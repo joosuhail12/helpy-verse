@@ -179,13 +179,51 @@ const Dashboard = () => {
     setIsSecondPanelCollapsed(prev => !prev);
   };
 
+  // Helper function to get current page title
+  const getCurrentPageTitle = () => {
+    const currentMainNav = mainNavItems.find(item => location.pathname.startsWith(item.path));
+    if (!currentMainNav) return '';
+
+    // Get the last segment of the path
+    const pathSegments = location.pathname.split('/').filter(Boolean);
+    const lastSegment = pathSegments[pathSegments.length - 1];
+    
+    // Find the exact page title by searching through subNavItems
+    let exactPageTitle = '';
+    if (currentMainNav.id !== 'home') {
+      const searchForTitle = (items: any[]): string => {
+        for (const item of items) {
+          if (item.path?.endsWith(lastSegment)) {
+            return item.title;
+          }
+          if (item.children) {
+            const found = searchForTitle(item.children);
+            if (found) return found;
+          }
+        }
+        return '';
+      };
+      
+      exactPageTitle = searchForTitle(subNavItems[currentMainNav.id as keyof typeof subNavItems] || []);
+    }
+
+    return {
+      main: currentMainNav.title,
+      exact: exactPageTitle || currentMainNav.title
+    };
+  };
+
+  const pageTitle = getCurrentPageTitle();
+
   return (
     <div className="min-h-screen flex w-full bg-gradient-to-br from-white via-purple-50/30 to-purple-100/30">
       <div className="w-20 min-h-screen bg-white/60 backdrop-blur-lg border-r border-purple-100/50 shadow-lg flex flex-col items-center py-6">
         <div className="mb-8">
-          <h1 className="font-bold text-2xl bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
-            L
-          </h1>
+          <img 
+            src="https://framerusercontent.com/images/9N8Z1vTRbJsHlrIuTjm6Ajga4dI.png" 
+            alt="Logo" 
+            className="w-12 h-12 object-contain"
+          />
         </div>
         
         <div className="flex-1 flex flex-col gap-6">
@@ -310,11 +348,13 @@ const Dashboard = () => {
       <div className="flex-1 overflow-auto">
         <header className="bg-white/50 backdrop-blur-sm border-b border-purple-100 px-6 py-4">
           <div className="flex items-center gap-2 text-sm text-gray-600">
-            <span>Home</span>
-            <span className="text-gray-400">/</span>
-            <span className="text-primary font-medium">
-              {mainNavItems.find(item => item.id === activeMainNav)?.title}
-            </span>
+            <span className="font-medium text-primary">{pageTitle.main}</span>
+            {pageTitle.exact !== pageTitle.main && (
+              <>
+                <span className="text-gray-400">/</span>
+                <span>{pageTitle.exact}</span>
+              </>
+            )}
           </div>
         </header>
 
