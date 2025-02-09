@@ -28,7 +28,10 @@ export const useTicketShortcuts = ({
         switch (e.key.toLowerCase()) {
           case 'v':
             e.preventDefault();
-            setViewMode(prev => prev === 'compact' ? 'expanded' : 'compact' as const);
+            setViewMode(prev => {
+              // Directly return the string literal type
+              return prev === 'compact' ? 'expanded' : 'compact';
+            });
             break;
           case 'd':
             e.preventDefault();
