@@ -31,8 +31,8 @@ export const LoginForm = memo(() => {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in rounded-2xl bg-white/50 backdrop-blur-sm p-6 shadow-xl border border-white/20" style={{ animationDelay: "0.2s" }}>
-      <div className="space-y-2 animate-fade-in" style={{ animationDelay: "0.3s" }}>
+    <div className="space-y-6 rounded-2xl bg-white/50 backdrop-blur-sm p-6 shadow-xl border border-white/20">
+      <div className="space-y-2">
         <h2 className="text-2xl font-bold text-gray-800 transition-colors duration-300 hover:text-primary">
           Welcome back
         </h2>
@@ -42,7 +42,7 @@ export const LoginForm = memo(() => {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
-        <div className="space-y-2 animate-fade-in" style={{ animationDelay: "0.4s" }}>
+        <div className="space-y-2">
           <label htmlFor="email" className="block text-gray-700 font-medium text-sm transition-colors duration-300">
             Email
           </label>
@@ -61,7 +61,7 @@ export const LoginForm = memo(() => {
           />
         </div>
 
-        <div className="space-y-2 animate-fade-in" style={{ animationDelay: "0.5s" }}>
+        <div className="space-y-2">
           <label htmlFor="password" className="block text-gray-700 font-medium text-sm transition-colors duration-300">
             Password
           </label>
@@ -88,11 +88,11 @@ export const LoginForm = memo(() => {
           disabled={loading}
         >
           {loading ? 'Signing in...' : 'Sign In'}
-          {!loading && <ArrowRight className="w-4 h-4 animate-slide-in-right" />}
+          {!loading && <ArrowRight className="w-4 h-4" />}
         </button>
       </form>
 
-      <div className="flex items-center justify-between pt-2 text-sm animate-fade-in" style={{ animationDelay: "0.6s" }}>
+      <div className="flex items-center justify-between pt-2 text-sm">
         <Link
           to="/sign-up"
           className="text-primary hover:text-primary/80 font-medium transition-all duration-300 
@@ -113,4 +113,3 @@ export const LoginForm = memo(() => {
 });
 
 LoginForm.displayName = 'LoginForm';
-
