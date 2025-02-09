@@ -57,26 +57,26 @@ const Dashboard = () => {
       icon: currentMainNav.icon
     }];
 
-    if (currentMainNav.id !== 'home') {
-      const searchForBreadcrumb = (items: any[]): string => {
+    if (currentMainNav.id !== 'home' && lastSegment !== currentMainNav.id) {
+      const searchForBreadcrumb = (items: any[]): { title: string; icon: any } | null => {
         for (const item of items) {
           if (item.path?.endsWith(lastSegment)) {
-            return item.title;
+            return { title: item.title, icon: item.icon || Hash };
           }
           if (item.children) {
             const found = searchForBreadcrumb(item.children);
             if (found) return found;
           }
         }
-        return '';
+        return null;
       };
 
-      const exactPageTitle = searchForBreadcrumb(subNavItems[currentMainNav.id as keyof typeof subNavItems] || []);
-      if (exactPageTitle && exactPageTitle !== currentMainNav.title) {
+      const currentSection = searchForBreadcrumb(subNavItems[currentMainNav.id as keyof typeof subNavItems] || []);
+      if (currentSection) {
         breadcrumbs.push({
-          title: exactPageTitle,
+          title: currentSection.title,
           path: location.pathname,
-          icon: Hash // Adding Hash icon as default for sub-pages
+          icon: currentSection.icon
         });
       }
     }
@@ -91,7 +91,7 @@ const Dashboard = () => {
     <div className="min-h-screen flex w-full bg-gradient-to-br from-white via-purple-50/30 to-purple-100/30">
       <Sidebar />
 
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 flex flex-col h-screen overflow-hidden">
         <header className="sticky top-0 z-10 bg-white/50 backdrop-blur-sm border-b border-purple-100 px-6 py-4">
           <div className="flex items-center gap-2 text-sm">
             {breadcrumbs.map((crumb, index) => (
@@ -113,7 +113,7 @@ const Dashboard = () => {
           </div>
         </header>
 
-        <main className="p-6 animate-fade-in">
+        <main className="flex-1 p-6 overflow-auto">
           <div className="max-w-7xl mx-auto">
             {location.pathname === '/home' ? (
               <>
