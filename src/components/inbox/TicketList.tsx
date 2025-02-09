@@ -202,3 +202,4 @@ const TicketList = ({ tickets = [], isLoading = false }: TicketListProps) => {
 };
 
 export default TicketList;
+

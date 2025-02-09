@@ -158,3 +158,4 @@ const TicketCard = ({ ticket, viewMode, onCopyId }: TicketCardProps) => {
 };
 
 export default TicketCard;
+

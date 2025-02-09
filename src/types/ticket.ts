@@ -10,8 +10,13 @@ export interface Ticket {
   status: 'open' | 'closed' | 'pending';
   priority: 'low' | 'medium' | 'high';
   createdAt: string;
+  isUnread?: boolean;
+  updatedAt?: string;
+  assigneeAvatar?: string;
+  categories?: string[];
 }
 
 export type SortField = 'date' | 'priority' | 'status';
 export type SortDirection = 'asc' | 'desc';
 export type ViewMode = 'compact' | 'expanded';
+
