@@ -1,13 +1,13 @@
 
 import { ArrowRight } from "lucide-react";
-import { useState } from "react";
+import { useState, memo } from "react";
 import { Link } from "react-router-dom";
 import { useAppDispatch } from "../../hooks/useAppDispatch";
 import { useAppSelector } from "../../hooks/useAppSelector";
 import { registerUser } from "../../store/slices/authSlice";
 import { toast } from "../../components/ui/use-toast";
 
-export const SignUpForm = () => {
+export const SignUpForm = memo(() => {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -145,5 +145,6 @@ export const SignUpForm = () => {
       </div>
     </div>
   );
-};
+});
 
+SignUpForm.displayName = 'SignUpForm';
