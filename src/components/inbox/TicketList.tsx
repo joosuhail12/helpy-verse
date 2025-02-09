@@ -1,5 +1,5 @@
 
-import { Inbox, MessageSquare, Clock, Search, Filter } from 'lucide-react';
+import { Inbox, MessageSquare, User, Building, Tag, Search, Filter, Clock } from 'lucide-react';
 import { useState } from 'react';
 import { Input } from "@/components/ui/input";
 import {
@@ -14,6 +14,10 @@ interface Ticket {
   id: string;
   subject: string;
   customer: string;
+  lastMessage: string;
+  assignee: string | null;
+  company: string;
+  tags: string[];
   status: 'open' | 'closed' | 'pending';
   priority: 'low' | 'medium' | 'high';
   createdAt: string;
@@ -108,35 +112,57 @@ const TicketList = ({ tickets = [] }: TicketListProps) => {
                 <div className="flex-1 min-w-0">
                   <h3 className="font-medium text-gray-900 truncate">{ticket.subject}</h3>
                   <div className="flex items-center gap-2 mt-1">
-                    <div className="w-2 h-2 rounded-full bg-green-400"></div>
-                    <span className="text-sm text-gray-600 truncate">{ticket.customer}</span>
+                    <Building className="w-4 h-4 text-gray-400" />
+                    <span className="text-sm text-gray-600 truncate">{ticket.company}</span>
                   </div>
+                  <p className="text-sm text-gray-500 mt-2 line-clamp-2">{ticket.lastMessage}</p>
+                  {ticket.tags.length > 0 && (
+                    <div className="flex items-center gap-2 mt-2 flex-wrap">
+                      <Tag className="w-4 h-4 text-gray-400" />
+                      {ticket.tags.map((tag, index) => (
+                        <span
+                          key={index}
+                          className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full text-xs"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
 
-              <div className="flex items-center gap-4 flex-shrink-0">
-                <div className="flex items-center gap-2">
-                  <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${
-                    ticket.status === 'open' ? 'bg-green-50 text-green-700 border border-green-200' :
-                    ticket.status === 'pending' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
-                    'bg-gray-50 text-gray-700 border border-gray-200'
-                  }`}>
-                    {ticket.status}
-                  </span>
-                  <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${
-                    ticket.priority === 'high' ? 'bg-red-50 text-red-700 border border-red-200' :
-                    ticket.priority === 'medium' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
-                    'bg-blue-50 text-blue-700 border border-blue-200'
-                  }`}>
-                    {ticket.priority}
-                  </span>
+              <div className="flex flex-col items-end gap-2">
+                <div className="flex items-center gap-4 flex-shrink-0">
+                  <div className="flex items-center gap-2">
+                    <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${
+                      ticket.status === 'open' ? 'bg-green-50 text-green-700 border border-green-200' :
+                      ticket.status === 'pending' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
+                      'bg-gray-50 text-gray-700 border border-gray-200'
+                    }`}>
+                      {ticket.status}
+                    </span>
+                    <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${
+                      ticket.priority === 'high' ? 'bg-red-50 text-red-700 border border-red-200' :
+                      ticket.priority === 'medium' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
+                      'bg-blue-50 text-blue-700 border border-blue-200'
+                    }`}>
+                      {ticket.priority}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1 text-sm text-gray-500">
+
+                <div className="flex items-center gap-2 text-sm text-gray-500">
                   <Clock className="w-4 h-4" />
                   {new Date(ticket.createdAt).toLocaleDateString(undefined, {
                     month: 'short',
                     day: 'numeric'
                   })}
+                </div>
+
+                <div className="flex items-center gap-2 text-sm text-gray-500">
+                  <User className="w-4 h-4" />
+                  <span>{ticket.assignee || 'Unassigned'}</span>
                 </div>
               </div>
             </div>
