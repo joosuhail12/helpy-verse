@@ -29,7 +29,7 @@ const NavigationHeader = ({
           {mainNavItems.find(item => item.id === activeMainNav)?.title}
         </h2>
       )}
-      <TooltipProvider>
+      <TooltipProvider delayDuration={0}>
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
@@ -45,7 +45,11 @@ const NavigationHeader = ({
               )}
             </Button>
           </TooltipTrigger>
-          <TooltipContent side="right">
+          <TooltipContent 
+            side="right" 
+            className="z-[60] bg-white shadow-lg"
+            sideOffset={12}
+          >
             <p>Toggle panel (Ctrl + [)</p>
           </TooltipContent>
         </Tooltip>
@@ -55,3 +59,4 @@ const NavigationHeader = ({
 };
 
 export default NavigationHeader;
+

@@ -34,7 +34,7 @@ const NavigationItem = ({
   if (item.children) {
     return (
       <div>
-        <TooltipProvider>
+        <TooltipProvider delayDuration={0}>
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
@@ -65,7 +65,11 @@ const NavigationItem = ({
                 )}
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="right">
+            <TooltipContent 
+              side="right" 
+              className="z-[60] bg-white shadow-lg"
+              sideOffset={12}
+            >
               <p>{item.title}</p>
               <p className="text-xs text-muted-foreground">
                 Click to {expandedItems.includes(item.title) ? 'collapse' : 'expand'}
@@ -76,7 +80,7 @@ const NavigationItem = ({
         {expandedItems.includes(item.title) && !isSecondPanelCollapsed && (
           <div className="ml-8 mt-1 space-y-1 animate-accordion-down">
             {filterMenuItems(item.children).map((child: NavItemType) => (
-              <TooltipProvider key={child.title}>
+              <TooltipProvider key={child.title} delayDuration={0}>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
@@ -92,7 +96,11 @@ const NavigationItem = ({
                       </span>
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent side="right">
+                  <TooltipContent 
+                    side="right" 
+                    className="z-[60] bg-white shadow-lg"
+                    sideOffset={12}
+                  >
                     <p>{child.title}</p>
                     <p className="text-xs text-muted-foreground">Click to navigate</p>
                   </TooltipContent>
@@ -106,7 +114,7 @@ const NavigationItem = ({
   }
 
   return (
-    <TooltipProvider>
+    <TooltipProvider delayDuration={0}>
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
@@ -132,7 +140,11 @@ const NavigationItem = ({
             </div>
           </Button>
         </TooltipTrigger>
-        <TooltipContent side="right">
+        <TooltipContent 
+          side="right" 
+          className="z-[60] bg-white shadow-lg"
+          sideOffset={12}
+        >
           <p>{item.title}</p>
           <p className="text-xs text-muted-foreground">Click to navigate</p>
         </TooltipContent>
@@ -142,3 +154,4 @@ const NavigationItem = ({
 };
 
 export default NavigationItem;
+
