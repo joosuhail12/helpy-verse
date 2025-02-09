@@ -1,14 +1,15 @@
 
-import { useState } from 'react';
-import { Loader2, ChevronDown, ChevronUp, Copy, Check } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { useToast } from "@/components/ui/use-toast";
 import FilterBar from './FilterBar';
 import EmptyTicketState from './EmptyTicketState';
 import TicketCard from './TicketCard';
+import SortingControls from './SortingControls';
+import SelectionControls from './SelectionControls';
+import { useTicketList } from './hooks/useTicketList';
 import { Skeleton } from "@/components/ui/skeleton";
-import { Toggle } from "@/components/ui/toggle";
 import { Checkbox } from "@/components/ui/checkbox";
-import type { Ticket, SortField, SortDirection, ViewMode } from '@/types/ticket';
+import type { Ticket, ViewMode } from '@/types/ticket';
 
 interface TicketListProps {
   tickets: Ticket[];
@@ -17,22 +18,23 @@ interface TicketListProps {
 
 const TicketList = ({ tickets = [], isLoading = false }: TicketListProps) => {
   const { toast } = useToast();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [priorityFilter, setPriorityFilter] = useState<string>('all');
-  const [sortField, setSortField] = useState<SortField>('date');
-  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
-  const [viewMode, setViewMode] = useState<ViewMode>('expanded');
-  const [selectedTickets, setSelectedTickets] = useState<string[]>([]);
-
-  const handleSort = (field: SortField) => {
-    if (sortField === field) {
-      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortField(field);
-      setSortDirection('desc');
-    }
-  };
+  const {
+    searchQuery,
+    setSearchQuery,
+    statusFilter,
+    setStatusFilter,
+    priorityFilter,
+    setPriorityFilter,
+    sortField,
+    sortDirection,
+    viewMode,
+    setViewMode,
+    selectedTickets,
+    handleSort,
+    handleTicketSelection,
+    handleSelectAll,
+    sortedAndFilteredTickets,
+  } = useTicketList(tickets);
 
   const handleCopyTicketId = async (id: string) => {
     await navigator.clipboard.writeText(id);
@@ -41,50 +43,6 @@ const TicketList = ({ tickets = [], isLoading = false }: TicketListProps) => {
       duration: 2000,
     });
   };
-
-  const handleTicketSelection = (ticketId: string) => {
-    setSelectedTickets(prev => 
-      prev.includes(ticketId) 
-        ? prev.filter(id => id !== ticketId)
-        : [...prev, ticketId]
-    );
-  };
-
-  const handleSelectAll = () => {
-    setSelectedTickets(prev => 
-      prev.length === tickets.length ? [] : tickets.map(t => t.id)
-    );
-  };
-
-  const sortedAndFilteredTickets = tickets
-    .filter(ticket => {
-      const matchesSearch = 
-        ticket.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        ticket.customer.toLowerCase().includes(searchQuery.toLowerCase());
-      
-      const matchesStatus = statusFilter === 'all' || ticket.status === statusFilter;
-      const matchesPriority = priorityFilter === 'all' || ticket.priority === priorityFilter;
-
-      return matchesSearch && matchesStatus && matchesPriority;
-    })
-    .sort((a, b) => {
-      const direction = sortDirection === 'asc' ? 1 : -1;
-      
-      switch (sortField) {
-        case 'date':
-          return (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) * direction;
-        case 'priority': {
-          const priorityOrder = { high: 3, medium: 2, low: 1 };
-          return (priorityOrder[a.priority] - priorityOrder[b.priority]) * direction;
-        }
-        case 'status': {
-          const statusOrder = { open: 3, pending: 2, closed: 1 };
-          return (statusOrder[a.status] - statusOrder[b.status]) * direction;
-        }
-        default:
-          return 0;
-      }
-    });
 
   if (tickets.length === 0 && !isLoading) {
     return <EmptyTicketState />;
@@ -102,45 +60,13 @@ const TicketList = ({ tickets = [], isLoading = false }: TicketListProps) => {
           setPriorityFilter={setPriorityFilter}
         />
         
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2" role="group" aria-label="Sort options">
-            <button
-              onClick={() => handleSort('date')}
-              className={`px-3 py-1.5 text-sm font-medium rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary/50 ${
-                sortField === 'date' ? 'text-primary' : 'text-gray-600'
-              }`}
-              aria-pressed={sortField === 'date'}
-            >
-              Date {sortField === 'date' && (sortDirection === 'asc' ? <ChevronUp className="inline w-4 h-4" /> : <ChevronDown className="inline w-4 h-4" />)}
-            </button>
-            <button
-              onClick={() => handleSort('priority')}
-              className={`px-3 py-1.5 text-sm font-medium rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary/50 ${
-                sortField === 'priority' ? 'text-primary' : 'text-gray-600'
-              }`}
-              aria-pressed={sortField === 'priority'}
-            >
-              Priority {sortField === 'priority' && (sortDirection === 'asc' ? <ChevronUp className="inline w-4 h-4" /> : <ChevronDown className="inline w-4 h-4" />)}
-            </button>
-            <button
-              onClick={() => handleSort('status')}
-              className={`px-3 py-1.5 text-sm font-medium rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary/50 ${
-                sortField === 'status' ? 'text-primary' : 'text-gray-600'
-              }`}
-              aria-pressed={sortField === 'status'}
-            >
-              Status {sortField === 'status' && (sortDirection === 'asc' ? <ChevronUp className="inline w-4 h-4" /> : <ChevronDown className="inline w-4 h-4" />)}
-            </button>
-          </div>
-
-          <Toggle
-            pressed={viewMode === 'compact'}
-            onPressedChange={(pressed) => setViewMode(pressed ? 'compact' : 'expanded')}
-            aria-label="Toggle view mode"
-          >
-            {viewMode === 'compact' ? 'Expanded' : 'Compact'} View
-          </Toggle>
-        </div>
+        <SortingControls
+          sortField={sortField}
+          sortDirection={sortDirection}
+          viewMode={viewMode}
+          onSort={handleSort}
+          onViewModeChange={setViewMode}
+        />
       </div>
 
       {isLoading ? (
@@ -160,18 +86,11 @@ const TicketList = ({ tickets = [], isLoading = false }: TicketListProps) => {
         </div>
       ) : (
         <div className="space-y-4 animate-fade-in">
-          {tickets.length > 0 && (
-            <div className="flex items-center gap-2 mb-4">
-              <Checkbox
-                checked={selectedTickets.length === tickets.length}
-                onCheckedChange={handleSelectAll}
-                aria-label="Select all tickets"
-              />
-              <span className="text-sm text-gray-600">
-                {selectedTickets.length} selected
-              </span>
-            </div>
-          )}
+          <SelectionControls
+            selectedCount={selectedTickets.length}
+            totalCount={tickets.length}
+            onSelectAll={handleSelectAll}
+          />
           
           {sortedAndFilteredTickets.map((ticket) => (
             <div key={ticket.id} className="group relative">
@@ -202,4 +121,3 @@ const TicketList = ({ tickets = [], isLoading = false }: TicketListProps) => {
 };
 
 export default TicketList;
-
