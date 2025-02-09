@@ -1,5 +1,5 @@
 
-import { Inbox, MessageSquare, User, Building, Tag, Search, Filter, Clock } from 'lucide-react';
+import { Inbox, MessageSquare, User, Building, Tag, Search, Filter, Clock, UserX } from 'lucide-react';
 import { useState } from 'react';
 import { Input } from "@/components/ui/input";
 import {
@@ -161,8 +161,17 @@ const TicketList = ({ tickets = [] }: TicketListProps) => {
                 </div>
 
                 <div className="flex items-center gap-2 text-sm text-gray-500">
-                  <User className="w-4 h-4" />
-                  <span>{ticket.assignee || 'Unassigned'}</span>
+                  {ticket.assignee ? (
+                    <>
+                      <User className="w-4 h-4" />
+                      <span>{ticket.assignee}</span>
+                    </>
+                  ) : (
+                    <>
+                      <UserX className="w-4 h-4 text-amber-500" />
+                      <span className="text-amber-500 font-medium">Unassigned</span>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -174,4 +183,3 @@ const TicketList = ({ tickets = [] }: TicketListProps) => {
 };
 
 export default TicketList;
-

@@ -38,6 +38,30 @@ const tickets = [
     priority: 'low',
     createdAt: '2024-03-13T09:15:00Z',
   },
+  {
+    id: '4',
+    subject: 'Feature request: Dark mode',
+    customer: 'Emily Chen',
+    lastMessage: 'Would it be possible to add a dark mode option to the dashboard? It would help reduce eye strain during night shifts.',
+    assignee: null,
+    company: 'NightWatch Security',
+    tags: ['feature-request', 'ui'],
+    status: 'open',
+    priority: 'low',
+    createdAt: '2024-03-12T22:45:00Z',
+  },
+  {
+    id: '5',
+    subject: 'Integration issues with API',
+    customer: 'David Lee',
+    lastMessage: 'The API endpoints are returning 404 errors since this morning. This is blocking our development process.',
+    assignee: null,
+    company: 'DevTech Solutions',
+    tags: ['api', 'urgent', 'bug'],
+    status: 'open',
+    priority: 'high',
+    createdAt: '2024-03-15T08:15:00Z',
+  },
 ] satisfies Ticket[];
 
 type Ticket = {
@@ -66,4 +90,3 @@ const AllTickets = () => {
 };
 
 export default AllTickets;
-
