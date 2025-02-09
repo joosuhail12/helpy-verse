@@ -1,13 +1,13 @@
 
 import { ArrowRight } from "lucide-react";
-import { useState } from "react";
+import { useState, memo } from "react";
 import { Link } from "react-router-dom";
 import { useAppDispatch } from "../../hooks/useAppDispatch";
 import { useAppSelector } from "../../hooks/useAppSelector";
 import { loginUser } from "../../store/slices/authSlice";
 import { toast } from "../../components/ui/use-toast";
 
-export const LoginForm = () => {
+export const LoginForm = memo(() => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const dispatch = useAppDispatch();
@@ -110,5 +110,7 @@ export const LoginForm = () => {
       </div>
     </div>
   );
-};
+});
+
+LoginForm.displayName = 'LoginForm';
 

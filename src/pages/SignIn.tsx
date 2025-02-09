@@ -1,9 +1,10 @@
 
+import { memo } from "react";
 import { Logo } from "@/components/auth/Logo";
 import { FeatureList } from "@/components/auth/FeatureList";
 import { LoginForm } from "@/components/auth/LoginForm";
 
-const SignIn = () => {
+const SignIn = memo(() => {
   return (
     <div className="min-h-screen w-full gradient-background flex items-center justify-center p-6 md:p-8">
       <div className="w-full max-w-3xl auth-card grid md:grid-cols-2 gap-8">
@@ -24,6 +25,9 @@ const SignIn = () => {
       </div>
     </div>
   );
-};
+});
+
+SignIn.displayName = 'SignIn';
 
 export default SignIn;
+
