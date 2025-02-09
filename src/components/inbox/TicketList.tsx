@@ -1,8 +1,25 @@
 
 import { Inbox } from 'lucide-react';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
+interface Ticket {
+  id: string;
+  subject: string;
+  customer: string;
+  status: 'open' | 'closed' | 'pending';
+  priority: 'low' | 'medium' | 'high';
+  createdAt: string;
+}
 
 interface TicketListProps {
-  tickets?: any[]; // We'll define a proper type when implementing the actual ticket data
+  tickets?: Ticket[];
 }
 
 const TicketList = ({ tickets = [] }: TicketListProps) => {
@@ -22,7 +39,50 @@ const TicketList = ({ tickets = [] }: TicketListProps) => {
     );
   }
 
-  return null; // We'll implement the actual ticket list view later
+  return (
+    <div className="bg-white/50 backdrop-blur-sm rounded-lg border border-purple-100">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Subject</TableHead>
+            <TableHead>Customer</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Priority</TableHead>
+            <TableHead>Created</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {tickets.map((ticket) => (
+            <TableRow key={ticket.id}>
+              <TableCell className="font-medium">{ticket.subject}</TableCell>
+              <TableCell>{ticket.customer}</TableCell>
+              <TableCell>
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                  ticket.status === 'open' ? 'bg-green-100 text-green-800' :
+                  ticket.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                  'bg-gray-100 text-gray-800'
+                }`}>
+                  {ticket.status}
+                </span>
+              </TableCell>
+              <TableCell>
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                  ticket.priority === 'high' ? 'bg-red-100 text-red-800' :
+                  ticket.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                  'bg-blue-100 text-blue-800'
+                }`}>
+                  {ticket.priority}
+                </span>
+              </TableCell>
+              <TableCell className="text-gray-500">
+                {new Date(ticket.createdAt).toLocaleDateString()}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
 };
 
 export default TicketList;
