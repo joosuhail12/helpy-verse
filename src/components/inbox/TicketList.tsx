@@ -1,13 +1,5 @@
 
-import { Inbox, MessageSquare } from 'lucide-react';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Inbox, MessageSquare, Clock, Flag } from 'lucide-react';
 
 interface Ticket {
   id: string;
@@ -40,65 +32,52 @@ const TicketList = ({ tickets = [] }: TicketListProps) => {
   }
 
   return (
-    <div className="bg-white/50 backdrop-blur-sm rounded-lg border border-purple-100 overflow-hidden">
-      <Table>
-        <TableHeader>
-          <TableRow className="hover:bg-transparent">
-            <TableHead className="w-[45%]">Conversation</TableHead>
-            <TableHead className="w-[20%]">Customer</TableHead>
-            <TableHead className="w-[15%]">Status</TableHead>
-            <TableHead className="w-[10%]">Priority</TableHead>
-            <TableHead className="w-[10%]">Created</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {tickets.map((ticket) => (
-            <TableRow 
-              key={ticket.id}
-              className="hover:bg-purple-50/50 cursor-pointer transition-colors"
-            >
-              <TableCell>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-purple-100/50 flex items-center justify-center flex-shrink-0">
-                    <MessageSquare className="w-5 h-5 text-primary/70" />
-                  </div>
-                  <span className="font-medium text-gray-900">{ticket.subject}</span>
-                </div>
-              </TableCell>
-              <TableCell>
-                <div className="flex items-center">
-                  <div className="w-2 h-2 rounded-full bg-green-400 mr-2"></div>
-                  <span className="text-gray-700">{ticket.customer}</span>
-                </div>
-              </TableCell>
-              <TableCell>
-                <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${
-                  ticket.status === 'open' ? 'bg-green-50 text-green-700 border border-green-200' :
-                  ticket.status === 'pending' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
-                  'bg-gray-50 text-gray-700 border border-gray-200'
-                }`}>
-                  {ticket.status}
-                </span>
-              </TableCell>
-              <TableCell>
-                <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${
-                  ticket.priority === 'high' ? 'bg-red-50 text-red-700 border border-red-200' :
-                  ticket.priority === 'medium' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
-                  'bg-blue-50 text-blue-700 border border-blue-200'
-                }`}>
-                  {ticket.priority}
-                </span>
-              </TableCell>
-              <TableCell className="text-sm text-gray-500">
-                {new Date(ticket.createdAt).toLocaleDateString(undefined, {
-                  month: 'short',
-                  day: 'numeric'
-                })}
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 animate-fade-in">
+      {tickets.map((ticket) => (
+        <div
+          key={ticket.id}
+          className="bg-white rounded-lg border border-purple-100 p-4 hover:shadow-md transition-all cursor-pointer space-y-4"
+        >
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-full bg-purple-100/50 flex items-center justify-center flex-shrink-0">
+              <MessageSquare className="w-5 h-5 text-primary/70" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-medium text-gray-900 truncate">{ticket.subject}</h3>
+              <div className="flex items-center gap-2 mt-1">
+                <div className="w-2 h-2 rounded-full bg-green-400"></div>
+                <span className="text-sm text-gray-600 truncate">{ticket.customer}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${
+                ticket.status === 'open' ? 'bg-green-50 text-green-700 border border-green-200' :
+                ticket.status === 'pending' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
+                'bg-gray-50 text-gray-700 border border-gray-200'
+              }`}>
+                {ticket.status}
+              </span>
+              <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${
+                ticket.priority === 'high' ? 'bg-red-50 text-red-700 border border-red-200' :
+                ticket.priority === 'medium' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
+                'bg-blue-50 text-blue-700 border border-blue-200'
+              }`}>
+                {ticket.priority}
+              </span>
+            </div>
+            <div className="flex items-center gap-1 text-sm text-gray-500">
+              <Clock className="w-4 h-4" />
+              {new Date(ticket.createdAt).toLocaleDateString(undefined, {
+                month: 'short',
+                day: 'numeric'
+              })}
+            </div>
+          </div>
+        </div>
+      ))}
     </div>
   );
 };
