@@ -11,6 +11,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import UserProfileCard from './UserProfileCard';
 
 interface SubNavigationProps {
   activeMainNav: string;
@@ -81,9 +82,9 @@ const SubNavigation = ({
     <div 
       className={`${
         isSecondPanelCollapsed ? 'w-12' : 'w-64'
-      } min-h-screen bg-white/60 backdrop-blur-lg border-r border-purple-100/50 transition-all duration-300 ease-in-out relative`}
+      } min-h-screen bg-white/60 backdrop-blur-lg border-r border-purple-100/50 transition-all duration-300 ease-in-out relative flex flex-col`}
     >
-      <div className="p-4">
+      <div className="flex-1 p-4">
         <div className="flex items-center justify-between mb-6">
           {!isSecondPanelCollapsed && (
             <h2 className="text-lg font-semibold text-gray-800 ml-2">
@@ -230,6 +231,8 @@ const SubNavigation = ({
           ))}
         </div>
       </div>
+
+      <UserProfileCard isCollapsed={isSecondPanelCollapsed} />
     </div>
   );
 };
