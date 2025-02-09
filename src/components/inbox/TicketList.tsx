@@ -1,6 +1,6 @@
 
 import { Loader2 } from 'lucide-react';
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { useEffect } from 'react';
 import FilterBar from './FilterBar';
 import EmptyTicketState from './EmptyTicketState';
@@ -8,10 +8,18 @@ import TicketCard from './TicketCard';
 import SortingControls from './SortingControls';
 import SelectionControls from './SelectionControls';
 import { useTicketList } from './hooks/useTicketList';
+import { useTicketShortcuts } from './hooks/useTicketShortcuts';
 import { getAblyChannel } from '@/utils/ably';
 import { Skeleton } from "@/components/ui/skeleton";
 import { Checkbox } from "@/components/ui/checkbox";
-import type { Ticket, ViewMode } from '@/types/ticket';
+import type { Ticket } from '@/types/ticket';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 
 interface TicketListProps {
   tickets: Ticket[];
@@ -37,7 +45,19 @@ const TicketList = ({ tickets = [], isLoading = false }: TicketListProps) => {
     handleSelectAll,
     sortedAndFilteredTickets,
     updateTicket,
+    markAsRead,
+    markAsUnread,
+    loadingStates,
   } = useTicketList(tickets);
+
+  // Set up keyboard shortcuts
+  useTicketShortcuts({
+    handleTicketSelection,
+    handleSort,
+    setViewMode,
+    markAsRead,
+    selectedTickets,
+  });
 
   useEffect(() => {
     let channel: any;
@@ -58,7 +78,6 @@ const TicketList = ({ tickets = [], isLoading = false }: TicketListProps) => {
 
         channel.subscribe('ticket:new', (message: any) => {
           const newTicket = message.data;
-          // You might want to handle new tickets differently
           toast({
             title: "New Ticket",
             description: `New ticket created: ${newTicket.subject}`,
@@ -134,11 +153,31 @@ const TicketList = ({ tickets = [], isLoading = false }: TicketListProps) => {
         </div>
       ) : (
         <div className="space-y-4 animate-fade-in">
-          <SelectionControls
-            selectedCount={selectedTickets.length}
-            totalCount={tickets.length}
-            onSelectAll={handleSelectAll}
-          />
+          <div className="flex items-center justify-between">
+            <SelectionControls
+              selectedCount={selectedTickets.length}
+              totalCount={tickets.length}
+              onSelectAll={handleSelectAll}
+            />
+            
+            {selectedTickets.length > 0 && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline">
+                    Actions
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onClick={() => markAsRead?.(selectedTickets)}>
+                    Mark as Read
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => markAsUnread?.(selectedTickets)}>
+                    Mark as Unread
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          </div>
           
           {sortedAndFilteredTickets.map((ticket) => (
             <div key={ticket.id} className="group relative">
@@ -151,9 +190,18 @@ const TicketList = ({ tickets = [], isLoading = false }: TicketListProps) => {
               </div>
               
               <div 
-                className="pl-12 group relative focus-within:ring-2 focus-within:ring-primary/50 focus-within:rounded-lg"
+                className={`pl-12 group relative focus-within:ring-2 focus-within:ring-primary/50 focus-within:rounded-lg ${
+                  ticket.isUnread ? 'bg-blue-50/30' : ''
+                }`}
                 tabIndex={0}
+                role="article"
+                aria-label={`Ticket from ${ticket.customer}: ${ticket.subject}`}
               >
+                {loadingStates[ticket.id] && (
+                  <div className="absolute inset-0 bg-white/50 flex items-center justify-center rounded-lg z-20">
+                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                  </div>
+                )}
                 <TicketCard 
                   ticket={ticket} 
                   viewMode={viewMode}

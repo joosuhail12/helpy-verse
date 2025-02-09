@@ -19,4 +19,3 @@ export interface Ticket {
 export type SortField = 'date' | 'priority' | 'status';
 export type SortDirection = 'asc' | 'desc';
 export type ViewMode = 'compact' | 'expanded';
-
