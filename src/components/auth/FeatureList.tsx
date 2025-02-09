@@ -8,10 +8,10 @@ interface FeatureItemProps {
 
 const FeatureItem = ({ text, delay }: FeatureItemProps) => (
   <div 
-    className="feature-item" 
+    className="feature-item hover:scale-105 transition-transform duration-200" 
     style={{ animationDelay: `${delay}s` }}
   >
-    <Check className="w-3.5 h-3.5 text-primary shrink-0" />
+    <Check className="w-3.5 h-3.5 text-primary shrink-0 animate-scale-in" style={{ animationDelay: `${delay + 0.1}s` }} />
     <span className="text-gray-600 text-sm">{text}</span>
   </div>
 );
@@ -25,7 +25,7 @@ export const FeatureList = () => {
   ];
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2 animate-fade-in">
       {features.map((feature, index) => (
         <FeatureItem 
           key={index} 

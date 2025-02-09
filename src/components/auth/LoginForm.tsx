@@ -31,8 +31,8 @@ export const LoginForm = () => {
   };
 
   return (
-    <div className="space-y-5 animate-fade-in md:pl-4" style={{ animationDelay: "0.2s" }}>
-      <div className="space-y-1.5">
+    <div className="space-y-5 animate-fade-in" style={{ animationDelay: "0.2s" }}>
+      <div className="space-y-1.5 animate-fade-in" style={{ animationDelay: "0.3s" }}>
         <h2 className="text-xl font-semibold text-neutral-800">Welcome back</h2>
         <p className="text-gray-500 text-sm">
           Enter your credentials to access your account
@@ -40,7 +40,7 @@ export const LoginForm = () => {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-1.5">
+        <div className="space-y-1.5 animate-fade-in" style={{ animationDelay: "0.4s" }}>
           <label htmlFor="email" className="block text-gray-800 font-medium text-sm">
             Email
           </label>
@@ -50,13 +50,13 @@ export const LoginForm = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="hello@example.com"
-            className="input-field"
+            className="input-field hover:scale-[1.01] transition-transform duration-200"
             required
             disabled={loading}
           />
         </div>
 
-        <div className="space-y-1.5">
+        <div className="space-y-1.5 animate-fade-in" style={{ animationDelay: "0.5s" }}>
           <label htmlFor="password" className="block text-gray-800 font-medium text-sm">
             Password
           </label>
@@ -65,7 +65,7 @@ export const LoginForm = () => {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="input-field"
+            className="input-field hover:scale-[1.01] transition-transform duration-200"
             required
             disabled={loading}
           />
@@ -73,24 +73,24 @@ export const LoginForm = () => {
 
         <button 
           type="submit" 
-          className="btn-primary"
+          className="btn-primary hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
           disabled={loading}
         >
           {loading ? 'Signing in...' : 'Sign In'}
-          {!loading && <ArrowRight className="w-3.5 h-3.5" />}
+          {!loading && <ArrowRight className="w-3.5 h-3.5 animate-slide-in-right" />}
         </button>
       </form>
 
-      <div className="flex items-center justify-between pt-2 text-xs">
+      <div className="flex items-center justify-between pt-2 text-xs animate-fade-in" style={{ animationDelay: "0.6s" }}>
         <Link
           to="/signup"
-          className="text-primary hover:text-primary/80 transition-colors"
+          className="text-primary hover:text-primary/80 transition-colors hover:scale-105 transform duration-200"
         >
           Create account
         </Link>
         <Link
           to="/forgot-password"
-          className="text-primary hover:text-primary/80 transition-colors"
+          className="text-primary hover:text-primary/80 transition-colors hover:scale-105 transform duration-200"
         >
           Forgot password?
         </Link>
