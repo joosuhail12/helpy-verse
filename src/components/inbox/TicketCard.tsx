@@ -1,5 +1,5 @@
 
-import { MessageSquare, Building, Tag, Clock, User, UserX, Copy, Check } from 'lucide-react';
+import { MessageSquare, Building, Tag, Clock, User, UserX, Copy, CheckCircle, Circle } from 'lucide-react';
 import { formatDistanceToNow, format } from 'date-fns';
 import {
   Tooltip,
@@ -30,6 +30,7 @@ interface TicketCardProps {
     status: 'open' | 'closed' | 'pending';
     priority: 'low' | 'medium' | 'high';
     createdAt: string;
+    isUnread?: boolean;
   };
   viewMode: ViewMode;
   onCopyId: () => void;
@@ -42,20 +43,24 @@ const TicketCard = ({ ticket, viewMode, onCopyId }: TicketCardProps) => {
     <div 
       className={`group bg-white rounded-lg border border-purple-100 p-4 hover:shadow-lg hover:bg-gray-50/50 transition-all cursor-pointer w-full ${
         isCompact ? 'py-3' : ''
-      }`}
+      } ${ticket.isUnread ? 'bg-blue-50/30' : ''}`}
       role="article"
       aria-labelledby={`ticket-${ticket.id}-subject`}
     >
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-start gap-3 flex-1 min-w-0">
           <div className="w-10 h-10 rounded-full bg-purple-100/50 flex items-center justify-center flex-shrink-0">
-            <MessageSquare className="w-5 h-5 text-primary/70" />
+            {ticket.isUnread ? (
+              <Circle className="w-5 h-5 text-primary/70" />
+            ) : (
+              <CheckCircle className="w-5 h-5 text-primary/70" />
+            )}
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <h3 
                 id={`ticket-${ticket.id}-subject`}
-                className="font-medium text-gray-900 truncate"
+                className={`font-medium text-gray-900 truncate ${ticket.isUnread ? 'font-semibold' : ''}`}
               >
                 {ticket.subject}
               </h3>
