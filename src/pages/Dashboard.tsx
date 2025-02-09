@@ -218,44 +218,44 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen flex w-full bg-gradient-to-br from-white via-purple-50/30 to-purple-100/30">
-      <div className="w-16 min-h-screen bg-white/60 backdrop-blur-lg border-r border-purple-100/50 shadow-lg flex flex-col items-center justify-center py-6">
-        <div className="absolute top-6">
+      <div className="w-16 min-h-screen bg-white/60 backdrop-blur-lg border-r border-purple-100/50 shadow-lg flex flex-col items-center justify-between py-6">
+        <div className="flex flex-col items-center gap-6">
           <img 
             src="https://framerusercontent.com/images/9N8Z1vTRbJsHlrIuTjm6Ajga4dI.png" 
             alt="Logo" 
             className="w-10 h-10 object-contain"
           />
-        </div>
-        
-        <div className="flex-1 flex flex-col items-center justify-center gap-6">
-          {mainNavItems.map((item) => (
-            <Button
-              key={item.id}
-              variant="ghost"
-              size="icon"
-              className={`relative flex items-center justify-center group ${
-                activeMainNav === item.id 
-                  ? 'text-primary bg-primary/10' 
-                  : 'text-gray-500 hover:text-primary hover:bg-primary/5'
-              }`}
-              onClick={() => {
-                setActiveMainNav(item.id);
-                navigate(item.path);
-              }}
-            >
-              <item.icon className="h-4 w-4" />
-              <span className="sr-only">{item.title}</span>
-              {activeMainNav === item.id && (
-                <div className="absolute left-0 w-1 h-full bg-primary rounded-r-full" />
-              )}
-            </Button>
-          ))}
+          
+          <div className="flex flex-col items-center justify-center gap-6">
+            {mainNavItems.map((item) => (
+              <Button
+                key={item.id}
+                variant="ghost"
+                size="icon"
+                className={`relative flex items-center justify-center group ${
+                  activeMainNav === item.id 
+                    ? 'text-primary bg-primary/10' 
+                    : 'text-gray-500 hover:text-primary hover:bg-primary/5'
+                }`}
+                onClick={() => {
+                  setActiveMainNav(item.id);
+                  navigate(item.path);
+                }}
+              >
+                <item.icon className="h-4 w-4" />
+                <span className="sr-only">{item.title}</span>
+                {activeMainNav === item.id && (
+                  <div className="absolute left-0 w-1 h-full bg-primary rounded-r-full" />
+                )}
+              </Button>
+            ))}
+          </div>
         </div>
 
         <Button
           variant="ghost"
           size="icon"
-          className="absolute bottom-6 text-red-600 hover:text-red-700 hover:bg-red-50 flex justify-center items-center"
+          className="text-red-600 hover:text-red-700 hover:bg-red-50 flex justify-center items-center"
           onClick={handleLogout}
         >
           <LogOut className="h-4 w-4" />
@@ -297,12 +297,16 @@ const Dashboard = () => {
                       <Button
                         variant="ghost"
                         className={`w-full flex items-center ${
-                          isSecondPanelCollapsed ? 'justify-center px-2' : 'justify-between px-4'
+                          isSecondPanelCollapsed ? 'justify-center p-2' : 'justify-between px-4'
                         }`}
                         onClick={() => toggleExpanded(item.title)}
                       >
                         <div className={`flex items-center ${isSecondPanelCollapsed ? 'justify-center' : 'gap-3'}`}>
-                          {item.icon && <item.icon className="h-4 w-4" />}
+                          {item.icon && (
+                            <div className="flex items-center justify-center w-4">
+                              <item.icon className="h-4 w-4" />
+                            </div>
+                          )}
                           {!isSecondPanelCollapsed && <span>{item.title}</span>}
                         </div>
                         {!isSecondPanelCollapsed && (
@@ -330,12 +334,16 @@ const Dashboard = () => {
                     <Button
                       variant="ghost"
                       className={`w-full flex items-center ${
-                        isSecondPanelCollapsed ? 'justify-center px-2' : 'justify-start px-4'
+                        isSecondPanelCollapsed ? 'justify-center p-2' : 'justify-start px-4'
                       }`}
                       onClick={() => navigate(item.path)}
                     >
                       <div className={`flex items-center ${isSecondPanelCollapsed ? 'justify-center' : 'gap-3'}`}>
-                        {item.icon && <item.icon className="h-4 w-4" />}
+                        {item.icon && (
+                          <div className="flex items-center justify-center w-4">
+                            <item.icon className="h-4 w-4" />
+                          </div>
+                        )}
                         {!isSecondPanelCollapsed && <span>{item.title}</span>}
                       </div>
                     </Button>
