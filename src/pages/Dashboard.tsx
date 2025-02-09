@@ -218,8 +218,8 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen flex w-full bg-gradient-to-br from-white via-purple-50/30 to-purple-100/30">
-      <div className="w-16 min-h-screen bg-white/60 backdrop-blur-lg border-r border-purple-100/50 shadow-lg flex flex-col items-center py-6">
-        <div className="mb-8 flex justify-center">
+      <div className="w-16 min-h-screen bg-white/60 backdrop-blur-lg border-r border-purple-100/50 shadow-lg flex flex-col items-center justify-center py-6">
+        <div className="absolute top-6">
           <img 
             src="https://framerusercontent.com/images/9N8Z1vTRbJsHlrIuTjm6Ajga4dI.png" 
             alt="Logo" 
@@ -227,13 +227,13 @@ const Dashboard = () => {
           />
         </div>
         
-        <div className="flex-1 flex flex-col gap-6">
+        <div className="flex-1 flex flex-col items-center justify-center gap-6">
           {mainNavItems.map((item) => (
             <Button
               key={item.id}
               variant="ghost"
               size="icon"
-              className={`relative flex justify-center items-center group ${
+              className={`relative flex items-center justify-center group ${
                 activeMainNav === item.id 
                   ? 'text-primary bg-primary/10' 
                   : 'text-gray-500 hover:text-primary hover:bg-primary/5'
@@ -255,7 +255,7 @@ const Dashboard = () => {
         <Button
           variant="ghost"
           size="icon"
-          className="mt-auto text-red-600 hover:text-red-700 hover:bg-red-50 flex justify-center items-center"
+          className="absolute bottom-6 text-red-600 hover:text-red-700 hover:bg-red-50 flex justify-center items-center"
           onClick={handleLogout}
         >
           <LogOut className="h-4 w-4" />
@@ -270,31 +270,25 @@ const Dashboard = () => {
           } min-h-screen bg-white/40 backdrop-blur-sm border-r border-purple-100/50 transition-all duration-300 ease-in-out relative`}
         >
           <div className="p-6">
-            {!isSecondPanelCollapsed && (
-              <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-4">
+              {!isSecondPanelCollapsed && (
                 <h2 className="text-lg font-semibold text-gray-800">
                   {mainNavItems.find(item => item.id === activeMainNav)?.title}
                 </h2>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 flex justify-center items-center"
-                  onClick={toggleSecondPanel}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-              </div>
-            )}
-            {isSecondPanelCollapsed && (
+              )}
               <Button
                 variant="ghost"
                 size="icon"
-                className="w-full h-8 mb-4 flex justify-center items-center"
+                className="h-8 w-8 flex justify-center items-center ml-auto"
                 onClick={toggleSecondPanel}
               >
-                <ChevronRight className="h-4 w-4" />
+                {isSecondPanelCollapsed ? (
+                  <ChevronRight className="h-4 w-4" />
+                ) : (
+                  <ChevronLeft className="h-4 w-4" />
+                )}
               </Button>
-            )}
+            </div>
             <div className="space-y-1">
               {subNavItems[activeMainNav as keyof typeof subNavItems]?.map((item: any, index: number) => (
                 <div key={item.title}>
@@ -302,8 +296,8 @@ const Dashboard = () => {
                     <div>
                       <Button
                         variant="ghost"
-                        className={`w-full justify-between text-left font-medium ${
-                          isSecondPanelCollapsed ? 'px-2 flex justify-center' : ''
+                        className={`w-full flex items-center ${
+                          isSecondPanelCollapsed ? 'justify-center px-2' : 'justify-between px-4'
                         }`}
                         onClick={() => toggleExpanded(item.title)}
                       >
@@ -323,7 +317,7 @@ const Dashboard = () => {
                             <Button
                               key={child.title}
                               variant="ghost"
-                              className="w-full justify-start text-sm"
+                              className="w-full flex items-center justify-start text-sm px-4"
                               onClick={() => navigate(child.path)}
                             >
                               {child.title}
@@ -335,9 +329,9 @@ const Dashboard = () => {
                   ) : (
                     <Button
                       variant="ghost"
-                      className={`w-full ${
-                        isSecondPanelCollapsed ? 'px-2 flex justify-center' : 'justify-start'
-                      } font-medium`}
+                      className={`w-full flex items-center ${
+                        isSecondPanelCollapsed ? 'justify-center px-2' : 'justify-start px-4'
+                      }`}
                       onClick={() => navigate(item.path)}
                     >
                       <div className={`flex items-center ${isSecondPanelCollapsed ? 'justify-center' : 'gap-3'}`}>
