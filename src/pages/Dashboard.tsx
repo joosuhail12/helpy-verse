@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAppSelector } from '@/hooks/useAppSelector';
@@ -36,6 +35,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
+import React from 'react';
 
 const mainNavItems = [
   { id: 'home', title: 'Home', icon: Home, path: '/home' },
@@ -180,7 +180,6 @@ const Dashboard = () => {
     setIsSecondPanelCollapsed(prev => !prev);
   };
 
-  // Helper function to get current page title
   const getCurrentPageTitle = () => {
     const currentMainNav = mainNavItems.find(item => location.pathname.startsWith(item.path));
     if (!currentMainNav) return {
@@ -188,11 +187,9 @@ const Dashboard = () => {
       exact: ''
     };
 
-    // Get the last segment of the path
     const pathSegments = location.pathname.split('/').filter(Boolean);
     const lastSegment = pathSegments[pathSegments.length - 1];
     
-    // Find the exact page title by searching through subNavItems
     let exactPageTitle = '';
     if (currentMainNav.id !== 'home') {
       const searchForTitle = (items: any[]): string => {
@@ -222,7 +219,7 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen flex w-full bg-gradient-to-br from-white via-purple-50/30 to-purple-100/30">
       <div className="w-16 min-h-screen bg-white/60 backdrop-blur-lg border-r border-purple-100/50 shadow-lg flex flex-col items-center py-6">
-        <div className="mb-8">
+        <div className="mb-8 flex justify-center">
           <img 
             src="https://framerusercontent.com/images/9N8Z1vTRbJsHlrIuTjm6Ajga4dI.png" 
             alt="Logo" 
@@ -236,7 +233,7 @@ const Dashboard = () => {
               key={item.id}
               variant="ghost"
               size="icon"
-              className={`relative group ${
+              className={`relative flex justify-center items-center group ${
                 activeMainNav === item.id 
                   ? 'text-primary bg-primary/10' 
                   : 'text-gray-500 hover:text-primary hover:bg-primary/5'
@@ -258,7 +255,7 @@ const Dashboard = () => {
         <Button
           variant="ghost"
           size="icon"
-          className="mt-auto text-red-600 hover:text-red-700 hover:bg-red-50"
+          className="mt-auto text-red-600 hover:text-red-700 hover:bg-red-50 flex justify-center items-center"
           onClick={handleLogout}
         >
           <LogOut className="h-4 w-4" />
@@ -269,7 +266,7 @@ const Dashboard = () => {
       {activeMainNav !== 'home' && subNavItems[activeMainNav as keyof typeof subNavItems] && (
         <div 
           className={`${
-            isSecondPanelCollapsed ? 'w-16' : 'w-64'
+            isSecondPanelCollapsed ? 'w-12' : 'w-64'
           } min-h-screen bg-white/40 backdrop-blur-sm border-r border-purple-100/50 transition-all duration-300 ease-in-out relative`}
         >
           <div className="p-6">
@@ -281,14 +278,10 @@ const Dashboard = () => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8"
+                  className="h-8 w-8 flex justify-center items-center"
                   onClick={toggleSecondPanel}
                 >
-                  {isSecondPanelCollapsed ? (
-                    <ChevronRight className="h-4 w-4" />
-                  ) : (
-                    <ChevronLeft className="h-4 w-4" />
-                  )}
+                  <ChevronLeft className="h-4 w-4" />
                 </Button>
               </div>
             )}
@@ -296,7 +289,7 @@ const Dashboard = () => {
               <Button
                 variant="ghost"
                 size="icon"
-                className="w-full h-8 mb-4"
+                className="w-full h-8 mb-4 flex justify-center items-center"
                 onClick={toggleSecondPanel}
               >
                 <ChevronRight className="h-4 w-4" />
@@ -310,11 +303,11 @@ const Dashboard = () => {
                       <Button
                         variant="ghost"
                         className={`w-full justify-between text-left font-medium ${
-                          isSecondPanelCollapsed ? 'px-2' : ''
+                          isSecondPanelCollapsed ? 'px-2 flex justify-center' : ''
                         }`}
                         onClick={() => toggleExpanded(item.title)}
                       >
-                        <div className="flex items-center gap-3">
+                        <div className={`flex items-center ${isSecondPanelCollapsed ? 'justify-center' : 'gap-3'}`}>
                           {item.icon && <item.icon className="h-4 w-4" />}
                           {!isSecondPanelCollapsed && <span>{item.title}</span>}
                         </div>
@@ -342,12 +335,12 @@ const Dashboard = () => {
                   ) : (
                     <Button
                       variant="ghost"
-                      className={`w-full justify-start font-medium ${
-                        isSecondPanelCollapsed ? 'px-2' : ''
-                      }`}
+                      className={`w-full ${
+                        isSecondPanelCollapsed ? 'px-2 flex justify-center' : 'justify-start'
+                      } font-medium`}
                       onClick={() => navigate(item.path)}
                     >
-                      <div className="flex items-center gap-3">
+                      <div className={`flex items-center ${isSecondPanelCollapsed ? 'justify-center' : 'gap-3'}`}>
                         {item.icon && <item.icon className="h-4 w-4" />}
                         {!isSecondPanelCollapsed && <span>{item.title}</span>}
                       </div>
@@ -361,7 +354,7 @@ const Dashboard = () => {
       )}
 
       <div className="flex-1 overflow-auto">
-        <header className="bg-white/50 backdrop-blur-sm border-b border-purple-100 px-6 py-4">
+        <header className="sticky top-0 z-10 bg-white/50 backdrop-blur-sm border-b border-purple-100 px-6 py-4">
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <span className="font-medium text-primary">{pageTitle.main}</span>
             {pageTitle.exact !== pageTitle.main && (
