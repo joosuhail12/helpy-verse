@@ -1,4 +1,3 @@
-
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
 export interface AuthState {
@@ -18,26 +17,27 @@ const initialState: AuthState = {
   error: null,
 };
 
+// Test admin credentials
+const TEST_ADMIN = {
+  email: 'admin@test.com',
+  password: 'admin123'
+};
+
 export const loginUser = createAsyncThunk(
   'auth/login',
   async (credentials: { email: string; password: string }) => {
-    try {
-      // TODO: Replace with actual API call
-      const response = await fetch('YOUR_API_URL/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(credentials),
-      });
-      
-      if (!response.ok) throw new Error('Login failed');
-      
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      throw error;
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Check if credentials match test admin
+    if (credentials.email === TEST_ADMIN.email && credentials.password === TEST_ADMIN.password) {
+      return {
+        email: TEST_ADMIN.email,
+        role: 'admin' as const
+      };
     }
+    
+    throw new Error('Invalid credentials');
   }
 );
 
