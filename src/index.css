@@ -11,7 +11,7 @@
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-    --primary: 255 89% 74%;
+    --primary: 265 89% 60%;
     --primary-foreground: 210 40% 98%;
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
@@ -23,7 +23,7 @@
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 255 89% 74%;
+    --ring: 265 89% 60%;
     --radius: 1rem;
   }
 }
@@ -38,31 +38,29 @@
 }
 
 .gradient-background {
-  @apply bg-gradient-to-br from-[#E5DEFF] via-[#D6BCFA] to-[#9b87f5];
+  background: linear-gradient(135deg, #FF9F7F 0%, #E865FF 50%, #8465FF 100%);
   background-size: 200% 200%;
   animation: gradient 15s ease infinite;
 }
 
 .auth-card {
-  @apply bg-white/80 backdrop-blur-md shadow-2xl rounded-3xl p-8 md:p-12 animate-fade-in;
+  @apply bg-white/95 backdrop-blur-md shadow-2xl rounded-[2rem] p-8 md:p-12 animate-fade-in;
   box-shadow: 0 8px 32px -4px rgba(0, 0, 0, 0.1);
 }
 
 .input-field {
-  @apply w-full px-4 py-3.5 rounded-xl border border-gray-200 bg-white/70 backdrop-blur-sm 
-    focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 
-    transition-all duration-200 hover:border-primary/30;
+  @apply w-full px-6 py-4 rounded-2xl border-none bg-white shadow-sm
+    focus:outline-none focus:ring-2 focus:ring-primary/30
+    transition-all duration-200;
 }
 
 .btn-primary {
-  @apply w-full bg-primary hover:bg-primary/90 text-white font-medium py-3.5 px-4 
-    rounded-xl transition-all duration-200 flex items-center justify-center gap-2 
-    hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-primary/25;
+  @apply w-full bg-primary hover:bg-primary/90 text-white font-medium py-4 px-6 
+    rounded-2xl transition-all duration-200 flex items-center justify-center gap-2;
 }
 
 .feature-item {
   @apply flex items-center gap-3 opacity-0 animate-feature-item;
-  box-shadow: 0 2px 12px -4px rgba(0, 0, 0, 0.1);
 }
 
 @keyframes gradient {

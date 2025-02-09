@@ -10,10 +10,10 @@ const SignIn = () => {
         <div className="space-y-14">
           <Logo />
           <div className="space-y-6">
-            <h1 className="text-4xl font-bold text-neutral-800 leading-[1.2]">
+            <h1 className="text-4xl font-bold text-primary leading-[1.2]">
               Transform Your Customer Support
             </h1>
-            <p className="text-gray-600 text-lg leading-relaxed opacity-90">
+            <p className="text-gray-600 text-lg leading-relaxed">
               Pullse helps businesses deliver exceptional customer experiences
               through AI-powered support solutions.
             </p>
