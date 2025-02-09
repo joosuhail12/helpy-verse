@@ -13,16 +13,16 @@ export const LoginForm = () => {
   };
 
   return (
-    <div className="space-y-8 animate-fade-in" style={{ animationDelay: "0.2s" }}>
-      <div className="space-y-2">
+    <div className="space-y-10 animate-fade-in md:pl-8" style={{ animationDelay: "0.2s" }}>
+      <div className="space-y-2.5">
         <h2 className="text-2xl font-semibold text-neutral-800">Welcome back</h2>
-        <p className="text-gray-500">
+        <p className="text-gray-600">
           Enter your credentials to access your account
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-5">
-        <div className="space-y-2">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="space-y-2.5">
           <label htmlFor="email" className="block text-gray-700 font-medium">
             Email
           </label>
@@ -37,7 +37,7 @@ export const LoginForm = () => {
           />
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-2.5">
           <label htmlFor="password" className="block text-gray-700 font-medium">
             Password
           </label>
@@ -57,7 +57,7 @@ export const LoginForm = () => {
         </button>
       </form>
 
-      <div className="flex items-center justify-between pt-4">
+      <div className="flex items-center justify-between pt-4 text-sm">
         <Link
           to="/signup"
           className="text-primary hover:text-primary/80 transition-colors font-medium"
