@@ -182,7 +182,10 @@ const Dashboard = () => {
   // Helper function to get current page title
   const getCurrentPageTitle = () => {
     const currentMainNav = mainNavItems.find(item => location.pathname.startsWith(item.path));
-    if (!currentMainNav) return '';
+    if (!currentMainNav) return {
+      main: '',
+      exact: ''
+    };
 
     // Get the last segment of the path
     const pathSegments = location.pathname.split('/').filter(Boolean);
