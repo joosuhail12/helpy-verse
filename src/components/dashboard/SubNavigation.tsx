@@ -1,7 +1,7 @@
 
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { subNavItems } from './navigationConfig';
+import { subNavItems, mainNavItems } from './navigationConfig';
 import { NavigateFunction } from 'react-router-dom';
 
 interface SubNavigationProps {

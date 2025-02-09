@@ -1,8 +1,7 @@
-
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import Sidebar from '@/components/dashboard/Sidebar';
-import { mainNavItems } from '@/components/dashboard/navigationConfig';
+import { mainNavItems, subNavItems } from '@/components/dashboard/navigationConfig';
 
 const Dashboard = () => {
   const navigate = useNavigate();
