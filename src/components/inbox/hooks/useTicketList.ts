@@ -1,5 +1,5 @@
 
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Ticket, SortField, SortDirection, ViewMode } from '@/types/ticket';
@@ -21,8 +21,24 @@ const updateTicketStatus = async ({ ticketIds, isUnread }: { ticketIds: string[]
 };
 
 export const useTicketList = (initialTickets: Ticket[]) => {
-  const { toast } = useToast();
+  // Initialize React Query hooks first
   const queryClient = useQueryClient();
+  const { data: tickets = initialTickets } = useQuery({
+    queryKey: ['tickets'],
+    queryFn: fetchTickets,
+  });
+
+  const updateTicketMutation = useMutation({
+    mutationFn: updateTicketStatus,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tickets'] });
+    },
+  });
+
+  // Toast hooks
+  const { toast } = useToast();
+
+  // State hooks
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
@@ -31,20 +47,6 @@ export const useTicketList = (initialTickets: Ticket[]) => {
   const [viewMode, setViewMode] = useState<ViewMode>('expanded');
   const [selectedTickets, setSelectedTickets] = useState<string[]>([]);
   const [loadingStates, setLoadingStates] = useState<Record<string, boolean>>({});
-
-  // Fetch tickets using React Query
-  const { data: tickets = initialTickets } = useQuery({
-    queryKey: ['tickets'],
-    queryFn: fetchTickets,
-  });
-
-  // Update ticket mutation
-  const updateTicketMutation = useMutation({
-    mutationFn: updateTicketStatus,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tickets'] });
-    },
-  });
 
   const updateTicket = useCallback((updatedTicket: Ticket) => {
     queryClient.setQueryData(['tickets'], (oldData: Ticket[] | undefined) => 
