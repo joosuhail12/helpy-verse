@@ -1,5 +1,5 @@
 
-import { Inbox, MessageSquare, User, Building, Tag, Search, Filter, Clock, UserX } from 'lucide-react';
+import { Inbox, MessageSquare, User, Building, Tag, Search, Filter, Clock, UserX, ArrowUp, ArrowDown, Circle, CircleAlert, CheckCircle } from 'lucide-react';
 import { useState } from 'react';
 import { Input } from "@/components/ui/input";
 import {
@@ -9,6 +9,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { formatDistanceToNow, format } from 'date-fns';
 
 interface Ticket {
   id: string;
@@ -31,6 +38,19 @@ const TicketList = ({ tickets = [] }: TicketListProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
+
+  const getPriorityIcon = (priority: string) => {
+    switch (priority) {
+      case 'high':
+        return <CircleAlert className="w-4 h-4 text-red-500" />;
+      case 'medium':
+        return <Circle className="w-4 h-4 text-amber-500" />;
+      case 'low':
+        return <CheckCircle className="w-4 h-4 text-blue-500" />;
+      default:
+        return null;
+    }
+  };
 
   const filteredTickets = tickets.filter(ticket => {
     const matchesSearch = 
@@ -98,11 +118,11 @@ const TicketList = ({ tickets = [] }: TicketListProps) => {
         </div>
       </div>
 
-      <div className="space-y-3 animate-fade-in">
+      <div className="space-y-4 animate-fade-in">
         {filteredTickets.map((ticket) => (
           <div
             key={ticket.id}
-            className="bg-white rounded-lg border border-purple-100 p-4 hover:shadow-md transition-all cursor-pointer w-full"
+            className="bg-white rounded-lg border border-purple-100 p-4 hover:shadow-lg hover:bg-gray-50/50 transition-all cursor-pointer w-full"
           >
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-start gap-3 flex-1 min-w-0">
@@ -111,13 +131,17 @@ const TicketList = ({ tickets = [] }: TicketListProps) => {
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="font-medium text-gray-900 truncate">{ticket.subject}</h3>
-                  <div className="flex items-center gap-2 mt-1">
+                  <div className="flex items-center gap-2 mt-1 text-sm text-gray-600">
                     <Building className="w-4 h-4 text-gray-400" />
-                    <span className="text-sm text-gray-600 truncate">{ticket.company}</span>
+                    <span className="truncate">{ticket.company}</span>
+                    <span className="w-1 h-1 rounded-full bg-gray-300"></span>
+                    <span className="truncate">{ticket.customer}</span>
                   </div>
-                  <p className="text-sm text-gray-500 mt-2 line-clamp-2">{ticket.lastMessage}</p>
+                  <p className="text-sm text-gray-500 mt-3 border-t border-gray-100 pt-3 line-clamp-2">
+                    {ticket.lastMessage}
+                  </p>
                   {ticket.tags.length > 0 && (
-                    <div className="flex items-center gap-2 mt-2 flex-wrap">
+                    <div className="flex items-center gap-2 mt-3 flex-wrap">
                       <Tag className="w-4 h-4 text-gray-400" />
                       {ticket.tags.map((tag, index) => (
                         <span
@@ -132,35 +156,38 @@ const TicketList = ({ tickets = [] }: TicketListProps) => {
                 </div>
               </div>
 
-              <div className="flex flex-col items-end gap-2">
-                <div className="flex items-center gap-4 flex-shrink-0">
-                  <div className="flex items-center gap-2">
-                    <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${
-                      ticket.status === 'open' ? 'bg-green-50 text-green-700 border border-green-200' :
-                      ticket.status === 'pending' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
-                      'bg-gray-50 text-gray-700 border border-gray-200'
-                    }`}>
-                      {ticket.status}
-                    </span>
-                    <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${
-                      ticket.priority === 'high' ? 'bg-red-50 text-red-700 border border-red-200' :
-                      ticket.priority === 'medium' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
-                      'bg-blue-50 text-blue-700 border border-blue-200'
-                    }`}>
-                      {ticket.priority}
-                    </span>
-                  </div>
+              <div className="flex flex-col items-end gap-3">
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium ${
+                    ticket.status === 'open' ? 'bg-green-50 text-green-700 border border-green-200' :
+                    ticket.status === 'pending' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
+                    'bg-gray-50 text-gray-700 border border-gray-200'
+                  }`}>
+                    {ticket.status}
+                  </span>
+                  <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium ${
+                    ticket.priority === 'high' ? 'bg-red-50 text-red-700 border border-red-200' :
+                    ticket.priority === 'medium' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
+                    'bg-blue-50 text-blue-700 border border-blue-200'
+                  }`}>
+                    {getPriorityIcon(ticket.priority)}
+                    {ticket.priority}
+                  </span>
                 </div>
 
-                <div className="flex items-center gap-2 text-sm text-gray-500">
-                  <Clock className="w-4 h-4" />
-                  {new Date(ticket.createdAt).toLocaleDateString(undefined, {
-                    month: 'short',
-                    day: 'numeric'
-                  })}
-                </div>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger className="flex items-center gap-2 text-sm text-gray-500">
+                      <Clock className="w-4 h-4" />
+                      {formatDistanceToNow(new Date(ticket.createdAt), { addSuffix: true })}
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {format(new Date(ticket.createdAt), 'PPpp')}
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
 
-                <div className="flex items-center gap-2 text-sm text-gray-500">
+                <div className="flex items-center gap-2 text-sm text-gray-500 border-t border-gray-100 pt-2 mt-2">
                   {ticket.assignee ? (
                     <>
                       <User className="w-4 h-4" />
