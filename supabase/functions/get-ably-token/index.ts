@@ -1,6 +1,6 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import * as Ably from 'npm:ably/promises'
+import * as Ably from "npm:ably"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
