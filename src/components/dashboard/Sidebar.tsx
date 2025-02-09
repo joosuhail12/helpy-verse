@@ -1,0 +1,86 @@
+
+import { ChevronLeft, ChevronRight, LogOut } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import MainNavigation from './MainNavigation';
+import SubNavigation from './SubNavigation';
+import { mainNavItems, subNavItems } from './navigationConfig';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { logout } from '@/store/slices/authSlice';
+import { toast } from '@/components/ui/use-toast';
+
+const Sidebar = () => {
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const [activeMainNav, setActiveMainNav] = useState('home');
+  const [expandedItems, setExpandedItems] = useState<string[]>([]);
+  const [isSecondPanelCollapsed, setIsSecondPanelCollapsed] = useState(false);
+
+  const handleLogout = () => {
+    dispatch(logout());
+    toast({
+      title: "Logged out successfully",
+      description: "You have been logged out of your account"
+    });
+    navigate('/sign-in');
+  };
+
+  const toggleExpanded = (itemTitle: string) => {
+    setExpandedItems(prev => 
+      prev.includes(itemTitle) 
+        ? prev.filter(item => item !== itemTitle)
+        : [...prev, itemTitle]
+    );
+  };
+
+  const toggleSecondPanel = () => {
+    setIsSecondPanelCollapsed(prev => !prev);
+  };
+
+  return (
+    <>
+      <div className="w-16 min-h-screen bg-white/80 backdrop-blur-xl border-r border-purple-100 shadow-lg flex flex-col items-center justify-between py-6">
+        <div className="flex flex-col items-center gap-8">
+          <div className="relative group">
+            <img 
+              src="https://framerusercontent.com/images/9N8Z1vTRbJsHlrIuTjm6Ajga4dI.png" 
+              alt="Logo" 
+              className="w-10 h-10 object-contain transition-all duration-300 group-hover:scale-110"
+            />
+            <div className="absolute inset-0 bg-primary/5 rounded-full scale-0 group-hover:scale-125 transition-transform duration-300" />
+          </div>
+          
+          <MainNavigation 
+            activeMainNav={activeMainNav}
+            setActiveMainNav={setActiveMainNav}
+            navigate={navigate}
+          />
+        </div>
+
+        <Button
+          variant="ghost"
+          size="icon"
+          className="w-12 h-12 rounded-xl text-red-600 hover:text-red-700 hover:bg-red-50 flex justify-center items-center transition-all duration-300 hover:shadow-md"
+          onClick={handleLogout}
+        >
+          <LogOut className="h-5 w-5" />
+          <span className="sr-only">Logout</span>
+        </Button>
+      </div>
+
+      {activeMainNav !== 'home' && subNavItems[activeMainNav as keyof typeof subNavItems] && (
+        <SubNavigation 
+          activeMainNav={activeMainNav}
+          isSecondPanelCollapsed={isSecondPanelCollapsed}
+          toggleSecondPanel={toggleSecondPanel}
+          expandedItems={expandedItems}
+          toggleExpanded={toggleExpanded}
+          navigate={navigate}
+        />
+      )}
+    </>
+  );
+};
+
+export default Sidebar;
