@@ -1,11 +1,28 @@
 
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useToast } from "@/hooks/use-toast";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Ticket, SortField, SortDirection, ViewMode } from '@/types/ticket';
+
+// API functions
+const fetchTickets = async (): Promise<Ticket[]> => {
+  const response = await fetch('/api/tickets');
+  if (!response.ok) throw new Error('Failed to fetch tickets');
+  return response.json();
+};
+
+const updateTicketStatus = async ({ ticketIds, isUnread }: { ticketIds: string[], isUnread: boolean }): Promise<void> => {
+  const response = await fetch('/api/tickets/status', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ticketIds, isUnread }),
+  });
+  if (!response.ok) throw new Error('Failed to update ticket status');
+};
 
 export const useTicketList = (initialTickets: Ticket[]) => {
   const { toast } = useToast();
-  const [tickets, setTickets] = useState(initialTickets);
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
@@ -15,18 +32,27 @@ export const useTicketList = (initialTickets: Ticket[]) => {
   const [selectedTickets, setSelectedTickets] = useState<string[]>([]);
   const [loadingStates, setLoadingStates] = useState<Record<string, boolean>>({});
 
-  // Update tickets when initialTickets changes
-  useEffect(() => {
-    setTickets(initialTickets);
-  }, [initialTickets]);
+  // Fetch tickets using React Query
+  const { data: tickets = initialTickets } = useQuery({
+    queryKey: ['tickets'],
+    queryFn: fetchTickets,
+  });
+
+  // Update ticket mutation
+  const updateTicketMutation = useMutation({
+    mutationFn: updateTicketStatus,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tickets'] });
+    },
+  });
 
   const updateTicket = useCallback((updatedTicket: Ticket) => {
-    setTickets(currentTickets => 
-      currentTickets.map(ticket => 
+    queryClient.setQueryData(['tickets'], (oldData: Ticket[] | undefined) => 
+      oldData?.map(ticket => 
         ticket.id === updatedTicket.id ? updatedTicket : ticket
-      )
+      ) ?? []
     );
-  }, []);
+  }, [queryClient]);
 
   const handleSort = useCallback((field: SortField) => {
     if (sortField === field) {
@@ -52,7 +78,6 @@ export const useTicketList = (initialTickets: Ticket[]) => {
   }, [tickets]);
 
   const markAsRead = useCallback(async (ticketIds: string[]) => {
-    // Set loading state for affected tickets
     setLoadingStates(prev => {
       const newStates = { ...prev };
       ticketIds.forEach(id => {
@@ -62,15 +87,7 @@ export const useTicketList = (initialTickets: Ticket[]) => {
     });
 
     try {
-      // Update tickets locally
-      setTickets(currentTickets =>
-        currentTickets.map(ticket =>
-          ticketIds.includes(ticket.id)
-            ? { ...ticket, isUnread: false }
-            : ticket
-        )
-      );
-
+      await updateTicketMutation.mutateAsync({ ticketIds, isUnread: false });
       toast({
         description: `${ticketIds.length} ticket(s) marked as read`,
       });
@@ -80,7 +97,6 @@ export const useTicketList = (initialTickets: Ticket[]) => {
         description: "Failed to update ticket status",
       });
     } finally {
-      // Clear loading states
       setLoadingStates(prev => {
         const newStates = { ...prev };
         ticketIds.forEach(id => {
@@ -89,7 +105,7 @@ export const useTicketList = (initialTickets: Ticket[]) => {
         return newStates;
       });
     }
-  }, [toast]);
+  }, [toast, updateTicketMutation]);
 
   const markAsUnread = useCallback(async (ticketIds: string[]) => {
     setLoadingStates(prev => {
@@ -101,14 +117,7 @@ export const useTicketList = (initialTickets: Ticket[]) => {
     });
 
     try {
-      setTickets(currentTickets =>
-        currentTickets.map(ticket =>
-          ticketIds.includes(ticket.id)
-            ? { ...ticket, isUnread: true }
-            : ticket
-        )
-      );
-
+      await updateTicketMutation.mutateAsync({ ticketIds, isUnread: true });
       toast({
         description: `${ticketIds.length} ticket(s) marked as unread`,
       });
@@ -126,7 +135,7 @@ export const useTicketList = (initialTickets: Ticket[]) => {
         return newStates;
       });
     }
-  }, [toast]);
+  }, [toast, updateTicketMutation]);
 
   const sortedAndFilteredTickets = useMemo(() => {
     return tickets
