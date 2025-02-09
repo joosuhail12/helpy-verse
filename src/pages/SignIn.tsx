@@ -7,10 +7,10 @@ const SignIn = () => {
   return (
     <div className="min-h-screen w-full gradient-background flex items-center justify-center p-4">
       <div className="w-full max-w-6xl auth-card grid md:grid-cols-2 gap-12">
-        <div className="space-y-10">
+        <div className="space-y-12">
           <Logo />
-          <div className="space-y-4">
-            <h1 className="text-4xl font-bold text-neutral-800">
+          <div className="space-y-6">
+            <h1 className="text-4xl font-bold text-neutral-800 leading-tight">
               Transform Your Customer Support
             </h1>
             <p className="text-gray-600 text-lg leading-relaxed">

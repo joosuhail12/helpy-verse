@@ -9,22 +9,21 @@ export const LoginForm = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle login logic here
     console.log("Login attempt with:", { email, password });
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 animate-fade-in" style={{ animationDelay: "0.2s" }}>
       <div className="space-y-2">
-        <h2 className="text-2xl font-semibold">Welcome back</h2>
+        <h2 className="text-2xl font-semibold text-neutral-800">Welcome back</h2>
         <p className="text-gray-500">
           Enter your credentials to access your account
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-5">
         <div className="space-y-2">
-          <label htmlFor="email" className="block text-gray-700">
+          <label htmlFor="email" className="block text-gray-700 font-medium">
             Email
           </label>
           <input
@@ -39,7 +38,7 @@ export const LoginForm = () => {
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="password" className="block text-gray-700">
+          <label htmlFor="password" className="block text-gray-700 font-medium">
             Password
           </label>
           <input
@@ -61,13 +60,13 @@ export const LoginForm = () => {
       <div className="flex items-center justify-between pt-4">
         <Link
           to="/signup"
-          className="text-primary hover:text-primary/80 transition-colors"
+          className="text-primary hover:text-primary/80 transition-colors font-medium"
         >
           Create account
         </Link>
         <Link
           to="/forgot-password"
-          className="text-primary hover:text-primary/80 transition-colors"
+          className="text-primary hover:text-primary/80 transition-colors font-medium"
         >
           Forgot password?
         </Link>
