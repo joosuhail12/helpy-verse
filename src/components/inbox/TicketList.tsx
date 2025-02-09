@@ -1,5 +1,5 @@
 
-import { Inbox } from 'lucide-react';
+import { Inbox, MessageSquare } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -19,7 +19,7 @@ interface Ticket {
 }
 
 interface TicketListProps {
-  tickets?: Ticket[];
+  tickets: Ticket[];
 }
 
 const TicketList = ({ tickets = [] }: TicketListProps) => {
@@ -40,42 +40,60 @@ const TicketList = ({ tickets = [] }: TicketListProps) => {
   }
 
   return (
-    <div className="bg-white/50 backdrop-blur-sm rounded-lg border border-purple-100">
+    <div className="bg-white/50 backdrop-blur-sm rounded-lg border border-purple-100 overflow-hidden">
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead>Subject</TableHead>
-            <TableHead>Customer</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Priority</TableHead>
-            <TableHead>Created</TableHead>
+          <TableRow className="hover:bg-transparent">
+            <TableHead className="w-[45%]">Conversation</TableHead>
+            <TableHead className="w-[20%]">Customer</TableHead>
+            <TableHead className="w-[15%]">Status</TableHead>
+            <TableHead className="w-[10%]">Priority</TableHead>
+            <TableHead className="w-[10%]">Created</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {tickets.map((ticket) => (
-            <TableRow key={ticket.id}>
-              <TableCell className="font-medium">{ticket.subject}</TableCell>
-              <TableCell>{ticket.customer}</TableCell>
+            <TableRow 
+              key={ticket.id}
+              className="hover:bg-purple-50/50 cursor-pointer transition-colors"
+            >
               <TableCell>
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                  ticket.status === 'open' ? 'bg-green-100 text-green-800' :
-                  ticket.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                  'bg-gray-100 text-gray-800'
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-purple-100/50 flex items-center justify-center flex-shrink-0">
+                    <MessageSquare className="w-5 h-5 text-primary/70" />
+                  </div>
+                  <span className="font-medium text-gray-900">{ticket.subject}</span>
+                </div>
+              </TableCell>
+              <TableCell>
+                <div className="flex items-center">
+                  <div className="w-2 h-2 rounded-full bg-green-400 mr-2"></div>
+                  <span className="text-gray-700">{ticket.customer}</span>
+                </div>
+              </TableCell>
+              <TableCell>
+                <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${
+                  ticket.status === 'open' ? 'bg-green-50 text-green-700 border border-green-200' :
+                  ticket.status === 'pending' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
+                  'bg-gray-50 text-gray-700 border border-gray-200'
                 }`}>
                   {ticket.status}
                 </span>
               </TableCell>
               <TableCell>
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                  ticket.priority === 'high' ? 'bg-red-100 text-red-800' :
-                  ticket.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                  'bg-blue-100 text-blue-800'
+                <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${
+                  ticket.priority === 'high' ? 'bg-red-50 text-red-700 border border-red-200' :
+                  ticket.priority === 'medium' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
+                  'bg-blue-50 text-blue-700 border border-blue-200'
                 }`}>
                   {ticket.priority}
                 </span>
               </TableCell>
-              <TableCell className="text-gray-500">
-                {new Date(ticket.createdAt).toLocaleDateString()}
+              <TableCell className="text-sm text-gray-500">
+                {new Date(ticket.createdAt).toLocaleDateString(undefined, {
+                  month: 'short',
+                  day: 'numeric'
+                })}
               </TableCell>
             </TableRow>
           ))}

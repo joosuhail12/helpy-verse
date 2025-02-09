@@ -26,7 +26,16 @@ const tickets = [
     priority: 'low',
     createdAt: '2024-03-13T09:15:00Z',
   },
-] as const;
+] satisfies Ticket[];
+
+type Ticket = {
+  id: string;
+  subject: string;
+  customer: string;
+  status: 'open' | 'closed' | 'pending';
+  priority: 'low' | 'medium' | 'high';
+  createdAt: string;
+};
 
 const AllTickets = () => {
   return (
