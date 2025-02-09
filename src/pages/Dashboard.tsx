@@ -1,7 +1,9 @@
+
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import Sidebar from '@/components/dashboard/Sidebar';
 import { mainNavItems, subNavItems } from '@/components/dashboard/navigationConfig';
+import { ChevronRight } from 'lucide-react';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -42,7 +44,53 @@ const Dashboard = () => {
     };
   };
 
+  const getBreadcrumbs = () => {
+    const pathSegments = location.pathname.split('/').filter(Boolean);
+    const breadcrumbs = [];
+    let currentPath = '';
+
+    for (const segment of pathSegments) {
+      currentPath += `/${segment}`;
+      const mainNav = mainNavItems.find(item => item.id === segment);
+      
+      if (mainNav) {
+        breadcrumbs.push({
+          title: mainNav.title,
+          path: currentPath,
+          icon: mainNav.icon
+        });
+      } else {
+        const searchForBreadcrumb = (items: any[]): string => {
+          for (const item of items) {
+            if (item.path?.endsWith(segment)) {
+              return item.title;
+            }
+            if (item.children) {
+              const found = searchForBreadcrumb(item.children);
+              if (found) return found;
+            }
+          }
+          return '';
+        };
+
+        const currentMainNav = mainNavItems.find(item => location.pathname.startsWith(item.path));
+        if (currentMainNav) {
+          const title = searchForBreadcrumb(subNavItems[currentMainNav.id as keyof typeof subNavItems] || []);
+          if (title) {
+            breadcrumbs.push({
+              title,
+              path: currentPath
+            });
+          }
+        }
+      }
+    }
+
+    return breadcrumbs;
+  };
+
   const pageTitle = getCurrentPageTitle();
+  const breadcrumbs = getBreadcrumbs();
 
   return (
     <div className="min-h-screen flex w-full bg-gradient-to-br from-white via-purple-50/30 to-purple-100/30">
@@ -50,14 +98,23 @@ const Dashboard = () => {
 
       <div className="flex-1 overflow-auto">
         <header className="sticky top-0 z-10 bg-white/50 backdrop-blur-sm border-b border-purple-100 px-6 py-4">
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <span className="font-medium text-primary">{pageTitle.main}</span>
-            {pageTitle.exact !== pageTitle.main && (
-              <>
-                <span className="text-gray-400">/</span>
-                <span>{pageTitle.exact}</span>
-              </>
-            )}
+          <div className="flex items-center gap-2 text-sm">
+            {breadcrumbs.map((crumb, index) => (
+              <div key={crumb.path} className="flex items-center">
+                {index > 0 && <ChevronRight className="h-4 w-4 text-gray-400 mx-2" />}
+                <button
+                  onClick={() => navigate(crumb.path)}
+                  className={`flex items-center gap-2 hover:text-primary transition-colors ${
+                    index === breadcrumbs.length - 1 
+                      ? 'text-primary font-medium' 
+                      : 'text-gray-600'
+                  }`}
+                >
+                  {crumb.icon && <crumb.icon className="h-4 w-4" />}
+                  {crumb.title}
+                </button>
+              </div>
+            ))}
           </div>
         </header>
 

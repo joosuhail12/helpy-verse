@@ -2,7 +2,7 @@
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { subNavItems, mainNavItems } from './navigationConfig';
-import { NavigateFunction } from 'react-router-dom';
+import { NavigateFunction, useLocation } from 'react-router-dom';
 
 interface SubNavigationProps {
   activeMainNav: string;
@@ -21,6 +21,16 @@ const SubNavigation = ({
   toggleExpanded, 
   navigate 
 }: SubNavigationProps) => {
+  const location = useLocation();
+
+  const isItemActive = (path: string) => location.pathname === path;
+  const hasActiveChild = (children: any[]) => {
+    return children.some(child => 
+      isItemActive(child.path) || 
+      (child.children && hasActiveChild(child.children))
+    );
+  };
+
   return (
     <div 
       className={`${
@@ -56,7 +66,7 @@ const SubNavigation = ({
                     variant="ghost"
                     className={`w-full flex items-center rounded-lg transition-colors ${
                       isSecondPanelCollapsed ? 'justify-center p-2' : 'justify-between px-4 py-2'
-                    } hover:bg-primary/5`}
+                    } ${hasActiveChild(item.children) ? 'bg-primary/10 text-primary' : 'hover:bg-primary/5'}`}
                     onClick={() => toggleExpanded(item.title)}
                   >
                     <div className={`flex items-center ${isSecondPanelCollapsed ? 'justify-center' : 'gap-3'}`}>
@@ -79,7 +89,10 @@ const SubNavigation = ({
                         <Button
                           key={child.title}
                           variant="ghost"
-                          className="w-full flex items-center justify-start text-sm px-4 py-2 rounded-lg hover:bg-primary/5 transition-colors"
+                          className={`w-full flex items-center justify-start text-sm px-4 py-2 rounded-lg transition-colors
+                            ${isItemActive(child.path) 
+                              ? 'bg-primary/10 text-primary' 
+                              : 'hover:bg-primary/5'}`}
                           onClick={() => navigate(child.path)}
                         >
                           {child.title}
@@ -93,7 +106,7 @@ const SubNavigation = ({
                   variant="ghost"
                   className={`w-full flex items-center rounded-lg transition-colors ${
                     isSecondPanelCollapsed ? 'justify-center p-2' : 'justify-start px-4 py-2'
-                  } hover:bg-primary/5`}
+                  } ${isItemActive(item.path) ? 'bg-primary/10 text-primary' : 'hover:bg-primary/5'}`}
                   onClick={() => navigate(item.path)}
                 >
                   <div className={`flex items-center ${isSecondPanelCollapsed ? 'justify-center' : 'gap-3'}`}>
