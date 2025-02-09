@@ -1,5 +1,5 @@
 
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import Sidebar from '@/components/dashboard/Sidebar';
 import { mainNavItems, subNavItems } from '@/components/dashboard/navigationConfig';
@@ -114,31 +114,37 @@ const Dashboard = () => {
         </header>
 
         <main className="p-6 animate-fade-in">
-          <div className="max-w-4xl mx-auto space-y-6">
-            <div className="bg-white/50 backdrop-blur-sm p-6 rounded-2xl border border-purple-100 shadow-sm">
-              <h1 className="text-2xl font-bold text-gray-800 mb-2">Welcome, {user?.email}</h1>
-              <p className="text-gray-600">Select an option from the sidebar to get started with your journey.</p>
-            </div>
+          <div className="max-w-7xl mx-auto">
+            {location.pathname === '/home' ? (
+              <>
+                <div className="max-w-4xl mx-auto space-y-6">
+                  <div className="bg-white/50 backdrop-blur-sm p-6 rounded-2xl border border-purple-100 shadow-sm">
+                    <h1 className="text-2xl font-bold text-gray-800 mb-2">Welcome, {user?.email}</h1>
+                    <p className="text-gray-600">Select an option from the sidebar to get started with your journey.</p>
+                  </div>
 
-            {location.pathname === '/home' && (
-              <div className="grid md:grid-cols-3 gap-4">
-                {mainNavItems.slice(1, 4).map((item) => (
-                  <button
-                    key={item.title}
-                    onClick={() => navigate(item.path)}
-                    className="bg-white/50 backdrop-blur-sm p-6 rounded-2xl border border-purple-100 shadow-sm 
-                             hover:shadow-md hover:border-primary/20 transition-all duration-300 group text-left"
-                  >
-                    <item.icon className="h-8 w-8 text-primary mb-3" />
-                    <h3 className="font-semibold text-gray-800 mb-1 group-hover:text-primary transition-colors">
-                      {item.title}
-                    </h3>
-                    <p className="text-sm text-gray-500">
-                      Access your {item.title.toLowerCase()} and manage your workflow
-                    </p>
-                  </button>
-                ))}
-              </div>
+                  <div className="grid md:grid-cols-3 gap-4">
+                    {mainNavItems.slice(1, 4).map((item) => (
+                      <button
+                        key={item.title}
+                        onClick={() => navigate(item.path)}
+                        className="bg-white/50 backdrop-blur-sm p-6 rounded-2xl border border-purple-100 shadow-sm 
+                                 hover:shadow-md hover:border-primary/20 transition-all duration-300 group text-left"
+                      >
+                        <item.icon className="h-8 w-8 text-primary mb-3" />
+                        <h3 className="font-semibold text-gray-800 mb-1 group-hover:text-primary transition-colors">
+                          {item.title}
+                        </h3>
+                        <p className="text-sm text-gray-500">
+                          Access your {item.title.toLowerCase()} and manage your workflow
+                        </p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </>
+            ) : (
+              <Outlet />
             )}
           </div>
         </main>

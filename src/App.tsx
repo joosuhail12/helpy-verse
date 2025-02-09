@@ -12,7 +12,8 @@ import { useAppSelector } from "./hooks/useAppSelector";
 const SignIn = lazy(() => import("./pages/SignIn"));
 const SignUp = lazy(() => import("./pages/SignUp"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
-const Home = lazy(() => import("./pages/Dashboard")); // We'll keep the file name but update the import name
+const Home = lazy(() => import("./pages/Dashboard"));
+const AllTickets = lazy(() => import("./pages/inbox/All"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -69,7 +70,9 @@ const App = () => (
                     <Home />
                   </ProtectedRoute>
                 }
-              />
+              >
+                <Route path="inbox/all" element={<AllTickets />} />
+              </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
