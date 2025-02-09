@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAppSelector } from '@/hooks/useAppSelector';
@@ -220,12 +221,12 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen flex w-full bg-gradient-to-br from-white via-purple-50/30 to-purple-100/30">
-      <div className="w-20 min-h-screen bg-white/60 backdrop-blur-lg border-r border-purple-100/50 shadow-lg flex flex-col items-center py-6">
+      <div className="w-16 min-h-screen bg-white/60 backdrop-blur-lg border-r border-purple-100/50 shadow-lg flex flex-col items-center py-6">
         <div className="mb-8">
           <img 
             src="https://framerusercontent.com/images/9N8Z1vTRbJsHlrIuTjm6Ajga4dI.png" 
             alt="Logo" 
-            className="w-12 h-12 object-contain"
+            className="w-10 h-10 object-contain"
           />
         </div>
         
@@ -245,7 +246,7 @@ const Dashboard = () => {
                 navigate(item.path);
               }}
             >
-              <item.icon className="h-5 w-5" />
+              <item.icon className="h-4 w-4" />
               <span className="sr-only">{item.title}</span>
               {activeMainNav === item.id && (
                 <div className="absolute left-0 w-1 h-full bg-primary rounded-r-full" />
@@ -260,7 +261,7 @@ const Dashboard = () => {
           className="mt-auto text-red-600 hover:text-red-700 hover:bg-red-50"
           onClick={handleLogout}
         >
-          <LogOut className="h-5 w-5" />
+          <LogOut className="h-4 w-4" />
           <span className="sr-only">Logout</span>
         </Button>
       </div>
@@ -271,24 +272,35 @@ const Dashboard = () => {
             isSecondPanelCollapsed ? 'w-16' : 'w-64'
           } min-h-screen bg-white/40 backdrop-blur-sm border-r border-purple-100/50 transition-all duration-300 ease-in-out relative`}
         >
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute -right-4 top-6 bg-white/60 shadow-md border border-purple-100/50 z-10 rounded-full"
-            onClick={toggleSecondPanel}
-          >
-            {isSecondPanelCollapsed ? (
-              <ChevronRight className="h-4 w-4" />
-            ) : (
-              <ChevronLeft className="h-4 w-4" />
-            )}
-          </Button>
-
-          <div className={`p-6 ${isSecondPanelCollapsed ? 'px-2' : ''}`}>
+          <div className="p-6">
             {!isSecondPanelCollapsed && (
-              <h2 className="text-lg font-semibold text-gray-800 mb-4">
-                {mainNavItems.find(item => item.id === activeMainNav)?.title}
-              </h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-gray-800">
+                  {mainNavItems.find(item => item.id === activeMainNav)?.title}
+                </h2>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={toggleSecondPanel}
+                >
+                  {isSecondPanelCollapsed ? (
+                    <ChevronRight className="h-4 w-4" />
+                  ) : (
+                    <ChevronLeft className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+            )}
+            {isSecondPanelCollapsed && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="w-full h-8 mb-4"
+                onClick={toggleSecondPanel}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
             )}
             <div className="space-y-1">
               {subNavItems[activeMainNav as keyof typeof subNavItems]?.map((item: any, index: number) => (
