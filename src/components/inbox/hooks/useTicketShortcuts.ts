@@ -28,7 +28,7 @@ export const useTicketShortcuts = ({
         switch (e.key.toLowerCase()) {
           case 'v':
             e.preventDefault();
-            setViewMode(prev => prev === 'compact' ? 'expanded' : 'compact');
+            setViewMode(prev => prev === 'compact' ? 'expanded' : 'compact' as const);
             break;
           case 'd':
             e.preventDefault();
