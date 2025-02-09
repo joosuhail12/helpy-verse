@@ -1,8 +1,10 @@
 
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import { subNavItems, mainNavItems } from './navigationConfig';
 import { NavigateFunction, useLocation } from 'react-router-dom';
+import { Input } from '@/components/ui/input';
+import { useState } from 'react';
 
 interface SubNavigationProps {
   activeMainNav: string;
@@ -22,6 +24,7 @@ const SubNavigation = ({
   navigate 
 }: SubNavigationProps) => {
   const location = useLocation();
+  const [searchQuery, setSearchQuery] = useState('');
 
   const isItemActive = (path: string) => location.pathname === path;
   const hasActiveChild = (children: any[]) => {
@@ -30,6 +33,22 @@ const SubNavigation = ({
       (child.children && hasActiveChild(child.children))
     );
   };
+
+  const filterMenuItems = (items: any[]) => {
+    return items.filter(item => {
+      const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      if (item.children) {
+        const filteredChildren = filterMenuItems(item.children);
+        return matchesSearch || filteredChildren.length > 0;
+      }
+      
+      return matchesSearch;
+    });
+  };
+
+  const currentNavItems = subNavItems[activeMainNav as keyof typeof subNavItems] || [];
+  const filteredNavItems = searchQuery ? filterMenuItems(currentNavItems) : currentNavItems;
 
   return (
     <div 
@@ -57,8 +76,22 @@ const SubNavigation = ({
             )}
           </Button>
         </div>
+
+        {!isSecondPanelCollapsed && (
+          <div className="relative mb-4">
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
+            <Input
+              type="text"
+              placeholder="Search menu..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-8 bg-white/50"
+            />
+          </div>
+        )}
+
         <div className="space-y-1">
-          {subNavItems[activeMainNav as keyof typeof subNavItems]?.map((item: any) => (
+          {filteredNavItems.map((item: any) => (
             <div key={item.title}>
               {item.children ? (
                 <div>
@@ -85,7 +118,7 @@ const SubNavigation = ({
                   </Button>
                   {expandedItems.includes(item.title) && !isSecondPanelCollapsed && (
                     <div className="ml-8 mt-1 space-y-1 animate-accordion-down">
-                      {item.children.map((child: any) => (
+                      {filterMenuItems(item.children).map((child: any) => (
                         <Button
                           key={child.title}
                           variant="ghost"
