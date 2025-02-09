@@ -23,6 +23,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarProvider
 } from "@/components/ui/sidebar";
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
@@ -52,79 +53,81 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen flex w-full bg-gray-50">
-      {/* Sidebar */}
-      <Sidebar className={`transition-all duration-300 ${isSidebarOpen ? 'w-64' : 'w-20'}`}>
-        <SidebarContent>
-          <div className="p-4 flex items-center justify-between">
-            <h1 className={`font-bold text-xl transition-opacity ${isSidebarOpen ? 'opacity-100' : 'opacity-0'}`}>
-              Dashboard
-            </h1>
+    <SidebarProvider defaultOpen={true}>
+      <div className="min-h-screen flex w-full bg-gray-50">
+        {/* Sidebar */}
+        <Sidebar className={`transition-all duration-300 ${isSidebarOpen ? 'w-64' : 'w-20'}`}>
+          <SidebarContent>
+            <div className="p-4 flex items-center justify-between">
+              <h1 className={`font-bold text-xl transition-opacity ${isSidebarOpen ? 'opacity-100' : 'opacity-0'}`}>
+                Dashboard
+              </h1>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              >
+                <Menu className="h-5 w-5" />
+              </Button>
+            </div>
+            
+            <SidebarGroup>
+              <SidebarGroupLabel className={isSidebarOpen ? 'opacity-100' : 'opacity-0'}>
+                Navigation
+              </SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {navItems.map((item) => (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton
+                        onClick={() => navigate(item.path)}
+                        className="w-full flex items-center gap-3 px-4 py-2 hover:bg-primary/10 rounded-lg transition-colors"
+                      >
+                        <item.icon className="h-5 w-5" />
+                        <span className={`transition-opacity ${isSidebarOpen ? 'opacity-100' : 'opacity-0'}`}>
+                          {item.title}
+                        </span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </SidebarContent>
+
+          <div className="mt-auto p-4">
             <Button
               variant="ghost"
-              size="icon"
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className="w-full flex items-center gap-3 justify-center"
+              onClick={handleLogout}
             >
-              <Menu className="h-5 w-5" />
+              <LogOut className="h-5 w-5" />
+              <span className={`transition-opacity ${isSidebarOpen ? 'opacity-100' : 'opacity-0'}`}>
+                Logout
+              </span>
             </Button>
           </div>
-          
-          <SidebarGroup>
-            <SidebarGroupLabel className={isSidebarOpen ? 'opacity-100' : 'opacity-0'}>
-              Navigation
-            </SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {navItems.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton
-                      onClick={() => navigate(item.path)}
-                      className="w-full flex items-center gap-3 px-4 py-2 hover:bg-primary/10 rounded-lg transition-colors"
-                    >
-                      <item.icon className="h-5 w-5" />
-                      <span className={`transition-opacity ${isSidebarOpen ? 'opacity-100' : 'opacity-0'}`}>
-                        {item.title}
-                      </span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        </SidebarContent>
+        </Sidebar>
 
-        <div className="mt-auto p-4">
-          <Button
-            variant="ghost"
-            className="w-full flex items-center gap-3 justify-center"
-            onClick={handleLogout}
-          >
-            <LogOut className="h-5 w-5" />
-            <span className={`transition-opacity ${isSidebarOpen ? 'opacity-100' : 'opacity-0'}`}>
-              Logout
-            </span>
-          </Button>
+        {/* Main Content */}
+        <div className="flex-1 overflow-auto">
+          {/* Header with Breadcrumbs */}
+          <header className="bg-white border-b px-6 py-4">
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <span>Dashboard</span>
+              <span>/</span>
+              <span className="text-primary font-medium">Home</span>
+            </div>
+          </header>
+
+          {/* Page Content */}
+          <main className="p-6">
+            <h1 className="text-2xl font-bold mb-6">Welcome, {user?.email}</h1>
+            <p className="text-gray-600">Select an option from the sidebar to get started.</p>
+          </main>
         </div>
-      </Sidebar>
-
-      {/* Main Content */}
-      <div className="flex-1 overflow-auto">
-        {/* Header with Breadcrumbs */}
-        <header className="bg-white border-b px-6 py-4">
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <span>Dashboard</span>
-            <span>/</span>
-            <span className="text-primary font-medium">Home</span>
-          </div>
-        </header>
-
-        {/* Page Content */}
-        <main className="p-6">
-          <h1 className="text-2xl font-bold mb-6">Welcome, {user?.email}</h1>
-          <p className="text-gray-600">Select an option from the sidebar to get started.</p>
-        </main>
       </div>
-    </div>
+    </SidebarProvider>
   );
 };
 
