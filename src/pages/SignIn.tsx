@@ -6,7 +6,7 @@ import { LoginForm } from "@/components/auth/LoginForm";
 const SignIn = () => {
   return (
     <div className="min-h-screen w-full gradient-background flex items-center justify-center p-6 md:p-8">
-      <div className="w-full max-w-4xl auth-card grid md:grid-cols-2 gap-8">
+      <div className="w-full max-w-3xl auth-card grid md:grid-cols-2 gap-8">
         <div className="space-y-10">
           <Logo />
           <div className="space-y-4">
