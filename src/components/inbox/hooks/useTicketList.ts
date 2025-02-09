@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import type { Ticket, SortField, SortDirection, ViewMode } from '@/types/ticket';
 
 export const useTicketList = (initialTickets: Ticket[]) => {
