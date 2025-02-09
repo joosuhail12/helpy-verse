@@ -41,6 +41,34 @@ export const loginUser = createAsyncThunk(
   }
 );
 
+export const registerUser = createAsyncThunk(
+  'auth/register',
+  async (credentials: { 
+    fullName: string;
+    email: string;
+    password: string;
+    companyName: string;
+  }) => {
+    try {
+      // TODO: Replace with actual API call
+      const response = await fetch('YOUR_API_URL/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(credentials),
+      });
+      
+      if (!response.ok) throw new Error('Registration failed');
+      
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      throw error;
+    }
+  }
+);
+
 const authSlice = createSlice({
   name: 'auth',
   initialState,
@@ -68,6 +96,19 @@ const authSlice = createSlice({
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || 'Login failed';
+      })
+      .addCase(registerUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(registerUser.fulfilled, (state, action) => {
+        state.loading = false;
+        state.isAuthenticated = true;
+        state.user = action.payload;
+      })
+      .addCase(registerUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Registration failed';
       });
   },
 });

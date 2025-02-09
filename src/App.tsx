@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Provider } from 'react-redux';
 import { store } from './store/store';
 import SignIn from "./pages/SignIn";
+import SignUp from "./pages/SignUp";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -21,6 +22,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<SignIn />} />
             <Route path="/sign-in" element={<SignIn />} />
+            <Route path="/sign-up" element={<SignUp />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
