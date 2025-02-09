@@ -16,11 +16,15 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { Settings, CheckCircle, MessageCircle, AlertCircle, PauseCircle, XCircle, Power } from 'lucide-react';
+import { Settings, CheckCircle, MessageCircle, AlertCircle, PauseCircle, XCircle, Power, LucideIcon } from 'lucide-react';
 import { UserStatus, statusConfig } from '@/types/userStatus';
 
 interface UserProfileCardProps {
   isCollapsed: boolean;
+}
+
+interface StatusIconsMap {
+  [key: string]: LucideIcon;
 }
 
 const UserProfileCard = ({ isCollapsed }: UserProfileCardProps) => {
@@ -28,7 +32,7 @@ const UserProfileCard = ({ isCollapsed }: UserProfileCardProps) => {
   const { user } = useAppSelector((state) => state.auth);
   const [status, setStatus] = useState<UserStatus>('available');
 
-  const statusIcons = {
+  const statusIcons: StatusIconsMap = {
     'available': CheckCircle,
     'active-conversation': MessageCircle,
     'busy': AlertCircle,

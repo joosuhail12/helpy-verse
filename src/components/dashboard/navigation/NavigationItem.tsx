@@ -8,16 +8,17 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { NavigationItem as NavItemType } from '../types/navigation';
 
 interface NavigationItemProps {
-  item: any;
+  item: NavItemType;
   isSecondPanelCollapsed: boolean;
   expandedItems: string[];
   toggleExpanded: (itemTitle: string) => void;
-  hasActiveChild?: (children: any[]) => boolean;
+  hasActiveChild?: (children: NavItemType[]) => boolean;
   isItemActive: (path: string) => boolean;
   navigate: (path: string) => void;
-  filterMenuItems: (items: any[]) => any[];
+  filterMenuItems: (items: NavItemType[]) => NavItemType[];
 }
 
 const NavigationItem = ({
