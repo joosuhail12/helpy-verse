@@ -22,7 +22,7 @@ export const LoginForm = memo(() => {
         title: "Success",
         description: "Logged in successfully",
       });
-      navigate('/dashboard');
+      navigate('/home');
     } catch (error) {
       toast({
         title: "Error",
