@@ -45,44 +45,38 @@ const Dashboard = () => {
   };
 
   const getBreadcrumbs = () => {
+    const currentMainNav = mainNavItems.find(item => location.pathname.startsWith(item.path));
+    if (!currentMainNav) return [];
+
     const pathSegments = location.pathname.split('/').filter(Boolean);
-    const breadcrumbs = [];
-    let currentPath = '';
+    const lastSegment = pathSegments[pathSegments.length - 1];
 
-    for (const segment of pathSegments) {
-      currentPath += `/${segment}`;
-      const mainNav = mainNavItems.find(item => item.id === segment);
-      
-      if (mainNav) {
-        breadcrumbs.push({
-          title: mainNav.title,
-          path: currentPath,
-          icon: mainNav.icon
-        });
-      } else {
-        const searchForBreadcrumb = (items: any[]): string => {
-          for (const item of items) {
-            if (item.path?.endsWith(segment)) {
-              return item.title;
-            }
-            if (item.children) {
-              const found = searchForBreadcrumb(item.children);
-              if (found) return found;
-            }
+    const breadcrumbs = [{
+      title: currentMainNav.title,
+      path: currentMainNav.path,
+      icon: currentMainNav.icon
+    }];
+
+    if (currentMainNav.id !== 'home') {
+      const searchForBreadcrumb = (items: any[]): string => {
+        for (const item of items) {
+          if (item.path?.endsWith(lastSegment)) {
+            return item.title;
           }
-          return '';
-        };
-
-        const currentMainNav = mainNavItems.find(item => location.pathname.startsWith(item.path));
-        if (currentMainNav) {
-          const title = searchForBreadcrumb(subNavItems[currentMainNav.id as keyof typeof subNavItems] || []);
-          if (title) {
-            breadcrumbs.push({
-              title,
-              path: currentPath
-            });
+          if (item.children) {
+            const found = searchForBreadcrumb(item.children);
+            if (found) return found;
           }
         }
+        return '';
+      };
+
+      const exactPageTitle = searchForBreadcrumb(subNavItems[currentMainNav.id as keyof typeof subNavItems] || []);
+      if (exactPageTitle && exactPageTitle !== currentMainNav.title) {
+        breadcrumbs.push({
+          title: exactPageTitle,
+          path: location.pathname
+        });
       }
     }
 
@@ -153,3 +147,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
