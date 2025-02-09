@@ -8,11 +8,13 @@ interface FeatureItemProps {
 
 const FeatureItem = ({ text, delay }: FeatureItemProps) => (
   <div 
-    className="feature-item hover:scale-105 transition-transform duration-200" 
+    className="feature-item hover:scale-105 transition-all duration-300 ease-in-out" 
     style={{ animationDelay: `${delay}s` }}
   >
-    <Check className="w-3.5 h-3.5 text-primary shrink-0 animate-scale-in" style={{ animationDelay: `${delay + 0.1}s` }} />
-    <span className="text-gray-600 text-sm">{text}</span>
+    <Check className="w-3.5 h-3.5 text-primary shrink-0 animate-scale-in" 
+      style={{ animationDelay: `${delay + 0.1}s` }} 
+    />
+    <span className="text-gray-600 text-sm transition-colors duration-300 hover:text-primary">{text}</span>
   </div>
 );
 
