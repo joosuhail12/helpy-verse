@@ -2,14 +2,32 @@
 import { ArrowRight } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useAppDispatch } from "../../hooks/useAppDispatch";
+import { useAppSelector } from "../../hooks/useAppSelector";
+import { loginUser } from "../../store/slices/authSlice";
+import { toast } from "../../components/ui/use-toast";
 
 export const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const dispatch = useAppDispatch();
+  const { loading, error } = useAppSelector((state) => state.auth);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Login attempt with:", { email, password });
+    try {
+      await dispatch(loginUser({ email, password })).unwrap();
+      toast({
+        title: "Success",
+        description: "Logged in successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Login failed. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -34,6 +52,7 @@ export const LoginForm = () => {
             placeholder="hello@example.com"
             className="input-field"
             required
+            disabled={loading}
           />
         </div>
 
@@ -48,12 +67,17 @@ export const LoginForm = () => {
             onChange={(e) => setPassword(e.target.value)}
             className="input-field"
             required
+            disabled={loading}
           />
         </div>
 
-        <button type="submit" className="btn-primary">
-          Sign In
-          <ArrowRight className="w-3.5 h-3.5" />
+        <button 
+          type="submit" 
+          className="btn-primary"
+          disabled={loading}
+        >
+          {loading ? 'Signing in...' : 'Sign In'}
+          {!loading && <ArrowRight className="w-3.5 h-3.5" />}
         </button>
       </form>
 
