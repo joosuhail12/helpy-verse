@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAppSelector } from '@/hooks/useAppSelector';
@@ -19,7 +18,20 @@ import {
   ListFilter,
   InboxIcon,
   UsersRound,
-  User
+  User,
+  Building2,
+  BrainCircuit,
+  ScrollText,
+  FileSpreadsheet,
+  UserCog,
+  MessagesSquare,
+  Mail,
+  Database,
+  Tags,
+  MessageCircle,
+  Reply,
+  Brain,
+  Activity
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
@@ -58,6 +70,82 @@ const subNavItems = {
         { title: 'Teammate 3 View', path: '/home/inbox/teammates/3' },
       ]
     }
+  ],
+  contacts: [
+    {
+      title: 'Contacts',
+      icon: Users,
+      children: [
+        { title: 'All Contacts', path: '/home/contacts/all' },
+        { title: 'Visitors', path: '/home/contacts/visitors' },
+        { title: 'Customers', path: '/home/contacts/customers' }
+      ]
+    },
+    { title: 'Companies', icon: Building2, path: '/home/contacts/companies' }
+  ],
+  automation: [
+    {
+      title: 'AI',
+      icon: BrainCircuit,
+      children: [
+        { title: 'Chatbot Profiles', path: '/home/automation/ai/chatbot-profiles' },
+        { title: 'Content Center', path: '/home/automation/ai/content-center' },
+        { title: 'Action Center', path: '/home/automation/ai/action-center' },
+        {
+          title: 'Bot Inboxes',
+          children: [
+            { title: 'Bot 1 Inbox', path: '/home/automation/ai/bot-inboxes/1' },
+            { title: 'Bot 2 Inbox', path: '/home/automation/ai/bot-inboxes/2' },
+            { title: 'Bot 3 Inbox', path: '/home/automation/ai/bot-inboxes/3' }
+          ]
+        },
+        { title: 'Copilot', path: '/home/automation/ai/copilot' }
+      ]
+    },
+    { title: 'Workflows', icon: Activity, path: '/home/automation/workflows' },
+    { title: 'Workflow Templates', icon: ScrollText, path: '/home/automation/workflow-templates' }
+  ],
+  reporting: [
+    { title: 'Dashboard', icon: BarChart, path: '/home/reporting/dashboard' },
+    {
+      title: 'Reports',
+      icon: FileSpreadsheet,
+      children: [
+        { title: 'Report 1', path: '/home/reporting/reports/1' },
+        { title: 'Report 2', path: '/home/reporting/reports/2' },
+        { title: 'Report 3', path: '/home/reporting/reports/3' }
+      ]
+    },
+    {
+      title: 'Custom Reports',
+      icon: FileSpreadsheet,
+      children: [
+        { title: 'Custom Report 1', path: '/home/reporting/custom/1' },
+        { title: 'Custom Report 2', path: '/home/reporting/custom/2' },
+        { title: 'Custom Report 3', path: '/home/reporting/custom/3' }
+      ]
+    }
+  ],
+  settings: [
+    { title: 'Teammates', icon: UserCog, path: '/home/settings/teammates' },
+    { title: 'Teams', icon: Users, path: '/home/settings/teams' },
+    { title: 'Chat', icon: MessagesSquare, path: '/home/settings/chat' },
+    {
+      title: 'Email',
+      icon: Mail,
+      children: [
+        { title: 'Domains', path: '/home/settings/email/domains' },
+        { title: 'Sender Email Address', path: '/home/settings/email/sender' },
+        { title: 'Email Settings', path: '/home/settings/email/settings' }
+      ]
+    },
+    { title: 'Custom Data', icon: Database, path: '/home/settings/custom-data' },
+    { title: 'Tags', icon: Tags, path: '/home/settings/tags' },
+    { title: 'Topics', icon: MessageCircle, path: '/home/settings/topics' },
+    { title: 'Canned Responses', icon: Reply, path: '/home/settings/canned-responses' },
+    { title: 'Sentiment', icon: Activity, path: '/home/settings/sentiment' },
+    { title: 'AutoQA', icon: Brain, path: '/home/settings/autoqa' },
+    { title: 'Auto Reply', icon: Reply, path: '/home/settings/auto-reply' }
   ]
 };
 
@@ -93,7 +181,6 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen flex w-full bg-gradient-to-br from-white via-purple-50/30 to-purple-100/30">
-      {/* Main Navigation Panel */}
       <div className="w-20 min-h-screen bg-white/60 backdrop-blur-lg border-r border-purple-100/50 shadow-lg flex flex-col items-center py-6">
         <div className="mb-8">
           <h1 className="font-bold text-2xl bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
@@ -137,7 +224,6 @@ const Dashboard = () => {
         </Button>
       </div>
 
-      {/* Sub Navigation Panel */}
       {activeMainNav !== 'home' && subNavItems[activeMainNav as keyof typeof subNavItems] && (
         <div 
           className={`${
@@ -221,9 +307,7 @@ const Dashboard = () => {
         </div>
       )}
 
-      {/* Main Content */}
       <div className="flex-1 overflow-auto">
-        {/* Header with Breadcrumbs */}
         <header className="bg-white/50 backdrop-blur-sm border-b border-purple-100 px-6 py-4">
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <span>Home</span>
@@ -234,7 +318,6 @@ const Dashboard = () => {
           </div>
         </header>
 
-        {/* Page Content */}
         <main className="p-6 animate-fade-in">
           <div className="max-w-4xl mx-auto space-y-6">
             <div className="bg-white/50 backdrop-blur-sm p-6 rounded-2xl border border-purple-100 shadow-sm">
