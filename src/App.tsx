@@ -16,8 +16,23 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const queryClient = new QueryClient();
 
 const LoadingFallback = () => (
-  <div className="min-h-screen w-full flex items-center justify-center">
-    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+  <div className="min-h-screen w-full gradient-background flex items-center justify-center">
+    <div className="w-full max-w-3xl p-6 md:p-8">
+      <div className="auth-card opacity-40">
+        <div className="animate-pulse space-y-8">
+          <div className="h-8 w-32 bg-primary/20 rounded-lg"></div>
+          <div className="space-y-4">
+            <div className="h-6 w-3/4 bg-primary/20 rounded-lg"></div>
+            <div className="h-4 w-full bg-primary/20 rounded-lg"></div>
+          </div>
+          <div className="space-y-3">
+            <div className="h-4 w-full bg-primary/20 rounded-lg"></div>
+            <div className="h-4 w-5/6 bg-primary/20 rounded-lg"></div>
+            <div className="h-4 w-4/6 bg-primary/20 rounded-lg"></div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 );
 
