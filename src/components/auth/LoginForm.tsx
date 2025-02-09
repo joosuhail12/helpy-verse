@@ -94,7 +94,7 @@ export const LoginForm = () => {
 
       <div className="flex items-center justify-between pt-2 text-sm animate-fade-in" style={{ animationDelay: "0.6s" }}>
         <Link
-          to="/signup"
+          to="/sign-up"
           className="text-primary hover:text-primary/80 font-medium transition-all duration-300 
                    ease-in-out hover:translate-x-0.5 transform flex items-center gap-1"
         >
@@ -111,3 +111,4 @@ export const LoginForm = () => {
     </div>
   );
 };
+
