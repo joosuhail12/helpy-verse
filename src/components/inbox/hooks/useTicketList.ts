@@ -1,8 +1,9 @@
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import type { Ticket, SortField, SortDirection, ViewMode } from '@/types/ticket';
 
-export const useTicketList = (tickets: Ticket[]) => {
+export const useTicketList = (initialTickets: Ticket[]) => {
+  const [tickets, setTickets] = useState(initialTickets);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
@@ -10,6 +11,19 @@ export const useTicketList = (tickets: Ticket[]) => {
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [viewMode, setViewMode] = useState<ViewMode>('expanded');
   const [selectedTickets, setSelectedTickets] = useState<string[]>([]);
+
+  // Update tickets when initialTickets changes
+  useEffect(() => {
+    setTickets(initialTickets);
+  }, [initialTickets]);
+
+  const updateTicket = useCallback((updatedTicket: Ticket) => {
+    setTickets(currentTickets => 
+      currentTickets.map(ticket => 
+        ticket.id === updatedTicket.id ? updatedTicket : ticket
+      )
+    );
+  }, []);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -80,5 +94,6 @@ export const useTicketList = (tickets: Ticket[]) => {
     handleTicketSelection,
     handleSelectAll,
     sortedAndFilteredTickets,
+    updateTicket,
   };
 };

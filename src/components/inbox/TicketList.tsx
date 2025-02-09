@@ -1,12 +1,14 @@
 
 import { Loader2 } from 'lucide-react';
 import { useToast } from "@/components/ui/use-toast";
+import { useEffect } from 'react';
 import FilterBar from './FilterBar';
 import EmptyTicketState from './EmptyTicketState';
 import TicketCard from './TicketCard';
 import SortingControls from './SortingControls';
 import SelectionControls from './SelectionControls';
 import { useTicketList } from './hooks/useTicketList';
+import { getAblyChannel } from '@/utils/ably';
 import { Skeleton } from "@/components/ui/skeleton";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { Ticket, ViewMode } from '@/types/ticket';
@@ -34,7 +36,53 @@ const TicketList = ({ tickets = [], isLoading = false }: TicketListProps) => {
     handleTicketSelection,
     handleSelectAll,
     sortedAndFilteredTickets,
+    updateTicket,
   } = useTicketList(tickets);
+
+  useEffect(() => {
+    let channel: any;
+
+    const setupRealtime = async () => {
+      try {
+        channel = await getAblyChannel('tickets');
+        
+        channel.subscribe('ticket:update', (message: any) => {
+          const updatedTicket = message.data;
+          updateTicket(updatedTicket);
+          
+          toast({
+            title: "Ticket Updated",
+            description: `Ticket ${updatedTicket.id} has been updated.`,
+          });
+        });
+
+        channel.subscribe('ticket:new', (message: any) => {
+          const newTicket = message.data;
+          // You might want to handle new tickets differently
+          toast({
+            title: "New Ticket",
+            description: `New ticket created: ${newTicket.subject}`,
+          });
+        });
+
+      } catch (error) {
+        console.error('Error setting up realtime:', error);
+        toast({
+          title: "Connection Error",
+          description: "Failed to connect to real-time updates",
+          variant: "destructive",
+        });
+      }
+    };
+
+    setupRealtime();
+
+    return () => {
+      if (channel) {
+        channel.unsubscribe();
+      }
+    };
+  }, [toast, updateTicket]);
 
   const handleCopyTicketId = async (id: string) => {
     await navigator.clipboard.writeText(id);
