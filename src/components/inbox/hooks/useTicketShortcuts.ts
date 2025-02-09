@@ -26,13 +26,6 @@ export const useTicketShortcuts = ({
 
       if (e.ctrlKey || e.metaKey) {
         switch (e.key.toLowerCase()) {
-          case 'v':
-            e.preventDefault();
-            setViewMode(prev => {
-              // Directly return the string literal type
-              return prev === 'compact' ? 'expanded' : 'compact';
-            });
-            break;
           case 'd':
             e.preventDefault();
             handleSort('date');
