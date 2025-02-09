@@ -1,7 +1,7 @@
 
 import { ArrowRight } from "lucide-react";
 import { useState, memo } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAppDispatch } from "../../hooks/useAppDispatch";
 import { useAppSelector } from "../../hooks/useAppSelector";
 import { loginUser } from "../../store/slices/authSlice";
@@ -12,6 +12,7 @@ export const LoginForm = memo(() => {
   const [password, setPassword] = useState("");
   const dispatch = useAppDispatch();
   const { loading, error } = useAppSelector((state) => state.auth);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,6 +22,7 @@ export const LoginForm = memo(() => {
         title: "Success",
         description: "Logged in successfully",
       });
+      navigate('/dashboard');
     } catch (error) {
       toast({
         title: "Error",
@@ -113,3 +115,4 @@ export const LoginForm = memo(() => {
 });
 
 LoginForm.displayName = 'LoginForm';
+
