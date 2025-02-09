@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import Sidebar from '@/components/dashboard/Sidebar';
 import { mainNavItems, subNavItems } from '@/components/dashboard/navigationConfig';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Hash } from 'lucide-react';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -75,7 +75,8 @@ const Dashboard = () => {
       if (exactPageTitle && exactPageTitle !== currentMainNav.title) {
         breadcrumbs.push({
           title: exactPageTitle,
-          path: location.pathname
+          path: location.pathname,
+          icon: Hash // Adding Hash icon as default for sub-pages
         });
       }
     }
@@ -147,4 +148,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-
