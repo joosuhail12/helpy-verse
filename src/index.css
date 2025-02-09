@@ -11,7 +11,7 @@
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-    --primary: 265 89% 78%;
+    --primary: 255 89% 74%;
     --primary-foreground: 210 40% 98%;
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
@@ -23,7 +23,7 @@
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 265 89% 78%;
+    --ring: 255 89% 74%;
     --radius: 1rem;
   }
 }
@@ -38,7 +38,7 @@
 }
 
 .gradient-background {
-  @apply bg-gradient-to-br from-pink-400 via-purple-400 to-indigo-400;
+  @apply bg-gradient-to-br from-[#E5DEFF] via-[#D6BCFA] to-[#9b87f5];
 }
 
 .auth-card {
