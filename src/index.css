@@ -44,19 +44,19 @@
 }
 
 .auth-card {
-  @apply bg-white/95 backdrop-blur-md shadow-2xl rounded-[2rem] p-8 md:p-12 animate-fade-in;
+  @apply bg-white/95 backdrop-blur-md shadow-2xl rounded-[1.5rem] p-6 md:p-8 animate-fade-in;
   box-shadow: 0 8px 32px -4px rgba(0, 0, 0, 0.1);
 }
 
 .input-field {
-  @apply w-full px-6 py-4 rounded-2xl border-none bg-white shadow-sm
+  @apply w-full px-5 py-3 rounded-xl border-none bg-white shadow-sm
     focus:outline-none focus:ring-2 focus:ring-primary/30
     transition-all duration-200;
 }
 
 .btn-primary {
-  @apply w-full bg-primary hover:bg-primary/90 text-white font-medium py-4 px-6 
-    rounded-2xl transition-all duration-200 flex items-center justify-center gap-2;
+  @apply w-full bg-primary hover:bg-primary/90 text-white font-medium py-3 px-5 
+    rounded-xl transition-all duration-200 flex items-center justify-center gap-2;
 }
 
 .feature-item {

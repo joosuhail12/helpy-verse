@@ -13,17 +13,17 @@ export const LoginForm = () => {
   };
 
   return (
-    <div className="space-y-8 animate-fade-in md:pl-8" style={{ animationDelay: "0.2s" }}>
+    <div className="space-y-6 animate-fade-in md:pl-6" style={{ animationDelay: "0.2s" }}>
       <div className="space-y-2">
-        <h2 className="text-[1.75rem] font-semibold text-neutral-800">Welcome back</h2>
-        <p className="text-gray-500 text-lg">
+        <h2 className="text-2xl font-semibold text-neutral-800">Welcome back</h2>
+        <p className="text-gray-500 text-base">
           Enter your credentials to access your account
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-5">
         <div className="space-y-2">
-          <label htmlFor="email" className="block text-gray-800 font-medium text-lg">
+          <label htmlFor="email" className="block text-gray-800 font-medium">
             Email
           </label>
           <input
@@ -38,7 +38,7 @@ export const LoginForm = () => {
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="password" className="block text-gray-800 font-medium text-lg">
+          <label htmlFor="password" className="block text-gray-800 font-medium">
             Password
           </label>
           <input
@@ -53,11 +53,11 @@ export const LoginForm = () => {
 
         <button type="submit" className="btn-primary">
           Sign In
-          <ArrowRight className="w-5 h-5" />
+          <ArrowRight className="w-4 h-4" />
         </button>
       </form>
 
-      <div className="flex items-center justify-between pt-4 text-base">
+      <div className="flex items-center justify-between pt-3 text-sm">
         <Link
           to="/signup"
           className="text-primary hover:text-primary/80 transition-colors"
