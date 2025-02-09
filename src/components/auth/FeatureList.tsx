@@ -11,8 +11,8 @@ const FeatureItem = ({ text, delay }: FeatureItemProps) => (
     className="feature-item" 
     style={{ animationDelay: `${delay}s` }}
   >
-    <Check className="w-4 h-4 text-primary shrink-0" />
-    <span className="text-gray-600 text-base">{text}</span>
+    <Check className="w-3.5 h-3.5 text-primary shrink-0" />
+    <span className="text-gray-600 text-sm">{text}</span>
   </div>
 );
 
@@ -25,7 +25,7 @@ export const FeatureList = () => {
   ];
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       {features.map((feature, index) => (
         <FeatureItem 
           key={index} 
