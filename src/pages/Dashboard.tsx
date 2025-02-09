@@ -1,6 +1,5 @@
-
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { logout } from '@/store/slices/authSlice';
@@ -42,6 +41,7 @@ const Dashboard = () => {
   const dispatch = useAppDispatch();
   const { user } = useAppSelector((state) => state.auth);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const location = useLocation();
 
   const handleLogout = () => {
     dispatch(logout());
@@ -56,57 +56,74 @@ const Dashboard = () => {
     <SidebarProvider defaultOpen={true}>
       <div className="min-h-screen flex w-full bg-gradient-to-br from-white via-purple-50/30 to-purple-100/30">
         {/* Sidebar */}
-        <Sidebar className={`transition-all duration-300 border-r border-purple-100 bg-white/50 backdrop-blur-md ${isSidebarOpen ? 'w-64' : 'w-20'}`}>
-          <SidebarContent>
-            <div className="p-4 flex items-center justify-between">
-              <h1 className={`font-bold text-xl text-primary transition-opacity ${isSidebarOpen ? 'opacity-100' : 'opacity-0'}`}>
-                Dashboard
-              </h1>
+        <Sidebar className={`transition-all duration-300 ${isSidebarOpen ? 'w-64' : 'w-20'}`}>
+          <div className="h-full flex flex-col bg-white/60 backdrop-blur-lg border-r border-purple-100/50 shadow-lg">
+            <SidebarContent>
+              <div className="p-4 flex items-center justify-between border-b border-purple-100/50">
+                <h1 className={`font-bold text-xl bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent transition-opacity duration-300 ${isSidebarOpen ? 'opacity-100' : 'opacity-0'}`}>
+                  Dashboard
+                </h1>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                  className="hover:bg-primary/10 transition-colors"
+                >
+                  <Menu className="h-5 w-5 text-primary" />
+                </Button>
+              </div>
+              
+              <SidebarGroup>
+                <SidebarGroupLabel className={`px-4 pt-6 text-sm font-medium text-purple-600/70 transition-opacity duration-300 ${isSidebarOpen ? 'opacity-100' : 'opacity-0'}`}>
+                  Navigation
+                </SidebarGroupLabel>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {navItems.map((item) => (
+                      <SidebarMenuItem key={item.title}>
+                        <SidebarMenuButton
+                          onClick={() => navigate(item.path)}
+                          className="w-full flex items-center gap-3 px-4 py-3 hover:bg-primary/5 rounded-lg transition-all duration-300 group relative overflow-hidden"
+                        >
+                          <div className="relative z-10 flex items-center gap-3">
+                            <item.icon className={`h-5 w-5 transition-colors duration-300 ${
+                              location.pathname === item.path 
+                                ? 'text-primary' 
+                                : 'text-gray-500 group-hover:text-primary'
+                            }`} />
+                            <span className={`text-sm font-medium transition-all duration-300 ${
+                              isSidebarOpen ? 'opacity-100' : 'opacity-0'
+                            } ${
+                              location.pathname === item.path 
+                                ? 'text-primary' 
+                                : 'text-gray-600 group-hover:text-primary'
+                            }`}>
+                              {item.title}
+                            </span>
+                          </div>
+                          {location.pathname === item.path && (
+                            <div className="absolute inset-0 bg-primary/10 rounded-lg" />
+                          )}
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    ))}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+            </SidebarContent>
+
+            <div className="mt-auto p-4 border-t border-purple-100/50">
               <Button
                 variant="ghost"
-                size="icon"
-                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className="hover:bg-primary/10"
+                className="w-full flex items-center gap-3 justify-center text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors"
+                onClick={handleLogout}
               >
-                <Menu className="h-5 w-5 text-primary" />
+                <LogOut className="h-5 w-5" />
+                <span className={`text-sm font-medium transition-opacity duration-300 ${isSidebarOpen ? 'opacity-100' : 'opacity-0'}`}>
+                  Logout
+                </span>
               </Button>
             </div>
-            
-            <SidebarGroup>
-              <SidebarGroupLabel className={`text-gray-500 ${isSidebarOpen ? 'opacity-100' : 'opacity-0'}`}>
-                Navigation
-              </SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {navItems.map((item) => (
-                    <SidebarMenuItem key={item.title}>
-                      <SidebarMenuButton
-                        onClick={() => navigate(item.path)}
-                        className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-primary/10 rounded-lg transition-all duration-300 group"
-                      >
-                        <item.icon className="h-5 w-5 text-gray-500 group-hover:text-primary transition-colors" />
-                        <span className={`text-gray-700 group-hover:text-primary transition-all ${isSidebarOpen ? 'opacity-100' : 'opacity-0'}`}>
-                          {item.title}
-                        </span>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-          </SidebarContent>
-
-          <div className="mt-auto p-4 border-t border-purple-100">
-            <Button
-              variant="ghost"
-              className="w-full flex items-center gap-3 justify-center hover:bg-red-50 hover:text-red-600 transition-colors"
-              onClick={handleLogout}
-            >
-              <LogOut className="h-5 w-5" />
-              <span className={`transition-opacity ${isSidebarOpen ? 'opacity-100' : 'opacity-0'}`}>
-                Logout
-              </span>
-            </Button>
           </div>
         </Sidebar>
 
