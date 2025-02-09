@@ -40,15 +40,15 @@ const Sidebar = () => {
 
   return (
     <>
-      <div className="w-16 min-h-screen bg-white/80 backdrop-blur-xl border-r border-purple-100 shadow-lg flex flex-col items-center justify-between py-6">
+      <div className="w-16 min-h-screen bg-white/80 backdrop-blur-xl border-r border-purple-100/50 shadow-lg flex flex-col items-center justify-between py-6 relative z-10">
         <div className="flex flex-col items-center gap-8">
           <div className="relative group">
+            <div className="absolute inset-0 bg-gradient-to-tr from-purple-500/20 to-blue-500/20 rounded-full blur-xl group-hover:blur-2xl transition-all duration-300 opacity-0 group-hover:opacity-100" />
             <img 
               src="https://framerusercontent.com/images/9N8Z1vTRbJsHlrIuTjm6Ajga4dI.png" 
               alt="Logo" 
-              className="w-10 h-10 object-contain transition-all duration-300 group-hover:scale-110"
+              className="w-10 h-10 object-contain transition-all duration-300 group-hover:scale-110 relative z-10"
             />
-            <div className="absolute inset-0 bg-primary/5 rounded-full scale-0 group-hover:scale-125 transition-transform duration-300" />
           </div>
           
           <MainNavigation 
@@ -61,10 +61,11 @@ const Sidebar = () => {
         <Button
           variant="ghost"
           size="icon"
-          className="w-12 h-12 rounded-xl text-red-600 hover:text-red-700 hover:bg-red-50 flex justify-center items-center transition-all duration-300 hover:shadow-md"
+          className="w-12 h-12 rounded-xl text-red-500 hover:text-red-600 hover:bg-red-50/80 flex justify-center items-center transition-all duration-300 hover:shadow-md relative group"
           onClick={handleLogout}
         >
-          <LogOut className="h-5 w-5" />
+          <div className="absolute inset-0 bg-red-100/50 rounded-xl blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <LogOut className="h-5 w-5 relative z-10" />
           <span className="sr-only">Logout</span>
         </Button>
       </div>

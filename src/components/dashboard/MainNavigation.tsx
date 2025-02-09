@@ -19,13 +19,10 @@ interface MainNavigationProps {
 const MainNavigation = ({ activeMainNav, setActiveMainNav, navigate }: MainNavigationProps) => {
   const location = useLocation();
 
-  // Keyboard shortcuts handler
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
-      // Only trigger if Alt key is pressed with another key
       if (event.altKey) {
         mainNavItems.forEach((item, index) => {
-          // Alt + 1-6 for navigation
           if (event.key === `${index + 1}`) {
             setActiveMainNav(item.id);
             navigate(item.path);
@@ -50,9 +47,9 @@ const MainNavigation = ({ activeMainNav, setActiveMainNav, navigate }: MainNavig
                 <Button
                   variant="ghost"
                   size="icon"
-                  className={`relative flex items-center justify-center w-12 h-12 rounded-xl transition-all duration-300 group ${
+                  className={`relative flex items-center justify-center w-12 h-12 rounded-xl transition-all duration-300 group overflow-hidden ${
                     isActive 
-                      ? 'text-primary bg-primary/10 shadow-sm hover:shadow-md hover:bg-primary/15' 
+                      ? 'text-primary bg-primary/5 shadow-sm hover:shadow-md hover:bg-primary/10' 
                       : 'text-gray-500 hover:text-primary hover:bg-primary/5'
                   }`}
                   onClick={() => {
@@ -60,7 +57,11 @@ const MainNavigation = ({ activeMainNav, setActiveMainNav, navigate }: MainNavig
                     navigate(item.path);
                   }}
                 >
-                  <item.icon className="h-5 w-5 transition-transform duration-300 group-hover:scale-110" />
+                  {isActive && (
+                    <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 to-primary/5 animate-pulse" />
+                  )}
+                  <div className="absolute -inset-1 bg-gradient-to-tr from-primary/20 to-primary/5 opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-300" />
+                  <item.icon className="h-5 w-5 transition-transform duration-300 group-hover:scale-110 relative z-10" />
                   <span className="sr-only">{item.title}</span>
                   {isActive && (
                     <div className="absolute left-0 w-1 h-8 bg-primary rounded-r-full animate-fade-in" />
