@@ -1,13 +1,12 @@
 
 import { useToast } from "@/hooks/use-toast";
-import { useEffect } from 'react';
 import FilterBar from './FilterBar';
 import EmptyTicketState from './EmptyTicketState';
 import SortingControls from './SortingControls';
 import SelectionControls from './SelectionControls';
 import { useTicketList } from './hooks/useTicketList';
 import { useTicketShortcuts } from './hooks/useTicketShortcuts';
-import { getAblyChannel } from '@/utils/ably';
+import { useRealtimeTickets } from './hooks/useRealtimeTickets';
 import LoadingState from './components/LoadingState';
 import TicketActions from './components/TicketActions';
 import TicketListItem from './components/TicketListItem';
@@ -50,49 +49,8 @@ const TicketList = ({ tickets = [], isLoading = false }: TicketListProps) => {
     selectedTickets,
   });
 
-  useEffect(() => {
-    let channel: any;
-
-    const setupRealtime = async () => {
-      try {
-        channel = await getAblyChannel('tickets');
-        
-        channel.subscribe('ticket:update', (message: any) => {
-          const updatedTicket = message.data;
-          updateTicket(updatedTicket);
-          
-          toast({
-            title: "Ticket Updated",
-            description: `Ticket ${updatedTicket.id} has been updated.`,
-          });
-        });
-
-        channel.subscribe('ticket:new', (message: any) => {
-          const newTicket = message.data;
-          toast({
-            title: "New Ticket",
-            description: `New ticket created: ${newTicket.subject}`,
-          });
-        });
-
-      } catch (error) {
-        console.error('Error setting up realtime:', error);
-        toast({
-          title: "Connection Error",
-          description: "Failed to connect to real-time updates",
-          variant: "destructive",
-        });
-      }
-    };
-
-    setupRealtime();
-
-    return () => {
-      if (channel) {
-        channel.unsubscribe();
-      }
-    };
-  }, [toast, updateTicket]);
+  // Use the new hook for realtime functionality
+  useRealtimeTickets(updateTicket);
 
   const handleCopyTicketId = async (id: string) => {
     await navigator.clipboard.writeText(id);
