@@ -85,11 +85,10 @@ const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
         // Get current presence state
         try {
           const presenceData = await channel.presence.get();
-          if (presenceData) {
-            const presenceMembers = Array.from(presenceData) as Ably.Types.PresenceMessage[];
-            if (presenceMembers && presenceMembers.length > 0) {
-              setActiveUsers(presenceMembers.map(member => member.data as UserPresence));
-            }
+          const presenceArray = presenceData ? Array.from(presenceData) : [];
+          const presenceMembers = presenceArray as Ably.Types.PresenceMessage[];
+          if (presenceMembers.length > 0) {
+            setActiveUsers(presenceMembers.map(member => member.data as UserPresence));
           }
         } catch (error) {
           console.error('Error getting presence members:', error);
@@ -195,3 +194,4 @@ const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
 };
 
 export default ConversationPanel;
+
