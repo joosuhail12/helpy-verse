@@ -48,15 +48,15 @@ const getNotificationText = (type: string) => {
 const getNotificationColor = (type: string) => {
   switch (type) {
     case 'mention':
-      return 'text-blue-500 bg-blue-50';
+      return 'text-blue-500 bg-blue-50 ring-2 ring-blue-100';
     case 'assignment':
-      return 'text-purple-500 bg-purple-50';
+      return 'text-purple-500 bg-purple-50 ring-2 ring-purple-100';
     case 'new_response':
-      return 'text-green-500 bg-green-50';
+      return 'text-green-500 bg-green-50 ring-2 ring-green-100';
     case 'new_ticket':
-      return 'text-amber-500 bg-amber-50';
+      return 'text-amber-500 bg-amber-50 ring-2 ring-amber-100';
     default:
-      return 'text-gray-500 bg-gray-50';
+      return 'text-gray-500 bg-gray-50 ring-2 ring-gray-100';
   }
 };
 
@@ -65,13 +65,13 @@ const getCardBackground = (type: string | undefined) => {
   
   switch (type) {
     case 'mention':
-      return 'bg-blue-50/30';
+      return 'bg-gradient-to-br from-blue-50 to-white border-blue-100';
     case 'assignment':
-      return 'bg-purple-50/30';
+      return 'bg-gradient-to-br from-purple-50 to-white border-purple-100';
     case 'new_response':
-      return 'bg-green-50/30';
+      return 'bg-gradient-to-br from-green-50 to-white border-green-100';
     case 'new_ticket':
-      return 'bg-amber-50/30';
+      return 'bg-gradient-to-br from-amber-50 to-white border-amber-100';
     default:
       return '';
   }
@@ -86,8 +86,8 @@ const TicketListItem = ({
   onCopyId,
 }: TicketListItemProps) => {
   return (
-    <div className="group relative">
-      <div className="absolute left-4 top-4 z-10">
+    <div className="group relative px-4 py-2">
+      <div className="absolute left-6 top-1/2 -translate-y-1/2 z-10">
         <Checkbox
           checked={isSelected}
           onCheckedChange={() => onSelect(ticket.id)}
@@ -96,15 +96,16 @@ const TicketListItem = ({
       </div>
       
       <div 
-        className={`pl-12 group relative focus-within:ring-2 focus-within:ring-primary/50 focus-within:rounded-lg transition-colors duration-200 
-          ${ticket.isUnread ? 'bg-blue-50/30' : ''}
-          ${ticket.hasNotification ? getCardBackground(ticket.notificationType) : ''}`}
+        className={`pl-12 group relative rounded-xl border shadow-sm hover:shadow-md transition-all duration-200 
+          ${ticket.isUnread ? 'bg-gradient-to-br from-blue-50/70 to-white border-blue-100' : 'border-gray-100'}
+          ${ticket.hasNotification ? getCardBackground(ticket.notificationType) : 'bg-white border-gray-100'}
+          focus-within:ring-2 focus-within:ring-primary/50`}
         tabIndex={0}
         role="article"
         aria-label={`Ticket from ${ticket.customer}: ${ticket.subject}`}
       >
         {isLoading && (
-          <div className="absolute inset-0 bg-white/50 flex items-center justify-center rounded-lg z-20">
+          <div className="absolute inset-0 bg-white/50 backdrop-blur-sm flex items-center justify-center rounded-xl z-20">
             <Loader2 className="h-6 w-6 animate-spin text-primary" />
           </div>
         )}
@@ -121,7 +122,7 @@ const TicketListItem = ({
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className={`p-1.5 rounded-full ${getNotificationColor(ticket.notificationType)}`}>
+                    <div className={`p-2 rounded-full transition-transform hover:scale-110 ${getNotificationColor(ticket.notificationType)}`}>
                       {getNotificationIcon(ticket.notificationType)}
                     </div>
                   </TooltipTrigger>
@@ -139,3 +140,4 @@ const TicketListItem = ({
 };
 
 export default TicketListItem;
+
