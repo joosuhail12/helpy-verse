@@ -1,3 +1,4 @@
+
 import { Loader2, Bell, AtSign, UserPlus, MessageCircle } from 'lucide-react';
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -85,8 +86,8 @@ const TicketListItem = ({
   onCopyId,
 }: TicketListItemProps) => {
   return (
-    <div className="group relative px-2">
-      <div className="absolute left-4 top-1/2 -translate-y-1/2 z-10">
+    <div className="group relative px-4 py-2">
+      <div className="absolute left-6 top-1/2 -translate-y-1/2 z-10">
         <Checkbox
           checked={isSelected}
           onCheckedChange={() => onSelect(ticket.id)}
@@ -95,7 +96,7 @@ const TicketListItem = ({
       </div>
       
       <div 
-        className={`pl-10 group relative rounded-lg border shadow-sm hover:shadow-md transition-all duration-200 
+        className={`pl-12 group relative rounded-xl border shadow-sm hover:shadow-md transition-all duration-200 
           ${ticket.isUnread ? 'bg-gradient-to-br from-blue-50/70 to-white border-blue-100' : 'border-gray-100'}
           ${ticket.hasNotification ? getCardBackground(ticket.notificationType) : 'bg-white border-gray-100'}
           focus-within:ring-2 focus-within:ring-primary/50`}
@@ -104,8 +105,8 @@ const TicketListItem = ({
         aria-label={`Ticket from ${ticket.customer}: ${ticket.subject}`}
       >
         {isLoading && (
-          <div className="absolute inset-0 bg-white/50 backdrop-blur-sm flex items-center justify-center rounded-lg z-20">
-            <Loader2 className="h-5 w-5 animate-spin text-primary" />
+          <div className="absolute inset-0 bg-white/50 backdrop-blur-sm flex items-center justify-center rounded-xl z-20">
+            <Loader2 className="h-6 w-6 animate-spin text-primary" />
           </div>
         )}
         
@@ -117,11 +118,11 @@ const TicketListItem = ({
           />
           
           {ticket.hasNotification && ticket.notificationType && (
-            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+            <div className="absolute right-4 top-4">
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className={`p-1.5 rounded-full transition-transform hover:scale-110 ${getNotificationColor(ticket.notificationType)}`}>
+                    <div className={`p-2 rounded-full transition-transform hover:scale-110 ${getNotificationColor(ticket.notificationType)}`}>
                       {getNotificationIcon(ticket.notificationType)}
                     </div>
                   </TooltipTrigger>
@@ -139,3 +140,4 @@ const TicketListItem = ({
 };
 
 export default TicketListItem;
+
