@@ -1,4 +1,6 @@
 
+import type { Ticket } from '@/types/ticket';
+
 export interface Message {
   id: string;
   content: string;
