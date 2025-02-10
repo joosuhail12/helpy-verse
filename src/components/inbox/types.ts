@@ -1,6 +1,12 @@
 
 import type { Ticket } from '@/types/ticket';
 
+export interface UserPresence {
+  userId: string;
+  name: string;
+  lastActive: string;
+}
+
 export interface Message {
   id: string;
   content: string;
@@ -14,4 +20,3 @@ export interface ConversationPanelProps {
   ticket: Ticket;
   onClose: () => void;
 }
-

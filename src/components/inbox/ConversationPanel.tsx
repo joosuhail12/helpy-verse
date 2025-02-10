@@ -4,7 +4,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { getAblyChannel } from '@/utils/ably';
 import debounce from 'lodash/debounce';
-import type { Message, ConversationPanelProps } from './types';
+import type { Message, ConversationPanelProps, UserPresence } from './types';
 import ConversationHeader from './ConversationHeader';
 import MessageItem from './MessageItem';
 import MessageInput from './MessageInput';
@@ -13,6 +13,7 @@ const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
+  const [activeUsers, setActiveUsers] = useState<UserPresence[]>([]);
   const { toast } = useToast();
   
   useEffect(() => {
@@ -38,6 +39,13 @@ const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
       try {
         const channel = await getAblyChannel(`ticket:${ticket.id}`);
         
+        // Set initial presence
+        await channel.presence.enter({
+          userId: 'Agent',
+          name: 'Agent',
+          lastActive: new Date().toISOString()
+        });
+
         channel.subscribe('new-message', (message) => {
           const newMsg = message.data as Message;
           setMessages(prev => [...prev, newMsg]);
@@ -46,24 +54,36 @@ const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
 
         channel.presence.subscribe('enter', (member) => {
           toast({
-            description: `${member.clientId} joined the conversation`,
+            description: `${member.data.name} joined the conversation`,
           });
+          setActiveUsers(prev => [...prev, member.data as UserPresence]);
+        });
+
+        channel.presence.subscribe('leave', (member) => {
+          toast({
+            description: `${member.data.name} left the conversation`,
+          });
+          setActiveUsers(prev => prev.filter(user => user.userId !== member.data.userId));
         });
 
         channel.presence.subscribe('update', (member) => {
           if (member.data?.isTyping) {
-            setTypingUsers(prev => [...new Set([...prev, member.clientId])]);
+            setTypingUsers(prev => [...new Set([...prev, member.data.name])]);
           } else {
-            setTypingUsers(prev => prev.filter(user => user !== member.clientId));
+            setTypingUsers(prev => prev.filter(user => user !== member.data.name));
           }
 
           if (member.data?.lastRead) {
             setMessages(prev => prev.map(msg => ({
               ...msg,
-              readBy: [...(msg.readBy || []), member.clientId]
+              readBy: [...(msg.readBy || []), member.data.userId]
             })));
           }
         });
+
+        // Get current presence state
+        const presence = await channel.presence.get();
+        setActiveUsers(presence.map(member => member.data as UserPresence));
 
         return () => {
           channel.presence.leave();
@@ -115,7 +135,12 @@ const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
     } else {
       try {
         const channel = await getAblyChannel(`ticket:${ticket.id}`);
-        await channel.presence.update({ isTyping: true });
+        await channel.presence.update({ 
+          isTyping: true,
+          name: 'Agent',
+          userId: 'Agent',
+          lastActive: new Date().toISOString()
+        });
         debouncedStopTyping(channel);
       } catch (error) {
         console.error('Error updating typing status:', error);
@@ -125,7 +150,11 @@ const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
 
   return (
     <div className="h-full flex flex-col bg-white">
-      <ConversationHeader ticket={ticket} onClose={onClose} />
+      <ConversationHeader 
+        ticket={ticket} 
+        onClose={onClose} 
+        activeUsers={activeUsers}
+      />
       
       <ScrollArea className="flex-1 p-4">
         <div className="space-y-4">
@@ -156,4 +185,3 @@ const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
 };
 
 export default ConversationPanel;
-

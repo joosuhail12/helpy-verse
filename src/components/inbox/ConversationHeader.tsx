@@ -1,16 +1,19 @@
 
 import React from 'react';
-import { X } from 'lucide-react';
+import { X, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar } from "@/components/ui/avatar";
+import { Tooltip } from "@/components/ui/tooltip";
 import type { Ticket } from '@/types/ticket';
+import type { UserPresence } from './types';
 
 interface ConversationHeaderProps {
   ticket: Ticket;
   onClose: () => void;
+  activeUsers: UserPresence[];
 }
 
-const ConversationHeader = ({ ticket, onClose }: ConversationHeaderProps) => {
+const ConversationHeader = ({ ticket, onClose, activeUsers }: ConversationHeaderProps) => {
   return (
     <div className="border-b p-4 flex items-center justify-between bg-white">
       <div className="flex-1">
@@ -29,17 +32,39 @@ const ConversationHeader = ({ ticket, onClose }: ConversationHeaderProps) => {
           </p>
         </div>
       </div>
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={onClose}
-        className="h-8 w-8"
-      >
-        <X className="h-4 w-4" />
-      </Button>
+      
+      <div className="flex items-center gap-3">
+        {activeUsers.length > 0 && (
+          <Tooltip>
+            <Tooltip.Trigger asChild>
+              <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                <Users className="h-4 w-4" />
+                <span>{activeUsers.length} active</span>
+              </div>
+            </Tooltip.Trigger>
+            <Tooltip.Content>
+              <div className="space-y-1">
+                {activeUsers.map((user) => (
+                  <div key={user.userId} className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-green-500" />
+                    <span>{user.name}</span>
+                  </div>
+                ))}
+              </div>
+            </Tooltip.Content>
+          </Tooltip>
+        )}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onClose}
+          className="h-8 w-8"
+        >
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
     </div>
   );
 };
 
 export default ConversationHeader;
-
