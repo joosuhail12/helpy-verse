@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import TicketList from '@/components/inbox/TicketList';
 
@@ -132,12 +131,6 @@ type Ticket = {
 };
 
 const AllTickets = () => {
-  const [currentPage, setCurrentPage] = useState(1);
-
-  const totalPages = Math.ceil(tickets.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const paginatedTickets = tickets.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-
   return (
     <div className="w-full h-[calc(100vh-8rem)] flex flex-col">
       <div className="flex items-center justify-between mb-6">
@@ -145,26 +138,8 @@ const AllTickets = () => {
       </div>
       
       <div className="flex-1 overflow-hidden">
-        <TicketList tickets={paginatedTickets} />
+        <TicketList tickets={tickets} />
       </div>
-
-      {totalPages > 1 && (
-        <div className="flex justify-center gap-2 mt-4">
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-            <button
-              key={page}
-              onClick={() => setCurrentPage(page)}
-              className={`px-3 py-1 rounded-md ${
-                currentPage === page
-                  ? 'bg-primary text-white'
-                  : 'bg-white text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              {page}
-            </button>
-          ))}
-        </div>
-      )}
     </div>
   );
 };

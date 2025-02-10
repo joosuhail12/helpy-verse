@@ -1,5 +1,6 @@
 
 import { useToast } from "@/hooks/use-toast";
+import { useState } from 'react';
 import FilterBar from './FilterBar';
 import EmptyTicketState from './EmptyTicketState';
 import SortingControls from './SortingControls';
@@ -11,8 +12,9 @@ import LoadingState from './components/LoadingState';
 import TicketActions from './components/TicketActions';
 import TicketListItem from './components/TicketListItem';
 import ConversationPanel from './ConversationPanel';
-import { useState } from 'react';
 import type { Ticket } from '@/types/ticket';
+
+const ITEMS_PER_PAGE = 5;
 
 interface TicketListProps {
   tickets: Ticket[];
@@ -22,6 +24,7 @@ interface TicketListProps {
 const TicketList = ({ tickets = [], isLoading = false }: TicketListProps) => {
   const { toast } = useToast();
   const [selectedTicketForChat, setSelectedTicketForChat] = useState<Ticket | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
   
   const {
     searchQuery,
@@ -67,6 +70,10 @@ const TicketList = ({ tickets = [], isLoading = false }: TicketListProps) => {
     setSelectedTicketForChat(ticket);
   };
 
+  const totalPages = Math.ceil(sortedAndFilteredTickets.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedTickets = sortedAndFilteredTickets.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
   if (tickets.length === 0 && !isLoading) {
     return <EmptyTicketState />;
   }
@@ -111,7 +118,7 @@ const TicketList = ({ tickets = [], isLoading = false }: TicketListProps) => {
               />
             </div>
             
-            {sortedAndFilteredTickets.map((ticket) => (
+            {paginatedTickets.map((ticket) => (
               <div
                 key={ticket.id}
                 onClick={() => handleTicketClick(ticket)}
@@ -134,6 +141,24 @@ const TicketList = ({ tickets = [], isLoading = false }: TicketListProps) => {
                 />
               </div>
             ))}
+
+            {totalPages > 1 && (
+              <div className="flex justify-center gap-2 mt-4">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`px-3 py-1 rounded-md ${
+                      currentPage === page
+                        ? 'bg-primary text-white'
+                        : 'bg-white text-gray-600 hover:bg-gray-100'
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>
