@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import TicketList from '@/components/inbox/TicketList';
 
@@ -17,6 +16,8 @@ const tickets = [
     priority: 'high',
     createdAt: '2024-03-15T10:00:00Z',
     isUnread: true,
+    hasNotification: true,
+    notificationType: 'mention',
   },
   {
     id: '2',
@@ -30,6 +31,8 @@ const tickets = [
     priority: 'medium',
     createdAt: '2024-03-14T15:30:00Z',
     isUnread: false,
+    hasNotification: true,
+    notificationType: 'assignment',
   },
   {
     id: '3',
@@ -123,6 +126,8 @@ type Ticket = {
   priority: 'low' | 'medium' | 'high';
   createdAt: string;
   isUnread?: boolean;
+  hasNotification?: boolean;
+  notificationType?: 'mention' | 'update' | 'assignment';
 };
 
 const AllTickets = () => {

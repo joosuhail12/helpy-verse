@@ -14,6 +14,8 @@ export interface Ticket {
   updatedAt?: string;
   assigneeAvatar?: string;
   categories?: string[];
+  hasNotification?: boolean;
+  notificationType?: 'mention' | 'update' | 'assignment';
 }
 
 export type SortField = 'date' | 'priority' | 'status';
