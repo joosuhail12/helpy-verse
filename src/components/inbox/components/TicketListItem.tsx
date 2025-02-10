@@ -22,13 +22,13 @@ interface TicketListItemProps {
 const getNotificationIcon = (type: string) => {
   switch (type) {
     case 'mention':
-      return <AtSign className="h-4 w-4" />;
+      return <AtSign className="h-3 w-3" />;
     case 'assignment':
-      return <UserPlus className="h-4 w-4" />;
+      return <UserPlus className="h-3 w-3" />;
     case 'new_response':
-      return <MessageCircle className="h-4 w-4" />;
+      return <MessageCircle className="h-3 w-3" />;
     default:
-      return <Bell className="h-4 w-4" />;
+      return <Bell className="h-3 w-3" />;
   }
 };
 
@@ -48,15 +48,15 @@ const getNotificationText = (type: string) => {
 const getNotificationColor = (type: string) => {
   switch (type) {
     case 'mention':
-      return 'text-blue-500 bg-blue-50 ring-2 ring-blue-100';
+      return 'text-blue-500 bg-blue-50 ring-1 ring-blue-100';
     case 'assignment':
-      return 'text-purple-500 bg-purple-50 ring-2 ring-purple-100';
+      return 'text-purple-500 bg-purple-50 ring-1 ring-purple-100';
     case 'new_response':
-      return 'text-green-500 bg-green-50 ring-2 ring-green-100';
+      return 'text-green-500 bg-green-50 ring-1 ring-green-100';
     case 'new_ticket':
-      return 'text-amber-500 bg-amber-50 ring-2 ring-amber-100';
+      return 'text-amber-500 bg-amber-50 ring-1 ring-amber-100';
     default:
-      return 'text-gray-500 bg-gray-50 ring-2 ring-gray-100';
+      return 'text-gray-500 bg-gray-50 ring-1 ring-gray-100';
   }
 };
 
@@ -86,8 +86,8 @@ const TicketListItem = ({
   onCopyId,
 }: TicketListItemProps) => {
   return (
-    <div className="group relative px-4 py-2">
-      <div className="absolute left-6 top-1/2 -translate-y-1/2 z-10">
+    <div className="group relative px-2 py-1">
+      <div className="absolute left-4 top-1/2 -translate-y-1/2 z-10">
         <Checkbox
           checked={isSelected}
           onCheckedChange={() => onSelect(ticket.id)}
@@ -96,17 +96,17 @@ const TicketListItem = ({
       </div>
       
       <div 
-        className={`pl-12 group relative rounded-xl border shadow-sm hover:shadow-md transition-all duration-200 
+        className={`pl-8 group relative rounded-lg border shadow-sm hover:shadow-md transition-all duration-200 
           ${ticket.isUnread ? 'bg-gradient-to-br from-blue-50/70 to-white border-blue-100' : 'border-gray-100'}
           ${ticket.hasNotification ? getCardBackground(ticket.notificationType) : 'bg-white border-gray-100'}
-          focus-within:ring-2 focus-within:ring-primary/50`}
+          focus-within:ring-1 focus-within:ring-primary/50`}
         tabIndex={0}
         role="article"
         aria-label={`Ticket from ${ticket.customer}: ${ticket.subject}`}
       >
         {isLoading && (
-          <div className="absolute inset-0 bg-white/50 backdrop-blur-sm flex items-center justify-center rounded-xl z-20">
-            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+          <div className="absolute inset-0 bg-white/50 backdrop-blur-sm flex items-center justify-center rounded-lg z-20">
+            <Loader2 className="h-4 w-4 animate-spin text-primary" />
           </div>
         )}
         
@@ -118,16 +118,16 @@ const TicketListItem = ({
           />
           
           {ticket.hasNotification && ticket.notificationType && (
-            <div className="absolute right-4 top-4">
+            <div className="absolute right-3 top-3">
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className={`p-2 rounded-full transition-transform hover:scale-110 ${getNotificationColor(ticket.notificationType)}`}>
+                    <div className={`p-1.5 rounded-full transition-transform hover:scale-110 ${getNotificationColor(ticket.notificationType)}`}>
                       {getNotificationIcon(ticket.notificationType)}
                     </div>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>{getNotificationText(ticket.notificationType)}</p>
+                    <p className="text-xs">{getNotificationText(ticket.notificationType)}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
