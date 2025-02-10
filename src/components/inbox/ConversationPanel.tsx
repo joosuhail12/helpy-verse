@@ -1,13 +1,14 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { X, Send, Clock, Paperclip, Image as ImageIcon, Reply } from 'lucide-react';
+import { X, Send, Clock, Paperclip, Image as ImageIcon, Reply, Check, CheckCheck } from 'lucide-react';
 import { getAblyChannel } from '@/utils/ably';
 import type { Ticket } from '@/types/ticket';
 import { useToast } from "@/hooks/use-toast";
+import debounce from 'lodash/debounce';
 
 interface Message {
   id: string;
@@ -15,6 +16,7 @@ interface Message {
   sender: string;
   timestamp: string;
   isCustomer: boolean;
+  readBy?: string[];
 }
 
 interface ConversationPanelProps {
@@ -25,7 +27,7 @@ interface ConversationPanelProps {
 const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
+  const [typingUsers, setTypingUsers] = useState<string[]>([]);
   const { toast } = useToast();
   
   // Initialize with the first message from the ticket
@@ -35,9 +37,18 @@ const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
       content: ticket.lastMessage,
       sender: ticket.customer,
       timestamp: ticket.createdAt,
-      isCustomer: true
+      isCustomer: true,
+      readBy: []
     }]);
   }, [ticket]);
+
+  // Debounced function to stop typing indicator
+  const debouncedStopTyping = useCallback(
+    debounce(async (channel) => {
+      await channel.presence.update({ isTyping: false });
+    }, 1000),
+    []
+  );
 
   // Set up real-time messaging
   useEffect(() => {
@@ -45,18 +56,42 @@ const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
       try {
         const channel = await getAblyChannel(`ticket:${ticket.id}`);
         
+        // Subscribe to new messages
         channel.subscribe('new-message', (message) => {
           const newMsg = message.data as Message;
           setMessages(prev => [...prev, newMsg]);
+          
+          // Mark message as read
+          channel.presence.update({ lastRead: newMsg.id });
         });
 
-        channel.presence.subscribe('enter', () => {
+        // Handle presence for typing indicators and read receipts
+        channel.presence.subscribe('enter', (member) => {
           toast({
-            description: "Someone joined the conversation",
+            description: `${member.clientId} joined the conversation`,
           });
         });
 
+        channel.presence.subscribe('update', (member) => {
+          // Update typing indicators
+          if (member.data?.isTyping) {
+            setTypingUsers(prev => [...new Set([...prev, member.clientId])]);
+          } else {
+            setTypingUsers(prev => prev.filter(user => user !== member.clientId));
+          }
+
+          // Update read receipts
+          if (member.data?.lastRead) {
+            setMessages(prev => prev.map(msg => ({
+              ...msg,
+              readBy: [...(msg.readBy || []), member.clientId]
+            })));
+          }
+        });
+
+        // Clean up on unmount
         return () => {
+          channel.presence.leave();
           channel.unsubscribe();
           channel.presence.unsubscribe();
         };
@@ -78,7 +113,8 @@ const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
         content: newMessage,
         sender: 'Agent',
         timestamp: new Date().toISOString(),
-        isCustomer: false
+        isCustomer: false,
+        readBy: ['Agent']
       };
 
       await channel.publish('new-message', newMsg);
@@ -97,10 +133,19 @@ const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  const handleKeyPress = async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
+    } else {
+      // Update typing indicator
+      try {
+        const channel = await getAblyChannel(`ticket:${ticket.id}`);
+        await channel.presence.update({ isTyping: true });
+        debouncedStopTyping(channel);
+      } catch (error) {
+        console.error('Error updating typing status:', error);
+      }
     }
   };
 
@@ -157,7 +202,7 @@ const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
                 <div className="mt-1 text-sm bg-secondary/20 rounded-lg p-3">
                   {message.content}
                 </div>
-                <div className="mt-1 flex gap-2">
+                <div className="mt-1 flex items-center gap-2">
                   <Button 
                     variant="ghost" 
                     size="sm" 
@@ -167,13 +212,22 @@ const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
                     <Reply className="h-3 w-3" />
                     Reply
                   </Button>
+                  {!message.isCustomer && (
+                    <span className="text-xs text-muted-foreground">
+                      {message.readBy && message.readBy.length > 1 ? (
+                        <CheckCheck className="h-3 w-3 inline" />
+                      ) : (
+                        <Check className="h-3 w-3 inline" />
+                      )}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
           ))}
-          {isTyping && (
-            <div className="text-sm text-muted-foreground">
-              Someone is typing...
+          {typingUsers.length > 0 && (
+            <div className="text-sm text-muted-foreground animate-pulse">
+              {typingUsers.join(', ')} {typingUsers.length === 1 ? 'is' : 'are'} typing...
             </div>
           )}
         </div>
