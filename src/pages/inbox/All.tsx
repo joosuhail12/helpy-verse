@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import TicketList from '@/components/inbox/TicketList';
 
@@ -138,12 +139,14 @@ const AllTickets = () => {
   const paginatedTickets = tickets.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   return (
-    <div className="w-full space-y-6 h-full">
-      <div className="flex items-center justify-between">
+    <div className="w-full h-[calc(100vh-8rem)] flex flex-col">
+      <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-semibold text-gray-900">All Tickets</h2>
       </div>
       
-      <TicketList tickets={paginatedTickets} />
+      <div className="flex-1 overflow-hidden">
+        <TicketList tickets={paginatedTickets} />
+      </div>
 
       {totalPages > 1 && (
         <div className="flex justify-center gap-2 mt-4">
