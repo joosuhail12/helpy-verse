@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
@@ -84,10 +83,9 @@ const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
 
         // Get current presence state
         try {
-          const presenceMessages = await channel.presence.get() as Ably.Types.PresenceMessage[];
-          const presenceArray = presenceMessages ? Array.from(presenceMessages) : [];
-          if (presenceArray.length > 0) {
-            setActiveUsers(presenceArray.map(member => member.data as UserPresence));
+          const presenceData = (await channel.presence.get()) as unknown as Ably.Types.PresenceMessage[];
+          if (presenceData && presenceData.length > 0) {
+            setActiveUsers(presenceData.map(member => member.data as UserPresence));
           }
         } catch (error) {
           console.error('Error getting presence members:', error);
@@ -193,4 +191,3 @@ const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
 };
 
 export default ConversationPanel;
-
