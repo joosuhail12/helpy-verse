@@ -148,7 +148,7 @@ const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
     }
   };
 
-  const handleKeyPress = async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  const handleKeyPress = async (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
