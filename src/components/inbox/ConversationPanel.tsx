@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
@@ -39,11 +40,15 @@ const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
       try {
         const channel = await getAblyChannel(`ticket:${ticket.id}`);
         
-        // Set initial presence
+        // Set initial presence with location
         await channel.presence.enter({
           userId: 'Agent',
           name: 'Agent',
-          lastActive: new Date().toISOString()
+          lastActive: new Date().toISOString(),
+          location: {
+            ticketId: ticket.id,
+            area: 'conversation'
+          }
         });
 
         channel.subscribe('new-message', (message) => {
@@ -78,6 +83,15 @@ const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
               ...msg,
               readBy: [...(msg.readBy || []), member.data.userId]
             })));
+          }
+
+          // Update user's location if changed
+          if (member.data?.location) {
+            setActiveUsers(prev => prev.map(user => 
+              user.userId === member.data.userId 
+                ? { ...user, location: member.data.location }
+                : user
+            ));
           }
         });
 
@@ -145,7 +159,11 @@ const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
           isTyping: true,
           name: 'Agent',
           userId: 'Agent',
-          lastActive: new Date().toISOString()
+          lastActive: new Date().toISOString(),
+          location: {
+            ticketId: ticket.id,
+            area: 'conversation'
+          }
         });
         debouncedStopTyping(channel);
       } catch (error) {

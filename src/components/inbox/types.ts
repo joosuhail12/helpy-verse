@@ -5,6 +5,10 @@ export interface UserPresence {
   userId: string;
   name: string;
   lastActive: string;
+  location?: {
+    ticketId: string;
+    area: string;
+  };
 }
 
 export interface Message {
