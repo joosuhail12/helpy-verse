@@ -7,11 +7,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import React, { useState, Suspense, lazy, useRef, useEffect } from 'react';
+import TicketCard from '../TicketCard';
 import type { Ticket, ViewMode } from '@/types/ticket';
-
-// Lazy load the TicketCard component
-const TicketCard = lazy(() => import('../TicketCard'));
 
 interface TicketListItemProps {
   ticket: Ticket;
@@ -88,34 +85,8 @@ const TicketListItem = ({
   onSelect,
   onCopyId,
 }: TicketListItemProps) => {
-  const [isVisible, setIsVisible] = useState(false);
-
-  // Use Intersection Observer to detect when the item is visible
-  const handleIntersection = (entries: IntersectionObserverEntry[]) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        setIsVisible(true);
-      }
-    });
-  };
-
-  // Set up the Intersection Observer when the component mounts
-  const itemRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const observer = new IntersectionObserver(handleIntersection, {
-      rootMargin: '100px', // Start loading slightly before the item comes into view
-      threshold: 0.1
-    });
-
-    if (itemRef.current) {
-      observer.observe(itemRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, []);
-
   return (
-    <div className="group relative px-1 py-0.5" ref={itemRef}>
+    <div className="group relative px-1 py-0.5">
       <div className="absolute left-3 top-1/2 -translate-y-1/2 z-10">
         <Checkbox
           checked={isSelected}
@@ -141,24 +112,11 @@ const TicketListItem = ({
         )}
         
         <div className="relative">
-          {isVisible ? (
-            <Suspense fallback={
-              <div className="flex items-center justify-center p-4">
-                <Loader2 className="h-4 w-4 animate-spin text-primary" />
-              </div>
-            }>
-              <TicketCard 
-                ticket={ticket} 
-                viewMode={viewMode}
-                onCopyId={() => onCopyId(ticket.id)}
-              />
-            </Suspense>
-          ) : (
-            <div className="animate-pulse p-4">
-              <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-              <div className="h-3 bg-gray-100 rounded w-1/2"></div>
-            </div>
-          )}
+          <TicketCard 
+            ticket={ticket} 
+            viewMode={viewMode}
+            onCopyId={() => onCopyId(ticket.id)}
+          />
           
           {ticket.hasNotification && ticket.notificationType && (
             <div className="absolute right-2 top-2">
