@@ -89,13 +89,11 @@ export const useConversation = (ticket: Ticket) => {
           }
         });
 
-        try {
-          const presenceData = await channel.presence.get();
-          if (presenceData && presenceData.length > 0) {
-            setActiveUsers(presenceData.map(member => member.data as UserPresence));
-          }
-        } catch (error) {
-          console.error('Error getting presence members:', error);
+        // Fixed: Added proper type checking and handling for presence data
+        const presenceData = await channel.presence.get();
+        const presentMembers = presenceData?.map(member => member.data as UserPresence) || [];
+        if (presentMembers.length > 0) {
+          setActiveUsers(presentMembers);
         }
 
         return () => {
