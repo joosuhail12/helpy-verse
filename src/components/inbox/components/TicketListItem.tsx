@@ -1,4 +1,3 @@
-
 import { Loader2, Bell, AtSign, UserPlus, MessageCircle } from 'lucide-react';
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -77,6 +76,19 @@ const getCardBackground = (type: string | undefined) => {
   }
 };
 
+const getPriorityColor = (priority: string) => {
+  switch (priority) {
+    case 'high':
+      return 'ring-red-500 bg-red-50';
+    case 'medium':
+      return 'ring-amber-500 bg-amber-50';
+    case 'low':
+      return 'ring-blue-500 bg-blue-50';
+    default:
+      return 'ring-gray-300 bg-gray-50';
+  }
+};
+
 const TicketListItem = ({
   ticket,
   viewMode,
@@ -97,9 +109,10 @@ const TicketListItem = ({
       </div>
       
       <div 
-        className={`pl-7 group relative rounded-md border shadow-sm hover:shadow-md transition-all duration-200 
-          ${ticket.isUnread ? 'bg-gradient-to-br from-blue-50/70 to-white border-blue-100' : 'border-gray-100'}
+        className={`pl-7 group relative rounded-md border shadow-sm transition-all duration-200 
+          ${ticket.isUnread ? 'bg-gradient-to-br from-blue-50/70 to-white border-blue-100 ring-1 ring-blue-100' : 'border-gray-100'}
           ${ticket.hasNotification ? getCardBackground(ticket.notificationType) : 'bg-white border-gray-100'}
+          hover:shadow-md hover:scale-[1.002] hover:-translate-y-0.5
           focus-within:ring-1 focus-within:ring-primary/50`}
         tabIndex={0}
         role="article"
@@ -112,6 +125,10 @@ const TicketListItem = ({
         )}
         
         <div className="relative">
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3">
+            <div className={`w-2 h-2 rounded-full ring-1 ${getPriorityColor(ticket.priority)}`} />
+          </div>
+          
           <TicketCard 
             ticket={ticket} 
             viewMode={viewMode}
@@ -141,4 +158,3 @@ const TicketListItem = ({
 };
 
 export default TicketListItem;
-
