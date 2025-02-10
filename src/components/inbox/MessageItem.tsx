@@ -1,8 +1,7 @@
 
 import React from 'react';
 import { Avatar } from "@/components/ui/avatar";
-import { Button } from '@/components/ui/button';
-import { Reply, Check, CheckCheck, Clock } from 'lucide-react';
+import { Check, CheckCheck, Clock } from 'lucide-react';
 import type { Message } from './types';
 import type { Ticket } from '@/types/ticket';
 
@@ -34,15 +33,6 @@ const MessageItem = ({ message, ticket, onReply }: MessageItemProps) => {
           {message.content}
         </div>
         <div className="mt-1 flex items-center gap-2">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="h-6 text-xs gap-1"
-            onClick={() => onReply(`Replying to: "${message.content.substring(0, 50)}..."\n\n`)}
-          >
-            <Reply className="h-3 w-3" />
-            Reply
-          </Button>
           {!message.isCustomer && (
             <span className="text-xs text-muted-foreground">
               {message.readBy && message.readBy.length > 1 ? (
@@ -59,4 +49,3 @@ const MessageItem = ({ message, ticket, onReply }: MessageItemProps) => {
 };
 
 export default MessageItem;
-
