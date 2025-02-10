@@ -46,6 +46,7 @@ const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
         onMessageChange={setNewMessage}
         onKeyPress={handleKeyPress}
         onSendMessage={handleSendMessage}
+        ticket={ticket}
       />
     </div>
   );
