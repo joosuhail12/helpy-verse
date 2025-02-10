@@ -6,6 +6,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import type { Ticket } from '@/types/ticket';
 import type { UserPresence } from './types';
+import { formatDistanceToNow } from 'date-fns';
 
 interface ConversationHeaderProps {
   ticket: Ticket;
@@ -37,17 +38,37 @@ const ConversationHeader = ({ ticket, onClose, activeUsers }: ConversationHeader
         {activeUsers.length > 0 && (
           <Tooltip>
             <TooltipTrigger asChild>
-              <div className="flex items-center gap-1 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer">
                 <Users className="h-4 w-4" />
-                <span>{activeUsers.length} active</span>
+                <div className="flex -space-x-2">
+                  {activeUsers.slice(0, 3).map((user) => (
+                    <Avatar key={user.userId} className="h-6 w-6 border-2 border-white">
+                      <span className="text-xs">{user.name[0]}</span>
+                    </Avatar>
+                  ))}
+                  {activeUsers.length > 3 && (
+                    <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center text-xs border-2 border-white">
+                      +{activeUsers.length - 3}
+                    </div>
+                  )}
+                </div>
               </div>
             </TooltipTrigger>
             <TooltipContent>
-              <div className="space-y-1">
+              <div className="space-y-2">
                 {activeUsers.map((user) => (
                   <div key={user.userId} className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-green-500" />
-                    <span>{user.name}</span>
+                    <span className="font-medium">{user.name}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {user.location ? (
+                        <>
+                          viewing ticket #{user.location.ticketId}
+                          {user.location.area && ` (${user.location.area})`}
+                        </>
+                      ) : 'browsing'}
+                      • active {formatDistanceToNow(new Date(user.lastActive), { addSuffix: true })}
+                    </span>
                   </div>
                 ))}
               </div>
