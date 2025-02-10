@@ -1,7 +1,15 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Avatar } from "@/components/ui/avatar";
-import { Check, CheckCheck, Clock } from 'lucide-react';
+import { Check, CheckCheck, Clock, Smile } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { getAblyChannel } from '@/utils/ably';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import EmojiPicker from 'emoji-picker-react';
 import type { Message } from './types';
 import type { Ticket } from '@/types/ticket';
 
@@ -11,7 +19,54 @@ interface MessageItemProps {
   onReply: (content: string) => void;
 }
 
-const MessageItem = ({ message, ticket, onReply }: MessageItemProps) => {
+const COMMON_REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
+
+const MessageItem = ({ message, ticket }: MessageItemProps) => {
+  const [reactions, setReactions] = useState<Record<string, string[]>>(message.reactions || {});
+
+  useEffect(() => {
+    const setupReactions = async () => {
+      const channel = await getAblyChannel(`ticket:${ticket.id}:reactions`);
+      
+      channel.subscribe(`message:${message.id}:reaction`, (msg: any) => {
+        setReactions(msg.data);
+      });
+
+      return () => {
+        channel.unsubscribe();
+      };
+    };
+
+    setupReactions();
+  }, [message.id, ticket.id]);
+
+  const handleReaction = async (emoji: string) => {
+    const channel = await getAblyChannel(`ticket:${ticket.id}:reactions`);
+    const userId = 'Agent'; // In a real app, this would be the actual user ID
+    
+    const newReactions = { ...reactions };
+    if (!newReactions[emoji]) {
+      newReactions[emoji] = [];
+    }
+    
+    const hasReacted = newReactions[emoji].includes(userId);
+    if (hasReacted) {
+      newReactions[emoji] = newReactions[emoji].filter(id => id !== userId);
+      if (newReactions[emoji].length === 0) {
+        delete newReactions[emoji];
+      }
+    } else {
+      newReactions[emoji].push(userId);
+    }
+    
+    await channel.publish(`message:${message.id}:reaction`, newReactions);
+    setReactions(newReactions);
+  };
+
+  const createMarkup = () => {
+    return { __html: message.content };
+  };
+
   return (
     <div className="flex gap-3">
       <Avatar className="h-8 w-8">
@@ -29,10 +84,46 @@ const MessageItem = ({ message, ticket, onReply }: MessageItemProps) => {
             {new Date(message.timestamp).toLocaleString()}
           </span>
         </div>
-        <div className="mt-1 text-sm bg-secondary/20 rounded-lg p-3">
-          {message.content}
-        </div>
+        <div 
+          className="mt-1 text-sm bg-secondary/20 rounded-lg p-3 prose prose-sm max-w-none"
+          dangerouslySetInnerHTML={createMarkup()}
+        />
         <div className="mt-1 flex items-center gap-2">
+          <div className="flex flex-wrap gap-1">
+            {Object.entries(reactions).map(([emoji, users]) => (
+              <Button
+                key={emoji}
+                variant="ghost"
+                size="sm"
+                className="h-6 px-2 text-xs"
+                onClick={() => handleReaction(emoji)}
+              >
+                {emoji} {users.length}
+              </Button>
+            ))}
+          </div>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                <Smile className="h-3 w-3" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-2" align="start">
+              <div className="flex gap-1">
+                {COMMON_REACTIONS.map((emoji) => (
+                  <Button
+                    key={emoji}
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0"
+                    onClick={() => handleReaction(emoji)}
+                  >
+                    {emoji}
+                  </Button>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
           {!message.isCustomer && (
             <span className="text-xs text-muted-foreground">
               {message.readBy && message.readBy.length > 1 ? (

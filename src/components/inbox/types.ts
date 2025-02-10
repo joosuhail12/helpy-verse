@@ -18,6 +18,7 @@ export interface Message {
   timestamp: string;
   isCustomer: boolean;
   readBy?: string[];
+  reactions?: Record<string, string[]>;
 }
 
 export interface ConversationPanelProps {

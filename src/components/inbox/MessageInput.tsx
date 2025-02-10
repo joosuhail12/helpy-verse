@@ -1,13 +1,20 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Send, Paperclip, Image as ImageIcon } from 'lucide-react';
+import { Send, Smile } from 'lucide-react';
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import EmojiPicker from 'emoji-picker-react';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface MessageInputProps {
   newMessage: string;
   onMessageChange: (value: string) => void;
-  onKeyPress: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
+  onKeyPress: (e: React.KeyboardEvent<HTMLDivElement>) => void;
   onSendMessage: () => void;
 }
 
@@ -17,23 +24,43 @@ const MessageInput = ({
   onKeyPress, 
   onSendMessage 
 }: MessageInputProps) => {
+  const editor = useEditor({
+    extensions: [StarterKit],
+    content: newMessage,
+    onUpdate: ({ editor }) => {
+      onMessageChange(editor.getHTML());
+    },
+  });
+
+  const handleEmojiSelect = (emojiData: any) => {
+    editor?.commands.insertContent(emojiData.emoji);
+  };
+
   return (
     <div className="border-t p-4 bg-white">
-      <Textarea
-        placeholder="Type your reply..."
-        className="min-h-[100px] resize-none mb-3"
-        value={newMessage}
-        onChange={(e) => onMessageChange(e.target.value)}
-        onKeyDown={onKeyPress}
-      />
+      <div className="border rounded-lg mb-3 min-h-[100px]">
+        <EditorContent 
+          editor={editor} 
+          className="p-3 prose prose-sm max-w-none min-h-[100px]"
+          onKeyDown={onKeyPress}
+        />
+      </div>
       <div className="flex justify-between items-center">
         <div className="flex gap-2">
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <Paperclip className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <ImageIcon className="h-4 w-4" />
-          </Button>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Smile className="h-4 w-4" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-full p-0" align="start">
+              <EmojiPicker 
+                onEmojiClick={handleEmojiSelect}
+                width={300}
+                height={400}
+              />
+            </PopoverContent>
+          </Popover>
         </div>
         <div className="flex items-center gap-4">
           <div className="text-xs text-muted-foreground">
@@ -50,4 +77,3 @@ const MessageInput = ({
 };
 
 export default MessageInput;
-
