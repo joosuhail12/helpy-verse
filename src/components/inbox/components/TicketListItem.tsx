@@ -7,7 +7,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useState, Suspense, lazy } from 'react';
+import React, { useState, Suspense, lazy, useRef, useEffect } from 'react';
 import type { Ticket, ViewMode } from '@/types/ticket';
 
 // Lazy load the TicketCard component
@@ -100,8 +100,8 @@ const TicketListItem = ({
   };
 
   // Set up the Intersection Observer when the component mounts
-  const itemRef = React.useRef<HTMLDivElement>(null);
-  React.useEffect(() => {
+  const itemRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
     const observer = new IntersectionObserver(handleIntersection, {
       rootMargin: '100px', // Start loading slightly before the item comes into view
       threshold: 0.1
