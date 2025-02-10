@@ -1,4 +1,3 @@
-
 import { Loader2, Bell, AtSign, UserPlus, MessageCircle } from 'lucide-react';
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -99,7 +98,7 @@ const TicketListItem = ({
   onCopyId,
 }: TicketListItemProps) => {
   return (
-    <div className="group relative py-2">
+    <div className="group relative py-4">
       <div className="absolute left-3 top-1/2 -translate-y-1/2 z-10">
         <Checkbox
           checked={isSelected}
@@ -110,7 +109,7 @@ const TicketListItem = ({
       </div>
       
       <div 
-        className={`pl-7 group relative rounded-lg border transition-all duration-300 ease-out shadow-sm
+        className={`pl-7 group relative rounded-lg border transition-all duration-300 ease-out shadow-sm mb-1
           ${ticket.isUnread ? 'bg-gradient-to-br from-blue-50/70 to-white border-blue-100 ring-1 ring-blue-100 shadow-blue-100/50' : 'border-gray-100'}
           ${ticket.hasNotification ? getCardBackground(ticket.notificationType) : 'bg-white border-gray-100'}
           hover:shadow-md hover:-translate-y-0.5 hover:scale-[1.002]
@@ -159,4 +158,3 @@ const TicketListItem = ({
 };
 
 export default TicketListItem;
-
