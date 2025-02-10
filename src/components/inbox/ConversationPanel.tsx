@@ -1,7 +1,10 @@
 
 import React from 'react';
-import { X } from 'lucide-react';
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Avatar } from "@/components/ui/avatar";
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { X, Send, Clock } from 'lucide-react';
 import type { Ticket } from '@/types/ticket';
 
 interface ConversationPanelProps {
@@ -11,13 +14,24 @@ interface ConversationPanelProps {
 
 const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
   return (
-    <div className="h-full flex flex-col border-l bg-white">
-      <div className="border-b p-4 flex items-center justify-between">
-        <div>
-          <h2 className="font-semibold text-lg">{ticket.subject}</h2>
-          <p className="text-sm text-gray-500">
-            {ticket.customer} • {ticket.company}
-          </p>
+    <div className="h-full flex flex-col bg-white">
+      {/* Header */}
+      <div className="border-b p-4 flex items-center justify-between bg-white">
+        <div className="flex-1">
+          <div className="flex items-center gap-2">
+            <h2 className="font-semibold text-lg truncate">{ticket.subject}</h2>
+            <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary">
+              #{ticket.id}
+            </span>
+          </div>
+          <div className="flex items-center gap-2 mt-1">
+            <Avatar className="h-5 w-5">
+              <span className="text-xs">{ticket.customer[0]}</span>
+            </Avatar>
+            <p className="text-sm text-muted-foreground">
+              {ticket.customer} • {ticket.company}
+            </p>
+          </div>
         </div>
         <Button
           variant="ghost"
@@ -28,26 +42,45 @@ const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
           <X className="h-4 w-4" />
         </Button>
       </div>
-      
-      <div className="flex-1 overflow-y-auto p-4">
+
+      {/* Messages Area */}
+      <ScrollArea className="flex-1 p-4">
         <div className="space-y-4">
-          <div className="bg-gray-100 rounded-lg p-3">
-            <p className="text-sm text-gray-900">{ticket.lastMessage}</p>
-            <div className="mt-1 text-xs text-gray-500">
-              {new Date(ticket.createdAt).toLocaleString()}
+          {/* First message (from customer) */}
+          <div className="flex gap-3">
+            <Avatar className="h-8 w-8">
+              <span className="text-xs">{ticket.customer[0]}</span>
+            </Avatar>
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <span className="font-medium text-sm">{ticket.customer}</span>
+                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  {new Date(ticket.createdAt).toLocaleString()}
+                </span>
+              </div>
+              <div className="mt-1 text-sm bg-secondary/20 rounded-lg p-3">
+                {ticket.lastMessage}
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </ScrollArea>
 
-      <div className="border-t p-4">
-        <textarea
-          className="w-full p-2 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-primary"
-          placeholder="Type your message..."
-          rows={3}
+      {/* Reply Area */}
+      <div className="border-t p-4 bg-white">
+        <Textarea
+          placeholder="Type your reply..."
+          className="min-h-[100px] resize-none mb-3"
         />
-        <div className="mt-2 flex justify-end">
-          <Button>Send Message</Button>
+        <div className="flex justify-between items-center">
+          <div className="text-xs text-muted-foreground">
+            Press Enter to send, Shift + Enter for new line
+          </div>
+          <Button className="gap-2">
+            <Send className="h-4 w-4" />
+            Send Reply
+          </Button>
         </div>
       </div>
     </div>
