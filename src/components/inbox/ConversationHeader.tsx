@@ -3,7 +3,7 @@ import React from 'react';
 import { X, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar } from "@/components/ui/avatar";
-import { Tooltip } from "@/components/ui/tooltip";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import type { Ticket } from '@/types/ticket';
 import type { UserPresence } from './types';
 
@@ -36,13 +36,13 @@ const ConversationHeader = ({ ticket, onClose, activeUsers }: ConversationHeader
       <div className="flex items-center gap-3">
         {activeUsers.length > 0 && (
           <Tooltip>
-            <Tooltip.Trigger asChild>
+            <TooltipTrigger asChild>
               <div className="flex items-center gap-1 text-sm text-muted-foreground">
                 <Users className="h-4 w-4" />
                 <span>{activeUsers.length} active</span>
               </div>
-            </Tooltip.Trigger>
-            <Tooltip.Content>
+            </TooltipTrigger>
+            <TooltipContent>
               <div className="space-y-1">
                 {activeUsers.map((user) => (
                   <div key={user.userId} className="flex items-center gap-2">
@@ -51,7 +51,7 @@ const ConversationHeader = ({ ticket, onClose, activeUsers }: ConversationHeader
                   </div>
                 ))}
               </div>
-            </Tooltip.Content>
+            </TooltipContent>
           </Tooltip>
         )}
         <Button
