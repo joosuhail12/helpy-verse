@@ -1,3 +1,4 @@
+
 import { useToast } from "@/hooks/use-toast";
 import { useState } from 'react';
 import FilterBar from './FilterBar';
@@ -80,6 +81,10 @@ const TicketList = ({ tickets = [], isLoading = false }: TicketListProps) => {
   return (
     <div className="flex h-full">
       <div className={`flex flex-col h-full transition-all duration-300 ${selectedTicketForChat ? 'w-2/5' : 'w-full'}`}>
+        <div className="flex items-center justify-between mb-4 px-6 py-4 border-b">
+          <h2 className="text-2xl font-semibold text-gray-900">All Tickets</h2>
+        </div>
+
         <div className="flex-1 overflow-auto px-6">
           <div className="flex items-center justify-between gap-4 mb-6">
             <FilterBar
