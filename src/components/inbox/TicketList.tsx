@@ -80,91 +80,96 @@ const TicketList = ({ tickets = [], isLoading = false }: TicketListProps) => {
 
   return (
     <div className="flex h-full">
-      <div className={`space-y-6 transition-all duration-300 ${selectedTicketForChat ? 'w-2/5' : 'w-full'}`}>
-        <div className="flex items-center justify-between gap-4 mb-6">
-          <FilterBar
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            statusFilter={statusFilter}
-            setStatusFilter={setStatusFilter}
-            priorityFilter={priorityFilter}
-            setPriorityFilter={setPriorityFilter}
-          />
-          
-          <SortingControls
-            sortField={sortField}
-            sortDirection={sortDirection}
-            viewMode={viewMode}
-            onSort={handleSort}
-            onViewModeChange={setViewMode}
-          />
+      <div className={`flex flex-col h-full transition-all duration-300 ${selectedTicketForChat ? 'w-2/5' : 'w-full'}`}>
+        <div className="flex items-center justify-between mb-4 px-6 py-4 border-b">
+          <h2 className="text-2xl font-semibold text-gray-900">All Tickets</h2>
         </div>
 
-        {isLoading ? (
-          <LoadingState />
-        ) : (
-          <div className="space-y-4 animate-fade-in">
-            <div className="flex items-center justify-between">
-              <SelectionControls
-                selectedCount={selectedTickets.length}
-                totalCount={tickets.length}
-                onSelectAll={handleSelectAll}
-              />
-              
-              <TicketActions
-                selectedTickets={selectedTickets}
-                markAsRead={markAsRead}
-                markAsUnread={markAsUnread}
-              />
-            </div>
+        <div className="flex-1 overflow-auto px-6">
+          <div className="flex items-center justify-between gap-4 mb-6">
+            <FilterBar
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              statusFilter={statusFilter}
+              setStatusFilter={setStatusFilter}
+              priorityFilter={priorityFilter}
+              setPriorityFilter={setPriorityFilter}
+            />
             
-            {paginatedTickets.map((ticket) => (
-              <div
-                key={ticket.id}
-                onClick={() => handleTicketClick(ticket)}
-                className="cursor-pointer"
-              >
-                <TicketListItem
-                  ticket={ticket}
-                  viewMode={selectedTicketForChat ? 'compact' : viewMode}
-                  isSelected={selectedTickets.includes(ticket.id)}
-                  isLoading={!!loadingStates[ticket.id]}
-                  onSelect={(id) => {
-                    // Prevent ticket selection from triggering the conversation panel
-                    event?.stopPropagation();
-                    handleTicketSelection(id);
-                  }}
-                  onCopyId={(id) => {
-                    event?.stopPropagation();
-                    handleCopyTicketId(id);
-                  }}
+            <SortingControls
+              sortField={sortField}
+              sortDirection={sortDirection}
+              viewMode={viewMode}
+              onSort={handleSort}
+              onViewModeChange={setViewMode}
+            />
+          </div>
+
+          {isLoading ? (
+            <LoadingState />
+          ) : (
+            <div className="space-y-4 animate-fade-in">
+              <div className="flex items-center justify-between">
+                <SelectionControls
+                  selectedCount={selectedTickets.length}
+                  totalCount={tickets.length}
+                  onSelectAll={handleSelectAll}
+                />
+                
+                <TicketActions
+                  selectedTickets={selectedTickets}
+                  markAsRead={markAsRead}
+                  markAsUnread={markAsUnread}
                 />
               </div>
-            ))}
+              
+              {paginatedTickets.map((ticket) => (
+                <div
+                  key={ticket.id}
+                  onClick={() => handleTicketClick(ticket)}
+                  className="cursor-pointer"
+                >
+                  <TicketListItem
+                    ticket={ticket}
+                    viewMode={selectedTicketForChat ? 'compact' : viewMode}
+                    isSelected={selectedTickets.includes(ticket.id)}
+                    isLoading={!!loadingStates[ticket.id]}
+                    onSelect={(id) => {
+                      event?.stopPropagation();
+                      handleTicketSelection(id);
+                    }}
+                    onCopyId={(id) => {
+                      event?.stopPropagation();
+                      handleCopyTicketId(id);
+                    }}
+                  />
+                </div>
+              ))}
 
-            {totalPages > 1 && (
-              <div className="flex justify-center gap-2 mt-4">
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                  <button
-                    key={page}
-                    onClick={() => setCurrentPage(page)}
-                    className={`px-3 py-1 rounded-md ${
-                      currentPage === page
-                        ? 'bg-primary text-white'
-                        : 'bg-white text-gray-600 hover:bg-gray-100'
-                    }`}
-                  >
-                    {page}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+              {totalPages > 1 && (
+                <div className="flex justify-center gap-2 mt-4 mb-6">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`px-3 py-1 rounded-md ${
+                        currentPage === page
+                          ? 'bg-primary text-white'
+                          : 'bg-white text-gray-600 hover:bg-gray-100'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
       
       {selectedTicketForChat && (
-        <div className="w-3/5 h-full">
+        <div className="w-3/5 h-full border-l">
           <ConversationPanel
             ticket={selectedTicketForChat}
             onClose={() => setSelectedTicketForChat(null)}
