@@ -82,10 +82,9 @@ const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
         });
 
         // Get current presence state
-        const presence = await channel.presence.get();
-        if (presence) {
-          setActiveUsers(presence.map(member => member.data as UserPresence));
-        }
+        const presenceData = await channel.presence.get();
+        const members = Array.from(presenceData || []);
+        setActiveUsers(members.map(member => member.data as UserPresence));
 
         return () => {
           channel.presence.leave();
