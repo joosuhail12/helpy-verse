@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Send, Smile } from 'lucide-react';
+import { Send, Smile, Bold, Italic, Underline, List, ListOrdered, Strikethrough } from 'lucide-react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import EmojiPicker from 'emoji-picker-react';
@@ -10,6 +10,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Separator } from "@/components/ui/separator";
 
 interface MessageInputProps {
   newMessage: string;
@@ -38,7 +39,55 @@ const MessageInput = ({
 
   return (
     <div className="border-t p-4 bg-white">
-      <div className="border rounded-lg mb-3 min-h-[100px]">
+      <div className="border rounded-lg mb-3">
+        <div className="border-b p-2 flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={() => editor?.chain().focus().toggleBold().run()}
+            data-active={editor?.isActive('bold')}
+          >
+            <Bold className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={() => editor?.chain().focus().toggleItalic().run()}
+            data-active={editor?.isActive('italic')}
+          >
+            <Italic className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={() => editor?.chain().focus().toggleStrike().run()}
+            data-active={editor?.isActive('strike')}
+          >
+            <Strikethrough className="h-4 w-4" />
+          </Button>
+          <Separator orientation="vertical" className="mx-1 h-6" />
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={() => editor?.chain().focus().toggleBulletList().run()}
+            data-active={editor?.isActive('bulletList')}
+          >
+            <List className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={() => editor?.chain().focus().toggleOrderedList().run()}
+            data-active={editor?.isActive('orderedList')}
+          >
+            <ListOrdered className="h-4 w-4" />
+          </Button>
+        </div>
         <EditorContent 
           editor={editor} 
           className="p-3 prose prose-sm max-w-none min-h-[100px]"
