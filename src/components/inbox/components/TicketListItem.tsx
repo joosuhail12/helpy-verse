@@ -86,17 +86,18 @@ const TicketListItem = ({
   onCopyId,
 }: TicketListItemProps) => {
   return (
-    <div className="group relative px-2 py-1">
-      <div className="absolute left-4 top-1/2 -translate-y-1/2 z-10">
+    <div className="group relative px-1 py-0.5">
+      <div className="absolute left-3 top-1/2 -translate-y-1/2 z-10">
         <Checkbox
           checked={isSelected}
           onCheckedChange={() => onSelect(ticket.id)}
           aria-label={`Select ticket ${ticket.id}`}
+          className="h-3.5 w-3.5"
         />
       </div>
       
       <div 
-        className={`pl-8 group relative rounded-lg border shadow-sm hover:shadow-md transition-all duration-200 
+        className={`pl-7 group relative rounded-md border shadow-sm hover:shadow-md transition-all duration-200 
           ${ticket.isUnread ? 'bg-gradient-to-br from-blue-50/70 to-white border-blue-100' : 'border-gray-100'}
           ${ticket.hasNotification ? getCardBackground(ticket.notificationType) : 'bg-white border-gray-100'}
           focus-within:ring-1 focus-within:ring-primary/50`}
@@ -105,8 +106,8 @@ const TicketListItem = ({
         aria-label={`Ticket from ${ticket.customer}: ${ticket.subject}`}
       >
         {isLoading && (
-          <div className="absolute inset-0 bg-white/50 backdrop-blur-sm flex items-center justify-center rounded-lg z-20">
-            <Loader2 className="h-4 w-4 animate-spin text-primary" />
+          <div className="absolute inset-0 bg-white/50 backdrop-blur-sm flex items-center justify-center rounded-md z-20">
+            <Loader2 className="h-3 w-3 animate-spin text-primary" />
           </div>
         )}
         
@@ -118,11 +119,11 @@ const TicketListItem = ({
           />
           
           {ticket.hasNotification && ticket.notificationType && (
-            <div className="absolute right-3 top-3">
+            <div className="absolute right-2 top-2">
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className={`p-1.5 rounded-full transition-transform hover:scale-110 ${getNotificationColor(ticket.notificationType)}`}>
+                    <div className={`p-1 rounded-full transition-transform hover:scale-110 ${getNotificationColor(ticket.notificationType)}`}>
                       {getNotificationIcon(ticket.notificationType)}
                     </div>
                   </TooltipTrigger>
