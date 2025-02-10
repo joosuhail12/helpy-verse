@@ -1,7 +1,5 @@
 
 import { useToast } from "@/hooks/use-toast";
-import { useVirtualizer } from "@tanstack/react-virtual";
-import { useRef } from "react";
 import FilterBar from './FilterBar';
 import EmptyTicketState from './EmptyTicketState';
 import SortingControls from './SortingControls';
@@ -19,12 +17,8 @@ interface TicketListProps {
   isLoading?: boolean;
 }
 
-const TICKET_HEIGHT = 120; // Approximate height of each ticket item
-
 const TicketList = ({ tickets = [], isLoading = false }: TicketListProps) => {
   const { toast } = useToast();
-  const parentRef = useRef<HTMLDivElement>(null);
-
   const {
     searchQuery,
     setSearchQuery,
@@ -57,13 +51,6 @@ const TicketList = ({ tickets = [], isLoading = false }: TicketListProps) => {
 
   // Use the new hook for realtime functionality
   useRealtimeTickets(updateTicket);
-
-  const virtualizer = useVirtualizer({
-    count: sortedAndFilteredTickets.length,
-    getScrollElement: () => parentRef.current,
-    estimateSize: () => TICKET_HEIGHT,
-    overscan: 5, // Number of items to render above/below the visible area
-  });
 
   const handleCopyTicketId = async (id: string) => {
     await navigator.clipboard.writeText(id);
@@ -116,44 +103,17 @@ const TicketList = ({ tickets = [], isLoading = false }: TicketListProps) => {
             />
           </div>
           
-          <div 
-            ref={parentRef} 
-            className="h-[calc(100vh-300px)] overflow-auto"
-          >
-            <div
-              style={{
-                height: `${virtualizer.getTotalSize()}px`,
-                width: '100%',
-                position: 'relative',
-              }}
-            >
-              {virtualizer.getVirtualItems().map((virtualRow) => {
-                const ticket = sortedAndFilteredTickets[virtualRow.index];
-                return (
-                  <div
-                    key={ticket.id}
-                    style={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      width: '100%',
-                      height: `${virtualRow.size}px`,
-                      transform: `translateY(${virtualRow.start}px)`,
-                    }}
-                  >
-                    <TicketListItem
-                      ticket={ticket}
-                      viewMode={viewMode}
-                      isSelected={selectedTickets.includes(ticket.id)}
-                      isLoading={!!loadingStates[ticket.id]}
-                      onSelect={handleTicketSelection}
-                      onCopyId={handleCopyTicketId}
-                    />
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+          {sortedAndFilteredTickets.map((ticket) => (
+            <TicketListItem
+              key={ticket.id}
+              ticket={ticket}
+              viewMode={viewMode}
+              isSelected={selectedTickets.includes(ticket.id)}
+              isLoading={!!loadingStates[ticket.id]}
+              onSelect={handleTicketSelection}
+              onCopyId={handleCopyTicketId}
+            />
+          ))}
         </div>
       )}
     </div>

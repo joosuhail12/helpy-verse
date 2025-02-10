@@ -1,3 +1,4 @@
+
 import { Loader2, Bell, AtSign, UserPlus, MessageCircle } from 'lucide-react';
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -76,19 +77,6 @@ const getCardBackground = (type: string | undefined) => {
   }
 };
 
-const getPriorityColor = (priority: string) => {
-  switch (priority) {
-    case 'high':
-      return 'ring-2 ring-red-500 bg-red-50';
-    case 'medium':
-      return 'ring-2 ring-amber-500 bg-amber-50';
-    case 'low':
-      return 'ring-2 ring-blue-500 bg-blue-50';
-    default:
-      return 'ring-2 ring-gray-300 bg-gray-50';
-  }
-};
-
 const TicketListItem = ({
   ticket,
   viewMode,
@@ -98,37 +86,32 @@ const TicketListItem = ({
   onCopyId,
 }: TicketListItemProps) => {
   return (
-    <div className="group relative py-4">
+    <div className="group relative px-1 py-0.5">
       <div className="absolute left-3 top-1/2 -translate-y-1/2 z-10">
         <Checkbox
           checked={isSelected}
           onCheckedChange={() => onSelect(ticket.id)}
           aria-label={`Select ticket ${ticket.id}`}
-          className="h-3.5 w-3.5 transition-all duration-200 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+          className="h-3.5 w-3.5"
         />
       </div>
       
       <div 
-        className={`pl-7 group relative rounded-lg border transition-all duration-300 ease-out shadow-sm mb-1
-          ${ticket.isUnread ? 'bg-gradient-to-br from-blue-50/70 to-white border-blue-100 ring-1 ring-blue-100 shadow-blue-100/50' : 'border-gray-100'}
+        className={`pl-7 group relative rounded-md border shadow-sm hover:shadow-md transition-all duration-200 
+          ${ticket.isUnread ? 'bg-gradient-to-br from-blue-50/70 to-white border-blue-100' : 'border-gray-100'}
           ${ticket.hasNotification ? getCardBackground(ticket.notificationType) : 'bg-white border-gray-100'}
-          hover:shadow-md hover:-translate-y-0.5 hover:scale-[1.002]
-          focus-within:ring-2 focus-within:ring-primary/30`}
+          focus-within:ring-1 focus-within:ring-primary/50`}
         tabIndex={0}
         role="article"
         aria-label={`Ticket from ${ticket.customer}: ${ticket.subject}`}
       >
         {isLoading && (
-          <div className="absolute inset-0 bg-white/50 backdrop-blur-sm flex items-center justify-center rounded-lg z-20">
+          <div className="absolute inset-0 bg-white/50 backdrop-blur-sm flex items-center justify-center rounded-md z-20">
             <Loader2 className="h-3 w-3 animate-spin text-primary" />
           </div>
         )}
         
         <div className="relative">
-          <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3">
-            <div className={`w-2.5 h-2.5 rounded-full transition-all duration-200 ${getPriorityColor(ticket.priority)} group-hover:scale-110`} />
-          </div>
-          
           <TicketCard 
             ticket={ticket} 
             viewMode={viewMode}
@@ -136,11 +119,11 @@ const TicketListItem = ({
           />
           
           {ticket.hasNotification && ticket.notificationType && (
-            <div className="absolute right-3 top-3">
+            <div className="absolute right-2 top-2">
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className={`p-1.5 rounded-full transition-all duration-200 group-hover:scale-110 ${getNotificationColor(ticket.notificationType)}`}>
+                    <div className={`p-1 rounded-full transition-transform hover:scale-110 ${getNotificationColor(ticket.notificationType)}`}>
                       {getNotificationIcon(ticket.notificationType)}
                     </div>
                   </TooltipTrigger>
@@ -158,3 +141,4 @@ const TicketListItem = ({
 };
 
 export default TicketListItem;
+
