@@ -16,6 +16,7 @@ const tickets = [
     status: 'open',
     priority: 'high',
     createdAt: '2024-03-15T10:00:00Z',
+    isUnread: true,
   },
   {
     id: '2',
@@ -28,6 +29,7 @@ const tickets = [
     status: 'pending',
     priority: 'medium',
     createdAt: '2024-03-14T15:30:00Z',
+    isUnread: false,
   },
   {
     id: '3',
@@ -40,6 +42,7 @@ const tickets = [
     status: 'closed',
     priority: 'low',
     createdAt: '2024-03-13T09:15:00Z',
+    isUnread: false,
   },
   {
     id: '4',
@@ -52,6 +55,7 @@ const tickets = [
     status: 'open',
     priority: 'low',
     createdAt: '2024-03-12T22:45:00Z',
+    isUnread: true,
   },
   {
     id: '5',
@@ -64,7 +68,47 @@ const tickets = [
     status: 'open',
     priority: 'high',
     createdAt: '2024-03-15T08:15:00Z',
+    isUnread: true,
   },
+  {
+    id: '6',
+    subject: 'Export functionality not working',
+    customer: 'Maria Garcia',
+    lastMessage: 'When trying to export reports to CSV, nothing happens. This worked yesterday.',
+    assignee: 'Tom Wilson',
+    company: 'DataAnalytics Pro',
+    tags: ['bug', 'export', 'reports'],
+    status: 'pending',
+    priority: 'high',
+    createdAt: '2024-03-15T09:30:00Z',
+    isUnread: true,
+  },
+  {
+    id: '7',
+    subject: 'Thank you for the quick response',
+    customer: 'Alex Kim',
+    lastMessage: 'Just wanted to say thanks for resolving my issue so quickly. Great service!',
+    assignee: 'Sarah Wilson',
+    company: 'StartupHub',
+    tags: ['feedback', 'positive'],
+    status: 'closed',
+    priority: 'low',
+    createdAt: '2024-03-14T16:45:00Z',
+    isUnread: false,
+  },
+  {
+    id: '8',
+    subject: 'Mobile app crashes on startup',
+    customer: 'Chris Taylor',
+    lastMessage: 'After the latest update, the mobile app crashes immediately when opened. Using iPhone 14 Pro.',
+    assignee: null,
+    company: 'MobileFirst Ltd',
+    tags: ['mobile', 'crash', 'urgent'],
+    status: 'open',
+    priority: 'high',
+    createdAt: '2024-03-15T11:20:00Z',
+    isUnread: true,
+  }
 ] satisfies Ticket[];
 
 type Ticket = {
@@ -78,6 +122,7 @@ type Ticket = {
   status: 'open' | 'closed' | 'pending';
   priority: 'low' | 'medium' | 'high';
   createdAt: string;
+  isUnread?: boolean;
 };
 
 const AllTickets = () => {
