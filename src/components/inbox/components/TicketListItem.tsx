@@ -1,12 +1,6 @@
 
-import { Loader2, Bell, AtSign, UserPlus, MessageCircle } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import TicketCard from '../TicketCard';
 import type { Ticket, ViewMode } from '@/types/ticket';
 
@@ -18,64 +12,6 @@ interface TicketListItemProps {
   onSelect: (ticketId: string) => void;
   onCopyId: (id: string) => void;
 }
-
-const getNotificationIcon = (type: string) => {
-  switch (type) {
-    case 'mention':
-      return <AtSign className="h-3 w-3" />;
-    case 'assignment':
-      return <UserPlus className="h-3 w-3" />;
-    case 'new_response':
-      return <MessageCircle className="h-3 w-3" />;
-    default:
-      return <Bell className="h-3 w-3" />;
-  }
-};
-
-const getNotificationText = (type: string) => {
-  switch (type) {
-    case 'mention':
-      return 'You were mentioned in this ticket';
-    case 'assignment':
-      return 'You were assigned to this ticket';
-    case 'new_response':
-      return 'New response on this ticket';
-    default:
-      return 'This ticket has been updated';
-  }
-};
-
-const getNotificationColor = (type: string) => {
-  switch (type) {
-    case 'mention':
-      return 'text-blue-500 bg-blue-50 ring-1 ring-blue-100';
-    case 'assignment':
-      return 'text-purple-500 bg-purple-50 ring-1 ring-purple-100';
-    case 'new_response':
-      return 'text-green-500 bg-green-50 ring-1 ring-green-100';
-    case 'new_ticket':
-      return 'text-amber-500 bg-amber-50 ring-1 ring-amber-100';
-    default:
-      return 'text-gray-500 bg-gray-50 ring-1 ring-gray-100';
-  }
-};
-
-const getCardBackground = (type: string | undefined) => {
-  if (!type) return '';
-  
-  switch (type) {
-    case 'mention':
-      return 'bg-gradient-to-br from-blue-50 to-white border-blue-100';
-    case 'assignment':
-      return 'bg-gradient-to-br from-purple-50 to-white border-purple-100';
-    case 'new_response':
-      return 'bg-gradient-to-br from-green-50 to-white border-green-100';
-    case 'new_ticket':
-      return 'bg-gradient-to-br from-amber-50 to-white border-amber-100';
-    default:
-      return '';
-  }
-};
 
 const getPriorityColor = (priority: string) => {
   switch (priority) {
@@ -105,23 +41,22 @@ const TicketListItem = ({
           checked={isSelected}
           onCheckedChange={() => onSelect(ticket.id)}
           aria-label={`Select ticket ${ticket.id}`}
-          className="h-3.5 w-3.5 transition-all duration-200 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+          className="h-4 w-4 transition-all duration-200 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
         />
       </div>
       
       <div 
-        className={`pl-7 group relative rounded-md border shadow-sm transition-all duration-300 ease-out
-          ${ticket.isUnread ? 'bg-gradient-to-br from-blue-50/70 to-white border-blue-100 ring-1 ring-blue-100 shadow-blue-100/50' : 'border-gray-100'}
-          ${ticket.hasNotification ? getCardBackground(ticket.notificationType) : 'bg-white border-gray-100'}
-          hover:shadow-md hover:scale-[1.002] hover:-translate-y-0.5
+        className={`pl-10 group relative rounded-lg border transition-all duration-300 ease-out
+          ${ticket.isUnread ? 'bg-gradient-to-r from-blue-50/50 to-transparent border-blue-100' : 'bg-white border-gray-100'}
+          hover:shadow-lg hover:border-primary/20 hover:-translate-y-0.5
           focus-within:ring-2 focus-within:ring-primary/30 cursor-pointer`}
         tabIndex={0}
         role="article"
         aria-label={`Ticket from ${ticket.customer}: ${ticket.subject}`}
       >
         {isLoading && (
-          <div className="absolute inset-0 bg-white/50 backdrop-blur-sm flex items-center justify-center rounded-md z-20">
-            <Loader2 className="h-3 w-3 animate-spin text-primary" />
+          <div className="absolute inset-0 bg-white/50 backdrop-blur-sm flex items-center justify-center rounded-lg z-20">
+            <Loader2 className="h-4 w-4 animate-spin text-primary" />
           </div>
         )}
         
@@ -135,23 +70,6 @@ const TicketListItem = ({
             viewMode={viewMode}
             onCopyId={() => onCopyId(ticket.id)}
           />
-          
-          {ticket.hasNotification && ticket.notificationType && (
-            <div className="absolute right-2 top-2">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className={`p-1.5 rounded-full transition-all duration-200 group-hover:scale-110 ${getNotificationColor(ticket.notificationType)}`}>
-                      {getNotificationIcon(ticket.notificationType)}
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p className="text-xs">{getNotificationText(ticket.notificationType)}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
-          )}
         </div>
       </div>
     </div>
@@ -159,4 +77,3 @@ const TicketListItem = ({
 };
 
 export default TicketListItem;
-
