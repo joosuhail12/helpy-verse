@@ -99,7 +99,7 @@ const TicketListItem = ({
   onCopyId,
 }: TicketListItemProps) => {
   return (
-    <div className="group relative px-1 py-0.5">
+    <div className="group relative py-2">
       <div className="absolute left-3 top-1/2 -translate-y-1/2 z-10">
         <Checkbox
           checked={isSelected}
@@ -110,17 +110,17 @@ const TicketListItem = ({
       </div>
       
       <div 
-        className={`pl-7 group relative rounded-md border shadow-sm transition-all duration-300 ease-out
+        className={`pl-7 group relative rounded-lg border transition-all duration-300 ease-out shadow-sm
           ${ticket.isUnread ? 'bg-gradient-to-br from-blue-50/70 to-white border-blue-100 ring-1 ring-blue-100 shadow-blue-100/50' : 'border-gray-100'}
           ${ticket.hasNotification ? getCardBackground(ticket.notificationType) : 'bg-white border-gray-100'}
-          hover:shadow-md hover:scale-[1.002] hover:-translate-y-0.5
-          focus-within:ring-2 focus-within:ring-primary/30 cursor-pointer`}
+          hover:shadow-md hover:-translate-y-0.5 hover:scale-[1.002]
+          focus-within:ring-2 focus-within:ring-primary/30`}
         tabIndex={0}
         role="article"
         aria-label={`Ticket from ${ticket.customer}: ${ticket.subject}`}
       >
         {isLoading && (
-          <div className="absolute inset-0 bg-white/50 backdrop-blur-sm flex items-center justify-center rounded-md z-20">
+          <div className="absolute inset-0 bg-white/50 backdrop-blur-sm flex items-center justify-center rounded-lg z-20">
             <Loader2 className="h-3 w-3 animate-spin text-primary" />
           </div>
         )}
@@ -137,7 +137,7 @@ const TicketListItem = ({
           />
           
           {ticket.hasNotification && ticket.notificationType && (
-            <div className="absolute right-2 top-2">
+            <div className="absolute right-3 top-3">
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>

@@ -41,15 +41,15 @@ const TicketCard = ({ ticket, viewMode, onCopyId }: TicketCardProps) => {
 
   return (
     <div 
-      className={`group/card bg-white rounded-md p-2.5 hover:shadow-lg hover:bg-gray-50/50 transition-all w-full ${
-        isCompact ? 'py-2' : ''
+      className={`group/card p-4 hover:bg-gray-50/50 transition-all w-full rounded-lg ${
+        isCompact ? 'py-3' : ''
       }`}
       role="article"
       aria-labelledby={`ticket-${ticket.id}-subject`}
     >
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex items-start gap-2 flex-1 min-w-0">
-          <div className="w-7 h-7 rounded-full bg-purple-100/50 flex items-center justify-center flex-shrink-0">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-start gap-3 flex-1 min-w-0">
+          <div className="w-8 h-8 rounded-full bg-purple-100/50 flex items-center justify-center flex-shrink-0">
             {ticket.isUnread ? (
               <Circle className="w-4 h-4 text-primary/70" />
             ) : (
@@ -57,7 +57,7 @@ const TicketCard = ({ ticket, viewMode, onCopyId }: TicketCardProps) => {
             )}
           </div>
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               <h3 
                 id={`ticket-${ticket.id}-subject`}
                 className={`text-sm truncate transition-all duration-200 ${
@@ -79,26 +79,31 @@ const TicketCard = ({ ticket, viewMode, onCopyId }: TicketCardProps) => {
                 <Copy className="w-3 h-3 text-gray-400 hover:text-primary transition-colors" />
               </button>
             </div>
-            <div className="flex items-center gap-1.5 mt-0.5 text-xs text-gray-600">
-              <Building className="w-3 h-3 text-gray-400" />
-              <span className="truncate">{ticket.company}</span>
+            
+            <div className="flex items-center gap-2 mt-1 text-xs text-gray-600">
+              <div className="flex items-center gap-1.5">
+                <Building className="w-3 h-3 text-gray-400" />
+                <span className="truncate">{ticket.company}</span>
+              </div>
               <span className="w-1 h-1 rounded-full bg-gray-300"></span>
               <span className="truncate">{ticket.customer}</span>
             </div>
+
             {!isCompact && (
-              <p className={`text-xs mt-2 border-t border-gray-100 pt-2 line-clamp-2 transition-colors ${
+              <p className={`text-xs mt-3 pt-3 border-t border-gray-100 line-clamp-2 transition-colors ${
                 ticket.isUnread ? 'text-gray-700' : 'text-gray-500'
               }`}>
                 {ticket.lastMessage}
               </p>
             )}
+
             {!isCompact && ticket.tags.length > 0 && (
-              <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+              <div className="flex items-center gap-2 mt-3 flex-wrap">
                 <Tag className="w-3 h-3 text-gray-400" />
                 {ticket.tags.map((tag, index) => (
                   <span
                     key={index}
-                    className="px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded-full text-xs transition-all duration-200 hover:bg-gray-200"
+                    className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full text-xs transition-all duration-200 hover:bg-gray-200"
                   >
                     {tag}
                   </span>
@@ -109,7 +114,7 @@ const TicketCard = ({ ticket, viewMode, onCopyId }: TicketCardProps) => {
         </div>
 
         <div className="flex flex-col items-end gap-2">
-          <div className="flex items-center gap-1.5 flex-shrink-0">
+          <div className="flex items-center gap-2 flex-shrink-0">
             <TicketStatusBadge status={ticket.status} />
             <TicketPriorityBadge priority={ticket.priority} />
           </div>
@@ -127,7 +132,7 @@ const TicketCard = ({ ticket, viewMode, onCopyId }: TicketCardProps) => {
           </TooltipProvider>
 
           {!isCompact && (
-            <div className="flex items-center gap-1.5 text-xs text-gray-500 border-t border-gray-100 pt-1.5 mt-1.5">
+            <div className="flex items-center gap-1.5 text-xs text-gray-500 border-t border-gray-100 pt-2 mt-2">
               {ticket.assignee ? (
                 <>
                   <User className="w-3 h-3" />
@@ -142,7 +147,7 @@ const TicketCard = ({ ticket, viewMode, onCopyId }: TicketCardProps) => {
             </div>
           )}
 
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover/card:opacity-100 transition-opacity">
+          <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover/card:opacity-100 transition-opacity">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="h-7 px-2 text-xs hover:bg-gray-100">
