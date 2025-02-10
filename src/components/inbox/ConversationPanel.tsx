@@ -8,6 +8,7 @@ import type { Message, ConversationPanelProps, UserPresence } from './types';
 import ConversationHeader from './ConversationHeader';
 import MessageItem from './MessageItem';
 import MessageInput from './MessageInput';
+import * as Ably from 'ably';
 
 const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -82,10 +83,14 @@ const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
         });
 
         // Get current presence state
-        const presenceMembers = await channel.presence.get();
-        if (presenceMembers) {
-          const members = Array.from(presenceMembers);
-          setActiveUsers(members.map(member => member.data as UserPresence));
+        try {
+          const presenceMembers = await channel.presence.get();
+          if (presenceMembers && presenceMembers.length > 0) {
+            const members = Array.from(presenceMembers) as Ably.Types.PresenceMessage[];
+            setActiveUsers(members.map(member => member.data as UserPresence));
+          }
+        } catch (error) {
+          console.error('Error getting presence members:', error);
         }
 
         return () => {
