@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import TicketList from '@/components/inbox/TicketList';
 
 const ITEMS_PER_PAGE = 5;
@@ -131,11 +131,20 @@ type Ticket = {
 };
 
 const AllTickets = () => {
-  const [currentPage, setCurrentPage] = useState(1);
+  const [windowHeight, setWindowHeight] = useState(0);
 
-  const totalPages = Math.ceil(tickets.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const paginatedTickets = tickets.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  useEffect(() => {
+    setWindowHeight(window.innerHeight);
+
+    const handleResize = () => {
+      setWindowHeight(window.innerHeight);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const listHeight = windowHeight - 200;
 
   return (
     <div className="w-full space-y-6 h-full">
@@ -143,25 +152,10 @@ const AllTickets = () => {
         <h2 className="text-2xl font-semibold text-gray-900">All Tickets</h2>
       </div>
       
-      <TicketList tickets={paginatedTickets} />
-
-      {totalPages > 1 && (
-        <div className="flex justify-center gap-2 mt-4">
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-            <button
-              key={page}
-              onClick={() => setCurrentPage(page)}
-              className={`px-3 py-1 rounded-md ${
-                currentPage === page
-                  ? 'bg-primary text-white'
-                  : 'bg-white text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              {page}
-            </button>
-          ))}
-        </div>
-      )}
+      <TicketList 
+        tickets={tickets} 
+        height={listHeight > 400 ? listHeight : 400}
+      />
     </div>
   );
 };

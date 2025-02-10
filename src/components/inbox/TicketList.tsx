@@ -1,5 +1,6 @@
 
 import { useToast } from "@/hooks/use-toast";
+import { FixedSizeList as List } from 'react-window';
 import FilterBar from './FilterBar';
 import EmptyTicketState from './EmptyTicketState';
 import SortingControls from './SortingControls';
@@ -15,9 +16,10 @@ import type { Ticket } from '@/types/ticket';
 interface TicketListProps {
   tickets: Ticket[];
   isLoading?: boolean;
+  height?: number;
 }
 
-const TicketList = ({ tickets = [], isLoading = false }: TicketListProps) => {
+const TicketList = ({ tickets = [], isLoading = false, height = 600 }: TicketListProps) => {
   const { toast } = useToast();
   const {
     searchQuery,
@@ -49,7 +51,6 @@ const TicketList = ({ tickets = [], isLoading = false }: TicketListProps) => {
     selectedTickets,
   });
 
-  // Use the new hook for realtime functionality
   useRealtimeTickets(updateTicket);
 
   const handleCopyTicketId = async (id: string) => {
@@ -63,6 +64,23 @@ const TicketList = ({ tickets = [], isLoading = false }: TicketListProps) => {
   if (tickets.length === 0 && !isLoading) {
     return <EmptyTicketState />;
   }
+
+  const Row = ({ index, style }: { index: number; style: React.CSSProperties }) => {
+    const ticket = sortedAndFilteredTickets[index];
+    return (
+      <div style={style}>
+        <TicketListItem
+          key={ticket.id}
+          ticket={ticket}
+          viewMode={viewMode}
+          isSelected={selectedTickets.includes(ticket.id)}
+          isLoading={!!loadingStates[ticket.id]}
+          onSelect={handleTicketSelection}
+          onCopyId={handleCopyTicketId}
+        />
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-6">
@@ -103,17 +121,14 @@ const TicketList = ({ tickets = [], isLoading = false }: TicketListProps) => {
             />
           </div>
           
-          {sortedAndFilteredTickets.map((ticket) => (
-            <TicketListItem
-              key={ticket.id}
-              ticket={ticket}
-              viewMode={viewMode}
-              isSelected={selectedTickets.includes(ticket.id)}
-              isLoading={!!loadingStates[ticket.id]}
-              onSelect={handleTicketSelection}
-              onCopyId={handleCopyTicketId}
-            />
-          ))}
+          <List
+            height={height}
+            itemCount={sortedAndFilteredTickets.length}
+            itemSize={viewMode === 'compact' ? 100 : 180} // Adjust these values based on your card heights
+            width="100%"
+          >
+            {Row}
+          </List>
         </div>
       )}
     </div>
