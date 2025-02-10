@@ -1,44 +1,14 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import { useToast } from "@/hooks/use-toast";
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Ticket, SortField, SortDirection, ViewMode } from '@/types/ticket';
 
-// API functions
-const fetchTickets = async (): Promise<Ticket[]> => {
-  const response = await fetch('/api/tickets');
-  if (!response.ok) throw new Error('Failed to fetch tickets');
-  return response.json();
-};
-
-const updateTicketStatus = async ({ ticketIds, isUnread }: { ticketIds: string[], isUnread: boolean }): Promise<void> => {
-  const response = await fetch('/api/tickets/status', {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ticketIds, isUnread }),
-  });
-  if (!response.ok) throw new Error('Failed to update ticket status');
-};
-
 export const useTicketList = (initialTickets: Ticket[]) => {
-  // Initialize React Query hooks first
-  const queryClient = useQueryClient();
-  const { data: tickets = initialTickets } = useQuery({
-    queryKey: ['tickets'],
-    queryFn: fetchTickets,
-  });
-
-  const updateTicketMutation = useMutation({
-    mutationFn: updateTicketStatus,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tickets'] });
-    },
-  });
-
   // Toast hooks
   const { toast } = useToast();
 
   // State hooks
+  const [tickets, setTickets] = useState<Ticket[]>(initialTickets);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
@@ -49,12 +19,12 @@ export const useTicketList = (initialTickets: Ticket[]) => {
   const [loadingStates, setLoadingStates] = useState<Record<string, boolean>>({});
 
   const updateTicket = useCallback((updatedTicket: Ticket) => {
-    queryClient.setQueryData(['tickets'], (oldData: Ticket[] | undefined) => 
-      oldData?.map(ticket => 
+    setTickets(prevTickets => 
+      prevTickets.map(ticket => 
         ticket.id === updatedTicket.id ? updatedTicket : ticket
-      ) ?? []
+      )
     );
-  }, [queryClient]);
+  }, []);
 
   const handleSort = useCallback((field: SortField) => {
     if (sortField === field) {
@@ -89,7 +59,15 @@ export const useTicketList = (initialTickets: Ticket[]) => {
     });
 
     try {
-      await updateTicketMutation.mutateAsync({ ticketIds, isUnread: false });
+      // Update local state instead of making API call
+      setTickets(prevTickets => 
+        prevTickets.map(ticket => 
+          ticketIds.includes(ticket.id) 
+            ? { ...ticket, isUnread: false }
+            : ticket
+        )
+      );
+
       toast({
         description: `${ticketIds.length} ticket(s) marked as read`,
       });
@@ -107,7 +85,7 @@ export const useTicketList = (initialTickets: Ticket[]) => {
         return newStates;
       });
     }
-  }, [toast, updateTicketMutation]);
+  }, [toast]);
 
   const markAsUnread = useCallback(async (ticketIds: string[]) => {
     setLoadingStates(prev => {
@@ -119,7 +97,15 @@ export const useTicketList = (initialTickets: Ticket[]) => {
     });
 
     try {
-      await updateTicketMutation.mutateAsync({ ticketIds, isUnread: true });
+      // Update local state instead of making API call
+      setTickets(prevTickets => 
+        prevTickets.map(ticket => 
+          ticketIds.includes(ticket.id) 
+            ? { ...ticket, isUnread: true }
+            : ticket
+        )
+      );
+
       toast({
         description: `${ticketIds.length} ticket(s) marked as unread`,
       });
@@ -137,7 +123,7 @@ export const useTicketList = (initialTickets: Ticket[]) => {
         return newStates;
       });
     }
-  }, [toast, updateTicketMutation]);
+  }, [toast]);
 
   const sortedAndFilteredTickets = useMemo(() => {
     return tickets
