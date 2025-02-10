@@ -1,3 +1,4 @@
+
 import { MessageSquare, Building, Tag, Clock, User, UserX, Copy, CheckCircle, Circle } from 'lucide-react';
 import { formatDistanceToNow, format } from 'date-fns';
 import {
@@ -40,9 +41,9 @@ const TicketCard = ({ ticket, viewMode, onCopyId }: TicketCardProps) => {
 
   return (
     <div 
-      className={`group bg-white rounded-md p-2.5 hover:shadow-lg hover:bg-gray-50/50 transition-all cursor-pointer w-full ${
+      className={`group/card bg-white rounded-md p-2.5 hover:shadow-lg hover:bg-gray-50/50 transition-all w-full ${
         isCompact ? 'py-2' : ''
-      } ${ticket.isUnread ? 'bg-blue-50/30' : ''}`}
+      }`}
       role="article"
       aria-labelledby={`ticket-${ticket.id}-subject`}
     >
@@ -59,7 +60,11 @@ const TicketCard = ({ ticket, viewMode, onCopyId }: TicketCardProps) => {
             <div className="flex items-center gap-1.5">
               <h3 
                 id={`ticket-${ticket.id}-subject`}
-                className={`font-medium text-sm text-gray-900 truncate ${ticket.isUnread ? 'font-semibold' : ''}`}
+                className={`text-sm truncate transition-all duration-200 ${
+                  ticket.isUnread 
+                    ? 'font-semibold text-gray-900' 
+                    : 'font-medium text-gray-700'
+                }`}
               >
                 {ticket.subject}
               </h3>
@@ -68,10 +73,10 @@ const TicketCard = ({ ticket, viewMode, onCopyId }: TicketCardProps) => {
                   e.stopPropagation();
                   onCopyId();
                 }}
-                className="opacity-0 group-hover:opacity-100 transition-opacity focus:opacity-100"
+                className="opacity-0 group-hover/card:opacity-100 transition-opacity focus:opacity-100"
                 aria-label={`Copy ticket ID ${ticket.id}`}
               >
-                <Copy className="w-3 h-3 text-gray-400 hover:text-primary" />
+                <Copy className="w-3 h-3 text-gray-400 hover:text-primary transition-colors" />
               </button>
             </div>
             <div className="flex items-center gap-1.5 mt-0.5 text-xs text-gray-600">
@@ -81,7 +86,9 @@ const TicketCard = ({ ticket, viewMode, onCopyId }: TicketCardProps) => {
               <span className="truncate">{ticket.customer}</span>
             </div>
             {!isCompact && (
-              <p className="text-xs text-gray-500 mt-2 border-t border-gray-100 pt-2 line-clamp-2">
+              <p className={`text-xs mt-2 border-t border-gray-100 pt-2 line-clamp-2 transition-colors ${
+                ticket.isUnread ? 'text-gray-700' : 'text-gray-500'
+              }`}>
                 {ticket.lastMessage}
               </p>
             )}
@@ -91,7 +98,7 @@ const TicketCard = ({ ticket, viewMode, onCopyId }: TicketCardProps) => {
                 {ticket.tags.map((tag, index) => (
                   <span
                     key={index}
-                    className="px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded-full text-xs"
+                    className="px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded-full text-xs transition-all duration-200 hover:bg-gray-200"
                   >
                     {tag}
                   </span>
@@ -109,7 +116,7 @@ const TicketCard = ({ ticket, viewMode, onCopyId }: TicketCardProps) => {
 
           <TooltipProvider>
             <Tooltip>
-              <TooltipTrigger className="flex items-center gap-1.5 text-xs text-gray-500">
+              <TooltipTrigger className="flex items-center gap-1.5 text-xs text-gray-500 transition-colors hover:text-gray-700">
                 <Clock className="w-3 h-3" />
                 {formatDistanceToNow(new Date(ticket.createdAt), { addSuffix: true })}
               </TooltipTrigger>
@@ -135,10 +142,10 @@ const TicketCard = ({ ticket, viewMode, onCopyId }: TicketCardProps) => {
             </div>
           )}
 
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover/card:opacity-100 transition-opacity">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-7 px-2 text-xs">
+                <Button variant="ghost" size="sm" className="h-7 px-2 text-xs hover:bg-gray-100">
                   Actions
                 </Button>
               </DropdownMenuTrigger>
@@ -162,3 +169,4 @@ const TicketCard = ({ ticket, viewMode, onCopyId }: TicketCardProps) => {
 };
 
 export default TicketCard;
+

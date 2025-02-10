@@ -1,3 +1,4 @@
+
 import { Loader2, Bell, AtSign, UserPlus, MessageCircle } from 'lucide-react';
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -79,13 +80,13 @@ const getCardBackground = (type: string | undefined) => {
 const getPriorityColor = (priority: string) => {
   switch (priority) {
     case 'high':
-      return 'ring-red-500 bg-red-50';
+      return 'ring-2 ring-red-500 bg-red-50';
     case 'medium':
-      return 'ring-amber-500 bg-amber-50';
+      return 'ring-2 ring-amber-500 bg-amber-50';
     case 'low':
-      return 'ring-blue-500 bg-blue-50';
+      return 'ring-2 ring-blue-500 bg-blue-50';
     default:
-      return 'ring-gray-300 bg-gray-50';
+      return 'ring-2 ring-gray-300 bg-gray-50';
   }
 };
 
@@ -104,16 +105,16 @@ const TicketListItem = ({
           checked={isSelected}
           onCheckedChange={() => onSelect(ticket.id)}
           aria-label={`Select ticket ${ticket.id}`}
-          className="h-3.5 w-3.5"
+          className="h-3.5 w-3.5 transition-all duration-200 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
         />
       </div>
       
       <div 
-        className={`pl-7 group relative rounded-md border shadow-sm transition-all duration-200 
-          ${ticket.isUnread ? 'bg-gradient-to-br from-blue-50/70 to-white border-blue-100 ring-1 ring-blue-100' : 'border-gray-100'}
+        className={`pl-7 group relative rounded-md border shadow-sm transition-all duration-300 ease-out
+          ${ticket.isUnread ? 'bg-gradient-to-br from-blue-50/70 to-white border-blue-100 ring-1 ring-blue-100 shadow-blue-100/50' : 'border-gray-100'}
           ${ticket.hasNotification ? getCardBackground(ticket.notificationType) : 'bg-white border-gray-100'}
           hover:shadow-md hover:scale-[1.002] hover:-translate-y-0.5
-          focus-within:ring-1 focus-within:ring-primary/50`}
+          focus-within:ring-2 focus-within:ring-primary/30 cursor-pointer`}
         tabIndex={0}
         role="article"
         aria-label={`Ticket from ${ticket.customer}: ${ticket.subject}`}
@@ -126,7 +127,7 @@ const TicketListItem = ({
         
         <div className="relative">
           <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3">
-            <div className={`w-2 h-2 rounded-full ring-1 ${getPriorityColor(ticket.priority)}`} />
+            <div className={`w-2.5 h-2.5 rounded-full transition-all duration-200 ${getPriorityColor(ticket.priority)} group-hover:scale-110`} />
           </div>
           
           <TicketCard 
@@ -140,7 +141,7 @@ const TicketListItem = ({
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className={`p-1 rounded-full transition-transform hover:scale-110 ${getNotificationColor(ticket.notificationType)}`}>
+                    <div className={`p-1.5 rounded-full transition-all duration-200 group-hover:scale-110 ${getNotificationColor(ticket.notificationType)}`}>
                       {getNotificationIcon(ticket.notificationType)}
                     </div>
                   </TooltipTrigger>
@@ -158,3 +159,4 @@ const TicketListItem = ({
 };
 
 export default TicketListItem;
+

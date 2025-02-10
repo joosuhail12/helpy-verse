@@ -43,12 +43,12 @@ const FilterBar = ({
             placeholder="Search tickets..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-8"
+            className="pl-8 transition-all duration-200 focus:ring-2 focus:ring-primary/20"
           />
         </div>
         <div className="flex gap-3">
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-[140px] transition-all duration-200 hover:border-primary/50">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
@@ -60,7 +60,7 @@ const FilterBar = ({
           </Select>
 
           <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-[140px] transition-all duration-200 hover:border-primary/50">
               <SelectValue placeholder="Priority" />
             </SelectTrigger>
             <SelectContent>
@@ -74,34 +74,43 @@ const FilterBar = ({
       </div>
 
       {hasActiveFilters && (
-        <div className="flex flex-wrap gap-2 pt-2">
+        <div className="flex flex-wrap gap-2 pt-2 animate-fade-in">
           {searchQuery && (
-            <span className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-primary/10 text-primary rounded-full">
+            <span className="inline-flex items-center gap-1 px-3 py-1.5 text-xs bg-primary/10 text-primary rounded-full transition-all duration-200 hover:bg-primary/20">
               Search: {searchQuery}
-              <button onClick={() => setSearchQuery('')}>
+              <button 
+                onClick={() => setSearchQuery('')}
+                className="hover:bg-primary/20 rounded-full p-0.5 transition-colors"
+              >
                 <X className="h-3 w-3" />
               </button>
             </span>
           )}
           {statusFilter !== 'all' && (
-            <span className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-primary/10 text-primary rounded-full">
+            <span className="inline-flex items-center gap-1 px-3 py-1.5 text-xs bg-primary/10 text-primary rounded-full transition-all duration-200 hover:bg-primary/20">
               Status: {statusFilter}
-              <button onClick={() => setStatusFilter('all')}>
+              <button 
+                onClick={() => setStatusFilter('all')}
+                className="hover:bg-primary/20 rounded-full p-0.5 transition-colors"
+              >
                 <X className="h-3 w-3" />
               </button>
             </span>
           )}
           {priorityFilter !== 'all' && (
-            <span className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-primary/10 text-primary rounded-full">
+            <span className="inline-flex items-center gap-1 px-3 py-1.5 text-xs bg-primary/10 text-primary rounded-full transition-all duration-200 hover:bg-primary/20">
               Priority: {priorityFilter}
-              <button onClick={() => setStatusFilter('all')}>
+              <button 
+                onClick={() => setPriorityFilter('all')}
+                className="hover:bg-primary/20 rounded-full p-0.5 transition-colors"
+              >
                 <X className="h-3 w-3" />
               </button>
             </span>
           )}
           <button
             onClick={clearFilters}
-            className="text-xs text-gray-500 hover:text-primary"
+            className="text-xs text-gray-500 hover:text-primary transition-colors px-2 py-1 rounded-md hover:bg-gray-100"
           >
             Clear all filters
           </button>
@@ -112,3 +121,4 @@ const FilterBar = ({
 };
 
 export default FilterBar;
+
