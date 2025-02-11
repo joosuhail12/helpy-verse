@@ -18,17 +18,19 @@ vi.mock('@/hooks/use-toast', () => ({
 }));
 
 const mockTicket = {
-  id: '123',
-  subject: 'Test Subject',
-  title: 'Test Ticket',
-  customer: 'John Doe',
-  company: 'Acme Inc',
-  lastMessage: 'Initial message',
-  createdAt: '2024-01-01T00:00:00.000Z',
-  status: 'open',
-  priority: 'medium',
-  assignee: null,
-  tags: []
+  id: 'ticket123',
+  subject: 'Performance Optimization Request',
+  customer: 'Michael Chang',
+  lastMessage: 'System is running slow after latest deployment',
+  assignee: 'agent3',
+  company: 'OptimizeTech Inc',
+  tags: ['performance', 'urgent'],
+  status: 'open' as const,
+  priority: 'high' as const,
+  createdAt: '2024-03-15T12:00:00Z',
+  updatedAt: '2024-03-15T12:05:00Z',
+  isUnread: true,
+  categories: ['technical', 'performance']
 };
 
 describe('ConversationPanel', () => {

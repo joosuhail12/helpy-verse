@@ -5,17 +5,19 @@ import userEvent from '@testing-library/user-event';
 import MessageToolbar from '../components/MessageToolbar';
 
 const mockTicket = {
-  id: '123',
-  subject: 'Test Subject',
-  title: 'Test Ticket',
-  customer: 'John Doe',
-  company: 'Acme Inc',
-  lastMessage: 'Initial message',
-  createdAt: '2024-01-01T00:00:00.000Z',
-  status: 'open',
-  priority: 'medium',
-  assignee: null,
-  tags: []
+  id: 'ticket123',
+  subject: 'Feature Request: Mobile App',
+  customer: 'Sarah Johnson',
+  lastMessage: 'Would love to see this in the mobile app',
+  assignee: 'agent1',
+  company: 'MobileFirst Solutions',
+  tags: ['feature-request', 'mobile'],
+  status: 'open' as const,
+  priority: 'medium' as const,
+  createdAt: '2024-03-15T09:00:00Z',
+  updatedAt: '2024-03-15T09:05:00Z',
+  isUnread: false,
+  categories: ['product', 'mobile']
 };
 
 describe('MessageToolbar', () => {

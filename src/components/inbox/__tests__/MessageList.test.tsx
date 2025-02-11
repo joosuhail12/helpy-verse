@@ -5,35 +5,46 @@ import MessageList from '../components/MessageList';
 
 const mockMessages = [
   {
-    id: '1',
-    content: 'Test message 1',
-    sender: 'John Doe',
-    timestamp: '2024-01-01T00:00:00.000Z',
+    id: 'msg1',
+    content: 'Having issues with the latest update',
+    sender: 'Alice Chen',
+    timestamp: '2024-03-15T10:30:00Z',
     isCustomer: true,
     readBy: []
   },
   {
-    id: '2',
-    content: 'Test message 2',
-    sender: 'Agent',
-    timestamp: '2024-01-01T00:00:00.000Z',
+    id: 'msg2',
+    content: 'Let me look into that for you right away',
+    sender: 'Support Agent',
+    timestamp: '2024-03-15T10:32:00Z',
     isCustomer: false,
-    readBy: ['Agent']
+    readBy: ['agent1']
+  },
+  {
+    id: 'msg3',
+    content: 'Customer mentioned previous incidents - need to check history',
+    sender: 'Support Agent',
+    timestamp: '2024-03-15T10:33:00Z',
+    isCustomer: false,
+    type: 'internal_note' as const,
+    readBy: ['agent1']
   }
 ];
 
 const mockTicket = {
-  id: '123',
-  subject: 'Test Subject',
-  title: 'Test Ticket',
-  customer: 'John Doe',
-  company: 'Acme Inc',
-  lastMessage: 'Initial message',
-  createdAt: '2024-01-01T00:00:00.000Z',
+  id: 'ticket123',
+  subject: 'Issue with Latest Update',
+  customer: 'Alice Chen',
+  lastMessage: 'Having issues with the latest update',
+  assignee: 'agent1',
+  company: 'TechCorp Ltd',
+  tags: ['bug', 'high-priority'],
   status: 'open' as const,
-  priority: 'medium' as const,
-  assignee: null,
-  tags: []
+  priority: 'high' as const,
+  createdAt: '2024-03-15T10:30:00Z',
+  updatedAt: '2024-03-15T10:33:00Z',
+  isUnread: true,
+  categories: ['technical', 'software']
 };
 
 describe('MessageList', () => {
@@ -61,41 +72,28 @@ describe('MessageList', () => {
       />
     );
 
-    expect(screen.getByText('Test message 1')).toBeInTheDocument();
-    expect(screen.getByText('Test message 2')).toBeInTheDocument();
+    expect(screen.getByText('Having issues with the latest update')).toBeInTheDocument();
+    expect(screen.getByText('Let me look into that for you right away')).toBeInTheDocument();
   });
 
   it('shows typing indicator when users are typing', () => {
     render(
       <MessageList
         messages={mockMessages}
-        typingUsers={['Jane Doe']}
+        typingUsers={['Tom Smith']}
         ticket={mockTicket}
         onReply={vi.fn()}
         isLoading={false}
       />
     );
 
-    expect(screen.getByText('Jane Doe is typing...')).toBeInTheDocument();
+    expect(screen.getByText('Tom Smith is typing...')).toBeInTheDocument();
   });
 
   it('renders internal notes with special styling', () => {
-    const messagesWithNote = [
-      ...mockMessages,
-      {
-        id: '3',
-        content: 'Internal note',
-        sender: 'Agent',
-        timestamp: '2024-01-01T00:00:00.000Z',
-        isCustomer: false,
-        type: 'internal_note' as const,
-        readBy: ['Agent']
-      }
-    ];
-
     render(
       <MessageList
-        messages={messagesWithNote}
+        messages={mockMessages}
         typingUsers={[]}
         ticket={mockTicket}
         onReply={vi.fn()}
@@ -103,6 +101,6 @@ describe('MessageList', () => {
       />
     );
 
-    expect(screen.getByText('Internal note')).toBeInTheDocument();
+    expect(screen.getByText('Customer mentioned previous incidents - need to check history')).toBeInTheDocument();
   });
 });

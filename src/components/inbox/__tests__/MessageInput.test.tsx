@@ -5,17 +5,19 @@ import userEvent from '@testing-library/user-event';
 import MessageInput from '../MessageInput';
 
 const mockTicket = {
-  id: '123',
-  subject: 'Test Subject',
-  title: 'Test Ticket',
-  customer: 'John Doe',
-  company: 'Acme Inc',
-  lastMessage: 'Initial message',
-  createdAt: '2024-01-01T00:00:00.000Z',
-  status: 'open',
-  priority: 'medium',
-  assignee: null,
-  tags: []
+  id: 'ticket123',
+  subject: 'API Integration Help',
+  customer: 'David Lee',
+  lastMessage: 'Need help with API integration',
+  assignee: 'agent2',
+  company: 'DevTech Solutions',
+  tags: ['api', 'integration'],
+  status: 'open' as const,
+  priority: 'high' as const,
+  createdAt: '2024-03-15T11:00:00Z',
+  updatedAt: '2024-03-15T11:05:00Z',
+  isUnread: true,
+  categories: ['technical', 'api']
 };
 
 describe('MessageInput', () => {
