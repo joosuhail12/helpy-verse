@@ -1,20 +1,11 @@
 
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
-import { ChevronUp, ChevronDown, Filter } from 'lucide-react';
 import FilterBar from '../../FilterBar';
 import SortingControls from '../../SortingControls';
 import SelectionControls from '../../SelectionControls';
 import LoadingState from '../LoadingState';
 import TicketActions from '../TicketActions';
 import TicketListItem from '../TicketListItem';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import type { Ticket, SortField, ViewMode } from '@/types/ticket';
 
 interface MainContentProps {
@@ -71,7 +62,6 @@ const MainContent = ({
   selectedTicketForChat,
 }: MainContentProps) => {
   const { toast } = useToast();
-  const [isOpen, setIsOpen] = useState(true);
   const totalPages = Math.ceil(sortedAndFilteredTickets.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const paginatedTickets = sortedAndFilteredTickets.slice(startIndex, startIndex + ITEMS_PER_PAGE);
@@ -92,118 +82,90 @@ const MainContent = ({
     }`}>
       <div className="flex-1 overflow-auto px-6">
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-6 mt-6">
-          <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-            <div className="p-4 flex items-center justify-between border-b">
-              <div className="flex-1 flex items-center gap-4">
-                <Input
-                  placeholder="Search tickets..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="max-w-xs bg-white border-gray-200"
+          <div className="p-4 space-y-6">
+            <FilterBar
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              statusFilter={statusFilter}
+              setStatusFilter={setStatusFilter}
+              priorityFilter={priorityFilter}
+              setPriorityFilter={setPriorityFilter}
+            />
+            
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-4 border-t">
+              <SelectionControls
+                selectedCount={selectedTickets.length}
+                totalCount={sortedAndFilteredTickets.length}
+                onSelectAll={handleSelectAll}
+              />
+              
+              <div className="flex items-center gap-4">
+                <TicketActions
+                  selectedTickets={selectedTickets}
+                  markAsRead={markAsRead}
+                  markAsUnread={markAsUnread}
                 />
-                <Button variant="ghost" size="icon">
-                  <Filter className="h-4 w-4" />
-                </Button>
                 <SortingControls
                   sortField={sortField}
                   sortDirection={sortDirection}
                   onSort={handleSort}
                 />
               </div>
-              <CollapsibleTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  {isOpen ? (
-                    <ChevronUp className="h-4 w-4" />
-                  ) : (
-                    <ChevronDown className="h-4 w-4" />
-                  )}
-                </Button>
-              </CollapsibleTrigger>
+            </div>
+          </div>
+        </div>
+
+        {isLoading ? (
+          <LoadingState />
+        ) : (
+          <div className="space-y-3 animate-fade-in pb-6">
+            <div className="space-y-2">
+              {paginatedTickets.map((ticket) => (
+                <div
+                  key={ticket.id}
+                  onClick={() => onTicketClick(ticket)}
+                  className="transform transition-all duration-200 hover:-translate-y-0.5"
+                >
+                  <TicketListItem
+                    ticket={ticket}
+                    viewMode={selectedTicketForChat ? 'compact' : viewMode}
+                    isSelected={selectedTickets.includes(ticket.id)}
+                    isLoading={!!loadingStates[ticket.id]}
+                    onSelect={(id) => {
+                      event?.stopPropagation();
+                      handleTicketSelection(id);
+                    }}
+                    onCopyId={(id) => {
+                      event?.stopPropagation();
+                      handleCopyTicketId(id);
+                    }}
+                  />
+                </div>
+              ))}
             </div>
 
-            <CollapsibleContent>
-              <div className="p-4 space-y-6">
-                <FilterBar
-                  searchQuery={searchQuery}
-                  setSearchQuery={setSearchQuery}
-                  statusFilter={statusFilter}
-                  setStatusFilter={setStatusFilter}
-                  priorityFilter={priorityFilter}
-                  setPriorityFilter={setPriorityFilter}
-                />
-                
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-4 border-t">
-                  <SelectionControls
-                    selectedCount={selectedTickets.length}
-                    totalCount={sortedAndFilteredTickets.length}
-                    onSelectAll={handleSelectAll}
-                  />
-                  
-                  <div className="flex items-center gap-4">
-                    <TicketActions
-                      selectedTickets={selectedTickets}
-                      markAsRead={markAsRead}
-                      markAsUnread={markAsUnread}
-                    />
-                  </div>
-                </div>
-              </div>
-            </CollapsibleContent>
-          </Collapsible>
-
-          {isLoading ? (
-            <LoadingState />
-          ) : (
-            <div className="space-y-3 animate-fade-in p-4">
-              <div className="space-y-2">
-                {paginatedTickets.map((ticket) => (
-                  <div
-                    key={ticket.id}
-                    onClick={() => onTicketClick(ticket)}
-                    className="transform transition-all duration-200 hover:-translate-y-0.5"
+            {totalPages > 1 && (
+              <div className="flex justify-center gap-2 mt-6">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      currentPage === page
+                        ? 'bg-primary text-white shadow-md shadow-primary/20'
+                        : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
+                    }`}
                   >
-                    <TicketListItem
-                      ticket={ticket}
-                      viewMode={selectedTicketForChat ? 'compact' : viewMode}
-                      isSelected={selectedTickets.includes(ticket.id)}
-                      isLoading={!!loadingStates[ticket.id]}
-                      onSelect={(id) => {
-                        event?.stopPropagation();
-                        handleTicketSelection(id);
-                      }}
-                      onCopyId={(id) => {
-                        event?.stopPropagation();
-                        handleCopyTicketId(id);
-                      }}
-                    />
-                  </div>
+                    {page}
+                  </button>
                 ))}
               </div>
-
-              {totalPages > 1 && (
-                <div className="flex justify-center gap-2 mt-6">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                    <button
-                      key={page}
-                      onClick={() => setCurrentPage(page)}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                        currentPage === page
-                          ? 'bg-primary text-white shadow-md shadow-primary/20'
-                          : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
-                      }`}
-                    >
-                      {page}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
 export default MainContent;
-
