@@ -1,12 +1,17 @@
 
 import { useToast } from "@/hooks/use-toast";
+import { Search, Filter } from 'lucide-react';
 import FilterBar from '../../FilterBar';
 import SortingControls from '../../SortingControls';
 import SelectionControls from '../../SelectionControls';
 import LoadingState from '../LoadingState';
 import TicketActions from '../TicketActions';
 import TicketListItem from '../TicketListItem';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import type { Ticket, SortField, ViewMode } from '@/types/ticket';
+import { useState } from 'react';
 
 interface MainContentProps {
   isLoading: boolean;
@@ -62,6 +67,7 @@ const MainContent = ({
   selectedTicketForChat,
 }: MainContentProps) => {
   const { toast } = useToast();
+  const [isExpanded, setIsExpanded] = useState(true);
   const totalPages = Math.ceil(sortedAndFilteredTickets.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const paginatedTickets = sortedAndFilteredTickets.slice(startIndex, startIndex + ITEMS_PER_PAGE);
@@ -82,37 +88,70 @@ const MainContent = ({
     }`}>
       <div className="flex-1 overflow-auto px-6">
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-6 mt-6">
-          <div className="p-4 space-y-6">
-            <FilterBar
-              searchQuery={searchQuery}
-              setSearchQuery={setSearchQuery}
-              statusFilter={statusFilter}
-              setStatusFilter={setStatusFilter}
-              priorityFilter={priorityFilter}
-              setPriorityFilter={setPriorityFilter}
-            />
-            
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-4 border-t">
-              <SelectionControls
-                selectedCount={selectedTickets.length}
-                totalCount={sortedAndFilteredTickets.length}
-                onSelectAll={handleSelectAll}
-              />
-              
-              <div className="flex items-center gap-4">
-                <TicketActions
-                  selectedTickets={selectedTickets}
-                  markAsRead={markAsRead}
-                  markAsUnread={markAsUnread}
+          <Collapsible 
+            open={isExpanded} 
+            onOpenChange={setIsExpanded}
+            className="w-full"
+          >
+            <div className="flex items-center justify-between p-4 border-b">
+              <div className="flex-1 flex items-center gap-2">
+                <Search className="h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Search tickets..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 h-auto p-0 text-sm placeholder:text-gray-400"
                 />
+              </div>
+              <div className="flex items-center gap-2">
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => setIsExpanded(!isExpanded)}
+                >
+                  <Filter className="h-4 w-4" />
+                </Button>
                 <SortingControls
                   sortField={sortField}
                   sortDirection={sortDirection}
                   onSort={handleSort}
+                  viewMode={viewMode}
+                  onViewModeChange={setViewMode}
+                  compact
                 />
               </div>
             </div>
-          </div>
+
+            <CollapsibleContent>
+              <div className="p-4 space-y-6">
+                <FilterBar
+                  searchQuery={searchQuery}
+                  setSearchQuery={setSearchQuery}
+                  statusFilter={statusFilter}
+                  setStatusFilter={setStatusFilter}
+                  priorityFilter={priorityFilter}
+                  setPriorityFilter={setPriorityFilter}
+                />
+                
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-4 border-t">
+                  <SelectionControls
+                    selectedCount={selectedTickets.length}
+                    totalCount={sortedAndFilteredTickets.length}
+                    onSelectAll={handleSelectAll}
+                  />
+                  
+                  <div className="flex items-center gap-4">
+                    <TicketActions
+                      selectedTickets={selectedTickets}
+                      markAsRead={markAsRead}
+                      markAsUnread={markAsUnread}
+                    />
+                  </div>
+                </div>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
         </div>
 
         {isLoading ? (

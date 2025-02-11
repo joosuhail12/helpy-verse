@@ -1,6 +1,13 @@
 
-import { ChevronUp, ChevronDown } from 'lucide-react';
+import { ChevronUp, ChevronDown, ArrowUpDown } from 'lucide-react';
 import type { SortField, ViewMode } from '@/types/ticket';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface SortingControlsProps {
   sortField: SortField;
@@ -8,13 +15,38 @@ interface SortingControlsProps {
   viewMode: ViewMode;
   onSort: (field: SortField) => void;
   onViewModeChange: (mode: ViewMode) => void;
+  compact?: boolean;
 }
 
 const SortingControls = ({
   sortField,
   sortDirection,
   onSort,
+  compact = false,
 }: Omit<SortingControlsProps, 'viewMode' | 'onViewModeChange'>) => {
+  if (compact) {
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon" className="h-8 w-8">
+            <ArrowUpDown className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onClick={() => onSort('date')}>
+            Date {sortField === 'date' && (sortDirection === 'asc' ? <ChevronUp className="ml-2 h-4 w-4" /> : <ChevronDown className="ml-2 h-4 w-4" />)}
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => onSort('priority')}>
+            Priority {sortField === 'priority' && (sortDirection === 'asc' ? <ChevronUp className="ml-2 h-4 w-4" /> : <ChevronDown className="ml-2 h-4 w-4" />)}
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => onSort('status')}>
+            Status {sortField === 'status' && (sortDirection === 'asc' ? <ChevronUp className="ml-2 h-4 w-4" /> : <ChevronDown className="ml-2 h-4 w-4" />)}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+  }
+
   return (
     <div className="flex items-center gap-4">
       <div className="flex items-center gap-2" role="group" aria-label="Sort options">
@@ -51,4 +83,3 @@ const SortingControls = ({
 };
 
 export default SortingControls;
-
