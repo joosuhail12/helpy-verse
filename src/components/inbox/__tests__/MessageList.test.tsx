@@ -24,13 +24,15 @@ const mockMessages = [
 
 const mockTicket = {
   id: '123',
-  title: 'Test Ticket',
+  subject: 'Test Subject',
   customer: 'John Doe',
   company: 'Acme Inc',
   lastMessage: 'Initial message',
+  assignee: null,
   createdAt: '2024-01-01T00:00:00.000Z',
   status: 'open',
-  priority: 'medium'
+  priority: 'medium',
+  tags: []
 };
 
 describe('MessageList', () => {
