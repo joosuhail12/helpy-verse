@@ -91,14 +91,28 @@ export const useConversation = (ticket: Ticket) => {
         });
 
         const presenceData = await channel.presence.get();
-        const members = Array.from(presenceData.values());
-        const presentMembers = members.map(member => ({
-          userId: member.clientId,
-          name: member.data?.name || 'Unknown',
-          lastActive: member.data?.lastActive || new Date().toISOString(),
-          location: member.data?.location
-        } as UserPresence));
-        setActiveUsers(presentMembers);
+        if (presenceData) {
+          type PresenceMember = {
+            clientId: string;
+            data?: {
+              name?: string;
+              lastActive?: string;
+              location?: {
+                ticketId: string;
+                area: string;
+              };
+            };
+          };
+
+          const members = Array.from(presenceData.values()) as PresenceMember[];
+          const presentMembers = members.map(member => ({
+            userId: member.clientId,
+            name: member.data?.name || 'Unknown',
+            lastActive: member.data?.lastActive || new Date().toISOString(),
+            location: member.data?.location
+          } as UserPresence));
+          setActiveUsers(presentMembers);
+        }
 
         return () => {
           channel.presence.leave();
@@ -172,3 +186,4 @@ export const useConversation = (ticket: Ticket) => {
     handleTyping
   };
 };
+
