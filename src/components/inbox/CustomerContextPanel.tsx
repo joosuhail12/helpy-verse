@@ -3,9 +3,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { UserCircle, Building2, Hash, History, MessageSquare } from "lucide-react";
+import { UserCircle, Building2, History, MessageCircle } from "lucide-react";
 import { formatDistanceToNow } from 'date-fns';
 import type { Ticket } from "@/types/ticket";
+import CustomerTimeline from './components/CustomerTimeline';
+import CustomerSubscriptions from './components/CustomerSubscriptions';
+import CommunicationChannels from './components/CommunicationChannels';
 
 interface CustomerContextPanelProps {
   ticket: Ticket;
@@ -14,38 +17,62 @@ interface CustomerContextPanelProps {
 const CustomerContextPanel = ({ ticket }: CustomerContextPanelProps) => {
   // In a real implementation, these would be fetched from your Node.js backend
   const isLoading = false;
-  const customerHistory = [
+
+  const customerTimeline = [
     {
       id: '1',
-      type: 'ticket_created',
+      type: 'ticket' as const,
       description: 'Opened new ticket: Cannot access account',
       timestamp: '2024-03-10T10:00:00Z'
     },
     {
       id: '2',
-      type: 'purchase',
+      type: 'purchase' as const,
       description: 'Purchased Premium Plan',
       timestamp: '2024-03-08T15:30:00Z'
+    },
+    {
+      id: '3',
+      type: 'feedback' as const,
+      description: 'Left positive feedback on support interaction',
+      timestamp: '2024-03-05T09:15:00Z',
+      sentiment: 'positive' as const
     }
   ];
 
-  const previousConversations = [
+  const subscriptions = [
     {
-      id: '1',
-      subject: 'Billing inquiry',
-      status: 'closed',
-      lastMessage: 'Thank you for your help!',
-      timestamp: '2024-03-01T10:00:00Z'
+      id: 'sub1',
+      name: 'Premium Plan',
+      status: 'active' as const,
+      startDate: '2024-03-08T15:30:00Z',
+      price: 49.99
+    }
+  ];
+
+  const communicationChannels = [
+    {
+      type: 'email' as const,
+      value: ticket.customer + '@example.com',
+      isPreferred: true,
+      lastUsed: '2024-03-15T10:00:00Z'
+    },
+    {
+      type: 'phone' as const,
+      value: '+1 (555) 123-4567',
+      isPreferred: false,
+      lastUsed: '2024-03-10T14:30:00Z'
     }
   ];
 
   return (
     <Card className="h-full flex flex-col bg-background">
       <Tabs defaultValue="overview" className="flex-1">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="history">History</TabsTrigger>
-          <TabsTrigger value="conversations">Conversations</TabsTrigger>
+          <TabsTrigger value="timeline">Timeline</TabsTrigger>
+          <TabsTrigger value="subscriptions">Subscriptions</TabsTrigger>
+          <TabsTrigger value="channels">Channels</TabsTrigger>
         </TabsList>
 
         <ScrollArea className="flex-1 p-4">
@@ -90,64 +117,46 @@ const CustomerContextPanel = ({ ticket }: CustomerContextPanelProps) => {
                     </div>
                   </div>
                 </section>
-
-                <section className="space-y-4">
-                  <h3 className="text-lg font-semibold flex items-center gap-2">
-                    <Hash className="h-5 w-5" />
-                    Ticket Details
-                  </h3>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p className="text-muted-foreground">Status</p>
-                      <p className="font-medium capitalize">{ticket.status}</p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">Priority</p>
-                      <p className="font-medium capitalize">{ticket.priority}</p>
-                    </div>
-                  </div>
-                </section>
               </div>
             )}
           </TabsContent>
 
-          <TabsContent value="history" className="m-0">
+          <TabsContent value="timeline" className="m-0">
             <div className="space-y-4">
               <h3 className="text-lg font-semibold flex items-center gap-2">
                 <History className="h-5 w-5" />
-                Customer History
+                Customer Timeline
               </h3>
-              {customerHistory.map((event) => (
-                <div key={event.id} className="border-l-2 border-muted pl-4 py-2">
-                  <p className="text-sm">{event.description}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {formatDistanceToNow(new Date(event.timestamp), { addSuffix: true })}
-                  </p>
-                </div>
-              ))}
+              <CustomerTimeline
+                events={customerTimeline}
+                isLoading={isLoading}
+              />
             </div>
           </TabsContent>
 
-          <TabsContent value="conversations" className="m-0">
+          <TabsContent value="subscriptions" className="m-0">
             <div className="space-y-4">
               <h3 className="text-lg font-semibold flex items-center gap-2">
-                <MessageSquare className="h-5 w-5" />
-                Previous Conversations
+                <Building2 className="h-5 w-5" />
+                Active Subscriptions
               </h3>
-              {previousConversations.map((conv) => (
-                <Card key={conv.id} className="p-4">
-                  <h4 className="font-medium text-sm">{conv.subject}</h4>
-                  <p className="text-sm text-muted-foreground mt-1">{conv.lastMessage}</p>
-                  <div className="flex items-center justify-between mt-2">
-                    <span className="text-xs bg-muted px-2 py-1 rounded-full">
-                      {conv.status}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {formatDistanceToNow(new Date(conv.timestamp), { addSuffix: true })}
-                    </span>
-                  </div>
-                </Card>
-              ))}
+              <CustomerSubscriptions
+                subscriptions={subscriptions}
+                isLoading={isLoading}
+              />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="channels" className="m-0">
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold flex items-center gap-2">
+                <MessageCircle className="h-5 w-5" />
+                Communication Channels
+              </h3>
+              <CommunicationChannels
+                channels={communicationChannels}
+                isLoading={isLoading}
+              />
             </div>
           </TabsContent>
         </ScrollArea>
