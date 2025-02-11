@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Send, Smile, Loader2, StickyNote, Paperclip } from 'lucide-react';
+import { Send, Smile, Loader2, StickyNote, Paperclip, X } from 'lucide-react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import EmojiPicker from 'emoji-picker-react';
 import {
