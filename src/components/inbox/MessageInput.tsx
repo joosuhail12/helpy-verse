@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Send, Smile } from 'lucide-react';
+import { Send, Smile, Loader2 } from 'lucide-react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import EmojiPicker from 'emoji-picker-react';
 import {
@@ -19,6 +19,8 @@ interface MessageInputProps {
   onKeyPress: (e: React.KeyboardEvent<HTMLDivElement>) => void;
   onSendMessage: () => void;
   ticket: Ticket;
+  isSending?: boolean;
+  disabled?: boolean;
 }
 
 const MessageInput = ({ 
@@ -26,7 +28,9 @@ const MessageInput = ({
   onMessageChange, 
   onKeyPress, 
   onSendMessage,
-  ticket 
+  ticket,
+  isSending = false,
+  disabled = false
 }: MessageInputProps) => {
   const editor = useEditor(
     createEditorConfig(newMessage, (editor) => {
@@ -61,9 +65,10 @@ const MessageInput = ({
           editor={editor}
           onInsertPlaceholder={insertPlaceholder}
           ticket={ticket}
+          disabled={disabled}
         />
         <div 
-          className="cursor-text"
+          className={`cursor-text ${disabled ? 'opacity-50 pointer-events-none' : ''}`}
           onClick={() => editor?.commands.focus()}
         >
           <EditorContent 
@@ -77,7 +82,12 @@ const MessageInput = ({
         <div className="flex gap-2">
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-8 w-8"
+                disabled={disabled}
+              >
                 <Smile className="h-4 w-4" />
               </Button>
             </PopoverTrigger>
@@ -94,9 +104,17 @@ const MessageInput = ({
           <div className="text-xs text-muted-foreground">
             Press Enter to send, Shift + Enter for new line
           </div>
-          <Button className="gap-2" onClick={onSendMessage}>
-            <Send className="h-4 w-4" />
-            Send Reply
+          <Button 
+            className="gap-2" 
+            onClick={onSendMessage}
+            disabled={disabled || isSending}
+          >
+            {isSending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Send className="h-4 w-4" />
+            )}
+            {isSending ? 'Sending...' : 'Send Reply'}
           </Button>
         </div>
       </div>

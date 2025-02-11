@@ -1,5 +1,7 @@
 
 import React from 'react';
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 import type { ConversationPanelProps } from './types';
 import ConversationHeader from './ConversationHeader';
 import MessageInput from './MessageInput';
@@ -14,7 +16,10 @@ const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
     typingUsers,
     activeUsers,
     handleSendMessage,
-    handleTyping
+    handleTyping,
+    isLoading,
+    error,
+    isSending
   } = useConversation(ticket);
 
   const handleKeyPress = async (e: React.KeyboardEvent<HTMLDivElement>) => {
@@ -34,12 +39,22 @@ const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
         activeUsers={activeUsers}
       />
       
-      <MessageList
-        messages={messages}
-        typingUsers={typingUsers}
-        ticket={ticket}
-        onReply={setNewMessage}
-      />
+      {error ? (
+        <Alert variant="destructive" className="m-4">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            {error}
+          </AlertDescription>
+        </Alert>
+      ) : (
+        <MessageList
+          messages={messages}
+          typingUsers={typingUsers}
+          ticket={ticket}
+          onReply={setNewMessage}
+          isLoading={isLoading}
+        />
+      )}
 
       <MessageInput
         newMessage={newMessage}
@@ -47,6 +62,8 @@ const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
         onKeyPress={handleKeyPress}
         onSendMessage={handleSendMessage}
         ticket={ticket}
+        isSending={isSending}
+        disabled={!!error}
       />
     </div>
   );

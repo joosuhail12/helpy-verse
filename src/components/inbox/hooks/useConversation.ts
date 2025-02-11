@@ -12,6 +12,9 @@ export const useConversation = (ticket: Ticket) => {
   const [newMessage, setNewMessage] = useState('');
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
   const [activeUsers, setActiveUsers] = useState<UserPresence[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSending, setIsSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -23,17 +26,25 @@ export const useConversation = (ticket: Ticket) => {
       isCustomer: true,
       readBy: []
     }]);
+    setIsLoading(false);
   }, [ticket]);
 
   const debouncedStopTyping = useCallback(
     debounce(async (channel) => {
-      await channel.presence.update({ isTyping: false });
+      try {
+        await channel.presence.update({ isTyping: false });
+      } catch (error) {
+        console.error('Error updating typing status:', error);
+      }
     }, 1000),
     []
   );
 
   useEffect(() => {
     const setupRealtime = async () => {
+      setIsLoading(true);
+      setError(null);
+      
       try {
         const channel = await getAblyChannel(`ticket:${ticket.id}`);
         
@@ -90,19 +101,6 @@ export const useConversation = (ticket: Ticket) => {
           }
         });
 
-        // Define the type for presence data
-        interface PresenceMember extends Ably.Types.PresenceMessage {
-          clientId: string;
-          data: {
-            name?: string;
-            lastActive?: string;
-            location?: {
-              ticketId: string;
-              area: string;
-            };
-          };
-        }
-
         const presencePromise = channel.presence.get();
         const presenceData = await Promise.resolve(presencePromise) as unknown as Ably.Types.PresenceMessage[];
         
@@ -116,6 +114,8 @@ export const useConversation = (ticket: Ticket) => {
           setActiveUsers(presentMembers);
         }
 
+        setIsLoading(false);
+
         return () => {
           channel.presence.leave();
           channel.unsubscribe();
@@ -123,6 +123,8 @@ export const useConversation = (ticket: Ticket) => {
         };
       } catch (error) {
         console.error('Error setting up realtime:', error);
+        setError('Failed to connect to the conversation. Please try again.');
+        setIsLoading(false);
       }
     };
 
@@ -132,6 +134,7 @@ export const useConversation = (ticket: Ticket) => {
   const handleSendMessage = async () => {
     if (!newMessage.trim()) return;
 
+    setIsSending(true);
     try {
       const channel = await getAblyChannel(`ticket:${ticket.id}`);
       const newMsg: Message = {
@@ -156,6 +159,8 @@ export const useConversation = (ticket: Ticket) => {
         variant: "destructive",
         description: "Failed to send message. Please try again.",
       });
+    } finally {
+      setIsSending(false);
     }
   };
 
@@ -185,7 +190,9 @@ export const useConversation = (ticket: Ticket) => {
     typingUsers,
     activeUsers,
     handleSendMessage,
-    handleTyping
+    handleTyping,
+    isLoading,
+    isSending,
+    error
   };
 };
-
