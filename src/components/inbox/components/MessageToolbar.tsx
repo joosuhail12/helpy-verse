@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Bold, Italic, List, ListOrdered, Strikethrough, User, Building2, Ticket as TicketIcon } from 'lucide-react';
+import { Bold, Italic, List, ListOrdered, Strikethrough, User, Building2, Ticket as TicketIcon, StickyNote, Paperclip } from 'lucide-react';
 import { Separator } from "@/components/ui/separator";
 import {
   Tooltip,
@@ -11,18 +11,109 @@ import {
 } from "@/components/ui/tooltip";
 import type { Editor } from '@tiptap/react';
 import type { Ticket } from '@/types/ticket';
+import EmojiPickerButton from './EmojiPickerButton';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import FileUpload from './FileUpload';
 
 interface MessageToolbarProps {
   editor: Editor | null;
   onInsertPlaceholder: (type: 'customer' | 'company' | 'ticket') => void;
   ticket: Ticket;
   disabled?: boolean;
+  isInternalNote: boolean;
+  setIsInternalNote: (value: boolean) => void;
+  onEmojiSelect: (emojiData: any) => void;
+  onFilesAdded: (files: File[]) => void;
+  uploadProgress: Record<string, number>;
+  onRemoveFile: (file: File) => void;
+  files: File[];
+  isAttachmentSheetOpen: boolean;
+  setIsAttachmentSheetOpen: (value: boolean) => void;
 }
 
-const MessageToolbar = ({ editor, onInsertPlaceholder, ticket, disabled = false }: MessageToolbarProps) => {
+const MessageToolbar = ({ 
+  editor, 
+  onInsertPlaceholder, 
+  ticket, 
+  disabled = false,
+  isInternalNote,
+  setIsInternalNote,
+  onEmojiSelect,
+  onFilesAdded,
+  uploadProgress,
+  onRemoveFile,
+  files,
+  isAttachmentSheetOpen,
+  setIsAttachmentSheetOpen,
+}: MessageToolbarProps) => {
   return (
     <TooltipProvider>
       <div className="border-b p-2 flex items-center gap-1">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant={isInternalNote ? "default" : "ghost"}
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => setIsInternalNote(!isInternalNote)}
+              disabled={disabled}
+            >
+              <StickyNote className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Toggle Internal Note</p>
+          </TooltipContent>
+        </Tooltip>
+
+        <Sheet open={isAttachmentSheetOpen} onOpenChange={setIsAttachmentSheetOpen}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <SheetTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  className="h-8 w-8"
+                  disabled={disabled}
+                >
+                  <Paperclip className="h-4 w-4" />
+                </Button>
+              </SheetTrigger>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Add Files</p>
+            </TooltipContent>
+          </Tooltip>
+          <SheetContent side="right" className="w-[400px] sm:w-[540px]">
+            <SheetHeader>
+              <SheetTitle>Add Attachments</SheetTitle>
+              <SheetDescription>
+                Drag and drop files or click to select files to upload
+              </SheetDescription>
+            </SheetHeader>
+            <div className="mt-6">
+              <FileUpload
+                onFilesAdded={onFilesAdded}
+                uploadProgress={uploadProgress}
+                onRemoveFile={onRemoveFile}
+                files={files}
+                disabled={disabled}
+              />
+            </div>
+          </SheetContent>
+        </Sheet>
+
+        <EmojiPickerButton onEmojiSelect={onEmojiSelect} disabled={disabled} />
+
+        <Separator orientation="vertical" className="mx-1 h-6" />
+
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
@@ -176,4 +267,3 @@ const MessageToolbar = ({ editor, onInsertPlaceholder, ticket, disabled = false 
 };
 
 export default MessageToolbar;
-

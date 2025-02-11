@@ -4,7 +4,6 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import type { Ticket } from '@/types/ticket';
 import MessageToolbar from './components/MessageToolbar';
 import AttachmentList from './components/AttachmentList';
-import MessageControls from './components/MessageControls';
 import { createEditorConfig } from './utils/editorConfig';
 import { cn } from "@/lib/utils";
 
@@ -96,6 +95,15 @@ const MessageInput = ({
           onInsertPlaceholder={insertPlaceholder}
           ticket={ticket}
           disabled={disabled}
+          isInternalNote={isInternalNote}
+          setIsInternalNote={setIsInternalNote}
+          onEmojiSelect={handleEmojiSelect}
+          onFilesAdded={handleFilesAdded}
+          uploadProgress={uploadProgress}
+          onRemoveFile={handleRemoveFile}
+          files={files}
+          isAttachmentSheetOpen={isAttachmentSheetOpen}
+          setIsAttachmentSheetOpen={setIsAttachmentSheetOpen}
         />
         <div 
           className={`cursor-text ${disabled ? 'opacity-50 pointer-events-none' : ''}`}
@@ -113,20 +121,22 @@ const MessageInput = ({
           disabled={disabled}
         />
       </div>
-      <MessageControls
-        isInternalNote={isInternalNote}
-        setIsInternalNote={setIsInternalNote}
-        onSendMessage={onSendMessage}
-        isSending={isSending}
-        disabled={disabled}
-        onEmojiSelect={handleEmojiSelect}
-        onFilesAdded={handleFilesAdded}
-        uploadProgress={uploadProgress}
-        onRemoveFile={handleRemoveFile}
-        files={files}
-        isAttachmentSheetOpen={isAttachmentSheetOpen}
-        setIsAttachmentSheetOpen={setIsAttachmentSheetOpen}
-      />
+      <div className="flex items-center justify-end gap-4">
+        <div className="text-xs text-muted-foreground">
+          Press Enter to send, Shift + Enter for new line
+        </div>
+        <button
+          className={cn(
+            "px-4 py-2 rounded-md bg-primary text-white flex items-center gap-2",
+            disabled && "opacity-50 cursor-not-allowed",
+            isInternalNote && "bg-yellow-500"
+          )}
+          onClick={onSendMessage}
+          disabled={disabled || isSending}
+        >
+          {isSending ? 'Sending...' : isInternalNote ? 'Add Note' : 'Send Reply'}
+        </button>
+      </div>
     </div>
   );
 };
