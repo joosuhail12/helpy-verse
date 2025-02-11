@@ -7,6 +7,7 @@ import ConversationHeader from './ConversationHeader';
 import MessageInput from './MessageInput';
 import MessageList from './components/MessageList';
 import { useConversation } from './hooks/useConversation';
+import { cn } from "@/lib/utils";
 
 const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
   const {
@@ -19,7 +20,9 @@ const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
     handleTyping,
     isLoading,
     error,
-    isSending
+    isSending,
+    isInternalNote,
+    setIsInternalNote
   } = useConversation(ticket);
 
   const handleKeyPress = async (e: React.KeyboardEvent<HTMLDivElement>) => {

@@ -15,6 +15,7 @@ export const useConversation = (ticket: Ticket) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isInternalNote, setIsInternalNote] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -143,15 +144,17 @@ export const useConversation = (ticket: Ticket) => {
         sender: 'Agent',
         timestamp: new Date().toISOString(),
         isCustomer: false,
+        type: isInternalNote ? 'internal_note' : 'message',
         readBy: ['Agent']
       };
 
       await channel.publish('new-message', newMsg);
       setMessages(prev => [...prev, newMsg]);
       setNewMessage('');
+      setIsInternalNote(false);
       
       toast({
-        description: "Message sent successfully",
+        description: isInternalNote ? "Internal note added" : "Message sent successfully",
       });
     } catch (error) {
       console.error('Error sending message:', error);
@@ -193,6 +196,8 @@ export const useConversation = (ticket: Ticket) => {
     handleTyping,
     isLoading,
     isSending,
-    error
+    error,
+    isInternalNote,
+    setIsInternalNote
   };
 };

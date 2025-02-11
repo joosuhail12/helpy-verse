@@ -1,7 +1,7 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Send, Smile, Loader2 } from 'lucide-react';
+import { Send, Smile, Loader2, StickyNote } from 'lucide-react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import EmojiPicker from 'emoji-picker-react';
 import {
@@ -32,6 +32,7 @@ const MessageInput = ({
   isSending = false,
   disabled = false
 }: MessageInputProps) => {
+  const [isInternalNote, setIsInternalNote] = useState(false);
   const editor = useEditor(
     createEditorConfig(newMessage, (editor) => {
       onMessageChange(editor.getHTML());
@@ -60,7 +61,10 @@ const MessageInput = ({
 
   return (
     <div className="border-t p-4 bg-white">
-      <div className="border rounded-lg mb-3">
+      <div className={cn(
+        "border rounded-lg mb-3",
+        isInternalNote && "border-yellow-400 bg-yellow-50"
+      )}>
         <MessageToolbar 
           editor={editor}
           onInsertPlaceholder={insertPlaceholder}
@@ -80,6 +84,16 @@ const MessageInput = ({
       </div>
       <div className="flex justify-between items-center">
         <div className="flex gap-2">
+          <Button
+            variant={isInternalNote ? "default" : "outline"}
+            size="sm"
+            className="gap-2"
+            onClick={() => setIsInternalNote(!isInternalNote)}
+            disabled={disabled}
+          >
+            <StickyNote className="h-4 w-4" />
+            Internal Note
+          </Button>
           <Popover>
             <PopoverTrigger asChild>
               <Button 
@@ -106,7 +120,7 @@ const MessageInput = ({
           </div>
           <Button 
             className="gap-2" 
-            onClick={onSendMessage}
+            onClick={() => onSendMessage()}
             disabled={disabled || isSending}
           >
             {isSending ? (
@@ -114,7 +128,7 @@ const MessageInput = ({
             ) : (
               <Send className="h-4 w-4" />
             )}
-            {isSending ? 'Sending...' : 'Send Reply'}
+            {isSending ? 'Sending...' : isInternalNote ? 'Add Note' : 'Send Reply'}
           </Button>
         </div>
       </div>

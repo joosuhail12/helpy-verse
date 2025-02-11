@@ -32,11 +32,13 @@ const MessageList = ({ messages, typingUsers, ticket, onReply, isLoading }: Mess
             key={message.id}
             className={cn(
               "relative",
-              message.type === 'internal_note' && "pl-8 border-l-2 border-yellow-400"
+              message.type === 'internal_note' && "pl-8 border-l-2 border-yellow-400 bg-yellow-50/50 rounded-lg",
             )}
           >
             {message.type === 'internal_note' && (
-              <StickyNote className="h-4 w-4 absolute left-2 top-3 text-yellow-500" />
+              <div className="absolute left-2 top-3">
+                <StickyNote className="h-4 w-4 text-yellow-600" />
+              </div>
             )}
             <MessageItem
               message={message}
