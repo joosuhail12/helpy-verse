@@ -34,15 +34,15 @@ const FilterBar = ({
   setPriorityFilter,
 }: FilterBarProps) => {
   return (
-    <div className="flex flex-col sm:flex-row gap-4">
+    <div className="flex flex-col sm:flex-row gap-4 px-1">
       <div className="flex-1 space-y-4">
         <div className="relative">
-          <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
             placeholder="Search tickets..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-8"
+            className="pl-10 bg-white border-gray-200 h-11 text-sm"
           />
         </div>
         
@@ -51,7 +51,11 @@ const FilterBar = ({
             variant="outline"
             size="sm"
             onClick={() => setStatusFilter('assigned_to_me')}
-            className={statusFilter === 'assigned_to_me' ? 'bg-primary/10' : ''}
+            className={`rounded-full text-xs px-4 hover:bg-primary/5 ${
+              statusFilter === 'assigned_to_me' 
+                ? 'bg-primary/10 text-primary border-primary/20' 
+                : 'border-gray-200'
+            }`}
           >
             Assigned to me
           </Button>
@@ -59,7 +63,11 @@ const FilterBar = ({
             variant="outline"
             size="sm"
             onClick={() => setStatusFilter('unassigned')}
-            className={statusFilter === 'unassigned' ? 'bg-primary/10' : ''}
+            className={`rounded-full text-xs px-4 hover:bg-primary/5 ${
+              statusFilter === 'unassigned' 
+                ? 'bg-primary/10 text-primary border-primary/20' 
+                : 'border-gray-200'
+            }`}
           >
             Unassigned
           </Button>
@@ -67,7 +75,11 @@ const FilterBar = ({
             variant="outline"
             size="sm"
             onClick={() => setStatusFilter('overdue')}
-            className={statusFilter === 'overdue' ? 'bg-primary/10' : ''}
+            className={`rounded-full text-xs px-4 hover:bg-primary/5 ${
+              statusFilter === 'overdue' 
+                ? 'bg-primary/10 text-primary border-primary/20' 
+                : 'border-gray-200'
+            }`}
           >
             Overdue
           </Button>
@@ -77,7 +89,11 @@ const FilterBar = ({
       <div className="flex gap-3">
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="icon">
+            <Button 
+              variant="outline" 
+              size="icon"
+              className="h-11 w-11 border-gray-200"
+            >
               <Filter className="h-4 w-4" />
             </Button>
           </PopoverTrigger>
@@ -91,7 +107,7 @@ const FilterBar = ({
                 <div className="space-y-2">
                   <h4 className="font-medium text-sm">Status</h4>
                   <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger>
+                    <SelectTrigger className="h-9">
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
                     <SelectContent>
@@ -106,7 +122,7 @@ const FilterBar = ({
                 <div className="space-y-2">
                   <h4 className="font-medium text-sm">Priority</h4>
                   <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-                    <SelectTrigger>
+                    <SelectTrigger className="h-9">
                       <SelectValue placeholder="Select priority" />
                     </SelectTrigger>
                     <SelectContent>
@@ -122,10 +138,10 @@ const FilterBar = ({
               <TabsContent value="advanced" className="space-y-4">
                 <div className="space-y-2">
                   <h4 className="font-medium text-sm">Advanced Search</h4>
-                  <Input placeholder="Customer email..." className="mb-2" />
-                  <Input placeholder="Company name..." className="mb-2" />
-                  <Input placeholder="Tag..." className="mb-2" />
-                  <Input type="date" className="mb-2" />
+                  <Input placeholder="Customer email..." className="h-9 text-sm mb-2" />
+                  <Input placeholder="Company name..." className="h-9 text-sm mb-2" />
+                  <Input placeholder="Tag..." className="h-9 text-sm mb-2" />
+                  <Input type="date" className="h-9 text-sm mb-2" />
                 </div>
               </TabsContent>
             </Tabs>
@@ -137,4 +153,3 @@ const FilterBar = ({
 };
 
 export default FilterBar;
-

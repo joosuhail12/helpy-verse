@@ -47,23 +47,23 @@ const TicketCard = ({ ticket, viewMode, onCopyId }: TicketCardProps) => {
 
   return (
     <div 
-      className={`group bg-white rounded-md p-3 hover:shadow-lg hover:bg-gray-50/50 transition-all cursor-pointer w-full ${
-        isCompact ? 'py-2.5' : ''
+      className={`group bg-white rounded-xl p-4 hover:bg-gray-50/50 transition-all cursor-pointer w-full ${
+        isCompact ? 'py-3' : ''
       } ${ticket.isUnread ? 'bg-blue-50/30' : ''}`}
       role="article"
       aria-labelledby={`ticket-${ticket.id}-subject`}
     >
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex items-start justify-between gap-4">
         <div className="flex items-start gap-3 flex-1 min-w-0">
           {ticket.assignee ? (
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Avatar className="h-8 w-8">
+                  <Avatar className="h-8 w-8 ring-2 ring-white">
                     {ticket.assigneeAvatar ? (
                       <AvatarImage src={ticket.assigneeAvatar} alt={ticket.assignee} />
                     ) : (
-                      <AvatarFallback className="bg-primary/10 text-primary">
+                      <AvatarFallback className="bg-primary/10 text-primary text-xs">
                         {ticket.assignee.split(' ').map(name => name[0]).join('')}
                       </AvatarFallback>
                     )}
@@ -75,12 +75,12 @@ const TicketCard = ({ ticket, viewMode, onCopyId }: TicketCardProps) => {
               </Tooltip>
             </TooltipProvider>
           ) : (
-            <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center ring-2 ring-white">
               <UserX className="w-4 h-4 text-gray-400" />
             </div>
           )}
           
-          <div className="flex-1 min-w-0 space-y-1.5">
+          <div className="flex-1 min-w-0 space-y-1">
             <div className="flex items-start justify-between gap-2">
               <h3 
                 id={`ticket-${ticket.id}-subject`}
@@ -110,7 +110,7 @@ const TicketCard = ({ ticket, viewMode, onCopyId }: TicketCardProps) => {
             </div>
 
             {!isCompact && (
-              <p className="text-xs text-gray-500 border-t border-gray-100 pt-2 line-clamp-2">
+              <p className="text-xs text-gray-500 border-t border-gray-100/75 pt-2 line-clamp-2">
                 {ticket.lastMessage}
               </p>
             )}
@@ -121,7 +121,7 @@ const TicketCard = ({ ticket, viewMode, onCopyId }: TicketCardProps) => {
                 {ticket.tags.map((tag, index) => (
                   <span
                     key={index}
-                    className="px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded-full text-xs"
+                    className="px-1.5 py-0.5 bg-gray-100/75 text-gray-600 rounded-full text-[10px] font-medium"
                   >
                     {tag}
                   </span>
@@ -150,7 +150,7 @@ const TicketCard = ({ ticket, viewMode, onCopyId }: TicketCardProps) => {
           </TooltipProvider>
 
           {!isCompact && (
-            <div className="flex items-center gap-1.5 text-xs border-t border-gray-100 pt-1.5 mt-1">
+            <div className="flex items-center gap-1.5 text-xs border-t border-gray-100/75 pt-1.5 mt-1">
               {ticket.assignee ? (
                 <div className="flex items-center gap-1.5 text-gray-600">
                   <User className="w-3 h-3" />
@@ -192,4 +192,3 @@ const TicketCard = ({ ticket, viewMode, onCopyId }: TicketCardProps) => {
 };
 
 export default TicketCard;
-
