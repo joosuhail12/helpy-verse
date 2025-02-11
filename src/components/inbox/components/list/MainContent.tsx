@@ -109,6 +109,7 @@ const MainContent = ({
                   sortField={sortField}
                   sortDirection={sortDirection}
                   onSort={handleSort}
+                  compact={!!selectedTicketForChat}
                 />
               </div>
             </div>

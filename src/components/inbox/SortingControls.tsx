@@ -1,20 +1,59 @@
 
-import { ChevronUp, ChevronDown } from 'lucide-react';
-import type { SortField, ViewMode } from '@/types/ticket';
+import { ChevronUp, ChevronDown, ArrowUpDown } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import type { SortField } from '@/types/ticket';
 
 interface SortingControlsProps {
   sortField: SortField;
   sortDirection: 'asc' | 'desc';
-  viewMode: ViewMode;
   onSort: (field: SortField) => void;
-  onViewModeChange: (mode: ViewMode) => void;
+  compact?: boolean;
 }
 
 const SortingControls = ({
   sortField,
   sortDirection,
   onSort,
-}: Omit<SortingControlsProps, 'viewMode' | 'onViewModeChange'>) => {
+  compact = false,
+}: SortingControlsProps) => {
+  if (compact) {
+    return (
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button variant="outline" size="icon" className="h-10 w-10 border-gray-200">
+            <ArrowUpDown className="h-4 w-4" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-48" align="end">
+          <div className="space-y-1">
+            <Button
+              variant="ghost"
+              onClick={() => onSort('date')}
+              className={`w-full justify-between ${sortField === 'date' ? 'text-primary' : ''}`}
+            >
+              Date {sortField === 'date' && (sortDirection === 'asc' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />)}
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => onSort('priority')}
+              className={`w-full justify-between ${sortField === 'priority' ? 'text-primary' : ''}`}
+            >
+              Priority {sortField === 'priority' && (sortDirection === 'asc' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />)}
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => onSort('status')}
+              className={`w-full justify-between ${sortField === 'status' ? 'text-primary' : ''}`}
+            >
+              Status {sortField === 'status' && (sortDirection === 'asc' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />)}
+            </Button>
+          </div>
+        </PopoverContent>
+      </Popover>
+    );
+  }
+
   return (
     <div className="flex items-center gap-4">
       <div className="flex items-center gap-2" role="group" aria-label="Sort options">
@@ -51,4 +90,3 @@ const SortingControls = ({
 };
 
 export default SortingControls;
-

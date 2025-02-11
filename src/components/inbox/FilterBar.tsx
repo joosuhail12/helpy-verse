@@ -1,6 +1,8 @@
 
-import { Search, Filter } from 'lucide-react';
+import { useState } from 'react';
+import { Search, Filter, ChevronUp, ChevronDown } from 'lucide-react';
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -8,13 +10,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface FilterBarProps {
   searchQuery: string;
@@ -33,67 +35,24 @@ const FilterBar = ({
   priorityFilter,
   setPriorityFilter,
 }: FilterBarProps) => {
+  const [isOpen, setIsOpen] = useState(true);
+
   return (
-    <div className="flex flex-col sm:flex-row gap-4 px-1">
-      <div className="flex-1 space-y-4">
-        <div className="relative">
+    <Collapsible open={isOpen} onOpenChange={setIsOpen} className="space-y-4">
+      <div className="flex items-center gap-4">
+        <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
             placeholder="Search tickets..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 bg-white border-gray-200 h-11 text-sm"
+            className="pl-10 bg-white border-gray-200 h-10"
           />
         </div>
-        
-        <div className="flex flex-wrap gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setStatusFilter('assigned_to_me')}
-            className={`rounded-full text-xs px-4 hover:bg-primary/5 ${
-              statusFilter === 'assigned_to_me' 
-                ? 'bg-primary/10 text-primary border-primary/20' 
-                : 'border-gray-200'
-            }`}
-          >
-            Assigned to me
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setStatusFilter('unassigned')}
-            className={`rounded-full text-xs px-4 hover:bg-primary/5 ${
-              statusFilter === 'unassigned' 
-                ? 'bg-primary/10 text-primary border-primary/20' 
-                : 'border-gray-200'
-            }`}
-          >
-            Unassigned
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setStatusFilter('overdue')}
-            className={`rounded-full text-xs px-4 hover:bg-primary/5 ${
-              statusFilter === 'overdue' 
-                ? 'bg-primary/10 text-primary border-primary/20' 
-                : 'border-gray-200'
-            }`}
-          >
-            Overdue
-          </Button>
-        </div>
-      </div>
 
-      <div className="flex gap-3">
         <Popover>
           <PopoverTrigger asChild>
-            <Button 
-              variant="outline" 
-              size="icon"
-              className="h-11 w-11 border-gray-200"
-            >
+            <Button variant="outline" size="icon" className="h-10 w-10 border-gray-200">
               <Filter className="h-4 w-4" />
             </Button>
           </PopoverTrigger>
@@ -147,8 +106,55 @@ const FilterBar = ({
             </Tabs>
           </PopoverContent>
         </Popover>
+
+        <CollapsibleTrigger asChild>
+          <Button variant="ghost" size="icon" className="h-10 w-10">
+            {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+          </Button>
+        </CollapsibleTrigger>
       </div>
-    </div>
+
+      <CollapsibleContent className="space-y-4">
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setStatusFilter('assigned_to_me')}
+            className={`rounded-full text-xs px-4 hover:bg-primary/5 ${
+              statusFilter === 'assigned_to_me' 
+                ? 'bg-primary/10 text-primary border-primary/20' 
+                : 'border-gray-200'
+            }`}
+          >
+            Assigned to me
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setStatusFilter('unassigned')}
+            className={`rounded-full text-xs px-4 hover:bg-primary/5 ${
+              statusFilter === 'unassigned' 
+                ? 'bg-primary/10 text-primary border-primary/20' 
+                : 'border-gray-200'
+            }`}
+          >
+            Unassigned
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setStatusFilter('overdue')}
+            className={`rounded-full text-xs px-4 hover:bg-primary/5 ${
+              statusFilter === 'overdue' 
+                ? 'bg-primary/10 text-primary border-primary/20' 
+                : 'border-gray-200'
+            }`}
+          >
+            Overdue
+          </Button>
+        </div>
+      </CollapsibleContent>
+    </Collapsible>
   );
 };
 
