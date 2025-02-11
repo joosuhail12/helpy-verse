@@ -53,7 +53,7 @@ const LoadingFallback = () => (
 const App = () => (
   <Provider store={store}>
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
+      <TooltipProvider delayDuration={0}>
         <Toaster />
         <Sonner />
         <BrowserRouter>
