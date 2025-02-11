@@ -103,7 +103,9 @@ export const useConversation = (ticket: Ticket) => {
           };
         }
 
-        const presenceData = await channel.presence.get() as Ably.Types.PresenceMessage[];
+        const presencePromise = channel.presence.get();
+        const presenceData = await Promise.resolve(presencePromise) as unknown as Ably.Types.PresenceMessage[];
+        
         if (presenceData && Array.isArray(presenceData)) {
           const presentMembers = presenceData.map(member => ({
             userId: member.clientId,
@@ -186,3 +188,4 @@ export const useConversation = (ticket: Ticket) => {
     handleTyping
   };
 };
+
