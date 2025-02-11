@@ -5,9 +5,11 @@ import { Button } from '@/components/ui/button';
 import {
   Tooltip,
   TooltipContent,
+  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { mainNavItems } from '../navigationConfig';
+import { MainNavItem } from '../types/navigation';
 
 interface NavigationHeaderProps {
   activeMainNav: string;
@@ -27,29 +29,31 @@ const NavigationHeader = ({
           {mainNavItems.find(item => item.id === activeMainNav)?.title}
         </h2>
       )}
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 rounded-lg flex justify-center items-center hover:bg-primary/5 transition-colors"
-            onClick={toggleSecondPanel}
+      <TooltipProvider delayDuration={0}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 rounded-lg flex justify-center items-center hover:bg-primary/5 transition-colors"
+              onClick={toggleSecondPanel}
+            >
+              {isSecondPanelCollapsed ? (
+                <ChevronRight className="h-4 w-4" />
+              ) : (
+                <ChevronLeft className="h-4 w-4" />
+              )}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent 
+            side="right" 
+            className="z-[60] bg-white shadow-lg"
+            sideOffset={12}
           >
-            {isSecondPanelCollapsed ? (
-              <ChevronRight className="h-4 w-4" />
-            ) : (
-              <ChevronLeft className="h-4 w-4" />
-            )}
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent 
-          side="right" 
-          className="z-[60] bg-white shadow-lg"
-          sideOffset={12}
-        >
-          <p>Toggle panel (Ctrl + [)</p>
-        </TooltipContent>
-      </Tooltip>
+            <p>Toggle panel (Ctrl + [)</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     </div>
   );
 };
