@@ -30,8 +30,8 @@ const mockTicket = {
   company: 'Acme Inc',
   lastMessage: 'Initial message',
   createdAt: '2024-01-01T00:00:00.000Z',
-  status: 'open',
-  priority: 'medium',
+  status: 'open' as const,
+  priority: 'medium' as const,
   assignee: null,
   tags: []
 };
@@ -77,5 +77,32 @@ describe('MessageList', () => {
     );
 
     expect(screen.getByText('Jane Doe is typing...')).toBeInTheDocument();
+  });
+
+  it('renders internal notes with special styling', () => {
+    const messagesWithNote = [
+      ...mockMessages,
+      {
+        id: '3',
+        content: 'Internal note',
+        sender: 'Agent',
+        timestamp: '2024-01-01T00:00:00.000Z',
+        isCustomer: false,
+        type: 'internal_note' as const,
+        readBy: ['Agent']
+      }
+    ];
+
+    render(
+      <MessageList
+        messages={messagesWithNote}
+        typingUsers={[]}
+        ticket={mockTicket}
+        onReply={vi.fn()}
+        isLoading={false}
+      />
+    );
+
+    expect(screen.getByText('Internal note')).toBeInTheDocument();
   });
 });

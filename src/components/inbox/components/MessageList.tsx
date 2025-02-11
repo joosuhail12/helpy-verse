@@ -1,10 +1,11 @@
 
 import React from 'react';
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2 } from "lucide-react";
+import { Loader2, StickyNote } from "lucide-react";
 import MessageItem from '../MessageItem';
 import type { Message } from '../types';
 import type { Ticket } from '@/types/ticket';
+import { cn } from "@/lib/utils";
 
 interface MessageListProps {
   messages: Message[];
@@ -27,12 +28,22 @@ const MessageList = ({ messages, typingUsers, ticket, onReply, isLoading }: Mess
     <ScrollArea className="flex-1 p-4">
       <div className="space-y-4">
         {messages.map((message) => (
-          <MessageItem
+          <div 
             key={message.id}
-            message={message}
-            ticket={ticket}
-            onReply={onReply}
-          />
+            className={cn(
+              "relative",
+              message.type === 'internal_note' && "pl-8 border-l-2 border-yellow-400"
+            )}
+          >
+            {message.type === 'internal_note' && (
+              <StickyNote className="h-4 w-4 absolute left-2 top-3 text-yellow-500" />
+            )}
+            <MessageItem
+              message={message}
+              ticket={ticket}
+              onReply={onReply}
+            />
+          </div>
         ))}
         {typingUsers.length > 0 && (
           <div className="text-sm text-muted-foreground animate-pulse">

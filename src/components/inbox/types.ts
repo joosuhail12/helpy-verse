@@ -19,6 +19,7 @@ export interface Message {
   isCustomer: boolean;
   readBy?: string[];
   reactions?: Record<string, string[]>;
+  type?: 'message' | 'internal_note';
 }
 
 export interface ConversationPanelProps {
