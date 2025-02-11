@@ -21,15 +21,24 @@ const mockTicket = {
 };
 
 describe('MessageToolbar', () => {
+  const defaultProps = {
+    editor: null,
+    onInsertPlaceholder: vi.fn(),
+    ticket: mockTicket,
+    disabled: false,
+    isInternalNote: false,
+    setIsInternalNote: vi.fn(),
+    onEmojiSelect: vi.fn(),
+    onFilesAdded: vi.fn(),
+    uploadProgress: {},
+    onRemoveFile: vi.fn(),
+    files: [],
+    isAttachmentSheetOpen: false,
+    setIsAttachmentSheetOpen: vi.fn(),
+  };
+
   it('renders all formatting buttons', () => {
-    render(
-      <MessageToolbar
-        editor={null}
-        onInsertPlaceholder={vi.fn()}
-        ticket={mockTicket}
-        disabled={false}
-      />
-    );
+    render(<MessageToolbar {...defaultProps} />);
 
     expect(screen.getByTitle('Mention customer')).toBeInTheDocument();
     expect(screen.getByTitle('Mention company')).toBeInTheDocument();
@@ -37,14 +46,7 @@ describe('MessageToolbar', () => {
   });
 
   it('disables all buttons when disabled prop is true', () => {
-    render(
-      <MessageToolbar
-        editor={null}
-        onInsertPlaceholder={vi.fn()}
-        ticket={mockTicket}
-        disabled={true}
-      />
-    );
+    render(<MessageToolbar {...defaultProps} disabled={true} />);
 
     const buttons = screen.getAllByRole('button');
     buttons.forEach(button => {
@@ -55,11 +57,9 @@ describe('MessageToolbar', () => {
   it('calls onInsertPlaceholder with correct type when buttons are clicked', async () => {
     const onInsertPlaceholder = vi.fn();
     render(
-      <MessageToolbar
-        editor={null}
+      <MessageToolbar 
+        {...defaultProps}
         onInsertPlaceholder={onInsertPlaceholder}
-        ticket={mockTicket}
-        disabled={false}
       />
     );
 
@@ -73,3 +73,4 @@ describe('MessageToolbar', () => {
     expect(onInsertPlaceholder).toHaveBeenCalledWith('ticket');
   });
 });
+
