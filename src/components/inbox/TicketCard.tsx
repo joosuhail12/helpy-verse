@@ -2,6 +2,11 @@
 import { MessageSquare, Building, Tag, Clock, User, UserX, Copy, CheckCircle, Circle } from 'lucide-react';
 import { formatDistanceToNow, format } from 'date-fns';
 import {
+  Avatar,
+  AvatarImage,
+  AvatarFallback,
+} from "@/components/ui/avatar";
+import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
@@ -25,6 +30,7 @@ interface TicketCardProps {
     customer: string;
     lastMessage: string;
     assignee: string | null;
+    assigneeAvatar?: string;
     company: string;
     tags: string[];
     status: 'open' | 'closed' | 'pending';
@@ -49,13 +55,30 @@ const TicketCard = ({ ticket, viewMode, onCopyId }: TicketCardProps) => {
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3 flex-1 min-w-0">
-          <div className="w-8 h-8 rounded-full bg-purple-100/50 flex items-center justify-center flex-shrink-0">
-            {ticket.isUnread ? (
-              <Circle className="w-4 h-4 text-primary/70" />
-            ) : (
-              <CheckCircle className="w-4 h-4 text-primary/70" />
-            )}
-          </div>
+          {ticket.assignee ? (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Avatar className="h-8 w-8">
+                    {ticket.assigneeAvatar ? (
+                      <AvatarImage src={ticket.assigneeAvatar} alt={ticket.assignee} />
+                    ) : (
+                      <AvatarFallback className="bg-primary/10 text-primary">
+                        {ticket.assignee.split(' ').map(name => name[0]).join('')}
+                      </AvatarFallback>
+                    )}
+                  </Avatar>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Assigned to {ticket.assignee}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          ) : (
+            <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
+              <UserX className="w-4 h-4 text-gray-400" />
+            </div>
+          )}
           
           <div className="flex-1 min-w-0 space-y-1.5">
             <div className="flex items-start justify-between gap-2">
