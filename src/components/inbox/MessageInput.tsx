@@ -1,25 +1,10 @@
 
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Send, Smile, Loader2, StickyNote, Paperclip, X } from 'lucide-react';
 import { useEditor, EditorContent } from '@tiptap/react';
-import EmojiPicker from 'emoji-picker-react';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
 import type { Ticket } from '@/types/ticket';
 import MessageToolbar from './components/MessageToolbar';
-import FileUpload from './components/FileUpload';
+import AttachmentList from './components/AttachmentList';
+import MessageControls from './components/MessageControls';
 import { createEditorConfig } from './utils/editorConfig';
 import { cn } from "@/lib/utils";
 
@@ -122,106 +107,26 @@ const MessageInput = ({
             onKeyDown={onKeyPress}
           />
         </div>
-        {files.length > 0 && (
-          <div className="border-t p-3 space-y-2">
-            {files.map(file => (
-              <div key={file.name} className="flex items-center gap-2 text-sm">
-                <Paperclip className="h-4 w-4" />
-                <span className="flex-1 truncate">{file.name}</span>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6"
-                  onClick={() => handleRemoveFile(file)}
-                  disabled={disabled}
-                >
-                  <X className="h-3 w-3" />
-                </Button>
-              </div>
-            ))}
-          </div>
-        )}
+        <AttachmentList
+          files={files}
+          onRemoveFile={handleRemoveFile}
+          disabled={disabled}
+        />
       </div>
-      <div className="flex justify-between items-center">
-        <div className="flex gap-2 items-center">
-          <Button
-            variant={isInternalNote ? "default" : "outline"}
-            size="sm"
-            className="gap-2"
-            onClick={() => setIsInternalNote(!isInternalNote)}
-            disabled={disabled}
-          >
-            <StickyNote className="h-4 w-4" />
-            Internal Note
-          </Button>
-          <Sheet open={isAttachmentSheetOpen} onOpenChange={setIsAttachmentSheetOpen}>
-            <SheetTrigger asChild>
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="gap-2"
-                disabled={disabled}
-              >
-                <Paperclip className="h-4 w-4" />
-                Add Files
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-[400px] sm:w-[540px]">
-              <SheetHeader>
-                <SheetTitle>Add Attachments</SheetTitle>
-                <SheetDescription>
-                  Drag and drop files or click to select files to upload
-                </SheetDescription>
-              </SheetHeader>
-              <div className="mt-6">
-                <FileUpload
-                  onFilesAdded={handleFilesAdded}
-                  uploadProgress={uploadProgress}
-                  onRemoveFile={handleRemoveFile}
-                  files={files}
-                  disabled={disabled}
-                />
-              </div>
-            </SheetContent>
-          </Sheet>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="h-8 w-8"
-                disabled={disabled}
-              >
-                <Smile className="h-4 w-4" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-full p-0" align="start">
-              <EmojiPicker 
-                onEmojiClick={handleEmojiSelect}
-                width={300}
-                height={400}
-              />
-            </PopoverContent>
-          </Popover>
-        </div>
-        <div className="flex items-center gap-4">
-          <div className="text-xs text-muted-foreground">
-            Press Enter to send, Shift + Enter for new line
-          </div>
-          <Button 
-            className="gap-2" 
-            onClick={() => onSendMessage()}
-            disabled={disabled || isSending}
-          >
-            {isSending ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Send className="h-4 w-4" />
-            )}
-            {isSending ? 'Sending...' : isInternalNote ? 'Add Note' : 'Send Reply'}
-          </Button>
-        </div>
-      </div>
+      <MessageControls
+        isInternalNote={isInternalNote}
+        setIsInternalNote={setIsInternalNote}
+        onSendMessage={onSendMessage}
+        isSending={isSending}
+        disabled={disabled}
+        onEmojiSelect={handleEmojiSelect}
+        onFilesAdded={handleFilesAdded}
+        uploadProgress={uploadProgress}
+        onRemoveFile={handleRemoveFile}
+        files={files}
+        isAttachmentSheetOpen={isAttachmentSheetOpen}
+        setIsAttachmentSheetOpen={setIsAttachmentSheetOpen}
+      />
     </div>
   );
 };
