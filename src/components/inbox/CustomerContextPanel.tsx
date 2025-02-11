@@ -3,7 +3,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { UserCircle, Building2, History, MessageCircle } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { UserCircle, Building2, History, MessageCircle, Globe, Mail, Phone } from "lucide-react";
 import { formatDistanceToNow } from 'date-fns';
 import type { Ticket } from "@/types/ticket";
 import CustomerTimeline from './components/CustomerTimeline';
@@ -15,7 +16,6 @@ interface CustomerContextPanelProps {
 }
 
 const CustomerContextPanel = ({ ticket }: CustomerContextPanelProps) => {
-  // In a real implementation, these would be fetched from your Node.js backend
   const isLoading = false;
 
   const customerTimeline = [
@@ -66,17 +66,55 @@ const CustomerContextPanel = ({ ticket }: CustomerContextPanelProps) => {
   ];
 
   return (
-    <Card className="h-full flex flex-col bg-background">
+    <Card className="h-full flex flex-col bg-white border-l">
+      <div className="p-4 border-b">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-gray-900">Customer Details</h2>
+          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+            Active
+          </Badge>
+        </div>
+        <div className="flex items-center space-x-3 mb-2">
+          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+            <UserCircle className="h-6 w-6 text-primary" />
+          </div>
+          <div>
+            <p className="font-medium text-gray-900">{ticket.customer}</p>
+            <p className="text-sm text-gray-500">{ticket.company}</p>
+          </div>
+        </div>
+      </div>
+
       <Tabs defaultValue="overview" className="flex-1">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="timeline">Timeline</TabsTrigger>
-          <TabsTrigger value="subscriptions">Subscriptions</TabsTrigger>
-          <TabsTrigger value="channels">Channels</TabsTrigger>
+        <TabsList className="w-full grid grid-cols-4 p-0 h-12 bg-gray-50/80">
+          <TabsTrigger 
+            value="overview" 
+            className="data-[state=active]:bg-white rounded-none border-r"
+          >
+            Overview
+          </TabsTrigger>
+          <TabsTrigger 
+            value="timeline" 
+            className="data-[state=active]:bg-white rounded-none border-r"
+          >
+            Timeline
+          </TabsTrigger>
+          <TabsTrigger 
+            value="subscriptions" 
+            className="data-[state=active]:bg-white rounded-none border-r"
+          >
+            Plans
+          </TabsTrigger>
+          <TabsTrigger 
+            value="channels" 
+            className="data-[state=active]:bg-white rounded-none"
+          >
+            Contact
+          </TabsTrigger>
         </TabsList>
 
-        <ScrollArea className="flex-1 p-4">
-          <TabsContent value="overview" className="m-0">
+        <ScrollArea className="flex-1">
+          <TabsContent value="overview" className="m-0 p-4">
             {isLoading ? (
               <div className="space-y-4">
                 <Skeleton className="h-4 w-3/4" />
@@ -84,36 +122,38 @@ const CustomerContextPanel = ({ ticket }: CustomerContextPanelProps) => {
               </div>
             ) : (
               <div className="space-y-6">
-                <section className="space-y-4">
-                  <h3 className="text-lg font-semibold flex items-center gap-2">
-                    <UserCircle className="h-5 w-5" />
-                    Customer Details
-                  </h3>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p className="text-muted-foreground">Name</p>
-                      <p className="font-medium">{ticket.customer}</p>
+                <section className="space-y-3">
+                  <h3 className="text-sm font-medium text-gray-500">Quick Contact</h3>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-sm">
+                      <Mail className="h-4 w-4 text-gray-400" />
+                      <span className="text-gray-600">{ticket.customer}@example.com</span>
                     </div>
-                    <div>
-                      <p className="text-muted-foreground">Status</p>
-                      <p className="font-medium">Active</p>
+                    <div className="flex items-center gap-2 text-sm">
+                      <Phone className="h-4 w-4 text-gray-400" />
+                      <span className="text-gray-600">+1 (555) 123-4567</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <Globe className="h-4 w-4 text-gray-400" />
+                      <span className="text-gray-600">{ticket.company}.com</span>
                     </div>
                   </div>
                 </section>
 
-                <section className="space-y-4">
-                  <h3 className="text-lg font-semibold flex items-center gap-2">
-                    <Building2 className="h-5 w-5" />
-                    Company Information
-                  </h3>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p className="text-muted-foreground">Company</p>
-                      <p className="font-medium">{ticket.company}</p>
+                <section className="space-y-3">
+                  <h3 className="text-sm font-medium text-gray-500">Company Information</h3>
+                  <div className="grid gap-3 text-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-500">Plan</span>
+                      <Badge variant="secondary">Enterprise</Badge>
                     </div>
-                    <div>
-                      <p className="text-muted-foreground">Plan</p>
-                      <p className="font-medium">Enterprise</p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-500">Status</span>
+                      <Badge variant="outline" className="bg-green-50 text-green-700">Active</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-500">Customer Since</span>
+                      <span className="text-gray-600">March 2024</span>
                     </div>
                   </div>
                 </section>
@@ -121,12 +161,8 @@ const CustomerContextPanel = ({ ticket }: CustomerContextPanelProps) => {
             )}
           </TabsContent>
 
-          <TabsContent value="timeline" className="m-0">
+          <TabsContent value="timeline" className="m-0 p-4">
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold flex items-center gap-2">
-                <History className="h-5 w-5" />
-                Customer Timeline
-              </h3>
               <CustomerTimeline
                 events={customerTimeline}
                 isLoading={isLoading}
@@ -134,12 +170,8 @@ const CustomerContextPanel = ({ ticket }: CustomerContextPanelProps) => {
             </div>
           </TabsContent>
 
-          <TabsContent value="subscriptions" className="m-0">
+          <TabsContent value="subscriptions" className="m-0 p-4">
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold flex items-center gap-2">
-                <Building2 className="h-5 w-5" />
-                Active Subscriptions
-              </h3>
               <CustomerSubscriptions
                 subscriptions={subscriptions}
                 isLoading={isLoading}
@@ -147,12 +179,8 @@ const CustomerContextPanel = ({ ticket }: CustomerContextPanelProps) => {
             </div>
           </TabsContent>
 
-          <TabsContent value="channels" className="m-0">
+          <TabsContent value="channels" className="m-0 p-4">
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold flex items-center gap-2">
-                <MessageCircle className="h-5 w-5" />
-                Communication Channels
-              </h3>
               <CommunicationChannels
                 channels={communicationChannels}
                 isLoading={isLoading}
