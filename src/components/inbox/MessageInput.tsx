@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Send, Smile, Loader2, StickyNote } from 'lucide-react';
@@ -12,6 +11,7 @@ import {
 import type { Ticket } from '@/types/ticket';
 import MessageToolbar from './components/MessageToolbar';
 import { createEditorConfig } from './utils/editorConfig';
+import { cn } from "@/lib/utils";
 
 interface MessageInputProps {
   newMessage: string;
