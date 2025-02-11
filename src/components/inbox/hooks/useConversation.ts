@@ -90,20 +90,22 @@ export const useConversation = (ticket: Ticket) => {
           }
         });
 
-        const presenceData = await channel.presence.get();
-        if (presenceData) {
-          type PresenceMember = {
-            clientId: string;
-            data?: {
-              name?: string;
-              lastActive?: string;
-              location?: {
-                ticketId: string;
-                area: string;
-              };
+        // Define the type for presence data explicitly
+        type PresenceMember = Ably.Types.PresenceMessage & {
+          clientId: string;
+          data: {
+            name?: string;
+            lastActive?: string;
+            location?: {
+              ticketId: string;
+              area: string;
             };
           };
+        };
 
+        const presenceData = await channel.presence.get();
+        // Check if presenceData exists and is an array or array-like object
+        if (presenceData && typeof presenceData.values === 'function') {
           const members = Array.from(presenceData.values()) as PresenceMember[];
           const presentMembers = members.map(member => ({
             userId: member.clientId,
