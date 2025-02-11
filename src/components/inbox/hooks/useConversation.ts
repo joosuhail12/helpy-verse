@@ -5,6 +5,7 @@ import { getAblyChannel } from '@/utils/ably';
 import debounce from 'lodash/debounce';
 import type { Message, UserPresence } from '../types';
 import type { Ticket } from '@/types/ticket';
+import type * as Ably from 'ably';
 
 export const useConversation = (ticket: Ticket) => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -90,8 +91,16 @@ export const useConversation = (ticket: Ticket) => {
         });
 
         const presenceData = await channel.presence.get();
-        const presentMembers = presenceData ? Array.from(presenceData).map(member => member.data as UserPresence) : [];
-        setActiveUsers(presentMembers);
+        if (presenceData) {
+          const members = Array.from(presenceData);
+          const presentMembers = members.map(member => ({
+            userId: member.clientId,
+            name: (member.data as any)?.name || 'Unknown',
+            lastActive: (member.data as any)?.lastActive || new Date().toISOString(),
+            location: (member.data as any)?.location
+          } as UserPresence));
+          setActiveUsers(presentMembers);
+        }
 
         return () => {
           channel.presence.leave();
