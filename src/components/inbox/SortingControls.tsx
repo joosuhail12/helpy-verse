@@ -1,6 +1,5 @@
 
 import { ChevronUp, ChevronDown } from 'lucide-react';
-import { Toggle } from "@/components/ui/toggle";
 import type { SortField, ViewMode } from '@/types/ticket';
 
 interface SortingControlsProps {
@@ -14,10 +13,8 @@ interface SortingControlsProps {
 const SortingControls = ({
   sortField,
   sortDirection,
-  viewMode,
   onSort,
-  onViewModeChange,
-}: SortingControlsProps) => {
+}: Omit<SortingControlsProps, 'viewMode' | 'onViewModeChange'>) => {
   return (
     <div className="flex items-center gap-4">
       <div className="flex items-center gap-2" role="group" aria-label="Sort options">
@@ -49,16 +46,9 @@ const SortingControls = ({
           Status {sortField === 'status' && (sortDirection === 'asc' ? <ChevronUp className="inline w-4 h-4" /> : <ChevronDown className="inline w-4 h-4" />)}
         </button>
       </div>
-
-      <Toggle
-        pressed={viewMode === 'compact'}
-        onPressedChange={(pressed) => onViewModeChange(pressed ? 'compact' : 'expanded')}
-        aria-label="Toggle view mode"
-      >
-        {viewMode === 'compact' ? 'Expanded' : 'Compact'} View
-      </Toggle>
     </div>
   );
 };
 
 export default SortingControls;
+
