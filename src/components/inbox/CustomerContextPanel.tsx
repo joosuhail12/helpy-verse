@@ -4,15 +4,15 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { UserCircle, Building2, History, MessageCircle, Globe, Mail, Phone } from "lucide-react";
+import { UserCircle, Building2, History, MessageCircle, Globe, Mail, Phone, Ticket } from "lucide-react";
 import { formatDistanceToNow } from 'date-fns';
-import type { Ticket } from "@/types/ticket";
+import type { Ticket as TicketType } from "@/types/ticket";
 import CustomerTimeline from './components/CustomerTimeline';
 import CustomerSubscriptions from './components/CustomerSubscriptions';
 import CommunicationChannels from './components/CommunicationChannels';
 
 interface CustomerContextPanelProps {
-  ticket: Ticket;
+  ticket: TicketType;
 }
 
 const CustomerContextPanel = ({ ticket }: CustomerContextPanelProps) => {
@@ -100,10 +100,10 @@ const CustomerContextPanel = ({ ticket }: CustomerContextPanelProps) => {
             Timeline
           </TabsTrigger>
           <TabsTrigger 
-            value="subscriptions" 
+            value="tickets" 
             className="data-[state=active]:bg-white rounded-none border-r"
           >
-            Plans
+            Tickets
           </TabsTrigger>
           <TabsTrigger 
             value="channels" 
@@ -157,6 +157,52 @@ const CustomerContextPanel = ({ ticket }: CustomerContextPanelProps) => {
                     </div>
                   </div>
                 </section>
+
+                <section className="space-y-3">
+                  <h3 className="text-sm font-medium text-gray-500">Current Ticket</h3>
+                  <div className="grid gap-3 text-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-500">Subject</span>
+                      <span className="text-gray-600">{ticket.subject}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-500">Status</span>
+                      <Badge 
+                        variant="outline" 
+                        className={
+                          ticket.status === 'open' 
+                            ? 'bg-green-50 text-green-700' 
+                            : ticket.status === 'pending' 
+                            ? 'bg-yellow-50 text-yellow-700'
+                            : 'bg-gray-50 text-gray-700'
+                        }
+                      >
+                        {ticket.status.charAt(0).toUpperCase() + ticket.status.slice(1)}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-500">Priority</span>
+                      <Badge 
+                        variant="outline" 
+                        className={
+                          ticket.priority === 'high' 
+                            ? 'bg-red-50 text-red-700' 
+                            : ticket.priority === 'medium' 
+                            ? 'bg-yellow-50 text-yellow-700'
+                            : 'bg-blue-50 text-blue-700'
+                        }
+                      >
+                        {ticket.priority.charAt(0).toUpperCase() + ticket.priority.slice(1)}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-500">Created</span>
+                      <span className="text-gray-600">
+                        {formatDistanceToNow(new Date(ticket.createdAt), { addSuffix: true })}
+                      </span>
+                    </div>
+                  </div>
+                </section>
               </div>
             )}
           </TabsContent>
@@ -170,12 +216,36 @@ const CustomerContextPanel = ({ ticket }: CustomerContextPanelProps) => {
             </div>
           </TabsContent>
 
-          <TabsContent value="subscriptions" className="m-0 p-4">
+          <TabsContent value="tickets" className="m-0 p-4">
             <div className="space-y-4">
-              <CustomerSubscriptions
-                subscriptions={subscriptions}
-                isLoading={isLoading}
-              />
+              <section className="border rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-4">
+                  <Ticket className="h-5 w-5 text-primary" />
+                  <h3 className="font-medium">Recent Tickets</h3>
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-start justify-between p-3 bg-gray-50 rounded-md">
+                    <div>
+                      <p className="font-medium text-sm">{ticket.subject}</p>
+                      <p className="text-xs text-gray-500">
+                        {formatDistanceToNow(new Date(ticket.createdAt), { addSuffix: true })}
+                      </p>
+                    </div>
+                    <Badge 
+                      variant="outline" 
+                      className={
+                        ticket.status === 'open' 
+                          ? 'bg-green-50 text-green-700' 
+                          : ticket.status === 'pending' 
+                          ? 'bg-yellow-50 text-yellow-700'
+                          : 'bg-gray-50 text-gray-700'
+                      }
+                    >
+                      {ticket.status}
+                    </Badge>
+                  </div>
+                </div>
+              </section>
             </div>
           </TabsContent>
 
@@ -194,3 +264,4 @@ const CustomerContextPanel = ({ ticket }: CustomerContextPanelProps) => {
 };
 
 export default CustomerContextPanel;
+
