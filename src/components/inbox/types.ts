@@ -21,7 +21,17 @@ export interface Message {
   reactions?: Record<string, string[]>;
 }
 
+export interface Note {
+  id: string;
+  content: string;
+  agentId: string;
+  agentName: string;
+  timestamp: string;
+  ticketId: string;
+}
+
 export interface ConversationPanelProps {
   ticket: Ticket;
   onClose: () => void;
 }
+

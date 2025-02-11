@@ -1,9 +1,8 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { getAblyChannel } from '@/utils/ably';
 import debounce from 'lodash/debounce';
-import type { Message, UserPresence } from '../types';
+import type { Message, UserPresence, Note } from '../types';
 import type { Ticket } from '@/types/ticket';
 import type * as Ably from 'ably';
 
@@ -15,6 +14,9 @@ export const useConversation = (ticket: Ticket) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notes, setNotes] = useState<Note[]>([]);
+  const [isLoadingNotes, setIsLoadingNotes] = useState(true);
+  const [isAddingNote, setIsAddingNote] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -183,6 +185,58 @@ export const useConversation = (ticket: Ticket) => {
     }
   };
 
+  const loadNotes = async () => {
+    try {
+      const response = await fetch(`/api/tickets/${ticket.id}/notes`);
+      if (!response.ok) throw new Error('Failed to load notes');
+      const data = await response.json();
+      setNotes(data);
+    } catch (error) {
+      console.error('Error loading notes:', error);
+      toast({
+        variant: "destructive",
+        description: "Failed to load notes. Please try again.",
+      });
+    } finally {
+      setIsLoadingNotes(false);
+    }
+  };
+
+  const addNote = async (content: string) => {
+    setIsAddingNote(true);
+    try {
+      const response = await fetch(`/api/tickets/${ticket.id}/notes`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          content,
+          ticketId: ticket.id,
+          agentId: 'Agent',
+          agentName: 'Agent',
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to add note');
+      
+      const newNote = await response.json();
+      setNotes(prev => [...prev, newNote]);
+      
+      toast({
+        description: "Note added successfully",
+      });
+    } catch (error) {
+      console.error('Error adding note:', error);
+      toast({
+        variant: "destructive",
+        description: "Failed to add note. Please try again.",
+      });
+    } finally {
+      setIsAddingNote(false);
+    }
+  };
+
   return {
     messages,
     newMessage,
@@ -193,6 +247,10 @@ export const useConversation = (ticket: Ticket) => {
     handleTyping,
     isLoading,
     isSending,
-    error
+    error,
+    notes,
+    isLoadingNotes,
+    addNote,
+    isAddingNote
   };
 };
