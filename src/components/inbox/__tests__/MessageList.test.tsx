@@ -30,7 +30,7 @@ const mockTicket = {
   lastMessage: 'Initial message',
   assignee: null,
   createdAt: '2024-01-01T00:00:00.000Z',
-  status: 'open',
+  status: 'open' as const,
   priority: 'medium',
   tags: []
 };
@@ -78,3 +78,4 @@ describe('MessageList', () => {
     expect(screen.getByText('Jane Doe is typing...')).toBeInTheDocument();
   });
 });
+
