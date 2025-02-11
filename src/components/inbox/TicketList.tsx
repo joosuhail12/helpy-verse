@@ -80,13 +80,17 @@ const TicketList = ({ tickets = [], isLoading = false }: TicketListProps) => {
 
   return (
     <div className="flex h-full">
-      <div className={`flex flex-col h-full transition-all duration-300 ${selectedTicketForChat ? 'w-2/5' : 'w-full'}`}>
-        <div className="flex items-center justify-between mb-4 px-6 py-4 border-b">
-          <h2 className="text-2xl font-semibold text-gray-900">All Tickets</h2>
+      <div className={`flex flex-col h-full transition-all duration-300 ${
+        selectedTicketForChat 
+          ? 'w-full md:w-3/5 lg:w-2/5' 
+          : 'w-full'
+      }`}>
+        <div className="flex items-center justify-between mb-4 px-4 md:px-6 py-4 border-b">
+          <h2 className="text-xl md:text-2xl font-semibold text-gray-900">All Tickets</h2>
         </div>
 
-        <div className="flex-1 overflow-auto px-6">
-          <div className="flex items-center justify-between gap-4 mb-6">
+        <div className="flex-1 overflow-auto px-4 md:px-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
             <FilterBar
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
@@ -96,20 +100,22 @@ const TicketList = ({ tickets = [], isLoading = false }: TicketListProps) => {
               setPriorityFilter={setPriorityFilter}
             />
             
-            <SortingControls
-              sortField={sortField}
-              sortDirection={sortDirection}
-              viewMode={viewMode}
-              onSort={handleSort}
-              onViewModeChange={setViewMode}
-            />
+            <div className="flex justify-end">
+              <SortingControls
+                sortField={sortField}
+                sortDirection={sortDirection}
+                viewMode={viewMode}
+                onSort={handleSort}
+                onViewModeChange={setViewMode}
+              />
+            </div>
           </div>
 
           {isLoading ? (
             <LoadingState />
           ) : (
             <div className="space-y-4 animate-fade-in">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
                 <SelectionControls
                   selectedCount={selectedTickets.length}
                   totalCount={tickets.length}
@@ -123,28 +129,30 @@ const TicketList = ({ tickets = [], isLoading = false }: TicketListProps) => {
                 />
               </div>
               
-              {paginatedTickets.map((ticket) => (
-                <div
-                  key={ticket.id}
-                  onClick={() => handleTicketClick(ticket)}
-                  className="cursor-pointer"
-                >
-                  <TicketListItem
-                    ticket={ticket}
-                    viewMode={selectedTicketForChat ? 'compact' : viewMode}
-                    isSelected={selectedTickets.includes(ticket.id)}
-                    isLoading={!!loadingStates[ticket.id]}
-                    onSelect={(id) => {
-                      event?.stopPropagation();
-                      handleTicketSelection(id);
-                    }}
-                    onCopyId={(id) => {
-                      event?.stopPropagation();
-                      handleCopyTicketId(id);
-                    }}
-                  />
-                </div>
-              ))}
+              <div className="space-y-2 md:space-y-3">
+                {paginatedTickets.map((ticket) => (
+                  <div
+                    key={ticket.id}
+                    onClick={() => handleTicketClick(ticket)}
+                    className="cursor-pointer"
+                  >
+                    <TicketListItem
+                      ticket={ticket}
+                      viewMode={selectedTicketForChat ? 'compact' : viewMode}
+                      isSelected={selectedTickets.includes(ticket.id)}
+                      isLoading={!!loadingStates[ticket.id]}
+                      onSelect={(id) => {
+                        event?.stopPropagation();
+                        handleTicketSelection(id);
+                      }}
+                      onCopyId={(id) => {
+                        event?.stopPropagation();
+                        handleCopyTicketId(id);
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
 
               {totalPages > 1 && (
                 <div className="flex justify-center gap-2 mt-4 mb-6">
@@ -169,7 +177,7 @@ const TicketList = ({ tickets = [], isLoading = false }: TicketListProps) => {
       </div>
       
       {selectedTicketForChat && (
-        <div className="w-3/5 h-full border-l">
+        <div className="fixed inset-0 z-50 md:relative md:inset-auto md:w-2/5 lg:w-3/5 h-full border-l bg-background">
           <ConversationPanel
             ticket={selectedTicketForChat}
             onClose={() => setSelectedTicketForChat(null)}
@@ -181,3 +189,4 @@ const TicketList = ({ tickets = [], isLoading = false }: TicketListProps) => {
 };
 
 export default TicketList;
+
