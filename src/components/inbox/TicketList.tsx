@@ -79,62 +79,63 @@ const TicketList = ({ tickets = [], isLoading = false }: TicketListProps) => {
   }
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-full bg-gray-50/30">
       <div className={`flex flex-col h-full transition-all duration-300 ${
         selectedTicketForChat 
           ? 'w-full md:w-3/5 lg:w-2/5' 
           : 'w-full'
       }`}>
-        <div className="flex items-center justify-between mb-4 px-4 md:px-6 py-4 border-b">
-          <h2 className="text-xl md:text-2xl font-semibold text-gray-900">All Tickets</h2>
+        <div className="flex items-center justify-between mb-4 px-6 py-4 bg-white border-b">
+          <h2 className="text-xl font-semibold text-gray-900">All Tickets</h2>
         </div>
 
-        <div className="flex-1 overflow-auto px-4 md:px-6">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-            <FilterBar
-              searchQuery={searchQuery}
-              setSearchQuery={setSearchQuery}
-              statusFilter={statusFilter}
-              setStatusFilter={setStatusFilter}
-              priorityFilter={priorityFilter}
-              setPriorityFilter={setPriorityFilter}
-            />
-            
-            <div className="flex justify-end">
-              <SortingControls
-                sortField={sortField}
-                sortDirection={sortDirection}
-                viewMode={viewMode}
-                onSort={handleSort}
-                onViewModeChange={setViewMode}
+        <div className="flex-1 overflow-auto px-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-6">
+            <div className="p-4 space-y-6">
+              <FilterBar
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                statusFilter={statusFilter}
+                setStatusFilter={setStatusFilter}
+                priorityFilter={priorityFilter}
+                setPriorityFilter={setPriorityFilter}
               />
-            </div>
-          </div>
-
-          {isLoading ? (
-            <LoadingState />
-          ) : (
-            <div className="space-y-4 animate-fade-in">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
+              
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-4 border-t">
                 <SelectionControls
                   selectedCount={selectedTickets.length}
                   totalCount={tickets.length}
                   onSelectAll={handleSelectAll}
                 />
                 
-                <TicketActions
-                  selectedTickets={selectedTickets}
-                  markAsRead={markAsRead}
-                  markAsUnread={markAsUnread}
-                />
+                <div className="flex items-center gap-4">
+                  <TicketActions
+                    selectedTickets={selectedTickets}
+                    markAsRead={markAsRead}
+                    markAsUnread={markAsUnread}
+                  />
+                  <SortingControls
+                    sortField={sortField}
+                    sortDirection={sortDirection}
+                    viewMode={viewMode}
+                    onSort={handleSort}
+                    onViewModeChange={setViewMode}
+                  />
+                </div>
               </div>
-              
-              <div className="space-y-2 md:space-y-3">
+            </div>
+          </div>
+
+          {isLoading ? (
+            <LoadingState />
+          ) : (
+            <div className="space-y-3 animate-fade-in pb-6">
+              <div className="space-y-2">
                 {paginatedTickets.map((ticket) => (
                   <div
                     key={ticket.id}
                     onClick={() => handleTicketClick(ticket)}
-                    className="cursor-pointer"
+                    className="transform transition-all duration-200 hover:-translate-y-0.5"
                   >
                     <TicketListItem
                       ticket={ticket}
@@ -155,15 +156,15 @@ const TicketList = ({ tickets = [], isLoading = false }: TicketListProps) => {
               </div>
 
               {totalPages > 1 && (
-                <div className="flex justify-center gap-2 mt-4 mb-6">
+                <div className="flex justify-center gap-2 mt-6">
                   {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                     <button
                       key={page}
                       onClick={() => setCurrentPage(page)}
-                      className={`px-3 py-1 rounded-md ${
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                         currentPage === page
-                          ? 'bg-primary text-white'
-                          : 'bg-white text-gray-600 hover:bg-gray-100'
+                          ? 'bg-primary text-white shadow-md shadow-primary/20'
+                          : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
                       }`}
                     >
                       {page}
@@ -177,7 +178,7 @@ const TicketList = ({ tickets = [], isLoading = false }: TicketListProps) => {
       </div>
       
       {selectedTicketForChat && (
-        <div className="fixed inset-0 z-50 md:relative md:inset-auto md:w-2/5 lg:w-3/5 h-full border-l bg-background">
+        <div className="fixed inset-0 z-50 md:relative md:inset-auto md:w-2/5 lg:w-3/5 h-full border-l bg-white shadow-xl">
           <ConversationPanel
             ticket={selectedTicketForChat}
             onClose={() => setSelectedTicketForChat(null)}
