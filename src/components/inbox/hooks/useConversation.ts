@@ -90,8 +90,8 @@ export const useConversation = (ticket: Ticket) => {
           }
         });
 
-        // Define the type for presence data explicitly
-        type PresenceMember = Ably.Types.PresenceMessage & {
+        // Define the type for presence data
+        interface PresenceMember extends Ably.Types.PresenceMessage {
           clientId: string;
           data: {
             name?: string;
@@ -101,13 +101,11 @@ export const useConversation = (ticket: Ticket) => {
               area: string;
             };
           };
-        };
+        }
 
-        const presenceData = await channel.presence.get();
-        // Check if presenceData exists and is an array or array-like object
-        if (presenceData && typeof presenceData.values === 'function') {
-          const members = Array.from(presenceData.values()) as PresenceMember[];
-          const presentMembers = members.map(member => ({
+        const presenceData = await channel.presence.get() as Ably.Types.PresenceMessage[];
+        if (presenceData && Array.isArray(presenceData)) {
+          const presentMembers = presenceData.map(member => ({
             userId: member.clientId,
             name: member.data?.name || 'Unknown',
             lastActive: member.data?.lastActive || new Date().toISOString(),
@@ -188,4 +186,3 @@ export const useConversation = (ticket: Ticket) => {
     handleTyping
   };
 };
-
