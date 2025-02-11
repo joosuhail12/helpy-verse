@@ -92,27 +92,6 @@ const Dashboard = () => {
       <Sidebar />
 
       <div className="flex-1 flex flex-col h-screen overflow-hidden">
-        <header className="sticky top-0 z-10 bg-white/50 backdrop-blur-sm border-b border-purple-100 px-6 py-4">
-          <div className="flex items-center gap-2 text-sm">
-            {breadcrumbs.map((crumb, index) => (
-              <div key={crumb.path} className="flex items-center">
-                {index > 0 && <ChevronRight className="h-4 w-4 text-gray-400 mx-2" />}
-                <button
-                  onClick={() => navigate(crumb.path)}
-                  className={`flex items-center gap-2 hover:text-primary transition-colors ${
-                    index === breadcrumbs.length - 1 
-                      ? 'text-primary font-medium' 
-                      : 'text-gray-600'
-                  }`}
-                >
-                  {crumb.icon && <crumb.icon className="h-4 w-4" />}
-                  {crumb.title}
-                </button>
-              </div>
-            ))}
-          </div>
-        </header>
-
         <main className="flex-1 p-6 overflow-auto">
           <div className="max-w-7xl mx-auto">
             {location.pathname === '/home' ? (
@@ -154,3 +133,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
