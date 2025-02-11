@@ -89,12 +89,9 @@ export const useConversation = (ticket: Ticket) => {
           }
         });
 
-        // Fixed: Added proper type checking and handling for presence data
         const presenceData = await channel.presence.get();
-        const presentMembers = presenceData?.map(member => member.data as UserPresence) || [];
-        if (presentMembers.length > 0) {
-          setActiveUsers(presentMembers);
-        }
+        const presentMembers = presenceData ? Array.from(presenceData).map(member => member.data as UserPresence) : [];
+        setActiveUsers(presentMembers);
 
         return () => {
           channel.presence.leave();

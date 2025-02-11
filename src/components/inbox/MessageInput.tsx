@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Send, Smile, Bold, Italic, Underline, List, ListOrdered, Strikethrough, User, Building2, Ticket } from 'lucide-react';
+import { Send, Smile, Bold, Italic, Underline, List, ListOrdered, Strikethrough, User, Building2, Ticket as TicketIcon } from 'lucide-react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Mention from '@tiptap/extension-mention';
@@ -13,14 +13,14 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
-import type { Ticket } from '@/types/ticket';
+import type { Ticket as TicketType } from '@/types/ticket';
 
 interface MessageInputProps {
   newMessage: string;
   onMessageChange: (value: string) => void;
   onKeyPress: (e: React.KeyboardEvent<HTMLDivElement>) => void;
   onSendMessage: () => void;
-  ticket: Ticket;
+  ticket: TicketType;
 }
 
 const MessageInput = ({ 
@@ -193,7 +193,7 @@ const MessageInput = ({
             onClick={() => insertPlaceholder('ticket')}
             title="Reference ticket"
           >
-            <Ticket className="h-4 w-4" />
+            <TicketIcon className="h-4 w-4" />
           </Button>
         </div>
         <div 
