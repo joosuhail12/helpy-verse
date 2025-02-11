@@ -19,13 +19,16 @@ vi.mock('@/hooks/use-toast', () => ({
 
 const mockTicket = {
   id: '123',
+  subject: 'Test Subject',
   title: 'Test Ticket',
   customer: 'John Doe',
   company: 'Acme Inc',
   lastMessage: 'Initial message',
   createdAt: '2024-01-01T00:00:00.000Z',
   status: 'open',
-  priority: 'medium'
+  priority: 'medium',
+  assignee: null,
+  tags: []
 };
 
 describe('ConversationPanel', () => {
