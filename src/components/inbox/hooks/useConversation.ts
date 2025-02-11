@@ -91,13 +91,13 @@ export const useConversation = (ticket: Ticket) => {
         });
 
         const presenceData = await channel.presence.get();
-        if (presenceData) {
-          const members = Array.from(presenceData);
+        if (presenceData instanceof Map) {
+          const members = Array.from(presenceData.values()) as Ably.PresenceMessage[];
           const presentMembers = members.map(member => ({
             userId: member.clientId,
-            name: (member.data as any)?.name || 'Unknown',
-            lastActive: (member.data as any)?.lastActive || new Date().toISOString(),
-            location: (member.data as any)?.location
+            name: member.data?.name || 'Unknown',
+            lastActive: member.data?.lastActive || new Date().toISOString(),
+            location: member.data?.location
           } as UserPresence));
           setActiveUsers(presentMembers);
         }
