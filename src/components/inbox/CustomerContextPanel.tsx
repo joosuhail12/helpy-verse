@@ -1,15 +1,16 @@
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { UserCircle, Building2, History, MessageCircle, Globe, Mail, Phone, Ticket } from "lucide-react";
+import { UserCircle, Building2, History, MessageCircle, Globe, Mail, Phone, Ticket, ChevronUp, ChevronDown } from "lucide-react";
 import { formatDistanceToNow } from 'date-fns';
 import type { Ticket as TicketType } from "@/types/ticket";
 import CustomerTimeline from './components/CustomerTimeline';
 import CustomerSubscriptions from './components/CustomerSubscriptions';
 import CommunicationChannels from './components/CommunicationChannels';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
 
 interface CustomerContextPanelProps {
   ticket: TicketType;
@@ -17,6 +18,19 @@ interface CustomerContextPanelProps {
 
 const CustomerContextPanel = ({ ticket }: CustomerContextPanelProps) => {
   const isLoading = false;
+  const [openSections, setOpenSections] = useState({
+    ticket: true,
+    contact: true,
+    company: true,
+    timeline: false
+  });
+
+  const toggleSection = (section: keyof typeof openSections) => {
+    setOpenSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
 
   const customerTimeline = [
     {
@@ -85,152 +99,28 @@ const CustomerContextPanel = ({ ticket }: CustomerContextPanelProps) => {
         </div>
       </div>
 
-      <Tabs defaultValue="overview" className="flex-1">
-        <TabsList className="w-full grid grid-cols-4 p-0 h-12 bg-gray-50/80">
-          <TabsTrigger 
-            value="overview" 
-            className="data-[state=active]:bg-white rounded-none border-r"
-          >
-            Overview
-          </TabsTrigger>
-          <TabsTrigger 
-            value="timeline" 
-            className="data-[state=active]:bg-white rounded-none border-r"
-          >
-            Timeline
-          </TabsTrigger>
-          <TabsTrigger 
-            value="tickets" 
-            className="data-[state=active]:bg-white rounded-none border-r"
-          >
-            Tickets
-          </TabsTrigger>
-          <TabsTrigger 
-            value="channels" 
-            className="data-[state=active]:bg-white rounded-none"
-          >
-            Contact
-          </TabsTrigger>
-        </TabsList>
-
-        <ScrollArea className="flex-1">
-          <TabsContent value="overview" className="m-0 p-4">
-            {isLoading ? (
-              <div className="space-y-4">
-                <Skeleton className="h-4 w-3/4" />
-                <Skeleton className="h-4 w-1/2" />
-              </div>
-            ) : (
-              <div className="space-y-6">
-                <section className="space-y-3">
-                  <h3 className="text-sm font-medium text-gray-500">Quick Contact</h3>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-sm">
-                      <Mail className="h-4 w-4 text-gray-400" />
-                      <span className="text-gray-600">{ticket.customer}@example.com</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <Phone className="h-4 w-4 text-gray-400" />
-                      <span className="text-gray-600">+1 (555) 123-4567</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <Globe className="h-4 w-4 text-gray-400" />
-                      <span className="text-gray-600">{ticket.company}.com</span>
-                    </div>
+      <ScrollArea className="flex-1 p-4">
+        <div className="space-y-4">
+          {/* Ticket Information */}
+          <Collapsible open={openSections.ticket} onOpenChange={() => toggleSection('ticket')}>
+            <Card className="border shadow-sm">
+              <CollapsibleTrigger asChild>
+                <Button variant="ghost" className="w-full flex items-center justify-between p-4 hover:bg-gray-50">
+                  <div className="flex items-center gap-2">
+                    <Ticket className="h-4 w-4 text-primary" />
+                    <span className="font-medium">Current Ticket</span>
                   </div>
-                </section>
-
-                <section className="space-y-3">
-                  <h3 className="text-sm font-medium text-gray-500">Company Information</h3>
-                  <div className="grid gap-3 text-sm">
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-500">Plan</span>
-                      <Badge variant="secondary">Enterprise</Badge>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-500">Status</span>
-                      <Badge variant="outline" className="bg-green-50 text-green-700">Active</Badge>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-500">Customer Since</span>
-                      <span className="text-gray-600">March 2024</span>
-                    </div>
+                  {openSections.ticket ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="p-4 pt-0 space-y-3">
+                <div className="grid gap-3 text-sm">
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-500">Subject</span>
+                    <span className="text-gray-600">{ticket.subject}</span>
                   </div>
-                </section>
-
-                <section className="space-y-3">
-                  <h3 className="text-sm font-medium text-gray-500">Current Ticket</h3>
-                  <div className="grid gap-3 text-sm">
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-500">Subject</span>
-                      <span className="text-gray-600">{ticket.subject}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-500">Status</span>
-                      <Badge 
-                        variant="outline" 
-                        className={
-                          ticket.status === 'open' 
-                            ? 'bg-green-50 text-green-700' 
-                            : ticket.status === 'pending' 
-                            ? 'bg-yellow-50 text-yellow-700'
-                            : 'bg-gray-50 text-gray-700'
-                        }
-                      >
-                        {ticket.status.charAt(0).toUpperCase() + ticket.status.slice(1)}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-500">Priority</span>
-                      <Badge 
-                        variant="outline" 
-                        className={
-                          ticket.priority === 'high' 
-                            ? 'bg-red-50 text-red-700' 
-                            : ticket.priority === 'medium' 
-                            ? 'bg-yellow-50 text-yellow-700'
-                            : 'bg-blue-50 text-blue-700'
-                        }
-                      >
-                        {ticket.priority.charAt(0).toUpperCase() + ticket.priority.slice(1)}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-500">Created</span>
-                      <span className="text-gray-600">
-                        {formatDistanceToNow(new Date(ticket.createdAt), { addSuffix: true })}
-                      </span>
-                    </div>
-                  </div>
-                </section>
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="timeline" className="m-0 p-4">
-            <div className="space-y-4">
-              <CustomerTimeline
-                events={customerTimeline}
-                isLoading={isLoading}
-              />
-            </div>
-          </TabsContent>
-
-          <TabsContent value="tickets" className="m-0 p-4">
-            <div className="space-y-4">
-              <section className="border rounded-lg p-4">
-                <div className="flex items-center gap-2 mb-4">
-                  <Ticket className="h-5 w-5 text-primary" />
-                  <h3 className="font-medium">Recent Tickets</h3>
-                </div>
-                <div className="space-y-3">
-                  <div className="flex items-start justify-between p-3 bg-gray-50 rounded-md">
-                    <div>
-                      <p className="font-medium text-sm">{ticket.subject}</p>
-                      <p className="text-xs text-gray-500">
-                        {formatDistanceToNow(new Date(ticket.createdAt), { addSuffix: true })}
-                      </p>
-                    </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-500">Status</span>
                     <Badge 
                       variant="outline" 
                       className={
@@ -241,24 +131,119 @@ const CustomerContextPanel = ({ ticket }: CustomerContextPanelProps) => {
                           : 'bg-gray-50 text-gray-700'
                       }
                     >
-                      {ticket.status}
+                      {ticket.status.charAt(0).toUpperCase() + ticket.status.slice(1)}
                     </Badge>
                   </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-500">Priority</span>
+                    <Badge 
+                      variant="outline" 
+                      className={
+                        ticket.priority === 'high' 
+                          ? 'bg-red-50 text-red-700' 
+                          : ticket.priority === 'medium' 
+                          ? 'bg-yellow-50 text-yellow-700'
+                          : 'bg-blue-50 text-blue-700'
+                      }
+                    >
+                      {ticket.priority.charAt(0).toUpperCase() + ticket.priority.slice(1)}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-500">Created</span>
+                    <span className="text-gray-600">
+                      {formatDistanceToNow(new Date(ticket.createdAt), { addSuffix: true })}
+                    </span>
+                  </div>
                 </div>
-              </section>
-            </div>
-          </TabsContent>
+              </CollapsibleContent>
+            </Card>
+          </Collapsible>
 
-          <TabsContent value="channels" className="m-0 p-4">
-            <div className="space-y-4">
-              <CommunicationChannels
-                channels={communicationChannels}
-                isLoading={isLoading}
-              />
-            </div>
-          </TabsContent>
-        </ScrollArea>
-      </Tabs>
+          {/* Contact Information */}
+          <Collapsible open={openSections.contact} onOpenChange={() => toggleSection('contact')}>
+            <Card className="border shadow-sm">
+              <CollapsibleTrigger asChild>
+                <Button variant="ghost" className="w-full flex items-center justify-between p-4 hover:bg-gray-50">
+                  <div className="flex items-center gap-2">
+                    <UserCircle className="h-4 w-4 text-primary" />
+                    <span className="font-medium">Contact Information</span>
+                  </div>
+                  {openSections.contact ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="p-4 pt-0">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Mail className="h-4 w-4 text-gray-400" />
+                    <span className="text-gray-600">{ticket.customer}@example.com</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Phone className="h-4 w-4 text-gray-400" />
+                    <span className="text-gray-600">+1 (555) 123-4567</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Globe className="h-4 w-4 text-gray-400" />
+                    <span className="text-gray-600">{ticket.company}.com</span>
+                  </div>
+                </div>
+              </CollapsibleContent>
+            </Card>
+          </Collapsible>
+
+          {/* Company Information */}
+          <Collapsible open={openSections.company} onOpenChange={() => toggleSection('company')}>
+            <Card className="border shadow-sm">
+              <CollapsibleTrigger asChild>
+                <Button variant="ghost" className="w-full flex items-center justify-between p-4 hover:bg-gray-50">
+                  <div className="flex items-center gap-2">
+                    <Building2 className="h-4 w-4 text-primary" />
+                    <span className="font-medium">Company Information</span>
+                  </div>
+                  {openSections.company ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="p-4 pt-0">
+                <div className="grid gap-3 text-sm">
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-500">Plan</span>
+                    <Badge variant="secondary">Enterprise</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-500">Status</span>
+                    <Badge variant="outline" className="bg-green-50 text-green-700">Active</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-500">Customer Since</span>
+                    <span className="text-gray-600">March 2024</span>
+                  </div>
+                </div>
+              </CollapsibleContent>
+            </Card>
+          </Collapsible>
+
+          {/* Timeline */}
+          <Collapsible open={openSections.timeline} onOpenChange={() => toggleSection('timeline')}>
+            <Card className="border shadow-sm">
+              <CollapsibleTrigger asChild>
+                <Button variant="ghost" className="w-full flex items-center justify-between p-4 hover:bg-gray-50">
+                  <div className="flex items-center gap-2">
+                    <History className="h-4 w-4 text-primary" />
+                    <span className="font-medium">Timeline</span>
+                  </div>
+                  {openSections.timeline ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="px-4">
+                <CustomerTimeline
+                  events={customerTimeline}
+                  isLoading={isLoading}
+                />
+              </CollapsibleContent>
+            </Card>
+          </Collapsible>
+        </div>
+      </ScrollArea>
     </Card>
   );
 };
