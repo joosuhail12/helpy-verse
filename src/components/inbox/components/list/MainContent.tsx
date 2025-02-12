@@ -80,9 +80,9 @@ const MainContent = ({
         ? 'w-full md:w-3/5 lg:w-2/5' 
         : 'w-full'
     }`}>
-      <div className="flex-1 overflow-auto px-6">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-6 mt-6">
-          <div className="p-4 space-y-6">
+      <div className="flex-1 overflow-auto px-4">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-100 mb-4 mt-4">
+          <div className="p-4 space-y-4">
             <FilterBar
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
@@ -119,34 +119,32 @@ const MainContent = ({
         {isLoading ? (
           <LoadingState />
         ) : (
-          <div className="space-y-3 animate-fade-in pb-6">
-            <div className="space-y-2">
-              {paginatedTickets.map((ticket) => (
-                <div
-                  key={ticket.id}
-                  onClick={() => onTicketClick(ticket)}
-                  className="transform transition-all duration-200 hover:-translate-y-0.5"
-                >
-                  <TicketListItem
-                    ticket={ticket}
-                    viewMode={selectedTicketForChat ? 'compact' : viewMode}
-                    isSelected={selectedTickets.includes(ticket.id)}
-                    isLoading={!!loadingStates[ticket.id]}
-                    onSelect={(id) => {
-                      event?.stopPropagation();
-                      handleTicketSelection(id);
-                    }}
-                    onCopyId={(id) => {
-                      event?.stopPropagation();
-                      handleCopyTicketId(id);
-                    }}
-                  />
-                </div>
-              ))}
-            </div>
+          <div className="space-y-2 pb-4">
+            {paginatedTickets.map((ticket) => (
+              <div
+                key={ticket.id}
+                onClick={() => onTicketClick(ticket)}
+                className="transform transition-all duration-200 hover:-translate-y-0.5"
+              >
+                <TicketListItem
+                  ticket={ticket}
+                  viewMode={selectedTicketForChat ? 'compact' : viewMode}
+                  isSelected={selectedTickets.includes(ticket.id)}
+                  isLoading={!!loadingStates[ticket.id]}
+                  onSelect={(id) => {
+                    event?.stopPropagation();
+                    handleTicketSelection(id);
+                  }}
+                  onCopyId={(id) => {
+                    event?.stopPropagation();
+                    handleCopyTicketId(id);
+                  }}
+                />
+              </div>
+            ))}
 
             {totalPages > 1 && (
-              <div className="flex justify-center gap-2 mt-6">
+              <div className="flex justify-center gap-2 mt-4">
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                   <button
                     key={page}
