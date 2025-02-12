@@ -13,10 +13,11 @@ export const useRealtimeTickets = (updateTicket: (ticket: Ticket) => void) => {
 
     const setupRealtime = async () => {
       try {
+        // Get the Ably channel
         channel = await getAblyChannel('tickets');
-        
         if (!channel || !isSubscribed) return;
         
+        // Subscribe to ticket updates
         channel.subscribe('ticket:update', (message: any) => {
           if (!isSubscribed) return;
           const updatedTicket = message.data;
@@ -28,6 +29,7 @@ export const useRealtimeTickets = (updateTicket: (ticket: Ticket) => void) => {
           });
         });
 
+        // Subscribe to new tickets
         channel.subscribe('ticket:new', (message: any) => {
           if (!isSubscribed) return;
           const newTicket = message.data;
@@ -50,6 +52,7 @@ export const useRealtimeTickets = (updateTicket: (ticket: Ticket) => void) => {
 
     setupRealtime();
 
+    // Cleanup subscription on unmount
     return () => {
       isSubscribed = false;
       if (channel) {
