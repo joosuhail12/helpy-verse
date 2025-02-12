@@ -9,17 +9,12 @@ export const useRealtimeTickets = (updateTicket: (ticket: Ticket) => void) => {
 
   useEffect(() => {
     let channel: any;
-    let isSubscribed = true;
 
     const setupRealtime = async () => {
       try {
-        // Get the Ably channel
         channel = await getAblyChannel('tickets');
-        if (!channel || !isSubscribed) return;
         
-        // Subscribe to ticket updates
         channel.subscribe('ticket:update', (message: any) => {
-          if (!isSubscribed) return;
           const updatedTicket = message.data;
           updateTicket(updatedTicket);
           
@@ -29,9 +24,7 @@ export const useRealtimeTickets = (updateTicket: (ticket: Ticket) => void) => {
           });
         });
 
-        // Subscribe to new tickets
         channel.subscribe('ticket:new', (message: any) => {
-          if (!isSubscribed) return;
           const newTicket = message.data;
           toast({
             title: "New Ticket",
@@ -40,7 +33,6 @@ export const useRealtimeTickets = (updateTicket: (ticket: Ticket) => void) => {
         });
 
       } catch (error) {
-        if (!isSubscribed) return;
         console.error('Error setting up realtime:', error);
         toast({
           title: "Connection Error",
@@ -52,9 +44,7 @@ export const useRealtimeTickets = (updateTicket: (ticket: Ticket) => void) => {
 
     setupRealtime();
 
-    // Cleanup subscription on unmount
     return () => {
-      isSubscribed = false;
       if (channel) {
         channel.unsubscribe();
       }

@@ -1,6 +1,1 @@
-
 project_id = "iiovtfvunrdrfthcxiov"
-
-[functions.get-ably-token]
-verify_jwt = false
-

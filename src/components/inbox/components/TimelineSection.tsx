@@ -27,12 +27,10 @@ const TimelineSection = ({ events, isLoading }: TimelineSectionProps) => {
           <ChevronDown className="h-4 w-4 text-gray-500 transition-transform duration-200" />
         </CollapsibleTrigger>
         <CollapsibleContent>
-          <div className="p-4 pt-0">
-            <CustomerTimeline
-              events={events}
-              isLoading={isLoading}
-            />
-          </div>
+          <CustomerTimeline
+            events={events}
+            isLoading={isLoading}
+          />
         </CollapsibleContent>
       </Card>
     </Collapsible>

@@ -39,4 +39,3 @@ serve(async (req) => {
     )
   }
 })
-
