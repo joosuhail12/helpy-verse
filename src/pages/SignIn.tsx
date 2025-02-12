@@ -4,7 +4,7 @@ import { Logo } from "@/components/auth/Logo";
 import { FeatureList } from "@/components/auth/FeatureList";
 import { LoginForm } from "@/components/auth/LoginForm";
 
-export const SignIn = memo(() => {
+const SignInComponent = () => {
   return (
     <div className="min-h-screen w-full gradient-background flex items-center justify-center p-6 md:p-8">
       <div className="w-full max-w-3xl auth-card grid md:grid-cols-2 gap-8">
@@ -25,8 +25,11 @@ export const SignIn = memo(() => {
       </div>
     </div>
   );
-});
+};
 
-SignIn.displayName = 'SignIn';
+SignInComponent.displayName = 'SignInComponent';
 
+export const SignIn = memo(SignInComponent);
+
+// This default export is crucial for dynamic imports
 export default SignIn;

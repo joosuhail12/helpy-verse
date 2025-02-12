@@ -9,12 +9,13 @@ import { store } from './store/store';
 import { Suspense, lazy } from 'react';
 import { useAppSelector } from "./hooks/useAppSelector";
 
-const SignIn = lazy(() => import("./pages/SignIn"));
-const SignUp = lazy(() => import("./pages/SignUp"));
-const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
-const Home = lazy(() => import("./pages/Dashboard"));
-const AllTickets = lazy(() => import("./pages/inbox/All"));
-const NotFound = lazy(() => import("./pages/NotFound"));
+// Lazy load components with explicit chunk names
+const SignIn = lazy(() => import(/* webpackChunkName: "sign-in" */ "./pages/SignIn"));
+const SignUp = lazy(() => import(/* webpackChunkName: "sign-up" */ "./pages/SignUp"));
+const ForgotPassword = lazy(() => import(/* webpackChunkName: "forgot-password" */ "./pages/ForgotPassword"));
+const Home = lazy(() => import(/* webpackChunkName: "home" */ "./pages/Dashboard"));
+const AllTickets = lazy(() => import(/* webpackChunkName: "all-tickets" */ "./pages/inbox/All"));
+const NotFound = lazy(() => import(/* webpackChunkName: "not-found" */ "./pages/NotFound"));
 
 const queryClient = new QueryClient();
 
