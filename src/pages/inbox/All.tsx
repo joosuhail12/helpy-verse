@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import TicketList from '@/components/inbox/TicketList';
 import { useQuery } from '@tanstack/react-query';
@@ -11,12 +12,13 @@ const fetchTickets = async () => {
     return response.json();
   } catch (error) {
     console.error('Error fetching tickets:', error);
-    throw error;
+    // Return empty array instead of throwing to prevent constant loading state
+    return [];
   }
 };
 
 const AllTickets = () => {
-  const { data: tickets, isLoading } = useQuery({
+  const { data: tickets = [], isLoading } = useQuery({
     queryKey: ['tickets'],
     queryFn: fetchTickets,
     placeholderData: [
@@ -134,7 +136,7 @@ const AllTickets = () => {
   return (
     <div className="w-full h-[calc(100vh-4rem)] flex flex-col transition-all duration-300">
       <div className="flex-1 overflow-hidden">
-        <TicketList tickets={tickets || []} isLoading={isLoading} />
+        <TicketList tickets={tickets} isLoading={isLoading} />
       </div>
     </div>
   );
