@@ -10,7 +10,7 @@ const mockTickets: Ticket[] = [
     id: '1',
     subject: 'Cannot access my account',
     customer: 'John Doe',
-    lastMessage: 'I've been trying to log in but keep getting an error message.',
+    lastMessage: 'I\'ve been trying to log in but keep getting an error message.',
     assignee: 'Sarah Wilson',
     company: 'Acme Corp',
     tags: ['account', 'login'],
