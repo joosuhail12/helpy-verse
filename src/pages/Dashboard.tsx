@@ -92,7 +92,7 @@ const Dashboard = () => {
       <Sidebar />
 
       <div className="flex-1 flex flex-col h-screen overflow-hidden">
-        <main className="flex-1 p-6 overflow-auto">
+        <main className="flex-1 pt-6 overflow-auto">
           <div className="max-w-7xl mx-auto">
             {location.pathname === '/home' ? (
               <>
