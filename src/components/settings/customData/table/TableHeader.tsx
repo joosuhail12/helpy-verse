@@ -12,7 +12,7 @@ interface TableHeaderProps {
 const TableHeaderComponent = ({ filteredFields, selectedFields, onSelectAll }: TableHeaderProps) => {
   return (
     <TableHeader>
-      <TableRow>
+      <TableRow className="bg-purple-50/50 hover:bg-purple-50">
         <TableHead className="w-[50px]">
           <Checkbox
             checked={selectedFields.length === filteredFields.length && filteredFields.length > 0}
@@ -20,11 +20,11 @@ const TableHeaderComponent = ({ filteredFields, selectedFields, onSelectAll }: T
             aria-label="Select all"
           />
         </TableHead>
-        <TableHead>Field Name</TableHead>
-        <TableHead>Type</TableHead>
-        <TableHead>Required</TableHead>
-        <TableHead>Description</TableHead>
-        <TableHead className="text-right">Actions</TableHead>
+        <TableHead className="font-semibold text-purple-900">Field Name</TableHead>
+        <TableHead className="font-semibold text-purple-900">Type</TableHead>
+        <TableHead className="font-semibold text-purple-900">Required</TableHead>
+        <TableHead className="font-semibold text-purple-900">Description</TableHead>
+        <TableHead className="text-right font-semibold text-purple-900">Actions</TableHead>
       </TableRow>
     </TableHeader>
   );
