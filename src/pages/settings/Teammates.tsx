@@ -3,27 +3,29 @@ import { useEffect, useState } from 'react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { fetchTeammates, resendInvitation } from '@/store/slices/teammatesSlice';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { format, subDays } from 'date-fns';
 import { useToast } from "@/hooks/use-toast";
 import AddTeammateDialog from '@/components/teammates/AddTeammateDialog';
 import TeammatesBulkActions from '@/components/teammates/TeammatesBulkActions';
 import TeammatesFilters from '@/components/teammates/TeammatesFilters';
-import { Send } from 'lucide-react';
-import { Checkbox } from "@/components/ui/checkbox";
-import type { Teammate } from '@/types/teammate';
+import TeammatesTable from '@/components/teammates/TeammatesTable';
+import { useTeammateFilters } from '@/hooks/useTeammateFilters';
 
 const TeammatesPage = () => {
   const dispatch = useAppDispatch();
   const { teammates, loading, error } = useAppSelector((state) => state.teammates);
   const { toast } = useToast();
   const [selectedTeammates, setSelectedTeammates] = useState<string[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [roleFilter, setRoleFilter] = useState('all_roles');
-  const [statusFilter, setStatusFilter] = useState('all_statuses');
+
+  const {
+    searchQuery,
+    setSearchQuery,
+    roleFilter,
+    setRoleFilter,
+    statusFilter,
+    setStatusFilter,
+    handleQuickFilterClick,
+    filteredTeammates
+  } = useTeammateFilters(teammates);
 
   useEffect(() => {
     dispatch(fetchTeammates());
@@ -60,34 +62,6 @@ const TeammatesPage = () => {
       setSelectedTeammates(prev => prev.filter(id => id !== teammateId));
     }
   };
-
-  const handleQuickFilterClick = (filter: 'recent' | 'inactive') => {
-    if (filter === 'recent') {
-      setStatusFilter('all_statuses');
-      const recentDate = subDays(new Date(), 7);
-      // Only update the filtered results through the existing filters
-      setSearchQuery('');
-      setRoleFilter('all_roles');
-    } else if (filter === 'inactive') {
-      setStatusFilter('inactive');
-    }
-  };
-
-  const filteredTeammates = teammates.filter(teammate => {
-    const matchesSearch = searchQuery.toLowerCase() === '' || 
-      teammate.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      teammate.email.toLowerCase().includes(searchQuery.toLowerCase());
-
-    const matchesRole = roleFilter === 'all_roles' || teammate.role === roleFilter;
-    const matchesStatus = statusFilter === 'all_statuses' || teammate.status === statusFilter;
-
-    if (roleFilter === 'recent') {
-      const recentDate = subDays(new Date(), 7);
-      return new Date(teammate.createdAt) >= recentDate;
-    }
-
-    return matchesSearch && matchesRole && matchesStatus;
-  });
 
   if (loading) {
     return (
@@ -134,74 +108,13 @@ const TeammatesPage = () => {
         />
       )}
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-[50px]">
-              <Checkbox
-                checked={selectedTeammates.length === filteredTeammates.length}
-                onCheckedChange={(checked) => handleSelectAll(checked as boolean)}
-              />
-            </TableHead>
-            <TableHead className="w-[250px]">Name</TableHead>
-            <TableHead>Role</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Last Active</TableHead>
-            <TableHead>Joined</TableHead>
-            <TableHead>Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {filteredTeammates.map((teammate) => (
-            <TableRow key={teammate.id}>
-              <TableCell>
-                <Checkbox
-                  checked={selectedTeammates.includes(teammate.id)}
-                  onCheckedChange={(checked) => handleSelectTeammate(teammate.id, checked as boolean)}
-                />
-              </TableCell>
-              <TableCell>
-                <div className="flex items-center gap-3">
-                  <Avatar>
-                    <AvatarImage src={teammate.avatar} />
-                    <AvatarFallback>{teammate.name.slice(0, 2).toUpperCase()}</AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <div className="font-medium">{teammate.name}</div>
-                    <div className="text-sm text-gray-500">{teammate.email}</div>
-                  </div>
-                </div>
-              </TableCell>
-              <TableCell>
-                <Badge variant={teammate.role === 'admin' ? 'default' : 'secondary'}>
-                  {teammate.role}
-                </Badge>
-              </TableCell>
-              <TableCell>
-                <Badge variant={teammate.status === 'active' ? 'default' : 'secondary'}>
-                  {teammate.status}
-                </Badge>
-              </TableCell>
-              <TableCell>
-                {format(new Date(teammate.lastActive), 'MMM d, yyyy HH:mm')}
-              </TableCell>
-              <TableCell>
-                {format(new Date(teammate.createdAt), 'MMM d, yyyy')}
-              </TableCell>
-              <TableCell>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleResendInvitation(teammate.id)}
-                  title="Resend invitation email"
-                >
-                  <Send className="h-4 w-4" />
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+      <TeammatesTable
+        teammates={filteredTeammates}
+        selectedTeammates={selectedTeammates}
+        onSelectAll={handleSelectAll}
+        onSelectTeammate={handleSelectTeammate}
+        onResendInvitation={handleResendInvitation}
+      />
     </div>
   );
 };
