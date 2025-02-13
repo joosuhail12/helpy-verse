@@ -1,0 +1,141 @@
+
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/components/ui/use-toast";
+import { useState } from "react";
+import { useCustomDataMutations } from "@/hooks/useCustomDataMutations";
+import type { CustomFieldType } from "@/types/customField";
+
+interface AddCustomFieldDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  table: 'tickets' | 'contacts' | 'companies';
+}
+
+const AddCustomFieldDialog = ({ isOpen, onClose, table }: AddCustomFieldDialogProps) => {
+  const [name, setName] = useState("");
+  const [type, setType] = useState<CustomFieldType>("text");
+  const [required, setRequired] = useState(false);
+  const [description, setDescription] = useState("");
+  const { toast } = useToast();
+  const { addCustomField, isLoading } = useCustomDataMutations();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      await addCustomField({
+        table,
+        field: {
+          name,
+          type,
+          required,
+          description,
+        }
+      });
+      
+      toast({
+        title: "Custom field added",
+        description: "The custom field has been added successfully.",
+      });
+      
+      onClose();
+      setName("");
+      setType("text");
+      setRequired(false);
+      setDescription("");
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add custom field. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[425px]">
+        <form onSubmit={handleSubmit}>
+          <DialogHeader>
+            <DialogTitle>Add Custom Field</DialogTitle>
+            <DialogDescription>
+              Add a new custom field to the {table} table.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="name">Field Name</Label>
+              <Input
+                id="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="type">Field Type</Label>
+              <Select value={type} onValueChange={(value) => setType(value as CustomFieldType)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="text">Text</SelectItem>
+                  <SelectItem value="number">Number</SelectItem>
+                  <SelectItem value="date">Date</SelectItem>
+                  <SelectItem value="boolean">Boolean</SelectItem>
+                  <SelectItem value="select">Select</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="required">Required Field</Label>
+              <Switch
+                id="required"
+                checked={required}
+                onCheckedChange={setRequired}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" type="button" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? "Adding..." : "Add Field"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export default AddCustomFieldDialog;
