@@ -9,20 +9,37 @@ import { store } from './store/store';
 import { Suspense, lazy } from 'react';
 import { useAppSelector } from "./hooks/useAppSelector";
 
-// Lazy load components with explicit chunk names
+// Lazy load components with explicit chunk names and retry logic
 const SignIn = lazy(() => import(/* webpackChunkName: "signin" */ "./pages/SignIn"));
 const SignUp = lazy(() => import(/* webpackChunkName: "signup" */ "./pages/SignUp"));
 const ForgotPassword = lazy(() => import(/* webpackChunkName: "forgot-password" */ "./pages/ForgotPassword"));
 const Home = lazy(() => import(/* webpackChunkName: "home" */ "./pages/Dashboard"));
 const AllTickets = lazy(() => import(/* webpackChunkName: "all-tickets" */ "./pages/inbox/All"));
 const Tags = lazy(() => import(/* webpackChunkName: "tags" */ "./pages/settings/Tags"));
-const Teammates = lazy(() => 
-  import(/* webpackChunkName: "teammates" */ "./pages/settings/Teammates")
-    .catch(error => {
-      console.error("Error loading Teammates component:", error);
-      return { default: () => <div>Error loading teammates page. Please try refreshing.</div> };
-    })
-);
+
+// Add retry logic for Teammates component
+const loadTeammates = () => import(/* webpackChunkName: "teammates" */ "./pages/settings/Teammates")
+  .catch(error => {
+    console.error("Error loading Teammates component:", error);
+    return new Promise((resolve) => {
+      // Retry after a short delay
+      setTimeout(() => {
+        resolve(import(/* webpackChunkName: "teammates" */ "./pages/settings/Teammates")
+          .catch(() => ({
+            default: () => (
+              <div className="p-6">
+                <div className="bg-red-50 text-red-500 p-4 rounded-lg">
+                  Failed to load the Teammates page. Please refresh the page or try again later.
+                </div>
+              </div>
+            )
+          }))
+        );
+      }, 1000);
+    });
+  });
+
+const Teammates = lazy(loadTeammates);
 const NotFound = lazy(() => import(/* webpackChunkName: "not-found" */ "./pages/NotFound"));
 
 const queryClient = new QueryClient({

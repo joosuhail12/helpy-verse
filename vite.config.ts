@@ -12,14 +12,20 @@ export default defineConfig(({ mode }) => ({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          'react-vendor': ['react', 'react-dom'],
-          'router-vendor': ['react-router-dom'],
-          'redux-vendor': ['@reduxjs/toolkit', 'react-redux'],
-        },
+        manualChunks: (id) => {
+          if (id.includes('node_modules')) {
+            if (id.includes('react')) return 'react-vendor';
+            if (id.includes('redux')) return 'redux-vendor';
+            if (id.includes('router')) return 'router-vendor';
+            return 'vendor';
+          }
+          if (id.includes('src/pages/settings')) return 'settings';
+          if (id.includes('src/pages/inbox')) return 'inbox';
+        }
       },
     },
     chunkSizeWarningLimit: 1000,
+    sourcemap: true,
   },
   plugins: [
     react(),
