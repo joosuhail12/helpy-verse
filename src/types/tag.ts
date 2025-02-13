@@ -1,3 +1,4 @@
+
 export interface Tag {
   id: string;
   name: string;
@@ -14,7 +15,7 @@ export interface Tag {
     date: string;
     total: number;
   }[];
-  preview: {
+  preview?: {
     type: 'ticket' | 'contact' | 'company';
     id: string;
     title: string;
@@ -23,3 +24,4 @@ export interface Tag {
 
 export type SortField = 'name' | 'tickets' | 'contacts' | 'companies' | 'lastUsed' | 'createdAt';
 export type FilterEntity = 'all' | 'tickets' | 'contacts' | 'companies';
+

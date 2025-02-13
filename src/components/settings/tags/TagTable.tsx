@@ -7,7 +7,6 @@ import TagColorPreview from './TagColorPreview';
 import TagUsageStats from './TagUsageStats';
 import TagActions from './TagActions';
 import TagUsageChart from './TagUsageChart';
-import TagPreviewItems from './TagPreviewItems';
 
 interface TagTableProps {
   tags: Tag[];
@@ -60,7 +59,6 @@ const TagTable = ({
           <TableHead className="w-[150px]">Created</TableHead>
           <TableHead className="w-[150px]">Last Used</TableHead>
           <TableHead className="w-[100px]">Trend</TableHead>
-          <TableHead>Preview</TableHead>
           <TableHead className="w-[100px]"></TableHead>
         </TableRow>
       </TableHeader>
@@ -91,9 +89,6 @@ const TagTable = ({
               <div className="flex items-center justify-center">
                 {getTrendIcon(tag.trend)}
               </div>
-            </TableCell>
-            <TableCell>
-              <TagPreviewItems items={tag.preview} />
             </TableCell>
             <TableCell className="text-right">
               <TagActions
