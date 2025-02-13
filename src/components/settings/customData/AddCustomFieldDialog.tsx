@@ -22,19 +22,24 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { useState } from "react";
 import { useCustomDataMutations } from "@/hooks/useCustomDataMutations";
-import type { CustomFieldType } from "@/types/customField";
+import type { CustomField, CustomFieldType, ValidationRule, FieldDependency } from "@/types/customField";
+import ValidationRulesSection from "./ValidationRulesSection";
+import DependenciesSection from "./DependenciesSection";
 
 interface AddCustomFieldDialogProps {
   isOpen: boolean;
   onClose: () => void;
   table: 'tickets' | 'contacts' | 'companies';
+  existingFields: CustomField[];
 }
 
-const AddCustomFieldDialog = ({ isOpen, onClose, table }: AddCustomFieldDialogProps) => {
+const AddCustomFieldDialog = ({ isOpen, onClose, table, existingFields }: AddCustomFieldDialogProps) => {
   const [name, setName] = useState("");
   const [type, setType] = useState<CustomFieldType>("text");
   const [required, setRequired] = useState(false);
   const [description, setDescription] = useState("");
+  const [validationRules, setValidationRules] = useState<ValidationRule[]>([]);
+  const [dependencies, setDependencies] = useState<FieldDependency[]>([]);
   const { toast } = useToast();
   const { addCustomField, isLoading } = useCustomDataMutations();
 
@@ -49,6 +54,8 @@ const AddCustomFieldDialog = ({ isOpen, onClose, table }: AddCustomFieldDialogPr
           type,
           required,
           description,
+          validationRules,
+          dependencies,
         }
       });
       
@@ -62,6 +69,8 @@ const AddCustomFieldDialog = ({ isOpen, onClose, table }: AddCustomFieldDialogPr
       setType("text");
       setRequired(false);
       setDescription("");
+      setValidationRules([]);
+      setDependencies([]);
     } catch (error) {
       toast({
         title: "Error",
@@ -73,7 +82,7 @@ const AddCustomFieldDialog = ({ isOpen, onClose, table }: AddCustomFieldDialogPr
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[600px]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Add Custom Field</DialogTitle>
@@ -123,6 +132,17 @@ const AddCustomFieldDialog = ({ isOpen, onClose, table }: AddCustomFieldDialogPr
                 rows={3}
               />
             </div>
+            
+            <ValidationRulesSection
+              rules={validationRules}
+              onRulesChange={setValidationRules}
+            />
+            
+            <DependenciesSection
+              dependencies={dependencies}
+              onDependenciesChange={setDependencies}
+              availableFields={existingFields}
+            />
           </div>
           <DialogFooter>
             <Button variant="outline" type="button" onClick={onClose}>

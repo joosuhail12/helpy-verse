@@ -16,12 +16,15 @@ import { useToast } from "@/components/ui/use-toast";
 import { useState, useEffect } from "react";
 import type { CustomField } from "@/types/customField";
 import { useCustomDataMutations } from "@/hooks/useCustomDataMutations";
+import ValidationRulesSection from "./ValidationRulesSection";
+import DependenciesSection from "./DependenciesSection";
 
 interface EditCustomFieldDialogProps {
   isOpen: boolean;
   onClose: () => void;
   field: CustomField;
   table: 'tickets' | 'contacts' | 'companies';
+  existingFields: CustomField[];
 }
 
 const EditCustomFieldDialog = ({
@@ -29,10 +32,13 @@ const EditCustomFieldDialog = ({
   onClose,
   field,
   table,
+  existingFields,
 }: EditCustomFieldDialogProps) => {
   const [name, setName] = useState(field.name);
   const [required, setRequired] = useState(field.required);
   const [description, setDescription] = useState(field.description);
+  const [validationRules, setValidationRules] = useState(field.validationRules || []);
+  const [dependencies, setDependencies] = useState(field.dependencies || []);
   const { toast } = useToast();
   const { updateCustomField, isLoading } = useCustomDataMutations();
 
@@ -41,6 +47,8 @@ const EditCustomFieldDialog = ({
       setName(field.name);
       setRequired(field.required);
       setDescription(field.description);
+      setValidationRules(field.validationRules || []);
+      setDependencies(field.dependencies || []);
     }
   }, [isOpen, field]);
 
@@ -55,6 +63,8 @@ const EditCustomFieldDialog = ({
           name,
           required,
           description,
+          validationRules,
+          dependencies,
         }
       });
       
@@ -75,7 +85,7 @@ const EditCustomFieldDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[600px]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Edit Custom Field</DialogTitle>
@@ -111,6 +121,17 @@ const EditCustomFieldDialog = ({
                 rows={3}
               />
             </div>
+
+            <ValidationRulesSection
+              rules={validationRules}
+              onRulesChange={setValidationRules}
+            />
+            
+            <DependenciesSection
+              dependencies={dependencies}
+              onDependenciesChange={setDependencies}
+              availableFields={existingFields.filter(f => f.id !== field.id)}
+            />
           </div>
           <DialogFooter>
             <Button variant="outline" type="button" onClick={onClose}>

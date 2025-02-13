@@ -12,6 +12,8 @@ const CustomData = () => {
   const [isAddFieldOpen, setIsAddFieldOpen] = useState(false);
   const { data: customFields, isLoading, error } = useCustomFields(selectedTable);
 
+  const currentFields = customFields?.[selectedTable] || [];
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -31,7 +33,7 @@ const CustomData = () => {
 
         <TabsContent value="tickets">
           <CustomDataTable 
-            fields={customFields?.tickets || []} 
+            fields={currentFields} 
             isLoading={isLoading} 
             error={error}
             table="tickets" 
@@ -39,7 +41,7 @@ const CustomData = () => {
         </TabsContent>
         <TabsContent value="contacts">
           <CustomDataTable 
-            fields={customFields?.contacts || []} 
+            fields={currentFields} 
             isLoading={isLoading} 
             error={error}
             table="contacts" 
@@ -47,7 +49,7 @@ const CustomData = () => {
         </TabsContent>
         <TabsContent value="companies">
           <CustomDataTable 
-            fields={customFields?.companies || []} 
+            fields={currentFields} 
             isLoading={isLoading} 
             error={error}
             table="companies" 
@@ -59,6 +61,7 @@ const CustomData = () => {
         isOpen={isAddFieldOpen} 
         onClose={() => setIsAddFieldOpen(false)}
         table={selectedTable}
+        existingFields={currentFields}
       />
     </div>
   );
