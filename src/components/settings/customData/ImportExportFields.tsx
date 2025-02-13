@@ -6,8 +6,8 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dialog";
-import { Import, Export } from 'lucide-react';
+} from "@/components/ui/dropdown-menu";
+import { Import, FileDown } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { exportFieldsToCSV, exportFieldsToJSON, parseImportedCSV, parseImportedJSON } from './utils/importExportUtils';
 import type { CustomField } from '@/types/customField';
@@ -77,7 +77,7 @@ const ImportExportFields = ({ fields, table, onImport }: ImportExportFieldsProps
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="outline">
-            <Export className="w-4 h-4 mr-2" />
+            <FileDown className="w-4 h-4 mr-2" />
             Export Fields
           </Button>
         </DropdownMenuTrigger>

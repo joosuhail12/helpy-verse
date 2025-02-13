@@ -26,6 +26,7 @@ const CustomData = () => {
   });
 
   const handleImport = async (importedFields: CustomField[]) => {
+    const timestamp = new Date().toISOString();
     // Add each imported field using the existing mutation
     for (const field of importedFields) {
       await addCustomField({
@@ -38,6 +39,14 @@ const CustomData = () => {
           options: field.options,
           validationRules: field.validationRules,
           dependencies: field.dependencies,
+          history: [{
+            id: Math.random().toString(),
+            timestamp,
+            userId: 'system',
+            userName: 'System Import',
+            action: 'created',
+            changes: []
+          }]
         }
       });
     }
