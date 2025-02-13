@@ -1,13 +1,10 @@
 
 import { TableCell, TableRow } from "@/components/ui/table";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { Send, Copy, Check, X, Pencil } from 'lucide-react';
+import { Send } from 'lucide-react';
 import { format } from 'date-fns';
-import { Link } from 'react-router-dom';
 import {
   Tooltip,
   TooltipContent,
@@ -15,6 +12,10 @@ import {
 } from "@/components/ui/tooltip";
 import { useState } from 'react';
 import type { Teammate } from '@/types/teammate';
+import TeammateAvatar from './TeammateAvatar';
+import TeammateEmail from './TeammateEmail';
+import { getRoleBadgeVariant, getRoleDescription } from './utils/roleUtils';
+import { getStatusDescription } from './utils/statusUtils';
 
 interface TeammateTableRowProps {
   teammate: Teammate;
@@ -23,40 +24,6 @@ interface TeammateTableRowProps {
   onResendInvitation: (teammateId: string) => void;
   onUpdateTeammate?: (teammateId: string, updates: Partial<Teammate>) => void;
 }
-
-const getRoleBadgeVariant = (role: Teammate['role']) => {
-  switch (role) {
-    case 'admin':
-      return 'default';
-    case 'supervisor':
-      return 'secondary';
-    case 'agent':
-      return 'outline';
-    default:
-      return 'secondary';
-  }
-};
-
-const getRoleDescription = (role: Teammate['role']) => {
-  switch (role) {
-    case 'admin':
-      return 'Full access to all features and settings';
-    case 'supervisor':
-      return 'Can manage team members and view reports';
-    case 'agent':
-      return 'Can handle tickets and chat with customers';
-    case 'viewer':
-      return 'Can only view tickets and reports';
-    default:
-      return '';
-  }
-};
-
-const getStatusDescription = (status: Teammate['status']) => {
-  return status === 'active' 
-    ? 'Currently active and can access the system' 
-    : 'Account is deactivated';
-};
 
 const TeammateTableRow = ({
   teammate,
@@ -67,17 +34,6 @@ const TeammateTableRow = ({
 }: TeammateTableRowProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(teammate.name);
-  const [showCopied, setShowCopied] = useState(false);
-
-  const handleCopyEmail = async () => {
-    try {
-      await navigator.clipboard.writeText(teammate.email);
-      setShowCopied(true);
-      setTimeout(() => setShowCopied(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy email:', err);
-    }
-  };
 
   const handleSaveEdit = () => {
     if (onUpdateTeammate && editedName.trim() !== '') {
@@ -101,71 +57,16 @@ const TeammateTableRow = ({
       </TableCell>
       <TableCell>
         <div className="flex items-center gap-3">
-          <Avatar>
-            <AvatarImage src={teammate.avatar} />
-            <AvatarFallback>{teammate.name.slice(0, 2).toUpperCase()}</AvatarFallback>
-          </Avatar>
-          <div className="flex-grow">
-            {isEditing ? (
-              <div className="flex items-center gap-2">
-                <Input
-                  value={editedName}
-                  onChange={(e) => setEditedName(e.target.value)}
-                  className="h-8 w-48"
-                  autoFocus
-                />
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleSaveEdit}
-                  className="h-8 w-8 p-0"
-                >
-                  <Check className="h-4 w-4 text-green-500" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleCancelEdit}
-                  className="h-8 w-8 p-0"
-                >
-                  <X className="h-4 w-4 text-red-500" />
-                </Button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <Link 
-                  to={`/home/settings/teammates/${teammate.id}`}
-                  className="font-medium hover:underline"
-                >
-                  {teammate.name}
-                </Link>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsEditing(true)}
-                  className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  <Pencil className="h-3 w-3" />
-                </Button>
-              </div>
-            )}
-            <div className="flex items-center gap-2 text-sm text-gray-500">
-              <span>{teammate.email}</span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleCopyEmail}
-                className="h-6 w-6 p-0"
-                title="Copy email"
-              >
-                {showCopied ? (
-                  <Check className="h-3 w-3 text-green-500" />
-                ) : (
-                  <Copy className="h-3 w-3" />
-                )}
-              </Button>
-            </div>
-          </div>
+          <TeammateAvatar
+            teammate={teammate}
+            isEditing={isEditing}
+            editedName={editedName}
+            onEditedNameChange={setEditedName}
+            onSaveEdit={handleSaveEdit}
+            onCancelEdit={handleCancelEdit}
+            onStartEditing={() => setIsEditing(true)}
+          />
+          <TeammateEmail email={teammate.email} />
         </div>
       </TableCell>
       <TableCell>
