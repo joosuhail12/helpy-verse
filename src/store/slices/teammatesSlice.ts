@@ -74,15 +74,12 @@ export const addTeammate = createAsyncThunk(
       avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${newTeammate.name}`
     };
 
-    // Optimistically add the teammate
     dispatch(teammatesSlice.actions.addTeammateOptimistic(teammate));
 
     try {
-      // In a real implementation, this would be an API call
       await delay(1000);
       return teammate;
     } catch (error) {
-      // In case of error, the error handler will remove the optimistic update
       throw error;
     }
   }
@@ -103,7 +100,6 @@ export const resendInvitation = createAsyncThunk(
 export const updateTeammatesRole = createAsyncThunk(
   'teammates/updateTeammatesRole',
   async ({ teammateIds, role }: { teammateIds: string[], role: Teammate['role'] }, { dispatch, rejectWithValue }) => {
-    // Optimistically update roles
     dispatch(teammatesSlice.actions.updateRolesOptimistic({ teammateIds, role }));
 
     try {
@@ -111,6 +107,23 @@ export const updateTeammatesRole = createAsyncThunk(
       return { teammateIds, role };
     } catch (error) {
       return rejectWithValue('Failed to update roles');
+    }
+  }
+);
+
+export const exportTeammates = createAsyncThunk(
+  'teammates/exportTeammates',
+  async (teammateIds: string[], { getState, rejectWithValue }) => {
+    try {
+      await delay(1000); // Simulate API call
+      const state = getState() as { teammates: TeammatesState };
+      const selectedTeammates = state.teammates.teammates.filter(t => teammateIds.includes(t.id));
+      
+      // In a real implementation, this would handle the actual export logic
+      console.log('Exporting teammates:', selectedTeammates);
+      return teammateIds;
+    } catch (error) {
+      return rejectWithValue('Failed to export teammates');
     }
   }
 );
@@ -153,7 +166,7 @@ const teammatesSlice = createSlice({
         state.error = action.error.message || 'Failed to add teammate';
         // Remove the optimistic update in case of error
         if (action.meta.arg) {
-          state.teammates = state.teammates.filter(t => t.id !== action.meta.arg.id);
+          state.teammates = state.teammates.filter(t => t.id !== action.meta.requestId);
         }
       })
       .addCase(updateTeammatesRole.rejected, (state, action) => {
@@ -166,6 +179,17 @@ const teammatesSlice = createSlice({
             role: teammate.role // Revert to original role
           }));
         }
+      })
+      .addCase(exportTeammates.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(exportTeammates.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(exportTeammates.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Failed to export teammates';
       });
   },
 });

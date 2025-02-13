@@ -15,4 +15,3 @@ export interface NewTeammate {
   email: string;
   role: 'admin' | 'supervisor' | 'agent' | 'viewer';
 }
-
