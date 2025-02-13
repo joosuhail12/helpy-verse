@@ -3,6 +3,12 @@ import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import type { TeamHolidaySelectorProps } from "@/types/team";
 
 const TeamHolidaySelector = ({ selectedHolidays, onHolidaysChange }: TeamHolidaySelectorProps) => {
@@ -30,12 +36,20 @@ const TeamHolidaySelector = ({ selectedHolidays, onHolidaysChange }: TeamHoliday
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Calendar
-          mode="single"
-          onSelect={handleDateSelect}
-          className="rounded-md border"
-          selected={selectedHolidays.map(date => new Date(date))}
-        />
+        <TooltipProvider>
+          <Calendar
+            mode="single"
+            onSelect={handleDateSelect}
+            className="rounded-md border"
+            selected={selectedHolidays.length > 0 ? new Date(selectedHolidays[selectedHolidays.length - 1]) : undefined}
+            modifiers={{
+              booked: selectedHolidays.map(date => new Date(date))
+            }}
+            modifiersStyles={{
+              booked: { backgroundColor: 'rgb(var(--primary))' }
+            }}
+          />
+        </TooltipProvider>
 
         <div className="space-y-4">
           <h4 className="font-medium">Selected Holidays</h4>
@@ -46,13 +60,22 @@ const TeamHolidaySelector = ({ selectedHolidays, onHolidaysChange }: TeamHoliday
               {selectedHolidays.sort().map((dateString) => (
                 <div key={dateString} className="flex items-center justify-between p-2 bg-gray-50 rounded-md">
                   <span>{format(new Date(dateString), 'PPP')}</span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => removeHoliday(dateString)}
-                  >
-                    Remove
-                  </Button>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeHoliday(dateString)}
+                        >
+                          Remove
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Remove this holiday</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
               ))}
             </div>
