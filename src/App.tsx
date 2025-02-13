@@ -41,6 +41,8 @@ const CreateTeam = lazy(() => import(/* webpackChunkName: "create-team" */ "./pa
 const TeamDetail = lazy(() => import(/* webpackChunkName: "team-detail" */ "./pages/settings/TeamDetail"));
 const CustomObjectDetail = lazy(() => import(/* webpackChunkName: "custom-object-detail" */ "./pages/settings/CustomObjectDetail"));
 
+const CannedResponses = lazy(() => import(/* webpackChunkName: "canned-responses" */ "./pages/settings/CannedResponses"));
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -120,6 +122,7 @@ const App = () => (
                   <Route path="settings/custom-data" element={<CustomData />} />
                   <Route path="settings/custom-objects" element={<CustomObjects />} />
                   <Route path="settings/custom-objects/:id" element={<CustomObjectDetail />} />
+                  <Route path="settings/canned-responses" element={<CannedResponses />} />
                 </Route>
                 <Route path="*" element={<NotFound />} />
               </Routes>
