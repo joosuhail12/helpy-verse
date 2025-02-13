@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -18,6 +17,7 @@ const AllTickets = lazy(() => import(/* webpackChunkName: "all-tickets" */ "./pa
 const Tags = lazy(() => import(/* webpackChunkName: "tags" */ "./pages/settings/Tags"));
 const TeammateDetail = lazy(() => import(/* webpackChunkName: "teammate-detail" */ "./pages/settings/TeammateDetail"));
 const CustomData = lazy(() => import(/* webpackChunkName: "custom-data" */ "./pages/settings/CustomData"));
+const CustomObjects = lazy(() => import(/* webpackChunkName: "custom-objects" */ "./pages/settings/CustomObjects"));
 
 // Add retry logic for Teammates component with proper typing
 const loadTeammates = () => import(/* webpackChunkName: "teammates" */ "./pages/settings/Teammates")
@@ -117,6 +117,7 @@ const App = () => (
                   <Route path="settings/teammates/:id" element={<TeammateDetail />} />
                   <Route path="settings/teams/:id" element={<TeamDetail />} />
                   <Route path="settings/custom-data" element={<CustomData />} />
+                  <Route path="settings/custom-objects" element={<CustomObjects />} />
                 </Route>
                 <Route path="*" element={<NotFound />} />
               </Routes>
