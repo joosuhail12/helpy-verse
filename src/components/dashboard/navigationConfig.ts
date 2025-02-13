@@ -130,6 +130,7 @@ export const subNavItems = {
         { title: 'Email Settings', path: '/home/settings/email/settings' }
       ]
     },
+    { title: 'Custom Objects', icon: Database, path: '/home/settings/custom-objects' },
     { title: 'Custom Data', icon: Database, path: '/home/settings/custom-data' },
     { title: 'Tags', icon: Tags, path: '/home/settings/tags' },
     { title: 'Topics', icon: MessageCircle, path: '/home/settings/topics' },
