@@ -6,11 +6,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { MoreHorizontal, Pencil, Trash2, TestTube } from "lucide-react";
 import { useState } from "react";
 import { CustomField } from "@/types/customField";
 import DeleteCustomFieldDialog from "./DeleteCustomFieldDialog";
 import EditCustomFieldDialog from "./EditCustomFieldDialog";
+import TestFieldDialog from "./TestFieldDialog";
 
 interface CustomFieldActionsProps {
   field: CustomField;
@@ -21,6 +22,7 @@ interface CustomFieldActionsProps {
 const CustomFieldActions = ({ field, table, existingFields }: CustomFieldActionsProps) => {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isTestOpen, setIsTestOpen] = useState(false);
 
   return (
     <>
@@ -31,6 +33,10 @@ const CustomFieldActions = ({ field, table, existingFields }: CustomFieldActions
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
+          <DropdownMenuItem onClick={() => setTestOpen(true)}>
+            <TestTube className="mr-2 h-4 w-4" />
+            Test Field
+          </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setIsEditOpen(true)}>
             <Pencil className="mr-2 h-4 w-4" />
             Edit
@@ -58,6 +64,12 @@ const CustomFieldActions = ({ field, table, existingFields }: CustomFieldActions
         field={field}
         table={table}
         existingFields={existingFields}
+      />
+
+      <TestFieldDialog
+        isOpen={isTestOpen}
+        onClose={() => setIsTestOpen(false)}
+        field={field}
       />
     </>
   );
