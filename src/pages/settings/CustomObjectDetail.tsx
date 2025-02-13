@@ -1,7 +1,7 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useParams } from "react-router-dom";
-import { ArrowLeft, Database } from "lucide-react";
+import { ArrowLeft, Database, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -9,6 +9,11 @@ import { mockCustomObjects, type CustomObject } from "@/mock/customObjects";
 import { Skeleton } from "@/components/ui/skeleton";
 import CustomDataTable from "@/components/settings/customData/CustomDataTable";
 import { ObjectSettingsForm } from "./components/ObjectSettingsForm";
+import { useState } from "react";
+import AddCustomFieldDialog from "@/components/settings/customData/AddCustomFieldDialog";
+import { CustomField } from "@/types/customField";
+import { useCustomFieldImport } from "@/hooks/useCustomFieldImport";
+import ImportExportFields from "@/components/settings/customData/ImportExportFields";
 
 // This will be replaced with actual API call
 const fetchCustomObject = async (id: string): Promise<CustomObject | undefined> => {
@@ -19,12 +24,20 @@ const fetchCustomObject = async (id: string): Promise<CustomObject | undefined> 
 
 const CustomObjectDetail = () => {
   const { id } = useParams<{ id: string }>();
+  const [isAddFieldOpen, setIsAddFieldOpen] = useState(false);
+  const { handleImport } = useCustomFieldImport();
 
   const { data: customObject, isLoading } = useQuery({
     queryKey: ['customObject', id],
     queryFn: () => fetchCustomObject(id!),
     enabled: !!id,
   });
+
+  const handleImportWrapper = async (importedFields: CustomField[]) => {
+    if (customObject) {
+      await handleImport(importedFields, customObject.slug as "tickets" | "contacts" | "companies");
+    }
+  };
 
   if (isLoading) {
     return (
@@ -68,18 +81,42 @@ const CustomObjectDetail = () => {
           <ObjectSettingsForm object={customObject} />
         </TabsContent>
         <TabsContent value="fields" className="mt-6">
-          <CustomDataTable 
-            table={customObject.slug} 
-            currentFields={customObject.fields.map(field => ({
-              id: field.id,
-              name: field.name,
-              type: field.type as any,
-              required: field.required,
-              description: '',
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-              history: []
-            }))} 
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold">Custom Fields</h2>
+              <div className="flex items-center gap-4">
+                <ImportExportFields
+                  fields={customObject.fields}
+                  table={customObject.slug as "tickets" | "contacts" | "companies"}
+                  onImport={handleImportWrapper}
+                />
+                <Button onClick={() => setIsAddFieldOpen(true)}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Field
+                </Button>
+              </div>
+            </div>
+
+            <CustomDataTable 
+              table={customObject.slug as "tickets" | "contacts" | "companies"}
+              currentFields={customObject.fields.map(field => ({
+                id: field.id,
+                name: field.name,
+                type: field.type as any,
+                required: field.required,
+                description: field.description || '',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                history: []
+              }))} 
+            />
+          </div>
+
+          <AddCustomFieldDialog
+            isOpen={isAddFieldOpen}
+            onClose={() => setIsAddFieldOpen(false)}
+            table={customObject.slug as "tickets" | "contacts" | "companies"}
+            existingFields={customObject.fields}
           />
         </TabsContent>
       </Tabs>
@@ -88,3 +125,4 @@ const CustomObjectDetail = () => {
 };
 
 export default CustomObjectDetail;
+
