@@ -4,6 +4,7 @@ import authReducer from './slices/authSlice';
 import tagsReducer from './slices/tagsSlice';
 import teammatesReducer from './slices/teammates/teammatesSlice';
 import securityReducer from './slices/securitySlice';
+import teamsReducer from './slices/teams/teamsSlice';
 
 export const store = configureStore({
   reducer: {
@@ -11,6 +12,7 @@ export const store = configureStore({
     tags: tagsReducer,
     teammates: teammatesReducer,
     security: securityReducer,
+    teams: teamsReducer,
   },
 });
 

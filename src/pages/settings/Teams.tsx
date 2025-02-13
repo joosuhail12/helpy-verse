@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import TeamsLoadingState from '@/components/teams/TeamsLoadingState';
@@ -8,10 +8,27 @@ import TeamsList from '@/components/teams/TeamsList';
 import CreateTeamDialog from '@/components/teams/CreateTeamDialog';
 import { Button } from "@/components/ui/button";
 import { Plus, Users } from "lucide-react";
+import { setLoading, setError, setTeams } from '@/store/slices/teams/teamsSlice';
 
 const Teams = () => {
   const dispatch = useAppDispatch();
   const { teams, loading, error } = useAppSelector((state) => state.teams);
+
+  useEffect(() => {
+    const fetchTeams = async () => {
+      try {
+        dispatch(setLoading(true));
+        // TODO: Replace with actual API call to your Node.js backend
+        const response = await fetch('/api/teams');
+        const data = await response.json();
+        dispatch(setTeams(data));
+      } catch (err) {
+        dispatch(setError('Failed to load teams'));
+      }
+    };
+
+    fetchTeams();
+  }, [dispatch]);
 
   if (error) {
     return (
