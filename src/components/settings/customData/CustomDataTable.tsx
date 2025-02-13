@@ -104,7 +104,11 @@ const CustomDataTable = ({ fields, isLoading, error, table }: CustomDataTablePro
                   <TableCell>{field.required ? "Yes" : "No"}</TableCell>
                   <TableCell>{field.description}</TableCell>
                   <TableCell className="text-right">
-                    <CustomFieldActions field={field} table={table} />
+                    <CustomFieldActions 
+                      field={field} 
+                      table={table} 
+                      existingFields={fields}
+                    />
                   </TableCell>
                 </TableRow>
               ))

@@ -15,9 +15,10 @@ import EditCustomFieldDialog from "./EditCustomFieldDialog";
 interface CustomFieldActionsProps {
   field: CustomField;
   table: 'tickets' | 'contacts' | 'companies';
+  existingFields: CustomField[];
 }
 
-const CustomFieldActions = ({ field, table }: CustomFieldActionsProps) => {
+const CustomFieldActions = ({ field, table, existingFields }: CustomFieldActionsProps) => {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
 
@@ -56,6 +57,7 @@ const CustomFieldActions = ({ field, table }: CustomFieldActionsProps) => {
         onClose={() => setIsEditOpen(false)}
         field={field}
         table={table}
+        existingFields={existingFields}
       />
     </>
   );
