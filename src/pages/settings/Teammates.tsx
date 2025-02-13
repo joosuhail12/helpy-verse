@@ -55,6 +55,23 @@ const TeammatesPage = () => {
     }
   };
 
+  const handleUpdateTeammate = async (teammateId: string, updates: Partial<Teammate>) => {
+    try {
+      // Note: Implement the corresponding action in teammatesSlice
+      // await dispatch(updateTeammate({ teammateId, updates })).unwrap();
+      toast({
+        title: "Success",
+        description: "Teammate information has been updated.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update teammate information. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
       setSelectedTeammates(paginatedTeammates.map(t => t.id));
@@ -150,6 +167,7 @@ const TeammatesPage = () => {
           onSelectAll={handleSelectAll}
           onSelectTeammate={handleSelectTeammate}
           onResendInvitation={handleResendInvitation}
+          onUpdateTeammate={handleUpdateTeammate}
           sortBy={sortBy}
           sortDirection={sortDirection}
           onSort={handleSort}
@@ -163,3 +181,4 @@ const TeammatesPage = () => {
 };
 
 export default TeammatesPage;
+

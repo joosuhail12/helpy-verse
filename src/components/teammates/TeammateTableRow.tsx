@@ -4,13 +4,15 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Send } from 'lucide-react';
+import { Input } from "@/components/ui/input";
+import { Send, Copy, Check, X, Pencil } from 'lucide-react';
 import { format } from 'date-fns';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useState } from 'react';
 import type { Teammate } from '@/types/teammate';
 
 interface TeammateTableRowProps {
@@ -18,6 +20,7 @@ interface TeammateTableRowProps {
   isSelected: boolean;
   onSelect: (teammateId: string, checked: boolean) => void;
   onResendInvitation: (teammateId: string) => void;
+  onUpdateTeammate?: (teammateId: string, updates: Partial<Teammate>) => void;
 }
 
 const getRoleBadgeVariant = (role: Teammate['role']) => {
@@ -58,8 +61,35 @@ const TeammateTableRow = ({
   teammate,
   isSelected,
   onSelect,
-  onResendInvitation
+  onResendInvitation,
+  onUpdateTeammate
 }: TeammateTableRowProps) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedName, setEditedName] = useState(teammate.name);
+  const [showCopied, setShowCopied] = useState(false);
+
+  const handleCopyEmail = async () => {
+    try {
+      await navigator.clipboard.writeText(teammate.email);
+      setShowCopied(true);
+      setTimeout(() => setShowCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy email:', err);
+    }
+  };
+
+  const handleSaveEdit = () => {
+    if (onUpdateTeammate && editedName.trim() !== '') {
+      onUpdateTeammate(teammate.id, { name: editedName.trim() });
+    }
+    setIsEditing(false);
+  };
+
+  const handleCancelEdit = () => {
+    setEditedName(teammate.name);
+    setIsEditing(false);
+  };
+
   return (
     <TableRow className="animate-fade-in">
       <TableCell>
@@ -74,9 +104,61 @@ const TeammateTableRow = ({
             <AvatarImage src={teammate.avatar} />
             <AvatarFallback>{teammate.name.slice(0, 2).toUpperCase()}</AvatarFallback>
           </Avatar>
-          <div>
-            <div className="font-medium">{teammate.name}</div>
-            <div className="text-sm text-gray-500">{teammate.email}</div>
+          <div className="flex-grow">
+            {isEditing ? (
+              <div className="flex items-center gap-2">
+                <Input
+                  value={editedName}
+                  onChange={(e) => setEditedName(e.target.value)}
+                  className="h-8 w-48"
+                  autoFocus
+                />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleSaveEdit}
+                  className="h-8 w-8 p-0"
+                >
+                  <Check className="h-4 w-4 text-green-500" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleCancelEdit}
+                  className="h-8 w-8 p-0"
+                >
+                  <X className="h-4 w-4 text-red-500" />
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <span className="font-medium">{teammate.name}</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsEditing(true)}
+                  className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <Pencil className="h-3 w-3" />
+                </Button>
+              </div>
+            )}
+            <div className="flex items-center gap-2 text-sm text-gray-500">
+              <span>{teammate.email}</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleCopyEmail}
+                className="h-6 w-6 p-0"
+                title="Copy email"
+              >
+                {showCopied ? (
+                  <Check className="h-3 w-3 text-green-500" />
+                ) : (
+                  <Copy className="h-3 w-3" />
+                )}
+              </Button>
+            </div>
           </div>
         </div>
       </TableCell>
@@ -132,3 +214,4 @@ const TeammateTableRow = ({
 };
 
 export default TeammateTableRow;
+

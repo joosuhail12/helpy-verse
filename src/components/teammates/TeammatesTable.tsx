@@ -19,6 +19,7 @@ interface TeammatesTableProps {
   onSelectAll: (checked: boolean) => void;
   onSelectTeammate: (teammateId: string, checked: boolean) => void;
   onResendInvitation: (teammateId: string) => void;
+  onUpdateTeammate?: (teammateId: string, updates: Partial<Teammate>) => void;
   sortBy: keyof Teammate | null;
   sortDirection: 'asc' | 'desc';
   onSort: (column: keyof Teammate) => void;
@@ -33,6 +34,7 @@ const TeammatesTable = ({
   onSelectAll,
   onSelectTeammate,
   onResendInvitation,
+  onUpdateTeammate,
   sortBy,
   sortDirection,
   onSort,
@@ -103,6 +105,7 @@ const TeammatesTable = ({
               isSelected={selectedTeammates.includes(teammate.id)}
               onSelect={onSelectTeammate}
               onResendInvitation={onResendInvitation}
+              onUpdateTeammate={onUpdateTeammate}
             />
           ))}
         </TableBody>
@@ -139,3 +142,4 @@ const TeammatesTable = ({
 };
 
 export default TeammatesTable;
+
