@@ -125,7 +125,7 @@ export const reducer = (state: State, action: Action): State => {
 }
 
 const listeners = new Set<(state: State) => void>()
-const memoryState: State = { toasts: [] }
+let memoryState: State = { toasts: [] }
 
 function dispatch(action: Action) {
   memoryState = reducer(memoryState, action)
@@ -136,7 +136,7 @@ function dispatch(action: Action) {
 
 interface Toast extends Omit<ToasterToast, "id"> {}
 
-function toast({ ...props }: Toast) {
+export function toast({ ...props }: Toast) {
   const id = genId()
 
   const update = (props: ToasterToast) =>
@@ -181,4 +181,3 @@ export function useToast() {
     dismiss: (toastId?: string) => dispatch({ type: "DISMISS_TOAST", toastId }),
   }
 }
-
