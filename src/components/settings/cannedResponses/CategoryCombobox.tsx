@@ -68,7 +68,7 @@ export function CategoryCombobox({ value = "", onChange }: CategoryComboboxProps
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-full p-0" align="start">
-        <Command shouldFilter={false}>
+        <Command value={internalValue} onValueChange={handleSelect}>
           <CommandInput
             placeholder="Search or add category..."
             value={search}
@@ -91,7 +91,7 @@ export function CategoryCombobox({ value = "", onChange }: CategoryComboboxProps
               <CommandItem
                 key={category.id}
                 value={category.name}
-                onSelect={() => handleSelect(category.name)}
+                onSelect={handleSelect}
                 className="cursor-pointer"
               >
                 <CheckIcon
@@ -109,3 +109,4 @@ export function CategoryCombobox({ value = "", onChange }: CategoryComboboxProps
     </Popover>
   );
 }
+
