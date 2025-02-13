@@ -7,6 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Send, Copy, Check, X, Pencil } from 'lucide-react';
 import { format } from 'date-fns';
+import { Link } from 'react-router-dom';
 import {
   Tooltip,
   TooltipContent,
@@ -132,7 +133,12 @@ const TeammateTableRow = ({
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <span className="font-medium">{teammate.name}</span>
+                <Link 
+                  to={`/home/settings/teammates/${teammate.id}`}
+                  className="font-medium hover:underline"
+                >
+                  {teammate.name}
+                </Link>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -214,4 +220,3 @@ const TeammateTableRow = ({
 };
 
 export default TeammateTableRow;
-

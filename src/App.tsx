@@ -16,6 +16,7 @@ const ForgotPassword = lazy(() => import(/* webpackChunkName: "forgot-password" 
 const Home = lazy(() => import(/* webpackChunkName: "home" */ "./pages/Dashboard"));
 const AllTickets = lazy(() => import(/* webpackChunkName: "all-tickets" */ "./pages/inbox/All"));
 const Tags = lazy(() => import(/* webpackChunkName: "tags" */ "./pages/settings/Tags"));
+const TeammateDetail = lazy(() => import(/* webpackChunkName: "teammate-detail" */ "./pages/settings/TeammateDetail"));
 
 // Add retry logic for Teammates component with proper typing
 const loadTeammates = () => import(/* webpackChunkName: "teammates" */ "./pages/settings/Teammates")
@@ -101,6 +102,7 @@ const App = () => (
                   <Route path="inbox/all" element={<AllTickets />} />
                   <Route path="settings/tags" element={<Tags />} />
                   <Route path="settings/teammates" element={<Teammates />} />
+                  <Route path="settings/teammates/:id" element={<TeammateDetail />} />
                 </Route>
                 <Route path="*" element={<NotFound />} />
               </Routes>
