@@ -85,4 +85,121 @@ const TeammatesPage = () => {
   }
 
   return (
-    <div className="p-6 space
+    <div className="p-6 space-y-4">
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold">Teammates</h1>
+        <AddTeammateDialog />
+      </div>
+
+      <BulkActions 
+        selectedTeammates={selectedTeammates}
+        onClearSelection={() => dispatch(clearTeammateSelection())}
+      />
+
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-12">
+              <Checkbox 
+                checked={selectedTeammates.length === teammates.length}
+                onCheckedChange={(checked) => {
+                  teammates.forEach(teammate => {
+                    if (checked && !selectedTeammates.includes(teammate.id)) {
+                      dispatch(toggleTeammateSelection(teammate.id));
+                    } else if (!checked && selectedTeammates.includes(teammate.id)) {
+                      dispatch(toggleTeammateSelection(teammate.id));
+                    }
+                  });
+                }}
+              />
+            </TableHead>
+            <TableHead>
+              <button 
+                className="flex items-center font-semibold"
+                onClick={() => handleSort('name')}
+              >
+                Name {getSortIcon('name')}
+              </button>
+            </TableHead>
+            <TableHead>Role</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>
+              <button 
+                className="flex items-center font-semibold"
+                onClick={() => handleSort('lastActive')}
+              >
+                Last Active {getSortIcon('lastActive')}
+              </button>
+            </TableHead>
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {sortedTeammates.map((teammate) => (
+            <TableRow key={teammate.id}>
+              <TableCell>
+                <Checkbox 
+                  checked={selectedTeammates.includes(teammate.id)}
+                  onCheckedChange={() => dispatch(toggleTeammateSelection(teammate.id))}
+                />
+              </TableCell>
+              <TableCell className="flex items-center gap-3">
+                <Avatar>
+                  <AvatarImage src={teammate.avatar} />
+                  <AvatarFallback>{teammate.name.charAt(0)}</AvatarFallback>
+                </Avatar>
+                <div>
+                  <div className="font-medium">{teammate.name}</div>
+                  <div className="text-sm text-gray-500">{teammate.email}</div>
+                </div>
+              </TableCell>
+              <TableCell>
+                <Badge variant="outline">{teammate.role}</Badge>
+              </TableCell>
+              <TableCell>
+                <Badge 
+                  variant={teammate.status === 'active' ? 'default' : 'secondary'}
+                >
+                  {teammate.status}
+                </Badge>
+              </TableCell>
+              <TableCell>
+                {format(new Date(teammate.lastActive), 'MMM d, yyyy')}
+              </TableCell>
+              <TableCell className="text-right">
+                <div className="flex justify-end gap-2">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setTeammateToEdit(teammate)}
+                  >
+                    <Pen className="h-4 w-4" />
+                  </Button>
+                  {teammate.status !== 'active' && (
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handleResendInvitation(teammate.id)}
+                    >
+                      <Send className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+
+      {teammateToEdit && (
+        <EditTeammateDialog
+          teammate={teammateToEdit}
+          open={!!teammateToEdit}
+          onOpenChange={(open) => !open && setTeammateToEdit(null)}
+        />
+      )}
+    </div>
+  );
+};
+
+export default TeammatesPage;
