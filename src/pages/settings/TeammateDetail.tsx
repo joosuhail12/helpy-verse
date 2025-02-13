@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import type { Teammate } from '@/types/teammate';
 import TeammateHeader from './teammates/components/TeammateHeader';
 import TeammateProfileCard from './teammates/components/TeammateProfileCard';
+import SaveConfirmDialog from './teammates/components/SaveConfirmDialog';
 
 const TeammateDetail = () => {
   const { id } = useParams();
@@ -19,6 +20,9 @@ const TeammateDetail = () => {
 
   const [isEditing, setIsEditing] = useState(false);
   const [editedTeammate, setEditedTeammate] = useState<Teammate | null>(teammate || null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
   if (!teammate || !editedTeammate) {
     return (
@@ -28,20 +32,59 @@ const TeammateDetail = () => {
     );
   }
 
-  const handleSave = () => {
-    toast({
-      description: "Changes saved successfully.",
-    });
-    setIsEditing(false);
+  const validateTeammate = (teammate: Teammate) => {
+    const errors: Record<string, string> = {};
+    if (!teammate.name.trim()) {
+      errors.name = 'Name is required';
+    }
+    if (!teammate.email.trim()) {
+      errors.email = 'Email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(teammate.email)) {
+      errors.email = 'Invalid email format';
+    }
+    return errors;
+  };
+
+  const handleSave = async () => {
+    const errors = validateTeammate(editedTeammate);
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+      return;
+    }
+    setShowConfirmDialog(true);
+  };
+
+  const handleConfirmSave = async () => {
+    setIsSaving(true);
+    try {
+      // Here you would integrate with your custom backend
+      // const response = await updateTeammate(editedTeammate);
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulated API call
+      
+      toast({
+        description: "Changes saved successfully.",
+      });
+      setIsEditing(false);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        description: "Failed to save changes. Please try again.",
+      });
+    } finally {
+      setIsSaving(false);
+      setShowConfirmDialog(false);
+    }
   };
 
   const handleCancel = () => {
     setEditedTeammate(teammate);
     setIsEditing(false);
+    setValidationErrors({});
   };
 
   const handleUpdateTeammate = (updates: Partial<Teammate>) => {
     setEditedTeammate(prev => prev ? { ...prev, ...updates } : null);
+    setValidationErrors({}); // Clear validation errors when user makes changes
   };
 
   return (
@@ -51,6 +94,7 @@ const TeammateDetail = () => {
         onSave={handleSave}
         onCancel={handleCancel}
         onStartEditing={() => setIsEditing(true)}
+        isSaving={isSaving}
       />
 
       <div className="grid gap-6">
@@ -58,8 +102,17 @@ const TeammateDetail = () => {
           teammate={editedTeammate}
           isEditing={isEditing}
           onUpdateTeammate={handleUpdateTeammate}
+          validationErrors={validationErrors}
+          isLoading={isSaving}
         />
       </div>
+
+      <SaveConfirmDialog
+        isOpen={showConfirmDialog}
+        onConfirm={handleConfirmSave}
+        onCancel={() => setShowConfirmDialog(false)}
+        isSaving={isSaving}
+      />
     </div>
   );
 };
