@@ -16,7 +16,11 @@ interface Tag {
   id: string;
   name: string;
   color: string;
-  count: number;
+  counts: {
+    tickets: number;
+    contacts: number;
+    companies: number;
+  };
 }
 
 interface EditTagDialogProps {
@@ -40,7 +44,7 @@ const EditTagDialog = ({ tag, open, onOpenChange }: EditTagDialogProps) => {
     setIsSubmitting(true);
 
     try {
-      // Mock API call delay
+      // Mock API call delay - in the future, this will be replaced with actual API call
       await new Promise(resolve => setTimeout(resolve, 500));
 
       toast({

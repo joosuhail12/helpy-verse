@@ -16,7 +16,11 @@ interface Tag {
   id: string;
   name: string;
   color: string;
-  count: number;
+  counts: {
+    tickets: number;
+    contacts: number;
+    companies: number;
+  };
 }
 
 interface DeleteTagDialogProps {
@@ -28,11 +32,13 @@ interface DeleteTagDialogProps {
 const DeleteTagDialog = ({ tag, open, onOpenChange }: DeleteTagDialogProps) => {
   const [isDeleting, setIsDeleting] = useState(false);
 
+  const totalAssociations = tag.counts.tickets + tag.counts.contacts + tag.counts.companies;
+
   const handleDelete = async () => {
     setIsDeleting(true);
 
     try {
-      // Mock API call delay
+      // Mock API call delay - in the future, this will be replaced with actual API call
       await new Promise(resolve => setTimeout(resolve, 500));
       
       toast({
@@ -59,10 +65,21 @@ const DeleteTagDialog = ({ tag, open, onOpenChange }: DeleteTagDialogProps) => {
           <AlertDialogTitle>Delete Tag</AlertDialogTitle>
           <AlertDialogDescription>
             Are you sure you want to delete the tag "{tag.name}"? This action cannot be undone.
-            {tag.count > 0 && (
-              <span className="block mt-2 text-red-600">
-                This tag is currently used in {tag.count} {tag.count === 1 ? 'ticket' : 'tickets'}.
-              </span>
+            {totalAssociations > 0 && (
+              <div className="mt-2 space-y-1 text-red-600">
+                <p>This tag is currently used in:</p>
+                <ul className="list-disc list-inside">
+                  {tag.counts.tickets > 0 && (
+                    <li>{tag.counts.tickets} {tag.counts.tickets === 1 ? 'ticket' : 'tickets'}</li>
+                  )}
+                  {tag.counts.contacts > 0 && (
+                    <li>{tag.counts.contacts} {tag.counts.contacts === 1 ? 'contact' : 'contacts'}</li>
+                  )}
+                  {tag.counts.companies > 0 && (
+                    <li>{tag.counts.companies} {tag.counts.companies === 1 ? 'company' : 'companies'}</li>
+                  )}
+                </ul>
+              </div>
             )}
           </AlertDialogDescription>
         </AlertDialogHeader>

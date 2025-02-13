@@ -15,21 +15,45 @@ interface Tag {
   id: string;
   name: string;
   color: string;
-  count: number;
+  counts: {
+    tickets: number;
+    contacts: number;
+    companies: number;
+  };
 }
 
-// More realistic mock data with various colors and categories
+// Updated mock data to include counts for different entities
 const mockTags: Tag[] = [
-  { id: '1', name: 'Bug', color: '#EF4444', count: 23 },
-  { id: '2', name: 'Feature Request', color: '#3B82F6', count: 15 },
-  { id: '3', name: 'Support', color: '#10B981', count: 45 },
-  { id: '4', name: 'Documentation', color: '#F59E0B', count: 8 },
-  { id: '5', name: 'Design', color: '#8B5CF6', count: 12 },
-  { id: '6', name: 'Security', color: '#DC2626', count: 5 },
-  { id: '7', name: 'Performance', color: '#6366F1', count: 19 },
-  { id: '8', name: 'Question', color: '#2DD4BF', count: 31 },
-  { id: '9', name: 'Enhancement', color: '#EC4899', count: 27 },
-  { id: '10', name: 'Invalid', color: '#9CA3AF', count: 3 }
+  { 
+    id: '1', 
+    name: 'Bug', 
+    color: '#EF4444', 
+    counts: { tickets: 23, contacts: 5, companies: 2 } 
+  },
+  { 
+    id: '2', 
+    name: 'Feature Request', 
+    color: '#3B82F6', 
+    counts: { tickets: 15, contacts: 3, companies: 1 } 
+  },
+  { 
+    id: '3', 
+    name: 'Support', 
+    color: '#10B981', 
+    counts: { tickets: 45, contacts: 12, companies: 8 } 
+  },
+  { 
+    id: '4', 
+    name: 'Documentation', 
+    color: '#F59E0B', 
+    counts: { tickets: 8, contacts: 0, companies: 1 } 
+  },
+  { 
+    id: '5', 
+    name: 'Design', 
+    color: '#8B5CF6', 
+    counts: { tickets: 12, contacts: 4, companies: 2 } 
+  }
 ];
 
 interface TagListProps {
@@ -63,9 +87,13 @@ const TagList = ({ searchQuery }: TagListProps) => {
                 style={{ backgroundColor: tag.color }}
               />
               <span className="font-medium text-gray-900">{tag.name}</span>
-              <span className="text-sm text-gray-500">
-                {tag.count} {tag.count === 1 ? 'ticket' : 'tickets'}
-              </span>
+              <div className="flex gap-3 text-sm text-gray-500">
+                <span>{tag.counts.tickets} tickets</span>
+                <span>•</span>
+                <span>{tag.counts.contacts} contacts</span>
+                <span>•</span>
+                <span>{tag.counts.companies} companies</span>
+              </div>
             </div>
 
             <DropdownMenu>
