@@ -33,7 +33,7 @@ const CustomFieldActions = ({ field, table, existingFields }: CustomFieldActions
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={() => setTestOpen(true)}>
+          <DropdownMenuItem onClick={() => setIsTestOpen(true)}>
             <TestTube className="mr-2 h-4 w-4" />
             Test Field
           </DropdownMenuItem>

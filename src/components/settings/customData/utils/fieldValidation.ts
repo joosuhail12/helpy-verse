@@ -1,5 +1,5 @@
 
-import type { CustomField } from "@/types/customField";
+import type { CustomField, CustomFieldType, ValidationRule } from "@/types/customField";
 
 export const validateFieldName = (name: string, existingFields: CustomField[]): string[] => {
   const errors: string[] = [];
@@ -60,4 +60,3 @@ export const getDefaultValidationRules = (fieldType: CustomFieldType): Validatio
       return [];
   }
 };
-
