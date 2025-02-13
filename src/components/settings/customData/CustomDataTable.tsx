@@ -10,6 +10,7 @@ import TableBodyComponent from "./table/TableBody";
 import DuplicateFieldsWarning from "./DuplicateFieldsWarning";
 import { getDuplicateFields, filterFields } from "./utils/fieldUtils";
 import { useCustomFieldShortcuts } from "@/hooks/useCustomFieldShortcuts";
+import { useFieldCache } from "@/hooks/useFieldCache";
 import {
   DndContext,
   closestCenter,
@@ -24,19 +25,20 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
+import { useToast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
 
 interface CustomDataTableProps {
-  fields: CustomField[];
-  isLoading: boolean;
-  error: any;
   table: 'tickets' | 'contacts' | 'companies';
 }
 
-const CustomDataTable = ({ fields, isLoading, error, table }: CustomDataTableProps) => {
+const CustomDataTable = ({ table }: CustomDataTableProps) => {
   const [selectedFields, setSelectedFields] = useState<CustomField[]>([]);
   const [selectedHistory, setSelectedHistory] = useState<CustomField | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [items, setItems] = useState(fields);
+  const { fields, isLoading, error, updateField, isUpdating } = useFieldCache(table);
+  const [items, setItems] = useState<CustomField[]>([]);
+  const { toast } = useToast();
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -44,6 +46,11 @@ const CustomDataTable = ({ fields, isLoading, error, table }: CustomDataTablePro
       coordinateGetter: sortableKeyboardCoordinates,
     })
   );
+
+  // Update items when fields change
+  useEffect(() => {
+    setItems(fields);
+  }, [fields]);
 
   const duplicateFields = getDuplicateFields(fields);
   const filteredFields = filterFields(items, searchQuery);
@@ -67,19 +74,22 @@ const CustomDataTable = ({ fields, isLoading, error, table }: CustomDataTablePro
       setItems((items) => {
         const oldIndex = items.findIndex((item) => item.id === active.id);
         const newIndex = items.findIndex((item) => item.id === over.id);
-        return arrayMove(items, oldIndex, newIndex);
+        const newItems = arrayMove(items, oldIndex, newIndex);
+        
+        // Notify about the reorder
+        toast({
+          title: "Fields reordered",
+          description: "The field order has been updated.",
+          duration: 2000,
+        });
+        
+        return newItems;
       });
     }
   };
 
   useCustomFieldShortcuts({
     onCreateField: () => {}, // This is handled at the parent level
-    onBulkEdit: () => {
-      // Implement bulk edit logic
-    },
-    onBulkDelete: () => {
-      // Implement bulk delete logic
-    },
     hasSelection: selectedFields.length > 0
   });
 
@@ -105,7 +115,12 @@ const CustomDataTable = ({ fields, isLoading, error, table }: CustomDataTablePro
 
       <DuplicateFieldsWarning duplicateFields={duplicateFields} />
 
-      <div className="rounded-md border">
+      <div className="rounded-md border relative">
+        {(isLoading || isUpdating) && (
+          <div className="absolute inset-0 bg-white/50 backdrop-blur-sm flex items-center justify-center z-10">
+            <Loader2 className="h-8 w-8 text-purple-500 animate-spin" />
+          </div>
+        )}
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
