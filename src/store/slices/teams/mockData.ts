@@ -12,6 +12,15 @@ export const mockTeams: Team[] = [
     routing: {
       type: 'round-robin'
     },
+    officeHours: {
+      monday: [{ start: '09:00', end: '17:00' }],
+      tuesday: [{ start: '09:00', end: '17:00' }],
+      wednesday: [{ start: '09:00', end: '17:00' }],
+      thursday: [{ start: '09:00', end: '17:00' }],
+      friday: [{ start: '09:00', end: '17:00' }],
+      saturday: [],
+      sunday: []
+    },
     createdAt: '2024-01-15T10:00:00Z',
     updatedAt: '2024-03-15T14:30:00Z'
   },
@@ -26,6 +35,15 @@ export const mockTeams: Team[] = [
     routing: {
       type: 'load-balanced'
     },
+    officeHours: {
+      monday: [{ start: '08:00', end: '16:00' }],
+      tuesday: [{ start: '08:00', end: '16:00' }],
+      wednesday: [{ start: '08:00', end: '16:00' }],
+      thursday: [{ start: '08:00', end: '16:00' }],
+      friday: [{ start: '08:00', end: '16:00' }],
+      saturday: [],
+      sunday: []
+    },
     createdAt: '2024-02-01T09:00:00Z',
     updatedAt: '2024-03-14T11:20:00Z'
   },
@@ -38,6 +56,15 @@ export const mockTeams: Team[] = [
     ],
     routing: {
       type: 'manual'
+    },
+    officeHours: {
+      monday: [{ start: '10:00', end: '18:00' }],
+      tuesday: [{ start: '10:00', end: '18:00' }],
+      wednesday: [{ start: '10:00', end: '18:00' }],
+      thursday: [{ start: '10:00', end: '18:00' }],
+      friday: [{ start: '10:00', end: '18:00' }],
+      saturday: [],
+      sunday: []
     },
     createdAt: '2024-02-15T08:00:00Z',
     updatedAt: '2024-03-10T16:45:00Z'
