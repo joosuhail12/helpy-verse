@@ -4,12 +4,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
+import { mockCustomObjects, type CustomObject } from "@/mock/customObjects";
 
 // This will be replaced with actual API call once backend is ready
-const fetchCustomObjects = async () => {
+const fetchCustomObjects = async (): Promise<CustomObject[]> => {
   // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 1000));
-  return [];
+  return mockCustomObjects;
 };
 
 const CustomObjects = () => {
@@ -58,7 +59,29 @@ const CustomObjects = () => {
         </Card>
       ) : (
         <div className="space-y-4">
-          {/* Custom objects list will go here */}
+          {customObjects?.map((object) => (
+            <Card key={object.id}>
+              <CardContent className="flex items-center justify-between py-6">
+                <div>
+                  <h3 className="text-lg font-medium">{object.name}</h3>
+                  <p className="text-sm text-gray-500 mt-1">{object.description}</p>
+                  <div className="flex gap-2 mt-2">
+                    <span className="text-xs bg-gray-100 px-2 py-1 rounded">
+                      {object.fields.length} fields
+                    </span>
+                    {object.showInCustomerContext && (
+                      <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
+                        Shows in customer context
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <Button variant="outline">
+                  Manage Fields
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       )}
     </div>
