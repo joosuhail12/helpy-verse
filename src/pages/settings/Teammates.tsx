@@ -7,18 +7,23 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { format } from 'date-fns';
+import { format, subDays } from 'date-fns';
 import { useToast } from "@/hooks/use-toast";
 import AddTeammateDialog from '@/components/teammates/AddTeammateDialog';
 import TeammatesBulkActions from '@/components/teammates/TeammatesBulkActions';
+import TeammatesFilters from '@/components/teammates/TeammatesFilters';
 import { Send } from 'lucide-react';
 import { Checkbox } from "@/components/ui/checkbox";
+import type { Teammate } from '@/types/teammate';
 
 const TeammatesPage = () => {
   const dispatch = useAppDispatch();
   const { teammates, loading, error } = useAppSelector((state) => state.teammates);
   const { toast } = useToast();
   const [selectedTeammates, setSelectedTeammates] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [roleFilter, setRoleFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
 
   useEffect(() => {
     dispatch(fetchTeammates());
@@ -42,7 +47,7 @@ const TeammatesPage = () => {
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedTeammates(teammates.map(t => t.id));
+      setSelectedTeammates(filteredTeammates.map(t => t.id));
     } else {
       setSelectedTeammates([]);
     }
@@ -55,6 +60,29 @@ const TeammatesPage = () => {
       setSelectedTeammates(prev => prev.filter(id => id !== teammateId));
     }
   };
+
+  const handleQuickFilterClick = (filter: 'recent' | 'inactive') => {
+    if (filter === 'recent') {
+      setStatusFilter('');
+      const recentDate = subDays(new Date(), 7);
+      setFilteredTeammates(teammates.filter(teammate => 
+        new Date(teammate.createdAt) >= recentDate
+      ));
+    } else if (filter === 'inactive') {
+      setStatusFilter('inactive');
+    }
+  };
+
+  const filteredTeammates = teammates.filter(teammate => {
+    const matchesSearch = searchQuery.toLowerCase() === '' || 
+      teammate.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      teammate.email.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const matchesRole = roleFilter === '' || teammate.role === roleFilter;
+    const matchesStatus = statusFilter === '' || teammate.status === statusFilter;
+
+    return matchesSearch && matchesRole && matchesStatus;
+  });
 
   if (loading) {
     return (
@@ -84,6 +112,16 @@ const TeammatesPage = () => {
         <AddTeammateDialog />
       </div>
 
+      <TeammatesFilters
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        roleFilter={roleFilter}
+        onRoleFilterChange={setRoleFilter}
+        statusFilter={statusFilter}
+        onStatusFilterChange={setStatusFilter}
+        onQuickFilterClick={handleQuickFilterClick}
+      />
+
       {selectedTeammates.length > 0 && (
         <TeammatesBulkActions
           selectedIds={selectedTeammates}
@@ -96,7 +134,7 @@ const TeammatesPage = () => {
           <TableRow>
             <TableHead className="w-[50px]">
               <Checkbox
-                checked={selectedTeammates.length === teammates.length}
+                checked={selectedTeammates.length === filteredTeammates.length}
                 onCheckedChange={(checked) => handleSelectAll(checked as boolean)}
               />
             </TableHead>
@@ -109,7 +147,7 @@ const TeammatesPage = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {teammates.map((teammate) => (
+          {filteredTeammates.map((teammate) => (
             <TableRow key={teammate.id}>
               <TableCell>
                 <Checkbox
@@ -164,3 +202,4 @@ const TeammatesPage = () => {
 };
 
 export default TeammatesPage;
+
