@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -34,6 +33,7 @@ const loadTeammates = () => import(/* webpackChunkName: "teammates" */ "./pages/
   });
 
 const Teammates = lazy(loadTeammates);
+const Teams = lazy(() => import(/* webpackChunkName: "teams" */ "./pages/settings/Teams"));
 const NotFound = lazy(() => import(/* webpackChunkName: "not-found" */ "./pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -101,6 +101,7 @@ const App = () => (
                 >
                   <Route path="inbox/all" element={<AllTickets />} />
                   <Route path="settings/tags" element={<Tags />} />
+                  <Route path="settings/teams" element={<Teams />} />
                   <Route path="settings/teammates" element={<Teammates />} />
                   <Route path="settings/teammates/:id" element={<TeammateDetail />} />
                 </Route>
