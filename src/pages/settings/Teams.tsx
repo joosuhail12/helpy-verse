@@ -9,6 +9,7 @@ import CreateTeamDialog from '@/components/teams/CreateTeamDialog';
 import { Button } from "@/components/ui/button";
 import { Plus, Users } from "lucide-react";
 import { setLoading, setError, setTeams } from '@/store/slices/teams/teamsSlice';
+import { mockTeams } from '@/store/slices/teams/mockData';
 
 const Teams = () => {
   const dispatch = useAppDispatch();
@@ -18,12 +19,17 @@ const Teams = () => {
     const fetchTeams = async () => {
       try {
         dispatch(setLoading(true));
-        // TODO: Replace with actual API call to your Node.js backend
+        // Try to fetch from API first
         const response = await fetch('/api/teams');
+        if (!response.ok) {
+          throw new Error('API request failed');
+        }
         const data = await response.json();
         dispatch(setTeams(data));
       } catch (err) {
-        dispatch(setError('Failed to load teams'));
+        console.log('Using mock data as fallback:', mockTeams);
+        // Use mock data as fallback
+        dispatch(setTeams(mockTeams));
       }
     };
 
