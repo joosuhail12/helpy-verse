@@ -1,4 +1,3 @@
-
 export interface Team {
   id: string;
   name: string;
@@ -20,8 +19,18 @@ export interface Team {
       maxActiveChats?: number;
     };
   };
+  officeHours: {
+    [key in DayOfWeek]: TimeSlot[];
+  };
   createdAt: string;
   updatedAt: string;
+}
+
+export type DayOfWeek = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
+
+export interface TimeSlot {
+  start: string; // 24h format HH:mm
+  end: string; // 24h format HH:mm
 }
 
 export interface TeamsState {
@@ -85,3 +94,9 @@ export interface TeamRoutingSelectorProps {
   }) => void;
 }
 
+export interface TeamOfficeHoursSelectorProps {
+  officeHours: {
+    [key in DayOfWeek]: TimeSlot[];
+  };
+  onOfficeHoursChange: (officeHours: { [key in DayOfWeek]: TimeSlot[] }) => void;
+}

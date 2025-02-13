@@ -11,6 +11,8 @@ import TeamIconPicker from '@/components/teams/TeamIconPicker';
 import TeamMembersSelector from '@/components/teams/TeamMembersSelector';
 import TeamChannelSelector from '@/components/teams/TeamChannelSelector';
 import TeamRoutingSelector from '@/components/teams/TeamRoutingSelector';
+import TeamOfficeHoursSelector from '@/components/teams/TeamOfficeHoursSelector';
+import type { DayOfWeek, TimeSlot } from '@/types/team';
 
 const CreateTeam = () => {
   const navigate = useNavigate();
@@ -29,6 +31,15 @@ const CreateTeam = () => {
     maxOpenTickets?: number;
     maxActiveChats?: number;
   }>({});
+  const [officeHours, setOfficeHours] = useState<{ [key in DayOfWeek]: TimeSlot[] }>({
+    monday: [{ start: '09:00', end: '17:00' }],
+    tuesday: [{ start: '09:00', end: '17:00' }],
+    wednesday: [{ start: '09:00', end: '17:00' }],
+    thursday: [{ start: '09:00', end: '17:00' }],
+    friday: [{ start: '09:00', end: '17:00' }],
+    saturday: [],
+    sunday: []
+  });
 
   const handleCreateTeam = async () => {
     if (!teamName.trim()) {
@@ -60,6 +71,7 @@ const CreateTeam = () => {
               limits: routingLimits
             })
           },
+          officeHours
         }),
       });
 
@@ -148,6 +160,14 @@ const CreateTeam = () => {
           />
         </div>
 
+        <div className="border-t pt-6">
+          <h2 className="text-lg font-semibold mb-4">Team Availability</h2>
+          <TeamOfficeHoursSelector
+            officeHours={officeHours}
+            onOfficeHoursChange={setOfficeHours}
+          />
+        </div>
+
         <Button
           className="w-full mt-6"
           onClick={handleCreateTeam}
@@ -161,4 +181,3 @@ const CreateTeam = () => {
 };
 
 export default CreateTeam;
-
