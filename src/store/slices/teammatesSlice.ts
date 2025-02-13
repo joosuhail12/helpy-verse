@@ -1,4 +1,3 @@
-
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import type { Teammate, NewTeammate } from '@/types/teammate';
 
@@ -60,6 +59,24 @@ export const resendInvitation = createAsyncThunk(
   }
 );
 
+export const updateTeammatesRole = createAsyncThunk(
+  'teammates/updateTeammatesRole',
+  async ({ teammateIds, role }: { teammateIds: string[], role: string }) => {
+    // In a real implementation, this would be an API call to your backend
+    await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API delay
+    return { teammateIds, role };
+  }
+);
+
+export const exportTeammates = createAsyncThunk(
+  'teammates/exportTeammates',
+  async (teammateIds: string[]) => {
+    // In a real implementation, this would trigger a backend export process
+    await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API delay
+    return teammateIds;
+  }
+);
+
 const teammatesSlice = createSlice({
   name: 'teammates',
   initialState,
@@ -100,9 +117,35 @@ const teammatesSlice = createSlice({
       .addCase(resendInvitation.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || 'Failed to resend invitation';
+      })
+      .addCase(updateTeammatesRole.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateTeammatesRole.fulfilled, (state, action) => {
+        state.loading = false;
+        state.teammates = state.teammates.map(teammate => 
+          action.payload.teammateIds.includes(teammate.id)
+            ? { ...teammate, role: action.payload.role }
+            : teammate
+        );
+      })
+      .addCase(updateTeammatesRole.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Failed to update roles';
+      })
+      .addCase(exportTeammates.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(exportTeammates.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(exportTeammates.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Failed to export teammates';
       });
   },
 });
 
 export default teammatesSlice.reducer;
-

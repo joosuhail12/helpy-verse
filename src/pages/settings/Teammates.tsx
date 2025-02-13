@@ -1,5 +1,5 @@
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { fetchTeammates, resendInvitation } from '@/store/slices/teammatesSlice';
@@ -10,12 +10,15 @@ import { Button } from "@/components/ui/button";
 import { format } from 'date-fns';
 import { useToast } from "@/hooks/use-toast";
 import AddTeammateDialog from '@/components/teammates/AddTeammateDialog';
+import TeammatesBulkActions from '@/components/teammates/TeammatesBulkActions';
 import { Send } from 'lucide-react';
+import { Checkbox } from "@/components/ui/checkbox";
 
 const TeammatesPage = () => {
   const dispatch = useAppDispatch();
   const { teammates, loading, error } = useAppSelector((state) => state.teammates);
   const { toast } = useToast();
+  const [selectedTeammates, setSelectedTeammates] = useState<string[]>([]);
 
   useEffect(() => {
     dispatch(fetchTeammates());
@@ -34,6 +37,22 @@ const TeammatesPage = () => {
         description: "Failed to resend invitation. Please try again.",
         variant: "destructive",
       });
+    }
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedTeammates(teammates.map(t => t.id));
+    } else {
+      setSelectedTeammates([]);
+    }
+  };
+
+  const handleSelectTeammate = (teammateId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedTeammates(prev => [...prev, teammateId]);
+    } else {
+      setSelectedTeammates(prev => prev.filter(id => id !== teammateId));
     }
   };
 
@@ -65,9 +84,22 @@ const TeammatesPage = () => {
         <AddTeammateDialog />
       </div>
 
+      {selectedTeammates.length > 0 && (
+        <TeammatesBulkActions
+          selectedIds={selectedTeammates}
+          onClearSelection={() => setSelectedTeammates([])}
+        />
+      )}
+
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead className="w-[50px]">
+              <Checkbox
+                checked={selectedTeammates.length === teammates.length}
+                onCheckedChange={(checked) => handleSelectAll(checked as boolean)}
+              />
+            </TableHead>
             <TableHead className="w-[250px]">Name</TableHead>
             <TableHead>Role</TableHead>
             <TableHead>Status</TableHead>
@@ -79,6 +111,12 @@ const TeammatesPage = () => {
         <TableBody>
           {teammates.map((teammate) => (
             <TableRow key={teammate.id}>
+              <TableCell>
+                <Checkbox
+                  checked={selectedTeammates.includes(teammate.id)}
+                  onCheckedChange={(checked) => handleSelectTeammate(teammate.id, checked as boolean)}
+                />
+              </TableCell>
               <TableCell>
                 <div className="flex items-center gap-3">
                   <Avatar>
@@ -126,4 +164,3 @@ const TeammatesPage = () => {
 };
 
 export default TeammatesPage;
-
