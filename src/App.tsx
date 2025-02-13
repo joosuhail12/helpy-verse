@@ -18,30 +18,15 @@ const Tags = lazy(() => import(/* webpackChunkName: "tags" */ "./pages/settings/
 const TeammateDetail = lazy(() => import(/* webpackChunkName: "teammate-detail" */ "./pages/settings/TeammateDetail"));
 const CustomData = lazy(() => import(/* webpackChunkName: "custom-data" */ "./pages/settings/CustomData"));
 const CustomObjects = lazy(() => import(/* webpackChunkName: "custom-objects" */ "./pages/settings/CustomObjects"));
-
-// Add retry logic for Teammates component with proper typing
-const loadTeammates = () => import(/* webpackChunkName: "teammates" */ "./pages/settings/Teammates")
-  .catch((error: Error) => {
-    console.error("Error loading Teammates component:", error);
-    return {
-      default: () => (
-        <div className="p-6">
-          <div className="bg-red-50 text-red-500 p-4 rounded-lg">
-            Failed to load the Teammates page. Please refresh the page or try again later.
-          </div>
-        </div>
-      )
-    };
-  });
-
-const Teammates = lazy(loadTeammates);
 const Teams = lazy(() => import(/* webpackChunkName: "teams" */ "./pages/settings/Teams"));
+const Teammates = lazy(() => import(/* webpackChunkName: "teammates" */ "./pages/settings/Teammates"));
 const NotFound = lazy(() => import(/* webpackChunkName: "not-found" */ "./pages/NotFound"));
 const CreateTeam = lazy(() => import(/* webpackChunkName: "create-team" */ "./pages/settings/CreateTeam"));
 const TeamDetail = lazy(() => import(/* webpackChunkName: "team-detail" */ "./pages/settings/TeamDetail"));
 const CustomObjectDetail = lazy(() => import(/* webpackChunkName: "custom-object-detail" */ "./pages/settings/CustomObjectDetail"));
-
 const CannedResponses = lazy(() => import(/* webpackChunkName: "canned-responses" */ "./pages/settings/CannedResponses"));
+const CannedResponseDetail = lazy(() => import(/* webpackChunkName: "canned-response-detail" */ "./pages/settings/CannedResponseDetail"));
+const CreateCannedResponse = lazy(() => import(/* webpackChunkName: "create-canned-response" */ "./pages/settings/CreateCannedResponse"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -52,13 +37,11 @@ const queryClient = new QueryClient({
   },
 });
 
-// Root component to handle initial auth check and routing
 const RootComponent = () => {
   const { isAuthenticated } = useAppSelector((state) => state.auth);
   return isAuthenticated ? <Navigate to="/home" replace /> : <Navigate to="/sign-in" replace />;
 };
 
-// Protected Route Component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useAppSelector((state) => state.auth);
   
@@ -123,6 +106,8 @@ const App = () => (
                   <Route path="settings/custom-objects" element={<CustomObjects />} />
                   <Route path="settings/custom-objects/:id" element={<CustomObjectDetail />} />
                   <Route path="settings/canned-responses" element={<CannedResponses />} />
+                  <Route path="settings/canned-responses/create" element={<CreateCannedResponse />} />
+                  <Route path="settings/canned-responses/:id" element={<CannedResponseDetail />} />
                 </Route>
                 <Route path="*" element={<NotFound />} />
               </Routes>

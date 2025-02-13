@@ -10,44 +10,22 @@ import {
 } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Pencil, Search, Trash2 } from 'lucide-react';
+import { Pencil, Search } from 'lucide-react';
 import type { CannedResponse } from '@/mock/cannedResponses';
-import { DeleteResponseDialog } from './DeleteResponseDialog';
-import { EditResponseDialog } from './EditResponseDialog';
-import { toast } from '@/components/ui/use-toast';
+import { Link } from 'react-router-dom';
 
 interface CannedResponseListProps {
   responses: CannedResponse[];
-  setResponses: React.Dispatch<React.SetStateAction<CannedResponse[]>>;
 }
 
-export const CannedResponseList = ({ responses, setResponses }: CannedResponseListProps) => {
+export const CannedResponseList = ({ responses }: CannedResponseListProps) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedResponse, setSelectedResponse] = useState<CannedResponse | null>(null);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const filteredResponses = responses.filter(response => 
     response.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     response.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
     response.shortcut.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  const handleDelete = (id: string) => {
-    setResponses(responses.filter(r => r.id !== id));
-    toast({
-      title: "Success",
-      description: "Canned response deleted successfully",
-    });
-  };
-
-  const handleEdit = (updatedResponse: CannedResponse) => {
-    setResponses(responses.map(r => r.id === updatedResponse.id ? updatedResponse : r));
-    toast({
-      title: "Success",
-      description: "Canned response updated successfully",
-    });
-  };
 
   return (
     <div className="space-y-4">
@@ -82,46 +60,17 @@ export const CannedResponseList = ({ responses, setResponses }: CannedResponseLi
                 <TableCell>{response.isShared ? 'Yes' : 'No'}</TableCell>
                 <TableCell>{response.createdBy}</TableCell>
                 <TableCell className="text-right">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setSelectedResponse(response);
-                      setIsEditDialogOpen(true);
-                    }}
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setSelectedResponse(response);
-                      setIsDeleteDialogOpen(true);
-                    }}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  <Link to={`/home/settings/canned-responses/${response.id}`}>
+                    <Button variant="ghost" size="sm">
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  </Link>
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </div>
-
-      <DeleteResponseDialog 
-        response={selectedResponse}
-        open={isDeleteDialogOpen}
-        onOpenChange={setIsDeleteDialogOpen}
-        onDelete={handleDelete}
-      />
-
-      <EditResponseDialog 
-        response={selectedResponse}
-        open={isEditDialogOpen}
-        onOpenChange={setIsEditDialogOpen}
-        onEdit={handleEdit}
-      />
     </div>
   );
 };
