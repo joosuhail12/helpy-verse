@@ -6,6 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
 import { mockCustomObjects, type CustomObject } from "@/mock/customObjects";
 import { CreateCustomObjectDialog } from "./components/CreateCustomObjectDialog";
+import { Link } from "react-router-dom";
 
 // This will be replaced with actual API call once backend is ready
 const fetchCustomObjects = async (): Promise<CustomObject[]> => {
@@ -85,9 +86,11 @@ const CustomObjects = () => {
                     )}
                   </div>
                 </div>
-                <Button variant="outline">
-                  Manage Fields
-                </Button>
+                <Link to={`/home/settings/custom-objects/${object.id}`}>
+                  <Button variant="outline">
+                    Edit
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
           ))}
