@@ -1,52 +1,14 @@
 
 import { useState } from 'react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import type { Tag, SortField, FilterEntity } from '@/types/tag';
+import { useTags } from '@/hooks/useTags';
+import { useTagShortcuts } from '@/hooks/useTagShortcuts';
 import EditTagDialog from './EditTagDialog';
 import DeleteTagDialog from './DeleteTagDialog';
-import TagUsageStats from './TagUsageStats';
-import TagColorPreview from './TagColorPreview';
-import TagActions from './TagActions';
 import BulkActions from './BulkActions';
-import { useTagShortcuts } from '@/hooks/useTagShortcuts';
-import type { Tag, SortField, FilterEntity } from '@/types/tag';
-import SortingControls from '@/components/inbox/SortingControls';
-
-const mockTags: Tag[] = [
-  { 
-    id: '1', 
-    name: 'Bug', 
-    color: '#EF4444', 
-    counts: { tickets: 23, contacts: 5, companies: 2 } 
-  },
-  { 
-    id: '2', 
-    name: 'Feature Request', 
-    color: '#3B82F6', 
-    counts: { tickets: 15, contacts: 3, companies: 1 } 
-  },
-  { 
-    id: '3', 
-    name: 'Support', 
-    color: '#10B981', 
-    counts: { tickets: 45, contacts: 12, companies: 8 } 
-  },
-  { 
-    id: '4', 
-    name: 'Documentation', 
-    color: '#F59E0B', 
-    counts: { tickets: 8, contacts: 0, companies: 1 } 
-  },
-  { 
-    id: '5', 
-    name: 'Design', 
-    color: '#8B5CF6', 
-    counts: { tickets: 12, contacts: 4, companies: 2 } 
-  }
-];
+import TagTable from './TagTable';
+import TagListControls from './TagListControls';
+import TagPagination from './TagPagination';
 
 interface TagListProps {
   searchQuery: string;
@@ -56,13 +18,14 @@ interface TagListProps {
 }
 
 const TagList = ({ searchQuery, currentPage, itemsPerPage, onPageChange }: TagListProps) => {
-  const [tags, setTags] = useState<Tag[]>(mockTags);
   const [tagToEdit, setTagToEdit] = useState<Tag | null>(null);
   const [tagToDelete, setTagToDelete] = useState<Tag | null>(null);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [filterEntity, setFilterEntity] = useState<FilterEntity>('all');
+
+  const { tags } = useTags(searchQuery, filterEntity, sortField, sortDirection);
 
   useTagShortcuts({
     onCreateTag: () => {}, // Handled at the page level
@@ -104,58 +67,20 @@ const TagList = ({ searchQuery, currentPage, itemsPerPage, onPageChange }: TagLi
     setTagToEdit({ id: selectedTags.join(','), name: '', color: '', counts: { tickets: 0, contacts: 0, companies: 0 } });
   };
 
-  let filteredTags = tags.filter(tag =>
-    tag.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  if (filterEntity !== 'all') {
-    filteredTags = filteredTags.filter(tag => tag.counts[filterEntity] > 0);
-  }
-
-  filteredTags.sort((a, b) => {
-    let valueA = sortField === 'name' ? a.name : a.counts[sortField];
-    let valueB = sortField === 'name' ? b.name : b.counts[sortField];
-    
-    if (sortDirection === 'desc') {
-      [valueA, valueB] = [valueB, valueA];
-    }
-    
-    return valueA < valueB ? -1 : valueA > valueB ? 1 : 0;
-  });
-
-  const totalPages = Math.ceil(filteredTags.length / itemsPerPage);
+  const totalPages = Math.ceil(tags.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedTags = filteredTags.slice(startIndex, startIndex + itemsPerPage);
+  const paginatedTags = tags.slice(startIndex, startIndex + itemsPerPage);
 
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between">
-        <div className="text-sm text-gray-500">
-          {filteredTags.length} {filteredTags.length === 1 ? 'tag' : 'tags'} total
-        </div>
-        <div className="flex items-center gap-4">
-          <Select
-            value={filterEntity}
-            onValueChange={(value: FilterEntity) => setFilterEntity(value)}
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Filter by entity" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All tags</SelectItem>
-              <SelectItem value="tickets">Used in tickets</SelectItem>
-              <SelectItem value="contacts">Used in contacts</SelectItem>
-              <SelectItem value="companies">Used in companies</SelectItem>
-            </SelectContent>
-          </Select>
-          <SortingControls
-            sortField={sortField}
-            sortDirection={sortDirection}
-            onSort={handleSort}
-            compact
-          />
-        </div>
-      </div>
+      <TagListControls
+        totalTags={tags.length}
+        filterEntity={filterEntity}
+        onFilterChange={setFilterEntity}
+        sortField={sortField}
+        sortDirection={sortDirection}
+        onSort={handleSort}
+      />
 
       <BulkActions
         selectedCount={selectedTags.length}
@@ -163,79 +88,26 @@ const TagList = ({ searchQuery, currentPage, itemsPerPage, onPageChange }: TagLi
         onDeleteSelected={handleBulkDelete}
       />
 
-      {filteredTags.length === 0 ? (
+      {tags.length === 0 ? (
         <div className="p-8 text-center text-gray-500">
           No tags found matching your search.
         </div>
       ) : (
         <>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[30px]">
-                  <Checkbox
-                    checked={selectedTags.length === paginatedTags.length}
-                    onCheckedChange={handleSelectAll}
-                  />
-                </TableHead>
-                <TableHead className="w-[250px]">Name</TableHead>
-                <TableHead>Usage</TableHead>
-                <TableHead className="w-[100px]"></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {paginatedTags.map((tag) => (
-                <TableRow key={tag.id}>
-                  <TableCell>
-                    <Checkbox
-                      checked={selectedTags.includes(tag.id)}
-                      onCheckedChange={() => handleSelectTag(tag.id)}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center space-x-3">
-                      <TagColorPreview color={tag.color} />
-                      <span className="font-medium text-gray-900">{tag.name}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <TagUsageStats {...tag.counts} />
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <TagActions
-                      tag={tag}
-                      onEdit={setTagToEdit}
-                      onDelete={setTagToDelete}
-                    />
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <TagTable
+            tags={paginatedTags}
+            selectedTags={selectedTags}
+            onSelectAll={handleSelectAll}
+            onSelectTag={handleSelectTag}
+            onEditTag={setTagToEdit}
+            onDeleteTag={setTagToDelete}
+          />
 
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 p-4 border-t">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onPageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <span className="text-sm text-gray-600">
-                Page {currentPage} of {totalPages}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onPageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-          )}
+          <TagPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={onPageChange}
+          />
         </>
       )}
 
