@@ -1,6 +1,7 @@
 
 import { useEffect } from 'react';
-import { useAppDispatch, useAppSelector } from '@/hooks/useAppDispatch';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { useAppSelector } from '@/hooks/useAppSelector';
 import { fetchTeammates } from '@/store/slices/teammatesSlice';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -73,7 +74,7 @@ const TeammatesPage = () => {
                 </Badge>
               </TableCell>
               <TableCell>
-                <Badge variant={teammate.status === 'active' ? 'success' : 'secondary'}>
+                <Badge variant={teammate.status === 'active' ? 'default' : 'secondary'}>
                   {teammate.status}
                 </Badge>
               </TableCell>
