@@ -1,10 +1,11 @@
 
-import { Database } from "lucide-react";
+import { Database, Plus } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
 import { mockCustomObjects, type CustomObject } from "@/mock/customObjects";
+import { CreateCustomObjectDialog } from "./components/CreateCustomObjectDialog";
 
 // This will be replaced with actual API call once backend is ready
 const fetchCustomObjects = async (): Promise<CustomObject[]> => {
@@ -42,9 +43,7 @@ const CustomObjects = () => {
           <Database className="h-5 w-5 text-primary" />
           <h1 className="text-2xl font-semibold">Custom Objects</h1>
         </div>
-        <Button>
-          Create Custom Object
-        </Button>
+        <CreateCustomObjectDialog />
       </div>
 
       {customObjects?.length === 0 ? (
