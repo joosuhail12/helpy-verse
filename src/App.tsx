@@ -1,11 +1,42 @@
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Provider } from 'react-redux';
+import { store } from './store/store';
+import { Suspense, lazy } from 'react';
+import { useAppSelector } from "./hooks/useAppSelector";
 
-import { Toaster } from "@/components/ui/toaster"
-import { Toaster as Sonner } from "@/components/ui/sonner"
-import { TooltipProvider } from "@/components/ui/tooltip"
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { BrowserRouter } from "react-router-dom"
-import { Provider } from 'react-redux'
-import { store } from './store/store'
+// Lazy load components with explicit chunk names
+const SignIn = lazy(() => import(/* webpackChunkName: "signin" */ "./pages/SignIn"));
+const SignUp = lazy(() => import(/* webpackChunkName: "signup" */ "./pages/SignUp"));
+const ForgotPassword = lazy(() => import(/* webpackChunkName: "forgot-password" */ "./pages/ForgotPassword"));
+const Home = lazy(() => import(/* webpackChunkName: "home" */ "./pages/Dashboard"));
+const AllTickets = lazy(() => import(/* webpackChunkName: "all-tickets" */ "./pages/inbox/All"));
+const Tags = lazy(() => import(/* webpackChunkName: "tags" */ "./pages/settings/Tags"));
+const TeammateDetail = lazy(() => import(/* webpackChunkName: "teammate-detail" */ "./pages/settings/TeammateDetail"));
+
+// Add retry logic for Teammates component with proper typing
+const loadTeammates = () => import(/* webpackChunkName: "teammates" */ "./pages/settings/Teammates")
+  .catch((error: Error) => {
+    console.error("Error loading Teammates component:", error);
+    return {
+      default: () => (
+        <div className="p-6">
+          <div className="bg-red-50 text-red-500 p-4 rounded-lg">
+            Failed to load the Teammates page. Please refresh the page or try again later.
+          </div>
+        </div>
+      )
+    };
+  });
+
+const Teammates = lazy(loadTeammates);
+const Teams = lazy(() => import(/* webpackChunkName: "teams" */ "./pages/settings/Teams"));
+const NotFound = lazy(() => import(/* webpackChunkName: "not-found" */ "./pages/NotFound"));
+const CreateTeam = lazy(() => import(/* webpackChunkName: "create-team" */ "./pages/settings/CreateTeam"));
+const TeamDetail = lazy(() => import(/* webpackChunkName: "team-detail" */ "./pages/settings/TeamDetail"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -14,25 +45,78 @@ const queryClient = new QueryClient({
       refetchOnWindowFocus: false,
     },
   },
-})
+});
 
-const App = () => {
+// Protected Route Component
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/sign-in" replace />;
+  }
+
+  return <>{children}</>;
+};
+
+const LoadingFallback = () => (
+  <div className="min-h-screen w-full gradient-background flex items-center justify-center">
+    <div className="w-full max-w-3xl p-6 md:p-8">
+      <div className="auth-card opacity-40">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 w-48 bg-gray-200 rounded"></div>
+          <div className="h-64 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+const ErrorBoundary = ({ children }: { children: React.ReactNode }) => {
   return (
-    <Provider store={store}>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <div className="min-h-screen p-4">
-              <h1>Basic App Test</h1>
-              <p>If you can see this, the basic app structure is working.</p>
-            </div>
-          </BrowserRouter>
-        </TooltipProvider>
-      </QueryClientProvider>
-    </Provider>
-  )
-}
+    <div className="min-h-screen">
+      {children}
+    </div>
+  );
+};
 
-export default App
+const App = () => (
+  <Provider store={store}>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <ErrorBoundary>
+            <Suspense fallback={<LoadingFallback />}>
+              <Routes>
+                <Route path="/" element={<Navigate to="/home" replace />} />
+                <Route path="/sign-in" element={<SignIn />} />
+                <Route path="/sign-up" element={<SignUp />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route
+                  path="/home/*"
+                  element={
+                    <ProtectedRoute>
+                      <Home />
+                    </ProtectedRoute>
+                  }
+                >
+                  <Route path="inbox/all" element={<AllTickets />} />
+                  <Route path="settings/tags" element={<Tags />} />
+                  <Route path="settings/teams" element={<Teams />} />
+                  <Route path="settings/teams/create" element={<CreateTeam />} />
+                  <Route path="settings/teammates" element={<Teammates />} />
+                  <Route path="settings/teammates/:id" element={<TeammateDetail />} />
+                  <Route path="settings/teams/:id" element={<TeamDetail />} />
+                </Route>
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
+          </ErrorBoundary>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </Provider>
+);
+
+export default App;
