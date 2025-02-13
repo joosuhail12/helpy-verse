@@ -1,4 +1,3 @@
-
 import type { Tag, SortField, FilterEntity } from '@/types/tag';
 import { mockTags } from '@/api/tagsApi';
 
@@ -62,74 +61,44 @@ const filterAndSortMockTags = (mockTags: Tag[], params: TagParams): TagsResponse
 
 export const tagService = {
   async fetchTags(params: TagParams): Promise<TagsResponse> {
-    try {
-      const queryParams = new URLSearchParams();
-      if (params.searchQuery) queryParams.set('search', params.searchQuery);
-      if (params.filterEntity) queryParams.set('entity', params.filterEntity);
-      if (params.sortField) queryParams.set('sort', params.sortField);
-      if (params.sortDirection) queryParams.set('direction', params.sortDirection);
-      if (params.page) queryParams.set('page', params.page.toString());
-      if (params.limit) queryParams.set('limit', params.limit.toString());
-
-      const response = await fetch(`${API_URL}?${queryParams.toString()}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch tags');
-      }
-      return response.json();
-    } catch (error) {
-      console.log('API unavailable, using mock data:', error);
-      return filterAndSortMockTags(mockTags, params);
-    }
+    console.log('Using mock data for tags');
+    return filterAndSortMockTags(mockTags, params);
   },
 
   async createTag(tag: Partial<Tag>): Promise<Tag> {
-    try {
-      const response = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(tag),
-      });
-      if (!response.ok) {
-        throw new Error('Failed to create tag');
-      }
-      return response.json();
-    } catch (error) {
-      console.log('API unavailable for creating tag, operation not supported in mock mode');
-      throw error;
-    }
+    console.log('Create tag operation using mock data');
+    const newTag: Tag = {
+      id: Date.now().toString(),
+      name: tag.name || '',
+      color: tag.color || '#000000',
+      createdAt: new Date().toISOString(),
+      lastUsed: new Date().toISOString(),
+      trend: 'stable',
+      counts: { tickets: 0, contacts: 0, companies: 0 },
+      history: [],
+      preview: []
+    };
+    return newTag;
   },
 
   async updateTag(id: string, tag: Partial<Tag>): Promise<Tag> {
-    try {
-      const response = await fetch(`${API_URL}/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(tag),
-      });
-      if (!response.ok) {
-        throw new Error('Failed to update tag');
-      }
-      return response.json();
-    } catch (error) {
-      console.log('API unavailable for updating tag, operation not supported in mock mode');
-      throw error;
-    }
+    console.log('Update tag operation using mock data');
+    const updatedTag: Tag = {
+      id,
+      name: tag.name || '',
+      color: tag.color || '#000000',
+      createdAt: new Date().toISOString(),
+      lastUsed: new Date().toISOString(),
+      trend: 'stable',
+      counts: { tickets: 0, contacts: 0, companies: 0 },
+      history: [],
+      preview: []
+    };
+    return updatedTag;
   },
 
   async deleteTags(ids: string[]): Promise<void> {
-    try {
-      const response = await fetch(`${API_URL}/bulk-delete`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ids }),
-      });
-      if (!response.ok) {
-        throw new Error('Failed to delete tags');
-      }
-    } catch (error) {
-      console.log('API unavailable for deleting tags, operation not supported in mock mode');
-      throw error;
-    }
+    console.log('Delete tags operation using mock data', ids);
+    return Promise.resolve();
   }
 };
-
