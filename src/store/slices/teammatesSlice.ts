@@ -1,3 +1,4 @@
+
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import type { Teammate, NewTeammate } from '@/types/teammate';
 
@@ -61,7 +62,7 @@ export const resendInvitation = createAsyncThunk(
 
 export const updateTeammatesRole = createAsyncThunk(
   'teammates/updateTeammatesRole',
-  async ({ teammateIds, role }: { teammateIds: string[], role: string }) => {
+  async ({ teammateIds, role }: { teammateIds: string[], role: Teammate['role'] }) => {
     // In a real implementation, this would be an API call to your backend
     await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API delay
     return { teammateIds, role };
@@ -124,9 +125,10 @@ const teammatesSlice = createSlice({
       })
       .addCase(updateTeammatesRole.fulfilled, (state, action) => {
         state.loading = false;
+        const { teammateIds, role } = action.payload;
         state.teammates = state.teammates.map(teammate => 
-          action.payload.teammateIds.includes(teammate.id)
-            ? { ...teammate, role: action.payload.role }
+          teammateIds.includes(teammate.id)
+            ? { ...teammate, role: role as Teammate['role'] }
             : teammate
         );
       })
