@@ -7,7 +7,7 @@ import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { mockCustomObjects, type CustomObject } from "@/mock/customObjects";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CustomDataTable } from "@/components/settings/customData/CustomDataTable";
+import CustomDataTable from "@/components/settings/customData/CustomDataTable";
 import { ObjectSettingsForm } from "./components/ObjectSettingsForm";
 
 // This will be replaced with actual API call

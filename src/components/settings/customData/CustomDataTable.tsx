@@ -34,7 +34,7 @@ interface CustomDataTableProps {
   error?: any;
 }
 
-const CustomDataTable = ({ table, currentFields = [], isLoading = false, error }: CustomDataTableProps) => {
+export const CustomDataTable = ({ table, currentFields = [], isLoading = false, error }: CustomDataTableProps) => {
   const [selectedFields, setSelectedFields] = useState<CustomField[]>([]);
   const [selectedHistory, setSelectedHistory] = useState<CustomField | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
