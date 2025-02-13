@@ -17,6 +17,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { Teammate } from '@/types/teammate';
 import TeammateAvatar from './TeammateAvatar';
 import TeammateEmail from './TeammateEmail';
@@ -44,6 +45,7 @@ const TeammateTableRow = ({
   const [editedName, setEditedName] = useState(teammate.name);
   const dispatch = useAppDispatch();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleSaveEdit = () => {
     if (onUpdateTeammate && editedName.trim() !== '') {
@@ -68,7 +70,6 @@ const TeammateTableRow = ({
   };
 
   const handleSendEmail = () => {
-    // In a real implementation, this would open an email client or modal
     window.location.href = `mailto:${teammate.email}`;
   };
 
@@ -76,6 +77,10 @@ const TeammateTableRow = ({
     toast({
       description: "Delete functionality will be implemented soon.",
     });
+  };
+
+  const handleEditProfile = () => {
+    navigate(`/home/settings/teammates/${teammate.id}`);
   };
 
   return (
@@ -143,7 +148,7 @@ const TeammateTableRow = ({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setIsEditing(true)}>
+              <DropdownMenuItem onClick={handleEditProfile}>
                 <Edit className="h-4 w-4 mr-2" />
                 Edit Profile
               </DropdownMenuItem>
