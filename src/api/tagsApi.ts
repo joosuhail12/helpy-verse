@@ -3,7 +3,7 @@ import type { Tag, SortField, FilterEntity } from '@/types/tag';
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 // Mock data (keeping the same data as before)
-const mockTags: Tag[] = [
+export const mockTags: Tag[] = [
   { 
     id: '1', 
     name: 'Bug', 
