@@ -16,6 +16,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { mockCategories } from "@/mock/categories";
+import type { Category } from "@/mock/categories";
 
 interface CategoryComboboxProps {
   value: string;
@@ -24,22 +25,22 @@ interface CategoryComboboxProps {
 
 export function CategoryCombobox({ value, onChange }: CategoryComboboxProps) {
   const [open, setOpen] = React.useState(false);
-  const [categories, setCategories] = React.useState(mockCategories);
+  const [categories, setCategories] = React.useState<Category[]>(mockCategories || []);
   const [inputValue, setInputValue] = React.useState("");
 
-  const handleSelect = (currentValue: string) => {
+  const handleSelect = React.useCallback((currentValue: string) => {
     if (currentValue === "add-new" && inputValue) {
       const newCategory = {
         id: (categories.length + 1).toString(),
         name: inputValue,
       };
-      setCategories([...categories, newCategory]);
+      setCategories(prevCategories => [...prevCategories, newCategory]);
       onChange(inputValue);
     } else {
       onChange(currentValue);
     }
     setOpen(false);
-  };
+  }, [categories, inputValue, onChange]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
