@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { useForm } from 'react-hook-form';
 import { toast } from '@/components/ui/use-toast';
@@ -11,6 +10,9 @@ import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { CannedResponse } from '@/mock/cannedResponses';
 import { CategoryCombobox } from '@/components/settings/cannedResponses/CategoryCombobox';
+import { CannedResponseEditor } from '@/components/settings/cannedResponses/CannedResponseEditor';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { createCannedResponse } from '@/store/slices/cannedResponses/actions';
 
 interface CannedResponseFormValues {
   title: string;
@@ -22,6 +24,7 @@ interface CannedResponseFormValues {
 
 const CreateCannedResponse = () => {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
 
   const form = useForm<CannedResponseFormValues>({
     defaultValues: {
@@ -33,23 +36,21 @@ const CreateCannedResponse = () => {
     },
   });
 
-  const onSubmit = (data: CannedResponseFormValues) => {
-    const newResponse: Omit<CannedResponse, 'id'> = {
-      ...data,
-      createdBy: 'Current User',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    // In a real app, this would be an API call
-    console.log('Creating response:', newResponse);
-    
-    toast({
-      title: "Success",
-      description: "Canned response created successfully",
-    });
-    
-    navigate('/home/settings/canned-responses');
+  const onSubmit = async (data: CannedResponseFormValues) => {
+    try {
+      await dispatch(createCannedResponse(data)).unwrap();
+      toast({
+        title: "Success",
+        description: "Canned response created successfully",
+      });
+      navigate('/home/settings/canned-responses');
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create canned response",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -90,10 +91,9 @@ const CreateCannedResponse = () => {
               <FormItem>
                 <FormLabel>Content</FormLabel>
                 <FormControl>
-                  <Textarea 
-                    {...field} 
-                    placeholder="Enter the response content"
-                    className="min-h-[200px]"
+                  <CannedResponseEditor
+                    content={field.value}
+                    onChange={field.onChange}
                   />
                 </FormControl>
               </FormItem>

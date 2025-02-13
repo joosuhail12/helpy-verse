@@ -4,14 +4,18 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { useForm } from 'react-hook-form';
 import { toast } from '@/components/ui/use-toast';
 import { ArrowLeft } from 'lucide-react';
-import { mockCannedResponses, type CannedResponse } from '@/mock/cannedResponses';
+import type { CannedResponse } from '@/mock/cannedResponses';
 import { Link } from 'react-router-dom';
 import { CategoryCombobox } from '@/components/settings/cannedResponses/CategoryCombobox';
+import { CannedResponseEditor } from '@/components/settings/cannedResponses/CannedResponseEditor';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { useAppSelector } from '@/hooks/useAppSelector';
+import { selectCannedResponseById } from '@/store/slices/cannedResponses/selectors';
+import { updateCannedResponse } from '@/store/slices/cannedResponses/actions';
 
 interface CannedResponseFormValues {
   title: string;
@@ -24,21 +28,9 @@ interface CannedResponseFormValues {
 const CannedResponseDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [response, setResponse] = useState<CannedResponse | null>(null);
-
-  useEffect(() => {
-    const foundResponse = mockCannedResponses.find(r => r.id === id);
-    if (foundResponse) {
-      setResponse(foundResponse);
-      form.reset({
-        title: foundResponse.title,
-        content: foundResponse.content,
-        shortcut: foundResponse.shortcut,
-        category: foundResponse.category,
-        isShared: foundResponse.isShared,
-      });
-    }
-  }, [id]);
+  const dispatch = useAppDispatch();
+  const response = useAppSelector(state => selectCannedResponseById(state, id ?? ''));
+  const [loading, setLoading] = useState(false);
 
   const form = useForm<CannedResponseFormValues>({
     defaultValues: {
@@ -50,24 +42,43 @@ const CannedResponseDetail = () => {
     },
   });
 
-  const onSubmit = (data: CannedResponseFormValues) => {
+  useEffect(() => {
+    if (response) {
+      form.reset({
+        title: response.title,
+        content: response.content,
+        shortcut: response.shortcut,
+        category: response.category,
+        isShared: response.isShared,
+      });
+    }
+  }, [response, form]);
+
+  const onSubmit = async (data: CannedResponseFormValues) => {
     if (!response) return;
 
-    const updatedResponse: CannedResponse = {
-      ...response,
-      ...data,
-      updatedAt: new Date().toISOString(),
-    };
-
-    // In a real app, this would be an API call
-    console.log('Updating response:', updatedResponse);
-    
-    toast({
-      title: "Success",
-      description: "Canned response updated successfully",
-    });
-    
-    navigate('/home/settings/canned-responses');
+    try {
+      setLoading(true);
+      await dispatch(updateCannedResponse({
+        ...response,
+        ...data,
+      })).unwrap();
+      
+      toast({
+        title: "Success",
+        description: "Canned response updated successfully",
+      });
+      
+      navigate('/home/settings/canned-responses');
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update canned response",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (!response) {
@@ -116,10 +127,10 @@ const CannedResponseDetail = () => {
               <FormItem>
                 <FormLabel>Content</FormLabel>
                 <FormControl>
-                  <Textarea 
-                    {...field} 
-                    placeholder="Enter the response content"
-                    className="min-h-[200px]"
+                  <CannedResponseEditor
+                    content={field.value}
+                    onChange={field.onChange}
+                    disabled={loading}
                   />
                 </FormControl>
               </FormItem>
@@ -167,13 +178,16 @@ const CannedResponseDetail = () => {
                   <Switch
                     checked={field.value}
                     onCheckedChange={field.onChange}
+                    disabled={loading}
                   />
                 </FormControl>
               </FormItem>
             )}
           />
 
-          <Button type="submit">Save Changes</Button>
+          <Button type="submit" disabled={loading}>
+            Save Changes
+          </Button>
         </form>
       </Form>
     </div>
