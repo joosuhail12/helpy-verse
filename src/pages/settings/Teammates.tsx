@@ -9,6 +9,8 @@ import TeammatesBulkActions from '@/components/teammates/TeammatesBulkActions';
 import TeammatesFilters from '@/components/teammates/TeammatesFilters';
 import TeammatesTable from '@/components/teammates/TeammatesTable';
 import { useTeammateFilters } from '@/hooks/useTeammateFilters';
+import LoadingState from '@/components/teammates/LoadingState';
+import EmptyState from '@/components/teammates/EmptyState';
 
 const TeammatesPage = () => {
   const dispatch = useAppDispatch();
@@ -66,10 +68,7 @@ const TeammatesPage = () => {
   if (loading) {
     return (
       <div className="p-6">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 w-48 bg-gray-200 rounded"></div>
-          <div className="h-64 bg-gray-200 rounded"></div>
-        </div>
+        <LoadingState />
       </div>
     );
   }
@@ -108,13 +107,17 @@ const TeammatesPage = () => {
         />
       )}
 
-      <TeammatesTable
-        teammates={filteredTeammates}
-        selectedTeammates={selectedTeammates}
-        onSelectAll={handleSelectAll}
-        onSelectTeammate={handleSelectTeammate}
-        onResendInvitation={handleResendInvitation}
-      />
+      {filteredTeammates.length === 0 ? (
+        <EmptyState />
+      ) : (
+        <TeammatesTable
+          teammates={filteredTeammates}
+          selectedTeammates={selectedTeammates}
+          onSelectAll={handleSelectAll}
+          onSelectTeammate={handleSelectTeammate}
+          onResendInvitation={handleResendInvitation}
+        />
+      )}
     </div>
   );
 };

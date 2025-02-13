@@ -6,6 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Send } from 'lucide-react';
 import { format } from 'date-fns';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import type { Teammate } from '@/types/teammate';
 
 interface TeammateTableRowProps {
@@ -15,6 +20,40 @@ interface TeammateTableRowProps {
   onResendInvitation: (teammateId: string) => void;
 }
 
+const getRoleBadgeVariant = (role: Teammate['role']) => {
+  switch (role) {
+    case 'admin':
+      return 'default';
+    case 'supervisor':
+      return 'secondary';
+    case 'agent':
+      return 'outline';
+    default:
+      return 'secondary';
+  }
+};
+
+const getRoleDescription = (role: Teammate['role']) => {
+  switch (role) {
+    case 'admin':
+      return 'Full access to all features and settings';
+    case 'supervisor':
+      return 'Can manage team members and view reports';
+    case 'agent':
+      return 'Can handle tickets and chat with customers';
+    case 'viewer':
+      return 'Can only view tickets and reports';
+    default:
+      return '';
+  }
+};
+
+const getStatusDescription = (status: Teammate['status']) => {
+  return status === 'active' 
+    ? 'Currently active and can access the system' 
+    : 'Account is deactivated';
+};
+
 const TeammateTableRow = ({
   teammate,
   isSelected,
@@ -22,7 +61,7 @@ const TeammateTableRow = ({
   onResendInvitation
 }: TeammateTableRowProps) => {
   return (
-    <TableRow>
+    <TableRow className="animate-fade-in">
       <TableCell>
         <Checkbox
           checked={isSelected}
@@ -42,14 +81,28 @@ const TeammateTableRow = ({
         </div>
       </TableCell>
       <TableCell>
-        <Badge variant={teammate.role === 'admin' ? 'default' : 'secondary'}>
-          {teammate.role}
-        </Badge>
+        <Tooltip>
+          <TooltipTrigger>
+            <Badge variant={getRoleBadgeVariant(teammate.role)}>
+              {teammate.role}
+            </Badge>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p className="text-sm">{getRoleDescription(teammate.role)}</p>
+          </TooltipContent>
+        </Tooltip>
       </TableCell>
       <TableCell>
-        <Badge variant={teammate.status === 'active' ? 'default' : 'secondary'}>
-          {teammate.status}
-        </Badge>
+        <Tooltip>
+          <TooltipTrigger>
+            <Badge variant={teammate.status === 'active' ? 'default' : 'secondary'}>
+              {teammate.status}
+            </Badge>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p className="text-sm">{getStatusDescription(teammate.status)}</p>
+          </TooltipContent>
+        </Tooltip>
       </TableCell>
       <TableCell>
         {format(new Date(teammate.lastActive), 'MMM d, yyyy HH:mm')}
