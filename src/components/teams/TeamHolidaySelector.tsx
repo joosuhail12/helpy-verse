@@ -35,12 +35,12 @@ const TeamHolidaySelector = ({ selectedHolidays, onHolidaysChange }: TeamHoliday
         <h3 className="text-lg font-semibold">Team Holidays</h3>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="space-y-6">
         <TooltipProvider>
           <Calendar
             mode="single"
             onSelect={handleDateSelect}
-            className="rounded-md border"
+            className="rounded-md border mx-auto"
             selected={selectedHolidays.length > 0 ? new Date(selectedHolidays[selectedHolidays.length - 1]) : undefined}
             modifiers={{
               booked: selectedHolidays.map(date => new Date(date))
@@ -56,7 +56,7 @@ const TeamHolidaySelector = ({ selectedHolidays, onHolidaysChange }: TeamHoliday
           {selectedHolidays.length === 0 ? (
             <p className="text-sm text-gray-500">No holidays selected</p>
           ) : (
-            <div className="space-y-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {selectedHolidays.sort().map((dateString) => (
                 <div key={dateString} className="flex items-center justify-between p-2 bg-gray-50 rounded-md">
                   <span>{format(new Date(dateString), 'PPP')}</span>
@@ -87,3 +87,4 @@ const TeamHolidaySelector = ({ selectedHolidays, onHolidaysChange }: TeamHoliday
 };
 
 export default TeamHolidaySelector;
+
