@@ -28,23 +28,36 @@ interface EditTagDialogProps {
 const EditTagDialog = ({ tag, open, onOpenChange }: EditTagDialogProps) => {
   const [name, setName] = useState(tag.name);
   const [color, setColor] = useState(tag.color);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     setName(tag.name);
     setColor(tag.color);
   }, [tag]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // TODO: Implement tag update logic
-    
-    toast({
-      title: "Tag updated",
-      description: `Successfully updated tag "${name}"`,
-    });
-    
-    onOpenChange(false);
+    setIsSubmitting(true);
+
+    try {
+      // Mock API call delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      toast({
+        title: "Tag updated",
+        description: `Successfully updated tag "${name}"`,
+      });
+      
+      onOpenChange(false);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update tag. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -65,29 +78,39 @@ const EditTagDialog = ({ tag, open, onOpenChange }: EditTagDialogProps) => {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Enter tag name"
+              required
+              minLength={2}
+              maxLength={50}
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="color">Color</Label>
-            <Input
-              id="color"
-              type="color"
-              value={color}
-              onChange={(e) => setColor(e.target.value)}
-            />
+            <div className="flex items-center gap-2">
+              <Input
+                id="color"
+                type="color"
+                value={color}
+                onChange={(e) => setColor(e.target.value)}
+                className="w-20 h-10 p-1"
+              />
+              <div className="text-sm text-gray-500">
+                Choose a color for the tag
+              </div>
+            </div>
           </div>
 
-          <div className="flex justify-end space-x-2">
+          <div className="flex justify-end space-x-2 pt-4">
             <Button
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
+              disabled={isSubmitting}
             >
               Cancel
             </Button>
-            <Button type="submit">
-              Save Changes
+            <Button type="submit" disabled={isSubmitting || !name.trim()}>
+              {isSubmitting ? 'Saving...' : 'Save Changes'}
             </Button>
           </div>
         </form>

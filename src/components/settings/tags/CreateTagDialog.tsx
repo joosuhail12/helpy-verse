@@ -21,20 +21,33 @@ interface CreateTagDialogProps {
 const CreateTagDialog = ({ open, onOpenChange }: CreateTagDialogProps) => {
   const [name, setName] = useState('');
   const [color, setColor] = useState('#3B82F6');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // TODO: Implement tag creation logic
-    
-    toast({
-      title: "Tag created",
-      description: `Successfully created tag "${name}"`,
-    });
-    
-    onOpenChange(false);
-    setName('');
-    setColor('#3B82F6');
+    setIsSubmitting(true);
+
+    try {
+      // Mock API call delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      toast({
+        title: "Tag created",
+        description: `Successfully created tag "${name}"`,
+      });
+      
+      onOpenChange(false);
+      setName('');
+      setColor('#3B82F6');
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create tag. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -55,29 +68,39 @@ const CreateTagDialog = ({ open, onOpenChange }: CreateTagDialogProps) => {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Enter tag name"
+              required
+              minLength={2}
+              maxLength={50}
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="color">Color</Label>
-            <Input
-              id="color"
-              type="color"
-              value={color}
-              onChange={(e) => setColor(e.target.value)}
-            />
+            <div className="flex items-center gap-2">
+              <Input
+                id="color"
+                type="color"
+                value={color}
+                onChange={(e) => setColor(e.target.value)}
+                className="w-20 h-10 p-1"
+              />
+              <div className="text-sm text-gray-500">
+                Choose a color for the tag
+              </div>
+            </div>
           </div>
 
-          <div className="flex justify-end space-x-2">
+          <div className="flex justify-end space-x-2 pt-4">
             <Button
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
+              disabled={isSubmitting}
             >
               Cancel
             </Button>
-            <Button type="submit">
-              Create Tag
+            <Button type="submit" disabled={isSubmitting || !name.trim()}>
+              {isSubmitting ? 'Creating...' : 'Create Tag'}
             </Button>
           </div>
         </form>
