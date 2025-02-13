@@ -6,6 +6,8 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import EditTagDialog from './EditTagDialog';
@@ -24,6 +26,16 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import SelectionControls from '@/components/inbox/SelectionControls';
+import SortingControls from '@/components/inbox/SortingControls';
 
 interface Tag {
   id: string;
@@ -36,7 +48,6 @@ interface Tag {
   };
 }
 
-// Updated mock data to include counts for different entities
 const mockTags: Tag[] = [
   { 
     id: '1', 
@@ -74,20 +85,117 @@ interface TagListProps {
   searchQuery: string;
 }
 
+type SortField = 'name' | 'tickets' | 'contacts' | 'companies';
+type FilterEntity = 'all' | 'tickets' | 'contacts' | 'companies';
+
 const TagList = ({ searchQuery }: TagListProps) => {
   const [tags, setTags] = useState<Tag[]>(mockTags);
   const [tagToEdit, setTagToEdit] = useState<Tag | null>(null);
   const [tagToDelete, setTagToDelete] = useState<Tag | null>(null);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [sortField, setSortField] = useState<SortField>('name');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [filterEntity, setFilterEntity] = useState<FilterEntity>('all');
 
-  const filteredTags = tags.filter(tag =>
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const handleSelectAll = () => {
+    if (selectedTags.length === filteredTags.length) {
+      setSelectedTags([]);
+    } else {
+      setSelectedTags(filteredTags.map(tag => tag.id));
+    }
+  };
+
+  const handleSelectTag = (tagId: string) => {
+    if (selectedTags.includes(tagId)) {
+      setSelectedTags(selectedTags.filter(id => id !== tagId));
+    } else {
+      setSelectedTags([...selectedTags, tagId]);
+    }
+  };
+
+  const handleBulkDelete = () => {
+    setTagToDelete({ id: selectedTags.join(','), name: `${selectedTags.length} tags`, color: '', counts: { tickets: 0, contacts: 0, companies: 0 } });
+  };
+
+  let filteredTags = tags.filter(tag =>
     tag.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  if (filterEntity !== 'all') {
+    filteredTags = filteredTags.filter(tag => tag.counts[filterEntity] > 0);
+  }
+
+  filteredTags.sort((a, b) => {
+    let valueA = sortField === 'name' ? a.name : a.counts[sortField];
+    let valueB = sortField === 'name' ? b.name : b.counts[sortField];
+    
+    if (sortDirection === 'desc') {
+      [valueA, valueB] = [valueB, valueA];
+    }
+    
+    return valueA < valueB ? -1 : valueA > valueB ? 1 : 0;
+  });
+
   return (
     <div>
-      <div className="mb-4 text-sm text-gray-500">
-        {filteredTags.length} {filteredTags.length === 1 ? 'tag' : 'tags'} total
+      <div className="mb-4 flex items-center justify-between">
+        <div className="text-sm text-gray-500">
+          {filteredTags.length} {filteredTags.length === 1 ? 'tag' : 'tags'} total
+        </div>
+        <div className="flex items-center gap-4">
+          <Select
+            value={filterEntity}
+            onValueChange={(value: FilterEntity) => setFilterEntity(value)}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filter by entity" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All tags</SelectItem>
+              <SelectItem value="tickets">Used in tickets</SelectItem>
+              <SelectItem value="contacts">Used in contacts</SelectItem>
+              <SelectItem value="companies">Used in companies</SelectItem>
+            </SelectContent>
+          </Select>
+          <SortingControls
+            sortField={sortField}
+            sortDirection={sortDirection}
+            onSort={handleSort}
+            compact
+          />
+        </div>
       </div>
+
+      {selectedTags.length > 0 && (
+        <div className="mb-4 flex items-center justify-between bg-gray-50 p-4 rounded-lg">
+          <span className="text-sm text-gray-600">{selectedTags.length} tags selected</span>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setTagToEdit({ id: selectedTags.join(','), name: '', color: '', counts: { tickets: 0, contacts: 0, companies: 0 } })}
+              disabled={selectedTags.length === 0}
+            >
+              Edit selected
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleBulkDelete}
+              disabled={selectedTags.length === 0}
+            >
+              Delete selected
+            </Button>
+          </div>
+        </div>
+      )}
 
       {filteredTags.length === 0 ? (
         <div className="p-8 text-center text-gray-500">
@@ -97,6 +205,12 @@ const TagList = ({ searchQuery }: TagListProps) => {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-[30px]">
+                <Checkbox
+                  checked={selectedTags.length === filteredTags.length}
+                  onCheckedChange={handleSelectAll}
+                />
+              </TableHead>
               <TableHead className="w-[250px]">Name</TableHead>
               <TableHead>Usage</TableHead>
               <TableHead className="w-[100px]"></TableHead>
@@ -105,6 +219,12 @@ const TagList = ({ searchQuery }: TagListProps) => {
           <TableBody>
             {filteredTags.map((tag) => (
               <TableRow key={tag.id}>
+                <TableCell>
+                  <Checkbox
+                    checked={selectedTags.includes(tag.id)}
+                    onCheckedChange={() => handleSelectTag(tag.id)}
+                  />
+                </TableCell>
                 <TableCell>
                   <div className="flex items-center space-x-3">
                     <div
