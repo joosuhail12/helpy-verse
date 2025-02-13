@@ -23,10 +23,15 @@ interface CategoryComboboxProps {
   onChange: (value: string) => void;
 }
 
-export function CategoryCombobox({ value, onChange }: CategoryComboboxProps) {
+export function CategoryCombobox({ value = "", onChange }: CategoryComboboxProps) {
   const [open, setOpen] = React.useState(false);
   const [categories] = React.useState<Category[]>(mockCategories);
   const [search, setSearch] = React.useState("");
+  const [internalValue, setInternalValue] = React.useState(value);
+
+  React.useEffect(() => {
+    setInternalValue(value);
+  }, [value]);
 
   const filteredCategories = React.useMemo(() => {
     const searchTerm = search.toLowerCase();
@@ -35,22 +40,17 @@ export function CategoryCombobox({ value, onChange }: CategoryComboboxProps) {
     );
   }, [categories, search]);
 
-  const currentCategory = React.useMemo(() => {
-    return categories.find((category) => category.name === value);
-  }, [categories, value]);
-
   const handleSelect = React.useCallback((selectedValue: string) => {
     if (selectedValue === "add-new" && search.trim()) {
-      const newCategory = {
-        id: (categories.length + 1).toString(),
-        name: search.trim(),
-      };
-      onChange(search.trim());
+      const newValue = search.trim();
+      setInternalValue(newValue);
+      onChange(newValue);
     } else {
+      setInternalValue(selectedValue);
       onChange(selectedValue);
     }
     setOpen(false);
-  }, [categories.length, search, onChange]);
+  }, [search, onChange]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -61,14 +61,14 @@ export function CategoryCombobox({ value, onChange }: CategoryComboboxProps) {
           aria-expanded={open}
           className="w-full justify-between"
         >
-          {value || "Select category..."}
+          {internalValue || "Select category..."}
           <div className="flex ml-2 h-4 w-4 shrink-0 opacity-50">
             {open ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
           </div>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-full p-0" align="start">
-        <Command value={value} onValueChange={handleSelect}>
+        <Command shouldFilter={false}>
           <CommandInput
             placeholder="Search or add category..."
             value={search}
@@ -91,13 +91,13 @@ export function CategoryCombobox({ value, onChange }: CategoryComboboxProps) {
               <CommandItem
                 key={category.id}
                 value={category.name}
-                onSelect={handleSelect}
+                onSelect={() => handleSelect(category.name)}
                 className="cursor-pointer"
               >
                 <CheckIcon
                   className={cn(
                     "mr-2 h-4 w-4",
-                    value === category.name ? "opacity-100" : "opacity-0"
+                    internalValue === category.name ? "opacity-100" : "opacity-0"
                   )}
                 />
                 {category.name}
