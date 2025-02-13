@@ -35,6 +35,7 @@ const loadTeammates = () => import(/* webpackChunkName: "teammates" */ "./pages/
 const Teammates = lazy(loadTeammates);
 const Teams = lazy(() => import(/* webpackChunkName: "teams" */ "./pages/settings/Teams"));
 const NotFound = lazy(() => import(/* webpackChunkName: "not-found" */ "./pages/NotFound"));
+const CreateTeam = lazy(() => import(/* webpackChunkName: "create-team" */ "./pages/settings/CreateTeam"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -102,6 +103,7 @@ const App = () => (
                   <Route path="inbox/all" element={<AllTickets />} />
                   <Route path="settings/tags" element={<Tags />} />
                   <Route path="settings/teams" element={<Teams />} />
+                  <Route path="settings/teams/create" element={<CreateTeam />} />
                   <Route path="settings/teammates" element={<Teammates />} />
                   <Route path="settings/teammates/:id" element={<TeammateDetail />} />
                 </Route>

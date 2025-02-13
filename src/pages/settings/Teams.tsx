@@ -1,17 +1,18 @@
 
 import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import TeamsLoadingState from '@/components/teams/TeamsLoadingState';
 import TeamsEmptyState from '@/components/teams/TeamsEmptyState';
 import TeamsList from '@/components/teams/TeamsList';
-import CreateTeamDialog from '@/components/teams/CreateTeamDialog';
 import { Button } from "@/components/ui/button";
 import { Plus, Users } from "lucide-react";
 import { setLoading, setError, setTeams } from '@/store/slices/teams/teamsSlice';
 import { mockTeams } from '@/store/slices/teams/mockData';
 
 const Teams = () => {
+  const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { teams, loading, error } = useAppSelector((state) => state.teams);
 
@@ -19,7 +20,6 @@ const Teams = () => {
     const fetchTeams = async () => {
       try {
         dispatch(setLoading(true));
-        // Try to fetch from API first
         const response = await fetch('/api/teams');
         if (!response.ok) {
           throw new Error('API request failed');
@@ -28,7 +28,6 @@ const Teams = () => {
         dispatch(setTeams(data));
       } catch (err) {
         console.log('Using mock data as fallback:', mockTeams);
-        // Use mock data as fallback
         dispatch(setTeams(mockTeams));
       }
     };
@@ -57,12 +56,10 @@ const Teams = () => {
           <Users className="h-6 w-6 text-gray-500" />
           <h1 className="text-2xl font-semibold text-gray-900">Teams</h1>
         </div>
-        <CreateTeamDialog>
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Create Team
-          </Button>
-        </CreateTeamDialog>
+        <Button onClick={() => navigate('/home/settings/teams/create')}>
+          <Plus className="mr-2 h-4 w-4" />
+          Create Team
+        </Button>
       </div>
 
       {teams.length === 0 ? (
