@@ -25,7 +25,7 @@ interface CategoryComboboxProps {
 
 export function CategoryCombobox({ value, onChange }: CategoryComboboxProps) {
   const [open, setOpen] = React.useState(false);
-  const [categories, setCategories] = React.useState<Category[]>(mockCategories || []);
+  const [categories] = React.useState<Category[]>(mockCategories);
   const [inputValue, setInputValue] = React.useState("");
 
   const handleSelect = React.useCallback((currentValue: string) => {
@@ -34,13 +34,12 @@ export function CategoryCombobox({ value, onChange }: CategoryComboboxProps) {
         id: (categories.length + 1).toString(),
         name: inputValue,
       };
-      setCategories(prevCategories => [...prevCategories, newCategory]);
       onChange(inputValue);
     } else {
       onChange(currentValue);
     }
     setOpen(false);
-  }, [categories, inputValue, onChange]);
+  }, [categories.length, inputValue, onChange]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -60,7 +59,7 @@ export function CategoryCombobox({ value, onChange }: CategoryComboboxProps) {
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-full p-0">
-        <Command>
+        <Command shouldFilter={false}>
           <CommandInput
             placeholder="Search or add category..."
             value={inputValue}
