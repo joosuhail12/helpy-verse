@@ -60,11 +60,33 @@ const TagList = ({ searchQuery, currentPage, itemsPerPage, onPageChange }: TagLi
   };
 
   const handleBulkDelete = () => {
-    setTagToDelete({ id: selectedTags.join(','), name: `${selectedTags.length} tags`, color: '', counts: { tickets: 0, contacts: 0, companies: 0 } });
+    const bulkDeleteTag: Tag = {
+      id: selectedTags.join(','),
+      name: `${selectedTags.length} tags`,
+      color: '',
+      createdAt: new Date().toISOString(),
+      lastUsed: new Date().toISOString(),
+      trend: 'stable',
+      counts: { tickets: 0, contacts: 0, companies: 0 },
+      history: [],
+      preview: []
+    };
+    setTagToDelete(bulkDeleteTag);
   };
 
   const handleBulkEdit = () => {
-    setTagToEdit({ id: selectedTags.join(','), name: '', color: '', counts: { tickets: 0, contacts: 0, companies: 0 } });
+    const bulkEditTag: Tag = {
+      id: selectedTags.join(','),
+      name: '',
+      color: '',
+      createdAt: new Date().toISOString(),
+      lastUsed: new Date().toISOString(),
+      trend: 'stable',
+      counts: { tickets: 0, contacts: 0, companies: 0 },
+      history: [],
+      preview: []
+    };
+    setTagToEdit(bulkEditTag);
   };
 
   const totalPages = Math.ceil(tags.length / itemsPerPage);
@@ -131,3 +153,4 @@ const TagList = ({ searchQuery, currentPage, itemsPerPage, onPageChange }: TagLi
 };
 
 export default TagList;
+
