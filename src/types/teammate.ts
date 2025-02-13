@@ -8,6 +8,7 @@ export interface Teammate {
   lastActive: string;
   createdAt: string;
   avatar?: string;
+  permissions: string[];
 }
 
 export interface NewTeammate {
@@ -15,3 +16,23 @@ export interface NewTeammate {
   email: string;
   role: 'admin' | 'supervisor' | 'agent' | 'viewer';
 }
+
+export interface ActivityLog {
+  id: string;
+  teammateId: string;
+  type: string;
+  description: string;
+  timestamp: string;
+  metadata?: Record<string, any>;
+}
+
+export interface TeamAssignment {
+  id: string;
+  teammateId: string;
+  teamName: string;
+  role: string;
+  status: 'active' | 'pending' | 'inactive';
+  startDate?: string;
+  endDate?: string;
+}
+

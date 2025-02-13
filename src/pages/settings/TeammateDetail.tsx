@@ -8,6 +8,10 @@ import type { Teammate } from '@/types/teammate';
 import TeammateHeader from './teammates/components/TeammateHeader';
 import TeammateProfileCard from './teammates/components/TeammateProfileCard';
 import SaveConfirmDialog from './teammates/components/SaveConfirmDialog';
+import TeammateActivityLogs from './teammates/components/TeammateActivityLogs';
+import TeammatePermissions from './teammates/components/TeammatePermissions';
+import TeammateAssignments from './teammates/components/TeammateAssignments';
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const TeammateDetail = () => {
   const { id } = useParams();
@@ -17,6 +21,8 @@ const TeammateDetail = () => {
   const teammate = useAppSelector(state => 
     state.teammates.teammates.find(t => t.id === id)
   );
+  const currentUserRole = useAppSelector(state => state.auth.role);
+  const isAdmin = currentUserRole === 'admin';
 
   const [isEditing, setIsEditing] = useState(false);
   const [editedTeammate, setEditedTeammate] = useState<Teammate | null>(teammate || null);
@@ -57,9 +63,7 @@ const TeammateDetail = () => {
   const handleConfirmSave = async () => {
     setIsSaving(true);
     try {
-      // Here you would integrate with your custom backend
-      // const response = await updateTeammate(editedTeammate);
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulated API call
+      await dispatch(updateTeammate(editedTeammate)).unwrap();
       
       toast({
         description: "Changes saved successfully.",
@@ -88,33 +92,55 @@ const TeammateDetail = () => {
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <TeammateHeader
-        isEditing={isEditing}
-        onSave={handleSave}
-        onCancel={handleCancel}
-        onStartEditing={() => setIsEditing(true)}
-        isSaving={isSaving}
-      />
-
-      <div className="grid gap-6">
-        <TeammateProfileCard
-          teammate={editedTeammate}
+    <ScrollArea className="h-[calc(100vh-4rem)]">
+      <div className="p-6 max-w-4xl mx-auto space-y-8">
+        <TeammateHeader
           isEditing={isEditing}
-          onUpdateTeammate={handleUpdateTeammate}
-          validationErrors={validationErrors}
-          isLoading={isSaving}
+          onSave={handleSave}
+          onCancel={handleCancel}
+          onStartEditing={() => setIsEditing(true)}
+          isSaving={isSaving}
+        />
+
+        <div className="grid gap-6">
+          <TeammateProfileCard
+            teammate={editedTeammate}
+            isEditing={isEditing}
+            onUpdateTeammate={handleUpdateTeammate}
+            validationErrors={validationErrors}
+            isLoading={isSaving}
+          />
+
+          {isAdmin && !isEditing && (
+            <TeammatePermissions 
+              teammateId={teammate.id}
+              currentPermissions={teammate.permissions}
+            />
+          )}
+
+          {!isEditing && (
+            <TeammateAssignments 
+              teammateId={teammate.id}
+            />
+          )}
+
+          {!isEditing && (
+            <TeammateActivityLogs 
+              teammateId={teammate.id}
+            />
+          )}
+        </div>
+
+        <SaveConfirmDialog
+          isOpen={showConfirmDialog}
+          onConfirm={handleConfirmSave}
+          onCancel={() => setShowConfirmDialog(false)}
+          isSaving={isSaving}
         />
       </div>
-
-      <SaveConfirmDialog
-        isOpen={showConfirmDialog}
-        onConfirm={handleConfirmSave}
-        onCancel={() => setShowConfirmDialog(false)}
-        isSaving={isSaving}
-      />
-    </div>
+    </ScrollArea>
   );
 };
 
 export default TeammateDetail;
+

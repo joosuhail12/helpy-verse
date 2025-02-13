@@ -1,11 +1,12 @@
-
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import type { Teammate, NewTeammate } from '@/types/teammate';
+import type { Teammate, NewTeammate, ActivityLog, TeamAssignment } from '@/types/teammate';
 
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 interface TeammatesState {
   teammates: Teammate[];
+  activityLogs: ActivityLog[];
+  assignments: TeamAssignment[];
   loading: boolean;
   error: string | null;
   lastFetchTime: number | null;
@@ -14,6 +15,8 @@ interface TeammatesState {
 
 const initialState: TeammatesState = {
   teammates: [],
+  activityLogs: [],
+  assignments: [],
   loading: false,
   error: null,
   lastFetchTime: null,
@@ -29,7 +32,36 @@ const mockTeammates: Teammate[] = [
     status: 'active',
     lastActive: new Date().toISOString(),
     createdAt: '2024-01-01T00:00:00.000Z',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=John'
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=John',
+    permissions: ['manage_tickets', 'view_reports']
+  }
+];
+
+const mockActivityLogs: ActivityLog[] = [
+  {
+    id: '1',
+    teammateId: '1',
+    type: 'login',
+    description: 'Logged in to the system',
+    timestamp: new Date().toISOString()
+  },
+  {
+    id: '2',
+    teammateId: '1',
+    type: 'update',
+    description: 'Updated profile information',
+    timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+  }
+];
+
+const mockAssignments: TeamAssignment[] = [
+  {
+    id: '1',
+    teammateId: '1',
+    teamName: 'Customer Support',
+    role: 'Team Lead',
+    status: 'active',
+    startDate: '2024-01-01T00:00:00.000Z'
   }
 ];
 
@@ -128,6 +160,51 @@ export const exportTeammates = createAsyncThunk(
   }
 );
 
+export const updateTeammate = createAsyncThunk(
+  'teammates/updateTeammate',
+  async (teammate: Teammate, { dispatch }) => {
+    try {
+      await delay(1000);
+      
+      // Log the activity
+      dispatch(addActivityLog({
+        id: Math.random().toString(36).substr(2, 9),
+        teammateId: teammate.id,
+        type: 'update',
+        description: 'Updated teammate information',
+        timestamp: new Date().toISOString()
+      }));
+      
+      return teammate;
+    } catch (error) {
+      throw error;
+    }
+  }
+);
+
+export const updateTeammatePermissions = createAsyncThunk(
+  'teammates/updateTeammatePermissions',
+  async ({ teammateId, permissions }: { teammateId: string, permissions: string[] }, { dispatch }) => {
+    try {
+      await delay(1000);
+      
+      // Log the activity
+      dispatch(addActivityLog({
+        id: Math.random().toString(36).substr(2, 9),
+        teammateId,
+        type: 'permission_change',
+        description: 'Updated teammate permissions',
+        timestamp: new Date().toISOString(),
+        metadata: { permissions }
+      }));
+      
+      return { teammateId, permissions };
+    } catch (error) {
+      throw error;
+    }
+  }
+);
+
 const teammatesSlice = createSlice({
   name: 'teammates',
   initialState,
@@ -142,6 +219,9 @@ const teammatesSlice = createSlice({
           ? { ...teammate, role }
           : teammate
       );
+    },
+    addActivityLog: (state, action) => {
+      state.activityLogs.unshift(action.payload);
     }
   },
   extraReducers: (builder) => {
@@ -153,6 +233,8 @@ const teammatesSlice = createSlice({
       .addCase(fetchTeammates.fulfilled, (state, action) => {
         state.loading = false;
         state.teammates = action.payload;
+        state.activityLogs = mockActivityLogs;
+        state.assignments = mockAssignments;
         state.lastFetchTime = Date.now();
         state.retryCount = 0;
       })
@@ -169,14 +251,25 @@ const teammatesSlice = createSlice({
           state.teammates = state.teammates.filter(t => t.id !== action.meta.requestId);
         }
       })
-      .addCase(updateTeammatesRole.rejected, (state, action) => {
+      .addCase(updateTeammate.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Failed to update roles';
+        state.error = action.error.message || 'Failed to update teammate';
         // Revert the optimistic update
         if (action.meta.arg) {
           state.teammates = state.teammates.map(teammate => ({
             ...teammate,
             role: teammate.role // Revert to original role
+          }));
+        }
+      })
+      .addCase(updateTeammatePermissions.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Failed to update teammate permissions';
+        // Revert the optimistic update
+        if (action.meta.arg) {
+          state.teammates = state.teammates.map(teammate => ({
+            ...teammate,
+            permissions: teammate.permissions // Revert to original permissions
           }));
         }
       })
@@ -193,5 +286,7 @@ const teammatesSlice = createSlice({
       });
   },
 });
+
+export const { addTeammateOptimistic, updateRolesOptimistic, addActivityLog } = teammatesSlice.actions;
 
 export default teammatesSlice.reducer;
