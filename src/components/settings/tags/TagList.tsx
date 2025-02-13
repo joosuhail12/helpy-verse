@@ -18,6 +18,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface Tag {
   id: string;
@@ -79,6 +85,10 @@ const TagList = ({ searchQuery }: TagListProps) => {
 
   return (
     <div>
+      <div className="mb-4 text-sm text-gray-500">
+        {filteredTags.length} {filteredTags.length === 1 ? 'tag' : 'tags'} total
+      </div>
+
       {filteredTags.length === 0 ? (
         <div className="p-8 text-center text-gray-500">
           No tags found matching your search.
@@ -98,41 +108,68 @@ const TagList = ({ searchQuery }: TagListProps) => {
                 <TableCell>
                   <div className="flex items-center space-x-3">
                     <div
-                      className="w-4 h-4 rounded flex-shrink-0"
-                      style={{ backgroundColor: tag.color }}
+                      className="w-4 h-4 rounded flex-shrink-0 transition-all duration-200 hover:scale-110 cursor-pointer"
+                      style={{ 
+                        backgroundColor: tag.color,
+                        boxShadow: `0 0 0 4px ${tag.color}15`
+                      }}
+                      title={`Color: ${tag.color}`}
                     />
                     <span className="font-medium text-gray-900">{tag.name}</span>
                   </div>
                 </TableCell>
                 <TableCell>
-                  <div className="flex gap-3 text-sm text-gray-500">
-                    <span>{tag.counts.tickets} tickets</span>
-                    <span>•</span>
-                    <span>{tag.counts.contacts} contacts</span>
-                    <span>•</span>
-                    <span>{tag.counts.companies} companies</span>
+                  <div className="flex gap-3 text-sm">
+                    <span className="text-indigo-600/70">{tag.counts.tickets} tickets</span>
+                    <span className="text-gray-300">•</span>
+                    <span className="text-purple-600/70">{tag.counts.contacts} contacts</span>
+                    <span className="text-gray-300">•</span>
+                    <span className="text-blue-600/70">{tag.counts.companies} companies</span>
                   </div>
                 </TableCell>
                 <TableCell className="text-right">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon">
-                        <MoreHorizontal className="h-4 w-4" />
-                        <span className="sr-only">Open menu</span>
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => setTagToEdit(tag)}>
-                        Edit
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className="text-red-600"
-                        onClick={() => setTagToDelete(tag)}
-                      >
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  <TooltipProvider>
+                    <DropdownMenu>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                              <span className="sr-only">Open menu</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Tag actions</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <DropdownMenuContent align="end">
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <DropdownMenuItem onClick={() => setTagToEdit(tag)}>
+                              Edit
+                            </DropdownMenuItem>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Edit tag details</p>
+                          </TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <DropdownMenuItem
+                              className="text-red-600"
+                              onClick={() => setTagToDelete(tag)}
+                            >
+                              Delete
+                            </DropdownMenuItem>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Delete this tag</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TooltipProvider>
                 </TableCell>
               </TableRow>
             ))}
@@ -160,3 +197,4 @@ const TagList = ({ searchQuery }: TagListProps) => {
 };
 
 export default TagList;
+
