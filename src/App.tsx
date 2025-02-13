@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -6,10 +5,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Provider } from 'react-redux';
 import { store } from './store/store';
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, ComponentType } from 'react';
 import { useAppSelector } from "./hooks/useAppSelector";
 
-// Lazy load components with explicit chunk names and retry logic
+// Lazy load components with explicit chunk names
 const SignIn = lazy(() => import(/* webpackChunkName: "signin" */ "./pages/SignIn"));
 const SignUp = lazy(() => import(/* webpackChunkName: "signup" */ "./pages/SignUp"));
 const ForgotPassword = lazy(() => import(/* webpackChunkName: "forgot-password" */ "./pages/ForgotPassword"));
@@ -17,11 +16,11 @@ const Home = lazy(() => import(/* webpackChunkName: "home" */ "./pages/Dashboard
 const AllTickets = lazy(() => import(/* webpackChunkName: "all-tickets" */ "./pages/inbox/All"));
 const Tags = lazy(() => import(/* webpackChunkName: "tags" */ "./pages/settings/Tags"));
 
-// Add retry logic for Teammates component
+// Add retry logic for Teammates component with proper typing
 const loadTeammates = () => import(/* webpackChunkName: "teammates" */ "./pages/settings/Teammates")
-  .catch(error => {
+  .catch((error: Error) => {
     console.error("Error loading Teammates component:", error);
-    return new Promise((resolve) => {
+    return new Promise<{ default: ComponentType }>((resolve) => {
       // Retry after a short delay
       setTimeout(() => {
         resolve(import(/* webpackChunkName: "teammates" */ "./pages/settings/Teammates")
@@ -120,4 +119,3 @@ const App = () => (
 );
 
 export default App;
-
