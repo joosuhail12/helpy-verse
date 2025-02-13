@@ -50,10 +50,14 @@ const FormatButtons = ({ editor, disabled }: { editor: Editor | null; disabled: 
     <Tooltip>
       <TooltipTrigger asChild>
         <Button
+          type="button"
           variant="ghost"
           size="icon"
           className="h-8 w-8"
-          onClick={() => editor?.chain().focus().toggleBold().run()}
+          onClick={(e) => {
+            e.preventDefault();
+            editor?.chain().focus().toggleBold().run();
+          }}
           data-active={editor?.isActive('bold')}
           disabled={disabled}
         >
@@ -68,10 +72,14 @@ const FormatButtons = ({ editor, disabled }: { editor: Editor | null; disabled: 
     <Tooltip>
       <TooltipTrigger asChild>
         <Button
+          type="button"
           variant="ghost"
           size="icon"
           className="h-8 w-8"
-          onClick={() => editor?.chain().focus().toggleItalic().run()}
+          onClick={(e) => {
+            e.preventDefault();
+            editor?.chain().focus().toggleItalic().run();
+          }}
           data-active={editor?.isActive('italic')}
           disabled={disabled}
         >
@@ -86,10 +94,14 @@ const FormatButtons = ({ editor, disabled }: { editor: Editor | null; disabled: 
     <Tooltip>
       <TooltipTrigger asChild>
         <Button
+          type="button"
           variant="ghost"
           size="icon"
           className="h-8 w-8"
-          onClick={() => editor?.chain().focus().toggleBulletList().run()}
+          onClick={(e) => {
+            e.preventDefault();
+            editor?.chain().focus().toggleBulletList().run();
+          }}
           data-active={editor?.isActive('bulletList')}
           disabled={disabled}
         >
@@ -104,10 +116,14 @@ const FormatButtons = ({ editor, disabled }: { editor: Editor | null; disabled: 
     <Tooltip>
       <TooltipTrigger asChild>
         <Button
+          type="button"
           variant="ghost"
           size="icon"
           className="h-8 w-8"
-          onClick={() => editor?.chain().focus().toggleOrderedList().run()}
+          onClick={(e) => {
+            e.preventDefault();
+            editor?.chain().focus().toggleOrderedList().run();
+          }}
           data-active={editor?.isActive('orderedList')}
           disabled={disabled}
         >
@@ -122,10 +138,14 @@ const FormatButtons = ({ editor, disabled }: { editor: Editor | null; disabled: 
     <Tooltip>
       <TooltipTrigger asChild>
         <Button
+          type="button"
           variant="ghost"
           size="icon"
           className="h-8 w-8"
-          onClick={() => editor?.chain().focus().toggleBlockquote().run()}
+          onClick={(e) => {
+            e.preventDefault();
+            editor?.chain().focus().toggleBlockquote().run();
+          }}
           data-active={editor?.isActive('blockquote')}
           disabled={disabled}
         >
@@ -140,10 +160,14 @@ const FormatButtons = ({ editor, disabled }: { editor: Editor | null; disabled: 
     <Tooltip>
       <TooltipTrigger asChild>
         <Button
+          type="button"
           variant="ghost"
           size="icon"
           className="h-8 w-8"
-          onClick={() => editor?.chain().focus().toggleCode().run()}
+          onClick={(e) => {
+            e.preventDefault();
+            editor?.chain().focus().toggleCode().run();
+          }}
           data-active={editor?.isActive('code')}
           disabled={disabled}
         >
@@ -158,10 +182,14 @@ const FormatButtons = ({ editor, disabled }: { editor: Editor | null; disabled: 
     <Tooltip>
       <TooltipTrigger asChild>
         <Button
+          type="button"
           variant="ghost"
           size="icon"
           className="h-8 w-8"
-          onClick={() => editor?.chain().focus().undo().run()}
+          onClick={(e) => {
+            e.preventDefault();
+            editor?.chain().focus().undo().run();
+          }}
           disabled={disabled}
         >
           <Undo className="h-4 w-4" />
@@ -175,10 +203,14 @@ const FormatButtons = ({ editor, disabled }: { editor: Editor | null; disabled: 
     <Tooltip>
       <TooltipTrigger asChild>
         <Button
+          type="button"
           variant="ghost"
           size="icon"
           className="h-8 w-8"
-          onClick={() => editor?.chain().focus().redo().run()}
+          onClick={(e) => {
+            e.preventDefault();
+            editor?.chain().focus().redo().run();
+          }}
           disabled={disabled}
         >
           <Redo className="h-4 w-4" />
@@ -196,10 +228,14 @@ const MentionButtons = ({ onInsertPlaceholder, disabled }: { onInsertPlaceholder
     <Tooltip>
       <TooltipTrigger asChild>
         <Button
+          type="button"
           variant="ghost"
           size="icon"
           className="h-8 w-8"
-          onClick={() => onInsertPlaceholder('customer')}
+          onClick={(e) => {
+            e.preventDefault();
+            onInsertPlaceholder('customer');
+          }}
           disabled={disabled}
         >
           <User className="h-4 w-4" />
@@ -213,10 +249,14 @@ const MentionButtons = ({ onInsertPlaceholder, disabled }: { onInsertPlaceholder
     <Tooltip>
       <TooltipTrigger asChild>
         <Button
+          type="button"
           variant="ghost"
           size="icon"
           className="h-8 w-8"
-          onClick={() => onInsertPlaceholder('company')}
+          onClick={(e) => {
+            e.preventDefault();
+            onInsertPlaceholder('company');
+          }}
           disabled={disabled}
         >
           <Building2 className="h-4 w-4" />
@@ -230,10 +270,14 @@ const MentionButtons = ({ onInsertPlaceholder, disabled }: { onInsertPlaceholder
     <Tooltip>
       <TooltipTrigger asChild>
         <Button
+          type="button"
           variant="ghost"
           size="icon"
           className="h-8 w-8"
-          onClick={() => onInsertPlaceholder('ticket')}
+          onClick={(e) => {
+            e.preventDefault();
+            onInsertPlaceholder('ticket');
+          }}
           disabled={disabled}
         >
           <TicketIcon className="h-4 w-4" />
@@ -247,4 +291,3 @@ const MentionButtons = ({ onInsertPlaceholder, disabled }: { onInsertPlaceholder
 );
 
 export default CannedResponseEditorToolbar;
-
