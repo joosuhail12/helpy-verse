@@ -11,15 +11,24 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import type { CustomObject } from "@/mock/customObjects";
 import { toast } from "@/components/ui/use-toast";
+import { Link, Users, Ticket } from "lucide-react";
 
 const objectSettingsSchema = z.object({
   name: z.string().min(1, "Name is required").max(50, "Name must be less than 50 characters"),
   description: z.string().max(200, "Description must be less than 200 characters"),
+  connectionType: z.enum(['customer', 'ticket']).nullable(),
   showInCustomerContext: z.boolean(),
   showInCustomerDetail: z.boolean(),
   showInCompanyDetail: z.boolean(),
@@ -37,6 +46,7 @@ export function ObjectSettingsForm({ object }: ObjectSettingsFormProps) {
     defaultValues: {
       name: object.name,
       description: object.description,
+      connectionType: object.connectionType,
       showInCustomerContext: object.showInCustomerContext,
       showInCustomerDetail: object.showInCustomerDetail,
       showInCompanyDetail: object.showInCompanyDetail,
@@ -90,6 +100,43 @@ export function ObjectSettingsForm({ object }: ObjectSettingsFormProps) {
               </FormControl>
               <FormDescription>
                 Describe the purpose of this custom object
+              </FormDescription>
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="connectionType"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Connect to</FormLabel>
+              <Select 
+                onValueChange={field.onChange} 
+                defaultValue={field.value || undefined}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="No connection" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="customer">
+                    <div className="flex items-center gap-2">
+                      <Users className="h-4 w-4" />
+                      <span>Customers</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="ticket">
+                    <div className="flex items-center gap-2">
+                      <Ticket className="h-4 w-4" />
+                      <span>Tickets</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <FormDescription>
+                Connect this object to customers or tickets to establish a relationship
               </FormDescription>
             </FormItem>
           )}

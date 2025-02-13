@@ -4,6 +4,7 @@ export interface CustomObject {
   name: string;
   description: string;
   slug: string;
+  connectionType: 'customer' | 'ticket' | null;
   showInCustomerContext: boolean;
   showInCustomerDetail: boolean;
   showInCompanyDetail: boolean;
@@ -38,6 +39,7 @@ export const mockCustomObjects: CustomObject[] = [
     name: 'Orders',
     description: 'Track customer orders and their status',
     slug: 'orders',
+    connectionType: 'customer',
     showInCustomerContext: true,
     showInCustomerDetail: true,
     showInCompanyDetail: false,
@@ -83,6 +85,7 @@ export const mockCustomObjects: CustomObject[] = [
     name: 'Products',
     description: 'Manage product catalog',
     slug: 'products',
+    connectionType: null,
     showInCustomerContext: false,
     showInCustomerDetail: false,
     showInCompanyDetail: true,
