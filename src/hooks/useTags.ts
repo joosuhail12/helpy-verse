@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import type { Tag, SortField, FilterEntity } from '@/types/tag';
 
@@ -6,32 +5,86 @@ const mockTags: Tag[] = [
   { 
     id: '1', 
     name: 'Bug', 
-    color: '#EF4444', 
-    counts: { tickets: 23, contacts: 5, companies: 2 } 
+    color: '#EF4444',
+    createdAt: '2024-03-01T10:00:00Z',
+    lastUsed: '2024-03-15T14:30:00Z',
+    trend: 'increasing',
+    counts: { tickets: 23, contacts: 5, companies: 2 },
+    history: [
+      { date: '2024-03-01', total: 20 },
+      { date: '2024-03-08', total: 25 },
+      { date: '2024-03-15', total: 30 }
+    ],
+    preview: [
+      { type: 'ticket', id: '1', title: 'Login page error' },
+      { type: 'contact', id: '2', title: 'John Smith' }
+    ]
   },
   { 
     id: '2', 
     name: 'Feature Request', 
-    color: '#3B82F6', 
-    counts: { tickets: 15, contacts: 3, companies: 1 } 
+    color: '#3B82F6',
+    createdAt: '2024-02-15T09:00:00Z',
+    lastUsed: '2024-03-14T11:20:00Z',
+    trend: 'stable',
+    counts: { tickets: 15, contacts: 3, companies: 1 },
+    history: [
+      { date: '2024-02-15', total: 15 },
+      { date: '2024-03-01', total: 16 },
+      { date: '2024-03-15', total: 15 }
+    ],
+    preview: [
+      { type: 'ticket', id: '3', title: 'Add dark mode' }
+    ]
   },
   { 
     id: '3', 
     name: 'Support', 
-    color: '#10B981', 
-    counts: { tickets: 45, contacts: 12, companies: 8 } 
+    color: '#10B981',
+    createdAt: '2024-01-10T08:00:00Z',
+    lastUsed: '2024-03-10T12:00:00Z',
+    trend: 'decreasing',
+    counts: { tickets: 45, contacts: 12, companies: 8 },
+    history: [
+      { date: '2024-01-10', total: 50 },
+      { date: '2024-02-10', total: 40 },
+      { date: '2024-03-10', total: 30 }
+    ],
+    preview: [
+      { type: 'ticket', id: '4', title: 'Password reset issue' }
+    ]
   },
   { 
     id: '4', 
     name: 'Documentation', 
-    color: '#F59E0B', 
-    counts: { tickets: 8, contacts: 0, companies: 1 } 
+    color: '#F59E0B',
+    createdAt: '2024-01-20T11:00:00Z',
+    lastUsed: '2024-03-12T09:00:00Z',
+    trend: 'stable',
+    counts: { tickets: 8, contacts: 0, companies: 1 },
+    history: [
+      { date: '2024-01-20', total: 10 },
+      { date: '2024-02-20', total: 8 },
+      { date: '2024-03-20', total: 8 }
+    ],
+    preview: []
   },
   { 
     id: '5', 
     name: 'Design', 
-    color: '#8B5CF6', 
-    counts: { tickets: 12, contacts: 4, companies: 2 } 
+    color: '#8B5CF6',
+    createdAt: '2024-02-01T15:00:00Z',
+    lastUsed: '2024-03-13T10:00:00Z',
+    trend: 'increasing',
+    counts: { tickets: 12, contacts: 4, companies: 2 },
+    history: [
+      { date: '2024-02-01', total: 5 },
+      { date: '2024-02-15', total: 10 },
+      { date: '2024-03-01', total: 15 }
+    ],
+    preview: [
+      { type: 'ticket', id: '5', title: 'UI improvement suggestions' }
+    ]
   }
 ];
 
@@ -47,8 +100,14 @@ export const useTags = (searchQuery: string, filterEntity: FilterEntity, sortFie
   }
 
   filteredTags.sort((a, b) => {
-    let valueA = sortField === 'name' ? a.name : a.counts[sortField];
-    let valueB = sortField === 'name' ? b.name : b.counts[sortField];
+    let valueA: any = sortField === 'name' ? a.name : 
+                      sortField === 'lastUsed' ? new Date(a.lastUsed).getTime() :
+                      sortField === 'createdAt' ? new Date(a.createdAt).getTime() :
+                      a.counts[sortField];
+    let valueB: any = sortField === 'name' ? b.name :
+                      sortField === 'lastUsed' ? new Date(b.lastUsed).getTime() :
+                      sortField === 'createdAt' ? new Date(b.createdAt).getTime() :
+                      b.counts[sortField];
     
     if (sortDirection === 'desc') {
       [valueA, valueB] = [valueB, valueA];

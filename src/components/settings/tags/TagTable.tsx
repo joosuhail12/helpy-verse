@@ -1,10 +1,13 @@
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
+import { ArrowUpIcon, ArrowDownIcon, MinusIcon } from "lucide-react";
 import type { Tag } from '@/types/tag';
 import TagColorPreview from './TagColorPreview';
 import TagUsageStats from './TagUsageStats';
 import TagActions from './TagActions';
+import TagUsageChart from './TagUsageChart';
+import TagPreviewItems from './TagPreviewItems';
 
 interface TagTableProps {
   tags: Tag[];
@@ -23,6 +26,25 @@ const TagTable = ({
   onEditTag,
   onDeleteTag,
 }: TagTableProps) => {
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  const getTrendIcon = (trend: Tag['trend']) => {
+    switch (trend) {
+      case 'increasing':
+        return <ArrowUpIcon className="w-4 h-4 text-green-500" />;
+      case 'decreasing':
+        return <ArrowDownIcon className="w-4 h-4 text-red-500" />;
+      default:
+        return <MinusIcon className="w-4 h-4 text-gray-500" />;
+    }
+  };
+
   return (
     <Table>
       <TableHeader>
@@ -33,8 +55,12 @@ const TagTable = ({
               onCheckedChange={onSelectAll}
             />
           </TableHead>
-          <TableHead className="w-[250px]">Name</TableHead>
+          <TableHead className="w-[200px]">Name</TableHead>
           <TableHead>Usage</TableHead>
+          <TableHead className="w-[150px]">Created</TableHead>
+          <TableHead className="w-[150px]">Last Used</TableHead>
+          <TableHead className="w-[100px]">Trend</TableHead>
+          <TableHead>Preview</TableHead>
           <TableHead className="w-[100px]"></TableHead>
         </TableRow>
       </TableHeader>
@@ -54,7 +80,20 @@ const TagTable = ({
               </div>
             </TableCell>
             <TableCell>
-              <TagUsageStats {...tag.counts} />
+              <div className="space-y-2">
+                <TagUsageStats {...tag.counts} />
+                <TagUsageChart tag={tag} />
+              </div>
+            </TableCell>
+            <TableCell>{formatDate(tag.createdAt)}</TableCell>
+            <TableCell>{formatDate(tag.lastUsed)}</TableCell>
+            <TableCell>
+              <div className="flex items-center justify-center">
+                {getTrendIcon(tag.trend)}
+              </div>
+            </TableCell>
+            <TableCell>
+              <TagPreviewItems items={tag.preview} />
             </TableCell>
             <TableCell className="text-right">
               <TagActions
@@ -71,3 +110,4 @@ const TagTable = ({
 };
 
 export default TagTable;
+
