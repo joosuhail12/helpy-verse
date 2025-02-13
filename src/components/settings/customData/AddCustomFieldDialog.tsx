@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -24,6 +25,7 @@ import { useCustomDataMutations } from "@/hooks/useCustomDataMutations";
 import type { CustomField, CustomFieldType, ValidationRule, FieldDependency, FieldHistoryEntry } from "@/types/customField";
 import ValidationRulesSection from "./ValidationRulesSection";
 import DependenciesSection from "./DependenciesSection";
+import FieldOptionsSection from "./FieldOptionsSection";
 
 interface AddCustomFieldDialogProps {
   isOpen: boolean;
@@ -39,19 +41,75 @@ const AddCustomFieldDialog = ({ isOpen, onClose, table, existingFields }: AddCus
   const [description, setDescription] = useState("");
   const [validationRules, setValidationRules] = useState<ValidationRule[]>([]);
   const [dependencies, setDependencies] = useState<FieldDependency[]>([]);
+  const [options, setOptions] = useState<string[]>([]);
   const { toast } = useToast();
   const { addCustomField, isLoading } = useCustomDataMutations();
+
+  const getDefaultValidationRules = (fieldType: CustomFieldType): ValidationRule[] => {
+    switch (fieldType) {
+      case 'email':
+        return [{
+          type: 'regex',
+          value: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$',
+          message: 'Please enter a valid email address'
+        }];
+      case 'phone':
+        return [{
+          type: 'regex',
+          value: '^\\+?[1-9]\\d{1,14}$',
+          message: 'Please enter a valid phone number'
+        }];
+      case 'url':
+        return [{
+          type: 'regex',
+          value: '^https?:\\/\\/[\\w\\-]+(\\.[\\w\\-]+)+[/#?]?.*$',
+          message: 'Please enter a valid URL'
+        }];
+      case 'currency':
+        return [
+          {
+            type: 'regex',
+            value: '^\\d+(\\.\\d{1,2})?$',
+            message: 'Please enter a valid currency amount'
+          },
+          {
+            type: 'min',
+            value: '0',
+            message: 'Amount must be greater than or equal to 0'
+          }
+        ];
+      default:
+        return [];
+    }
+  };
+
+  const handleTypeChange = (newType: CustomFieldType) => {
+    setType(newType);
+    setValidationRules(getDefaultValidationRules(newType));
+    if (!['select', 'multi-select'].includes(newType)) {
+      setOptions([]);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (['select', 'multi-select'].includes(type) && options.length === 0) {
+      toast({
+        title: "Validation Error",
+        description: "Please add at least one option for select/multi-select fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const timestamp = new Date().toISOString();
       const historyEntry: FieldHistoryEntry = {
         id: Math.random().toString(),
         timestamp,
-        userId: 'current-user', // In real app, get from auth
-        userName: 'Current User', // In real app, get from auth
+        userId: 'current-user',
+        userName: 'Current User',
         action: 'created',
         changes: []
       };
@@ -65,6 +123,7 @@ const AddCustomFieldDialog = ({ isOpen, onClose, table, existingFields }: AddCus
           description,
           validationRules,
           dependencies,
+          options: ['select', 'multi-select'].includes(type) ? options : undefined,
           history: [historyEntry]
         }
       });
@@ -81,6 +140,7 @@ const AddCustomFieldDialog = ({ isOpen, onClose, table, existingFields }: AddCus
       setDescription("");
       setValidationRules([]);
       setDependencies([]);
+      setOptions([]);
     } catch (error) {
       toast({
         title: "Error",
@@ -89,6 +149,8 @@ const AddCustomFieldDialog = ({ isOpen, onClose, table, existingFields }: AddCus
       });
     }
   };
+
+  const showOptionsSection = ['select', 'multi-select'].includes(type);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -112,7 +174,7 @@ const AddCustomFieldDialog = ({ isOpen, onClose, table, existingFields }: AddCus
             </div>
             <div className="grid gap-2">
               <Label htmlFor="type">Field Type</Label>
-              <Select value={type} onValueChange={(value) => setType(value as CustomFieldType)}>
+              <Select value={type} onValueChange={(value) => handleTypeChange(value as CustomFieldType)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -149,6 +211,13 @@ const AddCustomFieldDialog = ({ isOpen, onClose, table, existingFields }: AddCus
                 rows={3}
               />
             </div>
+            
+            {showOptionsSection && (
+              <FieldOptionsSection
+                options={options}
+                onOptionsChange={setOptions}
+              />
+            )}
             
             <ValidationRulesSection
               rules={validationRules}
