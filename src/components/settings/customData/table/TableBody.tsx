@@ -2,7 +2,7 @@
 import { TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { History, AtSign, CalendarDays, Link2, Phone, Mail, DollarSign, Text, Toggle, FileText, ListFilter, Files, Star } from "lucide-react";
+import { History, AtSign, CalendarDays, Link2, Phone, Mail, DollarSign, Text, ToggleLeft, FileText, ListFilter, Files, Star } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CustomField } from "@/types/customField";
 import CustomFieldActions from "../CustomFieldActions";
@@ -40,7 +40,7 @@ const getFieldTypeIcon = (type: CustomField['type']) => {
     case 'text':
       return <Text className="h-4 w-4 text-teal-500" />;
     case 'boolean':
-      return <Toggle className="h-4 w-4 text-green-500" />;
+      return <ToggleLeft className="h-4 w-4 text-green-500" />;
     case 'rich-text':
       return <FileText className="h-4 w-4 text-lime-500" />;
     case 'select':
