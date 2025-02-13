@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -91,9 +90,47 @@ const AddCustomFieldDialog = ({ isOpen, onClose, table, existingFields }: AddCus
     }
   };
 
+  const validateFieldName = (name: string): string[] => {
+    const errors: string[] = [];
+    
+    if (name.length < 2) {
+      errors.push("Field name must be at least 2 characters long");
+    }
+    
+    if (name.length > 50) {
+      errors.push("Field name must not exceed 50 characters");
+    }
+    
+    if (!/^[a-zA-Z][a-zA-Z0-9_]*$/.test(name)) {
+      errors.push("Field name must start with a letter and contain only letters, numbers, and underscores");
+    }
+    
+    if (existingFields.some(field => field.name.toLowerCase() === name.toLowerCase())) {
+      errors.push("A field with this name already exists");
+    }
+    
+    return errors;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    const nameValidationErrors = validateFieldName(name);
+    if (nameValidationErrors.length > 0) {
+      toast({
+        title: "Validation Error",
+        description: (
+          <ul className="list-disc pl-4">
+            {nameValidationErrors.map((error, index) => (
+              <li key={index}>{error}</li>
+            ))}
+          </ul>
+        ),
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (['select', 'multi-select'].includes(type) && options.length === 0) {
       toast({
         title: "Validation Error",
@@ -101,6 +138,20 @@ const AddCustomFieldDialog = ({ isOpen, onClose, table, existingFields }: AddCus
         variant: "destructive",
       });
       return;
+    }
+
+    if (['select', 'multi-select'].includes(type)) {
+      const duplicateOptions = options.filter((option, index) => 
+        options.indexOf(option) !== index
+      );
+      if (duplicateOptions.length > 0) {
+        toast({
+          title: "Validation Error",
+          description: "Duplicate options are not allowed.",
+          variant: "destructive",
+        });
+        return;
+      }
     }
 
     try {
@@ -129,8 +180,8 @@ const AddCustomFieldDialog = ({ isOpen, onClose, table, existingFields }: AddCus
       });
       
       toast({
-        title: "Custom field added",
-        description: "The custom field has been added successfully.",
+        title: "Success",
+        description: "Custom field has been added successfully.",
       });
       
       onClose();
