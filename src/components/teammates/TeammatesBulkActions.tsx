@@ -18,7 +18,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { updateTeammatesRole, exportTeammates } from '@/store/slices/teammatesSlice';
+import { updateTeammatesRole, exportTeammates } from '@/store/slices/teammates/actions';
 import { CheckSquare, UserMinus, FileText } from 'lucide-react';
 import type { Teammate } from '@/types/teammate';
 

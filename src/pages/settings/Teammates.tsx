@@ -1,7 +1,8 @@
+
 import { useEffect, useState } from 'react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
-import { fetchTeammates, resendInvitation } from '@/store/slices/teammatesSlice';
+import { fetchTeammates, resendInvitation } from '@/store/slices/teammates/actions';
 import { useToast } from "@/hooks/use-toast";
 import AddTeammateDialog from '@/components/teammates/AddTeammateDialog';
 import TeammatesBulkActions from '@/components/teammates/TeammatesBulkActions';

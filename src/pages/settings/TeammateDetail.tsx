@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
@@ -13,7 +12,7 @@ import TeammatePermissions from './teammates/components/TeammatePermissions';
 import TeammateAssignments from './teammates/components/TeammateAssignments';
 import TeammateSecuritySettings from './teammates/components/TeammateSecuritySettings';
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { updateTeammate } from '@/store/slices/teammatesSlice';
+import { updateTeammate } from '@/store/slices/teammates/actions';
 
 const TeammateDetail = () => {
   const { id } = useParams();

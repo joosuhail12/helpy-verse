@@ -3,7 +3,7 @@ import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { RefreshCcw } from "lucide-react";
-import { fetchTeammates } from '@/store/slices/teammatesSlice';
+import { fetchTeammates } from '@/store/slices/teammates/actions';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 
 interface Props {
