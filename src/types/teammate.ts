@@ -9,6 +9,7 @@ export interface Teammate {
   createdAt: string;
   avatar?: string;
   permissions: string[];
+  is2FAEnabled?: boolean;
 }
 
 export interface NewTeammate {
@@ -36,3 +37,12 @@ export interface TeamAssignment {
   endDate?: string;
 }
 
+export interface Session {
+  id: string;
+  teammateId: string;
+  deviceType: string;
+  deviceName: string;
+  location: string;
+  lastActive: string;
+  ipAddress?: string;
+}
