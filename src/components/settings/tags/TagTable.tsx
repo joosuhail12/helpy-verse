@@ -55,7 +55,8 @@ const TagTable = ({
             />
           </TableHead>
           <TableHead className="w-[200px]">Name</TableHead>
-          <TableHead>Usage</TableHead>
+          <TableHead>Usage Stats</TableHead>
+          <TableHead className="w-[250px]">Usage Trend</TableHead>
           <TableHead className="w-[150px]">Created</TableHead>
           <TableHead className="w-[150px]">Last Used</TableHead>
           <TableHead className="w-[100px]">Trend</TableHead>
@@ -78,10 +79,10 @@ const TagTable = ({
               </div>
             </TableCell>
             <TableCell>
-              <div className="space-y-2">
-                <TagUsageStats {...tag.counts} />
-                <TagUsageChart tag={tag} />
-              </div>
+              <TagUsageStats {...tag.counts} />
+            </TableCell>
+            <TableCell>
+              <TagUsageChart tag={tag} />
             </TableCell>
             <TableCell>{formatDate(tag.createdAt)}</TableCell>
             <TableCell>{formatDate(tag.lastUsed)}</TableCell>
@@ -105,4 +106,3 @@ const TagTable = ({
 };
 
 export default TagTable;
-
