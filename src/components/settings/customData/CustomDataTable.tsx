@@ -29,14 +29,17 @@ import { Loader2 } from "lucide-react";
 
 interface CustomDataTableProps {
   table: 'tickets' | 'contacts' | 'companies';
+  currentFields?: CustomField[];
+  isLoading?: boolean;
+  error?: any;
 }
 
-const CustomDataTable = ({ table }: CustomDataTableProps) => {
+const CustomDataTable = ({ table, currentFields = [], isLoading = false, error }: CustomDataTableProps) => {
   const [selectedFields, setSelectedFields] = useState<CustomField[]>([]);
   const [selectedHistory, setSelectedHistory] = useState<CustomField | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const { fields, isLoading, error, updateField, isUpdating } = useFieldCache(table);
-  const [items, setItems] = useState<CustomField[]>([]);
+  const { fields, isLoading: fieldLoading, error: fieldError, updateField, isUpdating } = useFieldCache(table);
+  const [items, setItems] = useState<CustomField[]>(currentFields || []);
   const { toast } = useToast();
 
   const sensors = useSensors(
