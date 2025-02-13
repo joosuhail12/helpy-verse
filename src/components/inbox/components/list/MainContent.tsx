@@ -81,7 +81,7 @@ const MainContent = ({
         : 'w-full'
     }`}>
       <div className="flex-1 overflow-auto px-4">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-100 mb-4 mt-4">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-100 mt-4">
           <div className="p-4 space-y-4">
             <FilterBar
               searchQuery={searchQuery}
@@ -119,7 +119,7 @@ const MainContent = ({
         {isLoading ? (
           <LoadingState />
         ) : (
-          <div className="space-y-2 pb-4">
+          <div className="space-y-2">
             {paginatedTickets.map((ticket) => (
               <div
                 key={ticket.id}

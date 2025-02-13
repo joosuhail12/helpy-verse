@@ -59,7 +59,7 @@ const TicketList = ({ tickets = [], isLoading = false }: TicketListProps) => {
   }
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-full">
       <div className="flex items-center justify-between px-6 py-3 bg-white border-b">
         <h2 className="text-xl font-semibold text-gray-900">All Tickets</h2>
       </div>
