@@ -1,5 +1,17 @@
 
-export type CustomFieldType = 'text' | 'number' | 'date' | 'boolean' | 'select';
+export type CustomFieldType = 
+  | 'text' 
+  | 'number' 
+  | 'date' 
+  | 'boolean' 
+  | 'select'
+  | 'multi-select'
+  | 'rich-text'
+  | 'file'
+  | 'currency'
+  | 'url'
+  | 'email'
+  | 'phone';
 
 export interface ValidationRule {
   type: 'required' | 'minLength' | 'maxLength' | 'regex' | 'min' | 'max';
@@ -13,18 +25,32 @@ export interface FieldDependency {
   value: string | number | boolean;
 }
 
+export interface FieldHistoryEntry {
+  id: string;
+  timestamp: string;
+  userId: string;
+  userName: string;
+  action: 'created' | 'updated' | 'deleted';
+  changes?: {
+    field: string;
+    oldValue: any;
+    newValue: any;
+  }[];
+}
+
 export interface CustomField {
   id: string;
   name: string;
   type: CustomFieldType;
   required: boolean;
   description: string;
-  options?: string[]; // For select type fields
+  options?: string[]; // For select and multi-select type fields
   validationRules?: ValidationRule[];
   dependencies?: FieldDependency[];
   visible?: boolean;
   createdAt: string;
   updatedAt: string;
+  history: FieldHistoryEntry[];
 }
 
 export interface CustomFields {
@@ -32,3 +58,4 @@ export interface CustomFields {
   contacts: CustomField[];
   companies: CustomField[];
 }
+

@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -47,6 +46,16 @@ const AddCustomFieldDialog = ({ isOpen, onClose, table, existingFields }: AddCus
     e.preventDefault();
     
     try {
+      const timestamp = new Date().toISOString();
+      const historyEntry: FieldHistoryEntry = {
+        id: Math.random().toString(),
+        timestamp,
+        userId: 'current-user', // In real app, get from auth
+        userName: 'Current User', // In real app, get from auth
+        action: 'created',
+        changes: []
+      };
+
       await addCustomField({
         table,
         field: {
@@ -56,6 +65,7 @@ const AddCustomFieldDialog = ({ isOpen, onClose, table, existingFields }: AddCus
           description,
           validationRules,
           dependencies,
+          history: [historyEntry]
         }
       });
       
@@ -112,6 +122,13 @@ const AddCustomFieldDialog = ({ isOpen, onClose, table, existingFields }: AddCus
                   <SelectItem value="date">Date</SelectItem>
                   <SelectItem value="boolean">Boolean</SelectItem>
                   <SelectItem value="select">Select</SelectItem>
+                  <SelectItem value="multi-select">Multi Select</SelectItem>
+                  <SelectItem value="rich-text">Rich Text</SelectItem>
+                  <SelectItem value="file">File Attachment</SelectItem>
+                  <SelectItem value="currency">Currency</SelectItem>
+                  <SelectItem value="url">URL</SelectItem>
+                  <SelectItem value="email">Email</SelectItem>
+                  <SelectItem value="phone">Phone</SelectItem>
                 </SelectContent>
               </Select>
             </div>

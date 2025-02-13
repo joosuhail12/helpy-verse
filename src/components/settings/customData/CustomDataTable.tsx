@@ -1,4 +1,3 @@
-
 import {
   Table,
   TableBody,
@@ -13,6 +12,8 @@ import CustomFieldActions from "./CustomFieldActions";
 import BulkCustomFieldActions from "./BulkCustomFieldActions";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useState } from "react";
+import { History } from "lucide-react";
+import FieldHistory from "./FieldHistory";
 
 interface CustomDataTableProps {
   fields: CustomField[];
@@ -23,6 +24,7 @@ interface CustomDataTableProps {
 
 const CustomDataTable = ({ fields, isLoading, error, table }: CustomDataTableProps) => {
   const [selectedFields, setSelectedFields] = useState<CustomField[]>([]);
+  const [selectedHistory, setSelectedHistory] = useState<CustomField | null>(null);
 
   const handleSelectAll = (checked: boolean) => {
     setSelectedFields(checked ? fields : []);
@@ -104,11 +106,21 @@ const CustomDataTable = ({ fields, isLoading, error, table }: CustomDataTablePro
                   <TableCell>{field.required ? "Yes" : "No"}</TableCell>
                   <TableCell>{field.description}</TableCell>
                   <TableCell className="text-right">
-                    <CustomFieldActions 
-                      field={field} 
-                      table={table} 
-                      existingFields={fields}
-                    />
+                    <div className="flex justify-end space-x-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => setSelectedHistory(field)}
+                      >
+                        <History className="h-4 w-4" />
+                      </Button>
+                      <CustomFieldActions 
+                        field={field} 
+                        table={table} 
+                        existingFields={fields}
+                      />
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
@@ -116,6 +128,14 @@ const CustomDataTable = ({ fields, isLoading, error, table }: CustomDataTablePro
           </TableBody>
         </Table>
       </div>
+
+      {selectedHistory && (
+        <FieldHistory 
+          isOpen={true}
+          onClose={() => setSelectedHistory(null)}
+          history={selectedHistory.history}
+        />
+      )}
     </div>
   );
 };

@@ -12,6 +12,16 @@ export const mockCustomFields: CustomFields = {
       options: ['Low', 'Medium', 'High', 'Critical'],
       createdAt: '2024-01-01T00:00:00Z',
       updatedAt: '2024-01-01T00:00:00Z',
+      history: [
+        {
+          id: '1',
+          timestamp: '2024-01-01T00:00:00Z',
+          userId: 'user1',
+          userName: 'John Doe',
+          action: 'created',
+          changes: []
+        }
+      ]
     },
     {
       id: '2',
@@ -21,39 +31,98 @@ export const mockCustomFields: CustomFields = {
       description: 'When the ticket needs to be resolved by',
       createdAt: '2024-01-02T00:00:00Z',
       updatedAt: '2024-01-02T00:00:00Z',
+      history: [
+        {
+          id: '1',
+          timestamp: '2024-01-02T00:00:00Z',
+          userId: 'user1',
+          userName: 'John Doe',
+          action: 'created',
+          changes: []
+        }
+      ]
     }
   ],
   contacts: [
     {
       id: '3',
-      name: 'Customer Type',
-      type: 'select',
+      name: 'Contact Methods',
+      type: 'multi-select',
       required: true,
-      description: 'The type of customer',
-      options: ['Premium', 'Standard', 'Trial'],
+      description: 'Preferred contact methods',
+      options: ['Email', 'Phone', 'SMS', 'Mail'],
       createdAt: '2024-01-03T00:00:00Z',
       updatedAt: '2024-01-03T00:00:00Z',
+      history: [
+        {
+          id: '1',
+          timestamp: '2024-01-03T00:00:00Z',
+          userId: 'user2',
+          userName: 'Jane Smith',
+          action: 'created',
+          changes: []
+        }
+      ]
+    },
+    {
+      id: '4',
+      name: 'Website',
+      type: 'url',
+      required: false,
+      description: 'Personal or business website',
+      createdAt: '2024-01-03T00:00:00Z',
+      updatedAt: '2024-01-03T00:00:00Z',
+      history: [
+        {
+          id: '1',
+          timestamp: '2024-01-03T00:00:00Z',
+          userId: 'user2',
+          userName: 'Jane Smith',
+          action: 'created',
+          changes: []
+        }
+      ]
     }
   ],
   companies: [
     {
-      id: '4',
-      name: 'Industry',
-      type: 'select',
+      id: '5',
+      name: 'Company Description',
+      type: 'rich-text',
       required: true,
-      description: 'The industry sector of the company',
-      options: ['Technology', 'Healthcare', 'Finance', 'Retail', 'Other'],
+      description: 'Detailed company description',
       createdAt: '2024-01-04T00:00:00Z',
       updatedAt: '2024-01-04T00:00:00Z',
+      history: [
+        {
+          id: '1',
+          timestamp: '2024-01-04T00:00:00Z',
+          userId: 'user1',
+          userName: 'John Doe',
+          action: 'created',
+          changes: []
+        }
+      ]
     },
     {
-      id: '5',
+      id: '6',
       name: 'Annual Revenue',
-      type: 'number',
+      type: 'currency',
       required: false,
       description: 'Annual revenue in USD',
       createdAt: '2024-01-05T00:00:00Z',
       updatedAt: '2024-01-05T00:00:00Z',
+      history: [
+        {
+          id: '1',
+          timestamp: '2024-01-05T00:00:00Z',
+          userId: 'user1',
+          userName: 'John Doe',
+          action: 'created',
+          changes: []
+        }
+      ]
     }
   ]
 };
+
