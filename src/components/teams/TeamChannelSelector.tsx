@@ -1,16 +1,13 @@
 
 import React from 'react';
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { TeamChannelSelectorProps } from '@/types/team';
 
 // Mock data - in production this would come from your Node.js backend
-const AVAILABLE_CHAT_CHANNELS = [
-  { id: 'chat-1', name: 'General Chat' },
-  { id: 'chat-2', name: 'Support Chat' },
-];
+const CHAT_CHANNEL = { id: 'chat-1', name: 'General Chat' };
 
 const AVAILABLE_EMAIL_CHANNELS = [
   { id: 'email-1', name: 'Support Email' },
@@ -25,47 +22,88 @@ const TeamChannelSelector = ({
   onEmailChannelToggle,
 }: TeamChannelSelectorProps) => {
   return (
-    <div className="space-y-6">
-      <div>
-        <Label className="text-base">Chat Channel</Label>
-        <p className="text-sm text-gray-500 mb-4">Select one chat channel for the team</p>
-        <RadioGroup
-          value={selectedChatChannel}
-          onValueChange={(value) => onChatChannelSelect(value === 'none' ? undefined : value)}
-          className="space-y-2"
-        >
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="none" id="none" />
-            <Label htmlFor="none" className="cursor-pointer">No specific channel (access to all)</Label>
-          </div>
-          {AVAILABLE_CHAT_CHANNELS.map((channel) => (
-            <div key={channel.id} className="flex items-center space-x-2">
-              <RadioGroupItem value={channel.id} id={channel.id} />
-              <Label htmlFor={channel.id} className="cursor-pointer">{channel.name}</Label>
+    <div className="space-y-4">
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-wrap gap-2">
+          {selectedChatChannel && (
+            <Badge 
+              variant="secondary" 
+              className="flex items-center gap-2"
+            >
+              <span>Chat: {CHAT_CHANNEL.name}</span>
+              <button 
+                onClick={() => onChatChannelSelect(undefined)}
+                className="hover:text-destructive"
+                aria-label="Remove chat channel"
+              >
+                ×
+              </button>
+            </Badge>
+          )}
+          {selectedEmailChannels.map((channelId) => {
+            const channel = AVAILABLE_EMAIL_CHANNELS.find(c => c.id === channelId);
+            return (
+              <Badge 
+                key={channelId} 
+                variant="secondary"
+                className="flex items-center gap-2"
+              >
+                <span>Email: {channel?.name}</span>
+                <button 
+                  onClick={() => onEmailChannelToggle(channelId)}
+                  className="hover:text-destructive"
+                  aria-label="Remove email channel"
+                >
+                  ×
+                </button>
+              </Badge>
+            );
+          })}
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          {!selectedChatChannel && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1"
+              onClick={() => onChatChannelSelect(CHAT_CHANNEL.id)}
+            >
+              <Plus className="h-4 w-4" />
+              Add Chat Channel
+            </Button>
+          )}
+          
+          <ScrollArea className="h-[200px] w-full rounded-md border p-4">
+            <div className="space-y-2">
+              {AVAILABLE_EMAIL_CHANNELS.map((channel) => {
+                const isSelected = selectedEmailChannels.includes(channel.id);
+                if (!isSelected) {
+                  return (
+                    <Button
+                      key={channel.id}
+                      variant="outline"
+                      size="sm"
+                      className="gap-1 w-full justify-start"
+                      onClick={() => onEmailChannelToggle(channel.id)}
+                    >
+                      <Plus className="h-4 w-4" />
+                      {channel.name}
+                    </Button>
+                  );
+                }
+                return null;
+              })}
             </div>
-          ))}
-        </RadioGroup>
+          </ScrollArea>
+        </div>
       </div>
 
-      <div>
-        <Label className="text-base">Email Channels</Label>
-        <p className="text-sm text-gray-500 mb-4">Select email channels for the team</p>
-        <ScrollArea className="h-[200px] w-full rounded-md border p-4">
-          {AVAILABLE_EMAIL_CHANNELS.map((channel) => (
-            <div key={channel.id} className="flex items-center space-x-2 mb-2">
-              <Checkbox
-                id={channel.id}
-                checked={selectedEmailChannels.includes(channel.id)}
-                onCheckedChange={() => onEmailChannelToggle(channel.id)}
-              />
-              <Label htmlFor={channel.id} className="cursor-pointer">{channel.name}</Label>
-            </div>
-          ))}
-        </ScrollArea>
-        {selectedEmailChannels.length === 0 && (
-          <p className="text-sm text-gray-500 mt-2">No channels selected (team will have access to all email channels)</p>
-        )}
-      </div>
+      {selectedEmailChannels.length === 0 && !selectedChatChannel && (
+        <p className="text-sm text-muted-foreground">
+          No channels selected (team will have access to all channels)
+        </p>
+      )}
     </div>
   );
 };
