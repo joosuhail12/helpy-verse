@@ -8,6 +8,10 @@ export interface Team {
     name: string;
     email: string;
   }>;
+  channels?: {
+    chat?: string;
+    email: string[];
+  };
   createdAt: string;
   updatedAt: string;
 }
@@ -22,6 +26,10 @@ export interface TeamCreatePayload {
   name: string;
   icon: string;
   members: string[];
+  channels?: {
+    chat?: string;
+    email: string[];
+  };
 }
 
 export interface TeamIconPickerProps {
@@ -37,4 +45,11 @@ export interface TeamMembersSelectorProps {
   }>;
   selectedTeammates: string[];
   onTeammateToggle: (teammateId: string) => void;
+}
+
+export interface TeamChannelSelectorProps {
+  selectedChatChannel?: string;
+  selectedEmailChannels: string[];
+  onChatChannelSelect: (channelId: string | undefined) => void;
+  onEmailChannelToggle: (channelId: string) => void;
 }

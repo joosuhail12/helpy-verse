@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import TeamIconPicker from '@/components/teams/TeamIconPicker';
 import TeamMembersSelector from '@/components/teams/TeamMembersSelector';
+import TeamChannelSelector from '@/components/teams/TeamChannelSelector';
 
 const CreateTeam = () => {
   const navigate = useNavigate();
@@ -19,6 +20,8 @@ const CreateTeam = () => {
   const [teamName, setTeamName] = useState('');
   const [selectedIcon, setSelectedIcon] = useState<string>('');
   const [selectedTeammates, setSelectedTeammates] = useState<string[]>([]);
+  const [selectedChatChannel, setSelectedChatChannel] = useState<string>();
+  const [selectedEmailChannels, setSelectedEmailChannels] = useState<string[]>([]);
 
   const handleCreateTeam = async () => {
     if (!teamName.trim()) {
@@ -40,6 +43,10 @@ const CreateTeam = () => {
           name: teamName,
           icon: selectedIcon,
           members: selectedTeammates,
+          channels: {
+            chat: selectedChatChannel,
+            email: selectedEmailChannels,
+          },
         }),
       });
 
@@ -66,6 +73,14 @@ const CreateTeam = () => {
       prev.includes(teammateId)
         ? prev.filter(id => id !== teammateId)
         : [...prev, teammateId]
+    );
+  };
+
+  const handleEmailChannelToggle = (channelId: string) => {
+    setSelectedEmailChannels(prev =>
+      prev.includes(channelId)
+        ? prev.filter(id => id !== channelId)
+        : [...prev, channelId]
     );
   };
 
@@ -99,6 +114,16 @@ const CreateTeam = () => {
           selectedTeammates={selectedTeammates}
           onTeammateToggle={toggleTeammate}
         />
+
+        <div className="border-t pt-6">
+          <h2 className="text-lg font-semibold mb-4">Team Channels</h2>
+          <TeamChannelSelector
+            selectedChatChannel={selectedChatChannel}
+            selectedEmailChannels={selectedEmailChannels}
+            onChatChannelSelect={setSelectedChatChannel}
+            onEmailChannelToggle={handleEmailChannelToggle}
+          />
+        </div>
 
         <Button
           className="w-full mt-6"
