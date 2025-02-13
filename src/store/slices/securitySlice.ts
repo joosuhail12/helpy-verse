@@ -112,7 +112,20 @@ export const resetPassword = createAsyncThunk(
 const securitySlice = createSlice({
   name: 'security',
   initialState,
-  reducers: {},
+  reducers: {
+    initializeTeammateSecurity: (state, action) => {
+      const teammateId = action.payload;
+      if (!state.teammateSettings[teammateId]) {
+        state.teammateSettings[teammateId] = {
+          is2FAEnabled: false,
+          qrCodeUrl: ''
+        };
+      }
+      if (!state.sessions[teammateId]) {
+        state.sessions[teammateId] = [];
+      }
+    }
+  },
   extraReducers: (builder) => {
     builder
       .addCase(enable2FA.fulfilled, (state, action) => {
@@ -151,4 +164,6 @@ const securitySlice = createSlice({
   },
 });
 
+export const { initializeTeammateSecurity } = securitySlice.actions;
 export default securitySlice.reducer;
+

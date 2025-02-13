@@ -5,7 +5,7 @@ import { useAppSelector } from '@/hooks/useAppSelector';
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Globe, Laptop, Smartphone, LogOut } from 'lucide-react';
-import { fetchSessions, revokeSession } from '@/store/slices/securitySlice';
+import { fetchSessions, revokeSession, initializeTeammateSecurity } from '@/store/slices/securitySlice';
 import { format } from 'date-fns';
 
 interface ActiveSessionsProps {
@@ -16,6 +16,10 @@ const ActiveSessions = ({ teammateId }: ActiveSessionsProps) => {
   const dispatch = useAppDispatch();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    dispatch(initializeTeammateSecurity(teammateId));
+  }, [teammateId, dispatch]);
 
   const sessions = useAppSelector(state => 
     state.security.sessions[teammateId] || []

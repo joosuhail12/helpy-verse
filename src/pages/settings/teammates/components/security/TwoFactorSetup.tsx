@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { QrCode, Loader2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { enable2FA, disable2FA, verify2FA } from '@/store/slices/securitySlice';
+import { enable2FA, disable2FA, verify2FA, initializeTeammateSecurity } from '@/store/slices/securitySlice';
 
 interface TwoFactorSetupProps {
   teammateId: string;
@@ -20,6 +20,10 @@ const TwoFactorSetup = ({ teammateId }: TwoFactorSetupProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    dispatch(initializeTeammateSecurity(teammateId));
+  }, [teammateId, dispatch]);
 
   const { is2FAEnabled, qrCodeUrl } = useAppSelector(state => 
     state.security.teammateSettings[teammateId] || { is2FAEnabled: false, qrCodeUrl: '' }
