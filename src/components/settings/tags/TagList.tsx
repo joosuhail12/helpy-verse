@@ -32,7 +32,7 @@ const TagList = ({ searchQuery, currentPage, itemsPerPage, onPageChange }: TagLi
     queryKey: ['tags', searchQuery, filterEntity, sortField, sortDirection, currentPage, itemsPerPage],
     queryFn: () => fetchTags(searchQuery, filterEntity, sortField, sortDirection, currentPage, itemsPerPage),
     staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
-    keepPreviousData: true,
+    placeholderData: (previousData) => previousData,
     meta: {
       onError: (error: Error) => {
         toast({
@@ -185,3 +185,4 @@ const TagList = ({ searchQuery, currentPage, itemsPerPage, onPageChange }: TagLi
 };
 
 export default TagList;
+
