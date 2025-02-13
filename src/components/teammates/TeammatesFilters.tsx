@@ -48,7 +48,7 @@ const TeammatesFilters = ({
             <SelectValue placeholder="Filter by role" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All roles</SelectItem>
+            <SelectItem value="all_roles">All roles</SelectItem>
             <SelectItem value="admin">Admin</SelectItem>
             <SelectItem value="supervisor">Supervisor</SelectItem>
             <SelectItem value="agent">Agent</SelectItem>
@@ -60,7 +60,7 @@ const TeammatesFilters = ({
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All statuses</SelectItem>
+            <SelectItem value="all_statuses">All statuses</SelectItem>
             <SelectItem value="active">Active</SelectItem>
             <SelectItem value="inactive">Inactive</SelectItem>
           </SelectContent>
@@ -89,4 +89,3 @@ const TeammatesFilters = ({
 };
 
 export default TeammatesFilters;
-

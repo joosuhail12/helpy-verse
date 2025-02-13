@@ -22,8 +22,8 @@ const TeammatesPage = () => {
   const { toast } = useToast();
   const [selectedTeammates, setSelectedTeammates] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [roleFilter, setRoleFilter] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
+  const [roleFilter, setRoleFilter] = useState('all_roles');
+  const [statusFilter, setStatusFilter] = useState('all_statuses');
 
   useEffect(() => {
     dispatch(fetchTeammates());
@@ -63,11 +63,11 @@ const TeammatesPage = () => {
 
   const handleQuickFilterClick = (filter: 'recent' | 'inactive') => {
     if (filter === 'recent') {
-      setStatusFilter('');
+      setStatusFilter('all_statuses');
       const recentDate = subDays(new Date(), 7);
-      setFilteredTeammates(teammates.filter(teammate => 
-        new Date(teammate.createdAt) >= recentDate
-      ));
+      // Only update the filtered results through the existing filters
+      setSearchQuery('');
+      setRoleFilter('all_roles');
     } else if (filter === 'inactive') {
       setStatusFilter('inactive');
     }
@@ -78,8 +78,13 @@ const TeammatesPage = () => {
       teammate.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       teammate.email.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesRole = roleFilter === '' || teammate.role === roleFilter;
-    const matchesStatus = statusFilter === '' || teammate.status === statusFilter;
+    const matchesRole = roleFilter === 'all_roles' || teammate.role === roleFilter;
+    const matchesStatus = statusFilter === 'all_statuses' || teammate.status === statusFilter;
+
+    if (roleFilter === 'recent') {
+      const recentDate = subDays(new Date(), 7);
+      return new Date(teammate.createdAt) >= recentDate;
+    }
 
     return matchesSearch && matchesRole && matchesStatus;
   });
@@ -202,4 +207,3 @@ const TeammatesPage = () => {
 };
 
 export default TeammatesPage;
-
