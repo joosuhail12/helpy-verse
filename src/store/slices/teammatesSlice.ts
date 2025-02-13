@@ -103,7 +103,8 @@ export const addTeammate = createAsyncThunk(
       status: 'active',
       lastActive: new Date().toISOString(),
       createdAt: new Date().toISOString(),
-      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${newTeammate.name}`
+      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${newTeammate.name}`,
+      permissions: [] // Add default empty permissions array
     };
 
     dispatch(teammatesSlice.actions.addTeammateOptimistic(teammate));

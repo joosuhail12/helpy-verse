@@ -12,6 +12,7 @@ import TeammateActivityLogs from './teammates/components/TeammateActivityLogs';
 import TeammatePermissions from './teammates/components/TeammatePermissions';
 import TeammateAssignments from './teammates/components/TeammateAssignments';
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { updateTeammate } from '@/store/slices/teammatesSlice';
 
 const TeammateDetail = () => {
   const { id } = useParams();
@@ -21,7 +22,9 @@ const TeammateDetail = () => {
   const teammate = useAppSelector(state => 
     state.teammates.teammates.find(t => t.id === id)
   );
-  const currentUserRole = useAppSelector(state => state.auth.role);
+  const currentUserRole = useAppSelector(state => 
+    state.auth.currentUser?.role || 'viewer'
+  );
   const isAdmin = currentUserRole === 'admin';
 
   const [isEditing, setIsEditing] = useState(false);
