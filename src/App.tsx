@@ -15,6 +15,7 @@ const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const Home = lazy(() => import("./pages/Dashboard"));
 const AllTickets = lazy(() => import("./pages/inbox/All"));
 const Tags = lazy(() => import("./pages/settings/Tags"));
+const Teammates = lazy(() => import("./pages/settings/Teammates"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -74,6 +75,7 @@ const App = () => (
               >
                 <Route path="inbox/all" element={<AllTickets />} />
                 <Route path="settings/tags" element={<Tags />} />
+                <Route path="settings/teammates" element={<Teammates />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
