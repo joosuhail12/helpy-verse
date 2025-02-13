@@ -1,4 +1,3 @@
-
 export interface Team {
   id: string;
   name: string;
@@ -11,6 +10,9 @@ export interface Team {
   channels?: {
     chat?: string;
     email: string[];
+  };
+  routing: {
+    type: 'manual' | 'round-robin' | 'load-balanced';
   };
   createdAt: string;
   updatedAt: string;
@@ -29,6 +31,9 @@ export interface TeamCreatePayload {
   channels?: {
     chat?: string;
     email: string[];
+  };
+  routing: {
+    type: 'manual' | 'round-robin' | 'load-balanced';
   };
 }
 
@@ -52,4 +57,9 @@ export interface TeamChannelSelectorProps {
   selectedEmailChannels: string[];
   onChatChannelSelect: (channelId: string | undefined) => void;
   onEmailChannelToggle: (channelId: string) => void;
+}
+
+export interface TeamRoutingSelectorProps {
+  selectedType: 'manual' | 'round-robin' | 'load-balanced';
+  onTypeSelect: (type: 'manual' | 'round-robin' | 'load-balanced') => void;
 }

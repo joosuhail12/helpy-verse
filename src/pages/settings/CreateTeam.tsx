@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import TeamIconPicker from '@/components/teams/TeamIconPicker';
 import TeamMembersSelector from '@/components/teams/TeamMembersSelector';
 import TeamChannelSelector from '@/components/teams/TeamChannelSelector';
+import TeamRoutingSelector from '@/components/teams/TeamRoutingSelector';
 
 const CreateTeam = () => {
   const navigate = useNavigate();
@@ -22,6 +23,7 @@ const CreateTeam = () => {
   const [selectedTeammates, setSelectedTeammates] = useState<string[]>([]);
   const [selectedChatChannel, setSelectedChatChannel] = useState<string>();
   const [selectedEmailChannels, setSelectedEmailChannels] = useState<string[]>([]);
+  const [routingType, setRoutingType] = useState<'manual' | 'round-robin' | 'load-balanced'>('manual');
 
   const handleCreateTeam = async () => {
     if (!teamName.trim()) {
@@ -46,6 +48,9 @@ const CreateTeam = () => {
           channels: {
             chat: selectedChatChannel,
             email: selectedEmailChannels,
+          },
+          routing: {
+            type: routingType,
           },
         }),
       });
@@ -125,6 +130,14 @@ const CreateTeam = () => {
           />
         </div>
 
+        <div className="border-t pt-6">
+          <h2 className="text-lg font-semibold mb-4">Ticket Routing</h2>
+          <TeamRoutingSelector
+            selectedType={routingType}
+            onTypeSelect={setRoutingType}
+          />
+        </div>
+
         <Button
           className="w-full mt-6"
           onClick={handleCreateTeam}
@@ -138,3 +151,4 @@ const CreateTeam = () => {
 };
 
 export default CreateTeam;
+
