@@ -35,15 +35,19 @@ export function CategoryCombobox({ value, onChange }: CategoryComboboxProps) {
     );
   }, [categories, search]);
 
-  const handleSelect = React.useCallback((currentValue: string) => {
-    if (currentValue === "add-new" && search.trim()) {
+  const currentCategory = React.useMemo(() => {
+    return categories.find((category) => category.name === value);
+  }, [categories, value]);
+
+  const handleSelect = React.useCallback((selectedValue: string) => {
+    if (selectedValue === "add-new" && search.trim()) {
       const newCategory = {
         id: (categories.length + 1).toString(),
         name: search.trim(),
       };
       onChange(search.trim());
     } else {
-      onChange(currentValue);
+      onChange(selectedValue);
     }
     setOpen(false);
   }, [categories.length, search, onChange]);
@@ -57,22 +61,20 @@ export function CategoryCombobox({ value, onChange }: CategoryComboboxProps) {
           aria-expanded={open}
           className="w-full justify-between"
         >
-          {value
-            ? categories.find((category) => category.name === value)?.name || value
-            : "Select category..."}
+          {value || "Select category..."}
           <div className="flex ml-2 h-4 w-4 shrink-0 opacity-50">
             {open ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
           </div>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-full p-0">
-        <Command>
+      <PopoverContent className="w-full p-0" align="start">
+        <Command value={value} onValueChange={handleSelect}>
           <CommandInput
             placeholder="Search or add category..."
             value={search}
             onValueChange={setSearch}
           />
-          <CommandEmpty>
+          <CommandEmpty className="py-2">
             {search.trim() && (
               <Button
                 variant="ghost"
@@ -84,12 +86,13 @@ export function CategoryCombobox({ value, onChange }: CategoryComboboxProps) {
               </Button>
             )}
           </CommandEmpty>
-          <CommandGroup>
+          <CommandGroup className="max-h-[200px] overflow-auto">
             {filteredCategories.map((category) => (
               <CommandItem
                 key={category.id}
                 value={category.name}
                 onSelect={handleSelect}
+                className="cursor-pointer"
               >
                 <CheckIcon
                   className={cn(
@@ -106,4 +109,3 @@ export function CategoryCombobox({ value, onChange }: CategoryComboboxProps) {
     </Popover>
   );
 }
-
