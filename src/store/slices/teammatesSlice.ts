@@ -19,12 +19,18 @@ interface TeammatesState {
   teammates: Teammate[];
   loading: boolean;
   error: string | null;
+  selectedTeammates: string[];
+  sortField: keyof Teammate | null;
+  sortDirection: 'asc' | 'desc';
 }
 
 const initialState: TeammatesState = {
   teammates: [],
   loading: false,
-  error: null
+  error: null,
+  selectedTeammates: [],
+  sortField: null,
+  sortDirection: 'asc'
 };
 
 export const fetchTeammates = createAsyncThunk(
@@ -51,10 +57,26 @@ export const addTeammate = createAsyncThunk(
   }
 );
 
+export const updateTeammate = createAsyncThunk(
+  'teammates/updateTeammate',
+  async (updatedTeammate: Partial<Teammate> & { id: string }) => {
+    // In a real implementation, this would be an API call
+    return updatedTeammate;
+  }
+);
+
+export const bulkDeactivateTeammates = createAsyncThunk(
+  'teammates/bulkDeactivateTeammates',
+  async (teammateIds: string[]) => {
+    // In a real implementation, this would be an API call
+    return teammateIds;
+  }
+);
+
 export const resendInvitation = createAsyncThunk(
   'teammates/resendInvitation',
   async (teammateId: string) => {
-    // In a real implementation, this would be an API call to resend the invitation
+    // In a real implementation, this would be an API call
     await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API delay
     return teammateId;
   }
@@ -63,7 +85,29 @@ export const resendInvitation = createAsyncThunk(
 const teammatesSlice = createSlice({
   name: 'teammates',
   initialState,
-  reducers: {},
+  reducers: {
+    toggleTeammateSelection: (state, action) => {
+      const teammateId = action.payload;
+      const index = state.selectedTeammates.indexOf(teammateId);
+      if (index === -1) {
+        state.selectedTeammates.push(teammateId);
+      } else {
+        state.selectedTeammates.splice(index, 1);
+      }
+    },
+    clearTeammateSelection: (state) => {
+      state.selectedTeammates = [];
+    },
+    setSortField: (state, action) => {
+      const newSortField = action.payload;
+      if (state.sortField === newSortField) {
+        state.sortDirection = state.sortDirection === 'asc' ? 'desc' : 'asc';
+      } else {
+        state.sortField = newSortField;
+        state.sortDirection = 'asc';
+      }
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchTeammates.pending, (state) => {
@@ -90,6 +134,39 @@ const teammatesSlice = createSlice({
         state.loading = false;
         state.error = action.error.message || 'Failed to add teammate';
       })
+      .addCase(updateTeammate.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateTeammate.fulfilled, (state, action) => {
+        state.loading = false;
+        const index = state.teammates.findIndex(t => t.id === action.payload.id);
+        if (index !== -1) {
+          state.teammates[index] = { ...state.teammates[index], ...action.payload };
+        }
+      })
+      .addCase(updateTeammate.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Failed to update teammate';
+      })
+      .addCase(bulkDeactivateTeammates.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(bulkDeactivateTeammates.fulfilled, (state, action) => {
+        state.loading = false;
+        action.payload.forEach(id => {
+          const teammate = state.teammates.find(t => t.id === id);
+          if (teammate) {
+            teammate.status = 'inactive';
+          }
+        });
+        state.selectedTeammates = [];
+      })
+      .addCase(bulkDeactivateTeammates.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Failed to deactivate teammates';
+      })
       .addCase(resendInvitation.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -104,5 +181,5 @@ const teammatesSlice = createSlice({
   },
 });
 
+export const { toggleTeammateSelection, clearTeammateSelection, setSortField } = teammatesSlice.actions;
 export default teammatesSlice.reducer;
-
