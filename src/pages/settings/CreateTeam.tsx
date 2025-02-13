@@ -4,18 +4,13 @@ import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { Users, ArrowLeft } from "lucide-react";
-import TeamIconPicker from '@/components/teams/TeamIconPicker';
-import TeamMembersSelector from '@/components/teams/TeamMembersSelector';
-import TeamChannelSelector from '@/components/teams/TeamChannelSelector';
-import TeamRoutingSelector from '@/components/teams/TeamRoutingSelector';
-import TeamOfficeHoursSelector from '@/components/teams/TeamOfficeHoursSelector';
-import TeamHolidaySelector from '@/components/teams/TeamHolidaySelector';
+import TeamBasicInfo from './teams/components/TeamBasicInfo';
+import TeamCommunicationSection from './teams/components/TeamCommunicationSection';
+import TeamRoutingSection from './teams/components/TeamRoutingSection';
+import TeamAvailabilitySection from './teams/components/TeamAvailabilitySection';
+import { createTeam } from './teams/utils/createTeamUtils';
 import type { DayOfWeek, TimeSlot } from '@/types/team';
 
 const CreateTeam = () => {
@@ -46,59 +41,6 @@ const CreateTeam = () => {
   });
   const [selectedHolidays, setSelectedHolidays] = useState<string[]>([]);
 
-  const handleCreateTeam = async () => {
-    if (!teamName.trim()) {
-      toast({
-        title: "Error",
-        description: "Team name is required",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      const response = await fetch('/api/teams', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: teamName,
-          icon: selectedIcon,
-          members: selectedTeammates,
-          channels: {
-            chat: selectedChatChannel,
-            email: selectedEmailChannels,
-          },
-          routing: {
-            type: routingType,
-            ...(routingType === 'load-balanced' && {
-              limits: routingLimits
-            })
-          },
-          officeHours,
-          holidays: selectedHolidays,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to create team');
-      }
-
-      toast({
-        title: "Success",
-        description: "Team created successfully",
-      });
-      navigate('/home/settings/teams');
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to create team. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
   const toggleTeammate = (teammateId: string) => {
     setSelectedTeammates(prev =>
       prev.includes(teammateId)
@@ -113,6 +55,51 @@ const CreateTeam = () => {
         ? prev.filter(id => id !== channelId)
         : [...prev, channelId]
     );
+  };
+
+  const handleCreateTeam = async () => {
+    if (!teamName.trim()) {
+      toast({
+        title: "Error",
+        description: "Team name is required",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const success = await createTeam({
+        name: teamName,
+        icon: selectedIcon,
+        members: selectedTeammates,
+        channels: {
+          chat: selectedChatChannel,
+          email: selectedEmailChannels,
+        },
+        routing: {
+          type: routingType,
+          ...(routingType === 'load-balanced' && {
+            limits: routingLimits
+          })
+        },
+        officeHours,
+        holidays: selectedHolidays,
+      });
+
+      if (success) {
+        toast({
+          title: "Success",
+          description: "Team created successfully",
+        });
+        navigate('/home/settings/teams');
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create team. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -135,66 +122,36 @@ const CreateTeam = () => {
       </div>
 
       <div className="grid gap-8">
-        <Card className="p-6">
-          <h2 className="text-lg font-semibold mb-6">Team Information</h2>
-          <div className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="teamName">Team Name</Label>
-              <Input
-                id="teamName"
-                placeholder="Enter team name"
-                value={teamName}
-                onChange={(e) => setTeamName(e.target.value)}
-              />
-            </div>
+        <TeamBasicInfo
+          teamName={teamName}
+          setTeamName={setTeamName}
+          selectedIcon={selectedIcon}
+          setSelectedIcon={setSelectedIcon}
+          teammates={teammates}
+          selectedTeammates={selectedTeammates}
+          onTeammateToggle={toggleTeammate}
+        />
 
-            <TeamIconPicker
-              selectedIcon={selectedIcon}
-              onIconSelect={setSelectedIcon}
-            />
+        <TeamCommunicationSection
+          selectedChatChannel={selectedChatChannel}
+          selectedEmailChannels={selectedEmailChannels}
+          onChatChannelSelect={setSelectedChatChannel}
+          onEmailChannelToggle={handleEmailChannelToggle}
+        />
 
-            <TeamMembersSelector
-              teammates={teammates}
-              selectedTeammates={selectedTeammates}
-              onTeammateToggle={toggleTeammate}
-            />
-          </div>
-        </Card>
+        <TeamRoutingSection
+          routingType={routingType}
+          setRoutingType={setRoutingType}
+          routingLimits={routingLimits}
+          setRoutingLimits={setRoutingLimits}
+        />
 
-        <Card className="p-6">
-          <h2 className="text-lg font-semibold mb-6">Team Communication</h2>
-          <TeamChannelSelector
-            selectedChatChannel={selectedChatChannel}
-            selectedEmailChannels={selectedEmailChannels}
-            onChatChannelSelect={setSelectedChatChannel}
-            onEmailChannelToggle={handleEmailChannelToggle}
-          />
-        </Card>
-
-        <Card className="p-6">
-          <h2 className="text-lg font-semibold mb-6">Ticket Routing</h2>
-          <TeamRoutingSelector
-            selectedType={routingType}
-            onTypeSelect={setRoutingType}
-            limits={routingLimits}
-            onLimitsChange={setRoutingLimits}
-          />
-        </Card>
-
-        <Card className="p-6">
-          <h2 className="text-lg font-semibold mb-6">Team Availability</h2>
-          <div className="space-y-8">
-            <TeamOfficeHoursSelector
-              officeHours={officeHours}
-              onOfficeHoursChange={setOfficeHours}
-            />
-            <Separator className="my-8" />
-            <TeamHolidaySelector
-              selectedHolidays={selectedHolidays}
-              onHolidaysChange={setSelectedHolidays}
-            />
-          </div>
-        </Card>
+        <TeamAvailabilitySection
+          officeHours={officeHours}
+          onOfficeHoursChange={setOfficeHours}
+          selectedHolidays={selectedHolidays}
+          onHolidaysChange={setSelectedHolidays}
+        />
 
         <div className="flex justify-end gap-4 mt-4">
           <Button
