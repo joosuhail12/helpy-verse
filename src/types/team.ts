@@ -22,6 +22,7 @@ export interface Team {
   officeHours: {
     [key in DayOfWeek]: TimeSlot[];
   };
+  holidays: string[]; // Array of ISO date strings
   createdAt: string;
   updatedAt: string;
 }
@@ -92,6 +93,11 @@ export interface TeamRoutingSelectorProps {
     maxOpenTickets?: number;
     maxActiveChats?: number;
   }) => void;
+}
+
+export interface TeamHolidaySelectorProps {
+  selectedHolidays: string[];
+  onHolidaysChange: (holidays: string[]) => void;
 }
 
 export interface TeamOfficeHoursSelectorProps {

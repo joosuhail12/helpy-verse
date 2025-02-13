@@ -1,4 +1,3 @@
-
 import type { Team } from '@/types/team';
 
 export const mockTeams: Team[] = [
@@ -21,6 +20,7 @@ export const mockTeams: Team[] = [
       saturday: [],
       sunday: []
     },
+    holidays: ['2024-12-25', '2024-12-31', '2025-01-01'],
     createdAt: '2024-01-15T10:00:00Z',
     updatedAt: '2024-03-15T14:30:00Z'
   },
@@ -44,6 +44,7 @@ export const mockTeams: Team[] = [
       saturday: [],
       sunday: []
     },
+    holidays: ['2024-07-04', '2024-11-28'],
     createdAt: '2024-02-01T09:00:00Z',
     updatedAt: '2024-03-14T11:20:00Z'
   },
@@ -66,8 +67,8 @@ export const mockTeams: Team[] = [
       saturday: [],
       sunday: []
     },
+    holidays: ['2024-05-27', '2024-09-02'],
     createdAt: '2024-02-15T08:00:00Z',
     updatedAt: '2024-03-10T16:45:00Z'
   }
 ];
-

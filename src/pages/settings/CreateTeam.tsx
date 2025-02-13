@@ -12,6 +12,7 @@ import TeamMembersSelector from '@/components/teams/TeamMembersSelector';
 import TeamChannelSelector from '@/components/teams/TeamChannelSelector';
 import TeamRoutingSelector from '@/components/teams/TeamRoutingSelector';
 import TeamOfficeHoursSelector from '@/components/teams/TeamOfficeHoursSelector';
+import TeamHolidaySelector from '@/components/teams/TeamHolidaySelector';
 import type { DayOfWeek, TimeSlot } from '@/types/team';
 
 const CreateTeam = () => {
@@ -40,6 +41,7 @@ const CreateTeam = () => {
     saturday: [],
     sunday: []
   });
+  const [selectedHolidays, setSelectedHolidays] = useState<string[]>([]);
 
   const handleCreateTeam = async () => {
     if (!teamName.trim()) {
@@ -71,7 +73,8 @@ const CreateTeam = () => {
               limits: routingLimits
             })
           },
-          officeHours
+          officeHours,
+          holidays: selectedHolidays,
         }),
       });
 
@@ -165,6 +168,13 @@ const CreateTeam = () => {
           <TeamOfficeHoursSelector
             officeHours={officeHours}
             onOfficeHoursChange={setOfficeHours}
+          />
+        </div>
+
+        <div className="border-t pt-6">
+          <TeamHolidaySelector
+            selectedHolidays={selectedHolidays}
+            onHolidaysChange={setSelectedHolidays}
           />
         </div>
 
