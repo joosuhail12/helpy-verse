@@ -105,7 +105,14 @@ const TeammateTableRow = ({
         </Tooltip>
       </TableCell>
       <TableCell>
-        {format(new Date(teammate.lastActive), 'MMM d, yyyy HH:mm')}
+        <Tooltip>
+          <TooltipTrigger>
+            <span>{format(new Date(teammate.lastActive), 'MMM d, yyyy HH:mm')}</span>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p className="text-sm">Last seen at {format(new Date(teammate.lastActive), 'PPpp')}</p>
+          </TooltipContent>
+        </Tooltip>
       </TableCell>
       <TableCell>
         {format(new Date(teammate.createdAt), 'MMM d, yyyy')}

@@ -11,12 +11,18 @@ import TeammatesTable from '@/components/teammates/TeammatesTable';
 import { useTeammateFilters } from '@/hooks/useTeammateFilters';
 import LoadingState from '@/components/teammates/LoadingState';
 import EmptyState from '@/components/teammates/EmptyState';
+import type { Teammate } from '@/types/teammate';
+
+const ITEMS_PER_PAGE = 10;
 
 const TeammatesPage = () => {
   const dispatch = useAppDispatch();
   const { teammates, loading, error } = useAppSelector((state) => state.teammates);
   const { toast } = useToast();
   const [selectedTeammates, setSelectedTeammates] = useState<string[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [sortBy, setSortBy] = useState<keyof Teammate | null>(null);
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
   const {
     searchQuery,
@@ -51,7 +57,7 @@ const TeammatesPage = () => {
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedTeammates(filteredTeammates.map(t => t.id));
+      setSelectedTeammates(paginatedTeammates.map(t => t.id));
     } else {
       setSelectedTeammates([]);
     }
@@ -64,6 +70,34 @@ const TeammatesPage = () => {
       setSelectedTeammates(prev => prev.filter(id => id !== teammateId));
     }
   };
+
+  const handleSort = (column: keyof Teammate) => {
+    if (sortBy === column) {
+      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(column);
+      setSortDirection('asc');
+    }
+  };
+
+  const sortedTeammates = [...filteredTeammates].sort((a, b) => {
+    if (!sortBy) return 0;
+    
+    const aValue = a[sortBy];
+    const bValue = b[sortBy];
+    
+    if (typeof aValue === 'string' && typeof bValue === 'string') {
+      return sortDirection === 'asc' 
+        ? aValue.localeCompare(bValue)
+        : bValue.localeCompare(aValue);
+    }
+    
+    return 0;
+  });
+
+  const totalPages = Math.ceil(sortedTeammates.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedTeammates = sortedTeammates.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   if (loading) {
     return (
@@ -107,15 +141,21 @@ const TeammatesPage = () => {
         />
       )}
 
-      {filteredTeammates.length === 0 ? (
+      {sortedTeammates.length === 0 ? (
         <EmptyState />
       ) : (
         <TeammatesTable
-          teammates={filteredTeammates}
+          teammates={paginatedTeammates}
           selectedTeammates={selectedTeammates}
           onSelectAll={handleSelectAll}
           onSelectTeammate={handleSelectTeammate}
           onResendInvitation={handleResendInvitation}
+          sortBy={sortBy}
+          sortDirection={sortDirection}
+          onSort={handleSort}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
         />
       )}
     </div>
