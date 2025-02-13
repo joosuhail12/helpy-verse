@@ -11,6 +11,7 @@ import { toast } from '@/components/ui/use-toast';
 import { ArrowLeft } from 'lucide-react';
 import { mockCannedResponses, type CannedResponse } from '@/mock/cannedResponses';
 import { Link } from 'react-router-dom';
+import { CategoryCombobox } from '@/components/settings/cannedResponses/CategoryCombobox';
 
 interface CannedResponseFormValues {
   title: string;
@@ -145,7 +146,7 @@ const CannedResponseDetail = () => {
               <FormItem>
                 <FormLabel>Category</FormLabel>
                 <FormControl>
-                  <Input {...field} placeholder="Enter a category" />
+                  <CategoryCombobox {...field} />
                 </FormControl>
               </FormItem>
             )}

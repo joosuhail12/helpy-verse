@@ -10,6 +10,7 @@ import { toast } from '@/components/ui/use-toast';
 import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { CannedResponse } from '@/mock/cannedResponses';
+import { CategoryCombobox } from '@/components/settings/cannedResponses/CategoryCombobox';
 
 interface CannedResponseFormValues {
   title: string;
@@ -119,7 +120,7 @@ const CreateCannedResponse = () => {
               <FormItem>
                 <FormLabel>Category</FormLabel>
                 <FormControl>
-                  <Input {...field} placeholder="Enter a category" />
+                  <CategoryCombobox {...field} />
                 </FormControl>
               </FormItem>
             )}
