@@ -1,20 +1,24 @@
 
 import * as React from "react";
-import { Check, ChevronsUpDown } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-} from "@/components/ui/command";
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { mockCategories } from "@/mock/categories";
 
 interface CategoryComboboxProps {
@@ -23,75 +27,70 @@ interface CategoryComboboxProps {
 }
 
 export function CategoryCombobox({ value, onChange }: CategoryComboboxProps) {
-  const [open, setOpen] = React.useState(false);
-  const [searchTerm, setSearchTerm] = React.useState("");
+  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+  const [newCategory, setNewCategory] = React.useState("");
 
-  const filteredCategories = React.useMemo(() => {
-    return mockCategories.filter((category) =>
-      category.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [searchTerm]);
-
-  const handleSelect = (currentValue: string) => {
-    onChange(currentValue);
-    setOpen(false);
+  const handleCreateCategory = () => {
+    if (newCategory.trim()) {
+      onChange(newCategory.trim());
+      setNewCategory("");
+      setIsDialogOpen(false);
+    }
   };
 
-  const selectedCategory = mockCategories.find(
-    (category) => category.name === value
-  );
-
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className="w-full justify-between"
-        >
-          {value || "Select category..."}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-full p-0">
-        <Command shouldFilter={false}>
-          <CommandInput 
-            placeholder="Search category..." 
-            onValueChange={setSearchTerm}
-            value={searchTerm}
-          />
-          <CommandEmpty>
-            {searchTerm && (
-              <Button
-                variant="ghost"
-                className="w-full justify-start px-2 py-1.5"
-                onClick={() => handleSelect(searchTerm)}
-              >
-                Add "{searchTerm}"
-              </Button>
-            )}
-          </CommandEmpty>
-          <CommandGroup>
-            {filteredCategories.map((category) => (
-              <CommandItem
-                key={category.id}
-                value={category.name}
-                onSelect={handleSelect}
-              >
-                <Check
-                  className={cn(
-                    "mr-2 h-4 w-4",
-                    value === category.name ? "opacity-100" : "opacity-0"
-                  )}
-                />
+    <div className="flex gap-2">
+      <Select value={value} onValueChange={onChange}>
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder="Select category..." />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectGroup>
+            {mockCategories.map((category) => (
+              <SelectItem key={category.id} value={category.name}>
                 {category.name}
-              </CommandItem>
+              </SelectItem>
             ))}
-          </CommandGroup>
-        </Command>
-      </PopoverContent>
-    </Popover>
+          </SelectGroup>
+        </SelectContent>
+      </Select>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogTrigger asChild>
+          <Button variant="outline" size="icon">
+            <PlusCircle className="h-4 w-4" />
+          </Button>
+        </DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add New Category</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <Input
+              placeholder="Enter category name"
+              value={newCategory}
+              onChange={(e) => setNewCategory(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleCreateCategory();
+                }
+              }}
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              variant="secondary"
+              onClick={() => setIsDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleCreateCategory}>
+              Add Category
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }
-
