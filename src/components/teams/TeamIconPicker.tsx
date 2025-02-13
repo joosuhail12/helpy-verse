@@ -18,6 +18,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import type { TeamIconPickerProps } from '@/types/team';
 
 const availableIcons = Object.entries(icons)
   .filter(([name]) => name !== 'createLucideIcon' && name !== 'icons')
@@ -25,11 +26,6 @@ const availableIcons = Object.entries(icons)
     name,
     icon,
   }));
-
-interface TeamIconPickerProps {
-  selectedIcon: string;
-  onIconSelect: (iconName: string) => void;
-}
 
 const TeamIconPicker = ({ selectedIcon, onIconSelect }: TeamIconPickerProps) => {
   const [openIconPicker, setOpenIconPicker] = React.useState(false);
@@ -47,7 +43,7 @@ const TeamIconPicker = ({ selectedIcon, onIconSelect }: TeamIconPickerProps) => 
           >
             {selectedIcon ? (
               <>
-                {React.createElement((icons as any)[selectedIcon], {
+                {React.createElement(icons[selectedIcon as keyof typeof icons] as React.ComponentType, {
                   className: "mr-2 h-4 w-4",
                 })}
                 {selectedIcon}

@@ -3,13 +3,7 @@ import React from 'react';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import type { Teammate } from '@/types/teammate';
-
-interface TeamMembersSelectorProps {
-  teammates: Teammate[];
-  selectedTeammates: string[];
-  onTeammateToggle: (teammateId: string) => void;
-}
+import type { TeamMembersSelectorProps } from '@/types/team';
 
 const TeamMembersSelector = ({
   teammates,
