@@ -21,7 +21,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { useState } from "react";
 import { useCustomDataMutations } from "@/hooks/useCustomDataMutations";
-import type { CustomField, CustomFieldType, ValidationRule, FieldDependency } from "@/types/customField";
+import type { CustomField, CustomFieldType, ValidationRule, FieldDependency, FieldHistoryEntry } from "@/types/customField";
 import ValidationRulesSection from "./ValidationRulesSection";
 import DependenciesSection from "./DependenciesSection";
 
