@@ -1,52 +1,16 @@
 
 import { useState } from 'react';
-import { MoreHorizontal } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Checkbox } from "@/components/ui/checkbox";
 import EditTagDialog from './EditTagDialog';
 import DeleteTagDialog from './DeleteTagDialog';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import SelectionControls from '@/components/inbox/SelectionControls';
+import TagUsageStats from './TagUsageStats';
+import TagColorPreview from './TagColorPreview';
+import TagActions from './TagActions';
+import BulkActions from './BulkActions';
+import type { Tag, SortField, FilterEntity } from '@/types/tag';
 import SortingControls from '@/components/inbox/SortingControls';
-
-interface Tag {
-  id: string;
-  name: string;
-  color: string;
-  counts: {
-    tickets: number;
-    contacts: number;
-    companies: number;
-  };
-}
 
 const mockTags: Tag[] = [
   { 
@@ -85,9 +49,6 @@ interface TagListProps {
   searchQuery: string;
 }
 
-type SortField = 'name' | 'tickets' | 'contacts' | 'companies';
-type FilterEntity = 'all' | 'tickets' | 'contacts' | 'companies';
-
 const TagList = ({ searchQuery }: TagListProps) => {
   const [tags, setTags] = useState<Tag[]>(mockTags);
   const [tagToEdit, setTagToEdit] = useState<Tag | null>(null);
@@ -124,6 +85,10 @@ const TagList = ({ searchQuery }: TagListProps) => {
 
   const handleBulkDelete = () => {
     setTagToDelete({ id: selectedTags.join(','), name: `${selectedTags.length} tags`, color: '', counts: { tickets: 0, contacts: 0, companies: 0 } });
+  };
+
+  const handleBulkEdit = () => {
+    setTagToEdit({ id: selectedTags.join(','), name: '', color: '', counts: { tickets: 0, contacts: 0, companies: 0 } });
   };
 
   let filteredTags = tags.filter(tag =>
@@ -175,27 +140,11 @@ const TagList = ({ searchQuery }: TagListProps) => {
         </div>
       </div>
 
-      {selectedTags.length > 0 && (
-        <div className="mb-4 flex items-center justify-between bg-gray-50 p-4 rounded-lg">
-          <span className="text-sm text-gray-600">{selectedTags.length} tags selected</span>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setTagToEdit({ id: selectedTags.join(','), name: '', color: '', counts: { tickets: 0, contacts: 0, companies: 0 } })}
-              disabled={selectedTags.length === 0}
-            >
-              Edit selected
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={handleBulkDelete}
-              disabled={selectedTags.length === 0}
-            >
-              Delete selected
-            </Button>
-          </div>
-        </div>
-      )}
+      <BulkActions
+        selectedCount={selectedTags.length}
+        onEditSelected={handleBulkEdit}
+        onDeleteSelected={handleBulkDelete}
+      />
 
       {filteredTags.length === 0 ? (
         <div className="p-8 text-center text-gray-500">
@@ -227,69 +176,19 @@ const TagList = ({ searchQuery }: TagListProps) => {
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center space-x-3">
-                    <div
-                      className="w-4 h-4 rounded flex-shrink-0 transition-all duration-200 hover:scale-110 cursor-pointer"
-                      style={{ 
-                        backgroundColor: tag.color,
-                        boxShadow: `0 0 0 4px ${tag.color}15`
-                      }}
-                      title={`Color: ${tag.color}`}
-                    />
+                    <TagColorPreview color={tag.color} />
                     <span className="font-medium text-gray-900">{tag.name}</span>
                   </div>
                 </TableCell>
                 <TableCell>
-                  <div className="flex gap-3 text-sm">
-                    <span className="text-indigo-600/70">{tag.counts.tickets} tickets</span>
-                    <span className="text-gray-300">•</span>
-                    <span className="text-purple-600/70">{tag.counts.contacts} contacts</span>
-                    <span className="text-gray-300">•</span>
-                    <span className="text-blue-600/70">{tag.counts.companies} companies</span>
-                  </div>
+                  <TagUsageStats {...tag.counts} />
                 </TableCell>
                 <TableCell className="text-right">
-                  <TooltipProvider>
-                    <DropdownMenu>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
-                              <span className="sr-only">Open menu</span>
-                            </Button>
-                          </DropdownMenuTrigger>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Tag actions</p>
-                        </TooltipContent>
-                      </Tooltip>
-                      <DropdownMenuContent align="end">
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <DropdownMenuItem onClick={() => setTagToEdit(tag)}>
-                              Edit
-                            </DropdownMenuItem>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Edit tag details</p>
-                          </TooltipContent>
-                        </Tooltip>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <DropdownMenuItem
-                              className="text-red-600"
-                              onClick={() => setTagToDelete(tag)}
-                            >
-                              Delete
-                            </DropdownMenuItem>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Delete this tag</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TooltipProvider>
+                  <TagActions
+                    tag={tag}
+                    onEdit={setTagToEdit}
+                    onDelete={setTagToDelete}
+                  />
                 </TableCell>
               </TableRow>
             ))}
@@ -317,4 +216,3 @@ const TagList = ({ searchQuery }: TagListProps) => {
 };
 
 export default TagList;
-
