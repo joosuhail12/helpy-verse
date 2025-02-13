@@ -21,22 +21,15 @@ const Tags = lazy(() => import(/* webpackChunkName: "tags" */ "./pages/settings/
 const loadTeammates = () => import(/* webpackChunkName: "teammates" */ "./pages/settings/Teammates")
   .catch((error: Error) => {
     console.error("Error loading Teammates component:", error);
-    return new Promise<{ default: React.ComponentType }>((resolve) => {
-      // Retry after a short delay
-      setTimeout(() => {
-        resolve(import(/* webpackChunkName: "teammates" */ "./pages/settings/Teammates")
-          .catch(() => ({
-            default: () => (
-              <div className="p-6">
-                <div className="bg-red-50 text-red-500 p-4 rounded-lg">
-                  Failed to load the Teammates page. Please refresh the page or try again later.
-                </div>
-              </div>
-            )
-          }))
-        );
-      }, 1000);
-    });
+    return {
+      default: () => (
+        <div className="p-6">
+          <div className="bg-red-50 text-red-500 p-4 rounded-lg">
+            Failed to load the Teammates page. Please refresh the page or try again later.
+          </div>
+        </div>
+      )
+    };
   });
 
 const Teammates = lazy(loadTeammates);
