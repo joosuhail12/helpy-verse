@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import AddCustomFieldDialog from '@/components/settings/customData/AddCustomFieldDialog';
 import { useCustomFields } from '@/hooks/useCustomFields';
+import { useCustomFieldShortcuts } from '@/hooks/useCustomFieldShortcuts';
 
 const CustomData = () => {
   const [selectedTable, setSelectedTable] = useState<'tickets' | 'contacts' | 'companies'>('tickets');
@@ -14,13 +15,19 @@ const CustomData = () => {
 
   const currentFields = customFields?.[selectedTable] || [];
 
+  // Setup keyboard shortcuts
+  useCustomFieldShortcuts({
+    onCreateField: () => setIsAddFieldOpen(true),
+    hasSelection: false, // This will be passed down to the table component
+  });
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Custom Data Fields</h1>
         <Button onClick={() => setIsAddFieldOpen(true)}>
           <Plus className="w-4 h-4 mr-2" />
-          Add Field
+          Add Field <span className="ml-2 text-xs text-muted-foreground">(Ctrl+N)</span>
         </Button>
       </div>
 

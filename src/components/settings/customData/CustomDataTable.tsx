@@ -9,6 +9,7 @@ import TableHeaderComponent from "./table/TableHeader";
 import TableBodyComponent from "./table/TableBody";
 import DuplicateFieldsWarning from "./DuplicateFieldsWarning";
 import { getDuplicateFields, filterFields } from "./utils/fieldUtils";
+import { useCustomFieldShortcuts } from "@/hooks/useCustomFieldShortcuts";
 
 interface CustomDataTableProps {
   fields: CustomField[];
@@ -36,6 +37,18 @@ const CustomDataTable = ({ fields, isLoading, error, table }: CustomDataTablePro
       setSelectedFields(selectedFields.filter((f) => f.id !== field.id));
     }
   };
+
+  // Setup keyboard shortcuts for bulk actions
+  useCustomFieldShortcuts({
+    onCreateField: () => {}, // This is handled at the parent level
+    onBulkEdit: () => {
+      // Implement bulk edit logic
+    },
+    onBulkDelete: () => {
+      // Implement bulk delete logic
+    },
+    hasSelection: selectedFields.length > 0
+  });
 
   if (error) {
     return (
