@@ -51,6 +51,15 @@ export const addTeammate = createAsyncThunk(
   }
 );
 
+export const resendInvitation = createAsyncThunk(
+  'teammates/resendInvitation',
+  async (teammateId: string) => {
+    // In a real implementation, this would be an API call to resend the invitation
+    await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API delay
+    return teammateId;
+  }
+);
+
 const teammatesSlice = createSlice({
   name: 'teammates',
   initialState,
@@ -80,6 +89,17 @@ const teammatesSlice = createSlice({
       .addCase(addTeammate.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || 'Failed to add teammate';
+      })
+      .addCase(resendInvitation.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(resendInvitation.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(resendInvitation.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Failed to resend invitation';
       });
   },
 });

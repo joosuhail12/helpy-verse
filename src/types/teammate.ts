@@ -3,7 +3,7 @@ export interface Teammate {
   id: string;
   name: string;
   email: string;
-  role: 'admin' | 'agent';
+  role: 'admin' | 'supervisor' | 'agent' | 'viewer';
   status: 'active' | 'inactive';
   lastActive: string;
   createdAt: string;
@@ -13,6 +13,6 @@ export interface Teammate {
 export interface NewTeammate {
   name: string;
   email: string;
-  role: 'admin' | 'agent';
+  role: 'admin' | 'supervisor' | 'agent' | 'viewer';
 }
 

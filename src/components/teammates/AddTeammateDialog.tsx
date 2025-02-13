@@ -1,6 +1,8 @@
 
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { addTeammate } from '@/store/slices/teammatesSlice';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -10,7 +12,15 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Plus } from "lucide-react";
-import { NewTeammate } from '@/types/teammate';
+import type { NewTeammate } from '@/types/teammate';
+
+const formSchema = z.object({
+  name: z.string().min(2, 'Name must be at least 2 characters'),
+  email: z.string().email('Please enter a valid email address'),
+  role: z.enum(['admin', 'supervisor', 'agent', 'viewer'], {
+    required_error: 'Please select a role',
+  }),
+});
 
 const AddTeammateDialog = () => {
   const [open, setOpen] = useState(false);
@@ -18,6 +28,7 @@ const AddTeammateDialog = () => {
   const { toast } = useToast();
   
   const form = useForm<NewTeammate>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',
       email: '',
@@ -99,7 +110,9 @@ const AddTeammateDialog = () => {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
+                      <SelectItem value="viewer">Viewer</SelectItem>
                       <SelectItem value="agent">Agent</SelectItem>
+                      <SelectItem value="supervisor">Supervisor</SelectItem>
                       <SelectItem value="admin">Admin</SelectItem>
                     </SelectContent>
                   </Select>

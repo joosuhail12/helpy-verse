@@ -2,20 +2,40 @@
 import { useEffect } from 'react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
-import { fetchTeammates } from '@/store/slices/teammatesSlice';
+import { fetchTeammates, resendInvitation } from '@/store/slices/teammatesSlice';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { format } from 'date-fns';
+import { useToast } from "@/hooks/use-toast";
 import AddTeammateDialog from '@/components/teammates/AddTeammateDialog';
+import { Send } from 'lucide-react';
 
 const TeammatesPage = () => {
   const dispatch = useAppDispatch();
   const { teammates, loading, error } = useAppSelector((state) => state.teammates);
+  const { toast } = useToast();
 
   useEffect(() => {
     dispatch(fetchTeammates());
   }, [dispatch]);
+
+  const handleResendInvitation = async (teammateId: string) => {
+    try {
+      await dispatch(resendInvitation(teammateId)).unwrap();
+      toast({
+        title: "Success",
+        description: "Invitation email has been resent.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to resend invitation. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   if (loading) {
     return (
@@ -53,6 +73,7 @@ const TeammatesPage = () => {
             <TableHead>Status</TableHead>
             <TableHead>Last Active</TableHead>
             <TableHead>Joined</TableHead>
+            <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -85,6 +106,16 @@ const TeammatesPage = () => {
               </TableCell>
               <TableCell>
                 {format(new Date(teammate.createdAt), 'MMM d, yyyy')}
+              </TableCell>
+              <TableCell>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleResendInvitation(teammate.id)}
+                  title="Resend invitation email"
+                >
+                  <Send className="h-4 w-4" />
+                </Button>
               </TableCell>
             </TableRow>
           ))}
