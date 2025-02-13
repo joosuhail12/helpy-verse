@@ -20,6 +20,7 @@ interface CannedResponseFormValues {
   shortcut: string;
   category: string;
   isShared: boolean;
+  createdBy: string;
 }
 
 const CreateCannedResponse = () => {
@@ -33,6 +34,7 @@ const CreateCannedResponse = () => {
       shortcut: '',
       category: '',
       isShared: false,
+      createdBy: 'Current User', // Adding default value for createdBy
     },
   });
 

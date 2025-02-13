@@ -1,6 +1,6 @@
 
 import * as React from "react";
-import { ArrowDown, ArrowUp, CheckIcon, PlusCircle } from "lucide-react";
+import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,34 +16,30 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { mockCategories } from "@/mock/categories";
-import type { Category } from "@/mock/categories";
 
 interface CategoryComboboxProps {
   value: string;
   onChange: (value: string) => void;
 }
 
-export function CategoryCombobox({ value = "", onChange }: CategoryComboboxProps) {
+export function CategoryCombobox({ value, onChange }: CategoryComboboxProps) {
   const [open, setOpen] = React.useState(false);
-  const [categories] = React.useState<Category[]>(mockCategories);
-  const [search, setSearch] = React.useState("");
+  const [searchTerm, setSearchTerm] = React.useState("");
 
   const filteredCategories = React.useMemo(() => {
-    const searchTerm = search.toLowerCase();
-    return categories.filter((category) =>
-      category.name.toLowerCase().includes(searchTerm)
+    return mockCategories.filter((category) =>
+      category.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  }, [categories, search]);
+  }, [searchTerm]);
 
-  const handleSelect = React.useCallback((currentValue: string) => {
-    if (currentValue === "add-new" && search.trim()) {
-      const newValue = search.trim();
-      onChange(newValue);
-    } else {
-      onChange(currentValue);
-    }
+  const handleSelect = (currentValue: string) => {
+    onChange(currentValue);
     setOpen(false);
-  }, [search, onChange]);
+  };
+
+  const selectedCategory = mockCategories.find(
+    (category) => category.name === value
+  );
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -55,27 +51,24 @@ export function CategoryCombobox({ value = "", onChange }: CategoryComboboxProps
           className="w-full justify-between"
         >
           {value || "Select category..."}
-          <div className="flex ml-2 h-4 w-4 shrink-0 opacity-50">
-            {open ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
-          </div>
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-full p-0" align="start">
-        <Command>
-          <CommandInput
-            placeholder="Search or add category..."
-            value={search}
-            onValueChange={setSearch}
+      <PopoverContent className="w-full p-0">
+        <Command shouldFilter={false}>
+          <CommandInput 
+            placeholder="Search category..." 
+            onValueChange={setSearchTerm}
+            value={searchTerm}
           />
-          <CommandEmpty className="py-2">
-            {search.trim() && (
+          <CommandEmpty>
+            {searchTerm && (
               <Button
                 variant="ghost"
-                className="w-full justify-start"
-                onClick={() => handleSelect("add-new")}
+                className="w-full justify-start px-2 py-1.5"
+                onClick={() => handleSelect(searchTerm)}
               >
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Add "{search.trim()}"
+                Add "{searchTerm}"
               </Button>
             )}
           </CommandEmpty>
@@ -84,10 +77,9 @@ export function CategoryCombobox({ value = "", onChange }: CategoryComboboxProps
               <CommandItem
                 key={category.id}
                 value={category.name}
-                onSelect={() => handleSelect(category.name)}
-                className="cursor-pointer"
+                onSelect={handleSelect}
               >
-                <CheckIcon
+                <Check
                   className={cn(
                     "mr-2 h-4 w-4",
                     value === category.name ? "opacity-100" : "opacity-0"
@@ -102,3 +94,4 @@ export function CategoryCombobox({ value = "", onChange }: CategoryComboboxProps
     </Popover>
   );
 }
+
