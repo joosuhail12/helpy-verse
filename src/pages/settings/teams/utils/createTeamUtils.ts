@@ -1,6 +1,4 @@
 
-import { toast } from "@/hooks/use-toast";
-
 export const createTeam = async (teamData: any) => {
   try {
     const response = await fetch('/api/teams', {
