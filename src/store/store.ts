@@ -5,6 +5,7 @@ import tagsReducer from './slices/tagsSlice';
 import teammatesReducer from './slices/teammates/teammatesSlice';
 import securityReducer from './slices/securitySlice';
 import teamsReducer from './slices/teams/teamsSlice';
+import cannedResponsesReducer from './slices/cannedResponses/cannedResponsesSlice';
 
 export const store = configureStore({
   reducer: {
@@ -13,8 +14,10 @@ export const store = configureStore({
     teammates: teammatesReducer,
     security: securityReducer,
     teams: teamsReducer,
+    cannedResponses: cannedResponsesReducer,
   },
 });
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
+

@@ -1,0 +1,56 @@
+
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import type { CannedResponse } from '@/mock/cannedResponses';
+import type { CannedResponsesState } from './types';
+import { mockCannedResponses } from '@/mock/cannedResponses';
+
+const initialState: CannedResponsesState = {
+  responses: mockCannedResponses,
+  loading: false,
+  error: null,
+  selectedResponse: null,
+};
+
+export const cannedResponsesSlice = createSlice({
+  name: 'cannedResponses',
+  initialState,
+  reducers: {
+    setResponses: (state, action: PayloadAction<CannedResponse[]>) => {
+      state.responses = action.payload;
+    },
+    addResponse: (state, action: PayloadAction<CannedResponse>) => {
+      state.responses.push(action.payload);
+    },
+    updateResponse: (state, action: PayloadAction<CannedResponse>) => {
+      const index = state.responses.findIndex(r => r.id === action.payload.id);
+      if (index !== -1) {
+        state.responses[index] = action.payload;
+      }
+    },
+    deleteResponse: (state, action: PayloadAction<string>) => {
+      state.responses = state.responses.filter(r => r.id !== action.payload);
+    },
+    setSelectedResponse: (state, action: PayloadAction<CannedResponse | null>) => {
+      state.selectedResponse = action.payload;
+    },
+    setLoading: (state, action: PayloadAction<boolean>) => {
+      state.loading = action.payload;
+    },
+    setError: (state, action: PayloadAction<string | null>) => {
+      state.error = action.payload;
+    },
+  },
+});
+
+export const {
+  setResponses,
+  addResponse,
+  updateResponse,
+  deleteResponse,
+  setSelectedResponse,
+  setLoading,
+  setError,
+} = cannedResponsesSlice.actions;
+
+export default cannedResponsesSlice.reducer;
+
