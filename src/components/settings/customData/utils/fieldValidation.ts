@@ -1,5 +1,5 @@
 
-import { CustomField, ValidationRule } from '@/types/customField';
+import { CustomField, ValidationRule, CustomFieldType } from '@/types/customField';
 
 export const validateFieldValue = (value: any, field: CustomField): string[] => {
   const errors: string[] = [];
@@ -42,3 +42,57 @@ export const validateFieldValue = (value: any, field: CustomField): string[] => 
   
   return errors;
 };
+
+export const validateFieldName = (name: string, existingFields: CustomField[]): string[] => {
+  const errors: string[] = [];
+  
+  if (!name) {
+    errors.push('Field name is required');
+    return errors;
+  }
+
+  if (name.length < 2) {
+    errors.push('Field name must be at least 2 characters long');
+  }
+
+  if (name.length > 50) {
+    errors.push('Field name must not exceed 50 characters');
+  }
+
+  if (!/^[a-zA-Z][a-zA-Z0-9_\s]*$/.test(name)) {
+    errors.push('Field name must start with a letter and can only contain letters, numbers, spaces and underscores');
+  }
+
+  const lowerCaseName = name.toLowerCase();
+  if (existingFields.some(field => field.name.toLowerCase() === lowerCaseName)) {
+    errors.push('A field with this name already exists');
+  }
+
+  return errors;
+};
+
+export const getDefaultValidationRules = (type: CustomFieldType): ValidationRule[] => {
+  switch (type) {
+    case 'email':
+      return [{
+        type: 'regex',
+        value: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$',
+        message: 'Please enter a valid email address'
+      }];
+    case 'phone':
+      return [{
+        type: 'regex',
+        value: '^\\+?[1-9]\\d{1,14}$',
+        message: 'Please enter a valid phone number'
+      }];
+    case 'url':
+      return [{
+        type: 'regex',
+        value: '^https?:\\/\\/[\\w\\d.-]+\\.[a-zA-Z]{2,}(?:\\/.*)?$',
+        message: 'Please enter a valid URL'
+      }];
+    default:
+      return [];
+  }
+};
+

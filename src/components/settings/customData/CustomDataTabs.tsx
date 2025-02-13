@@ -28,7 +28,7 @@ const CustomDataTabs = ({
 
       <TabsContent value="tickets">
         <CustomDataTable 
-          fields={currentFields} 
+          currentFields={currentFields} 
           isLoading={isLoading} 
           error={error}
           table="tickets" 
@@ -36,7 +36,7 @@ const CustomDataTabs = ({
       </TabsContent>
       <TabsContent value="contacts">
         <CustomDataTable 
-          fields={currentFields} 
+          currentFields={currentFields} 
           isLoading={isLoading} 
           error={error}
           table="contacts" 
@@ -44,7 +44,7 @@ const CustomDataTabs = ({
       </TabsContent>
       <TabsContent value="companies">
         <CustomDataTable 
-          fields={currentFields} 
+          currentFields={currentFields} 
           isLoading={isLoading} 
           error={error}
           table="companies" 
@@ -55,3 +55,4 @@ const CustomDataTabs = ({
 };
 
 export default CustomDataTabs;
+

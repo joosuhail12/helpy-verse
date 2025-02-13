@@ -1,8 +1,7 @@
-
 import { Table } from "@/components/ui/table";
 import { CustomField } from "@/types/customField";
 import BulkCustomFieldActions from "./BulkCustomFieldActions";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import FieldHistory from "./FieldHistory";
 import SearchField from "./SearchField";
 import TableHeaderComponent from "./table/TableHeader";
