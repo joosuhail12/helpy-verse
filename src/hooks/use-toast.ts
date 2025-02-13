@@ -136,7 +136,7 @@ function dispatch(action: Action) {
 
 interface Toast extends Omit<ToasterToast, "id"> {}
 
-export function toast({ ...props }: Toast) {
+export const toast = ({ ...props }: Toast) => {
   const id = genId()
 
   const update = (props: ToasterToast) =>

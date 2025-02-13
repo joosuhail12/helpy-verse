@@ -23,7 +23,7 @@ const TeammateDetail = () => {
     state.teammates.teammates.find(t => t.id === id)
   );
   const currentUserRole = useAppSelector(state => 
-    state.auth.currentUser?.role || 'viewer'
+    state.auth.user?.role || 'viewer'
   );
   const isAdmin = currentUserRole === 'admin';
 
@@ -146,4 +146,3 @@ const TeammateDetail = () => {
 };
 
 export default TeammateDetail;
-
