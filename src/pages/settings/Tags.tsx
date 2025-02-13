@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import TagList from '@/components/settings/tags/TagList';
 import CreateTagDialog from '@/components/settings/tags/CreateTagDialog';
 import { useTagShortcuts } from '@/hooks/useTagShortcuts';
+import TagsErrorBoundary from '@/components/settings/tags/TagsErrorBoundary';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -16,7 +17,7 @@ const Tags = () => {
 
   useTagShortcuts({
     onCreateTag: () => setIsCreateDialogOpen(true),
-    hasSelection: false, // This will be updated when we connect the bulk actions
+    hasSelection: false,
   });
 
   return (
@@ -49,12 +50,14 @@ const Tags = () => {
             />
           </div>
         </div>
-        <TagList 
-          searchQuery={searchQuery}
-          currentPage={currentPage}
-          itemsPerPage={ITEMS_PER_PAGE}
-          onPageChange={setCurrentPage}
-        />
+        <TagsErrorBoundary>
+          <TagList 
+            searchQuery={searchQuery}
+            currentPage={currentPage}
+            itemsPerPage={ITEMS_PER_PAGE}
+            onPageChange={setCurrentPage}
+          />
+        </TagsErrorBoundary>
       </div>
 
       <CreateTagDialog

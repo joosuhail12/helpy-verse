@@ -1,14 +1,16 @@
 
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import type { Tag, SortField, FilterEntity } from '@/types/tag';
-import { useTags } from '@/hooks/useTags';
 import { useTagShortcuts } from '@/hooks/useTagShortcuts';
+import { fetchTags } from '@/api/tagsApi';
 import EditTagDialog from './EditTagDialog';
 import DeleteTagDialog from './DeleteTagDialog';
 import BulkActions from './BulkActions';
 import TagTable from './TagTable';
 import TagListControls from './TagListControls';
 import TagPagination from './TagPagination';
+import { useToast } from '@/components/ui/use-toast';
 
 interface TagListProps {
   searchQuery: string;
@@ -24,8 +26,23 @@ const TagList = ({ searchQuery, currentPage, itemsPerPage, onPageChange }: TagLi
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [filterEntity, setFilterEntity] = useState<FilterEntity>('all');
+  const { toast } = useToast();
 
-  const { tags } = useTags(searchQuery, filterEntity, sortField, sortDirection);
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['tags', searchQuery, filterEntity, sortField, sortDirection, currentPage, itemsPerPage],
+    queryFn: () => fetchTags(searchQuery, filterEntity, sortField, sortDirection, currentPage, itemsPerPage),
+    staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
+    keepPreviousData: true,
+    meta: {
+      onError: (error: Error) => {
+        toast({
+          title: 'Error loading tags',
+          description: error.message,
+          variant: 'destructive',
+        });
+      },
+    },
+  });
 
   useTagShortcuts({
     onCreateTag: () => {}, // Handled at the page level
@@ -44,10 +61,11 @@ const TagList = ({ searchQuery, currentPage, itemsPerPage, onPageChange }: TagLi
   };
 
   const handleSelectAll = () => {
-    if (selectedTags.length === paginatedTags.length) {
+    if (!data) return;
+    if (selectedTags.length === data.tags.length) {
       setSelectedTags([]);
     } else {
-      setSelectedTags(paginatedTags.map(tag => tag.id));
+      setSelectedTags(data.tags.map(tag => tag.id));
     }
   };
 
@@ -89,14 +107,28 @@ const TagList = ({ searchQuery, currentPage, itemsPerPage, onPageChange }: TagLi
     setTagToEdit(bulkEditTag);
   };
 
-  const totalPages = Math.ceil(tags.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedTags = tags.slice(startIndex, startIndex + itemsPerPage);
+  if (isLoading) {
+    return (
+      <div className="p-8 text-center text-gray-500">
+        Loading tags...
+      </div>
+    );
+  }
+
+  if (error) {
+    throw error; // This will be caught by the error boundary
+  }
+
+  if (!data) {
+    return null;
+  }
+
+  const totalPages = Math.ceil(data.total / itemsPerPage);
 
   return (
     <div>
       <TagListControls
-        totalTags={tags.length}
+        totalTags={data.total}
         filterEntity={filterEntity}
         onFilterChange={setFilterEntity}
         sortField={sortField}
@@ -110,14 +142,14 @@ const TagList = ({ searchQuery, currentPage, itemsPerPage, onPageChange }: TagLi
         onDeleteSelected={handleBulkDelete}
       />
 
-      {tags.length === 0 ? (
+      {data.tags.length === 0 ? (
         <div className="p-8 text-center text-gray-500">
           No tags found matching your search.
         </div>
       ) : (
         <>
           <TagTable
-            tags={paginatedTags}
+            tags={data.tags}
             selectedTags={selectedTags}
             onSelectAll={handleSelectAll}
             onSelectTag={handleSelectTag}
@@ -153,4 +185,3 @@ const TagList = ({ searchQuery, currentPage, itemsPerPage, onPageChange }: TagLi
 };
 
 export default TagList;
-
