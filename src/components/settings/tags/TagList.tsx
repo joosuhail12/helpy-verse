@@ -1,6 +1,6 @@
 
-import { useState, useEffect } from 'react';
-import { MoreHorizontal, Tag as TagIcon } from 'lucide-react';
+import { useState } from 'react';
+import { MoreHorizontal } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,6 +10,14 @@ import {
 import { Button } from "@/components/ui/button";
 import EditTagDialog from './EditTagDialog';
 import DeleteTagDialog from './DeleteTagDialog';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 interface Tag {
   id: string;
@@ -70,53 +78,66 @@ const TagList = ({ searchQuery }: TagListProps) => {
   );
 
   return (
-    <div className="divide-y divide-gray-100">
+    <div>
       {filteredTags.length === 0 ? (
         <div className="p-8 text-center text-gray-500">
           No tags found matching your search.
         </div>
       ) : (
-        filteredTags.map((tag) => (
-          <div
-            key={tag.id}
-            className="flex items-center justify-between p-4 hover:bg-gray-50"
-          >
-            <div className="flex items-center space-x-3">
-              <div
-                className="w-4 h-4 rounded"
-                style={{ backgroundColor: tag.color }}
-              />
-              <span className="font-medium text-gray-900">{tag.name}</span>
-              <div className="flex gap-3 text-sm text-gray-500">
-                <span>{tag.counts.tickets} tickets</span>
-                <span>•</span>
-                <span>{tag.counts.contacts} contacts</span>
-                <span>•</span>
-                <span>{tag.counts.companies} companies</span>
-              </div>
-            </div>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <MoreHorizontal className="h-4 w-4" />
-                  <span className="sr-only">Open menu</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setTagToEdit(tag)}>
-                  Edit
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  className="text-red-600"
-                  onClick={() => setTagToDelete(tag)}
-                >
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        ))
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[250px]">Name</TableHead>
+              <TableHead>Usage</TableHead>
+              <TableHead className="w-[100px]"></TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredTags.map((tag) => (
+              <TableRow key={tag.id}>
+                <TableCell>
+                  <div className="flex items-center space-x-3">
+                    <div
+                      className="w-4 h-4 rounded flex-shrink-0"
+                      style={{ backgroundColor: tag.color }}
+                    />
+                    <span className="font-medium text-gray-900">{tag.name}</span>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="flex gap-3 text-sm text-gray-500">
+                    <span>{tag.counts.tickets} tickets</span>
+                    <span>•</span>
+                    <span>{tag.counts.contacts} contacts</span>
+                    <span>•</span>
+                    <span>{tag.counts.companies} companies</span>
+                  </div>
+                </TableCell>
+                <TableCell className="text-right">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon">
+                        <MoreHorizontal className="h-4 w-4" />
+                        <span className="sr-only">Open menu</span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => setTagToEdit(tag)}>
+                        Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="text-red-600"
+                        onClick={() => setTagToDelete(tag)}
+                      >
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       )}
 
       {tagToEdit && (
