@@ -9,3 +9,10 @@ export interface Teammate {
   createdAt: string;
   avatar?: string;
 }
+
+export interface NewTeammate {
+  name: string;
+  email: string;
+  role: 'admin' | 'agent';
+}
+

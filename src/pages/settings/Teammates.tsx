@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { format } from 'date-fns';
+import AddTeammateDialog from '@/components/teammates/AddTeammateDialog';
 
 const TeammatesPage = () => {
   const dispatch = useAppDispatch();
@@ -41,6 +42,7 @@ const TeammatesPage = () => {
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-semibold text-gray-900">Teammates</h1>
+        <AddTeammateDialog />
       </div>
 
       <Table>
@@ -93,3 +95,4 @@ const TeammatesPage = () => {
 };
 
 export default TeammatesPage;
+
