@@ -20,6 +20,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { updateTeammatesRole, exportTeammates } from '@/store/slices/teammatesSlice';
 import { CheckSquare, UserMinus, FileText } from 'lucide-react';
+import type { Teammate } from '@/types/teammate';
 
 interface TeammatesBulkActionsProps {
   selectedIds: string[];
@@ -29,7 +30,7 @@ interface TeammatesBulkActionsProps {
 const TeammatesBulkActions = ({ selectedIds, onClearSelection }: TeammatesBulkActionsProps) => {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [showRoleDialog, setShowRoleDialog] = useState(false);
-  const [newRole, setNewRole] = useState<string>('');
+  const [newRole, setNewRole] = useState<Teammate['role']>('agent');
   const dispatch = useAppDispatch();
   const { toast } = useToast();
 
@@ -109,7 +110,7 @@ const TeammatesBulkActions = ({ selectedIds, onClearSelection }: TeammatesBulkAc
               Select a new role for the {selectedIds.length} selected teammate(s).
             </DialogDescription>
           </DialogHeader>
-          <Select onValueChange={setNewRole}>
+          <Select onValueChange={(value: Teammate['role']) => setNewRole(value)}>
             <SelectTrigger>
               <SelectValue placeholder="Select new role" />
             </SelectTrigger>
@@ -158,3 +159,4 @@ const TeammatesBulkActions = ({ selectedIds, onClearSelection }: TeammatesBulkAc
 };
 
 export default TeammatesBulkActions;
+
