@@ -24,11 +24,11 @@ const CreateTeam = () => {
   const [selectedChatChannel, setSelectedChatChannel] = useState<string>();
   const [selectedEmailChannels, setSelectedEmailChannels] = useState<string[]>([]);
   const [routingType, setRoutingType] = useState<'manual' | 'round-robin' | 'load-balanced'>('manual');
-  const [routingLimits, setRoutingLimits] = useState({
-    maxTickets: 0,
-    maxOpenTickets: 0,
-    maxActiveChats: 0
-  });
+  const [routingLimits, setRoutingLimits] = useState<{
+    maxTickets?: number;
+    maxOpenTickets?: number;
+    maxActiveChats?: number;
+  }>({});
 
   const handleCreateTeam = async () => {
     if (!teamName.trim()) {
@@ -161,3 +161,4 @@ const CreateTeam = () => {
 };
 
 export default CreateTeam;
+

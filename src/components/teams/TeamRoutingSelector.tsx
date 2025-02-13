@@ -1,8 +1,8 @@
 
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Users, Repeat2, Scale } from "lucide-react";
-import { Slider } from "@/components/ui/slider";
 import type { TeamRoutingSelectorProps } from '@/types/team';
 
 const TeamRoutingSelector = ({ 
@@ -11,10 +11,11 @@ const TeamRoutingSelector = ({
   limits = {},
   onLimitsChange = () => {}
 }: TeamRoutingSelectorProps) => {
-  const handleLimitChange = (key: keyof typeof limits) => (value: number[]) => {
+  const handleLimitChange = (key: keyof typeof limits) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value) || 0;
     onLimitsChange({
       ...limits,
-      [key]: value[0]
+      [key]: value
     });
   };
 
@@ -65,50 +66,38 @@ const TeamRoutingSelector = ({
             <div className="mt-4 space-y-6 pt-4 border-t">
               <div className="space-y-4">
                 <Label className="text-sm font-medium">Maximum Total Tickets</Label>
-                <div className="flex items-center gap-4">
-                  <Slider
-                    value={[limits.maxTickets || 0]}
-                    onValueChange={handleLimitChange('maxTickets')}
-                    max={50}
-                    step={1}
-                    className="flex-1"
-                  />
-                  <span className="text-sm text-muted-foreground w-12 text-right">
-                    {limits.maxTickets || 0}
-                  </span>
-                </div>
+                <Input
+                  type="number"
+                  min={0}
+                  max={50}
+                  value={limits.maxTickets || 0}
+                  onChange={handleLimitChange('maxTickets')}
+                  className="w-full"
+                />
               </div>
 
               <div className="space-y-4">
                 <Label className="text-sm font-medium">Maximum Open Tickets</Label>
-                <div className="flex items-center gap-4">
-                  <Slider
-                    value={[limits.maxOpenTickets || 0]}
-                    onValueChange={handleLimitChange('maxOpenTickets')}
-                    max={30}
-                    step={1}
-                    className="flex-1"
-                  />
-                  <span className="text-sm text-muted-foreground w-12 text-right">
-                    {limits.maxOpenTickets || 0}
-                  </span>
-                </div>
+                <Input
+                  type="number"
+                  min={0}
+                  max={30}
+                  value={limits.maxOpenTickets || 0}
+                  onChange={handleLimitChange('maxOpenTickets')}
+                  className="w-full"
+                />
               </div>
 
               <div className="space-y-4">
                 <Label className="text-sm font-medium">Maximum Active Chats</Label>
-                <div className="flex items-center gap-4">
-                  <Slider
-                    value={[limits.maxActiveChats || 0]}
-                    onValueChange={handleLimitChange('maxActiveChats')}
-                    max={10}
-                    step={1}
-                    className="flex-1"
-                  />
-                  <span className="text-sm text-muted-foreground w-12 text-right">
-                    {limits.maxActiveChats || 0}
-                  </span>
-                </div>
+                <Input
+                  type="number"
+                  min={0}
+                  max={10}
+                  value={limits.maxActiveChats || 0}
+                  onChange={handleLimitChange('maxActiveChats')}
+                  className="w-full"
+                />
               </div>
             </div>
           )}
@@ -119,3 +108,4 @@ const TeamRoutingSelector = ({
 };
 
 export default TeamRoutingSelector;
+
