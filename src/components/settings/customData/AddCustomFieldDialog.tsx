@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -7,24 +8,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { useState } from "react";
 import { useCustomDataMutations } from "@/hooks/useCustomDataMutations";
 import type { CustomField, CustomFieldType, ValidationRule, FieldDependency, FieldHistoryEntry } from "@/types/customField";
-import ValidationRulesSection from "./ValidationRulesSection";
-import DependenciesSection from "./DependenciesSection";
-import FieldOptionsSection from "./FieldOptionsSection";
+import ValidationRulesSection from './ValidationRulesSection';
+import DependenciesSection from './DependenciesSection';
+import FieldOptionsSection from './FieldOptionsSection';
+import FieldDetailsForm from './components/FieldDetailsForm';
+import { validateFieldName, getDefaultValidationRules } from './utils/fieldValidation';
 
 interface AddCustomFieldDialogProps {
   isOpen: boolean;
@@ -44,44 +36,6 @@ const AddCustomFieldDialog = ({ isOpen, onClose, table, existingFields }: AddCus
   const { toast } = useToast();
   const { addCustomField, isLoading } = useCustomDataMutations();
 
-  const getDefaultValidationRules = (fieldType: CustomFieldType): ValidationRule[] => {
-    switch (fieldType) {
-      case 'email':
-        return [{
-          type: 'regex',
-          value: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$',
-          message: 'Please enter a valid email address'
-        }];
-      case 'phone':
-        return [{
-          type: 'regex',
-          value: '^\\+?[1-9]\\d{1,14}$',
-          message: 'Please enter a valid phone number'
-        }];
-      case 'url':
-        return [{
-          type: 'regex',
-          value: '^https?:\\/\\/[\\w\\-]+(\\.[\\w\\-]+)+[/#?]?.*$',
-          message: 'Please enter a valid URL'
-        }];
-      case 'currency':
-        return [
-          {
-            type: 'regex',
-            value: '^\\d+(\\.\\d{1,2})?$',
-            message: 'Please enter a valid currency amount'
-          },
-          {
-            type: 'min',
-            value: '0',
-            message: 'Amount must be greater than or equal to 0'
-          }
-        ];
-      default:
-        return [];
-    }
-  };
-
   const handleTypeChange = (newType: CustomFieldType) => {
     setType(newType);
     setValidationRules(getDefaultValidationRules(newType));
@@ -90,32 +44,10 @@ const AddCustomFieldDialog = ({ isOpen, onClose, table, existingFields }: AddCus
     }
   };
 
-  const validateFieldName = (name: string): string[] => {
-    const errors: string[] = [];
-    
-    if (name.length < 2) {
-      errors.push("Field name must be at least 2 characters long");
-    }
-    
-    if (name.length > 50) {
-      errors.push("Field name must not exceed 50 characters");
-    }
-    
-    if (!/^[a-zA-Z][a-zA-Z0-9_]*$/.test(name)) {
-      errors.push("Field name must start with a letter and contain only letters, numbers, and underscores");
-    }
-    
-    if (existingFields.some(field => field.name.toLowerCase() === name.toLowerCase())) {
-      errors.push("A field with this name already exists");
-    }
-    
-    return errors;
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const nameValidationErrors = validateFieldName(name);
+    const nameValidationErrors = validateFieldName(name, existingFields);
     if (nameValidationErrors.length > 0) {
       toast({
         title: "Validation Error",
@@ -213,55 +145,18 @@ const AddCustomFieldDialog = ({ isOpen, onClose, table, existingFields }: AddCus
               Add a new custom field to the {table} table.
             </DialogDescription>
           </DialogHeader>
+          
           <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="name">Field Name</Label>
-              <Input
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="type">Field Type</Label>
-              <Select value={type} onValueChange={(value) => handleTypeChange(value as CustomFieldType)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="text">Text</SelectItem>
-                  <SelectItem value="number">Number</SelectItem>
-                  <SelectItem value="date">Date</SelectItem>
-                  <SelectItem value="boolean">Boolean</SelectItem>
-                  <SelectItem value="select">Select</SelectItem>
-                  <SelectItem value="multi-select">Multi Select</SelectItem>
-                  <SelectItem value="rich-text">Rich Text</SelectItem>
-                  <SelectItem value="file">File Attachment</SelectItem>
-                  <SelectItem value="currency">Currency</SelectItem>
-                  <SelectItem value="url">URL</SelectItem>
-                  <SelectItem value="email">Email</SelectItem>
-                  <SelectItem value="phone">Phone</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex items-center justify-between">
-              <Label htmlFor="required">Required Field</Label>
-              <Switch
-                id="required"
-                checked={required}
-                onCheckedChange={setRequired}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={3}
-              />
-            </div>
+            <FieldDetailsForm
+              name={name}
+              type={type}
+              required={required}
+              description={description}
+              onNameChange={setName}
+              onTypeChange={handleTypeChange}
+              onRequiredChange={setRequired}
+              onDescriptionChange={setDescription}
+            />
             
             {showOptionsSection && (
               <FieldOptionsSection
@@ -281,6 +176,7 @@ const AddCustomFieldDialog = ({ isOpen, onClose, table, existingFields }: AddCus
               availableFields={existingFields}
             />
           </div>
+
           <DialogFooter>
             <Button variant="outline" type="button" onClick={onClose}>
               Cancel
@@ -296,3 +192,4 @@ const AddCustomFieldDialog = ({ isOpen, onClose, table, existingFields }: AddCus
 };
 
 export default AddCustomFieldDialog;
+
