@@ -5,10 +5,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import TagList from '@/components/settings/tags/TagList';
 import CreateTagDialog from '@/components/settings/tags/CreateTagDialog';
+import { useTagShortcuts } from '@/hooks/useTagShortcuts';
+
+const ITEMS_PER_PAGE = 10;
 
 const Tags = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+
+  useTagShortcuts({
+    onCreateTag: () => setIsCreateDialogOpen(true),
+    hasSelection: false, // This will be updated when we connect the bulk actions
+  });
 
   return (
     <div className="container mx-auto p-6 max-w-5xl">
@@ -17,6 +26,9 @@ const Tags = () => {
           <h1 className="text-2xl font-bold text-gray-900">Tags</h1>
           <p className="text-sm text-gray-500 mt-1">
             Manage tags to organize and categorize tickets
+            <span className="ml-2 text-gray-400">
+              (Press Ctrl/Cmd + N to create a new tag)
+            </span>
           </p>
         </div>
         <Button onClick={() => setIsCreateDialogOpen(true)}>
@@ -37,7 +49,12 @@ const Tags = () => {
             />
           </div>
         </div>
-        <TagList searchQuery={searchQuery} />
+        <TagList 
+          searchQuery={searchQuery}
+          currentPage={currentPage}
+          itemsPerPage={ITEMS_PER_PAGE}
+          onPageChange={setCurrentPage}
+        />
       </div>
 
       <CreateTagDialog

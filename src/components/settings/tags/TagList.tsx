@@ -2,13 +2,16 @@
 import { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import EditTagDialog from './EditTagDialog';
 import DeleteTagDialog from './DeleteTagDialog';
 import TagUsageStats from './TagUsageStats';
 import TagColorPreview from './TagColorPreview';
 import TagActions from './TagActions';
 import BulkActions from './BulkActions';
+import { useTagShortcuts } from '@/hooks/useTagShortcuts';
 import type { Tag, SortField, FilterEntity } from '@/types/tag';
 import SortingControls from '@/components/inbox/SortingControls';
 
@@ -47,9 +50,12 @@ const mockTags: Tag[] = [
 
 interface TagListProps {
   searchQuery: string;
+  currentPage: number;
+  itemsPerPage: number;
+  onPageChange: (page: number) => void;
 }
 
-const TagList = ({ searchQuery }: TagListProps) => {
+const TagList = ({ searchQuery, currentPage, itemsPerPage, onPageChange }: TagListProps) => {
   const [tags, setTags] = useState<Tag[]>(mockTags);
   const [tagToEdit, setTagToEdit] = useState<Tag | null>(null);
   const [tagToDelete, setTagToDelete] = useState<Tag | null>(null);
@@ -57,6 +63,13 @@ const TagList = ({ searchQuery }: TagListProps) => {
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [filterEntity, setFilterEntity] = useState<FilterEntity>('all');
+
+  useTagShortcuts({
+    onCreateTag: () => {}, // Handled at the page level
+    onBulkEdit: () => selectedTags.length > 0 && handleBulkEdit(),
+    onBulkDelete: () => selectedTags.length > 0 && handleBulkDelete(),
+    hasSelection: selectedTags.length > 0,
+  });
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -68,10 +81,10 @@ const TagList = ({ searchQuery }: TagListProps) => {
   };
 
   const handleSelectAll = () => {
-    if (selectedTags.length === filteredTags.length) {
+    if (selectedTags.length === paginatedTags.length) {
       setSelectedTags([]);
     } else {
-      setSelectedTags(filteredTags.map(tag => tag.id));
+      setSelectedTags(paginatedTags.map(tag => tag.id));
     }
   };
 
@@ -109,6 +122,10 @@ const TagList = ({ searchQuery }: TagListProps) => {
     
     return valueA < valueB ? -1 : valueA > valueB ? 1 : 0;
   });
+
+  const totalPages = Math.ceil(filteredTags.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedTags = filteredTags.slice(startIndex, startIndex + itemsPerPage);
 
   return (
     <div>
@@ -151,49 +168,75 @@ const TagList = ({ searchQuery }: TagListProps) => {
           No tags found matching your search.
         </div>
       ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[30px]">
-                <Checkbox
-                  checked={selectedTags.length === filteredTags.length}
-                  onCheckedChange={handleSelectAll}
-                />
-              </TableHead>
-              <TableHead className="w-[250px]">Name</TableHead>
-              <TableHead>Usage</TableHead>
-              <TableHead className="w-[100px]"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredTags.map((tag) => (
-              <TableRow key={tag.id}>
-                <TableCell>
+        <>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[30px]">
                   <Checkbox
-                    checked={selectedTags.includes(tag.id)}
-                    onCheckedChange={() => handleSelectTag(tag.id)}
+                    checked={selectedTags.length === paginatedTags.length}
+                    onCheckedChange={handleSelectAll}
                   />
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center space-x-3">
-                    <TagColorPreview color={tag.color} />
-                    <span className="font-medium text-gray-900">{tag.name}</span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <TagUsageStats {...tag.counts} />
-                </TableCell>
-                <TableCell className="text-right">
-                  <TagActions
-                    tag={tag}
-                    onEdit={setTagToEdit}
-                    onDelete={setTagToDelete}
-                  />
-                </TableCell>
+                </TableHead>
+                <TableHead className="w-[250px]">Name</TableHead>
+                <TableHead>Usage</TableHead>
+                <TableHead className="w-[100px]"></TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {paginatedTags.map((tag) => (
+                <TableRow key={tag.id}>
+                  <TableCell>
+                    <Checkbox
+                      checked={selectedTags.includes(tag.id)}
+                      onCheckedChange={() => handleSelectTag(tag.id)}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center space-x-3">
+                      <TagColorPreview color={tag.color} />
+                      <span className="font-medium text-gray-900">{tag.name}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <TagUsageStats {...tag.counts} />
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <TagActions
+                      tag={tag}
+                      onEdit={setTagToEdit}
+                      onDelete={setTagToDelete}
+                    />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2 p-4 border-t">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onPageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <span className="text-sm text-gray-600">
+                Page {currentPage} of {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onPageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+        </>
       )}
 
       {tagToEdit && (

@@ -9,7 +9,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { useState } from "react";
 
 interface Tag {
@@ -42,15 +42,15 @@ const DeleteTagDialog = ({ tag, open, onOpenChange }: DeleteTagDialogProps) => {
       await new Promise(resolve => setTimeout(resolve, 500));
       
       toast({
-        title: "Tag deleted",
-        description: `Successfully deleted tag "${tag.name}"`,
+        title: "Success",
+        description: `Successfully archived tag "${tag.name}"`,
       });
       
       onOpenChange(false);
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to delete tag. Please try again.",
+        description: "Failed to archive tag. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -62,9 +62,10 @@ const DeleteTagDialog = ({ tag, open, onOpenChange }: DeleteTagDialogProps) => {
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete Tag</AlertDialogTitle>
+          <AlertDialogTitle>Archive Tag</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to delete the tag "{tag.name}"? This action cannot be undone.
+            Are you sure you want to archive the tag "{tag.name}"? 
+            This action can be undone later.
             {totalAssociations > 0 && (
               <div className="mt-2 space-y-1 text-red-600">
                 <p>This tag is currently used in:</p>
@@ -90,7 +91,7 @@ const DeleteTagDialog = ({ tag, open, onOpenChange }: DeleteTagDialogProps) => {
             className="bg-red-600 hover:bg-red-700"
             disabled={isDeleting}
           >
-            {isDeleting ? 'Deleting...' : 'Delete'}
+            {isDeleting ? 'Archiving...' : 'Archive'}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
