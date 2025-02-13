@@ -1,6 +1,6 @@
 
 import * as React from "react";
-import { CaretSortIcon, CheckIcon, PlusCircle } from "lucide-react";
+import { ArrowDown, ArrowUp, CheckIcon, PlusCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -53,7 +53,9 @@ export function CategoryCombobox({ value, onChange }: CategoryComboboxProps) {
           {value
             ? categories.find((category) => category.name === value)?.name || value
             : "Select category..."}
-          <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          <div className="flex ml-2 h-4 w-4 shrink-0 opacity-50">
+            {open ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
+          </div>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-full p-0">
