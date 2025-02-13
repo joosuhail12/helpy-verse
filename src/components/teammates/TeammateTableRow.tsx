@@ -1,6 +1,5 @@
 
 import { TableCell, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Send } from 'lucide-react';
@@ -14,8 +13,8 @@ import { useState } from 'react';
 import type { Teammate } from '@/types/teammate';
 import TeammateAvatar from './TeammateAvatar';
 import TeammateEmail from './TeammateEmail';
-import { getRoleBadgeVariant, getRoleDescription } from './utils/roleUtils';
-import { getStatusDescription } from './utils/statusUtils';
+import TeammateRoleBadge from './TeammateRoleBadge';
+import TeammateStatusBadge from './TeammateStatusBadge';
 
 interface TeammateTableRowProps {
   teammate: Teammate;
@@ -70,28 +69,10 @@ const TeammateTableRow = ({
         </div>
       </TableCell>
       <TableCell>
-        <Tooltip>
-          <TooltipTrigger>
-            <Badge variant={getRoleBadgeVariant(teammate.role)}>
-              {teammate.role}
-            </Badge>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p className="text-sm">{getRoleDescription(teammate.role)}</p>
-          </TooltipContent>
-        </Tooltip>
+        <TeammateRoleBadge role={teammate.role} />
       </TableCell>
       <TableCell>
-        <Tooltip>
-          <TooltipTrigger>
-            <Badge variant={teammate.status === 'active' ? 'default' : 'secondary'}>
-              {teammate.status}
-            </Badge>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p className="text-sm">{getStatusDescription(teammate.status)}</p>
-          </TooltipContent>
-        </Tooltip>
+        <TeammateStatusBadge status={teammate.status} />
       </TableCell>
       <TableCell>
         <Tooltip>
