@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
@@ -11,6 +10,7 @@ import TeammatesTable from '@/components/teammates/TeammatesTable';
 import { useTeammateFilters } from '@/hooks/useTeammateFilters';
 import LoadingState from '@/components/teammates/LoadingState';
 import EmptyState from '@/components/teammates/EmptyState';
+import TeammatesErrorBoundary from '@/components/teammates/TeammatesErrorBoundary';
 import type { Teammate } from '@/types/teammate';
 
 const ITEMS_PER_PAGE = 10;
@@ -124,61 +124,52 @@ const TeammatesPage = () => {
     );
   }
 
-  if (error) {
-    return (
-      <div className="p-6">
-        <div className="bg-red-50 text-red-500 p-4 rounded-lg">
-          {error}
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-semibold text-gray-900">Teammates</h1>
-        <AddTeammateDialog />
+    <TeammatesErrorBoundary>
+      <div className="p-6 space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-semibold text-gray-900">Teammates</h1>
+          <AddTeammateDialog />
+        </div>
+
+        <TeammatesFilters
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          roleFilter={roleFilter}
+          onRoleFilterChange={setRoleFilter}
+          statusFilter={statusFilter}
+          onStatusFilterChange={setStatusFilter}
+          onQuickFilterClick={handleQuickFilterClick}
+        />
+
+        {selectedTeammates.length > 0 && (
+          <TeammatesBulkActions
+            selectedIds={selectedTeammates}
+            onClearSelection={() => setSelectedTeammates([])}
+          />
+        )}
+
+        {sortedTeammates.length === 0 ? (
+          <EmptyState />
+        ) : (
+          <TeammatesTable
+            teammates={paginatedTeammates}
+            selectedTeammates={selectedTeammates}
+            onSelectAll={handleSelectAll}
+            onSelectTeammate={handleSelectTeammate}
+            onResendInvitation={handleResendInvitation}
+            onUpdateTeammate={handleUpdateTeammate}
+            sortBy={sortBy}
+            sortDirection={sortDirection}
+            onSort={handleSort}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
+        )}
       </div>
-
-      <TeammatesFilters
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        roleFilter={roleFilter}
-        onRoleFilterChange={setRoleFilter}
-        statusFilter={statusFilter}
-        onStatusFilterChange={setStatusFilter}
-        onQuickFilterClick={handleQuickFilterClick}
-      />
-
-      {selectedTeammates.length > 0 && (
-        <TeammatesBulkActions
-          selectedIds={selectedTeammates}
-          onClearSelection={() => setSelectedTeammates([])}
-        />
-      )}
-
-      {sortedTeammates.length === 0 ? (
-        <EmptyState />
-      ) : (
-        <TeammatesTable
-          teammates={paginatedTeammates}
-          selectedTeammates={selectedTeammates}
-          onSelectAll={handleSelectAll}
-          onSelectTeammate={handleSelectTeammate}
-          onResendInvitation={handleResendInvitation}
-          onUpdateTeammate={handleUpdateTeammate}
-          sortBy={sortBy}
-          sortDirection={sortDirection}
-          onSort={handleSort}
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
-        />
-      )}
-    </div>
+    </TeammatesErrorBoundary>
   );
 };
 
 export default TeammatesPage;
-
