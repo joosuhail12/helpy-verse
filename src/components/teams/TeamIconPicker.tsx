@@ -19,16 +19,21 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import type { TeamIconPickerProps } from '@/types/team';
+import type { LucideIcon } from 'lucide-react';
 
+// Filter out non-icon entries and create properly typed icon array
 const availableIcons = Object.entries(icons)
   .filter(([name]) => name !== 'createLucideIcon' && name !== 'icons')
   .map(([name, icon]) => ({
     name,
-    icon,
+    icon: icon as LucideIcon,
   }));
 
 const TeamIconPicker = ({ selectedIcon, onIconSelect }: TeamIconPickerProps) => {
   const [openIconPicker, setOpenIconPicker] = React.useState(false);
+
+  // Find the selected icon component
+  const SelectedIcon = selectedIcon ? (icons[selectedIcon as keyof typeof icons] as LucideIcon) : Smile;
 
   return (
     <div className="space-y-2">
@@ -41,19 +46,8 @@ const TeamIconPicker = ({ selectedIcon, onIconSelect }: TeamIconPickerProps) => 
             aria-expanded={openIconPicker}
             className="w-full justify-between"
           >
-            {selectedIcon ? (
-              <>
-                {React.createElement(icons[selectedIcon as keyof typeof icons] as React.ComponentType, {
-                  className: "mr-2 h-4 w-4",
-                })}
-                {selectedIcon}
-              </>
-            ) : (
-              <>
-                <Smile className="mr-2 h-4 w-4" />
-                Select an icon
-              </>
-            )}
+            <SelectedIcon className="mr-2 h-4 w-4" />
+            {selectedIcon || 'Select an icon'}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-full p-0">
@@ -63,7 +57,7 @@ const TeamIconPicker = ({ selectedIcon, onIconSelect }: TeamIconPickerProps) => 
             <CommandGroup>
               <ScrollArea className="h-72">
                 <div className="grid grid-cols-2 gap-2 p-2">
-                  {availableIcons.map(({ name, icon }) => (
+                  {availableIcons.map(({ name, icon: Icon }) => (
                     <CommandItem
                       key={name}
                       value={name}
@@ -73,12 +67,10 @@ const TeamIconPicker = ({ selectedIcon, onIconSelect }: TeamIconPickerProps) => 
                       }}
                       className="flex items-center gap-2 cursor-pointer"
                     >
-                      {React.createElement(icon, {
-                        className: cn(
-                          "h-4 w-4",
-                          selectedIcon === name ? "text-primary" : "text-gray-500"
-                        ),
-                      })}
+                      <Icon className={cn(
+                        "h-4 w-4",
+                        selectedIcon === name ? "text-primary" : "text-gray-500"
+                      )} />
                       <span className="text-sm">{name}</span>
                     </CommandItem>
                   ))}
@@ -93,3 +85,4 @@ const TeamIconPicker = ({ selectedIcon, onIconSelect }: TeamIconPickerProps) => 
 };
 
 export default TeamIconPicker;
+
