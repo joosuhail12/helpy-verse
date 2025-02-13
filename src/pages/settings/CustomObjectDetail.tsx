@@ -86,7 +86,7 @@ const CustomObjectDetail = () => {
               <h2 className="text-lg font-semibold">Custom Fields</h2>
               <div className="flex items-center gap-4">
                 <ImportExportFields
-                  fields={customObject.fields}
+                  fields={customObject.fields as CustomField[]}
                   table={customObject.slug as "tickets" | "contacts" | "companies"}
                   onImport={handleImportWrapper}
                 />
@@ -99,16 +99,7 @@ const CustomObjectDetail = () => {
 
             <CustomDataTable 
               table={customObject.slug as "tickets" | "contacts" | "companies"}
-              currentFields={customObject.fields.map(field => ({
-                id: field.id,
-                name: field.name,
-                type: field.type as any,
-                required: field.required,
-                description: field.description || '',
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                history: []
-              }))} 
+              currentFields={customObject.fields as CustomField[]}
             />
           </div>
 
@@ -116,7 +107,7 @@ const CustomObjectDetail = () => {
             isOpen={isAddFieldOpen}
             onClose={() => setIsAddFieldOpen(false)}
             table={customObject.slug as "tickets" | "contacts" | "companies"}
-            existingFields={customObject.fields}
+            existingFields={customObject.fields as CustomField[]}
           />
         </TabsContent>
       </Tabs>
@@ -125,4 +116,3 @@ const CustomObjectDetail = () => {
 };
 
 export default CustomObjectDetail;
-
