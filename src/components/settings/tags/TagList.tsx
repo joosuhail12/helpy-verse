@@ -1,9 +1,21 @@
 
-import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import type { Tag, SortField, FilterEntity } from '@/types/tag';
+import { useState, useEffect } from 'react';
+import { useAppDispatch, useAppSelector } from '@/hooks/useAppDispatch';
+import type { Tag } from '@/types/tag';
 import { useTagShortcuts } from '@/hooks/useTagShortcuts';
-import { fetchTags } from '@/api/tagsApi';
+import {
+  fetchTags,
+  selectTags,
+  selectTagsTotal,
+  selectTagsLoading,
+  selectTagsError,
+  selectSelectedTags,
+  setPage,
+  setSort,
+  setFilter,
+  selectTag,
+  selectAllTags,
+} from '@/store/slices/tagsSlice';
 import EditTagDialog from './EditTagDialog';
 import DeleteTagDialog from './DeleteTagDialog';
 import BulkActions from './BulkActions';
@@ -20,29 +32,30 @@ interface TagListProps {
 }
 
 const TagList = ({ searchQuery, currentPage, itemsPerPage, onPageChange }: TagListProps) => {
+  const dispatch = useAppDispatch();
   const [tagToEdit, setTagToEdit] = useState<Tag | null>(null);
   const [tagToDelete, setTagToDelete] = useState<Tag | null>(null);
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [filterEntity, setFilterEntity] = useState<FilterEntity>('all');
+  
+  const tags = useAppSelector(selectTags);
+  const total = useAppSelector(selectTagsTotal);
+  const isLoading = useAppSelector(selectTagsLoading);
+  const error = useAppSelector(selectTagsError);
+  const selectedTags = useAppSelector(selectSelectedTags);
   const { toast } = useToast();
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['tags', searchQuery, filterEntity, sortField, sortDirection, currentPage, itemsPerPage],
-    queryFn: () => fetchTags(searchQuery, filterEntity, sortField, sortDirection, currentPage, itemsPerPage),
-    staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
-    placeholderData: (previousData) => previousData,
-    meta: {
-      onError: (error: Error) => {
-        toast({
-          title: 'Error loading tags',
-          description: error.message,
-          variant: 'destructive',
-        });
-      },
-    },
-  });
+  useEffect(() => {
+    dispatch(fetchTags({
+      searchQuery,
+      filterEntity,
+      sortField,
+      sortDirection,
+      page: currentPage,
+      limit: itemsPerPage,
+    }));
+  }, [dispatch, searchQuery, filterEntity, sortField, sortDirection, currentPage, itemsPerPage]);
 
   useTagShortcuts({
     onCreateTag: () => {}, // Handled at the page level
@@ -61,20 +74,11 @@ const TagList = ({ searchQuery, currentPage, itemsPerPage, onPageChange }: TagLi
   };
 
   const handleSelectAll = () => {
-    if (!data) return;
-    if (selectedTags.length === data.tags.length) {
-      setSelectedTags([]);
-    } else {
-      setSelectedTags(data.tags.map(tag => tag.id));
-    }
+    dispatch(selectAllTags(tags.map(tag => tag.id)));
   };
 
   const handleSelectTag = (tagId: string) => {
-    if (selectedTags.includes(tagId)) {
-      setSelectedTags(selectedTags.filter(id => id !== tagId));
-    } else {
-      setSelectedTags([...selectedTags, tagId]);
-    }
+    dispatch(selectTag(tagId));
   };
 
   const handleBulkDelete = () => {
@@ -119,16 +123,12 @@ const TagList = ({ searchQuery, currentPage, itemsPerPage, onPageChange }: TagLi
     throw error; // This will be caught by the error boundary
   }
 
-  if (!data) {
-    return null;
-  }
-
-  const totalPages = Math.ceil(data.total / itemsPerPage);
+  const totalPages = Math.ceil(total / itemsPerPage);
 
   return (
     <div>
       <TagListControls
-        totalTags={data.total}
+        totalTags={total}
         filterEntity={filterEntity}
         onFilterChange={setFilterEntity}
         sortField={sortField}
@@ -142,14 +142,14 @@ const TagList = ({ searchQuery, currentPage, itemsPerPage, onPageChange }: TagLi
         onDeleteSelected={handleBulkDelete}
       />
 
-      {data.tags.length === 0 ? (
+      {tags.length === 0 ? (
         <div className="p-8 text-center text-gray-500">
           No tags found matching your search.
         </div>
       ) : (
         <>
           <TagTable
-            tags={data.tags}
+            tags={tags}
             selectedTags={selectedTags}
             onSelectAll={handleSelectAll}
             onSelectTag={handleSelectTag}
@@ -185,4 +185,3 @@ const TagList = ({ searchQuery, currentPage, itemsPerPage, onPageChange }: TagLi
 };
 
 export default TagList;
-
