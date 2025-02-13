@@ -15,15 +15,15 @@ import {
   CommandGroup,
   CommandInput,
   CommandItem,
-} from "@/components/ui/command"
+} from "@/components/ui/command";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
+} from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
 const availableIcons = Object.entries(icons)
@@ -164,49 +164,49 @@ const CreateTeam = () => {
                           <span className="text-sm">{name}</span>
                         </CommandItem>
                       ))}
-                    </ScrollArea>
-                  </CommandGroup>
-                </Command>
-              </PopoverContent>
-            </Popover>
-          </div>
-
-          <div className="space-y-2">
-            <Label>Team Members</Label>
-            <ScrollArea className="h-[200px] w-full border rounded-md p-4">
-              <div className="space-y-2">
-                {teammates.map((teammate) => (
-                  <div
-                    key={teammate.id}
-                    className="flex items-center justify-between p-2 hover:bg-gray-50 rounded-md cursor-pointer"
-                    onClick={() => toggleTeammate(teammate.id)}
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
-                        {teammate.name.charAt(0)}
-                      </div>
-                      <div>
-                        <p className="font-medium">{teammate.name}</p>
-                        <p className="text-sm text-gray-500">{teammate.email}</p>
-                      </div>
                     </div>
-                    {selectedTeammates.includes(teammate.id) && (
-                      <Badge>Selected</Badge>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
-          </div>
-
-          <Button
-            className="w-full mt-6"
-            onClick={handleCreateTeam}
-            disabled={!teamName.trim()}
-          >
-            Create Team
-          </Button>
+                  </ScrollArea>
+                </CommandGroup>
+              </Command>
+            </PopoverContent>
+          </Popover>
         </div>
+
+        <div className="space-y-2">
+          <Label>Team Members</Label>
+          <ScrollArea className="h-[200px] w-full border rounded-md p-4">
+            <div className="space-y-2">
+              {teammates.map((teammate) => (
+                <div
+                  key={teammate.id}
+                  className="flex items-center justify-between p-2 hover:bg-gray-50 rounded-md cursor-pointer"
+                  onClick={() => toggleTeammate(teammate.id)}
+                >
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                      {teammate.name.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="font-medium">{teammate.name}</p>
+                      <p className="text-sm text-gray-500">{teammate.email}</p>
+                    </div>
+                  </div>
+                  {selectedTeammates.includes(teammate.id) && (
+                    <Badge>Selected</Badge>
+                  )}
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
+        </div>
+
+        <Button
+          className="w-full mt-6"
+          onClick={handleCreateTeam}
+          disabled={!teamName.trim()}
+        >
+          Create Team
+        </Button>
       </div>
     </div>
   );
