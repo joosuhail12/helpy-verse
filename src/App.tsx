@@ -49,6 +49,12 @@ const queryClient = new QueryClient({
   },
 });
 
+// Root component to handle initial auth check and routing
+const RootComponent = () => {
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
+  return isAuthenticated ? <Navigate to="/home" replace /> : <Navigate to="/sign-in" replace />;
+};
+
 // Protected Route Component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useAppSelector((state) => state.auth);
@@ -91,7 +97,7 @@ const App = () => (
           <ErrorBoundary>
             <Suspense fallback={<LoadingFallback />}>
               <Routes>
-                <Route path="/" element={<Navigate to="/home" replace />} />
+                <Route path="/" element={<RootComponent />} />
                 <Route path="/sign-in" element={<SignIn />} />
                 <Route path="/sign-up" element={<SignUp />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
