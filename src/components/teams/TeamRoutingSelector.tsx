@@ -2,9 +2,22 @@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Users, Repeat2, Scale } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
 import type { TeamRoutingSelectorProps } from '@/types/team';
 
-const TeamRoutingSelector = ({ selectedType, onTypeSelect }: TeamRoutingSelectorProps) => {
+const TeamRoutingSelector = ({ 
+  selectedType, 
+  onTypeSelect,
+  limits = {},
+  onLimitsChange = () => {}
+}: TeamRoutingSelectorProps) => {
+  const handleLimitChange = (key: keyof typeof limits) => (value: number[]) => {
+    onLimitsChange({
+      ...limits,
+      [key]: value[0]
+    });
+  };
+
   return (
     <RadioGroup
       value={selectedType}
@@ -47,6 +60,58 @@ const TeamRoutingSelector = ({ selectedType, onTypeSelect }: TeamRoutingSelector
           <p className="text-sm text-muted-foreground">
             Tickets are assigned based on team members' current workload. Optimizes for team capacity and availability.
           </p>
+          
+          {selectedType === 'load-balanced' && (
+            <div className="mt-4 space-y-6 pt-4 border-t">
+              <div className="space-y-4">
+                <Label className="text-sm font-medium">Maximum Total Tickets</Label>
+                <div className="flex items-center gap-4">
+                  <Slider
+                    value={[limits.maxTickets || 0]}
+                    onValueChange={handleLimitChange('maxTickets')}
+                    max={50}
+                    step={1}
+                    className="flex-1"
+                  />
+                  <span className="text-sm text-muted-foreground w-12 text-right">
+                    {limits.maxTickets || 0}
+                  </span>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <Label className="text-sm font-medium">Maximum Open Tickets</Label>
+                <div className="flex items-center gap-4">
+                  <Slider
+                    value={[limits.maxOpenTickets || 0]}
+                    onValueChange={handleLimitChange('maxOpenTickets')}
+                    max={30}
+                    step={1}
+                    className="flex-1"
+                  />
+                  <span className="text-sm text-muted-foreground w-12 text-right">
+                    {limits.maxOpenTickets || 0}
+                  </span>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <Label className="text-sm font-medium">Maximum Active Chats</Label>
+                <div className="flex items-center gap-4">
+                  <Slider
+                    value={[limits.maxActiveChats || 0]}
+                    onValueChange={handleLimitChange('maxActiveChats')}
+                    max={10}
+                    step={1}
+                    className="flex-1"
+                  />
+                  <span className="text-sm text-muted-foreground w-12 text-right">
+                    {limits.maxActiveChats || 0}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </RadioGroup>
@@ -54,4 +119,3 @@ const TeamRoutingSelector = ({ selectedType, onTypeSelect }: TeamRoutingSelector
 };
 
 export default TeamRoutingSelector;
-

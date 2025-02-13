@@ -1,3 +1,4 @@
+
 export interface Team {
   id: string;
   name: string;
@@ -13,6 +14,11 @@ export interface Team {
   };
   routing: {
     type: 'manual' | 'round-robin' | 'load-balanced';
+    limits?: {
+      maxTickets?: number;
+      maxOpenTickets?: number;
+      maxActiveChats?: number;
+    };
   };
   createdAt: string;
   updatedAt: string;
@@ -34,6 +40,11 @@ export interface TeamCreatePayload {
   };
   routing: {
     type: 'manual' | 'round-robin' | 'load-balanced';
+    limits?: {
+      maxTickets?: number;
+      maxOpenTickets?: number;
+      maxActiveChats?: number;
+    };
   };
 }
 
@@ -62,4 +73,15 @@ export interface TeamChannelSelectorProps {
 export interface TeamRoutingSelectorProps {
   selectedType: 'manual' | 'round-robin' | 'load-balanced';
   onTypeSelect: (type: 'manual' | 'round-robin' | 'load-balanced') => void;
+  limits?: {
+    maxTickets?: number;
+    maxOpenTickets?: number;
+    maxActiveChats?: number;
+  };
+  onLimitsChange?: (limits: {
+    maxTickets?: number;
+    maxOpenTickets?: number;
+    maxActiveChats?: number;
+  }) => void;
 }
+
