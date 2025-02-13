@@ -10,6 +10,20 @@ import TableBodyComponent from "./table/TableBody";
 import DuplicateFieldsWarning from "./DuplicateFieldsWarning";
 import { getDuplicateFields, filterFields } from "./utils/fieldUtils";
 import { useCustomFieldShortcuts } from "@/hooks/useCustomFieldShortcuts";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
 
 interface CustomDataTableProps {
   fields: CustomField[];
@@ -22,9 +36,17 @@ const CustomDataTable = ({ fields, isLoading, error, table }: CustomDataTablePro
   const [selectedFields, setSelectedFields] = useState<CustomField[]>([]);
   const [selectedHistory, setSelectedHistory] = useState<CustomField | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [items, setItems] = useState(fields);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   const duplicateFields = getDuplicateFields(fields);
-  const filteredFields = filterFields(fields, searchQuery);
+  const filteredFields = filterFields(items, searchQuery);
 
   const handleSelectAll = (checked: boolean) => {
     setSelectedFields(checked ? filteredFields : []);
@@ -38,7 +60,18 @@ const CustomDataTable = ({ fields, isLoading, error, table }: CustomDataTablePro
     }
   };
 
-  // Setup keyboard shortcuts for bulk actions
+  const handleDragEnd = (event: any) => {
+    const { active, over } = event;
+
+    if (active.id !== over.id) {
+      setItems((items) => {
+        const oldIndex = items.findIndex((item) => item.id === active.id);
+        const newIndex = items.findIndex((item) => item.id === over.id);
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
+  };
+
   useCustomFieldShortcuts({
     onCreateField: () => {}, // This is handled at the parent level
     onBulkEdit: () => {
@@ -73,24 +106,36 @@ const CustomDataTable = ({ fields, isLoading, error, table }: CustomDataTablePro
       <DuplicateFieldsWarning duplicateFields={duplicateFields} />
 
       <div className="rounded-md border">
-        <Table>
-          <TableHeaderComponent
-            filteredFields={filteredFields}
-            selectedFields={selectedFields}
-            onSelectAll={handleSelectAll}
-          />
-          <TableBodyComponent
-            isLoading={isLoading}
-            filteredFields={filteredFields}
-            selectedFields={selectedFields}
-            duplicateFields={duplicateFields}
-            searchQuery={searchQuery}
-            table={table}
-            fields={fields}
-            onSelectField={handleSelectField}
-            onHistoryClick={setSelectedHistory}
-          />
-        </Table>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <Table>
+            <TableHeaderComponent
+              filteredFields={filteredFields}
+              selectedFields={selectedFields}
+              onSelectAll={handleSelectAll}
+            />
+            <SortableContext
+              items={filteredFields}
+              strategy={verticalListSortingStrategy}
+            >
+              <TableBodyComponent
+                isLoading={isLoading}
+                filteredFields={filteredFields}
+                selectedFields={selectedFields}
+                duplicateFields={duplicateFields}
+                searchQuery={searchQuery}
+                table={table}
+                fields={fields}
+                onSelectField={handleSelectField}
+                onHistoryClick={setSelectedHistory}
+                onReorder={handleDragEnd}
+              />
+            </SortableContext>
+          </Table>
+        </DndContext>
       </div>
 
       {selectedHistory && (

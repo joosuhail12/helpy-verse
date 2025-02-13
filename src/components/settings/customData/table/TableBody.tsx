@@ -1,8 +1,7 @@
-
 import { TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { History, AtSign, CalendarDays, Link2, Phone, Mail, DollarSign, Text, ToggleLeft, FileText, ListFilter, Files, Star } from "lucide-react";
+import { History, AtSign, CalendarDays, Link2, Phone, Mail, DollarSign, Text, ToggleLeft, FileText, ListFilter, Files, Star, Eye, GripVertical } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CustomField } from "@/types/customField";
 import CustomFieldActions from "../CustomFieldActions";
@@ -12,6 +11,10 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { useState } from "react";
+import FieldPreview from "../FieldPreview";
 
 interface TableBodyProps {
   isLoading: boolean;
@@ -23,6 +26,7 @@ interface TableBodyProps {
   fields: CustomField[];
   onSelectField: (field: CustomField, checked: boolean) => void;
   onHistoryClick: (field: CustomField) => void;
+  onReorder: (oldIndex: number, newIndex: number) => void;
 }
 
 const getFieldTypeIcon = (type: CustomField['type']) => {
@@ -52,6 +56,30 @@ const getFieldTypeIcon = (type: CustomField['type']) => {
   }
 };
 
+const SortableTableRow = ({ field, index, children, onReorder }: any) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+  } = useSortable({ id: field.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  return (
+    <TableRow ref={setNodeRef} style={style}>
+      <TableCell className="w-[40px] cursor-grab" {...attributes} {...listeners}>
+        <GripVertical className="h-4 w-4 text-gray-400" />
+      </TableCell>
+      {children}
+    </TableRow>
+  );
+};
+
 const TableBodyComponent = ({
   isLoading,
   filteredFields,
@@ -61,13 +89,17 @@ const TableBodyComponent = ({
   table,
   fields,
   onSelectField,
-  onHistoryClick
+  onHistoryClick,
+  onReorder
 }: TableBodyProps) => {
+  const [previewField, setPreviewField] = useState<CustomField | null>(null);
+
   if (isLoading) {
     return (
       <TableBody>
         {Array.from({ length: 3 }).map((_, index) => (
           <TableRow key={index}>
+            <TableCell><Skeleton className="h-4 w-[20px]" /></TableCell>
             <TableCell><Skeleton className="h-4 w-[20px]" /></TableCell>
             <TableCell><Skeleton className="h-4 w-[150px]" /></TableCell>
             <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
@@ -84,7 +116,7 @@ const TableBodyComponent = ({
     return (
       <TableBody>
         <TableRow>
-          <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+          <TableCell colSpan={7} className="text-center py-8 text-gray-500">
             {searchQuery ? "No fields match your search criteria." : "No custom fields found. Click the Add Field button to create one."}
           </TableCell>
         </TableRow>
@@ -93,82 +125,96 @@ const TableBodyComponent = ({
   }
 
   return (
-    <TableBody>
-      {filteredFields.map((field) => (
-        <TableRow 
-          key={field.id}
-          className={duplicateFields.includes(field.name.toLowerCase()) ? "bg-yellow-50 hover:bg-yellow-100" : "hover:bg-purple-50/50"}
-        >
-          <TableCell>
-            <Checkbox
-              checked={selectedFields.some((f) => f.id === field.id)}
-              onCheckedChange={(checked) => onSelectField(field, checked as boolean)}
-              aria-label={`Select ${field.name}`}
-            />
-          </TableCell>
-          <TableCell className="font-medium">
-            <div className="flex items-center gap-2">
-              {field.name}
-              {field.required && (
+    <>
+      <TableBody>
+        {filteredFields.map((field, index) => (
+          <SortableTableRow key={field.id} field={field} index={index} onReorder={onReorder}>
+            <TableCell>
+              <Checkbox
+                checked={selectedFields.some((f) => f.id === field.id)}
+                onCheckedChange={(checked) => onSelectField(field, checked as boolean)}
+                aria-label={`Select ${field.name}`}
+              />
+            </TableCell>
+            <TableCell className="font-medium">
+              <div className="flex items-center gap-2">
+                {field.name}
+                {field.required && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <Star className="h-3 w-3 text-purple-500 fill-purple-500" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Required Field</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+                {duplicateFields.includes(field.name.toLowerCase()) && (
+                  <span className="ml-2 text-yellow-600 text-sm">(Duplicate)</span>
+                )}
+              </div>
+            </TableCell>
+            <TableCell>
+              <div className="flex items-center gap-2">
+                {getFieldTypeIcon(field.type)}
+                <span className="text-sm text-gray-600">{field.type}</span>
+              </div>
+            </TableCell>
+            <TableCell>{field.required ? "Yes" : "No"}</TableCell>
+            <TableCell>
+              {field.description && (
                 <TooltipProvider>
                   <Tooltip>
-                    <TooltipTrigger>
-                      <Star className="h-3 w-3 text-purple-500 fill-purple-500" />
+                    <TooltipTrigger className="text-left">
+                      <span className="line-clamp-1 text-sm text-gray-600">
+                        {field.description}
+                      </span>
                     </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Required Field</p>
+                    <TooltipContent className="max-w-[300px]">
+                      <p>{field.description}</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
               )}
-              {duplicateFields.includes(field.name.toLowerCase()) && (
-                <span className="ml-2 text-yellow-600 text-sm">(Duplicate)</span>
-              )}
-            </div>
-          </TableCell>
-          <TableCell>
-            <div className="flex items-center gap-2">
-              {getFieldTypeIcon(field.type)}
-              <span className="text-sm text-gray-600">{field.type}</span>
-            </div>
-          </TableCell>
-          <TableCell>{field.required ? "Yes" : "No"}</TableCell>
-          <TableCell>
-            {field.description && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger className="text-left">
-                    <span className="line-clamp-1 text-sm text-gray-600">
-                      {field.description}
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent className="max-w-[300px]">
-                    <p>{field.description}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            )}
-          </TableCell>
-          <TableCell className="text-right">
-            <div className="flex justify-end space-x-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 hover:bg-purple-100/50"
-                onClick={() => onHistoryClick(field)}
-              >
-                <History className="h-4 w-4 text-purple-500" />
-              </Button>
-              <CustomFieldActions 
-                field={field} 
-                table={table} 
-                existingFields={fields}
-              />
-            </div>
-          </TableCell>
-        </TableRow>
-      ))}
-    </TableBody>
+            </TableCell>
+            <TableCell className="text-right">
+              <div className="flex justify-end space-x-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 hover:bg-purple-100/50"
+                  onClick={() => setPreviewField(field)}
+                >
+                  <Eye className="h-4 w-4 text-purple-500" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 hover:bg-purple-100/50"
+                  onClick={() => onHistoryClick(field)}
+                >
+                  <History className="h-4 w-4 text-purple-500" />
+                </Button>
+                <CustomFieldActions 
+                  field={field} 
+                  table={table} 
+                  existingFields={fields}
+                />
+              </div>
+            </TableCell>
+          </SortableTableRow>
+        ))}
+      </TableBody>
+      {previewField && (
+        <FieldPreview
+          isOpen={true}
+          onClose={() => setPreviewField(null)}
+          field={previewField}
+        />
+      )}
+    </>
   );
 };
 
