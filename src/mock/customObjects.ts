@@ -5,6 +5,8 @@ export interface CustomObject {
   description: string;
   slug: string;
   showInCustomerContext: boolean;
+  showInCustomerDetail: boolean;
+  showInCompanyDetail: boolean;
   createdAt: string;
   updatedAt: string;
   fields: {
@@ -22,6 +24,8 @@ export const mockCustomObjects: CustomObject[] = [
     description: 'Track customer orders and their status',
     slug: 'orders',
     showInCustomerContext: true,
+    showInCustomerDetail: true,
+    showInCompanyDetail: false,
     createdAt: '2024-03-10T10:00:00Z',
     updatedAt: '2024-03-10T10:00:00Z',
     fields: [
@@ -45,6 +49,8 @@ export const mockCustomObjects: CustomObject[] = [
     description: 'Manage product catalog',
     slug: 'products',
     showInCustomerContext: false,
+    showInCustomerDetail: false,
+    showInCompanyDetail: true,
     createdAt: '2024-03-10T11:00:00Z',
     updatedAt: '2024-03-10T11:00:00Z',
     fields: [

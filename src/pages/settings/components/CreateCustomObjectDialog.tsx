@@ -18,6 +18,8 @@ const customObjectSchema = z.object({
   slug: z.string().min(1, "Slug is required").max(50, "Slug must be less than 50 characters")
     .regex(/^[a-z0-9-]+$/, "Slug must contain only lowercase letters, numbers, and hyphens"),
   showInCustomerContext: z.boolean().default(false),
+  showInCustomerDetail: z.boolean().default(false),
+  showInCompanyDetail: z.boolean().default(false),
 });
 
 type CustomObjectFormValues = z.infer<typeof customObjectSchema>;
@@ -32,6 +34,8 @@ export function CreateCustomObjectDialog() {
       description: "",
       slug: "",
       showInCustomerContext: false,
+      showInCustomerDetail: false,
+      showInCompanyDetail: false,
     },
   });
 
@@ -113,26 +117,68 @@ export function CreateCustomObjectDialog() {
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="showInCustomerContext"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                  <div className="space-y-0.5">
-                    <FormLabel className="text-base">Show in Customer Context</FormLabel>
-                    <FormDescription>
-                      Display this object in customer context panels
-                    </FormDescription>
-                  </div>
-                  <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
+            <div className="space-y-4">
+              <FormField
+                control={form.control}
+                name="showInCustomerContext"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                      <FormLabel className="text-base">Show in Customer Context</FormLabel>
+                      <FormDescription>
+                        Display this object in customer context panels
+                      </FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="showInCustomerDetail"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                      <FormLabel className="text-base">Show in Customer Detail</FormLabel>
+                      <FormDescription>
+                        Display this object on customer detail pages
+                      </FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="showInCompanyDetail"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                      <FormLabel className="text-base">Show in Company Detail</FormLabel>
+                      <FormDescription>
+                        Display this object on company detail pages
+                      </FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </div>
             <div className="flex justify-end gap-4">
               <Button type="button" variant="outline" onClick={() => setOpen(false)}>
                 Cancel
