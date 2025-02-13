@@ -26,20 +26,27 @@ interface CategoryComboboxProps {
 export function CategoryCombobox({ value, onChange }: CategoryComboboxProps) {
   const [open, setOpen] = React.useState(false);
   const [categories] = React.useState<Category[]>(mockCategories);
-  const [inputValue, setInputValue] = React.useState("");
+  const [search, setSearch] = React.useState("");
+
+  const filteredCategories = React.useMemo(() => {
+    const searchTerm = search.toLowerCase();
+    return categories.filter((category) =>
+      category.name.toLowerCase().includes(searchTerm)
+    );
+  }, [categories, search]);
 
   const handleSelect = React.useCallback((currentValue: string) => {
-    if (currentValue === "add-new" && inputValue) {
+    if (currentValue === "add-new" && search.trim()) {
       const newCategory = {
         id: (categories.length + 1).toString(),
-        name: inputValue,
+        name: search.trim(),
       };
-      onChange(inputValue);
+      onChange(search.trim());
     } else {
       onChange(currentValue);
     }
     setOpen(false);
-  }, [categories.length, inputValue, onChange]);
+  }, [categories.length, search, onChange]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -59,26 +66,26 @@ export function CategoryCombobox({ value, onChange }: CategoryComboboxProps) {
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-full p-0">
-        <Command shouldFilter={false}>
+        <Command>
           <CommandInput
             placeholder="Search or add category..."
-            value={inputValue}
-            onValueChange={setInputValue}
+            value={search}
+            onValueChange={setSearch}
           />
-          <CommandEmpty className="p-2">
-            {inputValue && (
+          <CommandEmpty>
+            {search.trim() && (
               <Button
                 variant="ghost"
                 className="w-full justify-start"
                 onClick={() => handleSelect("add-new")}
               >
                 <PlusCircle className="mr-2 h-4 w-4" />
-                Add "{inputValue}"
+                Add "{search.trim()}"
               </Button>
             )}
           </CommandEmpty>
           <CommandGroup>
-            {categories.map((category) => (
+            {filteredCategories.map((category) => (
               <CommandItem
                 key={category.id}
                 value={category.name}
@@ -99,3 +106,4 @@ export function CategoryCombobox({ value, onChange }: CategoryComboboxProps) {
     </Popover>
   );
 }
+
