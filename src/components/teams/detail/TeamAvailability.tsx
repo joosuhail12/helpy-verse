@@ -49,7 +49,7 @@ const TeamAvailability = ({ officeHours, holidays }: TeamAvailabilityProps) => {
           />
           <div className="space-y-2">
             {holidays.length > 0 ? (
-              [...holidays].sort().map((date) => (
+              holidays.sort().map((date) => (
                 <div key={date} className="p-2 bg-gray-50 rounded-md">
                   {format(new Date(date), 'PPP')}
                 </div>
