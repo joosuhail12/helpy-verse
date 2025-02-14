@@ -48,16 +48,17 @@ export const DomainBadge = ({ status }: { status: Domain['status'] }) => {
 const Domains = () => {
   const navigate = useNavigate();
   const [domains, setDomains] = useState<Domain[]>(mockDomains);
-  const [newDomain, setNewDomain] = useState('');
+  const [domainName, setDomainName] = useState('');
+  const [domainValue, setDomainValue] = useState('');
   const [ownerConfirmed, setOwnerConfirmed] = useState(false);
   const [isAddingDomain, setIsAddingDomain] = useState(false);
 
   const handleAddDomain = () => {
-    if (!newDomain || !ownerConfirmed) return;
+    if (!domainName || !domainValue || !ownerConfirmed) return;
 
     const domain: Domain = {
       id: Date.now().toString(),
-      domain: newDomain,
+      domain: domainValue,
       status: 'pending',
       dateAdded: new Date().toISOString(),
       verificationRecord: `lovable-verify=${Math.random().toString(36).substring(7)}`,
@@ -65,20 +66,20 @@ const Domains = () => {
       dnsRecords: [
         {
           type: 'TXT',
-          name: `_lovable-verification.${newDomain}`,
+          name: `_lovable-verification.${domainValue}`,
           value: `lovable-verify=${Math.random().toString(36).substring(7)}`,
           ttl: 3600
         },
         {
           type: 'MX',
-          name: newDomain,
+          name: domainValue,
           value: 'mx.lovable.mail',
           ttl: 3600,
           priority: 10
         },
         {
           type: 'CNAME',
-          name: `mail.${newDomain}`,
+          name: `mail.${domainValue}`,
           value: 'mail.lovable.com',
           ttl: 3600
         }
@@ -86,7 +87,8 @@ const Domains = () => {
     };
 
     setDomains([domain, ...domains]);
-    setNewDomain('');
+    setDomainName('');
+    setDomainValue('');
     setOwnerConfirmed(false);
     setIsAddingDomain(false);
     
@@ -132,17 +134,26 @@ const Domains = () => {
             <DialogHeader>
               <DialogTitle>Add a new domain</DialogTitle>
               <DialogDescription>
-                Enter your domain name to start the verification process.
+                Enter your domain details to start the verification process.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="domain">Domain Name</Label>
+                <Label htmlFor="domainName">Domain Name</Label>
+                <Input
+                  id="domainName"
+                  placeholder="My Company Domain"
+                  value={domainName}
+                  onChange={(e) => setDomainName(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="domain">Domain</Label>
                 <Input
                   id="domain"
                   placeholder="example.com"
-                  value={newDomain}
-                  onChange={(e) => setNewDomain(e.target.value)}
+                  value={domainValue}
+                  onChange={(e) => setDomainValue(e.target.value)}
                 />
               </div>
               <div className="flex items-center space-x-2">
@@ -165,7 +176,7 @@ const Domains = () => {
               </Button>
               <Button 
                 onClick={handleAddDomain}
-                disabled={!newDomain || !ownerConfirmed}
+                disabled={!domainName || !domainValue || !ownerConfirmed}
               >
                 Add Domain
               </Button>
