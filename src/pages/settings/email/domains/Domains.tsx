@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { mockDomains } from '@/mock/domains';
+import { mockDomains, type Domain } from '@/mock/domains';
 import { Card } from '@/components/ui/card';
 import { DomainListItem } from './components/DomainListItem';
 import { AddDomainDialog } from './components/AddDomainDialog';
