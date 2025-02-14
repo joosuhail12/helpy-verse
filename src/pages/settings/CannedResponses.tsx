@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { mockCannedResponses, type CannedResponse } from '@/mock/cannedResponses';
 import { useToast } from "@/hooks/use-toast";
@@ -7,6 +6,7 @@ import { CannedResponsesSearch } from '@/components/settings/cannedResponses/Can
 import { CannedResponsesBulkActions } from '@/components/settings/cannedResponses/CannedResponsesBulkActions';
 import { CategoryGroup } from '@/components/settings/cannedResponses/CategoryGroup';
 import { RecentlyUsedSection } from '@/components/settings/cannedResponses/RecentlyUsedSection';
+import { ViewToggle } from '@/components/settings/cannedResponses/ViewToggle';
 
 const CannedResponses = () => {
   const [responses] = useState<CannedResponse[]>(mockCannedResponses);
