@@ -6,24 +6,30 @@ interface DomainVerificationStepsProps {
   domain: Domain;
 }
 
+type Step = {
+  title: string;
+  description: string;
+  status: 'pending' | 'current' | 'complete';
+};
+
 export const DomainVerificationSteps = ({ domain }: DomainVerificationStepsProps) => {
-  const verificationSteps = [
+  const steps: Step[] = [
     {
-      title: 'Add DNS Records',
-      description: 'Add the required DNS records to your domain',
-      status: domain.status === 'pending' ? 'current' : 'complete',
+      title: 'Add Domain',
+      description: 'Add your domain to the platform',
+      status: domain.ownerConfirmed ? 'complete' : 'current',
     },
     {
-      title: 'Verify Domain',
-      description: 'Confirm DNS records are properly configured',
-      status: domain.status === 'verified' ? 'complete' : 'pending',
+      title: 'Configure DNS',
+      description: 'Add required DNS records',
+      status: domain.ownerConfirmed && domain.status === 'pending' ? 'current' : 'pending',
     },
     {
-      title: 'Domain Ready',
-      description: 'Your domain is ready to use',
+      title: 'Verify',
+      description: 'Verify domain ownership',
       status: domain.status === 'verified' ? 'complete' : 'pending',
     },
   ];
 
-  return <Steps steps={verificationSteps} />;
+  return <Steps items={steps} />;
 };

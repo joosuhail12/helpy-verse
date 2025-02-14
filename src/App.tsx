@@ -26,8 +26,8 @@ const CustomObjectDetail = lazy(() => import(/* webpackChunkName: "custom-object
 const CannedResponses = lazy(() => import(/* webpackChunkName: "canned-responses" */ "./pages/settings/CannedResponses"));
 const CannedResponseDetail = lazy(() => import(/* webpackChunkName: "canned-response-detail" */ "./pages/settings/CannedResponseDetail"));
 const CreateCannedResponse = lazy(() => import(/* webpackChunkName: "create-canned-response" */ "./pages/settings/CreateCannedResponse"));
-const Domains = lazy(() => import(/* webpackChunkName: "domains" */ "./pages/settings/email/Domains"));
-const DomainDetail = lazy(() => import(/* webpackChunkName: "domain-detail" */ "./pages/settings/email/DomainDetail"));
+const Domains = lazy(() => import(/* webpackChunkName: "domains" */ "./pages/settings/email/domains"));
+const DomainDetail = lazy(() => import(/* webpackChunkName: "domain-detail" */ "./pages/settings/email/domain-detail"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
