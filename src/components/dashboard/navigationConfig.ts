@@ -127,7 +127,7 @@ export const subNavItems = {
       icon: Mail,
       children: [
         { title: 'Domains', path: '/home/settings/email/domains' },
-        { title: 'Sender Email Address', path: '/home/settings/email/sender' },
+        { title: 'Manage Channels', path: '/home/settings/email/channels' },
         { title: 'Email Settings', path: '/home/settings/email/settings' }
       ]
     },
