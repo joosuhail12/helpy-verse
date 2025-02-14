@@ -6,6 +6,7 @@ import Placeholder from '@tiptap/extension-placeholder';
 import CannedResponseEditorToolbar from './CannedResponseEditorToolbar';
 import MentionList from '@/components/inbox/components/MentionList';
 import { cn } from '@/lib/utils';
+import { useCallback } from 'react';
 
 interface CannedResponseEditorProps {
   content: string;
@@ -20,16 +21,20 @@ export const CannedResponseEditor = ({
 }: CannedResponseEditorProps) => {
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        heading: false,
+        codeBlock: false,
+      }),
       Mention.configure({
         HTMLAttributes: {
           class: 'mention',
         },
         suggestion: {
           items: () => [
-            { label: '@customer', value: 'customer' },
-            { label: '@company', value: 'company' },
-            { label: '#ticket', value: 'ticket' },
+            { label: '@customer.name', value: 'customer.name' },
+            { label: '@customer.email', value: 'customer.email' },
+            { label: '@ticket.number', value: 'ticket.number' },
+            { label: '@agent.name', value: 'agent.name' },
           ],
           render: () => {
             let component: any;
@@ -71,7 +76,7 @@ export const CannedResponseEditor = ({
         },
       }),
       Placeholder.configure({
-        placeholder: 'Type your response content here. Use @ to mention or # for ticket reference...',
+        placeholder: 'Type your response content here. Use @ to insert variables...',
       }),
     ],
     content,
@@ -83,28 +88,41 @@ export const CannedResponseEditor = ({
       attributes: {
         class: 'prose prose-sm max-w-none min-h-[200px] focus:outline-none px-3 py-2',
       },
+      handleKeyDown: (view, event) => {
+        // Keyboard shortcuts
+        if (event.ctrlKey || event.metaKey) {
+          switch(event.key) {
+            case 'b':
+              event.preventDefault();
+              view.dispatch(view.state.tr.setMeta('format', 'bold'));
+              return true;
+            case 'i':
+              event.preventDefault();
+              view.dispatch(view.state.tr.setMeta('format', 'italic'));
+              return true;
+            case 'u':
+              event.preventDefault();
+              view.dispatch(view.state.tr.setMeta('format', 'underline'));
+              return true;
+            default:
+              return false;
+          }
+        }
+        return false;
+      }
     },
   });
 
-  const handleInsertPlaceholder = (type: 'customer' | 'company' | 'ticket') => {
-    let content = '';
-    switch (type) {
-      case 'customer':
-        content = '@customer';
-        break;
-      case 'company':
-        content = '@company';
-        break;
-      case 'ticket':
-        content = '#ticket';
-        break;
-    }
-    editor?.commands.insertContent(content);
-  };
+  const getWordCount = useCallback(() => {
+    if (!editor) return 0;
+    const text = editor.getText();
+    return text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
+  }, [editor]);
 
-  if (!editor) {
-    return null;
-  }
+  const getCharacterCount = useCallback(() => {
+    if (!editor) return 0;
+    return editor.getText().length;
+  }, [editor]);
 
   return (
     <div className={cn(
@@ -114,10 +132,16 @@ export const CannedResponseEditor = ({
       <CannedResponseEditorToolbar 
         editor={editor}
         disabled={disabled}
-        onInsertPlaceholder={handleInsertPlaceholder}
       />
       <EditorContent editor={editor} />
+      <div className="px-3 py-2 border-t text-xs text-muted-foreground flex justify-between items-center">
+        <div>
+          Words: {getWordCount()}
+        </div>
+        <div>
+          Characters: {getCharacterCount()}
+        </div>
+      </div>
     </div>
   );
 };
-

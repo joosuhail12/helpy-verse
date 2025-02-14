@@ -54,7 +54,7 @@ const CreateCannedResponse = () => {
 
   const onSubmit = async (data: FormValues) => {
     try {
-      await dispatch(createCannedResponse(data)).unwrap();
+      await dispatch(createCannedResponse(data as Omit<CannedResponse, 'id' | 'createdAt' | 'updatedAt'>)).unwrap();
       toast({
         title: "Success",
         description: "Canned response created successfully",
