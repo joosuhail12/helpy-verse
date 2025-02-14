@@ -26,7 +26,7 @@ export const RecentlyUsedSection = ({ responses, onResponseClick }: RecentlyUsed
           <div
             key={response.id}
             onClick={() => onResponseClick(response.id)}
-            className="p-3 rounded-lg border border-gray-200 hover:border-[#9b87f5] cursor-pointer transition-all"
+            className="p-3 rounded-lg border border-gray-200 hover:border-[#9b87f5] cursor-pointer transition-all animate-fade-in"
           >
             <div className="flex items-center justify-between mb-2">
               <h3 className="font-medium">{response.title}</h3>
@@ -41,4 +41,3 @@ export const RecentlyUsedSection = ({ responses, onResponseClick }: RecentlyUsed
     </div>
   );
 };
-

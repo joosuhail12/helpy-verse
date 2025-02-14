@@ -9,6 +9,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Loader2 } from 'lucide-react';
+import { useState } from 'react';
 import type { CannedResponse } from '@/mock/cannedResponses';
 
 interface DeleteResponseDialogProps {
@@ -24,6 +26,22 @@ export const DeleteResponseDialog = ({
   onOpenChange, 
   onDelete 
 }: DeleteResponseDialogProps) => {
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    if (!response) return;
+    
+    setIsDeleting(true);
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      onDelete(response.id);
+    } finally {
+      setIsDeleting(false);
+      onOpenChange(false);
+    }
+  };
+
   if (!response) return null;
 
   return (
@@ -37,14 +55,20 @@ export const DeleteResponseDialog = ({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
           <AlertDialogAction
-            onClick={() => {
-              onDelete(response.id);
-              onOpenChange(false);
-            }}
+            onClick={handleDelete}
+            disabled={isDeleting}
+            className="bg-red-500 hover:bg-red-600 focus:ring-red-500"
           >
-            Delete
+            {isDeleting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Deleting...
+              </>
+            ) : (
+              'Delete'
+            )}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

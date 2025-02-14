@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { ChevronDown, ChevronUp, Star, Share2 } from 'lucide-react';
+import { ChevronDown, ChevronUp, Star, Share2, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { CannedResponse } from '@/mock/cannedResponses';
 import { Badge } from '@/components/ui/badge';
@@ -12,6 +12,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { DeleteResponseDialog } from './DeleteResponseDialog';
 
 interface CategoryGroupProps {
   category: string;
@@ -31,6 +32,8 @@ export const CategoryGroup = ({
   onSelectResponse,
 }: CategoryGroupProps) => {
   const [isExpanded, setIsExpanded] = useState(true);
+  const [loadingAction, setLoadingAction] = useState<string | null>(null);
+  const [responseToDelete, setResponseToDelete] = useState<CannedResponse | null>(null);
 
   const getContentPreview = (content: string) => {
     const textContent = content.replace(/<[^>]+>/g, '');
@@ -38,6 +41,16 @@ export const CategoryGroup = ({
   };
 
   const isFrequentlyUsed = (response: CannedResponse) => response.shortcut.length <= 3;
+
+  const handleShare = async (responseId: string) => {
+    setLoadingAction(responseId);
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    } finally {
+      setLoadingAction(null);
+    }
+  };
 
   return (
     <div className="bg-white rounded-lg shadow-sm overflow-hidden">
@@ -63,6 +76,7 @@ export const CategoryGroup = ({
                   group p-4 rounded-lg border border-gray-200 
                   hover:border-[#9b87f5] transition-all cursor-pointer
                   hover:shadow-md hover:bg-[#F2FCE2]/20
+                  animate-fade-in
                   ${view === 'grid' ? '' : ''}
                   relative
                 `}
@@ -101,7 +115,11 @@ export const CategoryGroup = ({
                         )}
                         {response.isShared && (
                           <Badge variant="outline" className="border-[#9b87f5] text-[#9b87f5]">
-                            <Share2 className="h-3 w-3 mr-1" />
+                            {loadingAction === response.id ? (
+                              <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                            ) : (
+                              <Share2 className="h-3 w-3 mr-1" />
+                            )}
                             Shared
                           </Badge>
                         )}
@@ -123,6 +141,17 @@ export const CategoryGroup = ({
           ))}
         </div>
       )}
+
+      <DeleteResponseDialog
+        response={responseToDelete}
+        open={!!responseToDelete}
+        onOpenChange={(open) => !open && setResponseToDelete(null)}
+        onDelete={(id) => {
+          // Handle delete logic
+          setResponseToDelete(null);
+        }}
+      />
     </div>
   );
 };
+
