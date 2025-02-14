@@ -30,7 +30,7 @@ export const DomainListItem = ({
   onDelete, 
   onNavigate 
 }: DomainListItemProps) => {
-  const isExpiringSoon = isPast(addDays(new Date(domain.dateAdded), 365)); // Example: domains expire after 1 year
+  const isExpiringSoon = isPast(addDays(new Date(domain.dateAdded), 365));
   
   const handleCopyRecord = () => {
     navigator.clipboard.writeText(domain.verificationRecord);
@@ -41,25 +41,39 @@ export const DomainListItem = ({
 
   return (
     <div className={cn(
-      "flex items-center justify-between p-6 transition-colors group",
-      "border border-gray-100 hover:border-gray-200",
-      "hover:bg-muted/50",
+      "flex items-center justify-between p-6 transition-all group",
+      "hover:bg-muted/80 hover:shadow-sm",
+      selected && "bg-primary/5",
       isExpiringSoon && "bg-red-50/50"
     )}>
       <div className="flex items-start gap-4">
         <Checkbox
           checked={selected}
           onCheckedChange={(checked) => onSelect(domain.id, checked as boolean)}
-          className="mt-1"
+          className={cn(
+            "mt-1 transition-opacity",
+            !selected && "opacity-50 group-hover:opacity-100"
+          )}
         />
         <div className="flex items-start gap-3">
-          <div className="mt-1 p-2 bg-muted rounded-lg">
-            <Globe className="h-5 w-5 text-muted-foreground" />
+          <div className={cn(
+            "mt-1 p-2 rounded-lg transition-colors",
+            selected ? "bg-primary/10" : "bg-muted"
+          )}>
+            <Globe className={cn(
+              "h-5 w-5",
+              selected ? "text-primary" : "text-muted-foreground"
+            )} />
           </div>
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <button
-                className="text-lg font-medium hover:underline hover:text-primary transition-colors"
+                className={cn(
+                  "text-lg font-medium transition-colors",
+                  "hover:text-primary focus:text-primary focus:outline-none",
+                  "hover:underline focus:underline",
+                  selected && "text-primary"
+                )}
                 onClick={() => onNavigate(domain.id)}
               >
                 {domain.domain}
@@ -68,7 +82,7 @@ export const DomainListItem = ({
               {isExpiringSoon && (
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="flex items-center gap-1 text-xs font-medium text-destructive">
+                    <div className="flex items-center gap-1 text-xs font-medium text-destructive animate-pulse">
                       <AlertTriangle className="h-3 w-3" />
                       Expiring soon
                     </div>
@@ -86,7 +100,11 @@ export const DomainListItem = ({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div 
-                    className="mt-2 p-3 rounded-md bg-muted/50 group-hover:bg-white/80 transition-colors cursor-pointer"
+                    className={cn(
+                      "mt-2 p-3 rounded-md transition-all cursor-pointer",
+                      "bg-muted/50 hover:bg-background hover:shadow-sm",
+                      "border border-transparent hover:border-muted-foreground/10"
+                    )}
                     onClick={handleCopyRecord}
                   >
                     <p className="text-sm font-medium text-muted-foreground mb-1">Verification Record:</p>
@@ -111,7 +129,11 @@ export const DomainListItem = ({
           variant="ghost"
           size="sm"
           onClick={() => onNavigate(domain.id)}
-          className="opacity-0 group-hover:opacity-100 transition-opacity"
+          className={cn(
+            "transition-all",
+            "opacity-0 group-hover:opacity-100",
+            "hover:bg-background hover:text-primary"
+          )}
         >
           <ExternalLink className="h-4 w-4 mr-1" />
           Manage
@@ -121,7 +143,11 @@ export const DomainListItem = ({
             variant="outline"
             size="sm"
             onClick={() => onVerify(domain.id)}
-            className="opacity-0 group-hover:opacity-100 transition-opacity"
+            className={cn(
+              "transition-all",
+              "opacity-0 group-hover:opacity-100",
+              "hover:bg-primary/10 hover:text-primary hover:border-primary/20"
+            )}
           >
             <Check className="h-4 w-4 mr-1" />
             Verify

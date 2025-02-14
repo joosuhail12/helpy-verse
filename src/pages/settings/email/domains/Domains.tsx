@@ -117,14 +117,18 @@ const Domains = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <h2 className="text-2xl font-bold tracking-tight">Domains</h2>
-          <p className="text-muted-foreground">
-            Manage your email domains and DNS settings
-          </p>
+      <div className="bg-gradient-to-r from-primary/5 via-primary/10 to-transparent rounded-lg p-6">
+        <div className="flex items-center justify-between">
+          <div className="space-y-1">
+            <h2 className="text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/80">
+              Domains
+            </h2>
+            <p className="text-muted-foreground">
+              Manage your email domains and DNS settings
+            </p>
+          </div>
+          <AddDomainDialog onAddDomain={handleAddDomain} />
         </div>
-        <AddDomainDialog onAddDomain={handleAddDomain} />
       </div>
 
       <DomainControls
@@ -145,7 +149,7 @@ const Domains = () => {
         />
       )}
 
-      <Card className="p-6">
+      <Card className="overflow-hidden border-t-2 border-t-primary/10">
         {filteredDomains.length === 0 ? (
           <div className="text-center py-12">
             <Globe className="mx-auto h-12 w-12 text-muted-foreground/50" />
@@ -164,7 +168,7 @@ const Domains = () => {
             )}
           </div>
         ) : (
-          <div className="divide-y">
+          <div className="divide-y divide-gray-100">
             {filteredDomains.map((domain) => (
               <DomainListItem 
                 key={domain.id} 
@@ -184,3 +188,4 @@ const Domains = () => {
 };
 
 export default Domains;
+
