@@ -27,6 +27,7 @@ const CannedResponses = lazy(() => import(/* webpackChunkName: "canned-responses
 const CannedResponseDetail = lazy(() => import(/* webpackChunkName: "canned-response-detail" */ "./pages/settings/CannedResponseDetail"));
 const CreateCannedResponse = lazy(() => import(/* webpackChunkName: "create-canned-response" */ "./pages/settings/CreateCannedResponse"));
 const Domains = lazy(() => import(/* webpackChunkName: "domains" */ "./pages/settings/email/Domains"));
+const DomainDetail = lazy(() => import(/* webpackChunkName: "domain-detail" */ "./pages/settings/email/DomainDetail"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -109,6 +110,7 @@ const App = () => (
                   <Route path="settings/canned-responses/create" element={<CreateCannedResponse />} />
                   <Route path="settings/canned-responses/:id" element={<CannedResponseDetail />} />
                   <Route path="settings/email/domains" element={<Domains />} />
+                  <Route path="settings/email/domains/:id" element={<DomainDetail />} />
                 </Route>
                 <Route path="*" element={<NotFound />} />
               </Routes>

@@ -1,5 +1,6 @@
 
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Plus, Globe, ShieldCheck, ShieldAlert, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,12 +15,14 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from '@/components/ui/use-toast';
 import { mockDomains, Domain } from '@/mock/domains';
 import { format } from 'date-fns';
 
-const DomainBadge = ({ status }: { status: Domain['status'] }) => {
+export const DomainBadge = ({ status }: { status: Domain['status'] }) => {
   const variants = {
     verified: 'bg-green-100 text-green-800 border-green-200',
     pending: 'bg-yellow-100 text-yellow-800 border-yellow-200',
@@ -43,12 +46,14 @@ const DomainBadge = ({ status }: { status: Domain['status'] }) => {
 };
 
 const Domains = () => {
+  const navigate = useNavigate();
   const [domains, setDomains] = useState<Domain[]>(mockDomains);
   const [newDomain, setNewDomain] = useState('');
+  const [ownerConfirmed, setOwnerConfirmed] = useState(false);
   const [isAddingDomain, setIsAddingDomain] = useState(false);
 
   const handleAddDomain = () => {
-    if (!newDomain) return;
+    if (!newDomain || !ownerConfirmed) return;
 
     const domain: Domain = {
       id: Date.now().toString(),
@@ -56,16 +61,42 @@ const Domains = () => {
       status: 'pending',
       dateAdded: new Date().toISOString(),
       verificationRecord: `lovable-verify=${Math.random().toString(36).substring(7)}`,
+      ownerConfirmed: true,
+      dnsRecords: [
+        {
+          type: 'TXT',
+          name: `_lovable-verification.${newDomain}`,
+          value: `lovable-verify=${Math.random().toString(36).substring(7)}`,
+          ttl: 3600
+        },
+        {
+          type: 'MX',
+          name: newDomain,
+          value: 'mx.lovable.mail',
+          ttl: 3600,
+          priority: 10
+        },
+        {
+          type: 'CNAME',
+          name: `mail.${newDomain}`,
+          value: 'mail.lovable.com',
+          ttl: 3600
+        }
+      ]
     };
 
     setDomains([domain, ...domains]);
     setNewDomain('');
+    setOwnerConfirmed(false);
     setIsAddingDomain(false);
     
     toast({
       title: 'Domain added',
       description: 'The domain has been added and is pending verification.',
     });
+
+    // Navigate to the domain detail page
+    navigate(`/home/settings/email/domains/${domain.id}`);
   };
 
   const handleVerify = (domainId: string) => {
@@ -104,16 +135,40 @@ const Domains = () => {
                 Enter your domain name to start the verification process.
               </DialogDescription>
             </DialogHeader>
-            <Input
-              placeholder="example.com"
-              value={newDomain}
-              onChange={(e) => setNewDomain(e.target.value)}
-            />
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="domain">Domain Name</Label>
+                <Input
+                  id="domain"
+                  placeholder="example.com"
+                  value={newDomain}
+                  onChange={(e) => setNewDomain(e.target.value)}
+                />
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="ownership"
+                  checked={ownerConfirmed}
+                  onCheckedChange={(checked) => setOwnerConfirmed(!!checked)}
+                />
+                <Label
+                  htmlFor="ownership"
+                  className="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  I confirm that I own this domain
+                </Label>
+              </div>
+            </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsAddingDomain(false)}>
                 Cancel
               </Button>
-              <Button onClick={handleAddDomain}>Add Domain</Button>
+              <Button 
+                onClick={handleAddDomain}
+                disabled={!newDomain || !ownerConfirmed}
+              >
+                Add Domain
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -133,7 +188,12 @@ const Domains = () => {
                 >
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className="font-medium">{domain.domain}</span>
+                      <button
+                        className="font-medium hover:underline"
+                        onClick={() => navigate(`/home/settings/email/domains/${domain.id}`)}
+                      >
+                        {domain.domain}
+                      </button>
                       <DomainBadge status={domain.status} />
                     </div>
                     <p className="text-sm text-muted-foreground">
@@ -188,3 +248,4 @@ const Domains = () => {
 };
 
 export default Domains;
+
