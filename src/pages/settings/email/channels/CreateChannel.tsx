@@ -28,6 +28,8 @@ const CreateChannel = () => {
     setNoReplyEmail,
     selectedEmoji,
     setSelectedEmoji,
+    selectedTeamId,
+    setSelectedTeamId,
     handleSubmit,
     errors,
     touched,
@@ -86,6 +88,8 @@ const CreateChannel = () => {
             setNoReplyEmail={setNoReplyEmail}
             selectedEmoji={selectedEmoji}
             setSelectedEmoji={setSelectedEmoji}
+            selectedTeamId={selectedTeamId}
+            setSelectedTeamId={setSelectedTeamId}
             errors={errors}
             touched={touched}
             setFieldTouched={setFieldTouched}
@@ -117,4 +121,3 @@ const CreateChannel = () => {
 };
 
 export default CreateChannel;
-

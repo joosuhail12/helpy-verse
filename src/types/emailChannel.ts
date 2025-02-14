@@ -12,6 +12,7 @@ export interface EmailChannel {
   isVerified: boolean;
   createdAt: string;
   updatedAt?: string;
+  teamId?: string; // Add teamId as optional
 }
 
 export interface CreateEmailChannelDto {
@@ -23,4 +24,6 @@ export interface CreateEmailChannelDto {
   icon?: string;
   type: 'sending' | 'receiving' | 'both';
   isDefault: boolean;
+  teamId?: string; // Add teamId as optional
 }
+

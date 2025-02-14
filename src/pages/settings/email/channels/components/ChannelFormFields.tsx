@@ -2,9 +2,11 @@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Info, Mail, User } from 'lucide-react';
+import { Info, Mail, User, Users } from 'lucide-react';
 import { IconEmojiPicker } from './IconEmojiPicker';
+import { useAppSelector } from '@/hooks/useAppSelector';
 
 interface ChannelFormFieldsProps {
   channelName: string;
@@ -19,6 +21,8 @@ interface ChannelFormFieldsProps {
   setNoReplyEmail: (value: string) => void;
   selectedEmoji: string | null;
   setSelectedEmoji: (emoji: string | null) => void;
+  selectedTeamId: string | undefined;
+  setSelectedTeamId: (teamId: string | undefined) => void;
   errors: Record<string, string>;
   touched: Record<string, boolean>;
   setFieldTouched: (field: string) => void;
@@ -37,10 +41,14 @@ export function ChannelFormFields({
   setNoReplyEmail,
   selectedEmoji,
   setSelectedEmoji,
+  selectedTeamId,
+  setSelectedTeamId,
   errors,
   touched,
   setFieldTouched,
 }: ChannelFormFieldsProps) {
+  const teams = useAppSelector((state) => state.teams.teams);
+
   const renderFieldLabel = (
     label: string,
     fieldName: string,
@@ -118,6 +126,31 @@ export function ChannelFormFields({
               selectedEmoji={selectedEmoji}
               setSelectedEmoji={setSelectedEmoji}
             />
+          </div>
+          <div className="space-y-2">
+            {renderFieldLabel(
+              'Assign to Team',
+              'teamId',
+              'Select a team to assign this channel to',
+              false,
+              <Users className="h-4 w-4" />,
+              'Leave empty to make the channel accessible to all teams'
+            )}
+            <Select
+              value={selectedTeamId}
+              onValueChange={(value) => setSelectedTeamId(value || undefined)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select a team (optional)" />
+              </SelectTrigger>
+              <SelectContent>
+                {teams.map((team) => (
+                  <SelectItem key={team.id} value={team.id}>
+                    {team.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </div>

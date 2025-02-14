@@ -13,6 +13,7 @@ export function useChannelForm({ onAddChannel }: UseChannelFormProps) {
   const [autoBccEmail, setAutoBccEmail] = useState('');
   const [noReplyEmail, setNoReplyEmail] = useState('');
   const [selectedEmoji, setSelectedEmoji] = useState<string | null>(null);
+  const [selectedTeamId, setSelectedTeamId] = useState<string | undefined>(undefined);
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -79,6 +80,7 @@ export function useChannelForm({ onAddChannel }: UseChannelFormProps) {
           icon: selectedEmoji || undefined,
           type: 'both',
           isDefault: false,
+          teamId: selectedTeamId,
         });
       } finally {
         setIsSubmitting(false);
@@ -99,6 +101,8 @@ export function useChannelForm({ onAddChannel }: UseChannelFormProps) {
     setNoReplyEmail,
     selectedEmoji,
     setSelectedEmoji,
+    selectedTeamId,
+    setSelectedTeamId,
     handleSubmit,
     errors,
     touched,
@@ -106,4 +110,3 @@ export function useChannelForm({ onAddChannel }: UseChannelFormProps) {
     isSubmitting,
   };
 }
-
