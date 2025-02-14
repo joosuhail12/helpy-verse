@@ -6,7 +6,7 @@ import { format, isPast, addDays } from 'date-fns';
 import type { Domain } from '@/mock/domains';
 import { DomainBadge } from '../DomainBadge';
 import { cn } from '@/lib/utils';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/components/ui/toast';
 import {
   Tooltip,
   TooltipContent,
@@ -41,8 +41,9 @@ export const DomainListItem = ({
 
   return (
     <div className={cn(
-      "flex items-center justify-between p-6 transition-all group",
-      "hover:bg-muted/80 hover:shadow-sm",
+      "flex items-center justify-between p-8 transition-all group",
+      "hover:bg-muted/50 hover:shadow-md",
+      "rounded-lg mx-2 my-1",
       selected && "bg-primary/5",
       isExpiringSoon && "bg-red-50/50"
     )}>
@@ -55,9 +56,9 @@ export const DomainListItem = ({
             !selected && "opacity-50 group-hover:opacity-100"
           )}
         />
-        <div className="flex items-start gap-3">
+        <div className="flex items-start gap-4">
           <div className={cn(
-            "mt-1 p-2 rounded-lg transition-colors",
+            "mt-1 p-3 rounded-xl transition-colors",
             selected ? "bg-primary/10" : "bg-muted"
           )}>
             <Globe className={cn(
@@ -65,7 +66,7 @@ export const DomainListItem = ({
               selected ? "text-primary" : "text-muted-foreground"
             )} />
           </div>
-          <div className="space-y-2">
+          <div className="space-y-3">
             <div className="flex items-center gap-2">
               <button
                 className={cn(
@@ -101,14 +102,14 @@ export const DomainListItem = ({
                 <TooltipTrigger asChild>
                   <div 
                     className={cn(
-                      "mt-2 p-3 rounded-md transition-all cursor-pointer",
-                      "bg-muted/50 hover:bg-background hover:shadow-sm",
-                      "border border-transparent hover:border-muted-foreground/10"
+                      "mt-2 p-4 rounded-lg transition-all cursor-pointer",
+                      "bg-muted/50 hover:bg-background hover:shadow-md",
+                      "border border-border"
                     )}
                     onClick={handleCopyRecord}
                   >
-                    <p className="text-sm font-medium text-muted-foreground mb-1">Verification Record:</p>
-                    <code className="px-3 py-1 bg-muted rounded-md text-xs font-mono">
+                    <p className="text-sm font-medium text-muted-foreground mb-2">Verification Record:</p>
+                    <code className="px-3 py-1.5 bg-muted rounded-md text-xs font-mono">
                       {domain.verificationRecord}
                     </code>
                   </div>
