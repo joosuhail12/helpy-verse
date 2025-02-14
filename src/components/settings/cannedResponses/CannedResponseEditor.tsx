@@ -89,7 +89,6 @@ export const CannedResponseEditor = ({
         class: 'prose prose-sm max-w-none min-h-[200px] focus:outline-none px-3 py-2',
       },
       handleKeyDown: (view, event) => {
-        // Keyboard shortcuts
         if (event.ctrlKey || event.metaKey) {
           switch(event.key) {
             case 'b':
@@ -145,3 +144,4 @@ export const CannedResponseEditor = ({
     </div>
   );
 };
+

@@ -4,13 +4,26 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ResponseHoverCard } from './ResponseHoverCard';
 import type { CannedResponse } from '@/mock/cannedResponses';
 
-interface CategoryGroupProps {
+export interface CategoryGroupProps {
   title: string;
   responses: CannedResponse[];
   onSelect: (response: CannedResponse) => void;
+  view?: 'list' | 'grid';
+  selectedResponses?: string[];
+  onSelectResponse?: (id: string) => void;
+  category?: string;
+  onResponseClick?: (id: string) => void;
 }
 
-export const CategoryGroup = ({ title, responses, onSelect }: CategoryGroupProps) => {
+export const CategoryGroup = ({ 
+  title, 
+  responses, 
+  onSelect,
+  view = 'list',
+  selectedResponses = [],
+  onSelectResponse,
+  onResponseClick,
+}: CategoryGroupProps) => {
   return (
     <Card>
       <CardHeader>
@@ -30,3 +43,4 @@ export const CategoryGroup = ({ title, responses, onSelect }: CategoryGroupProps
     </Card>
   );
 };
+
