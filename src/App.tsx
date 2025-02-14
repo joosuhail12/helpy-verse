@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -30,6 +29,7 @@ const CreateCannedResponse = lazy(() => import(/* webpackChunkName: "create-cann
 const Domains = lazy(() => import(/* webpackChunkName: "domains" */ "./pages/settings/email/domains"));
 const DomainDetail = lazy(() => import(/* webpackChunkName: "domain-detail" */ "./pages/settings/email/domain-detail"));
 const Channels = lazy(() => import(/* webpackChunkName: "channels" */ "./pages/settings/email/channels"));
+const CreateChannel = lazy(() => import(/* webpackChunkName: "create-channel" */ "./pages/settings/email/channels/CreateChannel"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -114,6 +114,7 @@ const App = () => (
                   <Route path="settings/email/domains" element={<Domains />} />
                   <Route path="settings/email/domains/:id" element={<DomainDetail />} />
                   <Route path="settings/email/channels" element={<Channels />} />
+                  <Route path="settings/email/channels/create" element={<CreateChannel />} />
                 </Route>
                 <Route path="*" element={<NotFound />} />
               </Routes>
