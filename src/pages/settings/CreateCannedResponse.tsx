@@ -1,7 +1,7 @@
 
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { useForm } from 'react-hook-form';
@@ -13,32 +13,46 @@ import { CategoryCombobox } from '@/components/settings/cannedResponses/Category
 import { CannedResponseEditor } from '@/components/settings/cannedResponses/CannedResponseEditor';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { createCannedResponse } from '@/store/slices/cannedResponses/actions';
+import { CollapsibleFormSection } from '@/components/settings/cannedResponses/form/CollapsibleFormSection';
+import { ResponsePreview } from '@/components/settings/cannedResponses/form/ResponsePreview';
+import * as z from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 
-interface CannedResponseFormValues {
-  title: string;
-  content: string;
-  shortcut: string;
-  category: string;
-  isShared: boolean;
-  createdBy: string;
-}
+const formSchema = z.object({
+  title: z.string()
+    .min(1, "Title is required")
+    .max(50, "Title must be 50 characters or less"),
+  content: z.string()
+    .min(1, "Content is required"),
+  shortcut: z.string()
+    .min(1, "Shortcut is required")
+    .max(20, "Shortcut must be 20 characters or less")
+    .regex(/^[a-zA-Z0-9-_]+$/, "Shortcut can only contain letters, numbers, hyphens, and underscores"),
+  category: z.string()
+    .min(1, "Category is required"),
+  isShared: z.boolean(),
+  createdBy: z.string(),
+});
+
+type FormValues = z.infer<typeof formSchema>;
 
 const CreateCannedResponse = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
-  const form = useForm<CannedResponseFormValues>({
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
       title: '',
       content: '',
       shortcut: '',
       category: '',
       isShared: false,
-      createdBy: 'Current User', // Adding default value for createdBy
+      createdBy: 'Current User',
     },
   });
 
-  const onSubmit = async (data: CannedResponseFormValues) => {
+  const onSubmit = async (data: FormValues) => {
     try {
       await dispatch(createCannedResponse(data)).unwrap();
       toast({
@@ -54,6 +68,9 @@ const CreateCannedResponse = () => {
       });
     }
   };
+
+  const watchTitle = form.watch('title');
+  const watchContent = form.watch('content');
 
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-6">
@@ -73,81 +90,104 @@ const CreateCannedResponse = () => {
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <FormField
-            control={form.control}
-            name="title"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Title</FormLabel>
-                <FormControl>
-                  <Input {...field} placeholder="Enter a title" />
-                </FormControl>
-              </FormItem>
-            )}
-          />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="space-y-6">
+              <CollapsibleFormSection title="Basic Information">
+                <FormField
+                  control={form.control}
+                  name="title"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Title</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="Enter a title" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-          <FormField
-            control={form.control}
-            name="content"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Content</FormLabel>
-                <FormControl>
-                  <CannedResponseEditor
-                    content={field.value}
-                    onChange={field.onChange}
-                  />
-                </FormControl>
-              </FormItem>
-            )}
-          />
+                <FormField
+                  control={form.control}
+                  name="content"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Content</FormLabel>
+                      <FormControl>
+                        <CannedResponseEditor
+                          content={field.value}
+                          onChange={field.onChange}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CollapsibleFormSection>
 
-          <FormField
-            control={form.control}
-            name="shortcut"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Shortcut</FormLabel>
-                <FormControl>
-                  <Input {...field} placeholder="/shortcut" />
-                </FormControl>
-              </FormItem>
-            )}
-          />
+              <CollapsibleFormSection title="Organization">
+                <FormField
+                  control={form.control}
+                  name="shortcut"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Shortcut</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="/shortcut" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-          <FormField
-            control={form.control}
-            name="category"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Category</FormLabel>
-                <FormControl>
-                  <CategoryCombobox {...field} />
-                </FormControl>
-              </FormItem>
-            )}
-          />
+                <FormField
+                  control={form.control}
+                  name="category"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Category</FormLabel>
+                      <FormControl>
+                        <CategoryCombobox {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CollapsibleFormSection>
 
-          <FormField
-            control={form.control}
-            name="isShared"
-            render={({ field }) => (
-              <FormItem className="flex items-center justify-between rounded-lg border p-4">
-                <div className="space-y-0.5">
-                  <FormLabel>Shared Response</FormLabel>
-                  <div className="text-sm text-muted-foreground">
-                    Make this response available to all team members
-                  </div>
-                </div>
-                <FormControl>
-                  <Switch
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                </FormControl>
-              </FormItem>
-            )}
-          />
+              <CollapsibleFormSection title="Sharing Settings">
+                <FormField
+                  control={form.control}
+                  name="isShared"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center justify-between rounded-lg border p-4">
+                      <div className="space-y-0.5">
+                        <FormLabel>Shared Response</FormLabel>
+                        <div className="text-sm text-muted-foreground">
+                          Make this response available to all team members
+                        </div>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </CollapsibleFormSection>
+            </div>
+
+            <div className="space-y-6">
+              <div className="sticky top-6">
+                <ResponsePreview
+                  title={watchTitle}
+                  content={watchContent}
+                />
+              </div>
+            </div>
+          </div>
 
           <Button type="submit">Create Response</Button>
         </form>
