@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { mockDomains, type Domain } from '@/mock/domains';
 import { Card } from '@/components/ui/card';
@@ -7,9 +7,40 @@ import { DomainListItem } from './components/DomainListItem';
 import { AddDomainDialog } from './components/AddDomainDialog';
 import { toast } from '@/components/ui/use-toast';
 import { Globe } from 'lucide-react';
+import { DomainControls } from './components/DomainControls';
 
 const Domains = () => {
   const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<Domain['status'] | 'all'>('all');
+  const [sortBy, setSortBy] = useState<'date' | 'name'>('date');
+
+  const filteredDomains = useMemo(() => {
+    let filtered = [...mockDomains];
+
+    // Apply search filter
+    if (searchQuery) {
+      filtered = filtered.filter(domain =>
+        domain.domain.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    // Apply status filter
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(domain => domain.status === statusFilter);
+    }
+
+    // Apply sorting
+    filtered.sort((a, b) => {
+      if (sortBy === 'date') {
+        return new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime();
+      } else {
+        return a.domain.localeCompare(b.domain);
+      }
+    });
+
+    return filtered;
+  }, [mockDomains, searchQuery, statusFilter, sortBy]);
 
   const handleAddDomain = (domain: Domain) => {
     // TODO: Implement domain addition with backend
@@ -52,23 +83,36 @@ const Domains = () => {
         <AddDomainDialog onAddDomain={handleAddDomain} />
       </div>
 
+      <DomainControls
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        statusFilter={statusFilter}
+        onStatusFilterChange={setStatusFilter}
+        sortBy={sortBy}
+        onSortChange={setSortBy}
+      />
+
       <Card className="p-6">
-        {mockDomains.length === 0 ? (
+        {filteredDomains.length === 0 ? (
           <div className="text-center py-12">
             <Globe className="mx-auto h-12 w-12 text-muted-foreground/50" />
-            <h3 className="mt-4 text-lg font-semibold">No domains added</h3>
+            <h3 className="mt-4 text-lg font-semibold">No domains found</h3>
             <p className="mt-2 text-sm text-muted-foreground">
-              Add your first domain to start sending emails
+              {searchQuery || statusFilter !== 'all' 
+                ? "Try adjusting your filters" 
+                : "Add your first domain to start sending emails"}
             </p>
-            <AddDomainDialog
-              className="mt-4"
-              variant="outline"
-              onAddDomain={handleAddDomain}
-            />
+            {!searchQuery && statusFilter === 'all' && (
+              <AddDomainDialog
+                className="mt-4"
+                variant="outline"
+                onAddDomain={handleAddDomain}
+              />
+            )}
           </div>
         ) : (
           <div className="divide-y">
-            {mockDomains.map((domain) => (
+            {filteredDomains.map((domain) => (
               <DomainListItem 
                 key={domain.id} 
                 domain={domain}
