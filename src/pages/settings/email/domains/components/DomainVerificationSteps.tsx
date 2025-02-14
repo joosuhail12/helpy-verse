@@ -23,7 +23,7 @@ export const DomainVerificationSteps = ({ domain }: DomainVerificationStepsProps
       description: 'Your domain is ready to use',
       status: domain.status === 'verified' ? 'complete' : 'pending',
     },
-  ] as const;
+  ];
 
   return <Steps steps={verificationSteps} />;
 };
