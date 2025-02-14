@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from '@/components/ui/use-toast';
 import { mockDomains } from '@/mock/domains';
 import { format } from 'date-fns';
-import { DomainBadge } from './Domains';
+import { DomainBadge } from './DomainBadge';
 import { DomainHealthStatus } from './components/DomainHealthStatus';
 import { DomainDNSRecords } from './components/DomainDNSRecords';
 import { DomainVerificationSteps } from './components/DomainVerificationSteps';
