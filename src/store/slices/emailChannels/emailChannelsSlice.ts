@@ -1,7 +1,7 @@
 
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { emailChannelsApi } from '@/api/emailChannelsApi';
 import type { EmailChannel, CreateEmailChannelDto } from '@/types/emailChannel';
+import { mockEmailChannels } from '@/mock/emailChannels';
 
 interface EmailChannelsState {
   channels: EmailChannel[];
@@ -18,21 +18,33 @@ const initialState: EmailChannelsState = {
 export const fetchChannels = createAsyncThunk(
   'emailChannels/fetchChannels',
   async () => {
-    return await emailChannelsApi.getChannels();
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    return mockEmailChannels;
   }
 );
 
 export const createChannel = createAsyncThunk(
   'emailChannels/createChannel',
   async (channel: CreateEmailChannelDto) => {
-    return await emailChannelsApi.createChannel(channel);
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    const newChannel: EmailChannel = {
+      ...channel,
+      id: Math.random().toString(),
+      isVerified: false,
+      createdAt: new Date().toISOString(),
+    };
+    
+    return newChannel;
   }
 );
 
 export const verifyChannel = createAsyncThunk(
   'emailChannels/verifyChannel',
   async (id: string) => {
-    await emailChannelsApi.verifyChannel(id);
+    await new Promise(resolve => setTimeout(resolve, 500));
     return id;
   }
 );
@@ -40,7 +52,7 @@ export const verifyChannel = createAsyncThunk(
 export const deleteChannel = createAsyncThunk(
   'emailChannels/deleteChannel',
   async (id: string) => {
-    await emailChannelsApi.deleteChannel(id);
+    await new Promise(resolve => setTimeout(resolve, 500));
     return id;
   }
 );
@@ -48,7 +60,7 @@ export const deleteChannel = createAsyncThunk(
 export const setDefaultChannel = createAsyncThunk(
   'emailChannels/setDefaultChannel',
   async (id: string) => {
-    await emailChannelsApi.setDefaultChannel(id);
+    await new Promise(resolve => setTimeout(resolve, 500));
     return id;
   }
 );
@@ -93,3 +105,4 @@ const emailChannelsSlice = createSlice({
 });
 
 export default emailChannelsSlice.reducer;
+
