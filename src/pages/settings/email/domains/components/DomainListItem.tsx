@@ -33,97 +33,66 @@ export const DomainListItem = ({
   const { toast } = useToast();
   const isExpiringSoon = isPast(addDays(new Date(domain.dateAdded), 365));
   
-  const handleCopyRecord = () => {
-    navigator.clipboard.writeText(domain.verificationRecord);
-    toast({
-      description: "Verification record copied to clipboard",
-    });
-  };
-
   return (
     <div className={cn(
-      "flex items-center justify-between p-8 transition-all group",
-      "hover:bg-muted/50 hover:shadow-md",
+      "flex items-center justify-between p-6 transition-all group",
+      "hover:bg-muted/50 hover:shadow-sm",
       "rounded-lg mx-2 my-1",
       selected && "bg-primary/5",
       isExpiringSoon && "bg-red-50/50"
     )}>
-      <div className="flex items-start gap-4">
+      <div className="flex items-center gap-4">
         <Checkbox
           checked={selected}
           onCheckedChange={(checked) => onSelect(domain.id, checked as boolean)}
           className={cn(
-            "mt-1 transition-opacity",
+            "transition-opacity",
             !selected && "opacity-50 group-hover:opacity-100"
           )}
         />
-        <div className="flex items-start gap-4">
-          <div className={cn(
-            "mt-1 p-3 rounded-xl transition-colors",
-            selected ? "bg-primary/10" : "bg-muted"
-          )}>
-            <Globe className={cn(
-              "h-5 w-5",
-              selected ? "text-primary" : "text-muted-foreground"
-            )} />
-          </div>
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <button
-                className={cn(
-                  "text-lg font-medium transition-colors",
-                  "hover:text-primary focus:text-primary focus:outline-none",
-                  "hover:underline focus:underline",
-                  selected && "text-primary"
-                )}
-                onClick={() => onNavigate(domain.id)}
-              >
-                {domain.domain}
-              </button>
-              <DomainBadge status={domain.status} />
-              {isExpiringSoon && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className="flex items-center gap-1 text-xs font-medium text-destructive animate-pulse">
-                      <AlertTriangle className="h-3 w-3" />
-                      Expiring soon
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>This domain will expire soon. Please renew it to continue using it.</p>
-                  </TooltipContent>
-                </Tooltip>
+        <div className={cn(
+          "p-2.5 rounded-lg transition-colors",
+          selected ? "bg-primary/10" : "bg-muted"
+        )}>
+          <Globe className={cn(
+            "h-4 w-4",
+            selected ? "text-primary" : "text-muted-foreground"
+          )} />
+        </div>
+        <div>
+          <div className="flex items-center gap-2">
+            <button
+              className={cn(
+                "text-base font-medium transition-colors",
+                "hover:text-primary focus:text-primary focus:outline-none",
+                "hover:underline focus:underline",
+                selected && "text-primary"
               )}
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Added on {format(new Date(domain.dateAdded), 'MMM d, yyyy')}
-            </p>
-            {domain.status === 'pending' && (
+              onClick={() => onNavigate(domain.id)}
+            >
+              {domain.domain}
+            </button>
+            <DomainBadge status={domain.status} />
+            {isExpiringSoon && (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <div 
-                    className={cn(
-                      "mt-2 p-4 rounded-lg transition-all cursor-pointer",
-                      "bg-muted/50 hover:bg-background hover:shadow-md",
-                      "border border-border"
-                    )}
-                    onClick={handleCopyRecord}
-                  >
-                    <p className="text-sm font-medium text-muted-foreground mb-2">Verification Record:</p>
-                    <code className="px-3 py-1.5 bg-muted rounded-md text-xs font-mono">
-                      {domain.verificationRecord}
-                    </code>
+                  <div className="flex items-center gap-1 text-xs font-medium text-destructive animate-pulse">
+                    <AlertTriangle className="h-3 w-3" />
+                    Expiring soon
                   </div>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>Click to copy the verification record to your clipboard</p>
+                  <p>This domain will expire soon. Please renew it to continue using it.</p>
                 </TooltipContent>
               </Tooltip>
             )}
-            {domain.status === 'failed' && domain.error && (
-              <p className="text-sm text-destructive mt-1">{domain.error}</p>
-            )}
           </div>
+          <p className="text-sm text-muted-foreground mt-1">
+            Added on {format(new Date(domain.dateAdded), 'MMM d, yyyy')}
+          </p>
+          {domain.status === 'failed' && domain.error && (
+            <p className="text-sm text-destructive mt-1">{domain.error}</p>
+          )}
         </div>
       </div>
       <div className="flex items-center gap-2">
@@ -170,4 +139,3 @@ export const DomainListItem = ({
     </div>
   );
 };
-
