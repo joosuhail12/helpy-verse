@@ -5,6 +5,8 @@ import { validateShortcut } from '@/utils/shortcutUtils';
 export const shareSchema = z.object({
   teamId: z.string().optional(),
   userId: z.string().optional(),
+  teamName: z.string().optional(),
+  userName: z.string().optional(),
   permissions: z.enum(['view', 'edit']),
 });
 
@@ -29,4 +31,3 @@ export const formSchema = z.object({
 });
 
 export type FormValues = z.infer<typeof formSchema>;
-

@@ -10,5 +10,5 @@ export interface CannedResponsesState {
     responseId: string;
     versions: CannedResponse['versions'];
   } | null;
+  categories: string[];
 }
-
