@@ -15,30 +15,68 @@ export function useChannelForm({ onAddChannel }: UseChannelFormProps) {
   const [noReplyEmail, setNoReplyEmail] = useState('');
   const [selectedIcon, setSelectedIcon] = useState<typeof icons[0] | null>(null);
   const [selectedEmoji, setSelectedEmoji] = useState<string | null>(null);
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
 
-  const resetForm = () => {
-    setChannelName('');
-    setSenderName('');
-    setEmail('');
-    setAutoBccEmail('');
-    setNoReplyEmail('');
-    setSelectedIcon(null);
-    setSelectedEmoji(null);
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validate = () => {
+    const errors: Record<string, string> = {};
+
+    if (!channelName.trim()) {
+      errors.channelName = 'Channel name is required';
+    }
+
+    if (!senderName.trim()) {
+      errors.senderName = 'Sender name is required';
+    }
+
+    if (!email) {
+      errors.email = 'Email address is required';
+    } else if (!validateEmail(email)) {
+      errors.email = 'Invalid email address';
+    }
+
+    if (autoBccEmail && !validateEmail(autoBccEmail)) {
+      errors.autoBccEmail = 'Invalid email address';
+    }
+
+    if (noReplyEmail && !validateEmail(noReplyEmail)) {
+      errors.noReplyEmail = 'Invalid email address';
+    }
+
+    return errors;
+  };
+
+  const errors = validate();
+
+  const setFieldTouched = (field: string) => {
+    setTouched((prev) => ({ ...prev, [field]: true }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onAddChannel({
-      channelName,
-      senderName,
-      email,
-      autoBccEmail: autoBccEmail || undefined,
-      noReplyEmail: noReplyEmail || undefined,
-      icon: selectedIcon ? selectedIcon.label : selectedEmoji || undefined,
-      type: 'both',
-      isDefault: false,
-    });
-    resetForm();
+    
+    // Mark all fields as touched
+    const allFields = ['channelName', 'senderName', 'email', 'autoBccEmail', 'noReplyEmail'];
+    const newTouched = allFields.reduce((acc, field) => ({ ...acc, [field]: true }), {});
+    setTouched(newTouched);
+
+    const validationErrors = validate();
+    if (Object.keys(validationErrors).length === 0) {
+      onAddChannel({
+        channelName,
+        senderName,
+        email,
+        autoBccEmail: autoBccEmail || undefined,
+        noReplyEmail: noReplyEmail || undefined,
+        icon: selectedIcon ? selectedIcon.label : selectedEmoji || undefined,
+        type: 'both',
+        isDefault: false,
+      });
+    }
   };
 
   return {
@@ -57,6 +95,8 @@ export function useChannelForm({ onAddChannel }: UseChannelFormProps) {
     selectedEmoji,
     setSelectedEmoji,
     handleSubmit,
-    resetForm,
+    errors,
+    touched,
+    setFieldTouched,
   };
 }

@@ -31,6 +31,9 @@ const CreateChannel = () => {
     selectedEmoji,
     setSelectedEmoji,
     handleSubmit,
+    errors,
+    touched,
+    setFieldTouched,
   } = useChannelForm({
     onAddChannel: async (channel) => {
       try {
@@ -85,6 +88,9 @@ const CreateChannel = () => {
             setSelectedIcon={setSelectedIcon}
             selectedEmoji={selectedEmoji}
             setSelectedEmoji={setSelectedEmoji}
+            errors={errors}
+            touched={touched}
+            setFieldTouched={setFieldTouched}
           />
           <div className="flex justify-end gap-4">
             <Button
