@@ -2,7 +2,7 @@
 import React from 'react';
 import { mockDomains } from '@/mock/domains';
 import { Card } from '@/components/ui/card';
-import DomainListItem from './components/DomainListItem';
+import { DomainListItem } from './components/DomainListItem';
 
 const Domains = () => {
   return (
@@ -19,3 +19,4 @@ const Domains = () => {
 };
 
 export default Domains;
+
