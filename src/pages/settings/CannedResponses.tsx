@@ -1,20 +1,12 @@
 
 import { useState, useEffect } from 'react';
 import { mockCannedResponses, type CannedResponse } from '@/mock/cannedResponses';
-import { Button } from '@/components/ui/button';
-import { PlusCircle, Keyboard, Share2, Trash2, Search } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { ViewToggle } from '@/components/settings/cannedResponses/ViewToggle';
+import { useToast } from "@/hooks/use-toast";
+import { CannedResponsesHeader } from '@/components/settings/cannedResponses/CannedResponsesHeader';
+import { CannedResponsesSearch } from '@/components/settings/cannedResponses/CannedResponsesSearch';
+import { CannedResponsesBulkActions } from '@/components/settings/cannedResponses/CannedResponsesBulkActions';
 import { CategoryGroup } from '@/components/settings/cannedResponses/CategoryGroup';
 import { RecentlyUsedSection } from '@/components/settings/cannedResponses/RecentlyUsedSection';
-import { Input } from '@/components/ui/input';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { useToast } from "@/hooks/use-toast";
 
 const CannedResponses = () => {
   const [responses] = useState<CannedResponse[]>(mockCannedResponses);
@@ -94,100 +86,25 @@ const CannedResponses = () => {
     <div className="min-h-screen bg-[#F2FCE2]/30">
       <div className="p-6 max-w-7xl mx-auto space-y-8">
         <div className="flex flex-col gap-6 bg-white p-6 rounded-lg shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-purple-600 to-[#9b87f5] bg-clip-text text-transparent">
-                Canned Responses
-              </h1>
-              <div className="flex items-center gap-2 mt-2">
-                <p className="text-muted-foreground">
-                  Create and manage your team's canned responses for quick replies
-                </p>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button variant="ghost" size="sm" className="px-2">
-                        <Keyboard className="h-4 w-4 text-muted-foreground" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <div className="text-sm">
-                        <p className="font-medium mb-1">Keyboard Shortcuts</p>
-                        <div className="space-y-1">
-                          <p>Create new response: Ctrl/⌘ + N</p>
-                          <p>Search responses: Ctrl/⌘ + F</p>
-                        </div>
-                      </div>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </div>
-            </div>
-            <div className="flex items-center gap-4">
-              {selectedResponses.length > 0 && (
-                <div className="flex items-center gap-2">
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={handleBulkShare}
-                          className="text-[#9b87f5]"
-                        >
-                          <Share2 className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>Share selected responses</TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={handleBulkDelete}
-                          className="text-red-500"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>Delete selected responses</TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                  <span className="text-sm text-muted-foreground">
-                    {selectedResponses.length} selected
-                  </span>
-                </div>
-              )}
+          <CannedResponsesHeader />
+          <div className="flex items-center gap-4">
+            {selectedResponses.length > 0 && (
+              <CannedResponsesBulkActions
+                selectedResponses={selectedResponses}
+                view={view}
+                onViewChange={setView}
+                onBulkShare={handleBulkShare}
+                onBulkDelete={handleBulkDelete}
+              />
+            )}
+            {selectedResponses.length === 0 && (
               <ViewToggle view={view} onViewChange={setView} />
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Link to="/home/settings/canned-responses/create">
-                      <Button className="bg-[#9b87f5] hover:bg-[#9b87f5]/90">
-                        <PlusCircle className="mr-2 h-4 w-4" />
-                        Create Response
-                      </Button>
-                    </Link>
-                  </TooltipTrigger>
-                  <TooltipContent>Create new response (Ctrl/⌘ + N)</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
+            )}
           </div>
-
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search responses..."
-              className="pl-10"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
+          <CannedResponsesSearch 
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+          />
         </div>
 
         <RecentlyUsedSection 
