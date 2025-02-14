@@ -7,6 +7,11 @@ import type { Domain } from '@/mock/domains';
 import { DomainBadge } from '../DomainBadge';
 import { cn } from '@/lib/utils';
 import { toast } from '@/components/ui/use-toast';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface DomainListItemProps {
   domain: Domain;
@@ -37,6 +42,7 @@ export const DomainListItem = ({
   return (
     <div className={cn(
       "flex items-center justify-between p-6 transition-colors group",
+      "border border-gray-100 hover:border-gray-200",
       "hover:bg-muted/50",
       isExpiringSoon && "bg-red-50/50"
     )}>
@@ -50,7 +56,7 @@ export const DomainListItem = ({
           <div className="mt-1 p-2 bg-muted rounded-lg">
             <Globe className="h-5 w-5 text-muted-foreground" />
           </div>
-          <div className="space-y-1">
+          <div className="space-y-2">
             <div className="flex items-center gap-2">
               <button
                 className="text-lg font-medium hover:underline hover:text-primary transition-colors"
@@ -60,25 +66,39 @@ export const DomainListItem = ({
               </button>
               <DomainBadge status={domain.status} />
               {isExpiringSoon && (
-                <div className="flex items-center gap-1 text-xs font-medium text-destructive">
-                  <AlertTriangle className="h-3 w-3" />
-                  Expiring soon
-                </div>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-1 text-xs font-medium text-destructive">
+                      <AlertTriangle className="h-3 w-3" />
+                      Expiring soon
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>This domain will expire soon. Please renew it to continue using it.</p>
+                  </TooltipContent>
+                </Tooltip>
               )}
             </div>
             <p className="text-sm text-muted-foreground">
               Added on {format(new Date(domain.dateAdded), 'MMM d, yyyy')}
             </p>
             {domain.status === 'pending' && (
-              <div 
-                className="mt-2 group-hover:bg-white/80 transition-colors cursor-pointer"
-                onClick={handleCopyRecord}
-              >
-                <p className="text-sm font-medium text-muted-foreground mb-1">Verification Record:</p>
-                <code className="px-3 py-1 bg-muted rounded-md text-xs font-mono">
-                  {domain.verificationRecord}
-                </code>
-              </div>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div 
+                    className="mt-2 p-3 rounded-md bg-muted/50 group-hover:bg-white/80 transition-colors cursor-pointer"
+                    onClick={handleCopyRecord}
+                  >
+                    <p className="text-sm font-medium text-muted-foreground mb-1">Verification Record:</p>
+                    <code className="px-3 py-1 bg-muted rounded-md text-xs font-mono">
+                      {domain.verificationRecord}
+                    </code>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Click to copy the verification record to your clipboard</p>
+                </TooltipContent>
+              </Tooltip>
             )}
             {domain.status === 'failed' && domain.error && (
               <p className="text-sm text-destructive mt-1">{domain.error}</p>
@@ -122,3 +142,4 @@ export const DomainListItem = ({
     </div>
   );
 };
+
