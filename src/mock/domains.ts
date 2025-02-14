@@ -81,10 +81,9 @@ export const mockDomains: Domain[] = [
     id: '3',
     domain: 'failed-domain.net',
     status: 'failed',
-    dateAdded: '2024-03-14T09:15:00Z',
+    dateAdded: '2023-03-14T09:15:00Z', // Set to past year to show expiry warning
     verificationRecord: 'lovable-verify=xyz789',
     error: 'DNS record not found',
     ownerConfirmed: true
   }
 ];
-
