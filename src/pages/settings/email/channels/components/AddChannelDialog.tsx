@@ -1,37 +1,22 @@
 
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import { useState } from 'react';
-import { PlusCircle } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import React from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { createChannel } from '@/store/slices/emailChannels/emailChannelsSlice';
 import { ChannelFormFields } from './ChannelFormFields';
 import { useChannelForm } from '../hooks/useChannelForm';
+import { Button } from '@/components/ui/button';
+import type { CreateEmailChannelDto } from '@/types/emailChannel';
 
 interface AddChannelDialogProps {
-  onAddChannel: (channel: {
-    channelName: string;
-    senderName: string;
-    email: string;
-    autoBccEmail?: string;
-    noReplyEmail?: string;
-    icon?: string;
-    type: 'sending' | 'receiving' | 'both';
-    isDefault: boolean;
-  }) => void;
-  className?: string;
-  variant?: 'default' | 'outline';
+  isOpen: boolean;
+  onClose: () => void;
 }
 
-export function AddChannelDialog({ onAddChannel, className, variant = 'default' }: AddChannelDialogProps) {
-  const [open, setOpen] = useState(false);
+export function AddChannelDialog({ isOpen, onClose }: AddChannelDialogProps) {
+  const { toast } = useToast();
+  const dispatch = useAppDispatch();
 
   const {
     channelName,
@@ -49,29 +34,35 @@ export function AddChannelDialog({ onAddChannel, className, variant = 'default' 
     selectedEmoji,
     setSelectedEmoji,
     handleSubmit,
+    errors,
+    touched,
+    setFieldTouched,
   } = useChannelForm({
-    onAddChannel: (channel) => {
-      onAddChannel(channel);
-      setOpen(false);
+    onAddChannel: async (channel: CreateEmailChannelDto) => {
+      try {
+        await dispatch(createChannel(channel)).unwrap();
+        toast({
+          title: "Channel added",
+          description: "The email channel has been added successfully.",
+        });
+        onClose();
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to add the email channel.",
+          variant: "destructive",
+        });
+      }
     },
   });
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant={variant} className={cn("gap-2", className)}>
-          <PlusCircle className="h-4 w-4" />
-          Add Custom Channel
-        </Button>
-      </DialogTrigger>
+    <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
-        <form onSubmit={handleSubmit}>
-          <DialogHeader>
-            <DialogTitle>Add Custom Email Channel</DialogTitle>
-            <DialogDescription>
-              Add a new email channel for sending or receiving messages.
-            </DialogDescription>
-          </DialogHeader>
+        <DialogHeader>
+          <DialogTitle>Add Email Channel</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-6">
           <ChannelFormFields
             channelName={channelName}
             setChannelName={setChannelName}
@@ -87,13 +78,20 @@ export function AddChannelDialog({ onAddChannel, className, variant = 'default' 
             setSelectedIcon={setSelectedIcon}
             selectedEmoji={selectedEmoji}
             setSelectedEmoji={setSelectedEmoji}
+            errors={errors}
+            touched={touched}
+            setFieldTouched={setFieldTouched}
           />
-          <DialogFooter>
-            <Button type="submit">Add Channel</Button>
-          </DialogFooter>
+          <div className="flex justify-end gap-4">
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit">
+              Create Channel
+            </Button>
+          </div>
         </form>
       </DialogContent>
     </Dialog>
   );
 }
-
