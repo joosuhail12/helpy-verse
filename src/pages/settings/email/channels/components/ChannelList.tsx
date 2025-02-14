@@ -49,7 +49,7 @@ export function ChannelList({ channels, onVerify, onDelete, onSetDefault }: Chan
                   </Badge>
                 )}
                 <Badge
-                  variant={channel.isVerified ? "success" : "destructive"}
+                  variant={channel.isVerified ? "default" : "destructive"}
                   className="gap-1"
                 >
                   {channel.isVerified ? (
