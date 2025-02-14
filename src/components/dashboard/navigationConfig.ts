@@ -24,7 +24,8 @@ import {
   Reply,
   Brain,
   Activity,
-  MessageSquare
+  MessageSquare,
+  Globe
 } from 'lucide-react';
 
 export const mainNavItems = [

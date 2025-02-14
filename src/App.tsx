@@ -8,7 +8,6 @@ import { store } from './store/store';
 import { Suspense, lazy } from 'react';
 import { useAppSelector } from "./hooks/useAppSelector";
 
-// Lazy load components with explicit chunk names
 const SignIn = lazy(() => import(/* webpackChunkName: "signin" */ "./pages/SignIn"));
 const SignUp = lazy(() => import(/* webpackChunkName: "signup" */ "./pages/SignUp"));
 const ForgotPassword = lazy(() => import(/* webpackChunkName: "forgot-password" */ "./pages/ForgotPassword"));
@@ -27,6 +26,7 @@ const CustomObjectDetail = lazy(() => import(/* webpackChunkName: "custom-object
 const CannedResponses = lazy(() => import(/* webpackChunkName: "canned-responses" */ "./pages/settings/CannedResponses"));
 const CannedResponseDetail = lazy(() => import(/* webpackChunkName: "canned-response-detail" */ "./pages/settings/CannedResponseDetail"));
 const CreateCannedResponse = lazy(() => import(/* webpackChunkName: "create-canned-response" */ "./pages/settings/CreateCannedResponse"));
+const Domains = lazy(() => import(/* webpackChunkName: "domains" */ "./pages/settings/email/Domains"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -108,6 +108,7 @@ const App = () => (
                   <Route path="settings/canned-responses" element={<CannedResponses />} />
                   <Route path="settings/canned-responses/create" element={<CreateCannedResponse />} />
                   <Route path="settings/canned-responses/:id" element={<CannedResponseDetail />} />
+                  <Route path="settings/email/domains" element={<Domains />} />
                 </Route>
                 <Route path="*" element={<NotFound />} />
               </Routes>
