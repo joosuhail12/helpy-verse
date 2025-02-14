@@ -1,5 +1,4 @@
-
-import { Mail, MessageCircle, MessageSquare, Envelope } from 'lucide-react';
+import { Mail, MessageCircle, MessageSquare } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';

@@ -13,7 +13,7 @@ import { useState } from 'react';
 import { PlusCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ChannelFormFields } from './ChannelFormFields';
-import { icons } from './IconSelection';
+import { useChannelForm } from '../hooks/useChannelForm';
 
 interface AddChannelDialogProps {
   onAddChannel: (channel: {
@@ -32,35 +32,27 @@ interface AddChannelDialogProps {
 
 export function AddChannelDialog({ onAddChannel, className, variant = 'default' }: AddChannelDialogProps) {
   const [open, setOpen] = useState(false);
-  const [channelName, setChannelName] = useState('');
-  const [senderName, setSenderName] = useState('');
-  const [email, setEmail] = useState('');
-  const [autoBccEmail, setAutoBccEmail] = useState('');
-  const [noReplyEmail, setNoReplyEmail] = useState('');
-  const [selectedIcon, setSelectedIcon] = useState<typeof icons[0] | null>(null);
-  const [type] = useState<'sending' | 'receiving' | 'both'>('both');
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onAddChannel({
-      channelName,
-      senderName,
-      email,
-      autoBccEmail,
-      noReplyEmail,
-      icon: selectedIcon ? selectedIcon.label : undefined,
-      type,
-      isDefault: false,
-    });
-    setOpen(false);
-    // Reset form
-    setChannelName('');
-    setSenderName('');
-    setEmail('');
-    setAutoBccEmail('');
-    setNoReplyEmail('');
-    setSelectedIcon(null);
-  };
+  const {
+    channelName,
+    setChannelName,
+    senderName,
+    setSenderName,
+    email,
+    setEmail,
+    autoBccEmail,
+    setAutoBccEmail,
+    noReplyEmail,
+    setNoReplyEmail,
+    selectedIcon,
+    setSelectedIcon,
+    handleSubmit,
+  } = useChannelForm({
+    onAddChannel: (channel) => {
+      onAddChannel(channel);
+      setOpen(false);
+    },
+  });
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
