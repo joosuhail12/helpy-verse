@@ -1,4 +1,3 @@
-
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -15,6 +14,8 @@ import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { createCannedResponse } from '@/store/slices/cannedResponses/actions';
 import { CollapsibleFormSection } from '@/components/settings/cannedResponses/form/CollapsibleFormSection';
 import { ResponsePreview } from '@/components/settings/cannedResponses/form/ResponsePreview';
+import { ShortcutTester } from '@/components/settings/cannedResponses/ShortcutTester';
+import { validateShortcut, getSimilarShortcuts } from '@/utils/shortcutUtils';
 import * as z from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 
@@ -27,7 +28,10 @@ const formSchema = z.object({
   shortcut: z.string()
     .min(1, "Shortcut is required")
     .max(20, "Shortcut must be 20 characters or less")
-    .regex(/^[a-zA-Z0-9-_]+$/, "Shortcut can only contain letters, numbers, hyphens, and underscores"),
+    .regex(/^[a-zA-Z0-9-_]+$/, "Shortcut can only contain letters, numbers, hyphens, and underscores")
+    .refine(val => validateShortcut(val) === null, {
+      message: "This shortcut is already in use"
+    }),
   category: z.string()
     .min(1, "Category is required"),
   isShared: z.boolean(),
@@ -51,6 +55,13 @@ const CreateCannedResponse = () => {
       createdBy: 'Current User',
     },
   });
+
+  const watchShortcut = form.watch('shortcut');
+  const [similarShortcuts, setSimilarShortcuts] = useState<string[]>([]);
+
+  useEffect(() => {
+    setSimilarShortcuts(getSimilarShortcuts(watchShortcut));
+  }, [watchShortcut]);
 
   const onSubmit = async (data: FormValues) => {
     try {
@@ -133,9 +144,27 @@ const CreateCannedResponse = () => {
                     <FormItem>
                       <FormLabel>Shortcut</FormLabel>
                       <FormControl>
-                        <Input {...field} placeholder="/shortcut" />
+                        <div className="space-y-2">
+                          <Input {...field} placeholder="/shortcut" />
+                          {similarShortcuts.length > 0 && (
+                            <div className="text-sm text-muted-foreground">
+                              Similar shortcuts:
+                              <div className="flex flex-wrap gap-2 mt-1">
+                                {similarShortcuts.map((shortcut, index) => (
+                                  <span
+                                    key={index}
+                                    className="px-2 py-1 bg-muted rounded-md text-xs"
+                                  >
+                                    {shortcut}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </FormControl>
                       <FormMessage />
+                      {watchShortcut && <ShortcutTester shortcut={watchShortcut} />}
                     </FormItem>
                   )}
                 />
