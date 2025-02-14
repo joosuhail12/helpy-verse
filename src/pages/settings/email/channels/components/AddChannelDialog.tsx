@@ -31,6 +31,8 @@ export function AddChannelDialog({ isOpen, onClose }: AddChannelDialogProps) {
     setNoReplyEmail,
     selectedEmoji,
     setSelectedEmoji,
+    selectedTeamId,
+    setSelectedTeamId,
     handleSubmit,
     errors,
     touched,
@@ -74,6 +76,8 @@ export function AddChannelDialog({ isOpen, onClose }: AddChannelDialogProps) {
             setNoReplyEmail={setNoReplyEmail}
             selectedEmoji={selectedEmoji}
             setSelectedEmoji={setSelectedEmoji}
+            selectedTeamId={selectedTeamId}
+            setSelectedTeamId={setSelectedTeamId}
             errors={errors}
             touched={touched}
             setFieldTouched={setFieldTouched}
