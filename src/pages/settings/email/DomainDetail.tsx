@@ -1,6 +1,6 @@
 
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -12,6 +12,8 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Steps } from '@/components/ui/steps';
+import { toast } from '@/components/ui/use-toast';
 import { mockDomains } from '@/mock/domains';
 import { format } from 'date-fns';
 import { DomainBadge } from './Domains';
@@ -20,6 +22,40 @@ const DomainDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const domain = mockDomains.find(d => d.id === id);
+
+  const handleCopyToClipboard = (value: string) => {
+    navigator.clipboard.writeText(value);
+    toast({
+      title: "Copied to clipboard",
+      description: "The value has been copied to your clipboard.",
+    });
+  };
+
+  const verificationSteps = [
+    {
+      title: 'Add DNS Records',
+      description: 'Add the required DNS records to your domain',
+      status: domain?.status === 'pending' ? 'current' : 'complete',
+    },
+    {
+      title: 'Verify Domain',
+      description: 'Confirm DNS records are properly configured',
+      status: domain?.status === 'verified' ? 'complete' : 'pending',
+    },
+    {
+      title: 'Domain Ready',
+      description: 'Your domain is ready to use',
+      status: domain?.status === 'verified' ? 'complete' : 'pending',
+    },
+  ];
+
+  const handleVerifyDomain = () => {
+    // This would typically make an API call to verify the domain
+    toast({
+      title: "Verification in progress",
+      description: "We're verifying your domain configuration...",
+    });
+  };
 
   if (!domain) {
     return (
@@ -61,9 +97,20 @@ const DomainDetail = () => {
                   Added on {format(new Date(domain.dateAdded), 'MMM d, yyyy')}
                 </p>
               </div>
-              <DomainBadge status={domain.status} />
+              <div className="flex items-center gap-4">
+                <DomainBadge status={domain.status} />
+                {domain.status !== 'verified' && (
+                  <Button onClick={handleVerifyDomain}>
+                    <Check className="h-4 w-4 mr-2" />
+                    Verify Now
+                  </Button>
+                )}
+              </div>
             </div>
           </CardHeader>
+          <CardContent>
+            <Steps steps={verificationSteps} />
+          </CardContent>
         </Card>
 
         <Card>
@@ -79,6 +126,7 @@ const DomainDetail = () => {
                   <TableHead>Value</TableHead>
                   <TableHead>TTL</TableHead>
                   <TableHead>Priority</TableHead>
+                  <TableHead />
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -89,9 +137,25 @@ const DomainDetail = () => {
                     </TableCell>
                     <TableCell className="font-mono text-sm">
                       {record.name}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="ml-2"
+                        onClick={() => handleCopyToClipboard(record.name)}
+                      >
+                        <Copy className="h-4 w-4" />
+                      </Button>
                     </TableCell>
                     <TableCell className="font-mono text-sm">
                       {record.value}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="ml-2"
+                        onClick={() => handleCopyToClipboard(record.value)}
+                      >
+                        <Copy className="h-4 w-4" />
+                      </Button>
                     </TableCell>
                     <TableCell>{record.ttl}</TableCell>
                     <TableCell>{record.priority || '-'}</TableCell>
