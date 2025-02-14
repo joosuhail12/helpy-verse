@@ -1,7 +1,8 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ResponseHoverCard } from './ResponseHoverCard';
+import { Card } from '@/components/ui/card';
+import { CategoryHeader } from './CategoryHeader';
+import { ResponsesGrid } from './ResponsesGrid';
 import type { CannedResponse } from '@/mock/cannedResponses';
 
 export interface CategoryGroupProps {
@@ -19,28 +20,20 @@ export const CategoryGroup = ({
   title, 
   responses, 
   onSelect,
-  view = 'list',
-  selectedResponses = [],
-  onSelectResponse,
   onResponseClick,
 }: CategoryGroupProps) => {
+  const handleDelete = (id: string) => {
+    onResponseClick?.(id);
+  };
+
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-      </CardHeader>
-      <CardContent className="grid gap-4">
-        {responses.map((response, index) => (
-          <ResponseHoverCard
-            key={response.id}
-            response={response}
-            onSelect={() => onSelect(response)}
-            className={`animate-in fade-in-0 slide-in-from-left-1 duration-300`}
-            style={{ animationDelay: `${index * 50}ms` }}
-          />
-        ))}
-      </CardContent>
+      <CategoryHeader title={title} />
+      <ResponsesGrid 
+        responses={responses} 
+        onSelect={onSelect}
+        onDelete={handleDelete}
+      />
     </Card>
   );
 };
-
