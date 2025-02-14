@@ -1,6 +1,5 @@
 
 import { useState } from 'react';
-import type { icons } from '../components/IconSelection';
 import type { CreateEmailChannelDto } from '@/types/emailChannel';
 
 interface UseChannelFormProps {
@@ -13,7 +12,6 @@ export function useChannelForm({ onAddChannel }: UseChannelFormProps) {
   const [email, setEmail] = useState('');
   const [autoBccEmail, setAutoBccEmail] = useState('');
   const [noReplyEmail, setNoReplyEmail] = useState('');
-  const [selectedIcon, setSelectedIcon] = useState<typeof icons[0] | null>(null);
   const [selectedEmoji, setSelectedEmoji] = useState<string | null>(null);
   const [touched, setTouched] = useState<Record<string, boolean>>({});
 
@@ -27,10 +25,14 @@ export function useChannelForm({ onAddChannel }: UseChannelFormProps) {
 
     if (!channelName.trim()) {
       errors.channelName = 'Channel name is required';
+    } else if (channelName.length > 50) {
+      errors.channelName = 'Channel name must be less than 50 characters';
     }
 
     if (!senderName.trim()) {
       errors.senderName = 'Sender name is required';
+    } else if (senderName.length > 50) {
+      errors.senderName = 'Sender name must be less than 50 characters';
     }
 
     if (!email) {
@@ -59,7 +61,6 @@ export function useChannelForm({ onAddChannel }: UseChannelFormProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Mark all fields as touched
     const allFields = ['channelName', 'senderName', 'email', 'autoBccEmail', 'noReplyEmail'];
     const newTouched = allFields.reduce((acc, field) => ({ ...acc, [field]: true }), {});
     setTouched(newTouched);
@@ -72,7 +73,7 @@ export function useChannelForm({ onAddChannel }: UseChannelFormProps) {
         email,
         autoBccEmail: autoBccEmail || undefined,
         noReplyEmail: noReplyEmail || undefined,
-        icon: selectedIcon ? selectedIcon.label : selectedEmoji || undefined,
+        icon: selectedEmoji || undefined,
         type: 'both',
         isDefault: false,
       });
@@ -90,8 +91,6 @@ export function useChannelForm({ onAddChannel }: UseChannelFormProps) {
     setAutoBccEmail,
     noReplyEmail,
     setNoReplyEmail,
-    selectedIcon,
-    setSelectedIcon,
     selectedEmoji,
     setSelectedEmoji,
     handleSubmit,
