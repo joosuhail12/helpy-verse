@@ -8,7 +8,12 @@ import { useToast } from '@/hooks/use-toast';
 
 interface EmailChannel {
   id: string;
+  channelName: string;
+  senderName: string;
   email: string;
+  autoBccEmail?: string;
+  noReplyEmail?: string;
+  icon?: string;
   type: 'sending' | 'receiving' | 'both';
   isDefault: boolean;
   isVerified: boolean;
@@ -18,7 +23,11 @@ interface EmailChannel {
 const mockChannels: EmailChannel[] = [
   {
     id: '1',
+    channelName: 'Primary Support',
+    senderName: 'Support Team',
     email: 'support@company.com',
+    noReplyEmail: 'no-reply@company.com',
+    icon: '📧',
     type: 'both',
     isDefault: true,
     isVerified: true,
@@ -26,7 +35,11 @@ const mockChannels: EmailChannel[] = [
   },
   {
     id: '2',
-    email: 'no-reply@company.com',
+    channelName: 'Marketing Updates',
+    senderName: 'Marketing',
+    email: 'marketing@company.com',
+    autoBccEmail: 'archive@company.com',
+    icon: '📣',
     type: 'sending',
     isDefault: false,
     isVerified: true,

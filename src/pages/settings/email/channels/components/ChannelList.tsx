@@ -6,7 +6,12 @@ import { format } from 'date-fns';
 
 interface EmailChannel {
   id: string;
+  channelName: string;
+  senderName: string;
   email: string;
+  autoBccEmail?: string;
+  noReplyEmail?: string;
+  icon?: string;
   type: 'sending' | 'receiving' | 'both';
   isDefault: boolean;
   isVerified: boolean;
@@ -40,30 +45,39 @@ export function ChannelList({ channels, onVerify, onDelete, onSetDefault }: Chan
           className="flex items-center justify-between p-6 hover:bg-muted/50 group"
         >
           <div className="flex items-center gap-4">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <h3 className="font-medium">{channel.email}</h3>
-                {channel.isDefault && (
-                  <Badge variant="secondary" className="text-primary">
-                    Default
-                  </Badge>
-                )}
-                <Badge
-                  variant={channel.isVerified ? "default" : "destructive"}
-                  className="gap-1"
-                >
-                  {channel.isVerified ? (
-                    <CheckCircle2 className="h-3 w-3" />
-                  ) : (
-                    <XCircle className="h-3 w-3" />
+            <div className="flex items-center gap-3">
+              {channel.icon && (
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
+                  {channel.icon}
+                </div>
+              )}
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <h3 className="font-medium">{channel.channelName}</h3>
+                  {channel.isDefault && (
+                    <Badge variant="secondary" className="text-primary">
+                      Default
+                    </Badge>
                   )}
-                  {channel.isVerified ? "Verified" : "Unverified"}
-                </Badge>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <span>{getTypeLabel(channel.type)}</span>
-                <span>•</span>
-                <span>Added {format(new Date(channel.createdAt), 'MMM d, yyyy')}</span>
+                  <Badge
+                    variant={channel.isVerified ? "default" : "destructive"}
+                    className="gap-1"
+                  >
+                    {channel.isVerified ? (
+                      <CheckCircle2 className="h-3 w-3" />
+                    ) : (
+                      <XCircle className="h-3 w-3" />
+                    )}
+                    {channel.isVerified ? "Verified" : "Unverified"}
+                  </Badge>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <span>{channel.email}</span>
+                  <span>•</span>
+                  <span>{getTypeLabel(channel.type)}</span>
+                  <span>•</span>
+                  <span>Added {format(new Date(channel.createdAt), 'MMM d, yyyy')}</span>
+                </div>
               </div>
             </div>
           </div>
