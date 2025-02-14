@@ -10,6 +10,7 @@ const initialState: CannedResponsesState = {
   error: null,
   selectedResponse: null,
   versionHistory: null,
+  categories: Array.from(new Set(mockCannedResponses.map(r => r.category))),
 };
 
 export const cannedResponsesSlice = createSlice({
@@ -114,4 +115,3 @@ export const {
 } = cannedResponsesSlice.actions;
 
 export default cannedResponsesSlice.reducer;
-
