@@ -1,44 +1,61 @@
 
 import { Check, X, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { format } from 'date-fns';
 import type { Domain } from '@/mock/domains';
 import { DomainBadge } from '../DomainBadge';
 
 interface DomainListItemProps {
   domain: Domain;
+  selected: boolean;
+  onSelect: (id: string, checked: boolean) => void;
   onVerify: (id: string) => void;
   onDelete: (id: string) => void;
   onNavigate: (id: string) => void;
 }
 
-export const DomainListItem = ({ domain, onVerify, onDelete, onNavigate }: DomainListItemProps) => {
+export const DomainListItem = ({ 
+  domain, 
+  selected,
+  onSelect,
+  onVerify, 
+  onDelete, 
+  onNavigate 
+}: DomainListItemProps) => {
   return (
     <div className="flex items-center justify-between p-6 hover:bg-muted/50 transition-colors">
-      <div className="space-y-1">
-        <div className="flex items-center gap-2">
-          <button
-            className="text-lg font-medium hover:underline hover:text-primary transition-colors"
-            onClick={() => onNavigate(domain.id)}
-          >
-            {domain.domain}
-          </button>
-          <DomainBadge status={domain.status} />
-        </div>
-        <p className="text-sm text-muted-foreground">
-          Added on {format(new Date(domain.dateAdded), 'MMM d, yyyy')}
-        </p>
-        {domain.status === 'pending' && (
-          <div className="mt-2">
-            <p className="text-sm font-medium text-muted-foreground mb-1">Verification Record:</p>
-            <code className="px-3 py-1 bg-muted rounded-md text-xs font-mono">
-              {domain.verificationRecord}
-            </code>
+      <div className="flex items-start gap-4">
+        <Checkbox
+          checked={selected}
+          onCheckedChange={(checked) => onSelect(domain.id, checked as boolean)}
+          className="mt-1"
+        />
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <button
+              className="text-lg font-medium hover:underline hover:text-primary transition-colors"
+              onClick={() => onNavigate(domain.id)}
+            >
+              {domain.domain}
+            </button>
+            <DomainBadge status={domain.status} />
           </div>
-        )}
-        {domain.status === 'failed' && domain.error && (
-          <p className="text-sm text-destructive mt-1">{domain.error}</p>
-        )}
+          <p className="text-sm text-muted-foreground">
+            Added on {format(new Date(domain.dateAdded), 'MMM d, yyyy')}
+          </p>
+          {domain.status === 'pending' && (
+            <div className="mt-2">
+              <p className="text-sm font-medium text-muted-foreground mb-1">Verification Record:</p>
+              <code className="px-3 py-1 bg-muted rounded-md text-xs font-mono">
+                {domain.verificationRecord}
+              </code>
+            </div>
+          )}
+          {domain.status === 'failed' && domain.error && (
+            <p className="text-sm text-destructive mt-1">{domain.error}</p>
+          )}
+        </div>
       </div>
       <div className="flex items-center gap-2">
         <Button

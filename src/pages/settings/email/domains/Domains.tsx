@@ -8,29 +8,28 @@ import { AddDomainDialog } from './components/AddDomainDialog';
 import { toast } from '@/components/ui/use-toast';
 import { Globe } from 'lucide-react';
 import { DomainControls } from './components/DomainControls';
+import { DomainBulkActions } from './components/DomainBulkActions';
 
 const Domains = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<Domain['status'] | 'all'>('all');
   const [sortBy, setSortBy] = useState<'date' | 'name'>('date');
+  const [selectedDomains, setSelectedDomains] = useState<string[]>([]);
 
   const filteredDomains = useMemo(() => {
     let filtered = [...mockDomains];
 
-    // Apply search filter
     if (searchQuery) {
       filtered = filtered.filter(domain =>
         domain.domain.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
-    // Apply status filter
     if (statusFilter !== 'all') {
       filtered = filtered.filter(domain => domain.status === statusFilter);
     }
 
-    // Apply sorting
     filtered.sort((a, b) => {
       if (sortBy === 'date') {
         return new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime();
@@ -43,7 +42,6 @@ const Domains = () => {
   }, [mockDomains, searchQuery, statusFilter, sortBy]);
 
   const handleAddDomain = (domain: Domain) => {
-    // TODO: Implement domain addition with backend
     toast({
       title: "Domain added",
       description: "The domain has been added successfully.",
@@ -52,7 +50,6 @@ const Domains = () => {
   };
 
   const handleVerify = (id: string) => {
-    // TODO: Implement domain verification with backend
     toast({
       title: "Verification initiated",
       description: "Domain verification process has started.",
@@ -60,15 +57,62 @@ const Domains = () => {
   };
 
   const handleDelete = (id: string) => {
-    // TODO: Implement domain deletion with backend
     toast({
       title: "Domain deleted",
       description: "The domain has been removed successfully.",
     });
+    setSelectedDomains(prev => prev.filter(domainId => domainId !== id));
   };
 
   const handleNavigate = (id: string) => {
     navigate(`/home/settings/email/domains/${id}`);
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    setSelectedDomains(checked ? filteredDomains.map(d => d.id) : []);
+  };
+
+  const handleSelectDomain = (id: string, checked: boolean) => {
+    if (checked) {
+      setSelectedDomains(prev => [...prev, id]);
+    } else {
+      setSelectedDomains(prev => prev.filter(domainId => domainId !== id));
+    }
+  };
+
+  const handleBulkVerify = () => {
+    toast({
+      title: "Bulk verification initiated",
+      description: `Verification process started for ${selectedDomains.length} domains.`,
+    });
+  };
+
+  const handleBulkDelete = () => {
+    toast({
+      title: "Domains deleted",
+      description: `Successfully deleted ${selectedDomains.length} domains.`,
+    });
+    setSelectedDomains([]);
+  };
+
+  const handleBulkExport = () => {
+    const selectedDomainsData = mockDomains.filter(d => selectedDomains.includes(d.id));
+    const csvContent = "data:text/csv;charset=utf-8," + 
+      "Domain,Status,Date Added\n" +
+      selectedDomainsData.map(d => `${d.domain},${d.status},${d.dateAdded}`).join("\n");
+    
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "domains.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast({
+      title: "Export complete",
+      description: `Successfully exported ${selectedDomains.length} domains.`,
+    });
   };
 
   return (
@@ -91,6 +135,15 @@ const Domains = () => {
         sortBy={sortBy}
         onSortChange={setSortBy}
       />
+
+      {selectedDomains.length > 0 && (
+        <DomainBulkActions
+          selectedCount={selectedDomains.length}
+          onVerify={handleBulkVerify}
+          onDelete={handleBulkDelete}
+          onExport={handleBulkExport}
+        />
+      )}
 
       <Card className="p-6">
         {filteredDomains.length === 0 ? (
@@ -116,6 +169,8 @@ const Domains = () => {
               <DomainListItem 
                 key={domain.id} 
                 domain={domain}
+                selected={selectedDomains.includes(domain.id)}
+                onSelect={handleSelectDomain}
                 onVerify={handleVerify}
                 onDelete={handleDelete}
                 onNavigate={handleNavigate}
