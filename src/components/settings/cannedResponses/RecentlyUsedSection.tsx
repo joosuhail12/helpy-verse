@@ -9,7 +9,7 @@ interface RecentlyUsedSectionProps {
 }
 
 export const RecentlyUsedSection = ({ responses, onResponseClick }: RecentlyUsedSectionProps) => {
-  const recentResponses = responses
+  const recentResponses = [...responses]
     .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
     .slice(0, 3);
 
@@ -41,3 +41,4 @@ export const RecentlyUsedSection = ({ responses, onResponseClick }: RecentlyUsed
     </div>
   );
 };
+
