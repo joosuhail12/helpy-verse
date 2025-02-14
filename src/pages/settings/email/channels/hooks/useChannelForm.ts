@@ -1,18 +1,10 @@
 
 import { useState } from 'react';
 import type { icons } from '../components/IconSelection';
+import type { CreateEmailChannelDto } from '@/types/emailChannel';
 
 interface UseChannelFormProps {
-  onAddChannel: (channel: {
-    channelName: string;
-    senderName: string;
-    email: string;
-    autoBccEmail?: string;
-    noReplyEmail?: string;
-    icon?: string;
-    type: 'sending' | 'receiving' | 'both';
-    isDefault: boolean;
-  }) => void;
+  onAddChannel: (channel: CreateEmailChannelDto) => void;
 }
 
 export function useChannelForm({ onAddChannel }: UseChannelFormProps) {
@@ -22,7 +14,7 @@ export function useChannelForm({ onAddChannel }: UseChannelFormProps) {
   const [autoBccEmail, setAutoBccEmail] = useState('');
   const [noReplyEmail, setNoReplyEmail] = useState('');
   const [selectedIcon, setSelectedIcon] = useState<typeof icons[0] | null>(null);
-  const [type] = useState<'sending' | 'receiving' | 'both'>('both');
+  const [selectedEmoji, setSelectedEmoji] = useState<string | null>(null);
 
   const resetForm = () => {
     setChannelName('');
@@ -31,6 +23,7 @@ export function useChannelForm({ onAddChannel }: UseChannelFormProps) {
     setAutoBccEmail('');
     setNoReplyEmail('');
     setSelectedIcon(null);
+    setSelectedEmoji(null);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -39,10 +32,10 @@ export function useChannelForm({ onAddChannel }: UseChannelFormProps) {
       channelName,
       senderName,
       email,
-      autoBccEmail,
-      noReplyEmail,
-      icon: selectedIcon ? selectedIcon.label : undefined,
-      type,
+      autoBccEmail: autoBccEmail || undefined,
+      noReplyEmail: noReplyEmail || undefined,
+      icon: selectedIcon ? selectedIcon.label : selectedEmoji || undefined,
+      type: 'both',
       isDefault: false,
     });
     resetForm();
@@ -61,6 +54,8 @@ export function useChannelForm({ onAddChannel }: UseChannelFormProps) {
     setNoReplyEmail,
     selectedIcon,
     setSelectedIcon,
+    selectedEmoji,
+    setSelectedEmoji,
     handleSubmit,
     resetForm,
   };

@@ -1,7 +1,7 @@
 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { IconSelection } from './IconSelection';
+import { IconEmojiPicker } from './IconEmojiPicker';
 import type { icons } from './IconSelection';
 
 interface ChannelFormFieldsProps {
@@ -17,6 +17,8 @@ interface ChannelFormFieldsProps {
   setNoReplyEmail: (value: string) => void;
   selectedIcon: typeof icons[0] | null;
   setSelectedIcon: (icon: typeof icons[0] | null) => void;
+  selectedEmoji: string | null;
+  setSelectedEmoji: (emoji: string | null) => void;
 }
 
 export function ChannelFormFields({
@@ -32,9 +34,11 @@ export function ChannelFormFields({
   setNoReplyEmail,
   selectedIcon,
   setSelectedIcon,
+  selectedEmoji,
+  setSelectedEmoji,
 }: ChannelFormFieldsProps) {
   return (
-    <div className="grid gap-4 py-4">
+    <div className="grid gap-4">
       <div className="grid gap-2">
         <Label htmlFor="channelName">Channel Name</Label>
         <Input
@@ -88,7 +92,12 @@ export function ChannelFormFields({
       </div>
       <div className="grid gap-2">
         <Label>Channel Icon</Label>
-        <IconSelection selectedIcon={selectedIcon} onSelectIcon={setSelectedIcon} />
+        <IconEmojiPicker
+          selectedIcon={selectedIcon}
+          setSelectedIcon={setSelectedIcon}
+          selectedEmoji={selectedEmoji}
+          setSelectedEmoji={setSelectedEmoji}
+        />
       </div>
     </div>
   );

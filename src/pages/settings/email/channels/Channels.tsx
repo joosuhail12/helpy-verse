@@ -1,15 +1,15 @@
 
 import React, { useEffect } from 'react';
 import { Card } from '@/components/ui/card';
-import { Mail } from 'lucide-react';
-import { AddChannelDialog } from './components/AddChannelDialog';
+import { Mail, PlusCircle } from 'lucide-react';
 import { ChannelList } from './components/ChannelList';
 import { useToast } from '@/hooks/use-toast';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 import { 
   fetchChannels, 
-  createChannel, 
   verifyChannel, 
   deleteChannel, 
   setDefaultChannel 
@@ -18,10 +18,10 @@ import {
   selectEmailChannels, 
   selectEmailChannelsLoading 
 } from '@/store/slices/emailChannels/selectors';
-import type { CreateEmailChannelDto } from '@/types/emailChannel';
 
 const Channels = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const channels = useAppSelector(selectEmailChannels);
   const loading = useAppSelector(selectEmailChannelsLoading);
@@ -29,22 +29,6 @@ const Channels = () => {
   useEffect(() => {
     dispatch(fetchChannels());
   }, [dispatch]);
-
-  const handleAddChannel = async (channelData: CreateEmailChannelDto) => {
-    try {
-      await dispatch(createChannel(channelData)).unwrap();
-      toast({
-        title: "Channel added",
-        description: "The email channel has been added successfully.",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to add the email channel.",
-        variant: "destructive",
-      });
-    }
-  };
 
   const handleVerify = async (id: string) => {
     try {
@@ -106,7 +90,10 @@ const Channels = () => {
               Manage your email channels for sending and receiving messages
             </p>
           </div>
-          <AddChannelDialog onAddChannel={handleAddChannel} />
+          <Button onClick={() => navigate('create')} className="gap-2">
+            <PlusCircle className="h-4 w-4" />
+            Add Custom Channel
+          </Button>
         </div>
       </div>
 
@@ -123,11 +110,14 @@ const Channels = () => {
             <p className="mt-2 text-sm text-muted-foreground">
               Add your first email channel to start sending and receiving emails
             </p>
-            <AddChannelDialog
-              className="mt-6"
+            <Button
+              className="mt-6 gap-2"
               variant="outline"
-              onAddChannel={handleAddChannel}
-            />
+              onClick={() => navigate('create')}
+            >
+              <PlusCircle className="h-4 w-4" />
+              Add Custom Channel
+            </Button>
           </div>
         ) : (
           <ChannelList
