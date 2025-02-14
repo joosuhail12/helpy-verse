@@ -31,5 +31,7 @@ export const DomainVerificationSteps = ({ domain }: DomainVerificationStepsProps
     },
   ];
 
-  return <Steps items={steps} />;
+  return <Steps steps={steps} />;
 };
+
+export default DomainVerificationSteps;
