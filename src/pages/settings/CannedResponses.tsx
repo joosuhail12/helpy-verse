@@ -57,6 +57,10 @@ const CannedResponses = () => {
     setSelectedResponses([]);
   };
 
+  const handleResponseSelect = (response: CannedResponse) => {
+    handleResponseClick(response.id);
+  };
+
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
@@ -165,12 +169,13 @@ const CannedResponses = () => {
           {Object.entries(groupedResponses).map(([category, categoryResponses]) => (
             <CategoryGroup
               key={category}
-              category={category}
+              title={category}
               responses={categoryResponses}
               view={view}
               onResponseClick={handleResponseClick}
               selectedResponses={selectedResponses}
               onSelectResponse={handleSelectResponse}
+              onSelect={handleResponseSelect}
             />
           ))}
         </div>
@@ -180,3 +185,4 @@ const CannedResponses = () => {
 };
 
 export default CannedResponses;
+
