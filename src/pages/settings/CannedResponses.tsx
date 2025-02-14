@@ -22,43 +22,47 @@ const CannedResponses = () => {
   }, {} as Record<string, CannedResponse[]>);
 
   const handleResponseClick = (id: string) => {
-    // Navigate to edit page
     window.location.href = `/home/settings/canned-responses/${id}`;
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Canned Responses</h1>
-          <p className="text-muted-foreground">
-            Create and manage your team's canned responses for quick replies
-          </p>
+    <div className="min-h-screen bg-[#F2FCE2]/30">
+      <div className="p-6 max-w-7xl mx-auto space-y-8">
+        <div className="flex items-center justify-between bg-white p-6 rounded-lg shadow-sm">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-purple-600 to-[#9b87f5] bg-clip-text text-transparent">
+              Canned Responses
+            </h1>
+            <p className="text-muted-foreground mt-2">
+              Create and manage your team's canned responses for quick replies
+            </p>
+          </div>
+          <div className="flex items-center gap-4">
+            <ViewToggle view={view} onViewChange={setView} />
+            <Link to="/home/settings/canned-responses/create">
+              <Button className="bg-[#9b87f5] hover:bg-[#9b87f5]/90">
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Create Response
+              </Button>
+            </Link>
+          </div>
         </div>
-        <div className="flex items-center gap-4">
-          <ViewToggle view={view} onViewChange={setView} />
-          <Link to="/home/settings/canned-responses/create">
-            <Button>
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Create Response
-            </Button>
-          </Link>
-        </div>
-      </div>
 
-      <div className="space-y-6">
-        {Object.entries(groupedResponses).map(([category, categoryResponses]) => (
-          <CategoryGroup
-            key={category}
-            category={category}
-            responses={categoryResponses}
-            view={view}
-            onResponseClick={handleResponseClick}
-          />
-        ))}
+        <div className="space-y-6">
+          {Object.entries(groupedResponses).map(([category, categoryResponses]) => (
+            <CategoryGroup
+              key={category}
+              category={category}
+              responses={categoryResponses}
+              view={view}
+              onResponseClick={handleResponseClick}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );
 };
 
 export default CannedResponses;
+
