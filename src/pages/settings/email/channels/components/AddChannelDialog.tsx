@@ -19,10 +19,19 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useState } from 'react';
-import { PlusCircle } from 'lucide-react';
+import { Mail, MessageCircle, MessageSquare, Envelope, PlusCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import EmojiPicker from 'emoji-picker-react';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface AddChannelDialogProps {
   onAddChannel: (channel: {
@@ -39,6 +48,13 @@ interface AddChannelDialogProps {
   variant?: 'default' | 'outline';
 }
 
+const icons = [
+  { icon: Mail, label: 'Mail' },
+  { icon: MessageCircle, label: 'Message Circle' },
+  { icon: MessageSquare, label: 'Message Square' },
+  { icon: Envelope, label: 'Envelope' },
+];
+
 export function AddChannelDialog({ onAddChannel, className, variant = 'default' }: AddChannelDialogProps) {
   const [open, setOpen] = useState(false);
   const [channelName, setChannelName] = useState('');
@@ -46,9 +62,8 @@ export function AddChannelDialog({ onAddChannel, className, variant = 'default' 
   const [email, setEmail] = useState('');
   const [autoBccEmail, setAutoBccEmail] = useState('');
   const [noReplyEmail, setNoReplyEmail] = useState('');
-  const [icon, setIcon] = useState('');
-  const [type, setType] = useState<'sending' | 'receiving' | 'both'>('both');
-  const [isDefault, setIsDefault] = useState(false);
+  const [selectedIcon, setSelectedIcon] = useState<typeof icons[0] | null>(null);
+  const [type] = useState<'sending' | 'receiving' | 'both'>('both');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,9 +73,9 @@ export function AddChannelDialog({ onAddChannel, className, variant = 'default' 
       email,
       autoBccEmail,
       noReplyEmail,
-      icon,
+      icon: selectedIcon ? selectedIcon.label : undefined,
       type,
-      isDefault,
+      isDefault: false,
     });
     setOpen(false);
     // Reset form
@@ -69,9 +84,7 @@ export function AddChannelDialog({ onAddChannel, className, variant = 'default' 
     setEmail('');
     setAutoBccEmail('');
     setNoReplyEmail('');
-    setIcon('');
-    setType('both');
-    setIsDefault(false);
+    setSelectedIcon(null);
   };
 
   return (
@@ -79,13 +92,13 @@ export function AddChannelDialog({ onAddChannel, className, variant = 'default' 
       <DialogTrigger asChild>
         <Button variant={variant} className={cn("gap-2", className)}>
           <PlusCircle className="h-4 w-4" />
-          Add Channel
+          Add Custom Channel
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Add Email Channel</DialogTitle>
+            <DialogTitle>Add Custom Email Channel</DialogTitle>
             <DialogDescription>
               Add a new email channel for sending or receiving messages.
             </DialogDescription>
@@ -143,52 +156,39 @@ export function AddChannelDialog({ onAddChannel, className, variant = 'default' 
               />
             </div>
             <div className="grid gap-2">
-              <Label>Icon or Emoji</Label>
-              <Popover>
-                <PopoverTrigger asChild>
+              <Label>Channel Icon</Label>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
                   <Button
                     variant="outline"
                     className={cn(
-                      "w-[280px] justify-start text-left font-normal",
-                      !icon && "text-muted-foreground"
+                      "w-full justify-start gap-2",
+                      !selectedIcon && "text-muted-foreground"
                     )}
                   >
-                    {icon ? (
-                      <span className="mr-2">{icon}</span>
+                    {selectedIcon ? (
+                      <>
+                        {<selectedIcon.icon className="h-4 w-4" />}
+                        {selectedIcon.label}
+                      </>
                     ) : (
-                      "Select emoji..."
+                      "Select an icon..."
                     )}
                   </Button>
-                </PopoverTrigger>
-                <PopoverContent className="p-0" side="right" align="start">
-                  <EmojiPicker
-                    onEmojiClick={(emojiData) => setIcon(emojiData.emoji)}
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="type">Channel Type</Label>
-              <Select value={type} onValueChange={(value: 'sending' | 'receiving' | 'both') => setType(value)}>
-                <SelectTrigger id="type">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="sending">Sending Only</SelectItem>
-                  <SelectItem value="receiving">Receiving Only</SelectItem>
-                  <SelectItem value="both">Sending & Receiving</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="isDefault"
-                checked={isDefault}
-                onChange={(e) => setIsDefault(e.target.checked)}
-                className="h-4 w-4 rounded border-gray-300"
-              />
-              <Label htmlFor="isDefault">Set as default channel</Label>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-[200px]">
+                  {icons.map((icon) => (
+                    <DropdownMenuItem
+                      key={icon.label}
+                      onClick={() => setSelectedIcon(icon)}
+                      className="gap-2"
+                    >
+                      <icon.icon className="h-4 w-4" />
+                      {icon.label}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
           <DialogFooter>
