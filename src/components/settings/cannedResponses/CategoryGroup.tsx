@@ -21,6 +21,7 @@ export const CategoryGroup = ({
   responses, 
   onSelect,
   onResponseClick,
+  view = 'list',
 }: CategoryGroupProps) => {
   const handleDelete = (id: string) => {
     onResponseClick?.(id);
@@ -33,6 +34,7 @@ export const CategoryGroup = ({
         responses={responses} 
         onSelect={onSelect}
         onDelete={handleDelete}
+        view={view}
       />
     </Card>
   );
