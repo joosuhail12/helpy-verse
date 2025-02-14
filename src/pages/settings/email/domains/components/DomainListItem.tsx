@@ -1,5 +1,5 @@
 
-import { Check, X } from 'lucide-react';
+import { Check, X, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 import type { Domain } from '@/mock/domains';
@@ -14,11 +14,11 @@ interface DomainListItemProps {
 
 export const DomainListItem = ({ domain, onVerify, onDelete, onNavigate }: DomainListItemProps) => {
   return (
-    <div className="flex items-center justify-between p-4 border rounded-lg">
+    <div className="flex items-center justify-between p-6 hover:bg-muted/50 transition-colors">
       <div className="space-y-1">
         <div className="flex items-center gap-2">
           <button
-            className="font-medium hover:underline"
+            className="text-lg font-medium hover:underline hover:text-primary transition-colors"
             onClick={() => onNavigate(domain.id)}
           >
             {domain.domain}
@@ -29,18 +29,26 @@ export const DomainListItem = ({ domain, onVerify, onDelete, onNavigate }: Domai
           Added on {format(new Date(domain.dateAdded), 'MMM d, yyyy')}
         </p>
         {domain.status === 'pending' && (
-          <div className="mt-2 text-sm">
-            <p className="font-medium">Verification Record:</p>
-            <code className="px-2 py-1 bg-secondary rounded text-xs">
+          <div className="mt-2">
+            <p className="text-sm font-medium text-muted-foreground mb-1">Verification Record:</p>
+            <code className="px-3 py-1 bg-muted rounded-md text-xs font-mono">
               {domain.verificationRecord}
             </code>
           </div>
         )}
         {domain.status === 'failed' && domain.error && (
-          <p className="text-sm text-red-500 mt-1">{domain.error}</p>
+          <p className="text-sm text-destructive mt-1">{domain.error}</p>
         )}
       </div>
-      <div className="flex gap-2">
+      <div className="flex items-center gap-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => onNavigate(domain.id)}
+        >
+          <ExternalLink className="h-4 w-4 mr-1" />
+          Manage
+        </Button>
         {domain.status === 'pending' && (
           <Button
             variant="outline"
@@ -54,7 +62,7 @@ export const DomainListItem = ({ domain, onVerify, onDelete, onNavigate }: Domai
         <Button
           variant="ghost"
           size="sm"
-          className="text-red-500 hover:text-red-600 hover:bg-red-50"
+          className="text-destructive hover:text-destructive hover:bg-destructive/10"
           onClick={() => onDelete(domain.id)}
         >
           <X className="h-4 w-4" />
