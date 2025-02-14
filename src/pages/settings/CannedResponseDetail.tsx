@@ -8,7 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { useForm } from 'react-hook-form';
 import { toast } from '@/components/ui/use-toast';
 import { ArrowLeft, History, Share2, Star, Copy } from 'lucide-react';
-import type { CannedResponse } from '@/mock/cannedResponses';
+import type { CannedResponse, CannedResponseShare } from '@/mock/cannedResponses';
 import { Link } from 'react-router-dom';
 import { CategoryCombobox } from '@/components/settings/cannedResponses/CategoryCombobox';
 import { CannedResponseEditor } from '@/components/settings/cannedResponses/CannedResponseEditor';
@@ -101,9 +101,27 @@ const CannedResponseDetail = () => {
 
     try {
       setLoading(true);
+      // Transform the form shared data to match CannedResponseShare interface
+      const transformedSharedWith: CannedResponseShare[] = data.sharedWith?.map(share => ({
+        id: Date.now().toString() + Math.random().toString(36).substr(2, 9), // Generate a unique ID
+        responseId: response.id,
+        sharedWith: {
+          teamId: share.teamId,
+          teamName: share.teamName,
+        },
+        permissions: share.permissions,
+        createdAt: new Date().toISOString(),
+      })) || [];
+
       await dispatch(updateCannedResponse({
         ...response,
-        ...data,
+        title: data.title,
+        content: data.content,
+        shortcut: data.shortcut,
+        category: data.category,
+        isShared: data.isShared,
+        sharedWith: transformedSharedWith,
+        updatedAt: new Date().toISOString(),
       })).unwrap();
       
       toast({
