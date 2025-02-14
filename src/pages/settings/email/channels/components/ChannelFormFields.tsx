@@ -3,11 +3,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { InfoIcon, Smile } from 'lucide-react';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import EmojiPicker from 'emoji-picker-react';
+import { Info, Mail, User } from 'lucide-react';
+import { IconEmojiPicker } from './IconEmojiPicker';
 
 interface ChannelFormFieldsProps {
   channelName: string;
@@ -44,19 +41,33 @@ export function ChannelFormFields({
   touched,
   setFieldTouched,
 }: ChannelFormFieldsProps) {
-  const renderFieldLabel = (label: string, fieldName: string, tooltip: string, required?: boolean) => (
-    <div className="flex items-center gap-2">
-      <Label htmlFor={fieldName} className="flex items-center gap-0.5">
-        {label}{required && <span className="text-red-500">*</span>}
-      </Label>
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <InfoIcon className="h-4 w-4 text-muted-foreground" />
-          </TooltipTrigger>
-          <TooltipContent>{tooltip}</TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+  const renderFieldLabel = (
+    label: string,
+    fieldName: string,
+    tooltip: string,
+    required?: boolean,
+    icon?: React.ReactNode,
+    description?: string
+  ) => (
+    <div className="space-y-1.5">
+      <div className="flex items-center gap-2">
+        <Label htmlFor={fieldName} className="flex items-center gap-2 text-sm font-medium">
+          {icon}
+          {label}
+          {required && <span className="text-destructive">*</span>}
+        </Label>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Info className="h-4 w-4 text-muted-foreground" />
+            </TooltipTrigger>
+            <TooltipContent>{tooltip}</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
+      {description && (
+        <p className="text-sm text-muted-foreground">{description}</p>
+      )}
     </div>
   );
 
@@ -67,12 +78,19 @@ export function ChannelFormFields({
   );
 
   return (
-    <div className="grid gap-6">
-      <div className="space-y-4">
-        <h3 className="text-sm font-medium">Basic Information</h3>
-        <div className="grid gap-4">
+    <div className="grid gap-8">
+      <div className="space-y-6">
+        <h3 className="text-lg font-semibold">Basic Information</h3>
+        <div className="grid gap-6">
           <div className="space-y-2">
-            {renderFieldLabel('Channel Name', 'channelName', 'The name used to identify this channel', true)}
+            {renderFieldLabel(
+              'Channel Name',
+              'channelName',
+              'The name used to identify this channel',
+              true,
+              <Info className="h-4 w-4" />,
+              'Choose a clear and descriptive name for your email channel'
+            )}
             <Input
               id="channelName"
               value={channelName}
@@ -80,53 +98,44 @@ export function ChannelFormFields({
               onBlur={() => setFieldTouched('channelName')}
               placeholder="Support Channel"
               maxLength={50}
-              className={errors.channelName && touched.channelName ? 'border-red-500' : ''}
+              className={errors.channelName && touched.channelName ? 'border-destructive' : ''}
             />
             {renderCharacterCount(channelName, 50)}
             {errors.channelName && touched.channelName && (
-              <p className="text-sm text-red-500">{errors.channelName}</p>
+              <p className="text-sm text-destructive mt-1">{errors.channelName}</p>
             )}
           </div>
           <div className="space-y-2">
-            {renderFieldLabel('Channel Icon', 'emoji', 'Choose an emoji to represent this channel')}
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-full justify-start gap-2",
-                    !selectedEmoji && "text-muted-foreground"
-                  )}
-                >
-                  {selectedEmoji ? (
-                    <span className="text-lg">{selectedEmoji}</span>
-                  ) : (
-                    <Smile className="h-4 w-4" />
-                  )}
-                  {selectedEmoji ? 'Selected Emoji' : 'Select an emoji...'}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-full p-0" align="start">
-                <div className="h-[300px]">
-                  <EmojiPicker
-                    onEmojiClick={(emojiData) => setSelectedEmoji(emojiData.emoji)}
-                    width="100%"
-                    height="100%"
-                  />
-                </div>
-              </PopoverContent>
-            </Popover>
+            {renderFieldLabel(
+              'Channel Icon',
+              'emoji',
+              'Choose an emoji to represent this channel',
+              false,
+              <Info className="h-4 w-4" />,
+              'Select an emoji that represents the purpose of this channel'
+            )}
+            <IconEmojiPicker
+              selectedEmoji={selectedEmoji}
+              setSelectedEmoji={setSelectedEmoji}
+            />
           </div>
         </div>
       </div>
 
-      <Separator />
+      <Separator className="my-2" />
 
-      <div className="space-y-4">
-        <h3 className="text-sm font-medium">Email Configuration</h3>
-        <div className="grid gap-4">
+      <div className="space-y-6">
+        <h3 className="text-lg font-semibold">Email Configuration</h3>
+        <div className="grid gap-6">
           <div className="space-y-2">
-            {renderFieldLabel('Email Sender Name', 'senderName', 'The name that will appear in the From field', true)}
+            {renderFieldLabel(
+              'Sender Name',
+              'senderName',
+              'The name that will appear in the From field',
+              true,
+              <User className="h-4 w-4" />,
+              'This name will be displayed to recipients in their email client'
+            )}
             <Input
               id="senderName"
               value={senderName}
@@ -134,15 +143,22 @@ export function ChannelFormFields({
               onBlur={() => setFieldTouched('senderName')}
               placeholder="Support Team"
               maxLength={50}
-              className={errors.senderName && touched.senderName ? 'border-red-500' : ''}
+              className={errors.senderName && touched.senderName ? 'border-destructive' : ''}
             />
             {renderCharacterCount(senderName, 50)}
             {errors.senderName && touched.senderName && (
-              <p className="text-sm text-red-500">{errors.senderName}</p>
+              <p className="text-sm text-destructive mt-1">{errors.senderName}</p>
             )}
           </div>
           <div className="space-y-2">
-            {renderFieldLabel('Email Address', 'email', 'The email address that will be used to send emails', true)}
+            {renderFieldLabel(
+              'Email Address',
+              'email',
+              'The email address that will be used to send emails',
+              true,
+              <Mail className="h-4 w-4" />,
+              'Main email address for sending and receiving messages'
+            )}
             <Input
               id="email"
               type="email"
@@ -150,49 +166,57 @@ export function ChannelFormFields({
               onChange={(e) => setEmail(e.target.value)}
               onBlur={() => setFieldTouched('email')}
               placeholder="support@company.com"
-              className={errors.email && touched.email ? 'border-red-500' : ''}
+              className={errors.email && touched.email ? 'border-destructive' : ''}
             />
             {errors.email && touched.email && (
-              <p className="text-sm text-red-500">{errors.email}</p>
+              <p className="text-sm text-destructive mt-1">{errors.email}</p>
             )}
           </div>
-        </div>
-      </div>
-
-      <Separator />
-
-      <div className="space-y-4">
-        <h3 className="text-sm font-medium">Advanced Settings</h3>
-        <div className="grid gap-4">
-          <div className="space-y-2">
-            {renderFieldLabel('Auto BCC Email', 'autoBccEmail', 'Optional email address that will be BCC\'d on all outgoing emails')}
-            <Input
-              id="autoBccEmail"
-              type="email"
-              value={autoBccEmail}
-              onChange={(e) => setAutoBccEmail(e.target.value)}
-              onBlur={() => setFieldTouched('autoBccEmail')}
-              placeholder="archive@company.com"
-              className={errors.autoBccEmail && touched.autoBccEmail ? 'border-red-500' : ''}
-            />
-            {errors.autoBccEmail && touched.autoBccEmail && (
-              <p className="text-sm text-red-500">{errors.autoBccEmail}</p>
-            )}
-          </div>
-          <div className="space-y-2">
-            {renderFieldLabel('No Reply Email', 'noReplyEmail', 'Optional email address for automated responses')}
-            <Input
-              id="noReplyEmail"
-              type="email"
-              value={noReplyEmail}
-              onChange={(e) => setNoReplyEmail(e.target.value)}
-              onBlur={() => setFieldTouched('noReplyEmail')}
-              placeholder="no-reply@company.com"
-              className={errors.noReplyEmail && touched.noReplyEmail ? 'border-red-500' : ''}
-            />
-            {errors.noReplyEmail && touched.noReplyEmail && (
-              <p className="text-sm text-red-500">{errors.noReplyEmail}</p>
-            )}
+          <div className="grid gap-6 rounded-lg border p-4 bg-muted/10">
+            <div className="space-y-2">
+              {renderFieldLabel(
+                'Auto BCC Email',
+                'autoBccEmail',
+                'Optional email address that will be BCC\'d on all outgoing emails',
+                false,
+                <Mail className="h-4 w-4" />,
+                'Automatically BCC this address on all outgoing emails for record-keeping'
+              )}
+              <Input
+                id="autoBccEmail"
+                type="email"
+                value={autoBccEmail}
+                onChange={(e) => setAutoBccEmail(e.target.value)}
+                onBlur={() => setFieldTouched('autoBccEmail')}
+                placeholder="archive@company.com"
+                className={errors.autoBccEmail && touched.autoBccEmail ? 'border-destructive' : ''}
+              />
+              {errors.autoBccEmail && touched.autoBccEmail && (
+                <p className="text-sm text-destructive mt-1">{errors.autoBccEmail}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              {renderFieldLabel(
+                'No Reply Email',
+                'noReplyEmail',
+                'Optional email address for automated responses',
+                false,
+                <Mail className="h-4 w-4" />,
+                'Used for automated messages where replies are not monitored'
+              )}
+              <Input
+                id="noReplyEmail"
+                type="email"
+                value={noReplyEmail}
+                onChange={(e) => setNoReplyEmail(e.target.value)}
+                onBlur={() => setFieldTouched('noReplyEmail')}
+                placeholder="no-reply@company.com"
+                className={errors.noReplyEmail && touched.noReplyEmail ? 'border-destructive' : ''}
+              />
+              {errors.noReplyEmail && touched.noReplyEmail && (
+                <p className="text-sm text-destructive mt-1">{errors.noReplyEmail}</p>
+              )}
+            </div>
           </div>
         </div>
       </div>
