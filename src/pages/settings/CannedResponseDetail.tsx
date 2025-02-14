@@ -19,6 +19,8 @@ import { updateCannedResponse } from '@/store/slices/cannedResponses/actions';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { mockTeams } from '@/store/slices/teams/mockData';
 
 interface CannedResponseFormValues {
   title: string;
@@ -26,6 +28,11 @@ interface CannedResponseFormValues {
   shortcut: string;
   category: string;
   isShared: boolean;
+  sharedWith?: Array<{
+    teamId: string;
+    teamName?: string;
+    permissions: 'view' | 'edit';
+  }>;
 }
 
 const CannedResponseDetail = () => {
@@ -34,6 +41,8 @@ const CannedResponseDetail = () => {
   const dispatch = useAppDispatch();
   const response = useAppSelector(state => selectCannedResponseById(state, id ?? ''));
   const [loading, setLoading] = useState(false);
+  const [selectedTeam, setSelectedTeam] = useState('');
+  const [selectedPermission, setSelectedPermission] = useState<'view' | 'edit'>('view');
 
   const form = useForm<CannedResponseFormValues>({
     defaultValues: {
@@ -42,6 +51,7 @@ const CannedResponseDetail = () => {
       shortcut: '',
       category: '',
       isShared: false,
+      sharedWith: [],
     },
   });
 
@@ -53,9 +63,38 @@ const CannedResponseDetail = () => {
         shortcut: response.shortcut,
         category: response.category,
         isShared: response.isShared,
+        sharedWith: response.sharedWith?.map(share => ({
+          teamId: share.sharedWith.teamId || '',
+          teamName: share.sharedWith.teamName,
+          permissions: share.permissions,
+        })) || [],
       });
     }
   }, [response, form]);
+
+  const handleAddShare = () => {
+    if (!selectedTeam) return;
+
+    const currentShares = form.getValues('sharedWith') || [];
+    const team = mockTeams.find(t => t.id === selectedTeam);
+
+    form.setValue('sharedWith', [
+      ...currentShares,
+      {
+        teamId: selectedTeam,
+        teamName: team?.name,
+        permissions: selectedPermission,
+      }
+    ]);
+
+    setSelectedTeam('');
+    setSelectedPermission('view');
+  };
+
+  const handleRemoveShare = (index: number) => {
+    const currentShares = form.getValues('sharedWith') || [];
+    form.setValue('sharedWith', currentShares.filter((_, i) => i !== index));
+  };
 
   const onSubmit = async (data: CannedResponseFormValues) => {
     if (!response) return;
@@ -210,7 +249,7 @@ const CannedResponseDetail = () => {
                 <CardHeader>
                   <CardTitle>Sharing Settings</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-4">
                   <FormField
                     control={form.control}
                     name="isShared"
@@ -219,7 +258,7 @@ const CannedResponseDetail = () => {
                         <div className="space-y-0.5">
                           <FormLabel>Shared Response</FormLabel>
                           <FormDescription>
-                            Make this response available to all team members
+                            Make this response available to other team members
                           </FormDescription>
                         </div>
                         <FormControl>
@@ -232,6 +271,62 @@ const CannedResponseDetail = () => {
                       </FormItem>
                     )}
                   />
+
+                  {form.watch('isShared') && (
+                    <div className="space-y-4">
+                      <div className="flex gap-2">
+                        <Select value={selectedTeam} onValueChange={setSelectedTeam}>
+                          <SelectTrigger className="w-[200px]">
+                            <SelectValue placeholder="Select team" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {mockTeams.map(team => (
+                              <SelectItem key={team.id} value={team.id}>
+                                {team.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        
+                        <Select value={selectedPermission} onValueChange={(val: 'view' | 'edit') => setSelectedPermission(val)}>
+                          <SelectTrigger className="w-[150px]">
+                            <SelectValue placeholder="Permissions" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="view">View only</SelectItem>
+                            <SelectItem value="edit">Can edit</SelectItem>
+                          </SelectContent>
+                        </Select>
+
+                        <Button type="button" onClick={handleAddShare}>
+                          Add
+                        </Button>
+                      </div>
+
+                      <div className="space-y-2">
+                        {form.watch('sharedWith')?.map((share, index) => (
+                          <div key={index} className="flex items-center justify-between p-2 border rounded">
+                            <div>
+                              <span className="font-medium">
+                                {mockTeams.find(t => t.id === share.teamId)?.name}
+                              </span>
+                              <span className="ml-2 text-sm text-muted-foreground">
+                                ({share.permissions === 'view' ? 'View only' : 'Can edit'})
+                              </span>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleRemoveShare(index)}
+                            >
+                              Remove
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
