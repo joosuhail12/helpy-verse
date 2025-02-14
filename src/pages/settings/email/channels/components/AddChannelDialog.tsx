@@ -46,6 +46,8 @@ export function AddChannelDialog({ onAddChannel, className, variant = 'default' 
     setNoReplyEmail,
     selectedIcon,
     setSelectedIcon,
+    selectedEmoji,
+    setSelectedEmoji,
     handleSubmit,
   } = useChannelForm({
     onAddChannel: (channel) => {
@@ -83,6 +85,8 @@ export function AddChannelDialog({ onAddChannel, className, variant = 'default' 
             setNoReplyEmail={setNoReplyEmail}
             selectedIcon={selectedIcon}
             setSelectedIcon={setSelectedIcon}
+            selectedEmoji={selectedEmoji}
+            setSelectedEmoji={setSelectedEmoji}
           />
           <DialogFooter>
             <Button type="submit">Add Channel</Button>
@@ -92,3 +96,4 @@ export function AddChannelDialog({ onAddChannel, className, variant = 'default' 
     </Dialog>
   );
 }
+
