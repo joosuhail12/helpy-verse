@@ -1,97 +1,97 @@
 
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Mail } from 'lucide-react';
 import { AddChannelDialog } from './components/AddChannelDialog';
 import { ChannelList } from './components/ChannelList';
 import { useToast } from '@/hooks/use-toast';
-
-interface EmailChannel {
-  id: string;
-  channelName: string;
-  senderName: string;
-  email: string;
-  autoBccEmail?: string;
-  noReplyEmail?: string;
-  icon?: string;
-  type: 'sending' | 'receiving' | 'both';
-  isDefault: boolean;
-  isVerified: boolean;
-  createdAt: string;
-}
-
-const mockChannels: EmailChannel[] = [
-  {
-    id: '1',
-    channelName: 'Primary Support',
-    senderName: 'Support Team',
-    email: 'support@company.com',
-    noReplyEmail: 'no-reply@company.com',
-    icon: '📧',
-    type: 'both',
-    isDefault: true,
-    isVerified: true,
-    createdAt: '2024-03-10T10:00:00Z'
-  },
-  {
-    id: '2',
-    channelName: 'Marketing Updates',
-    senderName: 'Marketing',
-    email: 'marketing@company.com',
-    autoBccEmail: 'archive@company.com',
-    icon: '📣',
-    type: 'sending',
-    isDefault: false,
-    isVerified: true,
-    createdAt: '2024-03-09T15:30:00Z'
-  }
-];
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { useAppSelector } from '@/hooks/useAppSelector';
+import { 
+  fetchChannels, 
+  createChannel, 
+  verifyChannel, 
+  deleteChannel, 
+  setDefaultChannel 
+} from '@/store/slices/emailChannels/emailChannelsSlice';
+import { 
+  selectEmailChannels, 
+  selectEmailChannelsLoading 
+} from '@/store/slices/emailChannels/selectors';
+import type { CreateEmailChannelDto } from '@/types/emailChannel';
 
 const Channels = () => {
   const { toast } = useToast();
-  const [channels, setChannels] = useState<EmailChannel[]>(mockChannels);
+  const dispatch = useAppDispatch();
+  const channels = useAppSelector(selectEmailChannels);
+  const loading = useAppSelector(selectEmailChannelsLoading);
 
-  const handleAddChannel = (channel: Omit<EmailChannel, 'id' | 'isVerified' | 'createdAt'>) => {
-    const newChannel: EmailChannel = {
-      ...channel,
-      id: Math.random().toString(),
-      isVerified: false,
-      createdAt: new Date().toISOString()
-    };
-    setChannels(prev => [...prev, newChannel]);
-    toast({
-      title: "Channel added",
-      description: "The email channel has been added successfully.",
-    });
+  useEffect(() => {
+    dispatch(fetchChannels());
+  }, [dispatch]);
+
+  const handleAddChannel = async (channelData: CreateEmailChannelDto) => {
+    try {
+      await dispatch(createChannel(channelData)).unwrap();
+      toast({
+        title: "Channel added",
+        description: "The email channel has been added successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add the email channel.",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleVerify = (id: string) => {
-    setChannels(prev => prev.map(channel => 
-      channel.id === id ? { ...channel, isVerified: true } : channel
-    ));
-    toast({
-      title: "Verification initiated",
-      description: "A verification email has been sent.",
-    });
+  const handleVerify = async (id: string) => {
+    try {
+      await dispatch(verifyChannel(id)).unwrap();
+      toast({
+        title: "Verification initiated",
+        description: "A verification email has been sent.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to initiate verification.",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleDelete = (id: string) => {
-    setChannels(prev => prev.filter(channel => channel.id !== id));
-    toast({
-      title: "Channel deleted",
-      description: "The email channel has been removed successfully.",
-    });
+  const handleDelete = async (id: string) => {
+    try {
+      await dispatch(deleteChannel(id)).unwrap();
+      toast({
+        title: "Channel deleted",
+        description: "The email channel has been removed successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete the channel.",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleSetDefault = (id: string) => {
-    setChannels(prev => prev.map(channel => ({
-      ...channel,
-      isDefault: channel.id === id
-    })));
-    toast({
-      title: "Default updated",
-      description: "The default email channel has been updated.",
-    });
+  const handleSetDefault = async (id: string) => {
+    try {
+      await dispatch(setDefaultChannel(id)).unwrap();
+      toast({
+        title: "Default updated",
+        description: "The default email channel has been updated.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update default channel.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -111,7 +111,12 @@ const Channels = () => {
       </div>
 
       <Card className="overflow-hidden border-t-2 border-t-primary/10 shadow-sm">
-        {channels.length === 0 ? (
+        {loading ? (
+          <div className="text-center py-16">
+            <Mail className="mx-auto h-12 w-12 text-muted-foreground/50 animate-pulse" />
+            <h3 className="mt-4 text-lg font-semibold">Loading channels...</h3>
+          </div>
+        ) : channels.length === 0 ? (
           <div className="text-center py-16">
             <Mail className="mx-auto h-12 w-12 text-muted-foreground/50" />
             <h3 className="mt-4 text-lg font-semibold">No email channels</h3>

@@ -1,4 +1,3 @@
-
 import { configureStore } from '@reduxjs/toolkit';
 import authReducer from './slices/authSlice';
 import tagsReducer from './slices/tagsSlice';
@@ -6,6 +5,7 @@ import teammatesReducer from './slices/teammates/teammatesSlice';
 import securityReducer from './slices/securitySlice';
 import teamsReducer from './slices/teams/teamsSlice';
 import cannedResponsesReducer from './slices/cannedResponses/cannedResponsesSlice';
+import emailChannelsReducer from './slices/emailChannels/emailChannelsSlice';
 
 export const store = configureStore({
   reducer: {
@@ -15,9 +15,13 @@ export const store = configureStore({
     security: securityReducer,
     teams: teamsReducer,
     cannedResponses: cannedResponsesReducer,
+    emailChannels: emailChannelsReducer,
   },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: false,
+    }),
 });
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
-
