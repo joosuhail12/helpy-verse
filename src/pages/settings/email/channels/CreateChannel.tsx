@@ -8,7 +8,7 @@ import { createChannel } from '@/store/slices/emailChannels/emailChannelsSlice';
 import { ChannelFormFields } from './components/ChannelFormFields';
 import { useChannelForm } from './hooks/useChannelForm';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 
 const CreateChannel = () => {
   const { toast } = useToast();
@@ -32,19 +32,21 @@ const CreateChannel = () => {
     errors,
     touched,
     setFieldTouched,
+    isSubmitting,
   } = useChannelForm({
     onAddChannel: async (channel) => {
       try {
-        await dispatch(createChannel(channel)).unwrap();
+        const result = await dispatch(createChannel(channel)).unwrap();
         toast({
-          title: "Channel added",
-          description: "The email channel has been added successfully.",
+          title: "Channel created successfully",
+          description: `${result.channelName} has been created with ${result.email} as the sender.`,
+          duration: 5000,
         });
         navigate('/settings/email/channels');
-      } catch (error) {
+      } catch (error: any) {
         toast({
-          title: "Error",
-          description: "Failed to add the email channel.",
+          title: "Failed to create channel",
+          description: error?.message || "An unexpected error occurred. Please try again.",
           variant: "destructive",
         });
       }
@@ -93,11 +95,19 @@ const CreateChannel = () => {
               type="button"
               variant="outline"
               onClick={() => navigate('/settings/email/channels')}
+              disabled={isSubmitting}
             >
               Cancel
             </Button>
-            <Button type="submit">
-              Create Channel
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                'Create Channel'
+              )}
             </Button>
           </div>
         </form>
@@ -107,3 +117,4 @@ const CreateChannel = () => {
 };
 
 export default CreateChannel;
+

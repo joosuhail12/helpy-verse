@@ -14,6 +14,7 @@ export function useChannelForm({ onAddChannel }: UseChannelFormProps) {
   const [noReplyEmail, setNoReplyEmail] = useState('');
   const [selectedEmoji, setSelectedEmoji] = useState<string | null>(null);
   const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -58,7 +59,7 @@ export function useChannelForm({ onAddChannel }: UseChannelFormProps) {
     setTouched((prev) => ({ ...prev, [field]: true }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     const allFields = ['channelName', 'senderName', 'email', 'autoBccEmail', 'noReplyEmail'];
@@ -67,16 +68,21 @@ export function useChannelForm({ onAddChannel }: UseChannelFormProps) {
 
     const validationErrors = validate();
     if (Object.keys(validationErrors).length === 0) {
-      onAddChannel({
-        channelName,
-        senderName,
-        email,
-        autoBccEmail: autoBccEmail || undefined,
-        noReplyEmail: noReplyEmail || undefined,
-        icon: selectedEmoji || undefined,
-        type: 'both',
-        isDefault: false,
-      });
+      setIsSubmitting(true);
+      try {
+        await onAddChannel({
+          channelName,
+          senderName,
+          email,
+          autoBccEmail: autoBccEmail || undefined,
+          noReplyEmail: noReplyEmail || undefined,
+          icon: selectedEmoji || undefined,
+          type: 'both',
+          isDefault: false,
+        });
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 
@@ -97,5 +103,7 @@ export function useChannelForm({ onAddChannel }: UseChannelFormProps) {
     errors,
     touched,
     setFieldTouched,
+    isSubmitting,
   };
 }
+
