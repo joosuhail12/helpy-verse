@@ -29,8 +29,6 @@ export function AddChannelDialog({ isOpen, onClose }: AddChannelDialogProps) {
     setAutoBccEmail,
     noReplyEmail,
     setNoReplyEmail,
-    selectedIcon,
-    setSelectedIcon,
     selectedEmoji,
     setSelectedEmoji,
     handleSubmit,
@@ -74,8 +72,6 @@ export function AddChannelDialog({ isOpen, onClose }: AddChannelDialogProps) {
             setAutoBccEmail={setAutoBccEmail}
             noReplyEmail={noReplyEmail}
             setNoReplyEmail={setNoReplyEmail}
-            selectedIcon={selectedIcon}
-            setSelectedIcon={setSelectedIcon}
             selectedEmoji={selectedEmoji}
             setSelectedEmoji={setSelectedEmoji}
             errors={errors}

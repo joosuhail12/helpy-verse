@@ -26,8 +26,6 @@ const CreateChannel = () => {
     setAutoBccEmail,
     noReplyEmail,
     setNoReplyEmail,
-    selectedIcon,
-    setSelectedIcon,
     selectedEmoji,
     setSelectedEmoji,
     handleSubmit,
@@ -84,8 +82,6 @@ const CreateChannel = () => {
             setAutoBccEmail={setAutoBccEmail}
             noReplyEmail={noReplyEmail}
             setNoReplyEmail={setNoReplyEmail}
-            selectedIcon={selectedIcon}
-            setSelectedIcon={setSelectedIcon}
             selectedEmoji={selectedEmoji}
             setSelectedEmoji={setSelectedEmoji}
             errors={errors}
