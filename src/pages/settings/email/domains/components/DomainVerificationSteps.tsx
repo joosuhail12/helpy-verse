@@ -7,7 +7,7 @@ interface DomainVerificationStepsProps {
 }
 
 export const DomainVerificationSteps = ({ domain }: DomainVerificationStepsProps) => {
-  const verificationSteps = [
+  let verificationSteps = [
     {
       title: 'Add DNS Records',
       description: 'Add the required DNS records to your domain',
@@ -23,7 +23,8 @@ export const DomainVerificationSteps = ({ domain }: DomainVerificationStepsProps
       description: 'Your domain is ready to use',
       status: domain.status === 'verified' ? 'complete' : 'pending',
     },
-  ] as const;
+  ];
 
   return <Steps steps={verificationSteps} />;
 };
+

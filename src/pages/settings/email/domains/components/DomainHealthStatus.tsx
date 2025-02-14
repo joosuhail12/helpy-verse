@@ -1,4 +1,3 @@
-
 import { Mail, ShieldCheck, ShieldAlert, Calendar, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 import type { Domain } from '@/mock/domains';
