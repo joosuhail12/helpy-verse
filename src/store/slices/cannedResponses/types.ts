@@ -6,5 +6,9 @@ export interface CannedResponsesState {
   loading: boolean;
   error: string | null;
   selectedResponse: CannedResponse | null;
+  versionHistory: {
+    responseId: string;
+    versions: CannedResponse['versions'];
+  } | null;
 }
 

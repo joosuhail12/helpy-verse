@@ -2,6 +2,12 @@
 import * as z from 'zod';
 import { validateShortcut } from '@/utils/shortcutUtils';
 
+export const shareSchema = z.object({
+  teamId: z.string().optional(),
+  userId: z.string().optional(),
+  permissions: z.enum(['view', 'edit']),
+});
+
 export const formSchema = z.object({
   title: z.string()
     .min(1, "Title is required")
@@ -19,6 +25,8 @@ export const formSchema = z.object({
     .min(1, "Category is required"),
   isShared: z.boolean(),
   createdBy: z.string(),
+  sharedWith: z.array(shareSchema).optional(),
 });
 
 export type FormValues = z.infer<typeof formSchema>;
+
