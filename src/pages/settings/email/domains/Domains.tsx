@@ -1,16 +1,18 @@
+
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { mockDomains, type Domain } from '@/mock/domains';
 import { Card } from '@/components/ui/card';
 import { DomainListItem } from './components/DomainListItem';
 import { AddDomainDialog } from './components/AddDomainDialog';
-import { toast } from '@/components/ui/toast';
+import { useToast } from '@/hooks/use-toast';
 import { Globe } from 'lucide-react';
 import { DomainControls } from './components/DomainControls';
 import { DomainBulkActions } from './components/DomainBulkActions';
 
 const Domains = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<Domain['status'] | 'all'>('all');
   const [sortBy, setSortBy] = useState<'date' | 'name'>('date');

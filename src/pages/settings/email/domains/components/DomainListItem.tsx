@@ -6,7 +6,7 @@ import { format, isPast, addDays } from 'date-fns';
 import type { Domain } from '@/mock/domains';
 import { DomainBadge } from '../DomainBadge';
 import { cn } from '@/lib/utils';
-import { toast } from '@/components/ui/toast';
+import { useToast } from '@/hooks/use-toast';
 import {
   Tooltip,
   TooltipContent,
@@ -30,6 +30,7 @@ export const DomainListItem = ({
   onDelete, 
   onNavigate 
 }: DomainListItemProps) => {
+  const { toast } = useToast();
   const isExpiringSoon = isPast(addDays(new Date(domain.dateAdded), 365));
   
   const handleCopyRecord = () => {
