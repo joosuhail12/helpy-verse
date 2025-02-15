@@ -49,6 +49,13 @@ const contactsSlice = createSlice({
     addContact: (state, action) => {
       state.contacts.unshift(action.payload);
     },
+    updateContact: (state, action) => {
+      const { id, ...updates } = action.payload;
+      const contact = state.contacts.find(c => c.id === id);
+      if (contact) {
+        Object.assign(contact, updates);
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -68,5 +75,11 @@ const contactsSlice = createSlice({
   },
 });
 
-export const { setSelectedContacts, toggleContactSelection, addContact } = contactsSlice.actions;
+export const { 
+  setSelectedContacts, 
+  toggleContactSelection, 
+  addContact,
+  updateContact
+} = contactsSlice.actions;
+
 export default contactsSlice.reducer;

@@ -1,7 +1,7 @@
 
 import { Contact } from '@/types/contact';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Edit2, Trash2, User } from 'lucide-react';
+import { ArrowLeft, Edit2, Trash2, User, Ticket } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
@@ -24,6 +24,16 @@ export const ContactDetailHeader = ({ contact }: ContactDetailHeaderProps) => {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div className="flex items-center gap-2">
+          <Button 
+            variant="default" 
+            size="sm"
+            onClick={() => navigate('/home/tickets/new', { 
+              state: { contactId: contact.id } 
+            })}
+          >
+            <Ticket className="h-4 w-4 mr-2" />
+            Create Ticket
+          </Button>
           <Button variant="outline" size="sm">
             <Edit2 className="h-4 w-4 mr-2" />
             Edit
