@@ -5,6 +5,7 @@ import { ContactDetailHeader } from '@/components/contacts/detail/ContactDetailH
 import { ContactInformation } from '@/components/contacts/detail/ContactInformation';
 import { ContactTimeline } from '@/components/contacts/detail/ContactTimeline';
 import { ContactDetailSidebar } from '@/components/contacts/detail/ContactDetailSidebar';
+import { ContactCustomObjectData } from '@/components/contacts/detail/ContactCustomObjectData';
 import { Card } from '@/components/ui/card';
 import { Bell } from 'lucide-react';
 import { Activity } from '@/types/activity';
@@ -55,8 +56,9 @@ const ContactDetail = () => {
           )}
           
           <ContactDetailSidebar contact={contact} />
-          <div className="mt-4">
+          <div className="mt-4 space-y-4">
             <ContactInformation contact={contact} activities={activities} />
+            <ContactCustomObjectData contact={contact} />
           </div>
         </div>
 
@@ -70,3 +72,4 @@ const ContactDetail = () => {
 };
 
 export default ContactDetail;
+
