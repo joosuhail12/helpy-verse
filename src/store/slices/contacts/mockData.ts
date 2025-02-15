@@ -1,4 +1,3 @@
-
 import { Contact } from '@/types/contact';
 
 export const mockContacts: Contact[] = [
@@ -16,7 +15,11 @@ export const mockContacts: Contact[] = [
     tags: ['vip', 'enterprise'],
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-02-15T00:00:00Z',
-    managerId: '2',
+    street: '123 Business Ave',
+    city: 'San Francisco',
+    state: 'CA',
+    postalCode: '94105',
+    country: 'USA',
   },
   {
     id: '2',
@@ -63,4 +66,3 @@ export const mockContacts: Contact[] = [
     managerId: '1',
   },
 ];
-

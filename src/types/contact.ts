@@ -20,11 +20,13 @@ export interface Contact {
   tags: string[];
   notes?: string;
   lastContacted?: string;
-  nextFollowUp?: string;
   createdAt: string;
   updatedAt: string;
-  managerId?: string;
-  reportsToId?: string;
-  teamIds?: string[];
+  // Address fields
+  street?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  country?: string;
 }
 
