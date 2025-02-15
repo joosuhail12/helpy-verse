@@ -44,7 +44,7 @@ const CreateChannel = () => {
           description: `${result.channelName} has been created with ${result.email} as the sender.`,
           duration: 5000,
         });
-        navigate('/settings/email/channels');
+        navigate('/home/settings/email/channels');
       } catch (error: any) {
         toast({
           title: "Failed to create channel",
@@ -56,7 +56,7 @@ const CreateChannel = () => {
   });
 
   const handleBack = () => {
-    navigate('/settings/email/channels');
+    navigate('/home/settings/email/channels');
   };
 
   return (
