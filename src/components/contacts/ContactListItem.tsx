@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { toggleContactSelection } from '@/store/slices/contacts/contactsSlice';
+import { ContactActivityBadge } from './ContactActivityBadge';
 
 interface ContactListItemProps {
   contact: Contact;
@@ -55,6 +56,9 @@ export const ContactListItem = ({ contact, isSelected }: ContactListItemProps) =
         {contact.lastContacted 
           ? format(new Date(contact.lastContacted), 'MMM dd, yyyy')
           : '-'}
+      </TableCell>
+      <TableCell>
+        <ContactActivityBadge contact={contact} />
       </TableCell>
       <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
         <Button variant="ghost" size="icon">
