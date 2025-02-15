@@ -1,3 +1,4 @@
+
 import { Contact } from '@/types/contact';
 
 export const mockContacts: Contact[] = [
@@ -48,7 +49,6 @@ export const mockContacts: Contact[] = [
     tags: [],
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-02-15T00:00:00Z',
-    managerId: '1',
   },
   {
     id: '4',
@@ -63,6 +63,5 @@ export const mockContacts: Contact[] = [
     tags: [],
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-02-15T00:00:00Z',
-    managerId: '1',
   },
 ];
