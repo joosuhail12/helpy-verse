@@ -12,6 +12,18 @@ const mockCompanies: Company[] = [
     id: '1',
     name: 'Acme Corporation',
     website: 'https://www.acme.com',
+    industry: 'Technology',
+    employeeCount: 500,
+    type: 'customer',
+    status: 'active',
+    description: 'Leading technology solutions provider',
+    phone: '+1 (555) 123-4567',
+    email: 'contact@acme.com',
+    location: {
+      city: 'San Francisco',
+      state: 'CA',
+      country: 'USA'
+    },
     createdAt: new Date(2024, 0, 15).toISOString(),
     updatedAt: new Date(2024, 0, 15).toISOString(),
   },

@@ -19,7 +19,9 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Activity } from '@/types/activity';
+import { AssociatedContacts } from '@/components/companies/detail/AssociatedContacts';
 
 const CompanyDetail = () => {
   const { id } = useParams();
@@ -32,7 +34,6 @@ const CompanyDetail = () => {
     state.companies.companies.find(c => c.id === id)
   );
 
-  // Mock activities data with correct types - similar to contact details
   const activities: Activity[] = [
     {
       id: '1',
@@ -147,6 +148,32 @@ const CompanyDetail = () => {
                   />
                 </div>
 
+                {/* New Fields */}
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 text-sm font-medium text-purple-900/70">
+                    <span>Industry</span>
+                  </div>
+                  <InlineEditField
+                    value={company.industry || ''}
+                    contactId={company.id}
+                    field="industry"
+                    label="Industry"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 text-sm font-medium text-purple-900/70">
+                    <span>Employee Count</span>
+                  </div>
+                  <InlineEditField
+                    value={String(company.employeeCount || '')}
+                    contactId={company.id}
+                    field="employeeCount"
+                    label="Employee Count"
+                    type="number"
+                  />
+                </div>
+
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 text-sm font-medium text-purple-900/70">
                     <Calendar className="h-4 w-4" />
@@ -169,42 +196,43 @@ const CompanyDetail = () => {
               </div>
             </CardContent>
           </Card>
-
-          {/* Associated Contacts Card */}
-          <Card className="bg-white/60 backdrop-blur-sm border-purple-100/50 shadow-lg shadow-purple-500/5">
-            <CardHeader className="border-b border-purple-100/20 pb-4">
-              <CardTitle className="text-lg font-semibold text-purple-900">Associated Contacts</CardTitle>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <div className="text-sm text-gray-500">
-                No contacts associated with this company yet.
-              </div>
-            </CardContent>
-          </Card>
         </div>
 
-        {/* Right Column (8/12 width) - Activity Timeline */}
+        {/* Right Column (8/12 width) - Tabbed Content */}
         <div className="lg:col-span-8">
-          <Card className="bg-white/60 backdrop-blur-sm border-purple-100/50 shadow-lg shadow-purple-500/5">
-            <CardHeader className="border-b border-purple-100/20 pb-4">
-              <CardTitle className="text-lg font-semibold text-purple-900">Activity Timeline</CardTitle>
-            </CardHeader>
-            <CardContent className="pt-6">
-              {activities.map((activity) => (
-                <div key={activity.id} className="flex gap-4 mb-4">
-                  <div className="p-2 bg-purple-100 rounded-lg">
-                    <Building2 className="h-4 w-4 text-purple-600" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-900">{activity.description}</p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {new Date(activity.date).toLocaleDateString()}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
+          <Tabs defaultValue="timeline" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="timeline">Activity Timeline</TabsTrigger>
+              <TabsTrigger value="contacts">Manage Contacts</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="timeline">
+              <Card className="bg-white/60 backdrop-blur-sm border-purple-100/50 shadow-lg shadow-purple-500/5">
+                <CardHeader className="border-b border-purple-100/20 pb-4">
+                  <CardTitle className="text-lg font-semibold text-purple-900">Activity Timeline</CardTitle>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  {activities.map((activity) => (
+                    <div key={activity.id} className="flex gap-4 mb-4">
+                      <div className="p-2 bg-purple-100 rounded-lg">
+                        <Building2 className="h-4 w-4 text-purple-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-900">{activity.description}</p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {new Date(activity.date).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="contacts">
+              <AssociatedContacts company={company} />
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
 
