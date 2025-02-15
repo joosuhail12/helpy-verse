@@ -49,10 +49,13 @@ export const ContactCustomFields = ({ contact }: ContactCustomFieldsProps) => {
             <div key={field.id} className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground">{field.name}</p>
               <InlineEditField
-                value={String(contact[field.id] || '')}
+                value={contact[field.id] || ''}
                 contactId={contact.id}
                 field={field.id}
                 label={field.name}
+                type={field.type}
+                options={field.options}
+                validation={field.validationRules}
               />
             </div>
           ))}
@@ -61,4 +64,3 @@ export const ContactCustomFields = ({ contact }: ContactCustomFieldsProps) => {
     </Card>
   );
 };
-

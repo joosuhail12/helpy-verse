@@ -3,89 +3,76 @@ import { useState, useEffect, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Check, X, Pencil, Loader2 } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { updateContact } from '@/store/slices/contacts/contactsSlice';
 import { useToast } from '@/hooks/use-toast';
-import { Contact } from '@/types/contact';
-import { useDebounce } from '@/hooks/useDebounce';
-import { cn } from '@/lib/utils';
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { CustomFieldType } from '@/types/customField';
+import { validateFieldValue } from '@/components/settings/customData/utils/fieldValidation';
+import { Textarea } from '@/components/ui/textarea';
 
 interface InlineEditFieldProps {
-  value: string;
+  value: string | number | boolean;
   contactId: string;
   field: string;
   label: string;
-  type?: 'text' | 'email' | 'tel' | 'url' | 'select' | 'boolean' | 'date';
+  type?: CustomFieldType;
   options?: string[];
-  autoSave?: boolean;
+  validation?: {
+    type: 'required' | 'minLength' | 'maxLength' | 'regex' | 'min' | 'max';
+    value: string | number;
+    message: string;
+  }[];
 }
 
-export const InlineEditField = ({ 
-  value, 
-  contactId, 
-  field, 
+export const InlineEditField = ({
+  value,
+  contactId,
+  field,
   label,
   type = 'text',
   options = [],
-  autoSave = true
+  validation = []
 }: InlineEditFieldProps) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [editValue, setEditValue] = useState(value);
+  const [editValue, setEditValue] = useState<string | number | boolean>(value);
   const [isSaving, setIsSaving] = useState(false);
-  const [saveComplete, setSaveComplete] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const dispatch = useAppDispatch();
   const { toast } = useToast();
   const inputRef = useRef<HTMLInputElement>(null);
-  const debouncedValue = useDebounce(editValue, 1000);
 
   useEffect(() => {
-    if (autoSave && debouncedValue !== value) {
-      handleSave();
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
     }
-  }, [debouncedValue]);
-
-  const validateField = (val: string): string | null => {
-    switch (type) {
-      case 'email':
-        if (val && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) {
-          return 'Invalid email address';
-        }
-        break;
-      case 'url':
-        if (val && !/^https?:\/\/[^\s$.?#].[^\s]*$/.test(val)) {
-          return 'Invalid URL';
-        }
-        break;
-      case 'tel':
-        if (val && !/^\+?[\d\s-()]{8,}$/.test(val)) {
-          return 'Invalid phone number';
-        }
-        break;
-      case 'date':
-        if (val && isNaN(Date.parse(val))) {
-          return 'Invalid date';
-        }
-        break;
-    }
-    return null;
-  };
+  }, [isEditing]);
 
   const handleSave = async () => {
-    if (editValue === value) {
-      setIsEditing(false);
-      return;
-    }
+    // Validate the field based on its type and validation rules
+    const mockField = {
+      id: field,
+      name: label,
+      type,
+      required: validation.some(v => v.type === 'required'),
+      validationRules: validation,
+      description: ''
+    };
 
-    const validationError = validateField(editValue);
-    if (validationError) {
-      setError(validationError);
+    const validationErrors = validateFieldValue(editValue, mockField);
+    if (validationErrors.length > 0) {
+      setError(validationErrors[0]);
       toast({
-        title: "Validation Error",
-        description: validationError,
-        variant: "destructive",
+        title: 'Validation Error',
+        description: validationErrors[0],
+        variant: 'destructive',
       });
       return;
     }
@@ -94,20 +81,17 @@ export const InlineEditField = ({
     setError(null);
     try {
       await dispatch(updateContact({ id: contactId, [field]: editValue }));
-      setSaveComplete(true);
-      setTimeout(() => setSaveComplete(false), 1500);
+      setIsEditing(false);
       toast({
-        title: "Saved",
+        title: 'Success',
         description: `${label} has been updated.`,
       });
-      setIsEditing(false);
     } catch (error) {
       toast({
-        title: "Error",
+        title: 'Error',
         description: `Failed to update ${label.toLowerCase()}.`,
-        variant: "destructive",
+        variant: 'destructive',
       });
-      setEditValue(value);
     } finally {
       setIsSaving(false);
     }
@@ -119,17 +103,20 @@ export const InlineEditField = ({
     setError(null);
   };
 
-  useEffect(() => {
-    if (isEditing && inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [isEditing]);
-
   const renderEditField = () => {
     switch (type) {
+      case 'boolean':
+        return (
+          <Switch
+            checked={Boolean(editValue)}
+            onCheckedChange={(checked) => setEditValue(checked)}
+            disabled={isSaving}
+          />
+        );
+
       case 'select':
         return (
-          <Select value={editValue} onValueChange={setEditValue}>
+          <Select value={String(editValue)} onValueChange={(val) => setEditValue(val)}>
             <SelectTrigger className="h-8">
               <SelectValue />
             </SelectTrigger>
@@ -142,24 +129,50 @@ export const InlineEditField = ({
             </SelectContent>
           </Select>
         );
-      case 'boolean':
+
+      case 'multi-select':
         return (
-          <Switch
-            checked={editValue === 'true'}
-            onCheckedChange={(checked) => setEditValue(checked ? 'true' : 'false')}
-          />
+          <Select
+            value={String(editValue)}
+            onValueChange={(val) => setEditValue(val)}
+            multiple
+          >
+            <SelectTrigger className="h-8">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {options.map((option) => (
+                <SelectItem key={option} value={option}>
+                  {option}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         );
-      case 'date':
+
+      case 'rich-text':
         return (
-          <Input
-            ref={inputRef}
-            type="date"
-            value={editValue}
+          <Textarea
+            value={String(editValue)}
             onChange={(e) => setEditValue(e.target.value)}
-            className={cn("h-8", error && "border-red-500")}
+            className="min-h-[100px]"
             disabled={isSaving}
           />
         );
+
+      case 'currency':
+        return (
+          <Input
+            ref={inputRef}
+            type="number"
+            step="0.01"
+            value={editValue}
+            onChange={(e) => setEditValue(e.target.value)}
+            className="h-8"
+            disabled={isSaving}
+          />
+        );
+
       default:
         return (
           <Input
@@ -167,10 +180,26 @@ export const InlineEditField = ({
             type={type}
             value={editValue}
             onChange={(e) => setEditValue(e.target.value)}
-            className={cn("h-8", error && "border-red-500")}
+            className="h-8"
             disabled={isSaving}
           />
         );
+    }
+  };
+
+  const renderDisplayValue = () => {
+    switch (type) {
+      case 'boolean':
+        return String(value) === 'true' ? 'Yes' : 'No';
+      case 'currency':
+        return new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: 'USD'
+        }).format(Number(value) || 0);
+      case 'multi-select':
+        return Array.isArray(value) ? value.join(', ') : value;
+      default:
+        return value;
     }
   };
 
@@ -179,42 +208,32 @@ export const InlineEditField = ({
       <div className="space-y-1">
         <div className="flex items-center gap-2">
           {renderEditField()}
-          {!autoSave && (
-            <>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={handleSave}
-                disabled={isSaving}
-                className="h-8 w-8 p-0"
-              >
-                {isSaving ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Check className="h-4 w-4 text-green-500" />
-                )}
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={handleCancel}
-                disabled={isSaving}
-                className="h-8 w-8 p-0"
-              >
-                <X className="h-4 w-4 text-red-500" />
-              </Button>
-            </>
-          )}
-          {autoSave && isSaving && (
-            <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
-          )}
-          {autoSave && saveComplete && (
-            <Check className="h-4 w-4 text-green-500 animate-scale-in" />
-          )}
+          <div className="flex items-center space-x-2">
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={handleSave}
+              disabled={isSaving}
+              className="h-8 w-8 p-0"
+            >
+              {isSaving ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Check className="h-4 w-4 text-green-500" />
+              )}
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={handleCancel}
+              disabled={isSaving}
+              className="h-8 w-8 p-0"
+            >
+              <X className="h-4 w-4 text-red-500" />
+            </Button>
+          </div>
         </div>
-        {error && (
-          <p className="text-sm text-red-500">{error}</p>
-        )}
+        {error && <p className="text-sm text-red-500">{error}</p>}
       </div>
     );
   }
@@ -222,7 +241,7 @@ export const InlineEditField = ({
   return (
     <div className="group flex items-center gap-2">
       <span className="min-w-[100px] py-1 px-2 rounded transition-colors group-hover:bg-gray-100">
-        {value}
+        {renderDisplayValue()}
       </span>
       <Button
         size="sm"
