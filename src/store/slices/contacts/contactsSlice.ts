@@ -3,6 +3,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import type { ContactsState } from './types';
 import { mockContacts } from './mockData';
 import { CACHE_DURATION } from './types';
+import type { Contact } from '@/types/contact';
 
 const initialState: ContactsState = {
   contacts: [],
@@ -45,6 +46,9 @@ const contactsSlice = createSlice({
         state.selectedContacts.splice(index, 1);
       }
     },
+    addContact: (state, action) => {
+      state.contacts.unshift(action.payload);
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -64,5 +68,5 @@ const contactsSlice = createSlice({
   },
 });
 
-export const { setSelectedContacts, toggleContactSelection } = contactsSlice.actions;
+export const { setSelectedContacts, toggleContactSelection, addContact } = contactsSlice.actions;
 export default contactsSlice.reducer;
