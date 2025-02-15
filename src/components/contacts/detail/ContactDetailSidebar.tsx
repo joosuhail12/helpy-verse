@@ -7,7 +7,18 @@ import {
   Phone, Building2, Tag, Ticket
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useState } from 'react';
 
 interface ContactDetailSidebarProps {
   contact: Contact;
@@ -16,6 +27,7 @@ interface ContactDetailSidebarProps {
 export const ContactDetailSidebar = ({ contact }: ContactDetailSidebarProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const copyToClipboard = async (value: string, label: string) => {
     try {
@@ -31,6 +43,15 @@ export const ContactDetailSidebar = ({ contact }: ContactDetailSidebarProps) => 
         variant: "destructive",
       });
     }
+  };
+
+  const handleDelete = () => {
+    // Here you would handle the actual delete operation
+    toast({
+      title: "Contact deleted",
+      description: "The contact has been deleted successfully.",
+    });
+    navigate('/home/contacts/all');
   };
 
   return (
@@ -51,7 +72,12 @@ export const ContactDetailSidebar = ({ contact }: ContactDetailSidebarProps) => 
           <Edit2 className="h-4 w-4 mr-2" />
           Edit Contact
         </Button>
-        <Button variant="destructive" size="sm" className="w-full">
+        <Button 
+          variant="destructive" 
+          size="sm" 
+          className="w-full"
+          onClick={() => setIsDeleteDialogOpen(true)}
+        >
           <Trash2 className="h-4 w-4 mr-2" />
           Delete Contact
         </Button>
@@ -109,6 +135,23 @@ export const ContactDetailSidebar = ({ contact }: ContactDetailSidebarProps) => 
           </div>
         </Card>
       )}
+
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Contact</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this contact? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-red-600">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
