@@ -62,7 +62,7 @@ export const EditField = ({
     case 'multi-select':
       return (
         <Select 
-          value={Array.isArray(value) ? value[0] : String(value)}
+          value={Array.isArray(value) && value.length > 0 ? value[0] : ''}
           onValueChange={(val) => {
             const currentValues = Array.isArray(value) ? value : [];
             if (!currentValues.includes(val)) {
@@ -107,6 +107,18 @@ export const EditField = ({
         />
       );
 
+    case 'phone':
+      return (
+        <Input
+          ref={inputRef}
+          type="tel"
+          value={String(value)}
+          onChange={(e) => onChange(e.target.value)}
+          className="h-8"
+          disabled={isSaving}
+        />
+      );
+
     default:
       return (
         <Input
@@ -120,3 +132,4 @@ export const EditField = ({
       );
   }
 };
+

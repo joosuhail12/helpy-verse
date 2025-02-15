@@ -26,9 +26,10 @@ export const ContactCommunicationInfo = ({ contact }: ContactCommunicationInfoPr
           contactId={contact.id}
           field="phone"
           label="Phone"
-          type="tel"
+          type="phone"
         />
       </div>
     </div>
   );
 };
+

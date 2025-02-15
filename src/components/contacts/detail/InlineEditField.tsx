@@ -12,7 +12,7 @@ import { EditField } from './inline-edit/EditField';
 import { DisplayValue } from './inline-edit/DisplayValue';
 
 interface InlineEditFieldProps {
-  value: string | number | boolean;
+  value: string | number | boolean | string[];
   contactId: string;
   field: string;
   label: string;
@@ -35,7 +35,7 @@ export const InlineEditField = ({
   validation = []
 }: InlineEditFieldProps) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [editValue, setEditValue] = useState<string | number | boolean>(value);
+  const [editValue, setEditValue] = useState<string | number | boolean | string[]>(value);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const dispatch = useAppDispatch();
@@ -105,7 +105,7 @@ export const InlineEditField = ({
           <EditField
             type={type}
             value={editValue}
-            onChange={setEditValue}
+            onChange={(newValue) => setEditValue(newValue)}
             options={options}
             isSaving={isSaving}
             inputRef={inputRef}
@@ -135,3 +135,4 @@ export const InlineEditField = ({
     </div>
   );
 };
+

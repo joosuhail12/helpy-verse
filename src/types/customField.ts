@@ -11,6 +11,7 @@ export type CustomFieldType =
   | 'currency'
   | 'url'
   | 'email'
+  | 'tel'
   | 'phone';
 
 export interface ValidationRule {
