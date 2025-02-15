@@ -1,0 +1,33 @@
+
+import { Contact } from '@/types/contact';
+import { InlineEditField } from '../InlineEditField';
+
+interface ContactBasicInfoProps {
+  contact: Contact;
+}
+
+export const ContactBasicInfo = ({ contact }: ContactBasicInfoProps) => {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="space-y-1">
+        <p className="text-sm font-medium text-muted-foreground">First Name</p>
+        <InlineEditField
+          value={contact.firstName}
+          contactId={contact.id}
+          field="firstName"
+          label="First Name"
+        />
+      </div>
+      <div className="space-y-1">
+        <p className="text-sm font-medium text-muted-foreground">Last Name</p>
+        <InlineEditField
+          value={contact.lastName}
+          contactId={contact.id}
+          field="lastName"
+          label="Last Name"
+        />
+      </div>
+    </div>
+  );
+};
+
