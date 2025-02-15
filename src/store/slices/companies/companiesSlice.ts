@@ -7,8 +7,46 @@ interface CompaniesState {
   selectedCompanies: string[];
 }
 
+const mockCompanies: Company[] = [
+  {
+    id: '1',
+    name: 'Acme Corporation',
+    website: 'https://www.acme.com',
+    createdAt: new Date(2024, 0, 15).toISOString(),
+    updatedAt: new Date(2024, 0, 15).toISOString(),
+  },
+  {
+    id: '2',
+    name: 'TechSpace Solutions',
+    website: 'https://www.techspace.io',
+    createdAt: new Date(2024, 1, 1).toISOString(),
+    updatedAt: new Date(2024, 1, 1).toISOString(),
+  },
+  {
+    id: '3',
+    name: 'Global Innovations Inc',
+    website: 'https://www.globalinnovations.com',
+    createdAt: new Date(2024, 1, 15).toISOString(),
+    updatedAt: new Date(2024, 1, 15).toISOString(),
+  },
+  {
+    id: '4',
+    name: 'Future Systems',
+    website: 'https://www.futuresystems.co',
+    createdAt: new Date(2024, 2, 1).toISOString(),
+    updatedAt: new Date(2024, 2, 1).toISOString(),
+  },
+  {
+    id: '5',
+    name: 'Digital Dynamics',
+    website: 'https://www.digitaldynamics.tech',
+    createdAt: new Date(2024, 2, 15).toISOString(),
+    updatedAt: new Date(2024, 2, 15).toISOString(),
+  },
+];
+
 const initialState: CompaniesState = {
-  companies: [],
+  companies: mockCompanies,
   selectedCompanies: [],
 };
 
@@ -36,3 +74,4 @@ const companiesSlice = createSlice({
 
 export const { addCompany, updateCompany, deleteCompany, setSelectedCompanies } = companiesSlice.actions;
 export default companiesSlice.reducer;
+
