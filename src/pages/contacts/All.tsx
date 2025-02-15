@@ -10,7 +10,7 @@ import { Card } from '@/components/ui/card';
 
 const AllContacts = () => {
   const dispatch = useAppDispatch();
-  const { contacts, loading, error } = useAppSelector((state) => state.contacts);
+  const { contacts, loading, error, selectedContacts } = useAppSelector((state) => state.contacts);
 
   useEffect(() => {
     dispatch(fetchContacts());

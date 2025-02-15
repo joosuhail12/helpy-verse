@@ -6,16 +6,26 @@ import { MoreHorizontal } from 'lucide-react';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
+import { Checkbox } from '@/components/ui/checkbox';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { toggleContactSelection } from '@/store/slices/contacts/contactsSlice';
 
 interface ContactListItemProps {
   contact: Contact;
+  isSelected: boolean;
 }
 
-export const ContactListItem = ({ contact }: ContactListItemProps) => {
+export const ContactListItem = ({ contact, isSelected }: ContactListItemProps) => {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
 
   const handleRowClick = () => {
     navigate(`/home/contacts/${contact.id}`);
+  };
+
+  const handleCheckboxClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    dispatch(toggleContactSelection(contact.id));
   };
 
   return (
@@ -23,8 +33,8 @@ export const ContactListItem = ({ contact }: ContactListItemProps) => {
       className="cursor-pointer hover:bg-gray-50"
       onClick={handleRowClick}
     >
-      <TableCell onClick={(e) => e.stopPropagation()}>
-        <input type="checkbox" className="rounded border-gray-300" />
+      <TableCell onClick={handleCheckboxClick}>
+        <Checkbox checked={isSelected} />
       </TableCell>
       <TableCell>
         {contact.firstName} {contact.lastName}

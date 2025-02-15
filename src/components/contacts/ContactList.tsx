@@ -10,6 +10,10 @@ import {
 } from '@/components/ui/table';
 import { ContactListItem } from './ContactListItem';
 import { LoadingState } from './LoadingState';
+import { Checkbox } from '@/components/ui/checkbox';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { useAppSelector } from '@/hooks/useAppSelector';
+import { setSelectedContacts } from '@/store/slices/contacts/contactsSlice';
 
 interface ContactListProps {
   contacts: Contact[];
@@ -17,6 +21,17 @@ interface ContactListProps {
 }
 
 export const ContactList = ({ contacts, loading }: ContactListProps) => {
+  const dispatch = useAppDispatch();
+  const selectedContacts = useAppSelector(state => state.contacts.selectedContacts);
+
+  const handleSelectAll = () => {
+    if (selectedContacts.length === contacts.length) {
+      dispatch(setSelectedContacts([]));
+    } else {
+      dispatch(setSelectedContacts(contacts.map(contact => contact.id)));
+    }
+  };
+
   if (loading) {
     return <LoadingState />;
   }
@@ -27,7 +42,10 @@ export const ContactList = ({ contacts, loading }: ContactListProps) => {
         <TableHeader>
           <TableRow>
             <TableHead className="w-12">
-              <input type="checkbox" className="rounded border-gray-300" />
+              <Checkbox
+                checked={selectedContacts.length === contacts.length && contacts.length > 0}
+                onCheckedChange={handleSelectAll}
+              />
             </TableHead>
             <TableHead>Name</TableHead>
             <TableHead>Email</TableHead>
@@ -40,7 +58,11 @@ export const ContactList = ({ contacts, loading }: ContactListProps) => {
         </TableHeader>
         <TableBody>
           {contacts.map((contact) => (
-            <ContactListItem key={contact.id} contact={contact} />
+            <ContactListItem 
+              key={contact.id} 
+              contact={contact}
+              isSelected={selectedContacts.includes(contact.id)}
+            />
           ))}
         </TableBody>
       </Table>
