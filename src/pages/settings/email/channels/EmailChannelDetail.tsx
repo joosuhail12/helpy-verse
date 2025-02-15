@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,12 +7,19 @@ import { useToast } from '@/hooks/use-toast';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { selectEmailChannels } from '@/store/slices/emailChannels/selectors';
-import { deleteChannel, setDefaultChannel, verifyChannel } from '@/store/slices/emailChannels/emailChannelsSlice';
+import { 
+  deleteChannel, 
+  setDefaultChannel, 
+  verifyChannel,
+  updateChannel,
+} from '@/store/slices/emailChannels/emailChannelsSlice';
 import { format } from 'date-fns';
+import { Input } from '@/components/ui/input';
 import { ChannelDetailHeader } from './components/detail/ChannelDetailHeader';
 import { ChannelStatusBadges } from './components/detail/ChannelStatusBadges';
 import { ChannelActions } from './components/detail/ChannelActions';
 import { ChannelInfo } from './components/detail/ChannelInfo';
+import { IconEmojiPicker } from './components/IconEmojiPicker';
 
 const EmailChannelDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -21,6 +28,8 @@ const EmailChannelDetail = () => {
   const dispatch = useAppDispatch();
   const channels = useAppSelector(selectEmailChannels);
   const channel = channels.find((c) => c.id === id);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedChannel, setEditedChannel] = useState(channel);
 
   if (!channel) {
     return (
@@ -35,6 +44,8 @@ const EmailChannelDetail = () => {
       </div>
     );
   }
+
+  if (!editedChannel) return null;
 
   const handleDelete = async () => {
     try {
@@ -85,6 +96,42 @@ const EmailChannelDetail = () => {
     }
   };
 
+  const handleEdit = () => {
+    setIsEditing(true);
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+    setEditedChannel(channel);
+  };
+
+  const handleSave = async () => {
+    try {
+      await dispatch(updateChannel({
+        ...editedChannel,
+        id: channel.id,
+      })).unwrap();
+      setIsEditing(false);
+      toast({
+        title: "Channel updated",
+        description: "The email channel has been successfully updated.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update the channel.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleChange = (field: string, value: string) => {
+    setEditedChannel(prev => ({
+      ...prev!,
+      [field]: value,
+    }));
+  };
+
   return (
     <div className="container mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       <ChannelDetailHeader />
@@ -93,8 +140,23 @@ const EmailChannelDetail = () => {
         <div className="flex items-start justify-between">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              {channel.icon && <div className="text-2xl">{channel.icon}</div>}
-              <h2 className="text-xl font-semibold">{channel.channelName}</h2>
+              {isEditing ? (
+                <IconEmojiPicker
+                  selectedEmoji={editedChannel.icon || null}
+                  setSelectedEmoji={(emoji) => handleChange('icon', emoji || '')}
+                />
+              ) : (
+                channel.icon && <div className="text-2xl">{channel.icon}</div>
+              )}
+              {isEditing ? (
+                <Input
+                  value={editedChannel.channelName}
+                  onChange={(e) => handleChange('channelName', e.target.value)}
+                  className="max-w-xs"
+                />
+              ) : (
+                <h2 className="text-xl font-semibold">{channel.channelName}</h2>
+              )}
               <ChannelStatusBadges
                 isDefault={channel.isDefault}
                 isVerified={channel.isVerified}
@@ -102,24 +164,71 @@ const EmailChannelDetail = () => {
             </div>
             <p className="text-muted-foreground">
               Created on {format(new Date(channel.createdAt), 'MMM d, yyyy')}
+              {channel.updatedAt && ` • Updated on ${format(new Date(channel.updatedAt), 'MMM d, yyyy')}`}
             </p>
           </div>
-          <ChannelActions
-            isDefault={channel.isDefault}
-            isVerified={channel.isVerified}
-            onSetDefault={handleSetDefault}
-            onVerify={handleVerify}
-            onDelete={handleDelete}
-          />
+          {isEditing ? (
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={handleCancel}>Cancel</Button>
+              <Button onClick={handleSave}>Save Changes</Button>
+            </div>
+          ) : (
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={handleEdit}>Edit</Button>
+              <ChannelActions
+                isDefault={channel.isDefault}
+                isVerified={channel.isVerified}
+                onSetDefault={handleSetDefault}
+                onVerify={handleVerify}
+                onDelete={handleDelete}
+              />
+            </div>
+          )}
         </div>
 
         <div className="space-y-6 pt-4 border-t">
-          <ChannelInfo
-            senderName={channel.senderName}
-            email={channel.email}
-            autoBccEmail={channel.autoBccEmail}
-            noReplyEmail={channel.noReplyEmail}
-          />
+          {isEditing ? (
+            <div className="grid gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Sender Name</label>
+                <Input
+                  value={editedChannel.senderName}
+                  onChange={(e) => handleChange('senderName', e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Email Address</label>
+                <Input
+                  value={editedChannel.email}
+                  disabled
+                  className="bg-muted"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Auto BCC Email (Optional)</label>
+                <Input
+                  value={editedChannel.autoBccEmail || ''}
+                  onChange={(e) => handleChange('autoBccEmail', e.target.value)}
+                  placeholder="archive@company.com"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">No Reply Email (Optional)</label>
+                <Input
+                  value={editedChannel.noReplyEmail || ''}
+                  onChange={(e) => handleChange('noReplyEmail', e.target.value)}
+                  placeholder="no-reply@company.com"
+                />
+              </div>
+            </div>
+          ) : (
+            <ChannelInfo
+              senderName={channel.senderName}
+              email={channel.email}
+              autoBccEmail={channel.autoBccEmail}
+              noReplyEmail={channel.noReplyEmail}
+            />
+          )}
         </div>
       </Card>
     </div>
@@ -127,4 +236,3 @@ const EmailChannelDetail = () => {
 };
 
 export default EmailChannelDetail;
-

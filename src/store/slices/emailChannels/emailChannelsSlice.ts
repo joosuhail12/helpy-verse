@@ -41,6 +41,15 @@ export const createChannel = createAsyncThunk(
   }
 );
 
+export const updateChannel = createAsyncThunk(
+  'emailChannels/updateChannel',
+  async (channel: Partial<EmailChannel> & { id: string }) => {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    return channel;
+  }
+);
+
 export const verifyChannel = createAsyncThunk(
   'emailChannels/verifyChannel',
   async (id: string) => {
@@ -86,6 +95,16 @@ const emailChannelsSlice = createSlice({
       .addCase(createChannel.fulfilled, (state, action) => {
         state.channels.push(action.payload);
       })
+      .addCase(updateChannel.fulfilled, (state, action) => {
+        const index = state.channels.findIndex(c => c.id === action.payload.id);
+        if (index !== -1) {
+          state.channels[index] = {
+            ...state.channels[index],
+            ...action.payload,
+            updatedAt: new Date().toISOString(),
+          };
+        }
+      })
       .addCase(verifyChannel.fulfilled, (state, action) => {
         const channel = state.channels.find(c => c.id === action.payload);
         if (channel) {
@@ -105,4 +124,3 @@ const emailChannelsSlice = createSlice({
 });
 
 export default emailChannelsSlice.reducer;
-
