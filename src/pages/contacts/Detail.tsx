@@ -4,6 +4,10 @@ import { useAppSelector } from '@/hooks/useAppSelector';
 import { ContactDetailHeader } from '@/components/contacts/detail/ContactDetailHeader';
 import { ContactBasicInfo } from '@/components/contacts/detail/ContactBasicInfo';
 import { ContactCustomFields } from '@/components/contacts/detail/ContactCustomFields';
+import { ContactTimeline } from '@/components/contacts/detail/ContactTimeline';
+import { ContactRelated } from '@/components/contacts/detail/ContactRelated';
+import { ContactNotes } from '@/components/contacts/detail/ContactNotes';
+import { ContactTags } from '@/components/contacts/detail/ContactTags';
 import { Card } from '@/components/ui/card';
 
 const ContactDetail = () => {
@@ -27,8 +31,16 @@ const ContactDetail = () => {
       <ContactDetailHeader contact={contact} />
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
-        <ContactBasicInfo contact={contact} />
-        <ContactCustomFields contact={contact} />
+        <div className="space-y-8">
+          <ContactBasicInfo contact={contact} />
+          <ContactTimeline contact={contact} />
+          <ContactNotes contact={contact} />
+        </div>
+        <div className="space-y-8">
+          <ContactCustomFields contact={contact} />
+          <ContactRelated contact={contact} />
+          <ContactTags contact={contact} />
+        </div>
       </div>
     </div>
   );
