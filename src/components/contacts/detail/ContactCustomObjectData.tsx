@@ -1,6 +1,7 @@
 
 import { Contact } from '@/types/contact';
 import { mockCustomObjects } from '@/mock/customObjects';
+import { InlineEditField } from './InlineEditField';
 import {
   Card,
   CardHeader,
@@ -36,7 +37,12 @@ export const ContactCustomObjectData = ({ contact }: ContactCustomObjectDataProp
                   <p className="text-sm font-medium text-muted-foreground">
                     {field.name}
                   </p>
-                  <p className="text-sm py-1 px-2">-</p>
+                  <InlineEditField
+                    value={(contact as any)[`${obj.slug}_${field.id}`] || ''}
+                    contactId={contact.id}
+                    field={`${obj.slug}_${field.id}`}
+                    label={field.name}
+                  />
                 </div>
               ))}
             </div>
