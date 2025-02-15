@@ -10,7 +10,7 @@ export interface Activity {
     duration?: number;
     responseTime?: number;
     status?: string;
-    category?: string;
+    category?: 'positive' | 'negative' | 'neutral';
   };
 }
 
