@@ -19,6 +19,7 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
+import { Activity } from '@/types/activity';
 
 const CompanyDetail = () => {
   const { id } = useParams();
@@ -30,6 +31,19 @@ const CompanyDetail = () => {
   const company = useAppSelector(state => 
     state.companies.companies.find(c => c.id === id)
   );
+
+  // Mock activities data with correct types - similar to contact details
+  const activities: Activity[] = [
+    {
+      id: '1',
+      type: 'company_update',
+      description: 'Updated company information',
+      date: new Date().toISOString(),
+      metadata: {
+        category: 'update',
+      },
+    },
+  ];
 
   if (!company) {
     return (
@@ -96,62 +110,102 @@ const CompanyDetail = () => {
         </div>
       </div>
 
-      <div className="mt-8">
-        <Card className="bg-white/60 backdrop-blur-sm border-purple-100/50 shadow-lg shadow-purple-500/5">
-          <CardHeader className="border-b border-purple-100/20 pb-4">
-            <CardTitle className="text-lg font-semibold text-purple-900">Company Information</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-6 space-y-8">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 text-sm font-medium text-purple-900/70">
-                  <Building2 className="h-4 w-4" />
-                  <span>Company Name</span>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-8">
+        {/* Left Column (4/12 width) - Company Information */}
+        <div className="lg:col-span-4 space-y-6">
+          {/* Company Information Card */}
+          <Card className="bg-white/60 backdrop-blur-sm border-purple-100/50 shadow-lg shadow-purple-500/5">
+            <CardHeader className="border-b border-purple-100/20 pb-4">
+              <CardTitle className="text-lg font-semibold text-purple-900">Company Information</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-6 space-y-8">
+              <div className="grid grid-cols-1 gap-6">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 text-sm font-medium text-purple-900/70">
+                    <Building2 className="h-4 w-4" />
+                    <span>Company Name</span>
+                  </div>
+                  <InlineEditField
+                    value={company.name}
+                    contactId={company.id}
+                    field="name"
+                    label="Company Name"
+                    validation={[{ type: 'required', value: '', message: 'Company name is required' }]}
+                  />
                 </div>
-                <InlineEditField
-                  value={company.name}
-                  contactId={company.id}
-                  field="name"
-                  label="Company Name"
-                  validation={[{ type: 'required', value: '', message: 'Company name is required' }]}
-                />
-              </div>
 
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 text-sm font-medium text-purple-900/70">
-                  <Globe className="h-4 w-4" />
-                  <span>Website</span>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 text-sm font-medium text-purple-900/70">
+                    <Globe className="h-4 w-4" />
+                    <span>Website</span>
+                  </div>
+                  <InlineEditField
+                    value={company.website || ''}
+                    contactId={company.id}
+                    field="website"
+                    label="Website"
+                  />
                 </div>
-                <InlineEditField
-                  value={company.website || ''}
-                  contactId={company.id}
-                  field="website"
-                  label="Website"
-                />
-              </div>
 
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 text-sm font-medium text-purple-900/70">
-                  <Calendar className="h-4 w-4" />
-                  <span>Created At</span>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 text-sm font-medium text-purple-900/70">
+                    <Calendar className="h-4 w-4" />
+                    <span>Created At</span>
+                  </div>
+                  <p className="text-sm text-gray-600">
+                    {new Date(company.createdAt).toLocaleDateString()}
+                  </p>
                 </div>
-                <p className="text-sm text-gray-600">
-                  {new Date(company.createdAt).toLocaleDateString()}
-                </p>
-              </div>
 
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 text-sm font-medium text-purple-900/70">
-                  <Calendar className="h-4 w-4" />
-                  <span>Last Updated</span>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 text-sm font-medium text-purple-900/70">
+                    <Calendar className="h-4 w-4" />
+                    <span>Last Updated</span>
+                  </div>
+                  <p className="text-sm text-gray-600">
+                    {new Date(company.updatedAt).toLocaleDateString()}
+                  </p>
                 </div>
-                <p className="text-sm text-gray-600">
-                  {new Date(company.updatedAt).toLocaleDateString()}
-                </p>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+
+          {/* Associated Contacts Card */}
+          <Card className="bg-white/60 backdrop-blur-sm border-purple-100/50 shadow-lg shadow-purple-500/5">
+            <CardHeader className="border-b border-purple-100/20 pb-4">
+              <CardTitle className="text-lg font-semibold text-purple-900">Associated Contacts</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <div className="text-sm text-gray-500">
+                No contacts associated with this company yet.
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right Column (8/12 width) - Activity Timeline */}
+        <div className="lg:col-span-8">
+          <Card className="bg-white/60 backdrop-blur-sm border-purple-100/50 shadow-lg shadow-purple-500/5">
+            <CardHeader className="border-b border-purple-100/20 pb-4">
+              <CardTitle className="text-lg font-semibold text-purple-900">Activity Timeline</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-6">
+              {activities.map((activity) => (
+                <div key={activity.id} className="flex gap-4 mb-4">
+                  <div className="p-2 bg-purple-100 rounded-lg">
+                    <Building2 className="h-4 w-4 text-purple-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-900">{activity.description}</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {new Date(activity.date).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
@@ -174,4 +228,3 @@ const CompanyDetail = () => {
 };
 
 export default CompanyDetail;
-
