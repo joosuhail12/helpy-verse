@@ -5,15 +5,25 @@ import { Button } from '@/components/ui/button';
 import { MoreHorizontal } from 'lucide-react';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
+import { useNavigate } from 'react-router-dom';
 
 interface ContactListItemProps {
   contact: Contact;
 }
 
 export const ContactListItem = ({ contact }: ContactListItemProps) => {
+  const navigate = useNavigate();
+
+  const handleRowClick = () => {
+    navigate(`/home/contacts/${contact.id}`);
+  };
+
   return (
-    <TableRow>
-      <TableCell>
+    <TableRow 
+      className="cursor-pointer hover:bg-gray-50"
+      onClick={handleRowClick}
+    >
+      <TableCell onClick={(e) => e.stopPropagation()}>
         <input type="checkbox" className="rounded border-gray-300" />
       </TableCell>
       <TableCell>
@@ -36,7 +46,7 @@ export const ContactListItem = ({ contact }: ContactListItemProps) => {
           ? format(new Date(contact.lastContacted), 'MMM dd, yyyy')
           : '-'}
       </TableCell>
-      <TableCell className="text-right">
+      <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
         <Button variant="ghost" size="icon">
           <MoreHorizontal className="h-4 w-4" />
         </Button>
