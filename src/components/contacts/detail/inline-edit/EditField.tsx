@@ -114,7 +114,7 @@ export const EditField = ({
           ref={inputRef}
           type="number"
           step="0.01"
-          value={value}
+          value={typeof value === 'number' ? value : String(value)}
           onChange={(e) => onChange(e.target.value)}
           className="h-8"
           disabled={isSaving}
@@ -138,7 +138,7 @@ export const EditField = ({
         <Input
           ref={inputRef}
           type={type}
-          value={String(value)}
+          value={typeof value === 'boolean' ? String(value) : String(value)}
           onChange={(e) => onChange(e.target.value)}
           className="h-8"
           disabled={isSaving}
@@ -146,3 +146,4 @@ export const EditField = ({
       );
   }
 };
+
