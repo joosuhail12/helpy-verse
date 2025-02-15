@@ -22,3 +22,11 @@ export interface Activity {
   date: string;
   metadata: ActivityMetadata;
 }
+
+export interface InteractionMetrics {
+  totalInteractions: number;
+  averageResponseTime: number;
+  mostFrequentType: ActivityType;
+  lastInteraction: string;
+}
+

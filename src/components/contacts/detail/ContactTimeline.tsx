@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Contact } from '@/types/contact';
 import { Activity, ActivityType, InteractionMetrics } from '@/types/activity';
@@ -44,6 +45,7 @@ export const ContactTimeline = ({ contact }: ContactTimelineProps) => {
       description: 'Sent follow-up email',
       date: new Date(contact.lastContacted || new Date()).toISOString(),
       metadata: {
+        category: 'positive',
         responseTime: 25,
       },
     },
@@ -52,6 +54,9 @@ export const ContactTimeline = ({ contact }: ContactTimelineProps) => {
       type: 'note',
       description: 'Added new contact information',
       date: new Date(contact.createdAt).toISOString(),
+      metadata: {
+        category: 'update',
+      },
     },
     {
       id: '3',
@@ -59,6 +64,7 @@ export const ContactTimeline = ({ contact }: ContactTimelineProps) => {
       description: 'Created support ticket #1234',
       date: new Date(Date.now() - 86400000).toISOString(),
       metadata: {
+        category: 'neutral',
         status: 'open',
       },
     },
@@ -176,3 +182,4 @@ export const ContactTimeline = ({ contact }: ContactTimelineProps) => {
     </Card>
   );
 };
+
