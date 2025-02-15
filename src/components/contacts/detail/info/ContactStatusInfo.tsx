@@ -17,6 +17,8 @@ export const ContactStatusInfo = ({ contact }: ContactStatusInfoProps) => {
           contactId={contact.id}
           field="type"
           label="Type"
+          type="select"
+          options={['visitor', 'customer']}
         />
       </div>
       <div className="space-y-1.5">
@@ -26,6 +28,8 @@ export const ContactStatusInfo = ({ contact }: ContactStatusInfoProps) => {
           contactId={contact.id}
           field="status"
           label="Status"
+          type="select"
+          options={['active', 'inactive']}
         />
       </div>
     </div>

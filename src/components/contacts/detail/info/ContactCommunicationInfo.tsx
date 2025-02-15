@@ -16,6 +16,7 @@ export const ContactCommunicationInfo = ({ contact }: ContactCommunicationInfoPr
           contactId={contact.id}
           field="email"
           label="Email"
+          type="email"
         />
       </div>
       <div className="space-y-1">
@@ -25,9 +26,9 @@ export const ContactCommunicationInfo = ({ contact }: ContactCommunicationInfoPr
           contactId={contact.id}
           field="phone"
           label="Phone"
+          type="tel"
         />
       </div>
     </div>
   );
 };
-

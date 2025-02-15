@@ -3,6 +3,8 @@ import { useState, useEffect, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Check, X, Pencil, Loader2 } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { updateContact } from '@/store/slices/contacts/contactsSlice';
 import { useToast } from '@/hooks/use-toast';
@@ -15,6 +17,8 @@ interface InlineEditFieldProps {
   contactId: string;
   field: string;
   label: string;
+  type?: 'text' | 'email' | 'tel' | 'url' | 'select' | 'boolean' | 'date';
+  options?: string[];
   autoSave?: boolean;
 }
 
@@ -23,12 +27,15 @@ export const InlineEditField = ({
   contactId, 
   field, 
   label,
+  type = 'text',
+  options = [],
   autoSave = true
 }: InlineEditFieldProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value);
   const [isSaving, setIsSaving] = useState(false);
   const [saveComplete, setSaveComplete] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const dispatch = useAppDispatch();
   const { toast } = useToast();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -40,13 +47,51 @@ export const InlineEditField = ({
     }
   }, [debouncedValue]);
 
+  const validateField = (val: string): string | null => {
+    switch (type) {
+      case 'email':
+        if (val && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) {
+          return 'Invalid email address';
+        }
+        break;
+      case 'url':
+        if (val && !/^https?:\/\/[^\s$.?#].[^\s]*$/.test(val)) {
+          return 'Invalid URL';
+        }
+        break;
+      case 'tel':
+        if (val && !/^\+?[\d\s-()]{8,}$/.test(val)) {
+          return 'Invalid phone number';
+        }
+        break;
+      case 'date':
+        if (val && isNaN(Date.parse(val))) {
+          return 'Invalid date';
+        }
+        break;
+    }
+    return null;
+  };
+
   const handleSave = async () => {
     if (editValue === value) {
       setIsEditing(false);
       return;
     }
 
+    const validationError = validateField(editValue);
+    if (validationError) {
+      setError(validationError);
+      toast({
+        title: "Validation Error",
+        description: validationError,
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSaving(true);
+    setError(null);
     try {
       await dispatch(updateContact({ id: contactId, [field]: editValue }));
       setSaveComplete(true);
@@ -71,6 +116,7 @@ export const InlineEditField = ({
   const handleCancel = () => {
     setEditValue(value);
     setIsEditing(false);
+    setError(null);
   };
 
   useEffect(() => {
@@ -79,47 +125,95 @@ export const InlineEditField = ({
     }
   }, [isEditing]);
 
+  const renderEditField = () => {
+    switch (type) {
+      case 'select':
+        return (
+          <Select value={editValue} onValueChange={setEditValue}>
+            <SelectTrigger className="h-8">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {options.map((option) => (
+                <SelectItem key={option} value={option}>
+                  {option}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        );
+      case 'boolean':
+        return (
+          <Switch
+            checked={editValue === 'true'}
+            onCheckedChange={(checked) => setEditValue(checked ? 'true' : 'false')}
+          />
+        );
+      case 'date':
+        return (
+          <Input
+            ref={inputRef}
+            type="date"
+            value={editValue}
+            onChange={(e) => setEditValue(e.target.value)}
+            className={cn("h-8", error && "border-red-500")}
+            disabled={isSaving}
+          />
+        );
+      default:
+        return (
+          <Input
+            ref={inputRef}
+            type={type}
+            value={editValue}
+            onChange={(e) => setEditValue(e.target.value)}
+            className={cn("h-8", error && "border-red-500")}
+            disabled={isSaving}
+          />
+        );
+    }
+  };
+
   if (isEditing) {
     return (
-      <div className="flex items-center gap-2">
-        <Input
-          ref={inputRef}
-          value={editValue}
-          onChange={(e) => setEditValue(e.target.value)}
-          className="h-8"
-          disabled={isSaving}
-        />
-        {!autoSave && (
-          <>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={handleSave}
-              disabled={isSaving}
-              className="h-8 w-8 p-0"
-            >
-              {isSaving ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Check className="h-4 w-4 text-green-500" />
-              )}
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={handleCancel}
-              disabled={isSaving}
-              className="h-8 w-8 p-0"
-            >
-              <X className="h-4 w-4 text-red-500" />
-            </Button>
-          </>
-        )}
-        {autoSave && isSaving && (
-          <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
-        )}
-        {autoSave && saveComplete && (
-          <Check className="h-4 w-4 text-green-500 animate-scale-in" />
+      <div className="space-y-1">
+        <div className="flex items-center gap-2">
+          {renderEditField()}
+          {!autoSave && (
+            <>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={handleSave}
+                disabled={isSaving}
+                className="h-8 w-8 p-0"
+              >
+                {isSaving ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Check className="h-4 w-4 text-green-500" />
+                )}
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={handleCancel}
+                disabled={isSaving}
+                className="h-8 w-8 p-0"
+              >
+                <X className="h-4 w-4 text-red-500" />
+              </Button>
+            </>
+          )}
+          {autoSave && isSaving && (
+            <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+          )}
+          {autoSave && saveComplete && (
+            <Check className="h-4 w-4 text-green-500 animate-scale-in" />
+          )}
+        </div>
+        {error && (
+          <p className="text-sm text-red-500">{error}</p>
         )}
       </div>
     );
@@ -141,4 +235,3 @@ export const InlineEditField = ({
     </div>
   );
 };
-

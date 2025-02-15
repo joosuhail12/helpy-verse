@@ -20,6 +20,7 @@ export const ContactSocialInfo = ({ contact }: ContactSocialInfoProps) => {
           contactId={contact.id}
           field="linkedinUrl"
           label="LinkedIn URL"
+          type="url"
         />
       </div>
       <div className="space-y-1.5">
@@ -32,6 +33,7 @@ export const ContactSocialInfo = ({ contact }: ContactSocialInfoProps) => {
           contactId={contact.id}
           field="twitterUrl"
           label="Twitter URL"
+          type="url"
         />
       </div>
     </div>
