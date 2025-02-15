@@ -1,6 +1,7 @@
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
 import { Trash2, Mail, MessageCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
@@ -9,9 +10,10 @@ import type { EmailChannel } from '@/types/emailChannel';
 interface ChannelListProps {
   channels: EmailChannel[];
   onDelete: (id: string) => void;
+  onToggleStatus: (id: string, isActive: boolean) => void;
 }
 
-export function ChannelList({ channels, onDelete }: ChannelListProps) {
+export function ChannelList({ channels, onDelete, onToggleStatus }: ChannelListProps) {
   const navigate = useNavigate();
   
   const getTypeLabel = (type: EmailChannel['type']) => {
@@ -65,7 +67,14 @@ export function ChannelList({ channels, onDelete }: ChannelListProps) {
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
+          <div 
+            className="flex items-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity" 
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Switch
+              checked={channel.isActive}
+              onCheckedChange={(checked) => onToggleStatus(channel.id, checked)}
+            />
             <Button
               variant="ghost"
               size="icon"

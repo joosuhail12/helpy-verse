@@ -3,6 +3,7 @@ import React, { useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Mail, PlusCircle } from 'lucide-react';
 import { ChannelList } from './components/ChannelList';
+import { DefaultEmailChannel } from './components/DefaultEmailChannel';
 import { useToast } from '@/hooks/use-toast';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
@@ -11,10 +12,14 @@ import { useNavigate } from 'react-router-dom';
 import { 
   fetchChannels,
   deleteChannel,
+  toggleChannelStatus,
+  toggleDefaultChannelStatus,
 } from '@/store/slices/emailChannels/emailChannelsSlice';
 import { 
   selectEmailChannels, 
-  selectEmailChannelsLoading 
+  selectEmailChannelsLoading,
+  selectDefaultChannel,
+  selectHasDomainVerified,
 } from '@/store/slices/emailChannels/selectors';
 
 const Channels = () => {
@@ -23,6 +28,8 @@ const Channels = () => {
   const dispatch = useAppDispatch();
   const channels = useAppSelector(selectEmailChannels);
   const loading = useAppSelector(selectEmailChannelsLoading);
+  const defaultChannel = useAppSelector(selectDefaultChannel);
+  const hasDomainVerified = useAppSelector(selectHasDomainVerified);
 
   useEffect(() => {
     dispatch(fetchChannels());
@@ -44,6 +51,50 @@ const Channels = () => {
     }
   };
 
+  const handleToggleStatus = async (id: string, isActive: boolean) => {
+    try {
+      await dispatch(toggleChannelStatus({ id, isActive })).unwrap();
+      toast({
+        title: isActive ? "Channel activated" : "Channel deactivated",
+        description: `The email channel has been ${isActive ? 'activated' : 'deactivated'} successfully.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update channel status.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleToggleDefaultChannel = async (isActive: boolean) => {
+    try {
+      await dispatch(toggleDefaultChannelStatus(isActive)).unwrap();
+      toast({
+        title: isActive ? "Default channel activated" : "Default channel deactivated",
+        description: `The default email channel has been ${isActive ? 'activated' : 'deactivated'} successfully.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update default channel status.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleCreateClick = () => {
+    if (!hasDomainVerified) {
+      toast({
+        title: "Domain verification required",
+        description: "Please verify a domain before adding custom email channels.",
+        variant: "destructive",
+      });
+      return;
+    }
+    navigate('create');
+  };
+
   return (
     <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       <div className="bg-gradient-to-r from-primary/5 via-primary/10 to-transparent rounded-xl p-8">
@@ -56,12 +107,19 @@ const Channels = () => {
               Manage your email channels for sending and receiving messages
             </p>
           </div>
-          <Button onClick={() => navigate('create')} className="gap-2">
+          <Button onClick={handleCreateClick} className="gap-2">
             <PlusCircle className="h-4 w-4" />
             Add Custom Channel
           </Button>
         </div>
       </div>
+
+      <DefaultEmailChannel
+        email={defaultChannel.email}
+        isActive={defaultChannel.isActive}
+        onToggle={handleToggleDefaultChannel}
+        disabled={channels.length > 0}
+      />
 
       <Card className="overflow-hidden border-t-2 border-t-primary/10 shadow-sm">
         {loading ? (
@@ -79,7 +137,7 @@ const Channels = () => {
             <Button
               className="mt-6 gap-2"
               variant="outline"
-              onClick={() => navigate('create')}
+              onClick={handleCreateClick}
             >
               <PlusCircle className="h-4 w-4" />
               Add Custom Channel
@@ -89,6 +147,7 @@ const Channels = () => {
           <ChannelList
             channels={channels}
             onDelete={handleDelete}
+            onToggleStatus={handleToggleStatus}
           />
         )}
       </Card>

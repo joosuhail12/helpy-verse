@@ -14,6 +14,8 @@ export interface EmailChannel {
   allowAgentConversations: boolean;
   useAgentNames: boolean;
   useOriginalSender: boolean;
+  isActive: boolean;
+  isDefault?: boolean;
 }
 
 export interface CreateEmailChannelDto {
@@ -28,4 +30,5 @@ export interface CreateEmailChannelDto {
   allowAgentConversations: boolean;
   useAgentNames: boolean;
   useOriginalSender: boolean;
+  isActive: boolean;
 }

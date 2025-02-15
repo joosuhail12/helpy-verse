@@ -14,6 +14,7 @@ export const mockEmailChannels: EmailChannel[] = [
     allowAgentConversations: true,
     useAgentNames: true,
     useOriginalSender: true,
+    isActive: true,
   },
   {
     id: '2',
@@ -27,5 +28,12 @@ export const mockEmailChannels: EmailChannel[] = [
     allowAgentConversations: false,
     useAgentNames: false,
     useOriginalSender: false,
+    isActive: true,
   }
 ];
+
+export const mockWorkspace = {
+  name: 'acme',
+  defaultEmail: 'acme@mail.pullse.ai',
+  hasDomainVerified: false,
+};
