@@ -1,10 +1,11 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { StickyNote, Loader2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
+import { useDebounce } from '@/hooks/useDebounce';
 
 interface QuickNoteInputProps {
   contactId: string;
@@ -13,8 +14,15 @@ interface QuickNoteInputProps {
 export const QuickNoteInput = ({ contactId }: QuickNoteInputProps) => {
   const [note, setNote] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const debouncedNote = useDebounce(note, 1000);
   const dispatch = useAppDispatch();
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (debouncedNote && debouncedNote !== '') {
+      handleSubmit();
+    }
+  }, [debouncedNote]);
 
   const handleSubmit = async () => {
     if (!note.trim()) return;
@@ -25,14 +33,14 @@ export const QuickNoteInput = ({ contactId }: QuickNoteInputProps) => {
       // For now just simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       toast({
-        title: "Note added",
-        description: "Your note has been added successfully.",
+        title: "Note saved",
+        description: "Your note has been saved automatically.",
       });
       setNote('');
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to add note. Please try again.",
+        description: "Failed to save note. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -42,24 +50,19 @@ export const QuickNoteInput = ({ contactId }: QuickNoteInputProps) => {
 
   return (
     <div className="space-y-2">
-      <Textarea
-        placeholder="Add a quick note..."
-        value={note}
-        onChange={(e) => setNote(e.target.value)}
-        className="min-h-[80px]"
-      />
-      <Button 
-        onClick={handleSubmit} 
-        disabled={isSubmitting || !note.trim()}
-        className="w-full"
-      >
-        {isSubmitting ? (
-          <Loader2 className="h-4 w-4 animate-spin mr-2" />
-        ) : (
-          <StickyNote className="h-4 w-4 mr-2" />
+      <div className="relative">
+        <Textarea
+          placeholder="Add a quick note..."
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          className="min-h-[80px] pr-8"
+        />
+        {isSubmitting && (
+          <div className="absolute right-2 top-2">
+            <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+          </div>
         )}
-        Add Note
-      </Button>
+      </div>
     </div>
   );
 };

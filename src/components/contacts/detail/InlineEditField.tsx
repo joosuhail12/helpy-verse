@@ -1,70 +1,123 @@
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Check, X, Pencil } from 'lucide-react';
+import { Check, X, Pencil, Loader2 } from 'lucide-react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { updateContact } from '@/store/slices/contacts/contactsSlice';
 import { useToast } from '@/components/ui/use-toast';
 import { Contact } from '@/types/contact';
+import { useDebounce } from '@/hooks/useDebounce';
 
 interface InlineEditFieldProps {
   value: string;
   contactId: string;
   field: keyof Contact;
   label: string;
+  autoSave?: boolean;
 }
 
-export const InlineEditField = ({ value, contactId, field, label }: InlineEditFieldProps) => {
+export const InlineEditField = ({ 
+  value, 
+  contactId, 
+  field, 
+  label,
+  autoSave = true
+}: InlineEditFieldProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value);
+  const [isSaving, setIsSaving] = useState(false);
   const dispatch = useAppDispatch();
   const { toast } = useToast();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const debouncedValue = useDebounce(editValue, 1000);
 
-  const handleSave = () => {
-    dispatch(updateContact({ id: contactId, [field]: editValue }));
-    setIsEditing(false);
-    toast({
-      title: "Contact updated",
-      description: `${label} has been updated successfully.`,
-    });
+  useEffect(() => {
+    if (autoSave && debouncedValue !== value) {
+      handleSave();
+    }
+  }, [debouncedValue]);
+
+  const handleSave = async () => {
+    if (editValue === value) {
+      setIsEditing(false);
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      await dispatch(updateContact({ id: contactId, [field]: editValue }));
+      toast({
+        title: "Saved",
+        description: `${label} has been updated.`,
+      });
+      setIsEditing(false);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: `Failed to update ${label.toLowerCase()}.`,
+        variant: "destructive",
+      });
+      setEditValue(value);
+    } finally {
+      setIsSaving(false);
+    }
   };
+
+  const handleCancel = () => {
+    setEditValue(value);
+    setIsEditing(false);
+  };
+
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isEditing]);
 
   if (isEditing) {
     return (
       <div className="flex items-center gap-2">
         <Input
+          ref={inputRef}
           value={editValue}
           onChange={(e) => setEditValue(e.target.value)}
           className="h-8"
-          autoFocus
+          disabled={isSaving}
         />
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={handleSave}
-          className="h-8 w-8 p-0"
-        >
-          <Check className="h-4 w-4 text-green-500" />
-        </Button>
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={() => {
-            setEditValue(value);
-            setIsEditing(false);
-          }}
-          className="h-8 w-8 p-0"
-        >
-          <X className="h-4 w-4 text-red-500" />
-        </Button>
+        {!autoSave && (
+          <>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={handleSave}
+              disabled={isSaving}
+              className="h-8 w-8 p-0"
+            >
+              {isSaving ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Check className="h-4 w-4 text-green-500" />
+              )}
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={handleCancel}
+              disabled={isSaving}
+              className="h-8 w-8 p-0"
+            >
+              <X className="h-4 w-4 text-red-500" />
+            </Button>
+          </>
+        )}
       </div>
     );
   }
 
   return (
-    <div className="flex items-center gap-2">
-      <span>{value}</span>
+    <div className="group flex items-center gap-2">
+      <span className="min-w-[100px]">{value}</span>
       <Button
         size="sm"
         variant="ghost"
