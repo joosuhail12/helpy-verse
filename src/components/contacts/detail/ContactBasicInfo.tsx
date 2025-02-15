@@ -1,6 +1,7 @@
 
 import { Contact } from '@/types/contact';
 import { Badge } from '@/components/ui/badge';
+import { InlineEditField } from './InlineEditField';
 
 interface ContactBasicInfoProps {
   contact: Contact;
@@ -39,4 +40,3 @@ export const ContactBasicInfo = ({ contact }: ContactBasicInfoProps) => {
     </div>
   );
 };
-
