@@ -4,18 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Trash2, Mail, MessageCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
-
-interface EmailChannel {
-  id: string;
-  channelName: string;
-  senderName: string;
-  email: string;
-  autoBccEmail?: string;
-  noReplyEmail?: string;
-  icon?: string;
-  type: 'sending' | 'receiving' | 'both';
-  createdAt: string;
-}
+import type { EmailChannel } from '@/types/emailChannel';
 
 interface ChannelListProps {
   channels: EmailChannel[];

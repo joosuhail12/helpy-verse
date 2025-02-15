@@ -9,10 +9,8 @@ import { useAppSelector } from '@/hooks/useAppSelector';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { 
-  fetchChannels, 
-  verifyChannel, 
-  deleteChannel, 
-  setDefaultChannel 
+  fetchChannels,
+  deleteChannel,
 } from '@/store/slices/emailChannels/emailChannelsSlice';
 import { 
   selectEmailChannels, 
@@ -30,22 +28,6 @@ const Channels = () => {
     dispatch(fetchChannels());
   }, [dispatch]);
 
-  const handleVerify = async (id: string) => {
-    try {
-      await dispatch(verifyChannel(id)).unwrap();
-      toast({
-        title: "Verification initiated",
-        description: "A verification email has been sent.",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to initiate verification.",
-        variant: "destructive",
-      });
-    }
-  };
-
   const handleDelete = async (id: string) => {
     try {
       await dispatch(deleteChannel(id)).unwrap();
@@ -57,22 +39,6 @@ const Channels = () => {
       toast({
         title: "Error",
         description: "Failed to delete the channel.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleSetDefault = async (id: string) => {
-    try {
-      await dispatch(setDefaultChannel(id)).unwrap();
-      toast({
-        title: "Default updated",
-        description: "The default email channel has been updated.",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update default channel.",
         variant: "destructive",
       });
     }
@@ -122,9 +88,7 @@ const Channels = () => {
         ) : (
           <ChannelList
             channels={channels}
-            onVerify={handleVerify}
             onDelete={handleDelete}
-            onSetDefault={handleSetDefault}
           />
         )}
       </Card>
