@@ -18,11 +18,11 @@ export const ContactCustomFields = ({ contact }: ContactCustomFieldsProps) => {
 
   if (isLoading) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Custom Fields</CardTitle>
+      <Card className="border-none shadow-none bg-gray-50/50">
+        <CardHeader className="border-b pb-4">
+          <CardTitle className="text-lg">Custom Fields</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           <div className="space-y-4">
             <Skeleton className="h-4 w-[250px]" />
             <Skeleton className="h-4 w-[200px]" />
@@ -38,17 +38,19 @@ export const ContactCustomFields = ({ contact }: ContactCustomFieldsProps) => {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Custom Fields</CardTitle>
+    <Card className="border-none shadow-none bg-gray-50/50">
+      <CardHeader className="border-b pb-4">
+        <CardTitle className="text-lg">Custom Fields</CardTitle>
       </CardHeader>
-      <CardContent className="grid gap-4">
-        {customFields.contacts.map((field) => (
-          <div key={field.id}>
-            <p className="text-sm font-medium text-muted-foreground">{field.name}</p>
-            <p className="mt-1">-</p>
-          </div>
-        ))}
+      <CardContent className="pt-6">
+        <div className="grid gap-6">
+          {customFields.contacts.map((field) => (
+            <div key={field.id} className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground">{field.name}</p>
+              <p className="text-sm">-</p>
+            </div>
+          ))}
+        </CardContent>
       </CardContent>
     </Card>
   );

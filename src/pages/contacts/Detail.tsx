@@ -23,10 +23,10 @@ const ContactDetail = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 space-y-6">
+    <div className="container mx-auto px-4 py-6 max-w-5xl">
       <ContactDetailHeader contact={contact} />
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
         <ContactBasicInfo contact={contact} />
         <ContactCustomFields contact={contact} />
       </div>
