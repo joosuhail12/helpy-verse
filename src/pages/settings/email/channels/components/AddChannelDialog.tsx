@@ -95,3 +95,4 @@ export function AddChannelDialog({ isOpen, onClose }: AddChannelDialogProps) {
     </Dialog>
   );
 }
+
