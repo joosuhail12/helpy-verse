@@ -16,6 +16,7 @@ export interface Contact {
   preferredLanguage?: string;
   source?: 'website' | 'referral' | 'marketing' | 'sales' | 'other';
   assignedTo?: string;
+  managerId?: string;
   accountValue?: number;
   tags: string[];
   notes?: string;
