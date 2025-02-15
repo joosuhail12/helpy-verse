@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CheckCircle2, Star, StarOff, Trash2, XCircle } from 'lucide-react';
 import { format } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
 
 interface EmailChannel {
   id: string;
@@ -26,6 +27,8 @@ interface ChannelListProps {
 }
 
 export function ChannelList({ channels, onVerify, onDelete, onSetDefault }: ChannelListProps) {
+  const navigate = useNavigate();
+  
   const getTypeLabel = (type: EmailChannel['type']) => {
     switch (type) {
       case 'sending':
@@ -37,12 +40,17 @@ export function ChannelList({ channels, onVerify, onDelete, onSetDefault }: Chan
     }
   };
 
+  const handleChannelClick = (id: string) => {
+    navigate(`/home/settings/email/channels/${id}`);
+  };
+
   return (
     <div className="divide-y divide-border">
       {channels.map((channel) => (
         <div
           key={channel.id}
-          className="flex items-center justify-between p-6 hover:bg-muted/50 group"
+          className="flex items-center justify-between p-6 hover:bg-muted/50 group cursor-pointer"
+          onClick={() => handleChannelClick(channel.id)}
         >
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-3">
@@ -81,7 +89,7 @@ export function ChannelList({ channels, onVerify, onDelete, onSetDefault }: Chan
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
             {!channel.isDefault && (
               <Button
                 variant="ghost"
