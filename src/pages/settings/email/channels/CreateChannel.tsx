@@ -55,13 +55,17 @@ const CreateChannel = () => {
     },
   });
 
+  const handleBack = () => {
+    navigate('/settings/email/channels');
+  };
+
   return (
     <div className="container mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       <div className="flex items-center gap-4">
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => navigate('/settings/email/channels')}
+          onClick={handleBack}
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>
@@ -98,7 +102,7 @@ const CreateChannel = () => {
             <Button
               type="button"
               variant="outline"
-              onClick={() => navigate('/settings/email/channels')}
+              onClick={handleBack}
               disabled={isSubmitting}
             >
               Cancel

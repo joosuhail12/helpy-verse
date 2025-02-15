@@ -4,7 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Info, Users } from 'lucide-react';
 import { IconEmojiPicker } from '../IconEmojiPicker';
 import { FieldLabel } from './FieldLabel';
-import { useAppSelector } from '@/hooks/useAppSelector';
+import { mockTeams } from '@/store/slices/teams/mockData';
 
 interface BasicInformationSectionProps {
   channelName: string;
@@ -29,8 +29,6 @@ export const BasicInformationSection = ({
   touched,
   setFieldTouched,
 }: BasicInformationSectionProps) => {
-  const teams = useAppSelector((state) => state.teams.teams);
-
   return (
     <div className="space-y-6">
       <h3 className="text-lg font-semibold">Basic Information</h3>
@@ -91,7 +89,7 @@ export const BasicInformationSection = ({
               <SelectValue placeholder="Select a team (optional)" />
             </SelectTrigger>
             <SelectContent>
-              {teams.map((team) => (
+              {mockTeams.map((team) => (
                 <SelectItem key={team.id} value={team.id}>
                   {team.name}
                 </SelectItem>
