@@ -6,6 +6,7 @@ import { Check, X, Pencil } from 'lucide-react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { updateContact } from '@/store/slices/contacts/contactsSlice';
 import { useToast } from '@/components/ui/use-toast';
+import { Contact } from '@/types/contact';
 
 interface InlineEditFieldProps {
   value: string;
