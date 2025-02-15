@@ -10,8 +10,8 @@ interface ContactStatusInfoProps {
 export const ContactStatusInfo = ({ contact }: ContactStatusInfoProps) => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <div className="space-y-1">
-        <p className="text-sm font-medium text-muted-foreground">Type</p>
+      <div className="space-y-1.5">
+        <p className="text-sm font-medium text-purple-900/70">Type</p>
         <InlineEditField
           value={contact.type}
           contactId={contact.id}
@@ -19,8 +19,8 @@ export const ContactStatusInfo = ({ contact }: ContactStatusInfoProps) => {
           label="Type"
         />
       </div>
-      <div className="space-y-1">
-        <p className="text-sm font-medium text-muted-foreground">Status</p>
+      <div className="space-y-1.5">
+        <p className="text-sm font-medium text-purple-900/70">Status</p>
         <InlineEditField
           value={contact.status}
           contactId={contact.id}
@@ -31,4 +31,3 @@ export const ContactStatusInfo = ({ contact }: ContactStatusInfoProps) => {
     </div>
   );
 };
-
