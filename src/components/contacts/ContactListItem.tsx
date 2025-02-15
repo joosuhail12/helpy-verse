@@ -27,7 +27,7 @@ export const ContactListItem = ({ contact }: ContactListItemProps) => {
         </Badge>
       </TableCell>
       <TableCell>
-        <Badge variant={contact.status === 'active' ? 'success' : 'destructive'}>
+        <Badge variant={contact.status === 'active' ? 'default' : 'destructive'}>
           {contact.status}
         </Badge>
       </TableCell>
