@@ -1,13 +1,11 @@
+
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { updateCompany, deleteCompany } from '@/store/slices/companies/companiesSlice';
-import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { ArrowLeft, Building2, Globe, Calendar, Trash2 } from 'lucide-react';
+import { deleteCompany } from '@/store/slices/companies/companiesSlice';
 import { useState } from 'react';
-import { InlineEditField } from '@/components/contacts/detail/InlineEditField';
 import { useToast } from '@/hooks/use-toast';
+import { Activity } from '@/types/activity';
 import {
   AlertDialog,
   AlertDialogContent,
@@ -19,7 +17,9 @@ import {
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Activity } from '@/types/activity';
+import { CompanyDetailHeader } from '@/components/companies/detail/CompanyDetailHeader';
+import { CompanyMainInfo } from '@/components/companies/detail/CompanyMainInfo';
+import { CompanyActivityTimeline } from '@/components/companies/detail/CompanyActivityTimeline';
 import { AssociatedContacts } from '@/components/companies/detail/AssociatedContacts';
 import { CompanyCustomFields } from '@/components/companies/detail/CompanyCustomFields';
 import { CompanyCustomObjectData } from '@/components/companies/detail/CompanyCustomObjectData';
@@ -50,9 +50,9 @@ const CompanyDetail = () => {
   if (!company) {
     return (
       <div className="p-6">
-        <Card className="p-4 text-red-500">
+        <div className="p-4 text-red-500">
           Company not found
-        </Card>
+        </div>
       </div>
     );
   }
@@ -76,127 +76,15 @@ const CompanyDetail = () => {
 
   return (
     <div className="container mx-auto px-4 py-6 max-w-[1400px]">
-      <div className="border-b border-purple-100/20 pb-6 backdrop-blur-sm">
-        <div className="flex items-start justify-between mb-6">
-          <Button 
-            variant="ghost" 
-            size="icon"
-            onClick={() => navigate('/home/contacts/companies')}
-            className="mt-1 hover:bg-purple-50/50 transition-colors"
-          >
-            <ArrowLeft className="h-4 w-4 text-purple-600" />
-          </Button>
-          
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={() => setShowDeleteDialog(true)}
-          >
-            <Trash2 className="h-4 w-4 mr-2" />
-            Delete Company
-          </Button>
-        </div>
-        
-        <div className="flex items-center gap-6">
-          <div className="p-4 bg-purple-100 rounded-lg">
-            <Building2 className="h-8 w-8 text-purple-600" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">
-              {company.name}
-            </h1>
-            <p className="text-sm text-purple-600/70 mt-1">
-              {company.website}
-            </p>
-          </div>
-        </div>
-      </div>
+      <CompanyDetailHeader 
+        company={company} 
+        onDeleteClick={() => setShowDeleteDialog(true)} 
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-8">
         <div className="lg:col-span-4 space-y-6">
-          <Card className="bg-white/60 backdrop-blur-sm border-purple-100/50 shadow-lg shadow-purple-500/5">
-            <CardHeader className="border-b border-purple-100/20 pb-4">
-              <CardTitle className="text-lg font-semibold text-purple-900">Company Information</CardTitle>
-            </CardHeader>
-            <CardContent className="pt-6 space-y-8">
-              <div className="grid grid-cols-1 gap-6">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-sm font-medium text-purple-900/70">
-                    <Building2 className="h-4 w-4" />
-                    <span>Company Name</span>
-                  </div>
-                  <InlineEditField
-                    value={company.name}
-                    contactId={company.id}
-                    field="name"
-                    label="Company Name"
-                    validation={[{ type: 'required', value: '', message: 'Company name is required' }]}
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-sm font-medium text-purple-900/70">
-                    <Globe className="h-4 w-4" />
-                    <span>Website</span>
-                  </div>
-                  <InlineEditField
-                    value={company.website || ''}
-                    contactId={company.id}
-                    field="website"
-                    label="Website"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-sm font-medium text-purple-900/70">
-                    <span>Industry</span>
-                  </div>
-                  <InlineEditField
-                    value={company.industry || ''}
-                    contactId={company.id}
-                    field="industry"
-                    label="Industry"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-sm font-medium text-purple-900/70">
-                    <span>Employee Count</span>
-                  </div>
-                  <InlineEditField
-                    value={String(company.employeeCount || '')}
-                    contactId={company.id}
-                    field="employeeCount"
-                    label="Employee Count"
-                    type="number"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-sm font-medium text-purple-900/70">
-                    <Calendar className="h-4 w-4" />
-                    <span>Created At</span>
-                  </div>
-                  <p className="text-sm text-gray-600">
-                    {new Date(company.createdAt).toLocaleDateString()}
-                  </p>
-                </div>
-
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-sm font-medium text-purple-900/70">
-                    <Calendar className="h-4 w-4" />
-                    <span>Last Updated</span>
-                  </div>
-                  <p className="text-sm text-gray-600">
-                    {new Date(company.updatedAt).toLocaleDateString()}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
+          <CompanyMainInfo company={company} />
           <CompanyCustomFields company={company} />
-
           <CompanyCustomObjectData company={company} />
         </div>
 
@@ -208,26 +96,7 @@ const CompanyDetail = () => {
             </TabsList>
             
             <TabsContent value="timeline">
-              <Card className="bg-white/60 backdrop-blur-sm border-purple-100/50 shadow-lg shadow-purple-500/5">
-                <CardHeader className="border-b border-purple-100/20 pb-4">
-                  <CardTitle className="text-lg font-semibold text-purple-900">Activity Timeline</CardTitle>
-                </CardHeader>
-                <CardContent className="pt-6">
-                  {activities.map((activity) => (
-                    <div key={activity.id} className="flex gap-4 mb-4">
-                      <div className="p-2 bg-purple-100 rounded-lg">
-                        <Building2 className="h-4 w-4 text-purple-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-900">{activity.description}</p>
-                        <p className="text-xs text-gray-500 mt-1">
-                          {new Date(activity.date).toLocaleDateString()}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
+              <CompanyActivityTimeline activities={activities} />
             </TabsContent>
             
             <TabsContent value="contacts">
