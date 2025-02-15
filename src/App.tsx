@@ -33,6 +33,7 @@ const DomainDetail = lazy(() => import(/* webpackChunkName: "domain-detail" */ "
 const Channels = lazy(() => import(/* webpackChunkName: "channels" */ "./pages/settings/email/channels"));
 const CreateChannel = lazy(() => import(/* webpackChunkName: "create-channel" */ "./pages/settings/email/channels/CreateChannel"));
 const EmailChannelDetail = lazy(() => import(/* webpackChunkName: "email-channel-detail" */ "./pages/settings/email/channels/EmailChannelDetail"));
+const Companies = lazy(() => import(/* webpackChunkName: "companies" */ "./pages/contacts/Companies"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -103,6 +104,7 @@ const App = () => (
                 >
                   <Route path="inbox/all" element={<AllTickets />} />
                   <Route path="contacts/all" element={<AllContacts />} />
+                  <Route path="contacts/companies" element={<Companies />} />
                   <Route path="contacts/:id" element={<ContactDetail />} />
                   <Route path="settings/tags" element={<Tags />} />
                   <Route path="settings/teams" element={<Teams />} />
