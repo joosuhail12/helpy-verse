@@ -1,3 +1,4 @@
+
 import { useParams } from 'react-router-dom';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { ContactDetailHeader } from '@/components/contacts/detail/ContactDetailHeader';
@@ -20,6 +21,7 @@ import {
 } from "@/components/ui/collapsible";
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import { Activity } from '@/types/activity';
 
 const ContactDetail = () => {
   const { id } = useParams();
@@ -27,8 +29,8 @@ const ContactDetail = () => {
     state.contacts.contacts.find((c) => c.id === id)
   );
 
-  // Mock activities data for sentiment calculation
-  const activities = [
+  // Mock activities data with correct types
+  const activities: Activity[] = [
     {
       id: '1',
       type: 'email',
