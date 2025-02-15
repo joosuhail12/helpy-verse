@@ -23,4 +23,8 @@ export interface Contact {
   nextFollowUp?: string;
   createdAt: string;
   updatedAt: string;
+  managerId?: string;
+  reportsToId?: string;
+  teamIds?: string[];
 }
+

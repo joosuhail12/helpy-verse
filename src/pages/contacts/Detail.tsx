@@ -6,6 +6,7 @@ import { ContactInformation } from '@/components/contacts/detail/ContactInformat
 import { ContactTimeline } from '@/components/contacts/detail/ContactTimeline';
 import { ContactDetailSidebar } from '@/components/contacts/detail/ContactDetailSidebar';
 import { ContactCustomObjectData } from '@/components/contacts/detail/ContactCustomObjectData';
+import { ContactRelated } from '@/components/contacts/detail/ContactRelated';
 import { Card } from '@/components/ui/card';
 import { Bell } from 'lucide-react';
 import { Activity } from '@/types/activity';
@@ -58,6 +59,7 @@ const ContactDetail = () => {
           <ContactDetailSidebar contact={contact} />
           <div className="mt-4 space-y-4">
             <ContactInformation contact={contact} activities={activities} />
+            <ContactRelated contact={contact} />
             <ContactCustomObjectData contact={contact} />
           </div>
         </div>
