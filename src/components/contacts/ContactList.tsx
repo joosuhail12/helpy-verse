@@ -14,6 +14,14 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { setSelectedContacts } from '@/store/slices/contacts/contactsSlice';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Tag as TagIcon } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface ContactListProps {
   contacts: Contact[];
@@ -32,12 +40,49 @@ export const ContactList = ({ contacts, loading }: ContactListProps) => {
     }
   };
 
+  const handleQuickTag = () => {
+    // This would be implemented in a real app to handle quick tag assignment
+    console.log('Quick tag for selected contacts:', selectedContacts);
+  };
+
   if (loading) {
     return <LoadingState />;
   }
 
   return (
     <div className="bg-white rounded-lg shadow">
+      <div className="p-4 border-b flex justify-between items-center">
+        <div className="flex items-center gap-2">
+          <Checkbox
+            checked={selectedContacts.length === contacts.length && contacts.length > 0}
+            onCheckedChange={handleSelectAll}
+          />
+          <span className="text-sm text-gray-500">
+            {selectedContacts.length > 0 && (
+              `${selectedContacts.length} selected`
+            )}
+          </span>
+        </div>
+        {selectedContacts.length > 0 && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleQuickTag}
+                >
+                  <TagIcon className="h-4 w-4 mr-2" />
+                  Quick Tag
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Quickly assign tags to selected contacts</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
+      </div>
       <Table>
         <TableHeader>
           <TableRow>
@@ -69,3 +114,4 @@ export const ContactList = ({ contacts, loading }: ContactListProps) => {
     </div>
   );
 };
+
