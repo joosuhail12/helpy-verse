@@ -2,14 +2,20 @@
 import { Building2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import type { Company } from '@/types/company';
+import { useNavigate } from 'react-router-dom';
 
 interface CompanyListItemProps {
   company: Company;
 }
 
 export const CompanyListItem = ({ company }: CompanyListItemProps) => {
+  const navigate = useNavigate();
+
   return (
-    <Card className="p-4 hover:shadow-md transition-shadow">
+    <Card 
+      className="p-4 hover:shadow-md transition-shadow cursor-pointer"
+      onClick={() => navigate(`/home/contacts/companies/${company.id}`)}
+    >
       <div className="flex items-center space-x-4">
         <div className="p-2 bg-purple-100 rounded-lg">
           <Building2 className="h-5 w-5 text-purple-600" />
@@ -22,3 +28,4 @@ export const CompanyListItem = ({ company }: CompanyListItemProps) => {
     </Card>
   );
 };
+
