@@ -2,6 +2,7 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
@@ -126,3 +127,4 @@ const EmailChannelDetail = () => {
 };
 
 export default EmailChannelDetail;
+
