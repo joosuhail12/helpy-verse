@@ -38,7 +38,7 @@ export const ContactCustomObjectData = ({ contact }: ContactCustomObjectDataProp
                     {field.name}
                   </p>
                   <InlineEditField
-                    value={(contact as any)[`${obj.slug}_${field.id}`] || ''}
+                    value={String(contact[`${obj.slug}_${field.id}`] || '')}
                     contactId={contact.id}
                     field={`${obj.slug}_${field.id}`}
                     label={field.name}

@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils';
 interface InlineEditFieldProps {
   value: string;
   contactId: string;
-  field: keyof Contact;
+  field: string;
   label: string;
   autoSave?: boolean;
 }

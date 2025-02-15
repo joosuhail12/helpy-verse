@@ -49,7 +49,7 @@ export const ContactCustomFields = ({ contact }: ContactCustomFieldsProps) => {
             <div key={field.id} className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground">{field.name}</p>
               <InlineEditField
-                value={(contact as any)[field.id] || ''}
+                value={String(contact[field.id] || '')}
                 contactId={contact.id}
                 field={field.id}
                 label={field.name}

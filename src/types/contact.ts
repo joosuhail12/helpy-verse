@@ -28,4 +28,7 @@ export interface Contact {
   state?: string;
   postalCode?: string;
   country?: string;
+  // Add index signature for custom fields
+  [key: string]: string | number | string[] | undefined | boolean;
 }
+
