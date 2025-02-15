@@ -36,12 +36,12 @@ export const ContactDetailSidebar = ({ contact }: ContactDetailSidebarProps) => 
   };
 
   return (
-    <div className="w-80 space-y-6">
-      <div className="space-y-2">
+    <div className="space-y-4">
+      <div className="flex flex-wrap gap-2">
         <Button 
           variant="default" 
           size="sm" 
-          className="w-full"
+          className="flex-1"
           onClick={() => navigate('/home/tickets/new', { 
             state: { contactId: contact.id } 
           })}
@@ -49,29 +49,20 @@ export const ContactDetailSidebar = ({ contact }: ContactDetailSidebarProps) => 
           <Ticket className="h-4 w-4 mr-2" />
           Create Ticket
         </Button>
-        <Button variant="outline" size="sm" className="w-full">
+        <Button variant="outline" size="sm" className="flex-1">
           <Edit2 className="h-4 w-4 mr-2" />
-          Edit Contact
-        </Button>
-        <Button variant="destructive" size="sm" className="w-full">
-          <Trash2 className="h-4 w-4 mr-2" />
-          Delete Contact
+          Edit
         </Button>
       </div>
 
-      <Card className="p-4 space-y-4">
-        <h3 className="font-medium text-sm">Quick Note</h3>
-        <QuickNoteInput contactId={contact.id} />
-      </Card>
-
-      <Card className="p-4 space-y-4">
-        <h3 className="font-medium text-sm">Quick Actions</h3>
+      <Card className="p-4 space-y-3">
+        <h3 className="font-medium text-sm text-gray-700">Quick Actions</h3>
         <div className="space-y-2">
           {contact.email && (
             <Button 
               variant="ghost" 
               size="sm" 
-              className="w-full justify-start hover:bg-gray-100" 
+              className="w-full justify-start hover:bg-gray-100 text-sm" 
               onClick={() => copyToClipboard(contact.email, 'Email')}
             >
               <Mail className="h-4 w-4 mr-2 text-gray-500" />
@@ -82,7 +73,7 @@ export const ContactDetailSidebar = ({ contact }: ContactDetailSidebarProps) => 
             <Button 
               variant="ghost" 
               size="sm" 
-              className="w-full justify-start hover:bg-gray-100"
+              className="w-full justify-start hover:bg-gray-100 text-sm"
               onClick={() => copyToClipboard(contact.phone!, 'Phone')}
             >
               <Phone className="h-4 w-4 mr-2 text-gray-500" />
@@ -93,7 +84,7 @@ export const ContactDetailSidebar = ({ contact }: ContactDetailSidebarProps) => 
             <Button 
               variant="ghost" 
               size="sm" 
-              className="w-full justify-start hover:bg-gray-100"
+              className="w-full justify-start hover:bg-gray-100 text-sm"
               onClick={() => copyToClipboard(contact.company!, 'Company')}
             >
               <Building2 className="h-4 w-4 mr-2 text-gray-500" />
@@ -103,12 +94,17 @@ export const ContactDetailSidebar = ({ contact }: ContactDetailSidebarProps) => 
         </div>
       </Card>
 
+      <Card className="p-4 space-y-3">
+        <h3 className="font-medium text-sm text-gray-700">Quick Note</h3>
+        <QuickNoteInput contactId={contact.id} />
+      </Card>
+
       {contact.tags.length > 0 && (
-        <Card className="p-4 space-y-4">
-          <h3 className="font-medium text-sm">Tags</h3>
+        <Card className="p-4 space-y-3">
+          <h3 className="font-medium text-sm text-gray-700">Tags</h3>
           <div className="flex flex-wrap gap-2">
             {contact.tags.map((tag) => (
-              <div key={tag} className="flex items-center gap-2 text-sm bg-secondary px-2 py-1 rounded-md">
+              <div key={tag} className="flex items-center gap-1.5 text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-md">
                 <Tag className="h-3 w-3" />
                 {tag}
               </div>
@@ -119,4 +115,3 @@ export const ContactDetailSidebar = ({ contact }: ContactDetailSidebarProps) => 
     </div>
   );
 };
-

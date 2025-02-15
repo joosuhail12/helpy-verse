@@ -43,27 +43,27 @@ const ContactDetail = () => {
   const needsAttention = contact.status === 'active' && !contact.lastContacted;
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-7xl">
+    <div className="container mx-auto px-4 py-6 max-w-[1400px]">
       <ContactDetailHeader contact={contact} />
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
-        {/* Left Column (2/3 width) - Contact Information */}
-        <div className="lg:col-span-2 space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-8">
+        {/* Left Column (4/12 width) - Contact Information */}
+        <div className="lg:col-span-4 space-y-4">
           {needsAttention && (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-center gap-2">
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-center gap-2 mb-4">
               <Bell className="h-4 w-4 text-yellow-500" />
               <p className="text-sm text-yellow-700">This contact needs attention</p>
             </div>
           )}
 
+          <ContactDetailSidebar contact={contact} />
+          <ContactBasicInfo contact={contact} />
           <CustomerSentiment activities={activities} />
           <MostUsedInfo contact={contact} />
-          <ContactBasicInfo contact={contact} />
         </div>
 
-        {/* Right Column (1/3 width) - Activity Timeline */}
-        <div className="space-y-6">
-          <ContactDetailSidebar contact={contact} />
+        {/* Right Column (8/12 width) - Activity Timeline */}
+        <div className="lg:col-span-8">
           <ContactTimeline contact={contact} />
         </div>
       </div>
@@ -72,4 +72,3 @@ const ContactDetail = () => {
 };
 
 export default ContactDetail;
-

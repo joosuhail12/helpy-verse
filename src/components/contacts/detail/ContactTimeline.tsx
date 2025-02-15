@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Contact } from '@/types/contact';
 import { Activity, ActivityType, InteractionMetrics } from '@/types/activity';
@@ -94,7 +93,7 @@ export const ContactTimeline = ({ contact }: ContactTimelineProps) => {
   );
 
   return (
-    <Card className="border-none shadow-none bg-gray-50/50">
+    <Card className="h-full">
       <CardHeader className="border-b pb-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -120,62 +119,60 @@ export const ContactTimeline = ({ contact }: ContactTimelineProps) => {
         </div>
       </CardHeader>
 
-      <CardContent className="p-0">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 border-b">
-          <div className="flex items-center gap-2">
-            <BarChart className="h-4 w-4 text-blue-500" />
-            <div>
-              <p className="text-sm font-medium">{metrics.totalInteractions}</p>
-              <p className="text-xs text-muted-foreground">Total Interactions</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Clock className="h-4 w-4 text-green-500" />
-            <div>
-              <p className="text-sm font-medium">{metrics.averageResponseTime}min</p>
-              <p className="text-xs text-muted-foreground">Avg. Response Time</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            {getActivityIcon(metrics.mostFrequentType)}
-            <div>
-              <p className="text-sm font-medium capitalize">{metrics.mostFrequentType}</p>
-              <p className="text-xs text-muted-foreground">Most Frequent</p>
-            </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 border-b bg-gray-50">
+        <div className="flex items-center gap-2">
+          <BarChart className="h-4 w-4 text-blue-500" />
+          <div>
+            <p className="text-sm font-medium">{metrics.totalInteractions}</p>
+            <p className="text-xs text-muted-foreground">Total Interactions</p>
           </div>
         </div>
-
-        <ScrollArea className="h-[400px]">
-          <div className="space-y-4 p-4">
-            {filteredActivities.map((activity) => (
-              <div
-                key={activity.id}
-                className="flex gap-4 items-start border-l-2 border-gray-200 pl-4 pb-4 last:pb-0 relative"
-              >
-                <div className="absolute -left-[9px] top-0 bg-background p-1 rounded-full">
-                  {getActivityIcon(activity.type)}
-                </div>
-                <div className="flex-1 space-y-1">
-                  <div className="flex items-center gap-2">
-                    <p className="text-sm">{activity.description}</p>
-                    <Badge variant="outline" className="capitalize">
-                      {activity.type}
-                    </Badge>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    {formatDistanceToNow(new Date(activity.date), { addSuffix: true })}
-                  </p>
-                  {activity.metadata?.responseTime && (
-                    <p className="text-xs text-muted-foreground">
-                      Response time: {activity.metadata.responseTime} minutes
-                    </p>
-                  )}
-                </div>
-              </div>
-            ))}
+        <div className="flex items-center gap-2">
+          <Clock className="h-4 w-4 text-green-500" />
+          <div>
+            <p className="text-sm font-medium">{metrics.averageResponseTime}min</p>
+            <p className="text-xs text-muted-foreground">Avg. Response Time</p>
           </div>
-        </ScrollArea>
-      </CardContent>
+        </div>
+        <div className="flex items-center gap-2">
+          {getActivityIcon(metrics.mostFrequentType)}
+          <div>
+            <p className="text-sm font-medium capitalize">{metrics.mostFrequentType}</p>
+            <p className="text-xs text-muted-foreground">Most Frequent</p>
+          </div>
+        </div>
+      </div>
+
+      <ScrollArea className="h-[600px]">
+        <div className="p-4 space-y-6">
+          {filteredActivities.map((activity) => (
+            <div
+              key={activity.id}
+              className="relative pl-6 pb-6 last:pb-0"
+            >
+              <div className="absolute left-0 top-0 h-full w-px bg-gray-200">
+                <div className="absolute -left-[5px] top 0 h-3 w-3 rounded-full border-2 border-white bg-gray-200" />
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-medium">{activity.description}</p>
+                  <Badge variant="outline" className="capitalize">
+                    {activity.type}
+                  </Badge>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {formatDistanceToNow(new Date(activity.date), { addSuffix: true })}
+                </p>
+                {activity.metadata?.responseTime && (
+                  <p className="text-xs text-muted-foreground">
+                    Response time: {activity.metadata.responseTime} minutes
+                  </p>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </ScrollArea>
     </Card>
   );
 };
