@@ -127,8 +127,7 @@ export const subNavItems = {
       icon: Mail,
       children: [
         { title: 'Domains', path: '/home/settings/email/domains' },
-        { title: 'Manage Channels', path: '/home/settings/email/channels' },
-        { title: 'Email Settings', path: '/home/settings/email/settings' }
+        { title: 'Manage Channels', path: '/home/settings/email/channels' }
       ]
     },
     { title: 'Custom Objects', icon: Database, path: '/home/settings/custom-objects' },
@@ -141,3 +140,4 @@ export const subNavItems = {
     { title: 'Auto Reply', icon: Reply, path: '/home/settings/auto-reply' }
   ]
 };
+

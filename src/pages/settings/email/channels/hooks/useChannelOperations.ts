@@ -1,51 +1,45 @@
 
-import { useNavigate } from 'react-router-dom';
-import { useToast } from '@/hooks/use-toast';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { useToast } from '@/hooks/use-toast';
 import { 
-  deleteChannel,
   updateChannel,
+  deleteChannel,  
 } from '@/store/slices/emailChannels/emailChannelsSlice';
 import type { EmailChannel } from '@/types/emailChannel';
 
 export const useChannelOperations = (channel: EmailChannel) => {
-  const navigate = useNavigate();
-  const { toast } = useToast();
   const dispatch = useAppDispatch();
+  const { toast } = useToast();
 
   const handleDelete = async () => {
     try {
       await dispatch(deleteChannel(channel.id)).unwrap();
       toast({
-        title: "Channel deleted",
-        description: "The email channel has been successfully deleted.",
+        title: 'Channel deleted',
+        description: 'The email channel has been deleted successfully.',
       });
-      navigate('/home/settings/email/channels');
-    } catch (error) {
+    } catch (error: any) {
       toast({
-        title: "Error",
-        description: "Failed to delete the channel.",
-        variant: "destructive",
+        title: 'Error deleting channel',
+        description: error?.message || 'An unexpected error occurred.',
+        variant: 'destructive',
       });
     }
   };
 
-  const handleUpdate = async (updatedChannel: Partial<EmailChannel>) => {
+  const handleUpdate = async (updatedChannel: Partial<EmailChannel>): Promise<boolean> => {
     try {
-      await dispatch(updateChannel({
-        ...updatedChannel,
-        id: channel.id,
-      })).unwrap();
+      await dispatch(updateChannel({ id: channel.id, ...updatedChannel })).unwrap();
       toast({
-        title: "Channel updated",
-        description: "The email channel has been successfully updated.",
+        title: 'Channel updated',
+        description: 'The email channel has been updated successfully.',
       });
       return true;
-    } catch (error) {
+    } catch (error: any) {
       toast({
-        title: "Error",
-        description: "Failed to update the channel.",
-        variant: "destructive",
+        title: 'Error updating channel',
+        description: error?.message || 'An unexpected error occurred.',
+        variant: 'destructive',
       });
       return false;
     }
