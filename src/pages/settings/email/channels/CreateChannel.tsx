@@ -9,6 +9,8 @@ import { ChannelFormFields } from './components/ChannelFormFields';
 import { useChannelForm } from './hooks/useChannelForm';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2 } from 'lucide-react';
+import type { FieldErrors } from 'react-hook-form';
+import type { EmailChannel } from '@/types/emailChannel';
 
 const CreateChannel = () => {
   const { toast } = useToast();
@@ -94,7 +96,7 @@ const CreateChannel = () => {
             setSelectedEmoji={setSelectedEmoji}
             selectedTeamId={selectedTeamId}
             setSelectedTeamId={setSelectedTeamId}
-            errors={errors}
+            errors={errors as unknown as Record<string, string>}
             touched={touched}
             setFieldTouched={setFieldTouched}
           />

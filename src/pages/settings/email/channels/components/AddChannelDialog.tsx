@@ -77,7 +77,7 @@ export function AddChannelDialog({ isOpen, onClose }: AddChannelDialogProps) {
             setSelectedEmoji={setSelectedEmoji}
             selectedTeamId={selectedTeamId}
             setSelectedTeamId={setSelectedTeamId}
-            errors={errors}
+            errors={errors as unknown as Record<string, string>}
             touched={touched}
             setFieldTouched={setFieldTouched}
           />
