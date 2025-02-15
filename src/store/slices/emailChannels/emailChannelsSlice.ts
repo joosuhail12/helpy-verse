@@ -1,4 +1,3 @@
-
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import type { EmailChannel, CreateEmailChannelDto } from '@/types/emailChannel';
 import { mockEmailChannels, mockWorkspace } from '@/mock/emailChannels';
@@ -83,6 +82,24 @@ export const toggleDefaultChannelStatus = createAsyncThunk(
   }
 );
 
+export const bulkDeleteChannels = createAsyncThunk(
+  'emailChannels/bulkDeleteChannels',
+  async (ids: string[]) => {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    return ids;
+  }
+);
+
+export const bulkToggleStatus = createAsyncThunk(
+  'emailChannels/bulkToggleStatus',
+  async ({ ids, isActive }: { ids: string[]; isActive: boolean }) => {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    return { ids, isActive };
+  }
+);
+
 const emailChannelsSlice = createSlice({
   name: 'emailChannels',
   initialState,
@@ -135,6 +152,20 @@ const emailChannelsSlice = createSlice({
       })
       .addCase(toggleDefaultChannelStatus.fulfilled, (state, action) => {
         state.defaultChannel.isActive = action.payload;
+      })
+      .addCase(bulkDeleteChannels.fulfilled, (state, action) => {
+        state.channels = state.channels.filter(c => !action.payload.includes(c.id));
+        // Re-enable default channel if no custom channels exist
+        if (state.channels.length === 0) {
+          state.defaultChannel.isActive = true;
+        }
+      })
+      .addCase(bulkToggleStatus.fulfilled, (state, action) => {
+        state.channels = state.channels.map(channel => 
+          action.payload.ids.includes(channel.id)
+            ? { ...channel, isActive: action.payload.isActive }
+            : channel
+        );
       });
   },
 });

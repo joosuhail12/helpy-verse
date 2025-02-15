@@ -2,6 +2,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Trash2, Mail, MessageCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
@@ -9,11 +10,21 @@ import type { EmailChannel } from '@/types/emailChannel';
 
 interface ChannelListProps {
   channels: EmailChannel[];
+  selectedChannels: string[];
+  onSelectAll: (checked: boolean) => void;
+  onSelectChannel: (id: string, checked: boolean) => void;
   onDelete: (id: string) => void;
   onToggleStatus: (id: string, isActive: boolean) => void;
 }
 
-export function ChannelList({ channels, onDelete, onToggleStatus }: ChannelListProps) {
+export function ChannelList({ 
+  channels, 
+  selectedChannels,
+  onSelectAll,
+  onSelectChannel,
+  onDelete, 
+  onToggleStatus 
+}: ChannelListProps) {
   const navigate = useNavigate();
   
   const getTypeLabel = (type: EmailChannel['type']) => {
@@ -43,27 +54,45 @@ export function ChannelList({ channels, onDelete, onToggleStatus }: ChannelListP
 
   return (
     <div className="divide-y divide-border rounded-md border">
+      <div className="p-4 bg-muted/50">
+        <div className="flex items-center gap-4">
+          <Checkbox
+            checked={selectedChannels.length === channels.length}
+            onCheckedChange={(checked) => onSelectAll(!!checked)}
+          />
+          <span className="text-sm font-medium">Select all channels</span>
+        </div>
+      </div>
       {channels.map((channel) => (
         <div
           key={channel.id}
-          className="flex items-center justify-between p-6 hover:bg-muted/50 transition-colors group cursor-pointer"
-          onClick={() => handleChannelClick(channel.id)}
+          className="flex items-center justify-between p-6 hover:bg-muted/50 transition-colors group"
         >
           <div className="flex items-center gap-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
-              {getTypeIcon(channel.type)}
-            </div>
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <h3 className="font-medium">{channel.channelName}</h3>
-                <Badge variant="outline" className="font-normal">
-                  {getTypeLabel(channel.type)}
-                </Badge>
+            <Checkbox
+              checked={selectedChannels.includes(channel.id)}
+              onCheckedChange={(checked) => onSelectChannel(channel.id, !!checked)}
+              onClick={(e) => e.stopPropagation()}
+            />
+            <div 
+              className="flex items-center gap-4 cursor-pointer"
+              onClick={() => handleChannelClick(channel.id)}
+            >
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+                {getTypeIcon(channel.type)}
               </div>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <span>{channel.email}</span>
-                <span>•</span>
-                <span>Added {format(new Date(channel.createdAt), 'MMM d, yyyy')}</span>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <h3 className="font-medium">{channel.channelName}</h3>
+                  <Badge variant="outline" className="font-normal">
+                    {getTypeLabel(channel.type)}
+                  </Badge>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <span>{channel.email}</span>
+                  <span>•</span>
+                  <span>Added {format(new Date(channel.createdAt), 'MMM d, yyyy')}</span>
+                </div>
               </div>
             </div>
           </div>
