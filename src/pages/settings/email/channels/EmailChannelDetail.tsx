@@ -20,12 +20,7 @@ const EmailChannelDetail = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedChannel, setEditedChannel] = useState(channel);
 
-  const {
-    handleDelete,
-    handleSetDefault,
-    handleVerify,
-    handleUpdate,
-  } = useChannelOperations(channel!);
+  const { handleDelete, handleUpdate } = useChannelOperations(channel!);
 
   if (!channel) {
     return (
@@ -85,8 +80,6 @@ const EmailChannelDetail = () => {
           onEdit={handleEdit}
           onCancel={handleCancel}
           onSave={handleSave}
-          onSetDefault={handleSetDefault}
-          onVerify={handleVerify}
           onDelete={handleDelete}
           onChange={handleChange}
         />

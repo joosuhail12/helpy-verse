@@ -15,8 +15,6 @@ interface ChannelHeaderSectionProps {
   onEdit: () => void;
   onCancel: () => void;
   onSave: () => void;
-  onSetDefault: () => void;
-  onVerify: () => void;
   onDelete: () => void;
   onChange: (field: string, value: string) => void;
 }
@@ -28,8 +26,6 @@ export const ChannelHeaderSection: React.FC<ChannelHeaderSectionProps> = ({
   onEdit,
   onCancel,
   onSave,
-  onSetDefault,
-  onVerify,
   onDelete,
   onChange,
 }) => {
@@ -54,10 +50,7 @@ export const ChannelHeaderSection: React.FC<ChannelHeaderSectionProps> = ({
           ) : (
             <h2 className="text-xl font-semibold">{channel.channelName}</h2>
           )}
-          <ChannelStatusBadges
-            isDefault={channel.isDefault}
-            isVerified={channel.isVerified}
-          />
+          <ChannelStatusBadges isDefault={channel.isDefault} />
         </div>
         <p className="text-muted-foreground">
           Created on {format(new Date(channel.createdAt), 'MMM d, yyyy')}
@@ -74,9 +67,6 @@ export const ChannelHeaderSection: React.FC<ChannelHeaderSectionProps> = ({
           <Button variant="outline" onClick={onEdit}>Edit</Button>
           <ChannelActions
             isDefault={channel.isDefault}
-            isVerified={channel.isVerified}
-            onSetDefault={onSetDefault}
-            onVerify={onVerify}
             onDelete={onDelete}
           />
         </div>

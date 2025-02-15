@@ -1,56 +1,41 @@
 
 import React from 'react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { Star, CheckCircle2, Trash2 } from 'lucide-react';
+import { MoreHorizontal, Trash2 } from 'lucide-react';
 
 interface ChannelActionsProps {
-  isDefault: boolean;
-  isVerified: boolean;
-  onSetDefault: () => void;
-  onVerify: () => void;
+  isDefault?: boolean;
   onDelete: () => void;
 }
 
 export const ChannelActions: React.FC<ChannelActionsProps> = ({
   isDefault,
-  isVerified,
-  onSetDefault,
-  onVerify,
   onDelete,
 }) => {
   return (
-    <div className="flex gap-2">
-      {!isDefault && (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onSetDefault}
-          className="gap-1"
-        >
-          <Star className="h-4 w-4" />
-          Set as Default
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon">
+          <MoreHorizontal className="h-4 w-4" />
         </Button>
-      )}
-      {!isVerified && (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onVerify}
-          className="gap-1"
-        >
-          <CheckCircle2 className="h-4 w-4" />
-          Verify
-        </Button>
-      )}
-      <Button
-        variant="destructive"
-        size="sm"
-        onClick={onDelete}
-        className="gap-1"
-      >
-        <Trash2 className="h-4 w-4" />
-        Delete
-      </Button>
-    </div>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        {!isDefault && (
+          <>
+            <DropdownMenuItem onClick={onDelete} className="text-destructive">
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete Channel
+            </DropdownMenuItem>
+          </>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };
