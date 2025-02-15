@@ -33,7 +33,6 @@ export const createChannel = createAsyncThunk(
     const newChannel: EmailChannel = {
       ...channel,
       id: Math.random().toString(),
-      isVerified: false,
       createdAt: new Date().toISOString(),
     };
     
@@ -50,24 +49,8 @@ export const updateChannel = createAsyncThunk(
   }
 );
 
-export const verifyChannel = createAsyncThunk(
-  'emailChannels/verifyChannel',
-  async (id: string) => {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return id;
-  }
-);
-
 export const deleteChannel = createAsyncThunk(
   'emailChannels/deleteChannel',
-  async (id: string) => {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return id;
-  }
-);
-
-export const setDefaultChannel = createAsyncThunk(
-  'emailChannels/setDefaultChannel',
   async (id: string) => {
     await new Promise(resolve => setTimeout(resolve, 500));
     return id;
@@ -105,20 +88,8 @@ const emailChannelsSlice = createSlice({
           };
         }
       })
-      .addCase(verifyChannel.fulfilled, (state, action) => {
-        const channel = state.channels.find(c => c.id === action.payload);
-        if (channel) {
-          channel.isVerified = true;
-        }
-      })
       .addCase(deleteChannel.fulfilled, (state, action) => {
         state.channels = state.channels.filter(c => c.id !== action.payload);
-      })
-      .addCase(setDefaultChannel.fulfilled, (state, action) => {
-        state.channels = state.channels.map(channel => ({
-          ...channel,
-          isDefault: channel.id === action.payload,
-        }));
       });
   },
 });

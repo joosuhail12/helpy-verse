@@ -8,8 +8,6 @@ export interface EmailChannel {
   noReplyEmail?: string;
   icon?: string;
   type: 'sending' | 'receiving' | 'both';
-  isDefault: boolean;
-  isVerified: boolean;
   createdAt: string;
   updatedAt?: string;
   teamId?: string;
@@ -26,7 +24,6 @@ export interface CreateEmailChannelDto {
   noReplyEmail?: string;
   icon?: string;
   type: 'sending' | 'receiving' | 'both';
-  isDefault: boolean;
   teamId?: string;
   allowAgentConversations: boolean;
   useAgentNames: boolean;
