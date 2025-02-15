@@ -4,15 +4,16 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { StickyNote, Loader2 } from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { updateContact } from '@/store/slices/contacts/contactsSlice';
 
 interface QuickNoteInputProps {
   contactId: string;
+  initialNote?: string;
 }
 
-export const QuickNoteInput = ({ contactId }: QuickNoteInputProps) => {
-  const [note, setNote] = useState('');
+export const QuickNoteInput = ({ contactId, initialNote = '' }: QuickNoteInputProps) => {
+  const [note, setNote] = useState(initialNote);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const dispatch = useAppDispatch();
   const { toast } = useToast();
@@ -22,7 +23,7 @@ export const QuickNoteInput = ({ contactId }: QuickNoteInputProps) => {
     
     setIsSubmitting(true);
     try {
-      dispatch(updateContact({
+      await dispatch(updateContact({
         id: contactId,
         notes: note,
       }));
@@ -31,7 +32,6 @@ export const QuickNoteInput = ({ contactId }: QuickNoteInputProps) => {
         title: "Note saved",
         description: "Your note has been saved successfully.",
       });
-      setNote('');
     } catch (error) {
       toast({
         title: "Error",
@@ -62,7 +62,7 @@ export const QuickNoteInput = ({ contactId }: QuickNoteInputProps) => {
             variant="ghost"
             onClick={handleSubmit}
             className="absolute right-2 top-2"
-            disabled={!note.trim()}
+            disabled={!note.trim() || note === initialNote}
           >
             <StickyNote className="h-4 w-4" />
           </Button>

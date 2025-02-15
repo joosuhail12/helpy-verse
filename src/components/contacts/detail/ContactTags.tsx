@@ -6,7 +6,7 @@ import {
   CardTitle,
   CardContent,
 } from '@/components/ui/card';
-import { Tag, Plus, X } from 'lucide-react';
+import { Tag, Plus, X, Check } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,7 +27,18 @@ export const ContactTags = ({ contact }: ContactTagsProps) => {
   const handleAddTag = () => {
     if (!newTag.trim()) return;
     
-    const updatedTags = [...contact.tags, newTag.trim()];
+    // Ensure tags is initialized as an array
+    const currentTags = Array.isArray(contact.tags) ? contact.tags : [];
+    if (currentTags.includes(newTag.trim())) {
+      toast({
+        title: "Tag exists",
+        description: "This tag already exists on the contact.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    const updatedTags = [...currentTags, newTag.trim()];
     dispatch(updateContact({ 
       id: contact.id, 
       tags: updatedTags 
@@ -40,7 +51,8 @@ export const ContactTags = ({ contact }: ContactTagsProps) => {
   };
 
   const handleRemoveTag = (tagToRemove: string) => {
-    const updatedTags = contact.tags.filter(tag => tag !== tagToRemove);
+    const currentTags = Array.isArray(contact.tags) ? contact.tags : [];
+    const updatedTags = currentTags.filter(tag => tag !== tagToRemove);
     dispatch(updateContact({ 
       id: contact.id, 
       tags: updatedTags 
@@ -75,6 +87,7 @@ export const ContactTags = ({ contact }: ContactTagsProps) => {
               size="sm"
               variant="ghost"
               onClick={handleAddTag}
+              disabled={!newTag.trim()}
               className="h-8 w-8 p-0"
             >
               <Plus className="h-4 w-4" />
@@ -84,7 +97,7 @@ export const ContactTags = ({ contact }: ContactTagsProps) => {
       </CardHeader>
       <CardContent className="pt-6">
         <div className="flex flex-wrap gap-2">
-          {contact.tags.map((tag) => (
+          {Array.isArray(contact.tags) && contact.tags.map((tag) => (
             <Badge 
               key={tag} 
               variant="secondary"

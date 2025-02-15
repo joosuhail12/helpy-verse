@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { CustomFieldType } from '@/types/customField';
+import { CompanySearchInput } from './CompanySearchInput';
 
 interface EditFieldProps {
   type: CustomFieldType;
@@ -19,6 +20,7 @@ interface EditFieldProps {
   options?: string[];
   isSaving?: boolean;
   inputRef?: React.RefObject<HTMLInputElement>;
+  field?: string;
 }
 
 export const EditField = ({
@@ -28,7 +30,19 @@ export const EditField = ({
   options = [],
   isSaving = false,
   inputRef,
+  field,
 }: EditFieldProps) => {
+  // Special handling for company field
+  if (field === 'company') {
+    return (
+      <CompanySearchInput
+        value={String(value)}
+        onChange={(val) => onChange(val)}
+        disabled={isSaving}
+      />
+    );
+  }
+
   switch (type) {
     case 'boolean':
       return (
@@ -132,4 +146,3 @@ export const EditField = ({
       );
   }
 };
-
