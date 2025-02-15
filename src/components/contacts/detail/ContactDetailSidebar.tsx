@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Contact } from '@/types/contact';
 import { 
-  Edit2, Trash2, 
   Ticket, Tag
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -22,17 +21,13 @@ export const ContactDetailSidebar = ({ contact }: ContactDetailSidebarProps) => 
         <Button 
           variant="default" 
           size="sm" 
-          className="flex-1"
+          className="w-full"
           onClick={() => navigate('/home/tickets/new', { 
             state: { contactId: contact.id } 
           })}
         >
           <Ticket className="h-4 w-4 mr-2" />
           Create Ticket
-        </Button>
-        <Button variant="outline" size="sm" className="flex-1">
-          <Edit2 className="h-4 w-4 mr-2" />
-          Edit
         </Button>
       </div>
 

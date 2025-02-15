@@ -1,6 +1,6 @@
 
 import { Contact } from '@/types/contact';
-import { format } from 'date-fns';
+import { InlineEditField } from '../InlineEditField';
 
 interface ContactDatesInfoProps {
   contact: Contact;
@@ -11,17 +11,21 @@ export const ContactDatesInfo = ({ contact }: ContactDatesInfoProps) => {
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <div className="space-y-1">
         <p className="text-sm font-medium text-muted-foreground">Created</p>
-        <p className="text-sm py-1 px-2">
-          {format(new Date(contact.createdAt), 'MMM dd, yyyy')}
-        </p>
+        <InlineEditField
+          value={new Date(contact.createdAt).toISOString().split('T')[0]}
+          contactId={contact.id}
+          field="createdAt"
+          label="Created At"
+        />
       </div>
       <div className="space-y-1">
         <p className="text-sm font-medium text-muted-foreground">Last Contact</p>
-        <p className="text-sm py-1 px-2">
-          {contact.lastContacted 
-            ? format(new Date(contact.lastContacted), 'MMM dd, yyyy')
-            : '-'}
-        </p>
+        <InlineEditField
+          value={contact.lastContacted ? new Date(contact.lastContacted).toISOString().split('T')[0] : ''}
+          contactId={contact.id}
+          field="lastContacted"
+          label="Last Contacted"
+        />
       </div>
     </div>
   );
