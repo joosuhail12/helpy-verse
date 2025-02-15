@@ -5,9 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Check, X, Pencil, Loader2 } from 'lucide-react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { updateContact } from '@/store/slices/contacts/contactsSlice';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { Contact } from '@/types/contact';
 import { useDebounce } from '@/hooks/useDebounce';
+import { cn } from '@/lib/utils';
 
 interface InlineEditFieldProps {
   value: string;
@@ -27,6 +28,7 @@ export const InlineEditField = ({
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value);
   const [isSaving, setIsSaving] = useState(false);
+  const [saveComplete, setSaveComplete] = useState(false);
   const dispatch = useAppDispatch();
   const { toast } = useToast();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -47,6 +49,8 @@ export const InlineEditField = ({
     setIsSaving(true);
     try {
       await dispatch(updateContact({ id: contactId, [field]: editValue }));
+      setSaveComplete(true);
+      setTimeout(() => setSaveComplete(false), 1500);
       toast({
         title: "Saved",
         description: `${label} has been updated.`,
@@ -111,13 +115,21 @@ export const InlineEditField = ({
             </Button>
           </>
         )}
+        {autoSave && isSaving && (
+          <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+        )}
+        {autoSave && saveComplete && (
+          <Check className="h-4 w-4 text-green-500 animate-scale-in" />
+        )}
       </div>
     );
   }
 
   return (
     <div className="group flex items-center gap-2">
-      <span className="min-w-[100px]">{value}</span>
+      <span className="min-w-[100px] py-1 px-2 rounded transition-colors group-hover:bg-gray-100">
+        {value}
+      </span>
       <Button
         size="sm"
         variant="ghost"
@@ -129,3 +141,4 @@ export const InlineEditField = ({
     </div>
   );
 };
+

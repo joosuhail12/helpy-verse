@@ -3,11 +3,11 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Contact } from '@/types/contact';
 import { 
-  Edit2, Trash2, Share2, Copy, Mail, 
+  Edit2, Trash2, Mail, 
   Phone, Building2, Tag, Ticket
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { QuickNoteInput } from './QuickNoteInput';
 
 interface ContactDetailSidebarProps {
@@ -24,6 +24,7 @@ export const ContactDetailSidebar = ({ contact }: ContactDetailSidebarProps) => 
       toast({
         title: "Copied!",
         description: `${label} has been copied to clipboard.`,
+        duration: 2000,
       });
     } catch (err) {
       toast({
@@ -70,7 +71,7 @@ export const ContactDetailSidebar = ({ contact }: ContactDetailSidebarProps) => 
             <Button 
               variant="ghost" 
               size="sm" 
-              className="w-full justify-start" 
+              className="w-full justify-start hover:bg-gray-100" 
               onClick={() => copyToClipboard(contact.email, 'Email')}
             >
               <Mail className="h-4 w-4 mr-2 text-gray-500" />
@@ -81,7 +82,7 @@ export const ContactDetailSidebar = ({ contact }: ContactDetailSidebarProps) => 
             <Button 
               variant="ghost" 
               size="sm" 
-              className="w-full justify-start"
+              className="w-full justify-start hover:bg-gray-100"
               onClick={() => copyToClipboard(contact.phone!, 'Phone')}
             >
               <Phone className="h-4 w-4 mr-2 text-gray-500" />
@@ -92,7 +93,7 @@ export const ContactDetailSidebar = ({ contact }: ContactDetailSidebarProps) => 
             <Button 
               variant="ghost" 
               size="sm" 
-              className="w-full justify-start"
+              className="w-full justify-start hover:bg-gray-100"
               onClick={() => copyToClipboard(contact.company!, 'Company')}
             >
               <Building2 className="h-4 w-4 mr-2 text-gray-500" />
@@ -118,3 +119,4 @@ export const ContactDetailSidebar = ({ contact }: ContactDetailSidebarProps) => 
     </div>
   );
 };
+
