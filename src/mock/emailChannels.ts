@@ -13,6 +13,9 @@ export const mockEmailChannels: EmailChannel[] = [
     isDefault: true,
     isVerified: true,
     createdAt: '2024-03-10T10:00:00Z',
+    allowAgentConversations: true,
+    useAgentNames: true,
+    useOriginalSender: true,
   },
   {
     id: '2',
@@ -25,6 +28,8 @@ export const mockEmailChannels: EmailChannel[] = [
     isDefault: false,
     isVerified: true,
     createdAt: '2024-03-09T15:30:00Z',
+    allowAgentConversations: false,
+    useAgentNames: false,
+    useOriginalSender: false,
   }
 ];
-

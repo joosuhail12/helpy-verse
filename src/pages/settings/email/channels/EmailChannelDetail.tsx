@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
@@ -19,6 +18,7 @@ import { ChannelDetailHeader } from './components/detail/ChannelDetailHeader';
 import { ChannelStatusBadges } from './components/detail/ChannelStatusBadges';
 import { ChannelActions } from './components/detail/ChannelActions';
 import { ChannelInfo } from './components/detail/ChannelInfo';
+import { ChannelEmailSettings } from './components/detail/ChannelEmailSettings';
 import { IconEmojiPicker } from './components/IconEmojiPicker';
 
 const EmailChannelDetail = () => {
@@ -132,6 +132,13 @@ const EmailChannelDetail = () => {
     }));
   };
 
+  const handleSettingChange = (setting: string, value: boolean) => {
+    setEditedChannel(prev => ({
+      ...prev!,
+      [setting]: value,
+    }));
+  };
+
   return (
     <div className="container mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       <ChannelDetailHeader />
@@ -229,6 +236,16 @@ const EmailChannelDetail = () => {
               noReplyEmail={channel.noReplyEmail}
             />
           )}
+
+          <div className="pt-6 border-t">
+            <ChannelEmailSettings
+              allowAgentConversations={editedChannel?.allowAgentConversations || false}
+              useAgentNames={editedChannel?.useAgentNames || false}
+              useOriginalSender={editedChannel?.useOriginalSender || false}
+              onSettingChange={handleSettingChange}
+              isEditing={isEditing}
+            />
+          </div>
         </div>
       </Card>
     </div>
