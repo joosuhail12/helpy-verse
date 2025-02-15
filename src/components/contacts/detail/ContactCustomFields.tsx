@@ -50,8 +50,9 @@ export const ContactCustomFields = ({ contact }: ContactCustomFieldsProps) => {
               <p className="text-sm">-</p>
             </div>
           ))}
-        </CardContent>
+        </div>
       </CardContent>
     </Card>
   );
 };
+
