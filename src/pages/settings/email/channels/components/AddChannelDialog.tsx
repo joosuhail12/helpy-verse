@@ -7,7 +7,6 @@ import { createChannel } from '@/store/slices/emailChannels/emailChannelsSlice';
 import { ChannelFormFields } from './ChannelFormFields';
 import { useChannelForm } from '../hooks/useChannelForm';
 import { Button } from '@/components/ui/button';
-import type { CreateEmailChannelDto } from '@/types/emailChannel';
 
 interface AddChannelDialogProps {
   isOpen: boolean;
@@ -38,7 +37,7 @@ export function AddChannelDialog({ isOpen, onClose }: AddChannelDialogProps) {
     touched,
     setFieldTouched,
   } = useChannelForm({
-    onAddChannel: async (channel: CreateEmailChannelDto) => {
+    onAddChannel: async (channel) => {
       try {
         await dispatch(createChannel(channel)).unwrap();
         toast({
@@ -95,4 +94,3 @@ export function AddChannelDialog({ isOpen, onClose }: AddChannelDialogProps) {
     </Dialog>
   );
 }
-
