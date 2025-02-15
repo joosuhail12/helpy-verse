@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
+import { QuickNoteInput } from './QuickNoteInput';
 
 interface ContactDetailSidebarProps {
   contact: Contact;
@@ -56,6 +57,11 @@ export const ContactDetailSidebar = ({ contact }: ContactDetailSidebarProps) => 
           Delete Contact
         </Button>
       </div>
+
+      <Card className="p-4 space-y-4">
+        <h3 className="font-medium text-sm">Quick Note</h3>
+        <QuickNoteInput contactId={contact.id} />
+      </Card>
 
       <Card className="p-4 space-y-4">
         <h3 className="font-medium text-sm">Quick Actions</h3>
