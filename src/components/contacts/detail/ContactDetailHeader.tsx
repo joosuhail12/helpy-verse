@@ -42,3 +42,4 @@ export const ContactDetailHeader = ({ contact }: ContactDetailHeaderProps) => {
     </div>
   );
 };
+

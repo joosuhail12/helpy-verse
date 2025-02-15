@@ -72,3 +72,4 @@ const ContactDetail = () => {
 };
 
 export default ContactDetail;
+
