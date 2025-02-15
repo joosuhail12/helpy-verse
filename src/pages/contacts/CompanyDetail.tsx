@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
@@ -22,6 +21,8 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Activity } from '@/types/activity';
 import { AssociatedContacts } from '@/components/companies/detail/AssociatedContacts';
+import { CompanyCustomFields } from '@/components/companies/detail/CompanyCustomFields';
+import { CompanyCustomObjectData } from '@/components/companies/detail/CompanyCustomObjectData';
 
 const CompanyDetail = () => {
   const { id } = useParams();
@@ -112,9 +113,7 @@ const CompanyDetail = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-8">
-        {/* Left Column (4/12 width) - Company Information */}
         <div className="lg:col-span-4 space-y-6">
-          {/* Company Information Card */}
           <Card className="bg-white/60 backdrop-blur-sm border-purple-100/50 shadow-lg shadow-purple-500/5">
             <CardHeader className="border-b border-purple-100/20 pb-4">
               <CardTitle className="text-lg font-semibold text-purple-900">Company Information</CardTitle>
@@ -148,7 +147,6 @@ const CompanyDetail = () => {
                   />
                 </div>
 
-                {/* New Fields */}
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 text-sm font-medium text-purple-900/70">
                     <span>Industry</span>
@@ -196,9 +194,12 @@ const CompanyDetail = () => {
               </div>
             </CardContent>
           </Card>
+
+          <CompanyCustomFields company={company} />
+
+          <CompanyCustomObjectData company={company} />
         </div>
 
-        {/* Right Column (8/12 width) - Tabbed Content */}
         <div className="lg:col-span-8">
           <Tabs defaultValue="timeline" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
