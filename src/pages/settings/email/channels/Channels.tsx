@@ -1,8 +1,9 @@
-
 import React, { useEffect, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Mail, PlusCircle } from 'lucide-react';
 import { ChannelList } from './components/ChannelList';
+import { LoadingState } from './components/LoadingState';
+import { EmptyState } from './components/EmptyState';
 import { DefaultEmailChannel } from './components/DefaultEmailChannel';
 import { useToast } from '@/hooks/use-toast';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
@@ -11,7 +12,6 @@ import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
 import { 
   fetchChannels,
   deleteChannel,
@@ -26,7 +26,6 @@ import {
   selectDefaultChannel,
   selectHasDomainVerified,
 } from '@/store/slices/emailChannels/selectors';
-import type { EmailChannel } from '@/types/emailChannel';
 
 const Channels = () => {
   const { toast } = useToast();
@@ -206,100 +205,90 @@ const Channels = () => {
       />
 
       <div className="space-y-4">
-        {channels.length > 0 && (
-          <div className="flex items-center gap-4">
-            <div className="flex-1">
-              <Input
-                placeholder="Search channels..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="max-w-xs"
-              />
-            </div>
-            <Select value={sortBy} onValueChange={(value: 'name' | 'date' | 'status') => setSortBy(value)}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Sort by" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="name">Channel Name</SelectItem>
-                <SelectItem value="date">Creation Date</SelectItem>
-                <SelectItem value="status">Status</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={sortOrder} onValueChange={(value: 'asc' | 'desc') => setSortOrder(value)}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Sort order" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="asc">Ascending</SelectItem>
-                <SelectItem value="desc">Descending</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        )}
-
-        {selectedChannels.length > 0 && (
-          <div className="flex items-center gap-4 p-4 bg-muted rounded-lg">
-            <span className="text-sm font-medium">{selectedChannels.length} selected</span>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleBulkToggleStatus(true)}
-              >
-                Activate Selected
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleBulkToggleStatus(false)}
-              >
-                Deactivate Selected
-              </Button>
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={handleBulkDelete}
-              >
-                Delete Selected
-              </Button>
-            </div>
-          </div>
-        )}
-
-        <Card className="overflow-hidden border-t-2 border-t-primary/10 shadow-sm">
-          {loading ? (
-            <div className="text-center py-16">
-              <Mail className="mx-auto h-12 w-12 text-muted-foreground/50 animate-pulse" />
-              <h3 className="mt-4 text-lg font-semibold">Loading channels...</h3>
-            </div>
-          ) : filteredAndSortedChannels.length === 0 ? (
-            <div className="text-center py-16">
-              <Mail className="mx-auto h-12 w-12 text-muted-foreground/50" />
-              <h3 className="mt-4 text-lg font-semibold">No email channels</h3>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Add your first email channel to start sending and receiving emails
-              </p>
-              <Button
-                className="mt-6 gap-2"
-                variant="outline"
-                onClick={handleCreateClick}
-              >
-                <PlusCircle className="h-4 w-4" />
-                Add Custom Channel
-              </Button>
-            </div>
-          ) : (
-            <ChannelList
-              channels={filteredAndSortedChannels}
-              selectedChannels={selectedChannels}
-              onSelectAll={handleSelectAll}
-              onSelectChannel={handleSelectChannel}
-              onDelete={handleDelete}
-              onToggleStatus={handleToggleStatus}
+        {loading ? (
+          <Card className="p-6">
+            <LoadingState />
+          </Card>
+        ) : channels.length === 0 ? (
+          <Card className="p-6">
+            <EmptyState 
+              onCreateClick={handleCreateClick}
+              hasDomainVerified={hasDomainVerified}
             />
-          )}
-        </Card>
+          </Card>
+        ) : (
+          <>
+            <div className="flex items-center gap-4">
+              <div className="flex-1">
+                <Input
+                  placeholder="Search channels..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="max-w-xs"
+                />
+              </div>
+              <Select value={sortBy} onValueChange={(value: 'name' | 'date' | 'status') => setSortBy(value)}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="name">Channel Name</SelectItem>
+                  <SelectItem value="date">Creation Date</SelectItem>
+                  <SelectItem value="status">Status</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={sortOrder} onValueChange={(value: 'asc' | 'desc') => setSortOrder(value)}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Sort order" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="asc">Ascending</SelectItem>
+                  <SelectItem value="desc">Descending</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {selectedChannels.length > 0 && (
+              <div className="flex items-center gap-4 p-4 bg-muted rounded-lg animate-fadeSlideIn">
+                <span className="text-sm font-medium">{selectedChannels.length} selected</span>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleBulkToggleStatus(true)}
+                  >
+                    Activate Selected
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleBulkToggleStatus(false)}
+                  >
+                    Deactivate Selected
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={handleBulkDelete}
+                  >
+                    Delete Selected
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            <Card className="overflow-hidden border-t-2 border-t-primary/10 shadow-sm">
+              <ChannelList
+                channels={filteredAndSortedChannels}
+                selectedChannels={selectedChannels}
+                onSelectAll={handleSelectAll}
+                onSelectChannel={handleSelectChannel}
+                onDelete={handleDelete}
+                onToggleStatus={handleToggleStatus}
+              />
+            </Card>
+          </>
+        )}
       </div>
     </div>
   );
