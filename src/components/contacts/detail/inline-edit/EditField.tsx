@@ -1,4 +1,5 @@
 
+import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
@@ -13,8 +14,8 @@ import { CustomFieldType } from '@/types/customField';
 
 interface EditFieldProps {
   type: CustomFieldType;
-  value: string | number | boolean;
-  onChange: (value: string | number | boolean) => void;
+  value: string | number | boolean | string[];
+  onChange: (value: string | number | boolean | string[]) => void;
   options?: string[];
   isSaving?: boolean;
   inputRef?: React.RefObject<HTMLInputElement>;
@@ -40,7 +41,36 @@ export const EditField = ({
 
     case 'select':
       return (
-        <Select value={String(value)} onValueChange={(val) => onChange(val)}>
+        <Select 
+          value={String(value)} 
+          onValueChange={(val) => onChange(val)}
+          disabled={isSaving}
+        >
+          <SelectTrigger className="h-8">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {options.map((option) => (
+              <SelectItem key={option} value={option}>
+                {option}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      );
+
+    case 'multi-select':
+      return (
+        <Select 
+          value={Array.isArray(value) ? value[0] : String(value)}
+          onValueChange={(val) => {
+            const currentValues = Array.isArray(value) ? value : [];
+            if (!currentValues.includes(val)) {
+              onChange([...currentValues, val]);
+            }
+          }}
+          disabled={isSaving}
+        >
           <SelectTrigger className="h-8">
             <SelectValue />
           </SelectTrigger>
@@ -82,7 +112,7 @@ export const EditField = ({
         <Input
           ref={inputRef}
           type={type}
-          value={value}
+          value={String(value)}
           onChange={(e) => onChange(e.target.value)}
           className="h-8"
           disabled={isSaving}

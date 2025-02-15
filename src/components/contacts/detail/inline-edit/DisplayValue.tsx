@@ -3,7 +3,7 @@ import { CustomFieldType } from '@/types/customField';
 
 interface DisplayValueProps {
   type: CustomFieldType;
-  value: string | number | boolean;
+  value: string | number | boolean | string[];
 }
 
 export const DisplayValue = ({ type, value }: DisplayValueProps) => {
@@ -19,7 +19,7 @@ export const DisplayValue = ({ type, value }: DisplayValueProps) => {
       case 'multi-select':
         return Array.isArray(value) ? value.join(', ') : value;
       default:
-        return value;
+        return Array.isArray(value) ? value.join(', ') : value;
     }
   };
 

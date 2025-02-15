@@ -7,21 +7,13 @@ import {
   CardContent,
 } from '@/components/ui/card';
 import { StickyNote } from 'lucide-react';
+import { QuickNoteInput } from './QuickNoteInput';
 
 interface ContactNotesProps {
   contact: Contact;
 }
 
 export const ContactNotes = ({ contact }: ContactNotesProps) => {
-  // Mock notes data - this would come from your backend
-  const notes = [
-    {
-      id: '1',
-      content: 'Prefers communication via email',
-      date: new Date().toISOString(),
-    },
-  ];
-
   return (
     <Card className="border-none shadow-none bg-gray-50/50">
       <CardHeader className="border-b pb-4">
@@ -31,15 +23,16 @@ export const ContactNotes = ({ contact }: ContactNotesProps) => {
         </div>
       </CardHeader>
       <CardContent className="pt-6">
-        <div className="space-y-4">
-          {notes.map((note) => (
-            <div key={note.id} className="space-y-1">
-              <p className="text-sm">{note.content}</p>
+        <QuickNoteInput contactId={contact.id} />
+        <div className="space-y-4 mt-4">
+          {contact.notes && (
+            <div className="space-y-1">
+              <p className="text-sm whitespace-pre-wrap">{contact.notes}</p>
               <p className="text-xs text-muted-foreground">
-                {new Date(note.date).toLocaleDateString()}
+                {new Date(contact.updatedAt).toLocaleDateString()}
               </p>
             </div>
-          ))}
+          )}
         </div>
       </CardContent>
     </Card>
