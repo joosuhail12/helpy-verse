@@ -25,12 +25,12 @@ export const AddContentDialog = () => {
           Add Content
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-3xl h-[90vh] p-0 bg-white dark:bg-gray-950 shadow-lg rounded-lg border-0">
+      <DialogContent className="max-w-3xl h-[90vh] p-0 bg-white dark:bg-gray-950">
         <DialogHeader className="p-6 pb-2">
           <DialogTitle className="text-xl font-semibold">Add Content</DialogTitle>
         </DialogHeader>
         <Tabs defaultValue="snippet" className="flex flex-col h-[calc(100%-5rem)]">
-          <TabsList className="mx-6 grid grid-cols-3 gap-4 bg-gray-50 dark:bg-gray-900 p-1 rounded-lg">
+          <TabsList className="px-6 grid grid-cols-3 gap-4 bg-gray-50 dark:bg-gray-900 p-1 rounded-lg">
             <TabsTrigger 
               value="snippet" 
               className="flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:shadow-sm"
@@ -54,13 +54,13 @@ export const AddContentDialog = () => {
             </TabsTrigger>
           </TabsList>
           <div className="flex-1 overflow-hidden px-6 pb-6">
-            <TabsContent value="snippet" className="mt-6 h-full data-[state=active]:flex flex-col">
+            <TabsContent value="snippet" className="h-full mt-6">
               <CreateSnippet onSuccess={() => setOpen(false)} />
             </TabsContent>
-            <TabsContent value="upload" className="mt-6 h-full data-[state=active]:flex flex-col">
+            <TabsContent value="upload" className="h-full mt-6">
               <FileUpload onSuccess={() => setOpen(false)} />
             </TabsContent>
-            <TabsContent value="scrape" className="mt-6 h-full data-[state=active]:flex flex-col">
+            <TabsContent value="scrape" className="h-full mt-6">
               <WebScraper onSuccess={() => setOpen(false)} />
             </TabsContent>
           </div>
