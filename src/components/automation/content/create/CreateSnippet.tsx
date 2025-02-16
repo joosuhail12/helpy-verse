@@ -1,40 +1,26 @@
+
 import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import * as z from 'zod';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
+  FormDescription,
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { mockChatbots } from '@/mock/chatbots';
 import { mockContentCategories, ContentCategory } from '@/mock/contentCategories';
-import { Plus } from 'lucide-react';
+import { ChatbotSelect } from './snippet/ChatbotSelect';
+import { CategorySelect } from './snippet/CategorySelect';
+import { snippetFormSchema, type SnippetFormValues } from './snippet/types';
 import { CreateCategoryDialog } from './CreateCategoryDialog';
-
-const formSchema = z.object({
-  title: z.string().min(2, 'Title must be at least 2 characters'),
-  description: z.string().min(10, 'Description must be at least 10 characters'),
-  content: z.string().min(20, 'Content must be at least 20 characters'),
-  chatbotId: z.string().min(1, 'Please select a chatbot'),
-  categoryId: z.string().min(1, 'Please select a category'),
-});
 
 interface CreateSnippetProps {
   onSuccess: () => void;
@@ -46,8 +32,8 @@ export const CreateSnippet = ({ onSuccess }: CreateSnippetProps) => {
   const [categories, setCategories] = useState<ContentCategory[]>(mockContentCategories);
   const [createCategoryOpen, setCreateCategoryOpen] = useState(false);
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<SnippetFormValues>({
+    resolver: zodResolver(snippetFormSchema),
     defaultValues: {
       title: '',
       description: '',
@@ -57,7 +43,7 @@ export const CreateSnippet = ({ onSuccess }: CreateSnippetProps) => {
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: SnippetFormValues) => {
     setIsSubmitting(true);
     try {
       // Simulating API call with mock data
@@ -124,76 +110,11 @@ export const CreateSnippet = ({ onSuccess }: CreateSnippetProps) => {
           />
 
           <div className="grid grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="chatbotId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Connect to Chatbot</FormLabel>
-                  <Select 
-                    onValueChange={field.onChange} 
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a chatbot" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {mockChatbots.map((chatbot) => (
-                        <SelectItem key={chatbot.id} value={chatbot.id}>
-                          {chatbot.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormDescription>
-                    Choose which chatbot will use this content
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="categoryId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Category</FormLabel>
-                  <div className="flex gap-2">
-                    <Select 
-                      onValueChange={field.onChange} 
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger className="flex-1">
-                          <SelectValue placeholder="Select a category" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {categories.map((category) => (
-                          <SelectItem key={category.id} value={category.id}>
-                            {category.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={() => setCreateCategoryOpen(true)}
-                    >
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  <FormDescription>
-                    Choose or create a category for this content
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
+            <ChatbotSelect form={form} />
+            <CategorySelect 
+              form={form}
+              categories={categories}
+              onCategoryCreated={handleCategoryCreated}
             />
           </div>
 
