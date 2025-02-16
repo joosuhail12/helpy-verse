@@ -2,7 +2,6 @@
 import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -46,7 +45,6 @@ export const CreateSnippet = ({ onSuccess }: CreateSnippetProps) => {
   const onSubmit = async (values: SnippetFormValues) => {
     setIsSubmitting(true);
     try {
-      // Simulating API call with mock data
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       toast({
@@ -127,7 +125,7 @@ export const CreateSnippet = ({ onSuccess }: CreateSnippetProps) => {
                 <FormControl>
                   <Textarea
                     placeholder="Enter your content here"
-                    className="min-h-[200px]"
+                    className="min-h-[200px] resize-none"
                     {...field}
                   />
                 </FormControl>
@@ -153,4 +151,3 @@ export const CreateSnippet = ({ onSuccess }: CreateSnippetProps) => {
     </div>
   );
 };
-
