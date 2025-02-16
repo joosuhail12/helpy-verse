@@ -2,15 +2,14 @@
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Search, Bot } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { useState } from 'react';
-import { useToast } from '@/hooks/use-toast';
 import { ContentList } from '@/components/automation/content/ContentList';
 import { ContentHeader } from '@/components/automation/content/ContentHeader';
+import { AddContentDialog } from '@/components/automation/content/AddContentDialog';
 
 const ContentCenter = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const { toast } = useToast();
 
   return (
     <div className="container mx-auto px-4 py-6 max-w-[1400px] space-y-6">
@@ -27,10 +26,7 @@ const ContentCenter = () => {
             className="pl-9"
           />
         </div>
-        <Button onClick={() => toast({ title: "Coming soon", description: "This feature will be implemented in the next phase" })}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Content
-        </Button>
+        <AddContentDialog />
       </div>
 
       <ContentList searchQuery={searchQuery} />
