@@ -25,12 +25,12 @@ export const AddContentDialog = () => {
           Add Content
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-3xl p-6 bg-white dark:bg-gray-950 shadow-lg rounded-lg border-0">
-        <DialogHeader>
+      <DialogContent className="max-w-3xl max-h-[90vh] p-0 bg-white dark:bg-gray-950 shadow-lg rounded-lg border-0">
+        <DialogHeader className="p-6 pb-2">
           <DialogTitle className="text-xl font-semibold">Add Content</DialogTitle>
         </DialogHeader>
-        <Tabs defaultValue="snippet" className="mt-4">
-          <TabsList className="grid grid-cols-3 gap-4 bg-gray-50 dark:bg-gray-900 p-1 rounded-lg">
+        <Tabs defaultValue="snippet" className="flex flex-col h-full">
+          <TabsList className="mx-6 grid grid-cols-3 gap-4 bg-gray-50 dark:bg-gray-900 p-1 rounded-lg">
             <TabsTrigger 
               value="snippet" 
               className="flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:shadow-sm"
@@ -53,14 +53,14 @@ export const AddContentDialog = () => {
               Scrape Web
             </TabsTrigger>
           </TabsList>
-          <div className="mt-6">
-            <TabsContent value="snippet">
+          <div className="flex-1 overflow-y-auto px-6 pb-6">
+            <TabsContent value="snippet" className="mt-6 h-full">
               <CreateSnippet onSuccess={() => setOpen(false)} />
             </TabsContent>
-            <TabsContent value="upload">
+            <TabsContent value="upload" className="mt-6 h-full">
               <FileUpload onSuccess={() => setOpen(false)} />
             </TabsContent>
-            <TabsContent value="scrape">
+            <TabsContent value="scrape" className="mt-6 h-full">
               <WebScraper onSuccess={() => setOpen(false)} />
             </TabsContent>
           </div>
@@ -69,3 +69,4 @@ export const AddContentDialog = () => {
     </Dialog>
   );
 };
+
