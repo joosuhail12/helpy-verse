@@ -2,7 +2,6 @@
 import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -76,7 +75,7 @@ export const WebScraper = ({ onSuccess }: WebScraperProps) => {
   };
 
   return (
-    <Card className="p-6 h-full overflow-auto">
+    <div className="flex-1 overflow-y-auto">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <FormField
@@ -158,6 +157,6 @@ export const WebScraper = ({ onSuccess }: WebScraperProps) => {
           </Button>
         </form>
       </Form>
-    </Card>
+    </div>
   );
 };
