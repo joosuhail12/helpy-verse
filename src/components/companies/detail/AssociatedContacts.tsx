@@ -83,17 +83,8 @@ export const AssociatedContacts = ({ company }: AssociatedContactsProps) => {
 
   return (
     <Card className="bg-white/60 backdrop-blur-sm border-purple-100/50 shadow-lg shadow-purple-500/5">
-      <CardHeader className="border-b border-purple-100/20 pb-4 flex flex-row justify-between items-center">
+      <CardHeader className="border-b border-purple-100/20 pb-4">
         <CardTitle className="text-lg font-semibold text-purple-900">Associated Contacts</CardTitle>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="text-purple-600 border-purple-200"
-          onClick={() => setShowAddDialog(true)}
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Add Contact
-        </Button>
       </CardHeader>
       <CardContent className="pt-6">
         <div className="mb-4 relative">
