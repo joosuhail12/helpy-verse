@@ -3,7 +3,6 @@ import { useAppSelector } from '@/hooks/useAppSelector';
 import { Card } from '@/components/ui/card';
 import {
   ChartContainer,
-  ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart';
 import {
@@ -12,6 +11,7 @@ import {
   ResponsiveContainer,
   XAxis,
   YAxis,
+  Tooltip,
 } from 'recharts';
 
 export const MessageVolumeTrends = () => {
@@ -70,9 +70,20 @@ export const MessageVolumeTrends = () => {
                 fill="var(--color-bar)"
                 radius={[4, 4, 0, 0]}
               />
-              <ChartTooltip>
-                <ChartTooltipContent />
-              </ChartTooltip>
+              <Tooltip
+                content={({ active, payload, label }) => {
+                  if (active && payload && payload.length) {
+                    return (
+                      <ChartTooltipContent
+                        active={active}
+                        payload={payload}
+                        label={label}
+                      />
+                    );
+                  }
+                  return null;
+                }}
+              />
             </BarChart>
           </ResponsiveContainer>
         </ChartContainer>

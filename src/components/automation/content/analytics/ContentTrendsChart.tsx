@@ -4,7 +4,6 @@ import { Card } from '@/components/ui/card';
 import { format } from 'date-fns';
 import {
   ChartContainer,
-  ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart';
 import {
@@ -13,6 +12,7 @@ import {
   ResponsiveContainer,
   XAxis,
   YAxis,
+  Tooltip,
 } from 'recharts';
 
 export const ContentTrendsChart = () => {
@@ -75,9 +75,20 @@ export const ContentTrendsChart = () => {
                 fill="var(--color-area)"
                 strokeWidth={2}
               />
-              <ChartTooltip>
-                <ChartTooltipContent />
-              </ChartTooltip>
+              <Tooltip
+                content={({ active, payload, label }) => {
+                  if (active && payload && payload.length) {
+                    return (
+                      <ChartTooltipContent
+                        active={active}
+                        payload={payload}
+                        label={label}
+                      />
+                    );
+                  }
+                  return null;
+                }}
+              />
             </AreaChart>
           </ResponsiveContainer>
         </ChartContainer>
