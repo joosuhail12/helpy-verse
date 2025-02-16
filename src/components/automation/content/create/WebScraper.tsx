@@ -92,7 +92,7 @@ export const WebScraper = ({ onSuccess }: WebScraperProps) => {
   };
 
   return (
-    <Card className="p-6">
+    <Card className="p-6 h-full overflow-auto">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <FormField

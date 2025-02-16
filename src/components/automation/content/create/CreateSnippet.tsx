@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -86,7 +85,7 @@ export const CreateSnippet = ({ onSuccess }: CreateSnippetProps) => {
   };
 
   return (
-    <Card className="p-6">
+    <Card className="p-6 h-full overflow-auto">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <FormField
@@ -233,4 +232,3 @@ export const CreateSnippet = ({ onSuccess }: CreateSnippetProps) => {
     </Card>
   );
 };
-

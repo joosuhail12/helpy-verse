@@ -15,8 +15,8 @@ export const FileUpload = ({ onSuccess }: { onSuccess: () => void }) => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center space-x-2">
+    <div className="space-y-6 h-full flex flex-col">
+      <div className="flex items-center space-x-2 flex-shrink-0">
         <Checkbox 
           id="batchProcess" 
           checked={batchProcess} 
@@ -30,7 +30,7 @@ export const FileUpload = ({ onSuccess }: { onSuccess: () => void }) => {
         </Label>
       </div>
 
-      <Card className="p-6 bg-white dark:bg-gray-950 shadow-sm">
+      <Card className="p-6 bg-white dark:bg-gray-950 shadow-sm flex-1 overflow-auto">
         <FileUploadForm
           onSuccess={onSuccess}
           categories={categories}
