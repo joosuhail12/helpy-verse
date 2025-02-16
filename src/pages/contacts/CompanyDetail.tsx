@@ -23,6 +23,7 @@ import { CompanyActivityTimeline } from '@/components/companies/detail/CompanyAc
 import { AssociatedContacts } from '@/components/companies/detail/AssociatedContacts';
 import { CompanyCustomFields } from '@/components/companies/detail/CompanyCustomFields';
 import { CompanyCustomObjectData } from '@/components/companies/detail/CompanyCustomObjectData';
+import { CompanyTickets } from '@/components/companies/detail/CompanyTickets';
 
 const CompanyDetail = () => {
   const { id } = useParams();
@@ -90,9 +91,10 @@ const CompanyDetail = () => {
 
         <div className="lg:col-span-8">
           <Tabs defaultValue="timeline" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="timeline">Activity Timeline</TabsTrigger>
               <TabsTrigger value="contacts">Manage Contacts</TabsTrigger>
+              <TabsTrigger value="tickets">Tickets</TabsTrigger>
             </TabsList>
             
             <TabsContent value="timeline">
@@ -101,6 +103,10 @@ const CompanyDetail = () => {
             
             <TabsContent value="contacts">
               <AssociatedContacts company={company} />
+            </TabsContent>
+
+            <TabsContent value="tickets">
+              <CompanyTickets companyId={company.id} />
             </TabsContent>
           </Tabs>
         </div>
@@ -126,3 +132,4 @@ const CompanyDetail = () => {
 };
 
 export default CompanyDetail;
+

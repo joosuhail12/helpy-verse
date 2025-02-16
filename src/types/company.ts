@@ -24,6 +24,15 @@ export interface Company {
   type?: 'customer' | 'partner' | 'prospect' | 'vendor';
   status?: 'active' | 'inactive';
   accountOwner?: string;
+  foundedYear?: number;
+  mainContact?: string;
+  tierLevel?: 'bronze' | 'silver' | 'gold' | 'platinum';
+  lastContactDate?: string;
+  marketSegment?: string;
+  businessModel?: 'b2b' | 'b2c' | 'b2b2c';
+  preferredLanguage?: string;
+  timezone?: string;
   createdAt: string;
   updatedAt: string;
 }
+
