@@ -1,7 +1,6 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import * as z from 'zod';
 import {
   Form,
   FormControl,
@@ -13,16 +12,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
-import { mockChatbots } from '@/mock/chatbots';
 import { ContentCategory } from '@/mock/contentCategories';
 import { CreateCategoryDialog } from '../CreateCategoryDialog';
 import { DropZone } from './DropZone';
@@ -30,13 +20,9 @@ import { UploadedFile } from './UploadedFile';
 import { useState } from 'react';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
-
-export const formSchema = z.object({
-  title: z.string().min(2, 'Title must be at least 2 characters'),
-  description: z.string().min(10, 'Description must be at least 10 characters'),
-  chatbotId: z.string().min(1, 'Please select a chatbot'),
-  categoryId: z.string().min(1, 'Please select a category'),
-});
+import { ChatbotSelect } from './ChatbotSelect';
+import { CategorySelect } from './CategorySelect';
+import { fileUploadFormSchema, FileUploadFormValues } from './types';
 
 interface FileUploadFormProps {
   onSuccess: () => void;
@@ -57,8 +43,8 @@ export const FileUploadForm = ({
   const [isUploading, setIsUploading] = useState(false);
   const [createCategoryOpen, setCreateCategoryOpen] = useState(false);
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<FileUploadFormValues>({
+    resolver: zodResolver(fileUploadFormSchema),
     defaultValues: {
       title: '',
       description: '',
@@ -67,7 +53,7 @@ export const FileUploadForm = ({
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: FileUploadFormValues) => {
     if (files.length === 0) {
       toast({
         title: "Error",
@@ -148,77 +134,11 @@ export const FileUploadForm = ({
         />
 
         <div className="grid grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="chatbotId"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Connect to Chatbot</FormLabel>
-                <Select 
-                  onValueChange={field.onChange} 
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger className="bg-gray-50 dark:bg-gray-900">
-                      <SelectValue placeholder="Select a chatbot" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {mockChatbots.map((chatbot) => (
-                      <SelectItem key={chatbot.id} value={chatbot.id}>
-                        {chatbot.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormDescription>
-                  Choose which chatbot will use this content
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="categoryId"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Category</FormLabel>
-                <div className="flex gap-2">
-                  <Select 
-                    onValueChange={field.onChange} 
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger className="flex-1 bg-gray-50 dark:bg-gray-900">
-                        <SelectValue placeholder="Select a category" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {categories.map((category) => (
-                        <SelectItem key={category.id} value={category.id}>
-                          {category.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    onClick={() => setCreateCategoryOpen(true)}
-                    className="bg-gray-50 dark:bg-gray-900"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
-                <FormDescription>
-                  Choose or create a category for this content
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
+          <ChatbotSelect form={form} />
+          <CategorySelect 
+            form={form} 
+            categories={categories}
+            onCategoryCreated={onCategoryCreated}
           />
         </div>
 
