@@ -11,15 +11,17 @@ import { Bot, MessageSquare, Settings, Archive } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
+import { Progress } from '@/components/ui/progress';
+import { type Content } from '@/types/content';
 
 // Mock data for chatbot content
-const mockContent = [
+const mockContent: Content[] = [
   {
     id: '1',
     title: 'Customer Support Bot',
     description: 'Handles basic customer inquiries and support tickets',
     category: 'support',
-    status: 'active',
+    status: 'completed',
     lastUpdated: '2024-03-15T10:00:00Z',
     messageCount: 1250,
   },
@@ -28,24 +30,50 @@ const mockContent = [
     title: 'Sales Assistant',
     description: 'Helps with product recommendations and sales inquiries',
     category: 'sales',
-    status: 'draft',
+    status: 'processing',
     lastUpdated: '2024-03-14T15:30:00Z',
     messageCount: 850,
+    progress: 65,
   },
   {
     id: '3',
     title: 'Onboarding Guide',
     description: 'Assists new users with platform navigation and setup',
     category: 'onboarding',
-    status: 'active',
+    status: 'queued',
     lastUpdated: '2024-03-13T09:15:00Z',
     messageCount: 2100,
+  },
+  {
+    id: '4',
+    title: 'Troubleshooting Guide',
+    description: 'Technical issue resolution guide',
+    category: 'support',
+    status: 'failed',
+    lastUpdated: '2024-03-12T14:20:00Z',
+    messageCount: 500,
+    errorMessage: 'Failed to process document',
   },
 ];
 
 interface ContentListProps {
   searchQuery: string;
 }
+
+const getStatusColor = (status: Content['status']) => {
+  switch (status) {
+    case 'completed':
+      return 'bg-green-500';
+    case 'processing':
+      return 'bg-blue-500';
+    case 'queued':
+      return 'bg-yellow-500';
+    case 'failed':
+      return 'bg-red-500';
+    default:
+      return 'bg-gray-500';
+  }
+};
 
 export const ContentList = ({ searchQuery }: ContentListProps) => {
   const filteredContent = mockContent.filter(content =>
@@ -102,9 +130,18 @@ export const ContentList = ({ searchQuery }: ContentListProps) => {
                 </Badge>
               </TableCell>
               <TableCell>
-                <Badge variant={content.status === 'active' ? 'default' : 'secondary'}>
-                  {content.status}
-                </Badge>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className={`w-2 h-2 rounded-full ${getStatusColor(content.status)}`} />
+                    <span className="text-sm capitalize">{content.status}</span>
+                  </div>
+                  {content.status === 'processing' && content.progress && (
+                    <Progress value={content.progress} className="h-1" />
+                  )}
+                  {content.status === 'failed' && content.errorMessage && (
+                    <p className="text-xs text-red-500">{content.errorMessage}</p>
+                  )}
+                </div>
               </TableCell>
               <TableCell>
                 {format(new Date(content.lastUpdated), 'MMM d, yyyy')}
