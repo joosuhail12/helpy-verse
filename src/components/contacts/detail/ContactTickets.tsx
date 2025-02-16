@@ -25,7 +25,7 @@ export const ContactTickets = ({ contact }: ContactTicketsProps) => {
       createdAt: '2024-03-15T10:00:00Z',
       isUnread: true,
       hasNotification: true,
-      notificationType: 'mention',
+      notificationType: 'mention' as const,
     },
     {
       id: '2',
