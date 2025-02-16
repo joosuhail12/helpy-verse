@@ -71,7 +71,7 @@ export const CreateSnippet = ({ onSuccess }: CreateSnippetProps) => {
   };
 
   return (
-    <Card className="p-6 h-full overflow-auto">
+    <div className="flex-1 overflow-y-auto">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <FormField
@@ -150,6 +150,7 @@ export const CreateSnippet = ({ onSuccess }: CreateSnippetProps) => {
         onOpenChange={setCreateCategoryOpen}
         onSuccess={handleCategoryCreated}
       />
-    </Card>
+    </div>
   );
 };
+
