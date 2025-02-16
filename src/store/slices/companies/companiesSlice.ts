@@ -1,10 +1,12 @@
 
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import type { Company } from '@/types/company';
 
 interface CompaniesState {
   companies: Company[];
   selectedCompanies: string[];
+  loading: boolean;
+  error: string | null;
 }
 
 const mockCompanies: Company[] = [
@@ -60,7 +62,17 @@ const mockCompanies: Company[] = [
 const initialState: CompaniesState = {
   companies: mockCompanies,
   selectedCompanies: [],
+  loading: false,
+  error: null,
 };
+
+export const fetchCompanies = createAsyncThunk(
+  'companies/fetchCompanies',
+  async () => {
+    // In a real app, this would be an API call
+    return mockCompanies;
+  }
+);
 
 const companiesSlice = createSlice({
   name: 'companies',
@@ -81,9 +93,40 @@ const companiesSlice = createSlice({
     setSelectedCompanies: (state, action: PayloadAction<string[]>) => {
       state.selectedCompanies = action.payload;
     },
+    toggleCompanySelection: (state, action: PayloadAction<string>) => {
+      const companyId = action.payload;
+      const index = state.selectedCompanies.indexOf(companyId);
+      if (index === -1) {
+        state.selectedCompanies.push(companyId);
+      } else {
+        state.selectedCompanies.splice(index, 1);
+      }
+    },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchCompanies.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchCompanies.fulfilled, (state, action) => {
+        state.loading = false;
+        state.companies = action.payload;
+      })
+      .addCase(fetchCompanies.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Failed to fetch companies';
+      });
   },
 });
 
-export const { addCompany, updateCompany, deleteCompany, setSelectedCompanies } = companiesSlice.actions;
+export const {
+  addCompany,
+  updateCompany,
+  deleteCompany,
+  setSelectedCompanies,
+  toggleCompanySelection,
+} = companiesSlice.actions;
+
 export default companiesSlice.reducer;
 
