@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { ContentList } from '@/components/automation/content/ContentList';
 import { ContentHeader } from '@/components/automation/content/ContentHeader';
 import { AddContentDialog } from '@/components/automation/content/AddContentDialog';
+import { EmbeddingStatusBar } from '@/components/automation/content/EmbeddingStatusBar';
 
 const ContentCenter = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -14,6 +15,8 @@ const ContentCenter = () => {
   return (
     <div className="container mx-auto px-4 py-6 max-w-[1400px] space-y-6">
       <ContentHeader />
+      
+      <EmbeddingStatusBar />
       
       <div className="flex justify-between gap-4 items-center">
         <div className="relative flex-1 max-w-md">
