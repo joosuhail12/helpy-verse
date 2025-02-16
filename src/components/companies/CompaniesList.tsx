@@ -2,6 +2,8 @@
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { CompanyListItem } from './CompanyListItem';
 import { LoadingState } from './LoadingState';
+import { Checkbox } from '@/components/ui/checkbox';
+import type { Company } from '@/types/company';
 import {
   Table,
   TableBody,
@@ -59,3 +61,4 @@ export const CompaniesList = ({ companies, loading }: CompaniesListProps) => {
     </div>
   );
 };
+
