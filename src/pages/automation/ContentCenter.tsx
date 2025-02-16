@@ -12,9 +12,12 @@ import { ContentSorting } from '@/components/automation/content/ContentSorting';
 import { ContentSummary } from '@/components/automation/content/analytics/ContentSummary';
 import { ContentTrendsChart } from '@/components/automation/content/analytics/ContentTrendsChart';
 import { MessageVolumeTrends } from '@/components/automation/content/analytics/MessageVolumeTrends';
+import { ContentBatchActions } from '@/components/automation/content/ContentBatchActions';
+import { useAppSelector } from '@/hooks/useAppSelector';
 
 const ContentCenter = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const selectedIds = useAppSelector((state) => state.content.selectedIds);
 
   return (
     <div className="container mx-auto px-4 py-6 max-w-[1400px] space-y-6">
@@ -50,8 +53,11 @@ const ContentCenter = () => {
       <div className="bg-white dark:bg-gray-950 rounded-lg shadow">
         <ContentList searchQuery={searchQuery} />
       </div>
+
+      <ContentBatchActions selectedIds={selectedIds} />
     </div>
   );
 };
 
 export default ContentCenter;
+

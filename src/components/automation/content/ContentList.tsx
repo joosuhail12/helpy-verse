@@ -1,3 +1,4 @@
+
 import {
   Table,
   TableBody,
@@ -9,10 +10,13 @@ import {
 import { Bot, MessageSquare, Settings, Archive } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { format } from 'date-fns';
 import { Progress } from '@/components/ui/progress';
 import { type Content } from '@/types/content';
 import { useAppSelector } from '@/hooks/useAppSelector';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { selectContent, deselectContent, selectAllContent, clearSelection } from '@/store/slices/content/contentSlice';
 
 interface ContentListProps {
   searchQuery: string;
@@ -34,7 +38,8 @@ const getStatusColor = (status: Content['status']) => {
 };
 
 export const ContentList = ({ searchQuery }: ContentListProps) => {
-  const { items, filters, sort } = useAppSelector((state) => state.content);
+  const { items, filters, sort, selectedIds } = useAppSelector((state) => state.content);
+  const dispatch = useAppDispatch();
 
   const filteredContent = items
     .filter(content => {
@@ -79,10 +84,32 @@ export const ContentList = ({ searchQuery }: ContentListProps) => {
     );
   }
 
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      dispatch(selectAllContent());
+    } else {
+      dispatch(clearSelection());
+    }
+  };
+
+  const handleSelectItem = (contentId: string, checked: boolean) => {
+    if (checked) {
+      dispatch(selectContent(contentId));
+    } else {
+      dispatch(deselectContent(contentId));
+    }
+  };
+
   return (
     <Table>
       <TableHeader>
         <TableRow>
+          <TableHead className="w-[50px]">
+            <Checkbox
+              checked={selectedIds.length === filteredContent.length && filteredContent.length > 0}
+              onCheckedChange={handleSelectAll}
+            />
+          </TableHead>
           <TableHead>Content</TableHead>
           <TableHead>Category</TableHead>
           <TableHead>Chatbot</TableHead>
@@ -95,6 +122,12 @@ export const ContentList = ({ searchQuery }: ContentListProps) => {
       <TableBody>
         {filteredContent.map((content) => (
           <TableRow key={content.id} className="group hover:bg-muted/50">
+            <TableCell>
+              <Checkbox
+                checked={selectedIds.includes(content.id)}
+                onCheckedChange={(checked) => handleSelectItem(content.id, checked as boolean)}
+              />
+            </TableCell>
             <TableCell>
               <div className="flex items-start gap-3">
                 <div className="mt-1">
@@ -151,3 +184,4 @@ export const ContentList = ({ searchQuery }: ContentListProps) => {
     </Table>
   );
 };
+
