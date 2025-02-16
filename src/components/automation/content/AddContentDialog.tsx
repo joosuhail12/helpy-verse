@@ -25,26 +25,35 @@ export const AddContentDialog = () => {
           Add Content
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-3xl">
+      <DialogContent className="max-w-3xl p-6 bg-white dark:bg-gray-950 shadow-lg rounded-lg border-0">
         <DialogHeader>
-          <DialogTitle>Add Content</DialogTitle>
+          <DialogTitle className="text-xl font-semibold">Add Content</DialogTitle>
         </DialogHeader>
         <Tabs defaultValue="snippet" className="mt-4">
-          <TabsList className="grid grid-cols-3 gap-4">
-            <TabsTrigger value="snippet" className="flex items-center gap-2">
+          <TabsList className="grid grid-cols-3 gap-4 bg-gray-50 dark:bg-gray-900 p-1 rounded-lg">
+            <TabsTrigger 
+              value="snippet" 
+              className="flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:shadow-sm"
+            >
               <Code className="h-4 w-4" />
               Create Snippet
             </TabsTrigger>
-            <TabsTrigger value="upload" className="flex items-center gap-2">
+            <TabsTrigger 
+              value="upload" 
+              className="flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:shadow-sm"
+            >
               <FilePlus className="h-4 w-4" />
               Upload File
             </TabsTrigger>
-            <TabsTrigger value="scrape" className="flex items-center gap-2">
+            <TabsTrigger 
+              value="scrape" 
+              className="flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:shadow-sm"
+            >
               <Link className="h-4 w-4" />
               Scrape Web
             </TabsTrigger>
           </TabsList>
-          <div className="mt-4">
+          <div className="mt-6">
             <TabsContent value="snippet">
               <CreateSnippet onSuccess={() => setOpen(false)} />
             </TabsContent>

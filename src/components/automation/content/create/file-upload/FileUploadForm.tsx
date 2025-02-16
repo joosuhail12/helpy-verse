@@ -42,9 +42,15 @@ interface FileUploadFormProps {
   onSuccess: () => void;
   categories: ContentCategory[];
   onCategoryCreated: (category: ContentCategory) => void;
+  batchProcess: boolean;
 }
 
-export const FileUploadForm = ({ onSuccess, categories, onCategoryCreated }: FileUploadFormProps) => {
+export const FileUploadForm = ({ 
+  onSuccess, 
+  categories, 
+  onCategoryCreated,
+  batchProcess,
+}: FileUploadFormProps) => {
   const { toast } = useToast();
   const [files, setFiles] = useState<File[]>([]);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -83,7 +89,9 @@ export const FileUploadForm = ({ onSuccess, categories, onCategoryCreated }: Fil
 
       toast({
         title: "Success",
-        description: "File uploaded successfully",
+        description: batchProcess 
+          ? "Files queued for batch processing" 
+          : "File uploaded successfully",
       });
       onSuccess();
     } catch (error) {
@@ -107,7 +115,11 @@ export const FileUploadForm = ({ onSuccess, categories, onCategoryCreated }: Fil
             <FormItem>
               <FormLabel>Title</FormLabel>
               <FormControl>
-                <Input placeholder="Enter title" {...field} />
+                <Input 
+                  placeholder="Enter title" 
+                  {...field} 
+                  className="bg-gray-50 dark:bg-gray-900"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -123,7 +135,7 @@ export const FileUploadForm = ({ onSuccess, categories, onCategoryCreated }: Fil
               <FormControl>
                 <Textarea 
                   placeholder="Enter a brief description of this content"
-                  className="resize-none h-20"
+                  className="resize-none h-20 bg-gray-50 dark:bg-gray-900"
                   {...field}
                 />
               </FormControl>
@@ -147,7 +159,7 @@ export const FileUploadForm = ({ onSuccess, categories, onCategoryCreated }: Fil
                   defaultValue={field.value}
                 >
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="bg-gray-50 dark:bg-gray-900">
                       <SelectValue placeholder="Select a chatbot" />
                     </SelectTrigger>
                   </FormControl>
@@ -179,7 +191,7 @@ export const FileUploadForm = ({ onSuccess, categories, onCategoryCreated }: Fil
                     defaultValue={field.value}
                   >
                     <FormControl>
-                      <SelectTrigger className="flex-1">
+                      <SelectTrigger className="flex-1 bg-gray-50 dark:bg-gray-900">
                         <SelectValue placeholder="Select a category" />
                       </SelectTrigger>
                     </FormControl>
@@ -196,6 +208,7 @@ export const FileUploadForm = ({ onSuccess, categories, onCategoryCreated }: Fil
                     variant="outline"
                     size="icon"
                     onClick={() => setCreateCategoryOpen(true)}
+                    className="bg-gray-50 dark:bg-gray-900"
                   >
                     <Plus className="h-4 w-4" />
                   </Button>
@@ -231,9 +244,9 @@ export const FileUploadForm = ({ onSuccess, categories, onCategoryCreated }: Fil
         <Button
           type="submit"
           disabled={isUploading || files.length === 0}
-          className="w-full"
+          className="w-full bg-purple-600 hover:bg-purple-700"
         >
-          {isUploading ? "Uploading..." : "Upload File"}
+          {isUploading ? "Uploading..." : batchProcess ? "Queue for Processing" : "Upload File"}
         </Button>
       </form>
 
@@ -245,4 +258,3 @@ export const FileUploadForm = ({ onSuccess, categories, onCategoryCreated }: Fil
     </Form>
   );
 };
-

@@ -3,22 +3,41 @@ import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { mockContentCategories, ContentCategory } from '@/mock/contentCategories';
 import { FileUploadForm } from './file-upload/FileUploadForm';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 
 export const FileUpload = ({ onSuccess }: { onSuccess: () => void }) => {
   const [categories, setCategories] = useState<ContentCategory[]>(mockContentCategories);
+  const [batchProcess, setBatchProcess] = useState(false);
 
   const handleCategoryCreated = (newCategory: ContentCategory) => {
     setCategories([...categories, newCategory]);
   };
 
   return (
-    <Card className="p-6">
-      <FileUploadForm
-        onSuccess={onSuccess}
-        categories={categories}
-        onCategoryCreated={handleCategoryCreated}
-      />
-    </Card>
+    <div className="space-y-6">
+      <div className="flex items-center space-x-2">
+        <Checkbox 
+          id="batchProcess" 
+          checked={batchProcess} 
+          onCheckedChange={(checked) => setBatchProcess(checked as boolean)}
+        />
+        <Label 
+          htmlFor="batchProcess" 
+          className="text-sm text-gray-600 dark:text-gray-400"
+        >
+          Process files in batch (recommended for multiple documents)
+        </Label>
+      </div>
+
+      <Card className="p-6 bg-white dark:bg-gray-950 shadow-sm">
+        <FileUploadForm
+          onSuccess={onSuccess}
+          categories={categories}
+          onCategoryCreated={handleCategoryCreated}
+          batchProcess={batchProcess}
+        />
+      </Card>
+    </div>
   );
 };
-
