@@ -6,7 +6,6 @@ import { Search } from 'lucide-react';
 import { useState } from 'react';
 import { ContentList } from '@/components/automation/content/ContentList';
 import { ContentHeader } from '@/components/automation/content/ContentHeader';
-import { AddContentDialog } from '@/components/automation/content/AddContentDialog';
 import { EmbeddingStatusBar } from '@/components/automation/content/EmbeddingStatusBar';
 
 const ContentCenter = () => {
@@ -29,7 +28,6 @@ const ContentCenter = () => {
             className="pl-9"
           />
         </div>
-        <AddContentDialog />
       </div>
 
       <ContentList searchQuery={searchQuery} />
