@@ -20,8 +20,8 @@ export const ContactTickets = ({ contact }: ContactTicketsProps) => {
       assignee: 'Sarah Wilson',
       company: contact.company || '',
       tags: ['account', 'urgent'],
-      status: 'open',
-      priority: 'high',
+      status: 'open' as const,
+      priority: 'high' as const,
       createdAt: '2024-03-15T10:00:00Z',
       isUnread: true,
       hasNotification: true,
@@ -35,8 +35,8 @@ export const ContactTickets = ({ contact }: ContactTicketsProps) => {
       assignee: null,
       company: contact.company || '',
       tags: ['feature-request'],
-      status: 'pending',
-      priority: 'medium',
+      status: 'pending' as const,
+      priority: 'medium' as const,
       createdAt: '2024-03-14T15:30:00Z',
       isUnread: false,
     },
@@ -55,3 +55,4 @@ export const ContactTickets = ({ contact }: ContactTicketsProps) => {
     </Card>
   );
 };
+
