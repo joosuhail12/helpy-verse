@@ -3,7 +3,7 @@ import { useAppSelector } from '@/hooks/useAppSelector';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { CompanyListItem } from './CompanyListItem';
 import { LoadingState } from './LoadingState';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Checkbox } from "@/components/ui/checkbox";
 import type { Company } from '@/types/company';
 import { setSelectedCompanies } from '@/store/slices/companies/companiesSlice';
 import {
@@ -78,4 +78,3 @@ export const CompaniesList = ({ companies, loading }: CompaniesListProps) => {
     </div>
   );
 };
-
