@@ -25,12 +25,16 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { mockChatbots } from '@/mock/chatbots';
+import { mockContentCategories, ContentCategory } from '@/mock/contentCategories';
+import { Plus } from 'lucide-react';
+import { CreateCategoryDialog } from './CreateCategoryDialog';
 
 const formSchema = z.object({
   url: z.string().url('Please enter a valid URL'),
   title: z.string().min(2, 'Title must be at least 2 characters'),
   description: z.string().min(10, 'Description must be at least 10 characters'),
   chatbotId: z.string().min(1, 'Please select a chatbot'),
+  categoryId: z.string().min(1, 'Please select a category'),
 });
 
 interface WebScraperProps {
@@ -41,6 +45,8 @@ export const WebScraper = ({ onSuccess }: WebScraperProps) => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [categories, setCategories] = useState<ContentCategory[]>(mockContentCategories);
+  const [createCategoryOpen, setCreateCategoryOpen] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -49,6 +55,7 @@ export const WebScraper = ({ onSuccess }: WebScraperProps) => {
       title: '',
       description: '',
       chatbotId: '',
+      categoryId: '',
     },
   });
 
@@ -77,6 +84,11 @@ export const WebScraper = ({ onSuccess }: WebScraperProps) => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleCategoryCreated = (newCategory: ContentCategory) => {
+    setCategories([...categories, newCategory]);
+    form.setValue('categoryId', newCategory.id);
   };
 
   return (
@@ -118,6 +130,80 @@ export const WebScraper = ({ onSuccess }: WebScraperProps) => {
             )}
           />
 
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="chatbotId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Connect to Chatbot</FormLabel>
+                  <Select 
+                    onValueChange={field.onChange} 
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a chatbot" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {mockChatbots.map((chatbot) => (
+                        <SelectItem key={chatbot.id} value={chatbot.id}>
+                          {chatbot.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormDescription>
+                    Choose which chatbot will use this content
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="categoryId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Category</FormLabel>
+                  <div className="flex gap-2">
+                    <Select 
+                      onValueChange={field.onChange} 
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="flex-1">
+                          <SelectValue placeholder="Select a category" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {categories.map((category) => (
+                          <SelectItem key={category.id} value={category.id}>
+                            {category.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setCreateCategoryOpen(true)}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <FormDescription>
+                    Choose or create a category for this content
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
           <FormField
             control={form.control}
             name="url"
@@ -139,37 +225,6 @@ export const WebScraper = ({ onSuccess }: WebScraperProps) => {
             )}
           />
 
-          <FormField
-            control={form.control}
-            name="chatbotId"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Connect to Chatbot</FormLabel>
-                <Select 
-                  onValueChange={field.onChange} 
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a chatbot" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {mockChatbots.map((chatbot) => (
-                      <SelectItem key={chatbot.id} value={chatbot.id}>
-                        {chatbot.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormDescription>
-                  Choose which chatbot will use this content
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
           {isSubmitting && (
             <div className="space-y-2">
               <Progress value={progress} className="h-1" />
@@ -184,6 +239,12 @@ export const WebScraper = ({ onSuccess }: WebScraperProps) => {
           </Button>
         </form>
       </Form>
+
+      <CreateCategoryDialog
+        open={createCategoryOpen}
+        onOpenChange={setCreateCategoryOpen}
+        onSuccess={handleCategoryCreated}
+      />
     </Card>
   );
 };
