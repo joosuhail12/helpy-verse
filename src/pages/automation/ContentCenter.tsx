@@ -9,6 +9,9 @@ import { ContentHeader } from '@/components/automation/content/ContentHeader';
 import { EmbeddingStatusBar } from '@/components/automation/content/EmbeddingStatusBar';
 import { ContentFilters } from '@/components/automation/content/ContentFilters';
 import { ContentSorting } from '@/components/automation/content/ContentSorting';
+import { ContentSummary } from '@/components/automation/content/analytics/ContentSummary';
+import { ContentTrendsChart } from '@/components/automation/content/analytics/ContentTrendsChart';
+import { MessageVolumeTrends } from '@/components/automation/content/analytics/MessageVolumeTrends';
 
 const ContentCenter = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -16,6 +19,13 @@ const ContentCenter = () => {
   return (
     <div className="container mx-auto px-4 py-6 max-w-[1400px] space-y-6">
       <ContentHeader />
+      
+      <ContentSummary />
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <ContentTrendsChart />
+        <MessageVolumeTrends />
+      </div>
       
       <EmbeddingStatusBar />
       
