@@ -10,6 +10,8 @@ import { ContactRelated } from '@/components/contacts/detail/ContactRelated';
 import { Card } from '@/components/ui/card';
 import { Bell } from 'lucide-react';
 import { Activity } from '@/types/activity';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ContactTickets } from '@/components/contacts/detail/ContactTickets';
 
 const ContactDetail = () => {
   const { id } = useParams();
@@ -17,7 +19,6 @@ const ContactDetail = () => {
     state.contacts.contacts.find((c) => c.id === id)
   );
 
-  // Mock activities data with correct types
   const activities: Activity[] = [
     {
       id: '1',
@@ -64,9 +65,22 @@ const ContactDetail = () => {
           </div>
         </div>
 
-        {/* Right Column (8/12 width) - Activity Timeline */}
+        {/* Right Column (8/12 width) - Activity Timeline & Tickets */}
         <div className="lg:col-span-8">
-          <ContactTimeline contact={contact} />
+          <Tabs defaultValue="activities" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="activities">Activity Timeline</TabsTrigger>
+              <TabsTrigger value="tickets">Tickets</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="activities">
+              <ContactTimeline contact={contact} />
+            </TabsContent>
+            
+            <TabsContent value="tickets">
+              <ContactTickets contact={contact} />
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </div>
@@ -74,4 +88,3 @@ const ContactDetail = () => {
 };
 
 export default ContactDetail;
-
