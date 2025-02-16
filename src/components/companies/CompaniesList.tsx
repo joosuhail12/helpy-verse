@@ -1,9 +1,11 @@
 
 import { useAppSelector } from '@/hooks/useAppSelector';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { CompanyListItem } from './CompanyListItem';
 import { LoadingState } from './LoadingState';
 import { Checkbox } from '@/components/ui/checkbox';
 import type { Company } from '@/types/company';
+import { setSelectedCompanies } from '@/store/slices/companies/companiesSlice';
 import {
   Table,
   TableBody,
@@ -19,6 +21,17 @@ interface CompaniesListProps {
 }
 
 export const CompaniesList = ({ companies, loading }: CompaniesListProps) => {
+  const dispatch = useAppDispatch();
+  const selectedCompanies = useAppSelector((state) => state.companies.selectedCompanies);
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      dispatch(setSelectedCompanies(companies.map(company => company.id)));
+    } else {
+      dispatch(setSelectedCompanies([]));
+    }
+  };
+
   if (loading) {
     return <LoadingState />;
   }
@@ -40,7 +53,11 @@ export const CompaniesList = ({ companies, loading }: CompaniesListProps) => {
         <TableHeader>
           <TableRow>
             <TableHead className="w-12">
-              <Checkbox />
+              <Checkbox
+                checked={selectedCompanies.length === companies.length}
+                onCheckedChange={handleSelectAll}
+                aria-label="Select all companies"
+              />
             </TableHead>
             <TableHead>Name</TableHead>
             <TableHead>Website</TableHead>
