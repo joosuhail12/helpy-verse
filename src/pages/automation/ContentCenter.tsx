@@ -7,6 +7,8 @@ import { useState } from 'react';
 import { ContentList } from '@/components/automation/content/ContentList';
 import { ContentHeader } from '@/components/automation/content/ContentHeader';
 import { EmbeddingStatusBar } from '@/components/automation/content/EmbeddingStatusBar';
+import { ContentFilters } from '@/components/automation/content/ContentFilters';
+import { ContentSorting } from '@/components/automation/content/ContentSorting';
 
 const ContentCenter = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -17,17 +19,22 @@ const ContentCenter = () => {
       
       <EmbeddingStatusBar />
       
-      <div className="flex justify-between gap-4 items-center">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input
-            type="text"
-            placeholder="Search content..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
-          />
+      <div className="flex flex-col gap-4">
+        <div className="flex justify-between items-center">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              type="text"
+              placeholder="Search content..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          <ContentSorting />
         </div>
+
+        <ContentFilters />
       </div>
 
       <div className="bg-white dark:bg-gray-950 rounded-lg shadow">
@@ -38,4 +45,3 @@ const ContentCenter = () => {
 };
 
 export default ContentCenter;
-

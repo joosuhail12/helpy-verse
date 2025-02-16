@@ -1,4 +1,5 @@
 import { configureStore } from '@reduxjs/toolkit';
+import contentReducer from './slices/content/contentSlice';
 import authReducer from './slices/authSlice';
 import tagsReducer from './slices/tagsSlice';
 import teammatesReducer from './slices/teammates/teammatesSlice';
@@ -20,6 +21,7 @@ export const store = configureStore({
     emailChannels: emailChannelsReducer,
     contacts: contactsReducer,
     companies: companiesReducer,
+    content: contentReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

@@ -1,4 +1,3 @@
-
 import {
   Table,
   TableBody,
@@ -13,64 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { Progress } from '@/components/ui/progress';
 import { type Content } from '@/types/content';
-
-// Mock data for chatbot content
-const mockContent: Content[] = [
-  {
-    id: '1',
-    title: 'Customer Support Bot',
-    description: 'Handles basic customer inquiries and support tickets',
-    category: 'support',
-    status: 'completed',
-    lastUpdated: '2024-03-15T10:00:00Z',
-    messageCount: 1250,
-    chatbot: {
-      id: '1',
-      name: 'Customer Support Bot',
-    },
-  },
-  {
-    id: '2',
-    title: 'Sales Assistant',
-    description: 'Helps with product recommendations and sales inquiries',
-    category: 'sales',
-    status: 'processing',
-    lastUpdated: '2024-03-14T15:30:00Z',
-    messageCount: 850,
-    progress: 65,
-    chatbot: {
-      id: '2',
-      name: 'Sales Assistant',
-    },
-  },
-  {
-    id: '3',
-    title: 'Onboarding Guide',
-    description: 'Assists new users with platform navigation and setup',
-    category: 'onboarding',
-    status: 'queued',
-    lastUpdated: '2024-03-13T09:15:00Z',
-    messageCount: 2100,
-    chatbot: {
-      id: '3',
-      name: 'Onboarding Guide',
-    },
-  },
-  {
-    id: '4',
-    title: 'Troubleshooting Guide',
-    description: 'Technical issue resolution guide',
-    category: 'support',
-    status: 'failed',
-    lastUpdated: '2024-03-12T14:20:00Z',
-    messageCount: 500,
-    errorMessage: 'Failed to process document',
-    chatbot: {
-      id: '1',
-      name: 'Customer Support Bot',
-    },
-  },
-];
+import { useAppSelector } from '@/hooks/useAppSelector';
 
 interface ContentListProps {
   searchQuery: string;
@@ -92,10 +34,32 @@ const getStatusColor = (status: Content['status']) => {
 };
 
 export const ContentList = ({ searchQuery }: ContentListProps) => {
-  const filteredContent = mockContent.filter(content =>
-    content.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    content.description.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const { items, filters, sort } = useAppSelector((state) => state.content);
+
+  const filteredContent = items
+    .filter(content => {
+      const matchesSearch = content.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        content.description.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      const matchesStatus = !filters.status || content.status === filters.status;
+      const matchesCategory = !filters.category || content.category === filters.category;
+      const matchesChatbot = !filters.chatbotId || content.chatbot?.id === filters.chatbotId;
+
+      return matchesSearch && matchesStatus && matchesCategory && matchesChatbot;
+    })
+    .sort((a, b) => {
+      const direction = sort.direction === 'asc' ? 1 : -1;
+      switch (sort.field) {
+        case 'lastUpdated':
+          return direction * (new Date(a.lastUpdated).getTime() - new Date(b.lastUpdated).getTime());
+        case 'messageCount':
+          return direction * (a.messageCount - b.messageCount);
+        case 'title':
+          return direction * a.title.localeCompare(b.title);
+        default:
+          return 0;
+      }
+    });
 
   if (filteredContent.length === 0) {
     return (
@@ -106,7 +70,9 @@ export const ContentList = ({ searchQuery }: ContentListProps) => {
           </div>
           <h3 className="text-sm font-medium text-gray-900 mb-1">No Content Found</h3>
           <p className="text-sm text-gray-500">
-            {searchQuery ? "Try adjusting your search terms." : "Start by adding some content for your chatbots."}
+            {searchQuery || Object.values(filters).some(Boolean)
+              ? "Try adjusting your search terms or filters."
+              : "Start by adding some content for your chatbots."}
           </p>
         </div>
       </div>
@@ -185,4 +151,3 @@ export const ContentList = ({ searchQuery }: ContentListProps) => {
     </Table>
   );
 };
-
