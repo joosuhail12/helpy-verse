@@ -67,7 +67,7 @@ export const mockContacts: Contact[] = [
     phone: '+1 (555) 777-8888',
     company: 'EcoTech Ventures',
     status: 'active',
-    type: 'prospect',
+    type: 'customer', // Changed from 'prospect' to 'customer'
     title: 'Sustainability Director',
     department: 'Environmental',
     timezone: 'America/Chicago',

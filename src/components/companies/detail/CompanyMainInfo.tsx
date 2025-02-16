@@ -1,4 +1,3 @@
-
 import { Company } from '@/types/company';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Building2, Globe, Calendar, Phone, Mail, MapPin, Users, Banknote, Info } from 'lucide-react';
@@ -94,7 +93,7 @@ export const CompanyMainInfo = ({ company }: CompanyMainInfoProps) => {
               contactId={company.id}
               field="description"
               label="Description"
-              type="textarea"
+              type="rich-text"
             />
           </div>
 
