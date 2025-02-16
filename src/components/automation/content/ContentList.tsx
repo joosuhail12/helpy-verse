@@ -83,7 +83,7 @@ export const ContentList = ({ searchQuery }: ContentListProps) => {
 
   if (filteredContent.length === 0) {
     return (
-      <div className="rounded-lg border border-gray-200 p-8">
+      <div className="p-8">
         <div className="text-center">
           <div className="mx-auto w-12 h-12 rounded-full bg-purple-50 flex items-center justify-center mb-3">
             <Archive className="h-6 w-6 text-purple-400" />
@@ -98,69 +98,68 @@ export const ContentList = ({ searchQuery }: ContentListProps) => {
   }
 
   return (
-    <div className="rounded-lg border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Content</TableHead>
-            <TableHead>Category</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Last Updated</TableHead>
-            <TableHead>Messages</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Content</TableHead>
+          <TableHead>Category</TableHead>
+          <TableHead>Status</TableHead>
+          <TableHead>Last Updated</TableHead>
+          <TableHead>Messages</TableHead>
+          <TableHead className="text-right">Actions</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {filteredContent.map((content) => (
+          <TableRow key={content.id} className="group hover:bg-muted/50">
+            <TableCell>
+              <div className="flex items-start gap-3">
+                <div className="mt-1">
+                  <Bot className="h-5 w-5 text-purple-500" />
+                </div>
+                <div>
+                  <div className="font-medium">{content.title}</div>
+                  <div className="text-sm text-gray-500">{content.description}</div>
+                </div>
+              </div>
+            </TableCell>
+            <TableCell>
+              <Badge variant="secondary" className="capitalize">
+                {content.category}
+              </Badge>
+            </TableCell>
+            <TableCell>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className={`w-2 h-2 rounded-full ${getStatusColor(content.status)}`} />
+                  <span className="text-sm capitalize">{content.status}</span>
+                </div>
+                {content.status === 'processing' && content.progress && (
+                  <Progress value={content.progress} className="h-1" />
+                )}
+                {content.status === 'failed' && content.errorMessage && (
+                  <p className="text-xs text-red-500">{content.errorMessage}</p>
+                )}
+              </div>
+            </TableCell>
+            <TableCell>
+              {format(new Date(content.lastUpdated), 'MMM d, yyyy')}
+            </TableCell>
+            <TableCell>
+              <div className="flex items-center gap-1 text-gray-500">
+                <MessageSquare className="h-4 w-4" />
+                <span>{content.messageCount.toLocaleString()}</span>
+              </div>
+            </TableCell>
+            <TableCell className="text-right">
+              <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                <Settings className="h-4 w-4" />
+              </Button>
+            </TableCell>
           </TableRow>
-        </TableHeader>
-        <TableBody>
-          {filteredContent.map((content) => (
-            <TableRow key={content.id}>
-              <TableCell>
-                <div className="flex items-start gap-3">
-                  <div className="mt-1">
-                    <Bot className="h-5 w-5 text-purple-500" />
-                  </div>
-                  <div>
-                    <div className="font-medium">{content.title}</div>
-                    <div className="text-sm text-gray-500">{content.description}</div>
-                  </div>
-                </div>
-              </TableCell>
-              <TableCell>
-                <Badge variant="secondary" className="capitalize">
-                  {content.category}
-                </Badge>
-              </TableCell>
-              <TableCell>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <span className={`w-2 h-2 rounded-full ${getStatusColor(content.status)}`} />
-                    <span className="text-sm capitalize">{content.status}</span>
-                  </div>
-                  {content.status === 'processing' && content.progress && (
-                    <Progress value={content.progress} className="h-1" />
-                  )}
-                  {content.status === 'failed' && content.errorMessage && (
-                    <p className="text-xs text-red-500">{content.errorMessage}</p>
-                  )}
-                </div>
-              </TableCell>
-              <TableCell>
-                {format(new Date(content.lastUpdated), 'MMM d, yyyy')}
-              </TableCell>
-              <TableCell>
-                <div className="flex items-center gap-1 text-gray-500">
-                  <MessageSquare className="h-4 w-4" />
-                  <span>{content.messageCount.toLocaleString()}</span>
-                </div>
-              </TableCell>
-              <TableCell className="text-right">
-                <Button variant="ghost" size="sm">
-                  <Settings className="h-4 w-4" />
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
+        ))}
+      </TableBody>
+    </Table>
   );
 };
+

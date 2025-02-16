@@ -30,9 +30,12 @@ const ContentCenter = () => {
         </div>
       </div>
 
-      <ContentList searchQuery={searchQuery} />
+      <div className="bg-white dark:bg-gray-950 rounded-lg shadow">
+        <ContentList searchQuery={searchQuery} />
+      </div>
     </div>
   );
 };
 
 export default ContentCenter;
+

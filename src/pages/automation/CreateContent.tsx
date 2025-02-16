@@ -2,10 +2,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { FilePlus, Link, Code } from 'lucide-react';
+import { FilePlus, Link, Code, ArrowLeft } from 'lucide-react';
 import { CreateSnippet } from '@/components/automation/content/create/CreateSnippet';
 import { FileUpload } from '@/components/automation/content/create/FileUpload';
 import { WebScraper } from '@/components/automation/content/create/WebScraper';
+import { Button } from '@/components/ui/button';
 
 const CreateContent = () => {
   const navigate = useNavigate();
@@ -17,7 +18,16 @@ const CreateContent = () => {
   return (
     <div className="container max-w-6xl py-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold">Create Content</h1>
+        <div className="flex items-center gap-4">
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={() => navigate('/home/automation/ai/content-center')}
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <h1 className="text-2xl font-semibold">Create Content</h1>
+        </div>
       </div>
 
       <div className="bg-white dark:bg-gray-950 rounded-lg shadow">
@@ -63,3 +73,4 @@ const CreateContent = () => {
 };
 
 export default CreateContent;
+
