@@ -24,6 +24,10 @@ const mockContent: Content[] = [
     status: 'completed',
     lastUpdated: '2024-03-15T10:00:00Z',
     messageCount: 1250,
+    chatbot: {
+      id: '1',
+      name: 'Customer Support Bot',
+    },
   },
   {
     id: '2',
@@ -34,6 +38,10 @@ const mockContent: Content[] = [
     lastUpdated: '2024-03-14T15:30:00Z',
     messageCount: 850,
     progress: 65,
+    chatbot: {
+      id: '2',
+      name: 'Sales Assistant',
+    },
   },
   {
     id: '3',
@@ -43,6 +51,10 @@ const mockContent: Content[] = [
     status: 'queued',
     lastUpdated: '2024-03-13T09:15:00Z',
     messageCount: 2100,
+    chatbot: {
+      id: '3',
+      name: 'Onboarding Guide',
+    },
   },
   {
     id: '4',
@@ -53,6 +65,10 @@ const mockContent: Content[] = [
     lastUpdated: '2024-03-12T14:20:00Z',
     messageCount: 500,
     errorMessage: 'Failed to process document',
+    chatbot: {
+      id: '1',
+      name: 'Customer Support Bot',
+    },
   },
 ];
 
@@ -103,6 +119,7 @@ export const ContentList = ({ searchQuery }: ContentListProps) => {
         <TableRow>
           <TableHead>Content</TableHead>
           <TableHead>Category</TableHead>
+          <TableHead>Chatbot</TableHead>
           <TableHead>Status</TableHead>
           <TableHead>Last Updated</TableHead>
           <TableHead>Messages</TableHead>
@@ -127,6 +144,12 @@ export const ContentList = ({ searchQuery }: ContentListProps) => {
               <Badge variant="secondary" className="capitalize">
                 {content.category}
               </Badge>
+            </TableCell>
+            <TableCell>
+              <div className="flex items-center gap-2">
+                <Bot className="h-4 w-4 text-purple-400" />
+                <span className="text-sm text-gray-600">{content.chatbot?.name}</span>
+              </div>
             </TableCell>
             <TableCell>
               <div className="space-y-2">

@@ -11,4 +11,9 @@ export interface Content {
   messageCount: number;
   progress?: number;
   errorMessage?: string;
+  chatbot?: {
+    id: string;
+    name: string;
+  };
 }
+
