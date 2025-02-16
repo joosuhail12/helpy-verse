@@ -15,10 +15,10 @@ import { Plus } from "lucide-react";
 import type { NewTeammate } from '@/types/teammate';
 
 const formSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
+  name: z.string().min(2, 'Name must be at least 2 characters').max(50),
   email: z.string().email('Please enter a valid email address'),
   role: z.enum(['admin', 'supervisor', 'agent', 'viewer'])
-}).required();
+});
 
 const AddTeammateDialog = () => {
   const [open, setOpen] = useState(false);
