@@ -18,14 +18,16 @@ const formSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(50),
   email: z.string().email('Please enter a valid email address'),
   role: z.enum(['admin', 'supervisor', 'agent', 'viewer'])
-});
+}).required();
+
+type FormValues = z.infer<typeof formSchema>;
 
 const AddTeammateDialog = () => {
   const [open, setOpen] = useState(false);
   const dispatch = useAppDispatch();
   const { toast } = useToast();
   
-  const form = useForm<NewTeammate>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',
@@ -34,7 +36,7 @@ const AddTeammateDialog = () => {
     },
   });
 
-  const onSubmit = async (data: NewTeammate) => {
+  const onSubmit = async (data: FormValues) => {
     try {
       await dispatch(addTeammate(data)).unwrap();
       toast({
