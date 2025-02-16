@@ -25,11 +25,11 @@ export const AddContentDialog = () => {
           Add Content
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-3xl max-h-[90vh] p-0 bg-white dark:bg-gray-950 shadow-lg rounded-lg border-0">
+      <DialogContent className="max-w-3xl h-[90vh] p-0 bg-white dark:bg-gray-950 shadow-lg rounded-lg border-0">
         <DialogHeader className="p-6 pb-2">
           <DialogTitle className="text-xl font-semibold">Add Content</DialogTitle>
         </DialogHeader>
-        <Tabs defaultValue="snippet" className="flex flex-col h-full">
+        <Tabs defaultValue="snippet" className="flex flex-col h-[calc(100%-5rem)]">
           <TabsList className="mx-6 grid grid-cols-3 gap-4 bg-gray-50 dark:bg-gray-900 p-1 rounded-lg">
             <TabsTrigger 
               value="snippet" 
@@ -53,7 +53,7 @@ export const AddContentDialog = () => {
               Scrape Web
             </TabsTrigger>
           </TabsList>
-          <div className="flex-1 overflow-y-auto px-6 pb-6">
+          <div className="flex-1 overflow-hidden px-6 pb-6">
             <TabsContent value="snippet" className="mt-6 h-full data-[state=active]:flex flex-col">
               <CreateSnippet onSuccess={() => setOpen(false)} />
             </TabsContent>
@@ -69,4 +69,3 @@ export const AddContentDialog = () => {
     </Dialog>
   );
 };
-

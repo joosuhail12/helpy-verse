@@ -69,75 +69,77 @@ export const CreateSnippet = ({ onSuccess }: CreateSnippetProps) => {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto">
+    <div className="h-full overflow-y-auto">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <FormField
-            control={form.control}
-            name="title"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Title</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter title" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+        <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col space-y-6 h-full">
+          <div className="space-y-6">
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Title</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter title" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          <FormField
-            control={form.control}
-            name="description"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Description</FormLabel>
-                <FormControl>
-                  <Textarea 
-                    placeholder="Enter a brief description of this content"
-                    className="resize-none h-20"
-                    {...field}
-                  />
-                </FormControl>
-                <FormDescription>
-                  Provide a short description to help identify this content's purpose
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder="Enter a brief description of this content"
+                      className="resize-none h-20"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Provide a short description to help identify this content's purpose
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          <div className="grid grid-cols-2 gap-4">
-            <ChatbotSelect form={form} />
-            <CategorySelect 
-              form={form}
-              categories={categories}
-              onCategoryCreated={handleCategoryCreated}
+            <div className="grid grid-cols-2 gap-4">
+              <ChatbotSelect form={form} />
+              <CategorySelect 
+                form={form}
+                categories={categories}
+                onCategoryCreated={handleCategoryCreated}
+              />
+            </div>
+
+            <FormField
+              control={form.control}
+              name="content"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Content</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Enter your content here"
+                      className="min-h-[200px] resize-none"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Write or paste your content here. This will be used for training the AI.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
           </div>
 
-          <FormField
-            control={form.control}
-            name="content"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Content</FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder="Enter your content here"
-                    className="min-h-[200px] resize-none"
-                    {...field}
-                  />
-                </FormControl>
-                <FormDescription>
-                  Write or paste your content here. This will be used for training the AI.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <Button type="submit" disabled={isSubmitting} className="w-full">
+          <Button type="submit" disabled={isSubmitting} className="w-full mt-auto">
             {isSubmitting ? "Creating..." : "Create Content"}
           </Button>
         </form>
