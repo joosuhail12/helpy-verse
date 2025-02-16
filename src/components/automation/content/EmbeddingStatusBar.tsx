@@ -71,7 +71,7 @@ export const EmbeddingStatusBar = () => {
           <Badge
             variant={
               status.status === 'processing' ? 'secondary' :
-              status.status === 'completed' ? 'success' :
+              status.status === 'completed' ? 'default' :
               'destructive'
             }
             className="capitalize"
