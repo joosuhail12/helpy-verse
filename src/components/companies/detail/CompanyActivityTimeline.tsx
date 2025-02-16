@@ -42,12 +42,13 @@ export const CompanyActivityTimeline = ({ activities }: CompanyActivityTimelineP
     averageResponseTime: activities.reduce((acc, curr) => 
       acc + (curr.metadata.responseTime || 0), 0) / activities.length || 0,
     mostFrequentType: activities.length > 0 
-      ? activities
-          .reduce((acc, curr) => {
+      ? Object.entries(
+          activities.reduce((acc, curr) => {
             acc[curr.type] = (acc[curr.type] || 0) + 1;
             return acc;
           }, {} as Record<ActivityType, number>)
-          .reduce((a, b) => (a[1] > b[1] ? a : b))[0]
+        )
+        .reduce((a, b) => (a[1] > b[1] ? a : b))[0] as ActivityType
       : 'email',
     lastInteraction: activities[0]?.date || new Date().toISOString(),
   };
@@ -174,3 +175,4 @@ export const CompanyActivityTimeline = ({ activities }: CompanyActivityTimelineP
     </Card>
   );
 };
+
