@@ -28,14 +28,12 @@ interface FileUploadFormProps {
   onSuccess: () => void;
   categories: ContentCategory[];
   onCategoryCreated: (category: ContentCategory) => void;
-  batchProcess: boolean;
 }
 
 export const FileUploadForm = ({ 
   onSuccess, 
   categories, 
   onCategoryCreated,
-  batchProcess,
 }: FileUploadFormProps) => {
   const { toast } = useToast();
   const [files, setFiles] = useState<File[]>([]);
@@ -75,9 +73,7 @@ export const FileUploadForm = ({
 
       toast({
         title: "Success",
-        description: batchProcess 
-          ? "Files queued for batch processing" 
-          : "File uploaded successfully",
+        description: "File uploaded successfully",
       });
       onSuccess();
     } catch (error) {
@@ -166,7 +162,7 @@ export const FileUploadForm = ({
           disabled={isUploading || files.length === 0}
           className="w-full bg-purple-600 hover:bg-purple-700"
         >
-          {isUploading ? "Uploading..." : batchProcess ? "Queue for Processing" : "Upload File"}
+          {isUploading ? "Uploading..." : "Upload File"}
         </Button>
       </form>
 

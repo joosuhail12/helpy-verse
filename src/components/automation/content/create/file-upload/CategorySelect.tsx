@@ -7,7 +7,7 @@ import { Plus } from 'lucide-react';
 import { UseFormReturn } from 'react-hook-form';
 import { FileUploadFormValues } from './types';
 import { ContentCategory } from '@/mock/contentCategories';
-import { CreateCategoryDialog } from '../../../CreateCategoryDialog';
+import { CreateCategoryDialog } from '../CreateCategoryDialog';
 
 interface CategorySelectProps {
   form: UseFormReturn<FileUploadFormValues>;
