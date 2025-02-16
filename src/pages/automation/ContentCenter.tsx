@@ -1,9 +1,5 @@
 
 import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Search } from 'lucide-react';
-import { useState } from 'react';
 import { ContentList } from '@/components/automation/content/ContentList';
 import { ContentHeader } from '@/components/automation/content/ContentHeader';
 import { EmbeddingStatusBar } from '@/components/automation/content/EmbeddingStatusBar';
@@ -14,10 +10,11 @@ import { ContentTrendsChart } from '@/components/automation/content/analytics/Co
 import { MessageVolumeTrends } from '@/components/automation/content/analytics/MessageVolumeTrends';
 import { ContentBatchActions } from '@/components/automation/content/ContentBatchActions';
 import { useAppSelector } from '@/hooks/useAppSelector';
+import { SearchBar } from '@/components/automation/content/search/SearchBar';
 
 const ContentCenter = () => {
-  const [searchQuery, setSearchQuery] = useState('');
   const selectedIds = useAppSelector((state) => state.content.selectedIds);
+  const searchQuery = useAppSelector((state) => state.content.search.query);
 
   return (
     <div className="container mx-auto px-4 py-6 max-w-[1400px] space-y-6">
@@ -33,17 +30,8 @@ const ContentCenter = () => {
       <EmbeddingStatusBar />
       
       <div className="flex flex-col gap-4">
-        <div className="flex justify-between items-center">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
-              type="text"
-              placeholder="Search content..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
-            />
-          </div>
+        <div className="flex justify-between items-center gap-4">
+          <SearchBar />
           <ContentSorting />
         </div>
 
