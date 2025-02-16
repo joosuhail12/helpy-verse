@@ -1,4 +1,3 @@
-
 import { 
   Home, 
   Inbox, 
@@ -80,8 +79,8 @@ export const subNavItems = {
       title: 'AI',
       icon: BrainCircuit,
       children: [
-        { title: 'Chatbot Profiles', path: '/home/automation/ai/chatbot-profiles' },
         { title: 'Content Center', path: '/home/automation/ai/content-center' },
+        { title: 'Chatbot Profiles', path: '/home/automation/ai/chatbot-profiles' },
         { title: 'Action Center', path: '/home/automation/ai/action-center' },
         {
           title: 'Bot Inboxes',
@@ -140,4 +139,3 @@ export const subNavItems = {
     { title: 'Auto Reply', icon: Reply, path: '/home/settings/auto-reply' }
   ]
 };
-

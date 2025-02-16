@@ -35,6 +35,7 @@ const CreateChannel = lazy(() => import(/* webpackChunkName: "create-channel" */
 const EmailChannelDetail = lazy(() => import(/* webpackChunkName: "email-channel-detail" */ "./pages/settings/email/channels/EmailChannelDetail"));
 const Companies = lazy(() => import(/* webpackChunkName: "companies" */ "./pages/contacts/Companies"));
 const CompanyDetail = lazy(() => import(/* webpackChunkName: "company-detail" */ "./pages/contacts/CompanyDetail"));
+const ContentCenter = lazy(() => import(/* webpackChunkName: "content-center" */ "./pages/automation/ContentCenter"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -125,6 +126,7 @@ const App = () => (
                   <Route path="settings/email/channels" element={<Channels />} />
                   <Route path="settings/email/channels/create" element={<CreateChannel />} />
                   <Route path="settings/email/channels/:id" element={<EmailChannelDetail />} />
+                  <Route path="automation/ai/content-center" element={<ContentCenter />} />
                 </Route>
                 <Route path="*" element={<NotFound />} />
               </Routes>
