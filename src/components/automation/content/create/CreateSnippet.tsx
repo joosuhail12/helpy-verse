@@ -16,12 +16,21 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { mockChatbots } from '@/mock/chatbots';
 
 const formSchema = z.object({
   title: z.string().min(2, 'Title must be at least 2 characters'),
   description: z.string().min(10, 'Description must be at least 10 characters'),
   content: z.string().min(20, 'Content must be at least 20 characters'),
+  chatbotId: z.string().min(1, 'Please select a chatbot'),
 });
 
 interface CreateSnippetProps {
@@ -38,6 +47,7 @@ export const CreateSnippet = ({ onSuccess }: CreateSnippetProps) => {
       title: '',
       description: '',
       content: '',
+      chatbotId: '',
     },
   });
 
@@ -88,8 +98,46 @@ export const CreateSnippet = ({ onSuccess }: CreateSnippetProps) => {
               <FormItem>
                 <FormLabel>Description</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter description" {...field} />
+                  <Textarea 
+                    placeholder="Enter a brief description of this content"
+                    className="resize-none h-20"
+                    {...field}
+                  />
                 </FormControl>
+                <FormDescription>
+                  Provide a short description to help identify this content's purpose
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="chatbotId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Connect to Chatbot</FormLabel>
+                <Select 
+                  onValueChange={field.onChange} 
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a chatbot" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {mockChatbots.map((chatbot) => (
+                      <SelectItem key={chatbot.id} value={chatbot.id}>
+                        {chatbot.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormDescription>
+                  Choose which chatbot will use this content
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}

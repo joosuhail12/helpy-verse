@@ -25,7 +25,7 @@ export const AddContentDialog = () => {
           Add Content
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-3xl">
         <DialogHeader>
           <DialogTitle>Add Content</DialogTitle>
         </DialogHeader>
