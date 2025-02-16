@@ -1,9 +1,13 @@
 
-import { Building2, Globe, Briefcase, CheckCircle, XCircle } from 'lucide-react';
-import { Card } from '@/components/ui/card';
+import { Building2, MoreHorizontal, CheckCircle, XCircle } from 'lucide-react';
+import { TableCell, TableRow } from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import type { Company } from '@/types/company';
 import { useNavigate } from 'react-router-dom';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { toggleCompanySelection } from '@/store/slices/companies/companiesSlice';
 
 interface CompanyListItemProps {
   company: Company;
@@ -11,68 +15,67 @@ interface CompanyListItemProps {
 
 export const CompanyListItem = ({ company }: CompanyListItemProps) => {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
 
-  const getIndustryIcon = () => {
-    switch (company.industry?.toLowerCase()) {
-      case 'technology':
-        return <Globe className="h-5 w-5 text-purple-600" />;
-      default:
-        return <Briefcase className="h-5 w-5 text-purple-600" />;
-    }
+  const handleRowClick = () => {
+    navigate(`/home/contacts/companies/${company.id}`);
+  };
+
+  const handleCheckboxClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    dispatch(toggleCompanySelection(company.id));
   };
 
   return (
-    <Card 
-      className="p-4 hover:shadow-md transition-all duration-300 hover:bg-purple-50/50 hover:border-purple-200 cursor-pointer group"
-      onClick={() => navigate(`/home/contacts/companies/${company.id}`)}
+    <TableRow 
+      className="cursor-pointer hover:bg-gray-50"
+      onClick={handleRowClick}
     >
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <div className="p-2 bg-purple-100 rounded-lg group-hover:bg-purple-200 transition-colors">
-            <Building2 className="h-5 w-5 text-purple-600" />
+      <TableCell onClick={handleCheckboxClick}>
+        <Checkbox />
+      </TableCell>
+      <TableCell>
+        <div className="flex items-center gap-2">
+          <div className="p-1 bg-purple-100 rounded-lg">
+            <Building2 className="h-4 w-4 text-purple-600" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h4 className="font-medium text-gray-900">{company.name}</h4>
-              <Badge 
-                variant={company.status === 'active' ? 'default' : 'secondary'}
-                className="flex items-center gap-1"
-              >
-                {company.status === 'active' ? (
-                  <>
-                    <CheckCircle className="h-3 w-3" />
-                    <span>Active</span>
-                  </>
-                ) : (
-                  <>
-                    <XCircle className="h-3 w-3" />
-                    <span>Inactive</span>
-                  </>
-                )}
-              </Badge>
-            </div>
-            <div className="flex items-center gap-2 mt-1">
-              {company.website && (
-                <p className="text-sm text-purple-600/70 hover:text-purple-700">{company.website}</p>
-              )}
-            </div>
-          </div>
+          <span>{company.name}</span>
         </div>
-        {company.industry && (
-          <div className="p-2 bg-purple-50 rounded-lg group-hover:bg-purple-100 transition-colors">
-            {getIndustryIcon()}
-          </div>
-        )}
-      </div>
-
-      <div className="mt-3 flex items-center gap-4 text-sm text-gray-500">
-        {company.employeeCount && (
-          <span>{company.employeeCount} employees</span>
-        )}
-        {company.location?.city && company.location?.country && (
-          <span>{company.location.city}, {company.location.country}</span>
-        )}
-      </div>
-    </Card>
+      </TableCell>
+      <TableCell>{company.website || '-'}</TableCell>
+      <TableCell>{company.industry || '-'}</TableCell>
+      <TableCell>
+        <Badge variant={company.type === 'customer' ? 'default' : 'secondary'}>
+          {company.type || 'N/A'}
+        </Badge>
+      </TableCell>
+      <TableCell>
+        <Badge variant={company.status === 'active' ? 'default' : 'destructive'}>
+          {company.status === 'active' ? (
+            <div className="flex items-center gap-1">
+              <CheckCircle className="h-3 w-3" />
+              <span>Active</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1">
+              <XCircle className="h-3 w-3" />
+              <span>Inactive</span>
+            </div>
+          )}
+        </Badge>
+      </TableCell>
+      <TableCell>
+        {company.location?.city && company.location?.country ? 
+          `${company.location.city}, ${company.location.country}` : '-'}
+      </TableCell>
+      <TableCell>
+        {company.employeeCount ? `${company.employeeCount}` : '-'}
+      </TableCell>
+      <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+        <Button variant="ghost" size="icon">
+          <MoreHorizontal className="h-4 w-4" />
+        </Button>
+      </TableCell>
+    </TableRow>
   );
 };
