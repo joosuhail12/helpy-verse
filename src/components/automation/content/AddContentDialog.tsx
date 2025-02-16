@@ -54,13 +54,13 @@ export const AddContentDialog = () => {
             </TabsTrigger>
           </TabsList>
           <div className="flex-1 overflow-hidden">
-            <TabsContent value="snippet" className="h-full p-6">
+            <TabsContent value="snippet" className="flex flex-col h-full p-6">
               <CreateSnippet onSuccess={() => setOpen(false)} />
             </TabsContent>
-            <TabsContent value="upload" className="h-full p-6">
+            <TabsContent value="upload" className="flex flex-col h-full p-6">
               <FileUpload onSuccess={() => setOpen(false)} />
             </TabsContent>
-            <TabsContent value="scrape" className="h-full p-6">
+            <TabsContent value="scrape" className="flex flex-col h-full p-6">
               <WebScraper onSuccess={() => setOpen(false)} />
             </TabsContent>
           </div>

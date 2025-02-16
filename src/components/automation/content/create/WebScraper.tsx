@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -75,73 +74,75 @@ export const WebScraper = ({ onSuccess }: WebScraperProps) => {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto">
+    <div className="flex flex-col h-full">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <FormField
-            control={form.control}
-            name="title"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Title</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter title" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+        <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col h-full">
+          <div className="flex-1 space-y-6 overflow-y-auto pr-2">
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Title</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter title" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          <FormField
-            control={form.control}
-            name="description"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Description</FormLabel>
-                <FormControl>
-                  <Textarea 
-                    placeholder="Enter a brief description of this content"
-                    className="resize-none h-20"
-                    {...field}
-                  />
-                </FormControl>
-                <FormDescription>
-                  Provide a short description to help identify this content's purpose
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder="Enter a brief description of this content"
+                      className="resize-none h-20"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Provide a short description to help identify this content's purpose
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          <div className="grid grid-cols-2 gap-4">
-            <ChatbotSelect form={form} />
-            <CategorySelect 
-              form={form}
-              categories={categories}
-              onCategoryCreated={handleCategoryCreated}
+            <div className="grid grid-cols-2 gap-4">
+              <ChatbotSelect form={form} />
+              <CategorySelect 
+                form={form}
+                categories={categories}
+                onCategoryCreated={handleCategoryCreated}
+              />
+            </div>
+
+            <FormField
+              control={form.control}
+              name="url"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Website URL</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="https://example.com" 
+                      {...field} 
+                      disabled={isSubmitting}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Enter the URL of the website you want to scrape content from.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
           </div>
-
-          <FormField
-            control={form.control}
-            name="url"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Website URL</FormLabel>
-                <FormControl>
-                  <Input 
-                    placeholder="https://example.com" 
-                    {...field} 
-                    disabled={isSubmitting}
-                  />
-                </FormControl>
-                <FormDescription>
-                  Enter the URL of the website you want to scrape content from.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
 
           {isSubmitting && (
             <div className="space-y-2">
@@ -152,9 +153,11 @@ export const WebScraper = ({ onSuccess }: WebScraperProps) => {
             </div>
           )}
 
-          <Button type="submit" disabled={isSubmitting} className="w-full">
-            {isSubmitting ? "Scraping..." : "Start Scraping"}
-          </Button>
+          <div className="mt-6 pt-4 border-t">
+            <Button type="submit" disabled={isSubmitting} className="w-full">
+              {isSubmitting ? "Scraping..." : "Start Scraping"}
+            </Button>
+          </div>
         </form>
       </Form>
     </div>

@@ -71,7 +71,7 @@ export const CreateSnippet = ({ onSuccess }: CreateSnippetProps) => {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col h-full">
-        <div className="flex-1 space-y-6 overflow-y-auto">
+        <div className="flex-1 space-y-6 overflow-y-auto pr-2">
           <FormField
             control={form.control}
             name="title"
@@ -138,7 +138,7 @@ export const CreateSnippet = ({ onSuccess }: CreateSnippetProps) => {
           />
         </div>
 
-        <div className="mt-6 flex-shrink-0">
+        <div className="mt-6 pt-4 border-t">
           <Button type="submit" disabled={isSubmitting} className="w-full">
             {isSubmitting ? "Creating..." : "Create Content"}
           </Button>

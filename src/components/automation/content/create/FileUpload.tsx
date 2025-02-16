@@ -11,7 +11,7 @@ export const FileUpload = ({ onSuccess }: { onSuccess: () => void }) => {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto">
+    <div className="flex flex-col h-full">
       <FileUploadForm
         onSuccess={onSuccess}
         categories={categories}
