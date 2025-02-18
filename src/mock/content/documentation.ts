@@ -1,4 +1,3 @@
-
 import { Content } from '@/types/content';
 import { addDays, subDays } from 'date-fns';
 
@@ -19,6 +18,37 @@ export const documentationContent: Content[] = [
       id: '1',
       name: 'Documentation Bot',
     },
+    lastEditedBy: {
+      id: 'user1',
+      name: 'John Doe',
+      avatar: 'https://api.dicebear.com/7.x/avatars/svg?seed=John',
+    },
+    versions: [
+      {
+        id: 'v1',
+        contentId: '1',
+        content: '# Previous version content...',
+        createdAt: subDays(today, 2).toISOString(),
+        createdBy: {
+          id: 'user1',
+          name: 'John Doe',
+          avatar: 'https://api.dicebear.com/7.x/avatars/svg?seed=John',
+        },
+        changes: 'Updated authentication section',
+      },
+      {
+        id: 'v2',
+        contentId: '1',
+        content: '# Even older version...',
+        createdAt: subDays(today, 4).toISOString(),
+        createdBy: {
+          id: 'user2',
+          name: 'Jane Smith',
+          avatar: 'https://api.dicebear.com/7.x/avatars/svg?seed=Jane',
+        },
+        changes: 'Initial documentation structure',
+      },
+    ],
   },
   {
     id: '5',
