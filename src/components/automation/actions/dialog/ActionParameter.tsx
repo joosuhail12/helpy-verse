@@ -108,26 +108,37 @@ export const ActionParameter = ({ parameter, onUpdate, onDelete, allParameters }
         throw new Error('This parameter is required');
       }
 
+      let parsedValue: string | number | boolean;
       switch (parameter.type) {
         case 'number':
           if (isNaN(Number(testValue))) {
             throw new Error('Value must be a valid number');
           }
+          parsedValue = Number(testValue);
           break;
         case 'boolean':
           if (testValue !== 'true' && testValue !== 'false') {
             throw new Error('Value must be either true or false');
           }
+          parsedValue = testValue === 'true';
           break;
         case 'object':
         case 'array':
           try {
             JSON.parse(testValue);
+            parsedValue = testValue;
           } catch {
             throw new Error('Value must be valid JSON');
           }
           break;
+        default:
+          parsedValue = testValue;
       }
+
+      onUpdate({
+        ...parameter,
+        defaultValue: String(parsedValue)
+      });
 
       toast({
         title: "Parameter validation passed",
