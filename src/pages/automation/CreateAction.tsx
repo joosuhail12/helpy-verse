@@ -24,8 +24,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/components/ui/use-toast';
 import type { ActionMethod } from '@/types/action';
+import { mockChatbots } from '@/mock/chatbots';
 
 const createActionSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -35,6 +37,7 @@ const createActionSchema = z.object({
   headers: z.string(),
   parameters: z.string(),
   parameterDescriptions: z.string(),
+  connectedChatbots: z.array(z.string()),
 });
 
 type FormValues = z.infer<typeof createActionSchema>;
@@ -54,6 +57,7 @@ export default function CreateAction() {
       headers: '',
       parameters: '',
       parameterDescriptions: '',
+      connectedChatbots: [],
     },
   });
 
@@ -91,6 +95,7 @@ export default function CreateAction() {
           name: 'Current User',
         },
         enabled: true,
+        connectedChatbots: values.connectedChatbots,
       };
 
       dispatch(addAction(newAction));
@@ -241,6 +246,51 @@ export default function CreateAction() {
                     {...field}
                   />
                 </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="connectedChatbots"
+            render={() => (
+              <FormItem>
+                <FormLabel>Connect to Chatbots</FormLabel>
+                <div className="mt-2 space-y-2">
+                  {mockChatbots.map((chatbot) => (
+                    <div key={chatbot.id} className="flex items-center space-x-2">
+                      <FormField
+                        control={form.control}
+                        name="connectedChatbots"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value?.includes(chatbot.id)}
+                                onCheckedChange={(checked) => {
+                                  const currentValue = field.value || [];
+                                  const newValue = checked
+                                    ? [...currentValue, chatbot.id]
+                                    : currentValue.filter((id) => id !== chatbot.id);
+                                  field.onChange(newValue);
+                                }}
+                              />
+                            </FormControl>
+                            <div className="space-y-1 leading-none">
+                              <FormLabel className="text-sm font-normal">
+                                {chatbot.name}
+                              </FormLabel>
+                              <p className="text-sm text-muted-foreground">
+                                {chatbot.description}
+                              </p>
+                            </div>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  ))}
+                </div>
                 <FormMessage />
               </FormItem>
             )}
