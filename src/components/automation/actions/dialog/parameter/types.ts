@@ -1,5 +1,8 @@
 
 import type { CustomAction, ActionParameter } from '@/types/action';
+import type { UseFormReturn } from 'react-hook-form';
+import type { z } from 'zod';
+import type { actionFormSchema } from '../ActionBasicInfo';
 
 export interface ActionParameterProps {
   parameter: ActionParameter;
@@ -19,8 +22,7 @@ export interface ActionParametersProps {
 }
 
 export interface ActionTestPanelProps {
-  action: CustomAction;
-  form: any;
+  form: UseFormReturn<z.infer<typeof actionFormSchema>>;
   isTestSuccessful: boolean;
   onTest: () => void;
 }

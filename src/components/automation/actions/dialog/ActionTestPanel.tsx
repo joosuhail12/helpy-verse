@@ -2,15 +2,7 @@
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { UseFormReturn } from 'react-hook-form';
-import * as z from 'zod';
-import { actionFormSchema } from './ActionBasicInfo';
-
-interface ActionTestPanelProps {
-  form: UseFormReturn<z.infer<typeof actionFormSchema>>;
-  isTestSuccessful: boolean;
-  onTest: () => void;
-}
+import type { ActionTestPanelProps } from './parameter/types';
 
 export const ActionTestPanel = ({ form, isTestSuccessful, onTest }: ActionTestPanelProps) => {
   return (
@@ -51,4 +43,3 @@ export const ActionTestPanel = ({ form, isTestSuccessful, onTest }: ActionTestPa
     </Card>
   );
 };
-
