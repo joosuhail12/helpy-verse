@@ -1,11 +1,20 @@
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { updateContent } from '@/store/slices/content/contentSlice';
+import { Copy, Check } from 'lucide-react';
+import Prism from 'prismjs';
+import 'prismjs/themes/prism.css';
+import 'prismjs/components/prism-javascript';
+import 'prismjs/components/prism-typescript';
+import 'prismjs/components/prism-jsx';
+import 'prismjs/components/prism-tsx';
+import 'prismjs/components/prism-json';
+import 'prismjs/components/prism-markdown';
 import type { Content } from '@/types/content';
 
 interface ContentPreviewProps {
@@ -17,6 +26,14 @@ export const ContentPreview = ({ content }: ContentPreviewProps) => {
   const { toast } = useToast();
   const [editableContent, setEditableContent] = React.useState(content.content || '');
   const [isEditing, setIsEditing] = React.useState(false);
+  const [isCopied, setIsCopied] = React.useState(false);
+  const preRef = useRef<HTMLPreElement>(null);
+
+  useEffect(() => {
+    if (content.type === 'snippet' && preRef.current) {
+      Prism.highlightElement(preRef.current);
+    }
+  }, [content.content, content.type, isEditing]);
 
   const handleSave = () => {
     dispatch(updateContent({ 
@@ -30,6 +47,26 @@ export const ContentPreview = ({ content }: ContentPreviewProps) => {
     });
   };
 
+  const copyToClipboard = async () => {
+    if (content.content) {
+      try {
+        await navigator.clipboard.writeText(content.content);
+        setIsCopied(true);
+        toast({
+          title: "Copied!",
+          description: "Content copied to clipboard",
+        });
+        setTimeout(() => setIsCopied(false), 2000);
+      } catch (err) {
+        toast({
+          title: "Error",
+          description: "Failed to copy content",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
   const renderContent = () => {
     if (content.type === 'snippet') {
       if (isEditing) {
@@ -38,7 +75,7 @@ export const ContentPreview = ({ content }: ContentPreviewProps) => {
             <Textarea
               value={editableContent}
               onChange={(e) => setEditableContent(e.target.value)}
-              className="min-h-[200px]"
+              className="min-h-[200px] font-mono"
             />
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setIsEditing(false)}>
@@ -53,9 +90,21 @@ export const ContentPreview = ({ content }: ContentPreviewProps) => {
       }
       return (
         <div className="space-y-4">
-          <pre className="whitespace-pre-wrap font-mono text-sm bg-muted p-4 rounded-md">
-            {content.content}
-          </pre>
+          <div className="relative">
+            <pre ref={preRef} className="whitespace-pre-wrap font-mono text-sm bg-muted p-4 rounded-md overflow-x-auto">
+              <code className="language-javascript">
+                {content.content}
+              </code>
+            </pre>
+            <Button
+              variant="outline"
+              size="sm"
+              className="absolute top-2 right-2"
+              onClick={copyToClipboard}
+            >
+              {isCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+            </Button>
+          </div>
           <div className="flex justify-end">
             <Button onClick={() => setIsEditing(true)}>
               Edit Content
@@ -65,23 +114,65 @@ export const ContentPreview = ({ content }: ContentPreviewProps) => {
       );
     }
 
+    if (content.type === 'website' && content.content) {
+      return (
+        <div className="space-y-4">
+          <div className="aspect-video w-full border rounded-lg overflow-hidden">
+            <iframe
+              src={content.content}
+              className="w-full h-full"
+              title="Website Preview"
+              sandbox="allow-scripts allow-same-origin"
+            />
+          </div>
+          <p className="text-sm text-muted-foreground break-all">
+            URL: {content.content}
+          </p>
+        </div>
+      );
+    }
+
+    if (content.type === 'file' && content.content) {
+      const fileExtension = content.content.split('.').pop()?.toLowerCase();
+      
+      if (fileExtension === 'pdf') {
+        return (
+          <div className="aspect-[4/3] w-full border rounded-lg overflow-hidden">
+            <iframe
+              src={content.content}
+              className="w-full h-full"
+              title="PDF Preview"
+            />
+          </div>
+        );
+      }
+
+      // For other document types, show a link to open
+      return (
+        <div className="text-center py-8">
+          <a
+            href={content.content}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary hover:underline"
+          >
+            Open Document
+          </a>
+        </div>
+      );
+    }
+
     return (
-      <pre className="whitespace-pre-wrap font-mono text-sm bg-muted p-4 rounded-md">
-        {content.content}
-      </pre>
+      <p className="text-muted-foreground text-center py-8">
+        No content available for preview
+      </p>
     );
   };
 
   return (
     <Card className="p-6">
       <h3 className="text-lg font-semibold mb-4">Content Preview</h3>
-      {content.content ? (
-        renderContent()
-      ) : (
-        <p className="text-muted-foreground text-center py-8">
-          No content available for preview
-        </p>
-      )}
+      {renderContent()}
     </Card>
   );
 };
