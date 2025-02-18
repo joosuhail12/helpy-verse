@@ -1,6 +1,6 @@
 
 import { useParams } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { Badge } from '@/components/ui/badge';
@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { EditActionDialog } from '@/components/automation/actions/EditActionDialog';
 import { PenLine, ArrowLeft } from 'lucide-react';
+import { toast } from '@/components/ui/use-toast';
 
 const ActionDetail = () => {
   const { actionId } = useParams();
@@ -18,14 +19,26 @@ const ActionDetail = () => {
     state.actions.items.find(item => item.id === actionId)
   );
 
+  useEffect(() => {
+    if (!action) {
+      toast({
+        title: "Action not found",
+        description: "The requested action could not be found.",
+        variant: "destructive",
+      });
+    }
+  }, [action]);
+
   if (!action) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold mb-4">Action not found</h1>
-        <Button onClick={() => navigate('/home/automation/ai/action-center')}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Action Center
-        </Button>
+        <div className="flex items-center space-x-4">
+          <Button onClick={() => navigate('/home/automation/ai/action-center')}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Action Center
+          </Button>
+          <h1 className="text-2xl font-bold">Action not found</h1>
+        </div>
       </div>
     );
   }
