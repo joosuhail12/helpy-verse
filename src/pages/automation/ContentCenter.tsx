@@ -8,6 +8,8 @@ import { ContentSorting } from '@/components/automation/content/ContentSorting';
 import { ContentSummary } from '@/components/automation/content/analytics/ContentSummary';
 import { ContentTrendsChart } from '@/components/automation/content/analytics/ContentTrendsChart';
 import { MessageVolumeTrends } from '@/components/automation/content/analytics/MessageVolumeTrends';
+import { ProcessingMetrics } from '@/components/automation/content/analytics/ProcessingMetrics';
+import { CategoryDistribution } from '@/components/automation/content/analytics/CategoryDistribution';
 import { ContentBatchActions } from '@/components/automation/content/ContentBatchActions';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { SearchBar } from '@/components/automation/content/search/SearchBar';
@@ -22,10 +24,14 @@ const ContentCenter = () => {
       
       <ContentSummary />
       
+      <ProcessingMetrics />
+      
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <ContentTrendsChart />
-        <MessageVolumeTrends />
+        <CategoryDistribution />
       </div>
+      
+      <MessageVolumeTrends />
       
       <EmbeddingStatusBar />
       
@@ -48,4 +54,3 @@ const ContentCenter = () => {
 };
 
 export default ContentCenter;
-

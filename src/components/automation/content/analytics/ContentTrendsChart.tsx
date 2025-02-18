@@ -2,6 +2,7 @@
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { Card } from '@/components/ui/card';
 import { format } from 'date-fns';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import {
   ChartContainer,
   ChartTooltipContent,
@@ -14,13 +15,21 @@ import {
   YAxis,
   Tooltip,
 } from 'recharts';
+import { useState } from 'react';
+
+type TimeInterval = 'daily' | 'weekly' | 'monthly';
 
 export const ContentTrendsChart = () => {
   const items = useAppSelector((state) => state.content.items);
+  const [timeInterval, setTimeInterval] = useState<TimeInterval>('daily');
 
-  // Group content by date and count creations per day
+  // Group content by date and count creations per interval
   const trendsData = items.reduce((acc: any[], item) => {
-    const date = format(new Date(item.lastUpdated), 'MMM d');
+    const date = format(new Date(item.lastUpdated), 
+      timeInterval === 'daily' ? 'MMM d' :
+      timeInterval === 'weekly' ? 'wo week' : 'MMM yyyy'
+    );
+    
     const existingDate = acc.find(d => d.date === date);
     
     if (existingDate) {
@@ -34,7 +43,20 @@ export const ContentTrendsChart = () => {
 
   return (
     <Card className="p-4">
-      <h3 className="text-sm font-medium mb-4">Content Creation Trends</h3>
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-sm font-medium">Content Creation Trends</h3>
+        <ToggleGroup type="single" value={timeInterval} onValueChange={(value) => value && setTimeInterval(value as TimeInterval)}>
+          <ToggleGroupItem value="daily" aria-label="Daily view">
+            Daily
+          </ToggleGroupItem>
+          <ToggleGroupItem value="weekly" aria-label="Weekly view">
+            Weekly
+          </ToggleGroupItem>
+          <ToggleGroupItem value="monthly" aria-label="Monthly view">
+            Monthly
+          </ToggleGroupItem>
+        </ToggleGroup>
+      </div>
       <div className="h-[200px]">
         <ChartContainer
           config={{
