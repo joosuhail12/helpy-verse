@@ -40,7 +40,7 @@ export const ContentList = ({ searchQuery }: ContentListProps) => {
     if ((event.target as HTMLElement).closest('.checkbox-wrapper')) {
       return;
     }
-    navigate(`/automation/content/${content.id}`);
+    navigate(`/home/automation/ai/content-center/${content.id}`);
   };
 
   const filteredItems = items.filter(item => {

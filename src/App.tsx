@@ -37,6 +37,7 @@ const Companies = lazy(() => import(/* webpackChunkName: "companies" */ "./pages
 const CompanyDetail = lazy(() => import(/* webpackChunkName: "company-detail" */ "./pages/contacts/CompanyDetail"));
 const ContentCenter = lazy(() => import(/* webpackChunkName: "content-center" */ "./pages/automation/ContentCenter"));
 const CreateContent = lazy(() => import(/* webpackChunkName: "create-content" */ "./pages/automation/CreateContent"));
+const ContentDetail = lazy(() => import(/* webpackChunkName: "content-detail" */ "./pages/automation/ContentDetail"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -129,6 +130,7 @@ const App = () => (
                   <Route path="settings/email/channels/:id" element={<EmailChannelDetail />} />
                   <Route path="automation/ai/content-center" element={<ContentCenter />} />
                   <Route path="automation/ai/content-center/create" element={<CreateContent />} />
+                  <Route path="automation/ai/content-center/:id" element={<ContentDetail />} />
                 </Route>
                 <Route path="*" element={<NotFound />} />
               </Routes>
