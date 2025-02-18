@@ -4,10 +4,12 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Database, Text, HashIcon, CheckSquare, GripVertical } from 'lucide-react';
+import { Database, Text, HashIcon, CheckSquare, GripVertical, Play } from 'lucide-react';
 import type { CustomAction } from '@/types/action';
 import { CSS } from '@dnd-kit/utilities';
 import { useSortable } from '@dnd-kit/sortable';
+import { useState } from 'react';
+import { toast } from '@/hooks/use-toast';
 
 interface ActionParameterProps {
   parameter: CustomAction['parameters'][0];
@@ -16,6 +18,9 @@ interface ActionParameterProps {
 }
 
 export const ActionParameter = ({ parameter, onUpdate, onDelete }: ActionParameterProps) => {
+  const [showTest, setShowTest] = useState(false);
+  const [testValue, setTestValue] = useState('');
+
   const {
     attributes,
     listeners,
@@ -45,6 +50,49 @@ export const ActionParameter = ({ parameter, onUpdate, onDelete }: ActionParamet
     }
   };
 
+  const validateParameterValue = () => {
+    if (parameter.required && !testValue) {
+      throw new Error('This parameter is required');
+    }
+
+    switch (parameter.type) {
+      case 'number':
+        if (isNaN(Number(testValue))) {
+          throw new Error('Value must be a valid number');
+        }
+        break;
+      case 'boolean':
+        if (testValue !== 'true' && testValue !== 'false') {
+          throw new Error('Value must be either true or false');
+        }
+        break;
+      case 'object':
+      case 'array':
+        try {
+          JSON.parse(testValue);
+        } catch {
+          throw new Error('Value must be valid JSON');
+        }
+        break;
+    }
+  };
+
+  const handleTestParameter = () => {
+    try {
+      validateParameterValue();
+      toast({
+        title: "Parameter validation passed",
+        description: `Value "${testValue}" is valid for parameter type ${parameter.type}`,
+      });
+    } catch (error) {
+      toast({
+        title: "Parameter validation failed",
+        description: error instanceof Error ? error.message : 'Invalid value',
+        variant: "destructive"
+      });
+    }
+  };
+
   return (
     <div ref={setNodeRef} style={style} className="space-y-2 pb-4 border-b last:border-0">
       <div className="flex items-center gap-2">
@@ -61,6 +109,16 @@ export const ActionParameter = ({ parameter, onUpdate, onDelete }: ActionParamet
           placeholder="Parameter name"
           className="font-medium"
         />
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => setShowTest(!showTest)}
+          className="flex items-center gap-1"
+        >
+          <Play className="h-4 w-4" />
+          Test
+        </Button>
         <Button
           type="button"
           variant="ghost"
@@ -86,6 +144,25 @@ export const ActionParameter = ({ parameter, onUpdate, onDelete }: ActionParamet
           {parameter.required && <Badge variant="default">Required</Badge>}
         </div>
       </div>
+      {showTest && (
+        <div className="flex gap-2 mt-2">
+          <Input
+            value={testValue}
+            onChange={(e) => setTestValue(e.target.value)}
+            placeholder={`Enter test ${parameter.type} value`}
+            className="flex-1"
+          />
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            onClick={handleTestParameter}
+          >
+            Validate
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
+
