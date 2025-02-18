@@ -4,12 +4,13 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { addAction } from '@/store/slices/actions/actionsSlice';
 import { fetchChatbots, selectChatbots, selectChatbotsLoading } from '@/store/slices/chatbots/chatbotsSlice';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import {
   Form,
   FormControl,
@@ -27,7 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Check, Plus, X } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import type { ActionMethod } from '@/types/action';
 
@@ -48,6 +49,7 @@ export default function CreateAction() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [isSelecting, setIsSelecting] = useState(false);
 
   const chatbots = useAppSelector(selectChatbots);
   const loading = useAppSelector(selectChatbotsLoading);
@@ -72,10 +74,7 @@ export default function CreateAction() {
 
   const onSubmit = (values: FormValues) => {
     try {
-      // Parse headers from JSON string
       const headers = values.headers ? JSON.parse(values.headers) : {};
-      
-      // Parse parameters from JSON string and combine with descriptions
       const parametersList = values.parameters ? JSON.parse(values.parameters) : [];
       const parameterDescriptions = values.parameterDescriptions 
         ? JSON.parse(values.parameterDescriptions) 
@@ -264,50 +263,115 @@ export default function CreateAction() {
             )}
           />
 
-          <FormField
-            control={form.control}
-            name="connectedChatbots"
-            render={() => (
-              <FormItem>
-                <FormLabel>Connect to Chatbots</FormLabel>
-                <div className="mt-2 space-y-2">
-                  {chatbots.map((chatbot) => (
-                    <div key={chatbot.id} className="flex items-center space-x-2">
-                      <FormField
-                        control={form.control}
-                        name="connectedChatbots"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-center space-x-3 space-y-0">
-                            <FormControl>
-                              <Checkbox
-                                checked={field.value?.includes(chatbot.id)}
-                                onCheckedChange={(checked) => {
+          <Card className="p-6">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">Connected Chatbots</h3>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsSelecting(!isSelecting)}
+                >
+                  {isSelecting ? (
+                    <>
+                      <X className="h-4 w-4 mr-2" />
+                      Cancel
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Connect
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              <FormField
+                control={form.control}
+                name="connectedChatbots"
+                render={({ field }) => (
+                  <FormItem>
+                    {isSelecting ? (
+                      <div className="grid gap-2">
+                        {chatbots.map((chatbot) => {
+                          const isConnected = field.value?.includes(chatbot.id);
+                          return (
+                            <div
+                              key={chatbot.id}
+                              className="flex items-center justify-between p-3 border rounded-md bg-white/50"
+                            >
+                              <div>
+                                <p className="font-medium">{chatbot.name}</p>
+                                <p className="text-sm text-muted-foreground">
+                                  {chatbot.description}
+                                </p>
+                              </div>
+                              <Button
+                                variant={isConnected ? "ghost" : "outline"}
+                                size="sm"
+                                onClick={() => {
                                   const currentValue = field.value || [];
-                                  const newValue = checked
-                                    ? [...currentValue, chatbot.id]
-                                    : currentValue.filter((id) => id !== chatbot.id);
+                                  const newValue = isConnected
+                                    ? currentValue.filter((id) => id !== chatbot.id)
+                                    : [...currentValue, chatbot.id];
                                   field.onChange(newValue);
                                 }}
-                              />
-                            </FormControl>
-                            <div className="space-y-1 leading-none">
-                              <FormLabel className="text-sm font-normal">
-                                {chatbot.name}
-                              </FormLabel>
-                              <p className="text-sm text-muted-foreground">
-                                {chatbot.description}
-                              </p>
+                              >
+                                {isConnected ? (
+                                  <>
+                                    <Check className="h-4 w-4 mr-2" />
+                                    Connected
+                                  </>
+                                ) : (
+                                  <>
+                                    <Plus className="h-4 w-4 mr-2" />
+                                    Connect
+                                  </>
+                                )}
+                              </Button>
                             </div>
-                          </FormItem>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        {field.value?.length ? (
+                          chatbots
+                            .filter((chatbot) => field.value?.includes(chatbot.id))
+                            .map((chatbot) => (
+                              <div
+                                key={chatbot.id}
+                                className="flex items-center justify-between p-3 border rounded-md bg-white/50"
+                              >
+                                <span className="font-medium">{chatbot.name}</span>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => {
+                                    const newValue = field.value?.filter(
+                                      (id) => id !== chatbot.id
+                                    );
+                                    field.onChange(newValue);
+                                  }}
+                                >
+                                  <X className="h-4 w-4 mr-2" />
+                                  Disconnect
+                                </Button>
+                              </div>
+                            ))
+                        ) : (
+                          <p className="text-center text-muted-foreground py-4">
+                            No chatbots connected
+                          </p>
                         )}
-                      />
-                    </div>
-                  ))}
-                </div>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                      </div>
+                    )}
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </Card>
 
           <div className="flex justify-end space-x-4">
             <Button
