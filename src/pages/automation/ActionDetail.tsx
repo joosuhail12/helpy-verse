@@ -36,17 +36,6 @@ const ActionDetail = () => {
     );
   }
 
-  const handleToggle = () => {
-    dispatch(toggleAction(action.id));
-    toast.success(`Action ${action.enabled ? 'disabled' : 'enabled'} successfully`);
-  };
-
-  const handleDelete = () => {
-    dispatch(deleteAction(action.id));
-    toast.success('Action deleted successfully');
-    navigate('/home/automation/ai/action-center');
-  };
-
   if (!action) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -69,6 +58,17 @@ const ActionDetail = () => {
       </div>
     );
   }
+
+  const handleToggle = () => {
+    dispatch(toggleAction(action.id));
+    toast.success(`Action ${action.enabled ? 'disabled' : 'enabled'} successfully`);
+  };
+
+  const handleDelete = () => {
+    dispatch(deleteAction(action.id));
+    toast.success('Action deleted successfully');
+    navigate('/home/automation/ai/action-center');
+  };
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-5xl">
