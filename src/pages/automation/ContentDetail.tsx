@@ -28,13 +28,13 @@ const ContentDetail = () => {
       <div className="container mx-auto px-4 py-8 max-w-7xl space-y-8">
         <ContentDetailHeader content={content} />
         
-        <div className="grid gap-8 grid-cols-1 lg:grid-cols-3">
-          <div className="lg:col-span-2 space-y-8">
+        <div className="grid gap-8 grid-cols-1 xl:grid-cols-2">
+          <div className="space-y-8">
             <ContentForm content={content} />
-            <ContentPreview content={content} />
           </div>
           
-          <div>
+          <div className="space-y-8">
+            <ContentPreview content={content} />
             <ContentReindexCard content={content} />
           </div>
         </div>
