@@ -33,6 +33,7 @@ export const CategoryDistribution = () => {
       <h3 className="text-sm font-medium mb-4">Content Category Distribution</h3>
       <div className="h-[300px]">
         <ChartContainer
+          id="category-distribution"
           config={{
             pie: {
               theme: {
@@ -76,3 +77,4 @@ export const CategoryDistribution = () => {
     </Card>
   );
 };
+

@@ -38,6 +38,7 @@ export const MessageVolumeTrends = () => {
       <h3 className="text-sm font-medium mb-4">Message Volume by Category</h3>
       <div className="h-[200px]">
         <ChartContainer
+          id="message-volume"
           config={{
             bar: {
               theme: {
@@ -91,3 +92,4 @@ export const MessageVolumeTrends = () => {
     </Card>
   );
 };
+

@@ -59,6 +59,7 @@ export const ContentTrendsChart = () => {
       </div>
       <div className="h-[200px]">
         <ChartContainer
+          id="content-trends"
           config={{
             area: {
               theme: {
@@ -118,3 +119,4 @@ export const ContentTrendsChart = () => {
     </Card>
   );
 };
+
