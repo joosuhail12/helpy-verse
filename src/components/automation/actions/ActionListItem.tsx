@@ -10,12 +10,13 @@ import {
   CardFooter,
 } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
-import { Edit2, Trash2 } from 'lucide-react';
+import { Edit2, Trash2, FileText } from 'lucide-react';
 import type { CustomAction } from '@/types/action';
 import { useState } from 'react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { deleteAction, toggleAction } from '@/store/slices/actions/actionsSlice';
 import { EditActionDialog } from './EditActionDialog';
+import { useNavigate } from 'react-router-dom';
 
 interface ActionListItemProps {
   action: CustomAction;
@@ -24,6 +25,7 @@ interface ActionListItemProps {
 export function ActionListItem({ action }: ActionListItemProps) {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
 
   const handleToggle = () => {
     dispatch(toggleAction(action.id));
@@ -31,6 +33,10 @@ export function ActionListItem({ action }: ActionListItemProps) {
 
   const handleDelete = () => {
     dispatch(deleteAction(action.id));
+  };
+
+  const handleViewDetails = () => {
+    navigate(`/home/automation/ai/action-center/${action.id}`);
   };
 
   return (
@@ -64,6 +70,14 @@ export function ActionListItem({ action }: ActionListItemProps) {
         </div>
       </CardContent>
       <CardFooter className="flex justify-end gap-2">
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={handleViewDetails}
+        >
+          <FileText className="h-4 w-4 mr-2" />
+          View Details
+        </Button>
         <Button 
           variant="outline" 
           size="sm"
