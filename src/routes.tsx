@@ -9,7 +9,6 @@ const DashboardLayout = lazy(() => import('@/layouts/DashboardLayout'));
 const Home = lazy(() => import('@/pages/Home'));
 const Automation = lazy(() => import('@/pages/automation'));
 const ActionCenter = lazy(() => import('@/pages/automation/ActionCenter'));
-const ActionDetail = lazy(() => import('@/pages/automation/ActionDetail'));
 const CreateAction = lazy(() => import('@/pages/automation/CreateAction'));
 
 export const router = createBrowserRouter([
@@ -30,10 +29,6 @@ export const router = createBrowserRouter([
                 element: <ActionCenter />,
               },
               {
-                path: 'ai/action-center/:actionid',
-                element: <ActionDetail />,
-              },
-              {
                 path: 'ai/action-center/create',
                 element: <CreateAction />,
               },
@@ -44,4 +39,3 @@ export const router = createBrowserRouter([
     ],
   },
 ]);
-
