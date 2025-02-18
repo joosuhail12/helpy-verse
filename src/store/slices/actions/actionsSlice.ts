@@ -9,19 +9,41 @@ interface ActionsState {
 const initialState: ActionsState = {
   items: [
     {
-      id: "1", // Changed to string to match route parameter
-      name: 'Get User Profile',
-      toolName: 'User Management API',
-      description: 'Fetches user profile information from the API',
-      endpoint: 'https://api.example.com/users/{userId}',
-      method: 'GET',
+      id: "1",
+      name: 'Create Support Ticket',
+      toolName: 'Support API',
+      description: 'Creates a new support ticket in the help desk system',
+      endpoint: 'https://api.support.com/v1/tickets',
+      method: 'POST',
       parameters: [
         {
           id: '1',
-          name: 'userId',
+          name: 'subject',
           type: 'string',
-          description: 'The unique identifier of the user',
+          description: 'The subject line of the ticket',
           required: true,
+        },
+        {
+          id: '2',
+          name: 'description',
+          type: 'string',
+          description: 'Detailed description of the issue',
+          required: true,
+        },
+        {
+          id: '3',
+          name: 'priority',
+          type: 'string',
+          description: 'Ticket priority (low, medium, high)',
+          required: true,
+          defaultValue: 'medium'
+        },
+        {
+          id: '4',
+          name: 'attachments',
+          type: 'array',
+          description: 'Array of file attachments',
+          required: false,
         }
       ],
       headers: {
@@ -32,69 +54,148 @@ const initialState: ActionsState = {
       updatedAt: '2024-03-15T10:00:00Z',
       createdBy: {
         id: '1',
-        name: 'System Admin',
+        name: 'Support Admin',
       },
       enabled: true,
     },
     {
       id: '2',
-      name: 'Update Email Preferences',
-      toolName: 'User Management API',
-      description: 'Updates user email notification preferences',
-      endpoint: 'https://api.example.com/users/{userId}/preferences',
-      method: 'PATCH',
+      name: 'Send Customer Email',
+      toolName: 'Email Service API',
+      description: 'Sends a transactional email to a customer',
+      endpoint: 'https://api.email-service.com/v2/send',
+      method: 'POST',
       parameters: [
         {
-          id: '2',
-          name: 'userId',
+          id: '5',
+          name: 'to',
           type: 'string',
-          description: 'The unique identifier of the user',
+          description: 'Recipient email address',
           required: true,
         },
         {
-          id: '3',
-          name: 'preferences',
-          type: 'object',
-          description: 'Email notification preferences object',
+          id: '6',
+          name: 'template_id',
+          type: 'string',
+          description: 'Email template identifier',
           required: true,
+        },
+        {
+          id: '7',
+          name: 'variables',
+          type: 'object',
+          description: 'Template variables to populate',
+          required: true,
+        },
+        {
+          id: '8',
+          name: 'schedule_time',
+          type: 'string',
+          description: 'Optional time to schedule the email (ISO 8601)',
+          required: false,
+        }
+      ],
+      headers: {
+        'X-API-Key': '{api_key}',
+        'Content-Type': 'application/json'
+      },
+      createdAt: '2024-03-16T09:30:00Z',
+      updatedAt: '2024-03-16T09:30:00Z',
+      createdBy: {
+        id: '2',
+        name: 'Marketing Manager',
+      },
+      enabled: true,
+    },
+    {
+      id: '3',
+      name: 'Update Customer Profile',
+      toolName: 'Customer Database API',
+      description: 'Updates customer information in the database',
+      endpoint: 'https://api.customer-db.com/v1/customers/{customer_id}',
+      method: 'PATCH',
+      parameters: [
+        {
+          id: '9',
+          name: 'customer_id',
+          type: 'string',
+          description: 'Unique identifier of the customer',
+          required: true,
+        },
+        {
+          id: '10',
+          name: 'profile_data',
+          type: 'object',
+          description: 'Customer profile information to update',
+          required: true,
+        },
+        {
+          id: '11',
+          name: 'notify_customer',
+          type: 'boolean',
+          description: 'Whether to notify the customer of changes',
+          required: false,
+          defaultValue: 'false'
         }
       ],
       headers: {
         'Authorization': 'Bearer {token}',
         'Content-Type': 'application/json'
       },
-      createdAt: '2024-03-15T11:00:00Z',
-      updatedAt: '2024-03-15T11:00:00Z',
+      createdAt: '2024-03-17T14:20:00Z',
+      updatedAt: '2024-03-17T14:20:00Z',
       createdBy: {
-        id: '1',
-        name: 'System Admin',
+        id: '3',
+        name: 'Customer Success Manager',
       },
       enabled: true,
     },
     {
-      id: '3',
-      name: 'Delete Account',
-      toolName: 'User Management API',
-      description: 'Permanently deletes a user account',
-      endpoint: 'https://api.example.com/users/{userId}',
-      method: 'DELETE',
+      id: '4',
+      name: 'Generate Invoice',
+      toolName: 'Billing API',
+      description: 'Generates a new invoice for a customer',
+      endpoint: 'https://api.billing.com/v1/invoices',
+      method: 'POST',
       parameters: [
         {
-          id: '4',
-          name: 'userId',
+          id: '12',
+          name: 'customer_id',
           type: 'string',
-          description: 'The unique identifier of the user to delete',
+          description: 'Customer identifier',
           required: true,
+        },
+        {
+          id: '13',
+          name: 'items',
+          type: 'array',
+          description: 'Array of line items for the invoice',
+          required: true,
+        },
+        {
+          id: '14',
+          name: 'due_date',
+          type: 'string',
+          description: 'Invoice due date (ISO 8601)',
+          required: true,
+        },
+        {
+          id: '15',
+          name: 'notes',
+          type: 'string',
+          description: 'Additional notes to appear on the invoice',
+          required: false,
         }
       ],
       headers: {
         'Authorization': 'Bearer {token}',
+        'Content-Type': 'application/json'
       },
-      createdAt: '2024-03-15T12:00:00Z',
-      updatedAt: '2024-03-15T12:00:00Z',
+      createdAt: '2024-03-18T11:45:00Z',
+      updatedAt: '2024-03-18T11:45:00Z',
       createdBy: {
-        id: '1',
-        name: 'System Admin',
+        id: '4',
+        name: 'Billing Administrator',
       },
       enabled: false,
     }
