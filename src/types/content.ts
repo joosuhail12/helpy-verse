@@ -57,4 +57,9 @@ export interface Content {
   versions?: ContentVersion[];
   tags?: ContentTag[];
   comments?: ContentComment[];
+  sharedWith?: {
+    id: string;
+    name: string;
+    avatar?: string;
+  }[];
 }

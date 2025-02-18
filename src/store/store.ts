@@ -1,32 +1,27 @@
+
 import { configureStore } from '@reduxjs/toolkit';
-import contentReducer from './slices/content/contentSlice';
 import authReducer from './slices/authSlice';
+import contactsReducer from './slices/contacts/contactsSlice';
+import contentReducer from './slices/content/contentSlice';
+import emailChannelsReducer from './slices/emailChannels/emailChannelsSlice';
+import securityReducer from './slices/securitySlice';
 import tagsReducer from './slices/tagsSlice';
 import teammatesReducer from './slices/teammates/teammatesSlice';
-import securityReducer from './slices/securitySlice';
 import teamsReducer from './slices/teams/teamsSlice';
-import cannedResponsesReducer from './slices/cannedResponses/cannedResponsesSlice';
-import emailChannelsReducer from './slices/emailChannels/emailChannelsSlice';
-import contactsReducer from './slices/contacts/contactsSlice';
-import companiesReducer from './slices/companies/companiesSlice';
+import actionsReducer from './slices/actions/actionsSlice';
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
+    contacts: contactsReducer,
+    content: contentReducer,
+    emailChannels: emailChannelsReducer,
+    security: securityReducer,
     tags: tagsReducer,
     teammates: teammatesReducer,
-    security: securityReducer,
     teams: teamsReducer,
-    cannedResponses: cannedResponsesReducer,
-    emailChannels: emailChannelsReducer,
-    contacts: contactsReducer,
-    companies: companiesReducer,
-    content: contentReducer,
+    actions: actionsReducer,
   },
-  middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware({
-      serializableCheck: false,
-    }),
 });
 
 export type RootState = ReturnType<typeof store.getState>;
