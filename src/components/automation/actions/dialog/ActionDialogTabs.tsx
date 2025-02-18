@@ -1,52 +1,69 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { UseFormReturn } from 'react-hook-form';
-import * as z from 'zod';
-import { actionFormSchema } from './ActionBasicInfo';
-import { ActionBasicInfo } from './ActionBasicInfo';
-import { ActionApiConfig } from './ActionApiConfig';
+import { Cog, Play, Bot } from 'lucide-react';
 import { ActionParameters } from './ActionParameters';
 import { ActionTestPanel } from './ActionTestPanel';
+import { ChatbotConnections } from './ChatbotConnections';
+import { ActionApiConfig } from './ActionApiConfig';
+import { useForm } from 'react-hook-form';
+import { actionFormSchema } from './ActionBasicInfo';
+import * as z from 'zod';
 import type { CustomAction } from '@/types/action';
 
 interface ActionDialogTabsProps {
-  form: UseFormReturn<z.infer<typeof actionFormSchema>>;
+  form: ReturnType<typeof useForm<z.infer<typeof actionFormSchema>>>;
   action: CustomAction;
   isTestSuccessful: boolean;
   isDirty: boolean;
   onParameterChange: (params: CustomAction['parameters']) => void;
-  onTest: () => void;
+  onTest: () => Promise<void>;
+  onUpdate: (updatedAction: CustomAction) => void;
 }
 
-export const ActionDialogTabs = ({ 
-  form, 
-  action, 
-  isTestSuccessful, 
+export const ActionDialogTabs = ({
+  form,
+  action,
+  isTestSuccessful,
   isDirty,
   onParameterChange,
   onTest,
+  onUpdate,
 }: ActionDialogTabsProps) => {
   return (
-    <Tabs defaultValue="details" className="w-full">
-      <TabsList className="grid w-full grid-cols-2">
-        <TabsTrigger value="details">Action Details</TabsTrigger>
-        <TabsTrigger value="test">Test API</TabsTrigger>
+    <Tabs defaultValue="parameters" className="flex-1">
+      <TabsList className="w-full justify-start">
+        <TabsTrigger value="parameters">
+          <Cog className="h-4 w-4 mr-2" />
+          Parameters
+        </TabsTrigger>
+        <TabsTrigger value="test">
+          <Play className="h-4 w-4 mr-2" />
+          Test
+        </TabsTrigger>
+        <TabsTrigger value="chatbots">
+          <Bot className="h-4 w-4 mr-2" />
+          Chatbots
+        </TabsTrigger>
       </TabsList>
-
-      <TabsContent value="details" className="space-y-4 mt-4">
-        <ActionBasicInfo form={form} />
+      <TabsContent value="parameters" className="mt-4 space-y-4">
         <ActionApiConfig form={form} />
-        <ActionParameters 
-          parameters={action.parameters} 
-          onParameterChange={onParameterChange}
+        <ActionParameters
+          parameters={action.parameters}
+          onChange={onParameterChange}
         />
       </TabsContent>
-
-      <TabsContent value="test" className="space-y-4 mt-4">
-        <ActionTestPanel 
-          form={form}
-          isTestSuccessful={isTestSuccessful}
+      <TabsContent value="test" className="mt-4">
+        <ActionTestPanel
+          action={action}
+          isSuccessful={isTestSuccessful}
+          isDirty={isDirty}
           onTest={onTest}
+        />
+      </TabsContent>
+      <TabsContent value="chatbots" className="mt-4">
+        <ChatbotConnections 
+          action={action}
+          onUpdate={onUpdate}
         />
       </TabsContent>
     </Tabs>
