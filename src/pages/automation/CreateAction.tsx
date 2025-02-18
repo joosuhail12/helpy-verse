@@ -4,8 +4,11 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
+import { useEffect } from 'react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { useAppSelector } from '@/hooks/useAppSelector';
 import { addAction } from '@/store/slices/actions/actionsSlice';
+import { fetchChatbots, selectChatbots, selectChatbotsLoading } from '@/store/slices/chatbots/chatbotsSlice';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -27,7 +30,6 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/components/ui/use-toast';
 import type { ActionMethod } from '@/types/action';
-import { mockChatbots } from '@/mock/chatbots';
 
 const createActionSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -46,6 +48,13 @@ export default function CreateAction() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const chatbots = useAppSelector(selectChatbots);
+  const loading = useAppSelector(selectChatbotsLoading);
+
+  useEffect(() => {
+    dispatch(fetchChatbots());
+  }, [dispatch]);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(createActionSchema),
@@ -114,6 +123,10 @@ export default function CreateAction() {
       });
     }
   };
+
+  if (loading) {
+    return <div className="flex items-center justify-center p-8">Loading chatbots...</div>;
+  }
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-3xl">
@@ -258,7 +271,7 @@ export default function CreateAction() {
               <FormItem>
                 <FormLabel>Connect to Chatbots</FormLabel>
                 <div className="mt-2 space-y-2">
-                  {mockChatbots.map((chatbot) => (
+                  {chatbots.map((chatbot) => (
                     <div key={chatbot.id} className="flex items-center space-x-2">
                       <FormField
                         control={form.control}
