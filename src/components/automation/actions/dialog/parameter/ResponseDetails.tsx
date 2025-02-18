@@ -51,4 +51,3 @@ export const ResponseDetails = ({ testConfig }: ResponseDetailsProps) => {
     </Card>
   );
 };
-

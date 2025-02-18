@@ -18,4 +18,3 @@ export interface TestPanelProps {
   testConfig?: TestConfig;
   onSaveConfig?: (config: TestConfig) => void;
 }
-

@@ -52,4 +52,3 @@ export const TestParameterInput = ({ parameter, value, onChange }: TestParameter
       );
   }
 };
-
