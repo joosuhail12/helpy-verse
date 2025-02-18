@@ -19,13 +19,20 @@ const ActionDetail = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   
-  const action = useAppSelector(state => 
-    state.actions.items.find(item => item.id === actionId)
-  );
+  console.log('ActionDetail rendered with actionId:', actionId);
+  
+  const action = useAppSelector(state => {
+    console.log('Current state:', state);
+    console.log('Actions in state:', state.actions.items);
+    return state.actions.items.find(item => item.id === actionId);
+  });
+
+  console.log('Found action:', action);
 
   const [editedAction, setEditedAction] = useState<CustomAction | null>(null);
 
   useEffect(() => {
+    console.log('useEffect triggered with action:', action);
     if (action) {
       setEditedAction(action);
     }
@@ -52,6 +59,7 @@ const ActionDetail = () => {
   };
 
   if (!action || !editedAction) {
+    console.log('Rendering not found state');
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center space-x-4">
@@ -64,6 +72,8 @@ const ActionDetail = () => {
       </div>
     );
   }
+
+  console.log('Rendering full action detail view');
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -194,3 +204,4 @@ const ActionDetail = () => {
 };
 
 export default ActionDetail;
+
