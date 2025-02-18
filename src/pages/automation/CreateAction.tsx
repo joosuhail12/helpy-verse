@@ -1,4 +1,3 @@
-
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
@@ -63,12 +62,12 @@ export default function CreateAction() {
       const parameters = parametersList.map((param: string) => ({
         id: uuidv4(),
         name: param,
-        type: 'string',
+        type: 'string' as const,
         description: parameterDescriptions[param] || '',
         required: true,
       }));
 
-      const newAction = {
+      const newAction: CustomAction = {
         id: uuidv4(),
         name: values.name,
         toolName: values.toolName,
@@ -84,7 +83,10 @@ export default function CreateAction() {
           name: 'Current User',
         },
         enabled: true,
-        connectedChatbots: values.connectedChatbots,
+        connectedChatbots: values.connectedChatbots.map(id => ({
+          id,
+          name: 'Chatbot ' + id // You might want to fetch actual names from your chatbot store
+        }))
       };
 
       dispatch(addAction(newAction));
@@ -144,4 +146,3 @@ export default function CreateAction() {
     </div>
   );
 }
-

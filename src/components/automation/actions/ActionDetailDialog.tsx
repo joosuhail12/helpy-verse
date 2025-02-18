@@ -142,21 +142,26 @@ export const ActionDetailDialog = ({ action, open, onOpenChange }: ActionDetailD
             <form onChange={handleFormChange} className="space-y-4">
               <ActionDialogHeader
                 form={form}
-                enabled={action.enabled}
+                enabled={action?.enabled ?? false}
                 isDirty={isDirty}
                 onSave={handleManualSave}
               />
               <ActionDialogTabs
                 form={form}
-                action={action}
+                action={action!}
                 isTestSuccessful={isTestSuccessful}
                 isDirty={isDirty}
                 onParameterChange={(params) => {
+                  if (!action) return;
                   const updatedAction = { ...action, parameters: params };
                   dispatch(updateAction(updatedAction));
                   setIsDirty(true);
                 }}
                 onTest={handleTest}
+                onUpdate={(updatedAction) => {
+                  dispatch(updateAction(updatedAction));
+                  setIsDirty(true);
+                }}
               />
             </form>
           </Form>

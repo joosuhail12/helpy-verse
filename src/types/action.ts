@@ -11,6 +11,17 @@ export interface ParameterDependency {
   condition: ParameterCondition;
 }
 
+export interface ActionParameter {
+  id: string;
+  name: string;
+  type: 'string' | 'number' | 'boolean' | 'object' | 'array';
+  description: string;
+  required: boolean;
+  defaultValue?: string;
+  dependencies?: ParameterDependency[];
+  visible?: boolean;
+}
+
 export interface CustomAction {
   id: string;
   name: string;
@@ -18,15 +29,7 @@ export interface CustomAction {
   description: string;
   endpoint: string;
   method: ActionMethod;
-  parameters: Array<{
-    id: string;
-    name: string;
-    type: 'string' | 'number' | 'boolean' | 'object' | 'array';
-    description: string;
-    required: boolean;
-    defaultValue?: string;
-    dependencies?: ParameterDependency[];
-  }>;
+  parameters: ActionParameter[];
   headers: Record<string, string>;
   createdAt: string;
   updatedAt: string;

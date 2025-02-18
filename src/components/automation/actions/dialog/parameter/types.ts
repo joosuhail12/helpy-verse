@@ -1,15 +1,26 @@
 
-import type { CustomAction, ParameterDependency } from '@/types/action';
+import type { CustomAction, ActionParameter } from '@/types/action';
 
 export interface ActionParameterProps {
-  parameter: CustomAction['parameters'][0];
-  onUpdate: (updatedParam: CustomAction['parameters'][0]) => void;
+  parameter: ActionParameter;
+  onUpdate: (updatedParam: ActionParameter) => void;
   onDelete: (e: React.MouseEvent, id: string) => void;
-  allParameters: CustomAction['parameters'];
+  allParameters: ActionParameter[];
 }
 
 export interface ParameterTestProps {
-  parameter: CustomAction['parameters'][0];
-  onUpdate: (updatedParam: CustomAction['parameters'][0]) => void;
+  parameter: ActionParameter;
+  onUpdate: (updatedParam: ActionParameter) => void;
 }
 
+export interface ActionParametersProps {
+  parameters: ActionParameter[];
+  onChange: (params: ActionParameter[]) => void;
+}
+
+export interface ActionTestPanelProps {
+  action: CustomAction;
+  isSuccessful: boolean;
+  isDirty: boolean;
+  onTest: () => Promise<void>;
+}
