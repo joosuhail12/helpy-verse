@@ -19,33 +19,58 @@ const ContentCenter = () => {
   const searchQuery = useAppSelector((state) => state.content.search.query);
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-[1400px] space-y-6">
-      <ContentHeader />
-      
-      <ContentSummary />
-      
-      <ProcessingMetrics />
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <ContentTrendsChart />
-        <CategoryDistribution />
-      </div>
-      
-      <MessageVolumeTrends />
-      
-      <EmbeddingStatusBar />
-      
-      <div className="flex flex-col gap-4">
-        <div className="flex justify-between items-center gap-4">
-          <SearchBar />
-          <ContentSorting />
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto px-4 py-8 max-w-[1400px] space-y-8">
+        <ContentHeader />
+        
+        <div className="grid gap-8">
+          {/* Analytics Section */}
+          <section className="space-y-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <Card className="lg:col-span-3 p-6">
+                <ContentSummary />
+              </Card>
+              
+              <Card className="p-6">
+                <ProcessingMetrics />
+              </Card>
+              
+              <Card className="lg:col-span-2 p-6">
+                <ContentTrendsChart />
+              </Card>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card className="p-6">
+                <CategoryDistribution />
+              </Card>
+              
+              <Card className="p-6">
+                <MessageVolumeTrends />
+              </Card>
+            </div>
+          </section>
+
+          {/* Content Management Section */}
+          <section className="space-y-6">
+            <EmbeddingStatusBar />
+            
+            <div className="flex flex-col lg:flex-row justify-between gap-4">
+              <div className="w-full lg:w-2/3">
+                <SearchBar />
+              </div>
+              <div className="flex justify-end">
+                <ContentSorting />
+              </div>
+            </div>
+
+            <ContentFilters />
+
+            <Card className="overflow-hidden border-0 shadow-md">
+              <ContentList searchQuery={searchQuery} />
+            </Card>
+          </section>
         </div>
-
-        <ContentFilters />
-      </div>
-
-      <div className="bg-white dark:bg-gray-950 rounded-lg shadow">
-        <ContentList searchQuery={searchQuery} />
       </div>
 
       <ContentBatchActions selectedIds={selectedIds} />
