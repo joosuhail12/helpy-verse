@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Form, FormField, FormItem, FormControl, FormMessage } from '@/components/ui/form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
+import * as z from 'zod';
 import { ActionBasicInfo, actionFormSchema } from './dialog/ActionBasicInfo';
 import { ActionApiConfig } from './dialog/ActionApiConfig';
 import { ActionParameters } from './dialog/ActionParameters';
