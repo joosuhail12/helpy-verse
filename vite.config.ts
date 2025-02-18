@@ -17,6 +17,7 @@ export default defineConfig(({ mode }) => ({
             if (id.includes('react')) return 'react-vendor';
             if (id.includes('redux')) return 'redux-vendor';
             if (id.includes('router')) return 'router-vendor';
+            if (id.includes('@tiptap')) return 'tiptap-vendor';
             return 'vendor';
           }
           if (id.includes('src/pages/settings')) return 'settings';
@@ -26,6 +27,9 @@ export default defineConfig(({ mode }) => ({
     },
     chunkSizeWarningLimit: 1000,
     sourcemap: true,
+  },
+  optimizeDeps: {
+    include: ['@tiptap/extension-mention', '@tiptap/suggestion'],
   },
   plugins: [
     react(),
