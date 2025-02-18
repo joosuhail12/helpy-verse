@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { toast } from '@/hooks/use-toast';
@@ -26,6 +25,7 @@ export const ActionDetailDialog = ({ action, open, onOpenChange }: ActionDetailD
   const [isTestSuccessful, setIsTestSuccessful] = useState(false);
   const [showDiscardDialog, setShowDiscardDialog] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
+  const [testConfig, setTestConfig] = useState<TestConfig>();
 
   const form = useForm({
     resolver: zodResolver(actionFormSchema),
@@ -86,13 +86,38 @@ export const ActionDetailDialog = ({ action, open, onOpenChange }: ActionDetailD
     }
   };
 
-  const handleTest = async () => {
+  const handleTest = async (paramValues: Record<string, any>) => {
+    const startTime = Date.now();
     try {
       const formData = form.getValues();
-      const response = await fetch(formData.endpoint, {
-        method: formData.method,
-        headers: JSON.parse(formData.headers),
+      const headers = JSON.parse(formData.headers);
+      
+      let url = formData.endpoint;
+      Object.entries(paramValues).forEach(([key, value]) => {
+        url = url.replace(`{${key}}`, encodeURIComponent(String(value)));
       });
+
+      const response = await fetch(url, {
+        method: formData.method,
+        headers: headers,
+        body: formData.method !== 'GET' ? JSON.stringify(paramValues) : undefined,
+      });
+      
+      const responseTime = Date.now() - startTime;
+      const responseData = await response.json();
+      
+      const newTestConfig: TestConfig = {
+        parameterValues: paramValues,
+        savedAt: new Date().toISOString(),
+        responseTime,
+        lastResponse: {
+          status: response.status,
+          data: responseData,
+          headers: Object.fromEntries(response.headers.entries()),
+        },
+      };
+      
+      setTestConfig(newTestConfig);
       
       if (response.ok) {
         setIsTestSuccessful(true);
@@ -148,7 +173,7 @@ export const ActionDetailDialog = ({ action, open, onOpenChange }: ActionDetailD
               />
               <ActionDialogTabs
                 form={form}
-                action={action!}
+                action={action}
                 isTestSuccessful={isTestSuccessful}
                 isDirty={isDirty}
                 onParameterChange={(params) => {
@@ -158,6 +183,8 @@ export const ActionDetailDialog = ({ action, open, onOpenChange }: ActionDetailD
                   setIsDirty(true);
                 }}
                 onTest={handleTest}
+                testConfig={testConfig}
+                onSaveTestConfig={setTestConfig}
                 onUpdate={(updatedAction) => {
                   dispatch(updateAction(updatedAction));
                   setIsDirty(true);
