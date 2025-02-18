@@ -6,8 +6,8 @@ import { ContentForm } from '@/components/automation/content/detail/ContentForm'
 import { ContentReindexCard } from '@/components/automation/content/detail/ContentReindexCard';
 import { ContentPreview } from '@/components/automation/content/detail/ContentPreview';
 import { ContentTags } from '@/components/automation/content/detail/ContentTags';
-import { ContentSharing } from '@/components/automation/content/detail/ContentSharing';
 import { ContentComments } from '@/components/automation/content/detail/ContentComments';
+import { ChatbotConnection } from '@/components/automation/content/detail/ChatbotConnection';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { Separator } from '@/components/ui/separator';
 
@@ -35,11 +35,10 @@ const ContentDetail = () => {
         <div className="grid gap-8 grid-cols-1 xl:grid-cols-2">
           <div className="space-y-8">
             <ContentForm content={content} />
+            <ChatbotConnection content={content} />
             
             <Card className="p-6 space-y-6">
               <ContentTags content={content} />
-              <Separator />
-              <ContentSharing content={content} />
               <Separator />
               <ContentComments content={content} />
             </Card>

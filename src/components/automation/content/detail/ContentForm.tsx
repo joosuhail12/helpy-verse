@@ -16,11 +16,13 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { updateContent } from '@/store/slices/content/contentSlice';
 import type { Content } from '@/types/content';
 
 const formSchema = z.object({
   title: z.string().min(2, 'Title must be at least 2 characters'),
   description: z.string().min(10, 'Description must be at least 10 characters'),
+  content: z.string().optional(),
 });
 
 interface ContentFormProps {
@@ -36,12 +38,37 @@ export const ContentForm = ({ content }: ContentFormProps) => {
     defaultValues: {
       title: content.title,
       description: content.description,
+      content: content.content,
     },
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      // TODO: Implement the update content action
+      const newVersion = {
+        id: `v${Date.now()}`,
+        contentId: content.id,
+        content: content.content || '',
+        createdAt: new Date().toISOString(),
+        createdBy: {
+          id: 'current-user',
+          name: 'Current User',
+          avatar: 'https://api.dicebear.com/7.x/avatars/svg?seed=current-user',
+        },
+        changes: 'Updated content',
+      };
+
+      const updates = {
+        ...values,
+        versions: [...(content.versions || []), newVersion],
+        lastEditedBy: newVersion.createdBy,
+        lastUpdated: new Date().toISOString(),
+      };
+
+      dispatch(updateContent({ 
+        id: content.id, 
+        updates 
+      }));
+
       toast({
         title: 'Changes saved',
         description: 'The content has been updated successfully.',
@@ -83,6 +110,24 @@ export const ContentForm = ({ content }: ContentFormProps) => {
                   <Textarea
                     placeholder="Enter description"
                     className="min-h-[100px]"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="content"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Content</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Enter content"
+                    className="min-h-[200px] font-mono"
                     {...field}
                   />
                 </FormControl>

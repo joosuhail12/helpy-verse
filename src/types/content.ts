@@ -45,10 +45,10 @@ export interface Content {
   progress?: number;
   errorMessage?: string;
   content?: string;
-  chatbot?: {
+  chatbots?: {
     id: string;
     name: string;
-  };
+  }[];
   lastEditedBy?: {
     id: string;
     name: string;
@@ -56,11 +56,5 @@ export interface Content {
   };
   versions?: ContentVersion[];
   tags?: ContentTag[];
-  sharedWith?: {
-    id: string;
-    name: string;
-    avatar?: string;
-    role: 'viewer' | 'editor';
-  }[];
   comments?: ContentComment[];
 }
