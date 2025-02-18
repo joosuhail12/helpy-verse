@@ -16,16 +16,21 @@ const ActionDetail = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
-  console.log('Current action ID:', id);
+  console.log('Rendering ActionDetail with ID:', id);
 
   const action = useAppSelector((state) => {
-    console.log('Redux state:', state.actions.items);
-    return state.actions.items.find(item => item.id === id);
+    console.log('Redux state:', state);
+    console.log('Actions in store:', state.actions.items);
+    return state.actions.items.find(item => {
+      console.log('Comparing item.id:', item.id, 'with param id:', id);
+      return item.id === id;
+    });
   });
 
   console.log('Found action:', action);
 
   if (!id) {
+    console.log('No ID provided');
     return (
       <div className="container mx-auto px-4 py-8">
         <Card>
@@ -38,6 +43,7 @@ const ActionDetail = () => {
   }
 
   if (!action) {
+    console.log('No action found for ID:', id);
     return (
       <div className="container mx-auto px-4 py-8">
         <ActionDetailHeader />
