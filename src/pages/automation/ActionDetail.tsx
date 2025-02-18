@@ -3,21 +3,33 @@ import { useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '@/hooks/useAppSelector';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { EditActionDialog } from '@/components/automation/actions/EditActionDialog';
-import { PenLine, ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Save } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { updateAction } from '@/store/slices/actions/actionsSlice';
+import type { CustomAction } from '@/types/action';
 
 const ActionDetail = () => {
   const { actionId } = useParams();
   const navigate = useNavigate();
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const dispatch = useAppDispatch();
   
   const action = useAppSelector(state => 
     state.actions.items.find(item => item.id === actionId)
   );
+
+  const [editedAction, setEditedAction] = useState<CustomAction | null>(null);
+
+  useEffect(() => {
+    if (action) {
+      setEditedAction(action);
+    }
+  }, [action]);
 
   useEffect(() => {
     if (!action) {
@@ -29,7 +41,17 @@ const ActionDetail = () => {
     }
   }, [action]);
 
-  if (!action) {
+  const handleSave = () => {
+    if (editedAction) {
+      dispatch(updateAction(editedAction));
+      toast({
+        title: "Changes saved",
+        description: "The action has been updated successfully.",
+      });
+    }
+  };
+
+  if (!action || !editedAction) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center space-x-4">
@@ -54,14 +76,18 @@ const ActionDetail = () => {
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
           </Button>
-          <h1 className="text-2xl font-bold">{action.name}</h1>
-          <Badge variant={action.enabled ? 'default' : 'secondary'}>
-            {action.enabled ? 'Enabled' : 'Disabled'}
+          <Input
+            value={editedAction.name}
+            onChange={(e) => setEditedAction({ ...editedAction, name: e.target.value })}
+            className="text-2xl font-bold h-auto px-2 py-1 max-w-[300px]"
+          />
+          <Badge variant={editedAction.enabled ? 'default' : 'secondary'}>
+            {editedAction.enabled ? 'Enabled' : 'Disabled'}
           </Badge>
         </div>
-        <Button onClick={() => setIsEditDialogOpen(true)}>
-          <PenLine className="h-4 w-4 mr-2" />
-          Edit Action
+        <Button onClick={handleSave}>
+          <Save className="h-4 w-4 mr-2" />
+          Save Changes
         </Button>
       </div>
 
@@ -72,12 +98,19 @@ const ActionDetail = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <h3 className="text-sm font-medium text-muted-foreground">Description</h3>
-              <p className="mt-1">{action.description}</p>
+              <h3 className="text-sm font-medium text-muted-foreground mb-2">Description</h3>
+              <Textarea
+                value={editedAction.description}
+                onChange={(e) => setEditedAction({ ...editedAction, description: e.target.value })}
+                className="min-h-[100px]"
+              />
             </div>
             <div>
-              <h3 className="text-sm font-medium text-muted-foreground">Tool Name</h3>
-              <p className="mt-1">{action.toolName}</p>
+              <h3 className="text-sm font-medium text-muted-foreground mb-2">Tool Name</h3>
+              <Input
+                value={editedAction.toolName}
+                onChange={(e) => setEditedAction({ ...editedAction, toolName: e.target.value })}
+              />
             </div>
           </CardContent>
         </Card>
@@ -88,18 +121,30 @@ const ActionDetail = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <h3 className="text-sm font-medium text-muted-foreground">Endpoint</h3>
-              <p className="mt-1 font-mono">{action.endpoint}</p>
+              <h3 className="text-sm font-medium text-muted-foreground mb-2">Endpoint</h3>
+              <Input
+                value={editedAction.endpoint}
+                onChange={(e) => setEditedAction({ ...editedAction, endpoint: e.target.value })}
+              />
             </div>
             <div>
-              <h3 className="text-sm font-medium text-muted-foreground">Method</h3>
-              <Badge variant="outline" className="mt-1">{action.method}</Badge>
+              <h3 className="text-sm font-medium text-muted-foreground mb-2">Method</h3>
+              <Badge variant="outline">{editedAction.method}</Badge>
             </div>
             <div>
-              <h3 className="text-sm font-medium text-muted-foreground">Headers</h3>
-              <pre className="mt-1 p-2 bg-muted rounded-md text-sm">
-                {JSON.stringify(action.headers, null, 2)}
-              </pre>
+              <h3 className="text-sm font-medium text-muted-foreground mb-2">Headers</h3>
+              <Textarea
+                value={JSON.stringify(editedAction.headers, null, 2)}
+                onChange={(e) => {
+                  try {
+                    const headers = JSON.parse(e.target.value);
+                    setEditedAction({ ...editedAction, headers });
+                  } catch (error) {
+                    // Don't update if JSON is invalid
+                  }
+                }}
+                className="font-mono"
+              />
             </div>
           </CardContent>
         </Card>
@@ -110,11 +155,29 @@ const ActionDetail = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {action.parameters.map((param) => (
+              {editedAction.parameters.map((param) => (
                 <div key={param.id}>
-                  <h3 className="text-sm font-medium">{param.name}</h3>
+                  <Input
+                    value={param.name}
+                    onChange={(e) => {
+                      const updatedParams = editedAction.parameters.map(p => 
+                        p.id === param.id ? { ...p, name: e.target.value } : p
+                      );
+                      setEditedAction({ ...editedAction, parameters: updatedParams });
+                    }}
+                    className="font-medium mb-1"
+                  />
                   <div className="mt-1 space-y-1">
-                    <p className="text-sm text-muted-foreground">{param.description}</p>
+                    <Textarea
+                      value={param.description}
+                      onChange={(e) => {
+                        const updatedParams = editedAction.parameters.map(p => 
+                          p.id === param.id ? { ...p, description: e.target.value } : p
+                        );
+                        setEditedAction({ ...editedAction, parameters: updatedParams });
+                      }}
+                      className="text-sm text-muted-foreground"
+                    />
                     <div className="flex gap-2">
                       <Badge variant="outline">{param.type}</Badge>
                       {param.required && <Badge variant="default">Required</Badge>}
@@ -126,12 +189,6 @@ const ActionDetail = () => {
           </CardContent>
         </Card>
       </div>
-
-      <EditActionDialog
-        action={action}
-        open={isEditDialogOpen}
-        onOpenChange={setIsEditDialogOpen}
-      />
     </div>
   );
 };
