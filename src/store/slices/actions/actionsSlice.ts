@@ -7,7 +7,95 @@ interface ActionsState {
 }
 
 const initialState: ActionsState = {
-  items: [],
+  items: [
+    {
+      id: '1',
+      name: 'Get User Profile',
+      description: 'Fetches user profile information from the API',
+      endpoint: 'https://api.example.com/users/{userId}',
+      method: 'GET',
+      parameters: [
+        {
+          id: '1',
+          name: 'userId',
+          type: 'string',
+          description: 'The unique identifier of the user',
+          required: true,
+        }
+      ],
+      headers: {
+        'Authorization': 'Bearer {token}',
+        'Content-Type': 'application/json'
+      },
+      createdAt: '2024-03-15T10:00:00Z',
+      updatedAt: '2024-03-15T10:00:00Z',
+      createdBy: {
+        id: '1',
+        name: 'System Admin',
+      },
+      enabled: true,
+    },
+    {
+      id: '2',
+      name: 'Update Email Preferences',
+      description: 'Updates user email notification preferences',
+      endpoint: 'https://api.example.com/users/{userId}/preferences',
+      method: 'PATCH',
+      parameters: [
+        {
+          id: '2',
+          name: 'userId',
+          type: 'string',
+          description: 'The unique identifier of the user',
+          required: true,
+        },
+        {
+          id: '3',
+          name: 'preferences',
+          type: 'object',
+          description: 'Email notification preferences object',
+          required: true,
+        }
+      ],
+      headers: {
+        'Authorization': 'Bearer {token}',
+        'Content-Type': 'application/json'
+      },
+      createdAt: '2024-03-15T11:00:00Z',
+      updatedAt: '2024-03-15T11:00:00Z',
+      createdBy: {
+        id: '1',
+        name: 'System Admin',
+      },
+      enabled: true,
+    },
+    {
+      id: '3',
+      name: 'Delete Account',
+      description: 'Permanently deletes a user account',
+      endpoint: 'https://api.example.com/users/{userId}',
+      method: 'DELETE',
+      parameters: [
+        {
+          id: '4',
+          name: 'userId',
+          type: 'string',
+          description: 'The unique identifier of the user to delete',
+          required: true,
+        }
+      ],
+      headers: {
+        'Authorization': 'Bearer {token}',
+      },
+      createdAt: '2024-03-15T12:00:00Z',
+      updatedAt: '2024-03-15T12:00:00Z',
+      createdBy: {
+        id: '1',
+        name: 'System Admin',
+      },
+      enabled: false,
+    }
+  ],
 };
 
 const actionsSlice = createSlice({
@@ -37,3 +125,4 @@ const actionsSlice = createSlice({
 
 export const { addAction, updateAction, deleteAction, toggleAction } = actionsSlice.actions;
 export default actionsSlice.reducer;
+
