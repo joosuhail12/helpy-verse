@@ -1,6 +1,7 @@
 
 import { lazy } from 'react';
 import { createBrowserRouter } from 'react-router-dom';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 
 // Layout components
 const DashboardLayout = lazy(() => import('@/layouts/DashboardLayout'));
@@ -27,15 +28,27 @@ export const router = createBrowserRouter([
             children: [
               {
                 path: 'ai/action-center',
-                element: <ActionCenter />,
+                element: (
+                  <ProtectedRoute>
+                    <ActionCenter />
+                  </ProtectedRoute>
+                ),
               },
               {
                 path: 'ai/action-center/:actionId',
-                element: <ActionDetail />,
+                element: (
+                  <ProtectedRoute>
+                    <ActionDetail />
+                  </ProtectedRoute>
+                ),
               },
               {
                 path: 'ai/action-center/create',
-                element: <CreateAction />,
+                element: (
+                  <ProtectedRoute>
+                    <CreateAction />
+                  </ProtectedRoute>
+                ),
               },
             ],
           },
