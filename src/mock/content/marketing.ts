@@ -25,9 +25,9 @@ export const marketingContent: Content[] = [
   <p>We're excited to have you on board...</p>
 </body>
 </html>`,
-    chatbot: {
+    chatbots: [{
       id: '2',
       name: 'Sales Assistant',
-    },
+    }],
   }
 ];

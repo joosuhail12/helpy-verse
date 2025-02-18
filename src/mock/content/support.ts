@@ -16,9 +16,9 @@ export const supportContent: Content[] = [
     messageCount: 2100,
     progress: 75,
     content: 'https://support.example.com/kb',
-    chatbot: {
+    chatbots: [{
       id: '3',
       name: 'Support Bot',
-    },
+    }],
   }
 ];

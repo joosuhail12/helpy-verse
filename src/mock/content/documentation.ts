@@ -1,3 +1,4 @@
+
 import { Content } from '@/types/content';
 import { addDays, subDays } from 'date-fns';
 
@@ -14,10 +15,10 @@ export const documentationContent: Content[] = [
     lastUpdated: subDays(today, 1).toISOString(),
     messageCount: 1250,
     content: '# API Documentation\n\n## Authentication\n\nTo authenticate your requests, include your API key in the Authorization header:\n\n```\nAuthorization: Bearer YOUR_API_KEY\n```\n\n## Endpoints\n\n### GET /api/v2/users\n\nRetrieve a list of users...',
-    chatbot: {
+    chatbots: [{
       id: '1',
       name: 'Documentation Bot',
-    },
+    }],
     lastEditedBy: {
       id: 'user1',
       name: 'John Doe',
@@ -60,10 +61,10 @@ export const documentationContent: Content[] = [
     lastUpdated: subDays(today, 2).toISOString(),
     messageCount: 180,
     errorMessage: 'Access denied: insufficient permissions',
-    chatbot: {
+    chatbots: [{
       id: '1',
       name: 'Documentation Bot',
-    },
+    }],
   },
   {
     id: '10',
@@ -75,9 +76,9 @@ export const documentationContent: Content[] = [
     lastUpdated: subDays(today, 1).toISOString(),
     messageCount: 567,
     content: `# API Rate Limiting\n\n## Default Limits\n- 1000 requests per hour\n- 10 concurrent connections\n\n## Premium Tier\n- 5000 requests per hour\n- 25 concurrent connections\n\nRate limits are applied per API key and reset hourly.`,
-    chatbot: {
+    chatbots: [{
       id: '1',
       name: 'Documentation Bot',
-    },
+    }],
   }
 ];

@@ -27,9 +27,9 @@ def process_customer_data(data_file):
     df['lifetime_value'] = df['purchases'].sum()
     
     return df.to_json()`,
-    chatbot: {
+    chatbots: [{
       id: '1',
       name: 'Documentation Bot',
-    },
+    }],
   }
 ];

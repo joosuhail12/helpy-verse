@@ -1,3 +1,4 @@
+
 import { useNavigate } from 'react-router-dom';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
@@ -50,7 +51,7 @@ export const ContentList = ({ searchQuery }: ContentListProps) => {
     if (filters.category && item.category !== filters.category) {
       return false;
     }
-    if (filters.chatbotId && item.chatbot?.id !== filters.chatbotId) {
+    if (filters.chatbotId && !item.chatbots?.some(bot => bot.id === filters.chatbotId)) {
       return false;
     }
     if (searchQuery && !item.title.toLowerCase().includes(searchQuery.toLowerCase()) && !item.description.toLowerCase().includes(searchQuery.toLowerCase())) {

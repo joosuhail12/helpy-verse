@@ -27,9 +27,9 @@ export const salesContent: Content[] = [
   const finalPrice = basePrice * quantity * (1 - discount);
   return finalPrice.toFixed(2);
 }`,
-    chatbot: {
+    chatbots: [{
       id: '2',
       name: 'Sales Assistant',
-    },
+    }],
   }
 ];

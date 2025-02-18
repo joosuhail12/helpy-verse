@@ -17,7 +17,7 @@ export const ChatbotConnection = ({ content }: ChatbotConnectionProps) => {
   const [isSelecting, setIsSelecting] = useState(false);
 
   const handleConnect = (chatbotId: string, chatbotName: string) => {
-    const currentChatbots = content.chatbot ? [content.chatbot] : [];
+    const currentChatbots = content.chatbots || [];
     const newChatbots = [...currentChatbots, { id: chatbotId, name: chatbotName }];
     
     dispatch(updateContent({

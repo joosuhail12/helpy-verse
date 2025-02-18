@@ -25,9 +25,9 @@ export const hrContent: Content[] = [
 - [ ] Team introduction
 - [ ] Security training
 - [ ] Platform overview`,
-    chatbot: {
+    chatbots: [{
       id: '2',
       name: 'Sales Assistant',
-    },
+    }],
   }
 ];

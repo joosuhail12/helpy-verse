@@ -15,9 +15,9 @@ export const productContent: Content[] = [
     lastUpdated: today.toISOString(),
     messageCount: 0,
     content: 'https://products.example.com/features',
-    chatbot: {
+    chatbots: [{
       id: '3',
       name: 'Support Bot',
-    },
+    }],
   }
 ];
