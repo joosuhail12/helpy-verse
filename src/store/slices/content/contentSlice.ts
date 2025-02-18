@@ -123,6 +123,12 @@ export const contentSlice = createSlice({
       state.search.query = '';
       state.search.suggestions = [];
     },
+    updateContent: (state, action: PayloadAction<{ id: string; updates: Partial<Content> }>) => {
+      const { id, updates } = action.payload;
+      state.items = state.items.map(item =>
+        item.id === id ? { ...item, ...updates, lastUpdated: new Date().toISOString() } : item
+      );
+    },
   },
 });
 
@@ -144,6 +150,7 @@ export const {
   updateSearchSuggestions,
   clearSearchHistory,
   clearSearch,
+  updateContent,
 } = contentSlice.actions;
 
 export default contentSlice.reducer;
