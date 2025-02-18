@@ -1,8 +1,7 @@
+
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Plus } from 'lucide-react';
-import type { CustomAction } from '@/types/action';
-import { v4 as uuidv4 } from 'uuid';
 import { parameterTemplates } from './templates/parameterTemplates';
+import { v4 as uuidv4 } from 'uuid';
 import {
   DndContext,
   closestCenter,
@@ -15,31 +14,22 @@ import {
 import {
   arrayMove,
   SortableContext,
-  sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { useState, useEffect } from 'react';
 import { ParameterGroup } from './ParameterGroup';
 import { ParameterTemplateButtons } from './ParameterTemplateButtons';
+import { groupParameters } from './parameter/utils/groupParameters';
+import type { ParameterGroupsState } from './parameter/types/parameterGroup';
+import type { CustomAction } from '@/types/action';
 
 interface ActionParametersProps {
   parameters: CustomAction['parameters'];
-  onParameterChange: (parameters: CustomAction['parameters']) => void;
+  onChange: (parameters: CustomAction['parameters']) => void;
 }
 
-export const ActionParameters = ({ parameters, onParameterChange }: ActionParametersProps) => {
-  const [groups, setGroups] = useState<Array<{
-    name: string;
-    isOpen: boolean;
-    parameters: CustomAction['parameters'];
-  }>>(() => {
-    return [
-      { name: 'Authentication', isOpen: true, parameters: [] },
-      { name: 'Pagination', isOpen: true, parameters: [] },
-      { name: 'Filtering', isOpen: true, parameters: [] },
-      { name: 'Other', isOpen: true, parameters: [] }
-    ];
-  });
+export const ActionParameters = ({ parameters, onChange }: ActionParametersProps) => {
+  const [groups, setGroups] = useState<ParameterGroupsState>(groupParameters(parameters));
 
   const evaluateDependencies = (parameters: CustomAction['parameters']) => {
     return parameters.map(param => {
@@ -76,51 +66,7 @@ export const ActionParameters = ({ parameters, onParameterChange }: ActionParame
 
   useEffect(() => {
     const evaluatedParameters = evaluateDependencies(parameters);
-    
-    setGroups([
-      { 
-        name: 'Authentication', 
-        isOpen: true, 
-        parameters: evaluatedParameters.filter(p => 
-          p.name.toLowerCase().includes('token') || 
-          p.name.toLowerCase().includes('key') || 
-          p.name.toLowerCase().includes('auth')
-        )
-      },
-      { 
-        name: 'Pagination', 
-        isOpen: true, 
-        parameters: evaluatedParameters.filter(p => 
-          p.name.toLowerCase().includes('page') || 
-          p.name.toLowerCase().includes('limit') ||
-          p.name.toLowerCase().includes('offset')
-        )
-      },
-      { 
-        name: 'Filtering', 
-        isOpen: true, 
-        parameters: evaluatedParameters.filter(p => 
-          p.name.toLowerCase().includes('filter') || 
-          p.name.toLowerCase().includes('sort') ||
-          p.name.toLowerCase().includes('search')
-        )
-      },
-      { 
-        name: 'Other', 
-        isOpen: true, 
-        parameters: evaluatedParameters.filter(p => 
-          !p.name.toLowerCase().includes('token') &&
-          !p.name.toLowerCase().includes('key') &&
-          !p.name.toLowerCase().includes('auth') &&
-          !p.name.toLowerCase().includes('page') &&
-          !p.name.toLowerCase().includes('limit') &&
-          !p.name.toLowerCase().includes('offset') &&
-          !p.name.toLowerCase().includes('filter') &&
-          !p.name.toLowerCase().includes('sort') &&
-          !p.name.toLowerCase().includes('search')
-        )
-      }
-    ]);
+    setGroups(groupParameters(evaluatedParameters));
   }, [parameters]);
 
   const sensors = useSensors(
@@ -139,7 +85,7 @@ export const ActionParameters = ({ parameters, onParameterChange }: ActionParame
       description: '',
       required: true,
     };
-    onParameterChange([...parameters, newParameter]);
+    onChange([...parameters, newParameter]);
   };
 
   const handleAddTemplate = (e: React.MouseEvent, templateName: keyof typeof parameterTemplates) => {
@@ -148,13 +94,13 @@ export const ActionParameters = ({ parameters, onParameterChange }: ActionParame
       ...param,
       id: uuidv4(),
     }));
-    onParameterChange([...parameters, ...newParameters]);
+    onChange([...parameters, ...newParameters]);
   };
 
   const handleDeleteParameter = (e: React.MouseEvent, id: string) => {
     e.preventDefault();
     const updatedParams = parameters.filter(param => param.id !== id);
-    onParameterChange(updatedParams);
+    onChange(updatedParams);
   };
 
   const handleUpdateParameter = (updatedParam: CustomAction['parameters'][0]) => {
@@ -162,7 +108,7 @@ export const ActionParameters = ({ parameters, onParameterChange }: ActionParame
       p.id === updatedParam.id ? updatedParam : p
     );
     const evaluatedParams = evaluateDependencies(updatedParams);
-    onParameterChange(evaluatedParams);
+    onChange(evaluatedParams);
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -172,16 +118,21 @@ export const ActionParameters = ({ parameters, onParameterChange }: ActionParame
       const oldIndex = parameters.findIndex((param) => param.id === active.id);
       const newIndex = parameters.findIndex((param) => param.id === over.id);
       
-      onParameterChange(arrayMove(parameters, oldIndex, newIndex));
+      onChange(arrayMove(parameters, oldIndex, newIndex));
     }
   };
 
   const toggleGroup = (groupName: string) => {
-    setGroups(prevGroups => 
-      prevGroups.map(group => 
-        group.name === groupName ? { ...group, isOpen: !group.isOpen } : group
-      )
-    );
+    setGroups(prevGroups => {
+      const updatedGroups = { ...prevGroups };
+      const group = Object.entries(updatedGroups).find(([_, group]) => group.name === groupName);
+      if (group) {
+        const [key] = group;
+        updatedGroups[key as keyof ParameterGroupsState].isOpen = 
+          !updatedGroups[key as keyof ParameterGroupsState].isOpen;
+      }
+      return updatedGroups;
+    });
   };
 
   return (
@@ -204,7 +155,7 @@ export const ActionParameters = ({ parameters, onParameterChange }: ActionParame
             strategy={verticalListSortingStrategy}
           >
             <div className="space-y-4">
-              {groups.map((group) => (
+              {Object.values(groups).map((group) => (
                 <ParameterGroup
                   key={group.name}
                   name={group.name}
