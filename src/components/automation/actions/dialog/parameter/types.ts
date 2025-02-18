@@ -26,4 +26,3 @@ export interface ActionTestPanelProps {
   isTestSuccessful: boolean;
   onTest: () => void;
 }
-
