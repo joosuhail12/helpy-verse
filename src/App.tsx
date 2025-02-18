@@ -39,6 +39,7 @@ const ContentCenter = lazy(() => import(/* webpackChunkName: "content-center" */
 const CreateContent = lazy(() => import(/* webpackChunkName: "create-content" */ "./pages/automation/CreateContent"));
 const ContentDetail = lazy(() => import(/* webpackChunkName: "content-detail" */ "./pages/automation/ContentDetail"));
 const ActionCenter = lazy(() => import(/* webpackChunkName: "action-center" */ "./pages/automation/ActionCenter"));
+const CreateAction = lazy(() => import(/* webpackChunkName: "create-action" */ "./pages/automation/CreateAction"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -133,6 +134,7 @@ const App = () => (
                   <Route path="automation/ai/content-center/create" element={<CreateContent />} />
                   <Route path="automation/ai/content-center/:id" element={<ContentDetail />} />
                   <Route path="automation/ai/action-center" element={<ActionCenter />} />
+                  <Route path="automation/ai/action-center/create" element={<CreateAction />} />
                 </Route>
                 <Route path="*" element={<NotFound />} />
               </Routes>
