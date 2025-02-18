@@ -20,7 +20,8 @@ export interface ActionParametersProps {
 
 export interface ActionTestPanelProps {
   action: CustomAction;
-  isSuccessful: boolean;
-  isDirty: boolean;
-  onTest: () => Promise<void>;
+  form: any;
+  isTestSuccessful: boolean;
+  onTest: () => void;
 }
+

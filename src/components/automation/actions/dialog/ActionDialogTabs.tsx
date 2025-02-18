@@ -55,8 +55,8 @@ export const ActionDialogTabs = ({
       <TabsContent value="test" className="mt-4">
         <ActionTestPanel
           action={action}
-          isSuccessful={isTestSuccessful}
-          isDirty={isDirty}
+          form={form}
+          isTestSuccessful={isTestSuccessful}
           onTest={onTest}
         />
       </TabsContent>
@@ -69,3 +69,4 @@ export const ActionDialogTabs = ({
     </Tabs>
   );
 };
+

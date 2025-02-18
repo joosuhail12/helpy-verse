@@ -12,7 +12,7 @@ import { Form } from '@/components/ui/form';
 import { useToast } from '@/components/ui/use-toast';
 import { LoadingState } from '@/components/automation/create-action/LoadingState';
 import { createActionSchema, type FormValues } from './create-action/schema';
-import type { ActionMethod } from '@/types/action';
+import type { CustomAction, ActionMethod } from '@/types/action';
 
 const BasicInformation = lazy(() => import('./create-action/BasicInformation').then(module => ({ 
   default: module.BasicInformation 
