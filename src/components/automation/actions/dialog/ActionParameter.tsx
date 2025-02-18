@@ -4,12 +4,18 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Database, Text, HashIcon, CheckSquare, GripVertical, Play } from 'lucide-react';
+import { Database, Text, HashIcon, CheckSquare, GripVertical, Play, AlertCircle } from 'lucide-react';
 import type { CustomAction } from '@/types/action';
 import { CSS } from '@dnd-kit/utilities';
 import { useSortable } from '@dnd-kit/sortable';
 import { useState } from 'react';
 import { toast } from '@/hooks/use-toast';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface ActionParameterProps {
   parameter: CustomAction['parameters'][0];
@@ -20,6 +26,8 @@ interface ActionParameterProps {
 export const ActionParameter = ({ parameter, onUpdate, onDelete }: ActionParameterProps) => {
   const [showTest, setShowTest] = useState(false);
   const [testValue, setTestValue] = useState('');
+  const [isValidating, setIsValidating] = useState(false);
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   const {
     attributes,
@@ -50,47 +58,77 @@ export const ActionParameter = ({ parameter, onUpdate, onDelete }: ActionParamet
     }
   };
 
-  const validateParameterValue = () => {
-    if (parameter.required && !testValue) {
-      throw new Error('This parameter is required');
-    }
-
+  const getValidationRules = () => {
+    const rules = [];
+    if (parameter.required) rules.push('Required field');
     switch (parameter.type) {
       case 'number':
-        if (isNaN(Number(testValue))) {
-          throw new Error('Value must be a valid number');
-        }
+        rules.push('Must be a valid number');
         break;
       case 'boolean':
-        if (testValue !== 'true' && testValue !== 'false') {
-          throw new Error('Value must be either true or false');
-        }
+        rules.push('Must be true or false');
         break;
       case 'object':
       case 'array':
-        try {
-          JSON.parse(testValue);
-        } catch {
-          throw new Error('Value must be valid JSON');
-        }
+        rules.push('Must be valid JSON');
         break;
     }
+    return rules;
   };
 
-  const handleTestParameter = () => {
+  const validateParameterValue = () => {
+    setIsValidating(true);
+    setValidationError(null);
+
     try {
-      validateParameterValue();
+      if (parameter.required && !testValue) {
+        throw new Error('This parameter is required');
+      }
+
+      switch (parameter.type) {
+        case 'number':
+          if (isNaN(Number(testValue))) {
+            throw new Error('Value must be a valid number');
+          }
+          break;
+        case 'boolean':
+          if (testValue !== 'true' && testValue !== 'false') {
+            throw new Error('Value must be either true or false');
+          }
+          break;
+        case 'object':
+        case 'array':
+          try {
+            JSON.parse(testValue);
+          } catch {
+            throw new Error('Value must be valid JSON');
+          }
+          break;
+      }
+
       toast({
         title: "Parameter validation passed",
         description: `Value "${testValue}" is valid for parameter type ${parameter.type}`,
       });
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Invalid value';
+      setValidationError(errorMessage);
       toast({
         title: "Parameter validation failed",
-        description: error instanceof Error ? error.message : 'Invalid value',
+        description: errorMessage,
         variant: "destructive"
       });
+    } finally {
+      setIsValidating(false);
     }
+  };
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onUpdate({ ...parameter, name: e.target.value });
+  };
+
+  const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    onUpdate({ ...parameter, description: e.target.value });
   };
 
   return (
@@ -103,12 +141,23 @@ export const ActionParameter = ({ parameter, onUpdate, onDelete }: ActionParamet
         >
           <GripVertical className="h-4 w-4 text-gray-400" />
         </div>
-        <Input
-          value={parameter.name}
-          onChange={(e) => onUpdate({ ...parameter, name: e.target.value })}
-          placeholder="Parameter name"
-          className="font-medium"
-        />
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex-1">
+                <Input
+                  value={parameter.name}
+                  onChange={handleNameChange}
+                  placeholder="Parameter name"
+                  className={`font-medium ${validationError ? 'border-red-500' : ''}`}
+                />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Enter a unique parameter name</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
         <Button
           type="button"
           variant="outline"
@@ -130,12 +179,23 @@ export const ActionParameter = ({ parameter, onUpdate, onDelete }: ActionParamet
         </Button>
       </div>
       <div className="space-y-2">
-        <Textarea
-          value={parameter.description}
-          onChange={(e) => onUpdate({ ...parameter, description: e.target.value })}
-          placeholder="Parameter description"
-          className="text-sm text-muted-foreground"
-        />
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div>
+                <Textarea
+                  value={parameter.description}
+                  onChange={handleDescriptionChange}
+                  placeholder="Parameter description"
+                  className="text-sm text-muted-foreground"
+                />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Provide a clear description of the parameter's purpose</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
         <div className="flex gap-2 items-center">
           <div className="flex items-center gap-1.5">
             {getTypeIcon(parameter.type)}
@@ -143,20 +203,38 @@ export const ActionParameter = ({ parameter, onUpdate, onDelete }: ActionParamet
           </div>
           {parameter.required && <Badge variant="default">Required</Badge>}
         </div>
+        <div className="text-sm text-muted-foreground space-y-1">
+          <div className="font-medium">Validation Rules:</div>
+          <ul className="list-disc list-inside space-y-1">
+            {getValidationRules().map((rule, index) => (
+              <li key={index} className="flex items-center gap-1">
+                <AlertCircle className="h-3 w-3 text-yellow-500" />
+                {rule}
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
       {showTest && (
-        <div className="flex gap-2 mt-2">
+        <div className="space-y-2 mt-2">
           <Input
             value={testValue}
             onChange={(e) => setTestValue(e.target.value)}
             placeholder={`Enter test ${parameter.type} value`}
-            className="flex-1"
+            className={`flex-1 ${validationError ? 'border-red-500' : ''}`}
           />
+          {validationError && (
+            <div className="text-sm text-red-500 flex items-center gap-1">
+              <AlertCircle className="h-3 w-3" />
+              {validationError}
+            </div>
+          )}
           <Button
             type="button"
             variant="secondary"
             size="sm"
-            onClick={handleTestParameter}
+            onClick={validateParameterValue}
+            disabled={isValidating}
           >
             Validate
           </Button>
