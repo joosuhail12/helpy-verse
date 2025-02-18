@@ -119,10 +119,10 @@ export const ActionParameter = ({ parameter, onUpdate, onDelete, allParameters }
           validatedValue = String(Number(testValue));
           break;
         case 'boolean':
-          if (testValue !== 'true' && testValue !== 'false') {
+          if (testValue.toLowerCase() !== 'true' && testValue.toLowerCase() !== 'false') {
             throw new Error('Value must be either true or false');
           }
-          validatedValue = testValue; // Keep as string 'true' or 'false'
+          validatedValue = testValue.toLowerCase(); // Convert to lowercase string representation
           break;
         case 'object':
         case 'array':
@@ -139,7 +139,7 @@ export const ActionParameter = ({ parameter, onUpdate, onDelete, allParameters }
 
       onUpdate({
         ...parameter,
-        defaultValue: validatedValue
+        defaultValue: validatedValue // Now validatedValue is always a string
       });
 
       toast({
