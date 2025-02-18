@@ -1,3 +1,4 @@
+
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -108,36 +109,37 @@ export const ActionParameter = ({ parameter, onUpdate, onDelete, allParameters }
         throw new Error('This parameter is required');
       }
 
-      let parsedValue: string | number | boolean;
+      let validatedValue: string;
+      
       switch (parameter.type) {
         case 'number':
           if (isNaN(Number(testValue))) {
             throw new Error('Value must be a valid number');
           }
-          parsedValue = Number(testValue);
+          validatedValue = String(Number(testValue));
           break;
         case 'boolean':
           if (testValue !== 'true' && testValue !== 'false') {
             throw new Error('Value must be either true or false');
           }
-          parsedValue = testValue === 'true';
+          validatedValue = testValue; // Keep as string 'true' or 'false'
           break;
         case 'object':
         case 'array':
           try {
             JSON.parse(testValue);
-            parsedValue = testValue;
+            validatedValue = testValue;
           } catch {
             throw new Error('Value must be valid JSON');
           }
           break;
         default:
-          parsedValue = testValue;
+          validatedValue = testValue;
       }
 
       onUpdate({
         ...parameter,
-        defaultValue: String(parsedValue)
+        defaultValue: validatedValue
       });
 
       toast({
@@ -423,3 +425,4 @@ export const ActionParameter = ({ parameter, onUpdate, onDelete, allParameters }
     </div>
   );
 };
+
