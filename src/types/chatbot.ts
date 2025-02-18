@@ -6,3 +6,4 @@ export interface Chatbot {
   status: 'active' | 'inactive';
   createdAt: string;
 }
+

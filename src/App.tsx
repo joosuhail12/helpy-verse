@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -41,6 +40,7 @@ const CreateContent = lazy(() => import(/* webpackChunkName: "create-content" */
 const ContentDetail = lazy(() => import(/* webpackChunkName: "content-detail" */ "./pages/automation/ContentDetail"));
 const ActionCenter = lazy(() => import(/* webpackChunkName: "action-center" */ "./pages/automation/ActionCenter"));
 const CreateAction = lazy(() => import(/* webpackChunkName: "create-action" */ "./pages/automation/CreateAction"));
+const ChatbotProfiles = lazy(() => import(/* webpackChunkName: "chatbot-profiles" */ "./pages/automation/ChatbotProfiles"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -138,6 +138,8 @@ const App = () => (
                   <Route path="automation/ai/content-center/:id" element={<ContentDetail />} />
                   <Route path="automation/ai/action-center" element={<ActionCenter />} />
                   <Route path="automation/ai/action-center/create" element={<CreateAction />} />
+                  <Route path="automation/ai/chatbot-profiles" element={<ChatbotProfiles />} />
+                  <Route path="automation/ai/chatbot-profiles/:id" element={<ChatbotProfiles />} />
                 </Route>
                 <Route path="*" element={<Navigate to="/sign-in" replace />} />
               </Routes>

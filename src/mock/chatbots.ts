@@ -30,3 +30,4 @@ export const mockChatbots: Chatbot[] = [
     createdAt: '2024-03-13T09:15:00Z',
   },
 ];
+
