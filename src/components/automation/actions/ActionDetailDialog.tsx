@@ -1,23 +1,17 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/hooks/use-toast';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { updateAction } from '@/store/slices/actions/actionsSlice';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Save } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Form, FormField, FormItem, FormControl, FormMessage } from '@/components/ui/form';
+import { Form } from '@/components/ui/form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
-import { ActionBasicInfo, actionFormSchema } from './dialog/ActionBasicInfo';
-import { ActionApiConfig } from './dialog/ActionApiConfig';
-import { ActionParameters } from './dialog/ActionParameters';
-import { ActionTestPanel } from './dialog/ActionTestPanel';
-import { DiscardChangesDialog } from '@/components/automation/content/detail/DiscardChangesDialog';
+import { actionFormSchema } from './dialog/ActionBasicInfo';
+import { ActionDialogHeader } from './dialog/ActionDialogHeader';
+import { ActionDialogTabs } from './dialog/ActionDialogTabs';
+import { UnsavedChangesDialog } from './dialog/UnsavedChangesDialog';
 import debounce from 'lodash/debounce';
 import type { CustomAction } from '@/types/action';
 
@@ -45,7 +39,6 @@ export const ActionDetailDialog = ({ action, open, onOpenChange }: ActionDetailD
     },
   });
 
-  // Reset form when action changes
   useEffect(() => {
     if (action) {
       form.reset({
@@ -60,7 +53,6 @@ export const ActionDetailDialog = ({ action, open, onOpenChange }: ActionDetailD
     }
   }, [action, form]);
 
-  // Auto-save functionality
   const debouncedSave = useCallback(
     debounce((data: z.infer<typeof actionFormSchema>) => {
       if (!action) return;
@@ -80,14 +72,12 @@ export const ActionDetailDialog = ({ action, open, onOpenChange }: ActionDetailD
     [action, dispatch]
   );
 
-  // Handle form changes
-  const onFormChange = () => {
+  const handleFormChange = () => {
     setIsDirty(true);
     const data = form.getValues();
     debouncedSave(data);
   };
 
-  // Handle dialog close
   const handleCloseDialog = () => {
     if (isDirty) {
       setShowDiscardDialog(true);
@@ -149,67 +139,31 @@ export const ActionDetailDialog = ({ action, open, onOpenChange }: ActionDetailD
       <Dialog open={open} onOpenChange={handleCloseDialog}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <Form {...form}>
-            <form onChange={onFormChange} className="space-y-4">
-              <Tabs defaultValue="details" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="details">Action Details</TabsTrigger>
-                  <TabsTrigger value="test">Test API</TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="details" className="space-y-4 mt-4">
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-4">
-                      <FormField
-                        control={form.control}
-                        name="name"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Input
-                                {...field}
-                                className="text-2xl font-bold h-auto px-2 py-1 max-w-[300px]"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <Badge variant={action.enabled ? 'default' : 'secondary'}>
-                        {action.enabled ? 'Enabled' : 'Disabled'}
-                      </Badge>
-                    </div>
-                    <Button onClick={handleManualSave} disabled={!isDirty}>
-                      <Save className="h-4 w-4 mr-2" />
-                      Save Changes
-                    </Button>
-                  </div>
-
-                  <ActionBasicInfo form={form} />
-                  <ActionApiConfig form={form} />
-                  <ActionParameters 
-                    parameters={action.parameters} 
-                    onParameterChange={(params) => {
-                      const updatedAction = { ...action, parameters: params };
-                      dispatch(updateAction(updatedAction));
-                      setIsDirty(true);
-                    }} 
-                  />
-                </TabsContent>
-
-                <TabsContent value="test" className="space-y-4 mt-4">
-                  <ActionTestPanel 
-                    form={form}
-                    isTestSuccessful={isTestSuccessful}
-                    onTest={handleTest}
-                  />
-                </TabsContent>
-              </Tabs>
+            <form onChange={handleFormChange} className="space-y-4">
+              <ActionDialogHeader
+                form={form}
+                enabled={action.enabled}
+                isDirty={isDirty}
+                onSave={handleManualSave}
+              />
+              <ActionDialogTabs
+                form={form}
+                action={action}
+                isTestSuccessful={isTestSuccessful}
+                isDirty={isDirty}
+                onParameterChange={(params) => {
+                  const updatedAction = { ...action, parameters: params };
+                  dispatch(updateAction(updatedAction));
+                  setIsDirty(true);
+                }}
+                onTest={handleTest}
+              />
             </form>
           </Form>
         </DialogContent>
       </Dialog>
 
-      <DiscardChangesDialog
+      <UnsavedChangesDialog
         isOpen={showDiscardDialog}
         onConfirm={() => {
           setShowDiscardDialog(false);
@@ -222,4 +176,3 @@ export const ActionDetailDialog = ({ action, open, onOpenChange }: ActionDetailD
     </>
   );
 };
-
