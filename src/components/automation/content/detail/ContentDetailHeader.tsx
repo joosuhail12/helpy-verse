@@ -17,7 +17,7 @@ export const ContentDetailHeader = ({ content }: ContentDetailHeaderProps) => {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => navigate('/automation/content')}
+          onClick={() => navigate('/home/automation/ai/content-center')}
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>
