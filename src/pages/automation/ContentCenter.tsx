@@ -20,34 +20,36 @@ const ContentCenter = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8 max-w-[1400px] space-y-8">
+      <div className="container mx-auto px-4 py-8 max-w-7xl space-y-8">
         <ContentHeader />
         
         <div className="grid gap-8">
           {/* Analytics Section */}
-          <section className="space-y-8">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <Card className="lg:col-span-3 p-6">
+          <section>
+            <div className="grid gap-6">
+              <Card className="p-6">
                 <ContentSummary />
               </Card>
               
-              <Card className="p-6">
-                <ProcessingMetrics />
-              </Card>
-              
-              <Card className="lg:col-span-2 p-6">
-                <ContentTrendsChart />
-              </Card>
-            </div>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <Card className="p-6">
+                  <ProcessingMetrics />
+                </Card>
+                
+                <Card className="lg:col-span-2 p-6">
+                  <ContentTrendsChart />
+                </Card>
+              </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card className="p-6">
-                <CategoryDistribution />
-              </Card>
-              
-              <Card className="p-6">
-                <MessageVolumeTrends />
-              </Card>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card className="p-6">
+                  <CategoryDistribution />
+                </Card>
+                
+                <Card className="p-6">
+                  <MessageVolumeTrends />
+                </Card>
+              </div>
             </div>
           </section>
 
@@ -55,8 +57,8 @@ const ContentCenter = () => {
           <section className="space-y-6">
             <EmbeddingStatusBar />
             
-            <div className="flex flex-col lg:flex-row justify-between gap-4">
-              <div className="w-full lg:w-2/3">
+            <div className="flex flex-col md:flex-row justify-between gap-4">
+              <div className="w-full md:w-2/3">
                 <SearchBar />
               </div>
               <div className="flex justify-end">

@@ -13,7 +13,7 @@ import {
   Tooltip,
 } from 'recharts';
 
-const COLORS = ['#9333EA', '#22C55E', '#3B82F6', '#EAB308', '#EC4899'];
+const COLORS = ['#9333EA', '#22C55E', '#3B82F6', '#EAB308', '#EC4899', '#14B8A6', '#F97316', '#6366F1'];
 
 export const CategoryDistribution = () => {
   const items = useAppSelector((state) => state.content.items);
@@ -29,9 +29,9 @@ export const CategoryDistribution = () => {
   }, []);
 
   return (
-    <Card className="p-4">
+    <div>
       <h3 className="text-sm font-medium mb-4">Content Category Distribution</h3>
-      <div className="h-[300px]">
+      <div className="h-[280px]">
         <ChartContainer
           id="category-distribution"
           config={{
@@ -74,7 +74,6 @@ export const CategoryDistribution = () => {
           </ResponsiveContainer>
         </ChartContainer>
       </div>
-    </Card>
+    </div>
   );
 };
-
