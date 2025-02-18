@@ -1,3 +1,4 @@
+
 import { lazy } from 'react';
 import { createBrowserRouter } from 'react-router-dom';
 
@@ -29,7 +30,7 @@ export const router = createBrowserRouter([
                 element: <ActionCenter />,
               },
               {
-                path: 'ai/action-center/:id',
+                path: 'ai/action-center/:actionid',
                 element: <ActionDetail />,
               },
               {
@@ -43,3 +44,4 @@ export const router = createBrowserRouter([
     ],
   },
 ]);
+

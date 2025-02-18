@@ -12,24 +12,24 @@ import ActionApiConfig from './components/ActionApiConfig';
 import ActionParameters from './components/ActionParameters';
 
 const ActionDetail = () => {
-  const { id } = useParams();
+  const { actionid } = useParams();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
-  console.log('Rendering ActionDetail with ID:', id);
+  console.log('Rendering ActionDetail with ID:', actionid);
 
   const action = useAppSelector((state) => {
     console.log('Redux state:', state);
     console.log('Actions in store:', state.actions.items);
     return state.actions.items.find(item => {
-      console.log('Comparing item.id:', item.id, 'with param id:', id);
-      return item.id === id;
+      console.log('Comparing item.id:', item.id, 'with param actionid:', actionid);
+      return item.id === actionid;
     });
   });
 
   console.log('Found action:', action);
 
-  if (!id) {
+  if (!actionid) {
     console.log('No ID provided');
     return (
       <div className="container mx-auto px-4 py-8">
@@ -43,7 +43,7 @@ const ActionDetail = () => {
   }
 
   if (!action) {
-    console.log('No action found for ID:', id);
+    console.log('No action found for ID:', actionid);
     return (
       <div className="container mx-auto px-4 py-8">
         <ActionDetailHeader />
