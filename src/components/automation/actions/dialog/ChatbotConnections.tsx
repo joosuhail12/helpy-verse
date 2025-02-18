@@ -14,7 +14,8 @@ interface ChatbotConnectionsProps {
 export const ChatbotConnections = ({ action, onUpdate }: ChatbotConnectionsProps) => {
   const [isSelecting, setIsSelecting] = useState(false);
 
-  const handleConnect = (chatbotId: string, chatbotName: string) => {
+  const handleConnect = (e: React.MouseEvent, chatbotId: string, chatbotName: string) => {
+    e.preventDefault(); // Prevent form submission
     const currentChatbots = action.connectedChatbots || [];
     const newChatbots = [...currentChatbots, { id: chatbotId, name: chatbotName }];
     
@@ -24,7 +25,8 @@ export const ChatbotConnections = ({ action, onUpdate }: ChatbotConnectionsProps
     });
   };
 
-  const handleDisconnect = (chatbotId: string) => {
+  const handleDisconnect = (e: React.MouseEvent, chatbotId: string) => {
+    e.preventDefault(); // Prevent form submission
     const currentChatbots = action.connectedChatbots || [];
     const newChatbots = currentChatbots.filter(bot => bot.id !== chatbotId);
     
@@ -32,6 +34,11 @@ export const ChatbotConnections = ({ action, onUpdate }: ChatbotConnectionsProps
       ...action,
       connectedChatbots: newChatbots,
     });
+  };
+
+  const handleToggleSelect = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent form submission
+    setIsSelecting(!isSelecting);
   };
 
   return (
@@ -42,7 +49,7 @@ export const ChatbotConnections = ({ action, onUpdate }: ChatbotConnectionsProps
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setIsSelecting(!isSelecting)}
+            onClick={handleToggleSelect}
           >
             {isSelecting ? (
               <>
@@ -79,7 +86,7 @@ export const ChatbotConnections = ({ action, onUpdate }: ChatbotConnectionsProps
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleDisconnect(chatbot.id)}
+                      onClick={(e) => handleDisconnect(e, chatbot.id)}
                     >
                       <Check className="h-4 w-4 mr-2" />
                       Connected
@@ -88,7 +95,7 @@ export const ChatbotConnections = ({ action, onUpdate }: ChatbotConnectionsProps
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleConnect(chatbot.id, chatbot.name)}
+                      onClick={(e) => handleConnect(e, chatbot.id, chatbot.name)}
                     >
                       <Plus className="h-4 w-4 mr-2" />
                       Connect
@@ -109,7 +116,7 @@ export const ChatbotConnections = ({ action, onUpdate }: ChatbotConnectionsProps
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => handleDisconnect(chatbot.id)}
+                  onClick={(e) => handleDisconnect(e, chatbot.id)}
                 >
                   <X className="h-4 w-4 mr-2" />
                   Disconnect
