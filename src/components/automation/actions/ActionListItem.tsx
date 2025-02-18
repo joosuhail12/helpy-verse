@@ -14,6 +14,7 @@ import { Trash2 } from 'lucide-react';
 import type { CustomAction } from '@/types/action';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { deleteAction, toggleAction } from '@/store/slices/actions/actionsSlice';
+import { useNavigate } from 'react-router-dom';
 
 interface ActionListItemProps {
   action: CustomAction;
@@ -21,6 +22,7 @@ interface ActionListItemProps {
 
 export function ActionListItem({ action }: ActionListItemProps) {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
 
   const handleToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -32,8 +34,15 @@ export function ActionListItem({ action }: ActionListItemProps) {
     dispatch(deleteAction(action.id));
   };
 
+  const handleCardClick = () => {
+    navigate(`/home/automation/ai/action-center/${action.id}`);
+  };
+
   return (
-    <Card>
+    <Card 
+      className="cursor-pointer transition-all duration-200 hover:shadow-md"
+      onClick={handleCardClick}
+    >
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
@@ -48,6 +57,7 @@ export function ActionListItem({ action }: ActionListItemProps) {
           <Switch 
             checked={action.enabled} 
             onCheckedChange={() => dispatch(toggleAction(action.id))}
+            onClick={(e) => e.stopPropagation()}
           />
         </div>
       </CardHeader>
