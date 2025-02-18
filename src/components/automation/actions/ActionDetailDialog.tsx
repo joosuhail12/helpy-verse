@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { toast } from '@/hooks/use-toast';
@@ -13,6 +14,7 @@ import { ActionDialogTabs } from './dialog/ActionDialogTabs';
 import { UnsavedChangesDialog } from './dialog/UnsavedChangesDialog';
 import debounce from 'lodash/debounce';
 import type { CustomAction } from '@/types/action';
+import type { TestConfig } from './dialog/parameter/types/testConfig';
 
 interface ActionDetailDialogProps {
   action: CustomAction | null;
@@ -208,3 +210,4 @@ export const ActionDetailDialog = ({ action, open, onOpenChange }: ActionDetailD
     </>
   );
 };
+

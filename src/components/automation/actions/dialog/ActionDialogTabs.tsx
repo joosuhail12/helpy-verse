@@ -9,6 +9,7 @@ import { useForm } from 'react-hook-form';
 import { actionFormSchema } from './ActionBasicInfo';
 import * as z from 'zod';
 import type { CustomAction } from '@/types/action';
+import type { TestConfig } from './parameter/types/testConfig';
 
 interface ActionDialogTabsProps {
   form: ReturnType<typeof useForm<z.infer<typeof actionFormSchema>>>;
@@ -16,7 +17,9 @@ interface ActionDialogTabsProps {
   isTestSuccessful: boolean;
   isDirty: boolean;
   onParameterChange: (params: CustomAction['parameters']) => void;
-  onTest: () => Promise<void>;
+  onTest: (paramValues: Record<string, any>) => Promise<void>;
+  testConfig?: TestConfig;
+  onSaveTestConfig: (config: TestConfig) => void;
   onUpdate: (updatedAction: CustomAction) => void;
 }
 
@@ -27,6 +30,8 @@ export const ActionDialogTabs = ({
   isDirty,
   onParameterChange,
   onTest,
+  testConfig,
+  onSaveTestConfig,
   onUpdate,
 }: ActionDialogTabsProps) => {
   return (
@@ -57,6 +62,9 @@ export const ActionDialogTabs = ({
           form={form}
           isTestSuccessful={isTestSuccessful}
           onTest={onTest}
+          parameters={action.parameters}
+          testConfig={testConfig}
+          onSaveConfig={onSaveTestConfig}
         />
       </TabsContent>
       <TabsContent value="chatbots" className="mt-4">
