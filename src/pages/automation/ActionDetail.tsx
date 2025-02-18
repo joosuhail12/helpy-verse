@@ -1,6 +1,6 @@
 
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -15,24 +15,21 @@ const ActionDetail = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
-  const action = useAppSelector((state) => 
-    state.actions.items.find(item => item.id === id)
-  );
+  console.log('Current action ID:', id);
 
-  if (!action) {
+  const action = useAppSelector((state) => {
+    console.log('Redux state:', state.actions.items);
+    return state.actions.items.find(item => item.id === id);
+  });
+
+  console.log('Found action:', action);
+
+  if (!id) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <Button 
-          variant="ghost" 
-          onClick={() => navigate('/home/automation/ai/action-center')}
-          className="mb-4"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Action Center
-        </Button>
         <Card>
           <CardContent className="py-8">
-            <p className="text-center text-muted-foreground">Action not found</p>
+            <p className="text-center text-muted-foreground">Invalid action ID</p>
           </CardContent>
         </Card>
       </div>
@@ -49,6 +46,29 @@ const ActionDetail = () => {
     toast.success('Action deleted successfully');
     navigate('/home/automation/ai/action-center');
   };
+
+  if (!action) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <Button 
+          variant="ghost" 
+          onClick={() => navigate('/home/automation/ai/action-center')}
+          className="mb-4"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Action Center
+        </Button>
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-8 space-y-4">
+            <p className="text-center text-muted-foreground">Action not found</p>
+            <Button onClick={() => navigate('/home/automation/ai/action-center')}>
+              Return to Action Center
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-5xl">
@@ -182,3 +202,4 @@ const ActionDetail = () => {
 };
 
 export default ActionDetail;
+
