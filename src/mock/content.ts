@@ -1,4 +1,3 @@
-
 import type { Content } from '@/types/content';
 import { addDays, subDays } from 'date-fns';
 
@@ -10,9 +9,11 @@ export const mockContent: Content[] = [
     title: 'Customer Support Bot',
     description: 'Handles basic customer inquiries and support tickets',
     category: 'support',
+    type: 'snippet',
     status: 'completed',
     lastUpdated: subDays(today, 1).toISOString(),
     messageCount: 1250,
+    content: '# Customer Support Guidelines\n\n1. Always greet the customer politely\n2. Address their concerns promptly\n3. Provide clear solutions\n4. Follow up when necessary',
     chatbot: {
       id: '1',
       name: 'Customer Support Bot',

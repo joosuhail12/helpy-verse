@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import { ContentDetailHeader } from '@/components/automation/content/detail/ContentDetailHeader';
 import { ContentForm } from '@/components/automation/content/detail/ContentForm';
 import { ContentReindexCard } from '@/components/automation/content/detail/ContentReindexCard';
+import { ContentPreview } from '@/components/automation/content/detail/ContentPreview';
 import { useAppSelector } from '@/hooks/useAppSelector';
 
 const ContentDetail = () => {
@@ -28,8 +29,9 @@ const ContentDetail = () => {
         <ContentDetailHeader content={content} />
         
         <div className="grid gap-8 grid-cols-1 lg:grid-cols-3">
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 space-y-8">
             <ContentForm content={content} />
+            <ContentPreview content={content} />
           </div>
           
           <div>
