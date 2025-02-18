@@ -1,9 +1,8 @@
+
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Plus, Key, ListFilter, FileStack, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import type { CustomAction } from '@/types/action';
 import { v4 as uuidv4 } from 'uuid';
-import { ActionParameter } from './ActionParameter';
 import { parameterTemplates } from './templates/parameterTemplates';
 import {
   DndContext,
@@ -21,13 +20,8 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { useState, useEffect } from 'react';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-
-interface ParameterGroup {
-  name: string;
-  isOpen: boolean;
-  parameters: CustomAction['parameters'];
-}
+import { ParameterGroup } from './ParameterGroup';
+import { ParameterTemplateButtons } from './ParameterTemplateButtons';
 
 interface ActionParametersProps {
   parameters: CustomAction['parameters'];
@@ -35,7 +29,11 @@ interface ActionParametersProps {
 }
 
 export const ActionParameters = ({ parameters, onParameterChange }: ActionParametersProps) => {
-  const [groups, setGroups] = useState<ParameterGroup[]>(() => {
+  const [groups, setGroups] = useState<Array<{
+    name: string;
+    isOpen: boolean;
+    parameters: CustomAction['parameters'];
+  }>>(() => {
     return [
       { name: 'Authentication', isOpen: true, parameters: [] },
       { name: 'Pagination', isOpen: true, parameters: [] },
@@ -59,9 +57,9 @@ export const ActionParameters = ({ parameters, onParameterChange }: ActionParame
 
         switch (operator) {
           case 'equals':
-            return dependentValue === value;
+            return dependentValue === String(value);
           case 'notEquals':
-            return dependentValue !== value;
+            return dependentValue !== String(value);
           case 'contains':
             return dependentValue.includes(String(value));
           case 'greaterThan':
@@ -191,45 +189,10 @@ export const ActionParameters = ({ parameters, onParameterChange }: ActionParame
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Parameters</CardTitle>
-        <div className="flex space-x-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={(e) => handleAddTemplate(e, 'authentication')}
-            className="flex items-center gap-1"
-          >
-            <Key className="h-4 w-4" />
-            Auth
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={(e) => handleAddTemplate(e, 'pagination')}
-            className="flex items-center gap-1"
-          >
-            <FileStack className="h-4 w-4" />
-            Pagination
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={(e) => handleAddTemplate(e, 'filtering')}
-            className="flex items-center gap-1"
-          >
-            <ListFilter className="h-4 w-4" />
-            Filtering
-          </Button>
-          <Button 
-            type="button"
-            variant="outline" 
-            size="sm" 
-            onClick={handleAddParameter}
-            className="flex items-center gap-1"
-          >
-            <Plus className="h-4 w-4" />
-            Add Parameter
-          </Button>
-        </div>
+        <ParameterTemplateButtons
+          onAddTemplate={handleAddTemplate}
+          onAddParameter={handleAddParameter}
+        />
       </CardHeader>
       <CardContent>
         <DndContext
@@ -243,33 +206,16 @@ export const ActionParameters = ({ parameters, onParameterChange }: ActionParame
           >
             <div className="space-y-4">
               {groups.map((group) => (
-                <Collapsible
+                <ParameterGroup
                   key={group.name}
-                  open={group.isOpen}
-                  onOpenChange={() => toggleGroup(group.name)}
-                  className="border rounded-lg p-2"
-                >
-                  <CollapsibleTrigger className="flex items-center justify-between w-full p-2 hover:bg-gray-50 rounded-lg">
-                    <span className="font-medium">{group.name}</span>
-                    {group.isOpen ? (
-                      <ChevronUp className="h-4 w-4" />
-                    ) : (
-                      <ChevronDown className="h-4 w-4" />
-                    )}
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="pt-2">
-                    <div className="space-y-4">
-                      {group.parameters.map((param) => (
-                        <ActionParameter
-                          key={param.id}
-                          parameter={param}
-                          onUpdate={handleUpdateParameter}
-                          onDelete={handleDeleteParameter}
-                        />
-                      ))}
-                    </div>
-                  </CollapsibleContent>
-                </Collapsible>
+                  name={group.name}
+                  isOpen={group.isOpen}
+                  onToggle={() => toggleGroup(group.name)}
+                  parameters={group.parameters}
+                  onUpdate={handleUpdateParameter}
+                  onDelete={handleDeleteParameter}
+                  allParameters={parameters}
+                />
               ))}
             </div>
           </SortableContext>
