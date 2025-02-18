@@ -14,7 +14,8 @@ interface ActionParametersProps {
 }
 
 export const ActionParameters = ({ parameters, onParameterChange }: ActionParametersProps) => {
-  const handleAddParameter = () => {
+  const handleAddParameter = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent form submission
     const newParameter = {
       id: uuidv4(),
       name: '',
@@ -25,7 +26,8 @@ export const ActionParameters = ({ parameters, onParameterChange }: ActionParame
     onParameterChange([...parameters, newParameter]);
   };
 
-  const handleDeleteParameter = (id: string) => {
+  const handleDeleteParameter = (e: React.MouseEvent, id: string) => {
+    e.preventDefault(); // Prevent form submission
     const updatedParams = parameters.filter(param => param.id !== id);
     onParameterChange(updatedParams);
   };
@@ -35,6 +37,7 @@ export const ActionParameters = ({ parameters, onParameterChange }: ActionParame
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Parameters</CardTitle>
         <Button 
+          type="button" // Explicitly set button type
           variant="outline" 
           size="sm" 
           onClick={handleAddParameter}
@@ -46,7 +49,7 @@ export const ActionParameters = ({ parameters, onParameterChange }: ActionParame
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
-          {parameters.map((param, index) => (
+          {parameters.map((param) => (
             <div key={param.id} className="space-y-2 pb-4 border-b last:border-0">
               <div className="flex items-center gap-2">
                 <Input
@@ -61,9 +64,10 @@ export const ActionParameters = ({ parameters, onParameterChange }: ActionParame
                   className="font-medium"
                 />
                 <Button
+                  type="button" // Explicitly set button type
                   variant="ghost"
                   size="sm"
-                  onClick={() => handleDeleteParameter(param.id)}
+                  onClick={(e) => handleDeleteParameter(e, param.id)}
                   className="text-destructive hover:text-destructive"
                 >
                   Delete
@@ -98,4 +102,3 @@ export const ActionParameters = ({ parameters, onParameterChange }: ActionParame
     </Card>
   );
 };
-
