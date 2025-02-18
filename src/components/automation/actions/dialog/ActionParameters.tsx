@@ -21,7 +21,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 interface ParameterGroup {
@@ -37,36 +37,60 @@ interface ActionParametersProps {
 
 export const ActionParameters = ({ parameters, onParameterChange }: ActionParametersProps) => {
   const [groups, setGroups] = useState<ParameterGroup[]>(() => {
-    // Initialize with default groups
     return [
-      { name: 'Authentication', isOpen: true, parameters: parameters.filter(p => 
-        p.name.toLowerCase().includes('token') || 
-        p.name.toLowerCase().includes('key') || 
-        p.name.toLowerCase().includes('auth')
-      ) },
-      { name: 'Pagination', isOpen: true, parameters: parameters.filter(p => 
-        p.name.toLowerCase().includes('page') || 
-        p.name.toLowerCase().includes('limit') ||
-        p.name.toLowerCase().includes('offset')
-      ) },
-      { name: 'Filtering', isOpen: true, parameters: parameters.filter(p => 
-        p.name.toLowerCase().includes('filter') || 
-        p.name.toLowerCase().includes('sort') ||
-        p.name.toLowerCase().includes('search')
-      ) },
-      { name: 'Other', isOpen: true, parameters: parameters.filter(p => 
-        !p.name.toLowerCase().includes('token') &&
-        !p.name.toLowerCase().includes('key') &&
-        !p.name.toLowerCase().includes('auth') &&
-        !p.name.toLowerCase().includes('page') &&
-        !p.name.toLowerCase().includes('limit') &&
-        !p.name.toLowerCase().includes('offset') &&
-        !p.name.toLowerCase().includes('filter') &&
-        !p.name.toLowerCase().includes('sort') &&
-        !p.name.toLowerCase().includes('search')
-      ) }
+      { name: 'Authentication', isOpen: true, parameters: [] },
+      { name: 'Pagination', isOpen: true, parameters: [] },
+      { name: 'Filtering', isOpen: true, parameters: [] },
+      { name: 'Other', isOpen: true, parameters: [] }
     ];
   });
+
+  useEffect(() => {
+    setGroups([
+      { 
+        name: 'Authentication', 
+        isOpen: true, 
+        parameters: parameters.filter(p => 
+          p.name.toLowerCase().includes('token') || 
+          p.name.toLowerCase().includes('key') || 
+          p.name.toLowerCase().includes('auth')
+        )
+      },
+      { 
+        name: 'Pagination', 
+        isOpen: true, 
+        parameters: parameters.filter(p => 
+          p.name.toLowerCase().includes('page') || 
+          p.name.toLowerCase().includes('limit') ||
+          p.name.toLowerCase().includes('offset')
+        )
+      },
+      { 
+        name: 'Filtering', 
+        isOpen: true, 
+        parameters: parameters.filter(p => 
+          p.name.toLowerCase().includes('filter') || 
+          p.name.toLowerCase().includes('sort') ||
+          p.name.toLowerCase().includes('search')
+        )
+      },
+      { 
+        name: 'Other', 
+        isOpen: true, 
+        parameters: parameters.filter(p => 
+          !p.name.toLowerCase().includes('token') &&
+          !p.name.toLowerCase().includes('key') &&
+          !p.name.toLowerCase().includes('auth') &&
+          !p.name.toLowerCase().includes('page') &&
+          !p.name.toLowerCase().includes('limit') &&
+          !p.name.toLowerCase().includes('offset') &&
+          !p.name.toLowerCase().includes('filter') &&
+          !p.name.toLowerCase().includes('sort') &&
+          !p.name.toLowerCase().includes('search')
+        )
+      }
+    ]);
+  }, [parameters]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
