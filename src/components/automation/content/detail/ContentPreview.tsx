@@ -1,12 +1,12 @@
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { updateContent } from '@/store/slices/content/contentSlice';
-import { Copy, Check } from 'lucide-react';
+import { Copy, Check, Loader2 } from 'lucide-react';
 import Prism from 'prismjs';
 import 'prismjs/themes/prism.css';
 import 'prismjs/components/prism-javascript';
@@ -15,6 +15,8 @@ import 'prismjs/components/prism-jsx';
 import 'prismjs/components/prism-tsx';
 import 'prismjs/components/prism-json';
 import 'prismjs/components/prism-markdown';
+import { useContentShortcuts } from '@/hooks/useContentShortcuts';
+import { DiscardChangesDialog } from './DiscardChangesDialog';
 import type { Content } from '@/types/content';
 
 interface ContentPreviewProps {
@@ -27,7 +29,26 @@ export const ContentPreview = ({ content }: ContentPreviewProps) => {
   const [editableContent, setEditableContent] = React.useState(content.content || '');
   const [isEditing, setIsEditing] = React.useState(false);
   const [isCopied, setIsCopied] = React.useState(false);
+  const [isSaving, setIsSaving] = React.useState(false);
+  const [showDiscardDialog, setShowDiscardDialog] = useState(false);
   const preRef = useRef<HTMLPreElement>(null);
+  const autoSaveTimeoutRef = useRef<NodeJS.Timeout>();
+
+  // Handle autosave for snippets
+  useEffect(() => {
+    if (content.type === 'snippet' && isEditing) {
+      clearTimeout(autoSaveTimeoutRef.current);
+      autoSaveTimeoutRef.current = setTimeout(() => {
+        handleSave();
+      }, 2000); // Autosave after 2 seconds of no typing
+    }
+    return () => clearTimeout(autoSaveTimeoutRef.current);
+  }, [editableContent]);
+
+  // Cleanup autosave on unmount
+  useEffect(() => {
+    return () => clearTimeout(autoSaveTimeoutRef.current);
+  }, []);
 
   useEffect(() => {
     if (content.type === 'snippet' && preRef.current) {
@@ -35,16 +56,41 @@ export const ContentPreview = ({ content }: ContentPreviewProps) => {
     }
   }, [content.content, content.type, isEditing]);
 
-  const handleSave = () => {
-    dispatch(updateContent({ 
-      id: content.id, 
-      updates: { content: editableContent }
-    }));
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      await dispatch(updateContent({ 
+        id: content.id, 
+        updates: { content: editableContent }
+      }));
+      setIsEditing(false);
+      toast({
+        title: "Success",
+        description: "Content updated successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update content",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleCancel = () => {
+    if (editableContent !== content.content) {
+      setShowDiscardDialog(true);
+    } else {
+      setIsEditing(false);
+    }
+  };
+
+  const handleDiscardChanges = () => {
+    setEditableContent(content.content || '');
     setIsEditing(false);
-    toast({
-      title: "Success",
-      description: "Content updated successfully",
-    });
+    setShowDiscardDialog(false);
   };
 
   const copyToClipboard = async () => {
@@ -67,6 +113,15 @@ export const ContentPreview = ({ content }: ContentPreviewProps) => {
     }
   };
 
+  // Set up keyboard shortcuts
+  useContentShortcuts(
+    content,
+    editableContent,
+    isEditing,
+    setIsEditing,
+    () => setShowDiscardDialog(true)
+  );
+
   const renderContent = () => {
     if (content.type === 'snippet') {
       if (isEditing) {
@@ -78,11 +133,18 @@ export const ContentPreview = ({ content }: ContentPreviewProps) => {
               className="min-h-[200px] font-mono"
             />
             <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setIsEditing(false)}>
+              <Button variant="outline" onClick={handleCancel} disabled={isSaving}>
                 Cancel
               </Button>
-              <Button onClick={handleSave}>
-                Save Changes
+              <Button onClick={handleSave} disabled={isSaving}>
+                {isSaving ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  'Save Changes'
+                )}
               </Button>
             </div>
           </div>
@@ -147,7 +209,6 @@ export const ContentPreview = ({ content }: ContentPreviewProps) => {
         );
       }
 
-      // For other document types, show a link to open
       return (
         <div className="text-center py-8">
           <a
@@ -173,6 +234,11 @@ export const ContentPreview = ({ content }: ContentPreviewProps) => {
     <Card className="p-6">
       <h3 className="text-lg font-semibold mb-4">Content Preview</h3>
       {renderContent()}
+      <DiscardChangesDialog
+        isOpen={showDiscardDialog}
+        onConfirm={handleDiscardChanges}
+        onCancel={() => setShowDiscardDialog(false)}
+      />
     </Card>
   );
 };
