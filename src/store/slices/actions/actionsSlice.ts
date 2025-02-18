@@ -9,7 +9,7 @@ interface ActionsState {
 const initialState: ActionsState = {
   items: [
     {
-      id: '1',
+      id: "1", // Changed to string to match route parameter
       name: 'Get User Profile',
       toolName: 'User Management API',
       description: 'Fetches user profile information from the API',
