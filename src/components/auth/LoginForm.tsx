@@ -11,7 +11,8 @@ export const LoginForm = memo(() => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const dispatch = useAppDispatch();
-  const { loading, error } = useAppSelector((state) => state.auth);
+  const auth = useAppSelector((state) => state.auth);
+  const loading = auth?.loading ?? false;
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {

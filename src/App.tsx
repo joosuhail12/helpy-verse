@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -51,12 +52,14 @@ const queryClient = new QueryClient({
 });
 
 const RootComponent = () => {
-  const { isAuthenticated } = useAppSelector((state) => state.auth);
+  const auth = useAppSelector((state) => state.auth);
+  const isAuthenticated = auth?.isAuthenticated ?? false;
   return isAuthenticated ? <Navigate to="/home" replace /> : <Navigate to="/sign-in" replace />;
 };
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isAuthenticated } = useAppSelector((state) => state.auth);
+  const auth = useAppSelector((state) => state.auth);
+  const isAuthenticated = auth?.isAuthenticated ?? false;
   
   if (!isAuthenticated) {
     return <Navigate to="/sign-in" replace />;
@@ -136,7 +139,7 @@ const App = () => (
                   <Route path="automation/ai/action-center" element={<ActionCenter />} />
                   <Route path="automation/ai/action-center/create" element={<CreateAction />} />
                 </Route>
-                <Route path="*" element={<NotFound />} />
+                <Route path="*" element={<Navigate to="/sign-in" replace />} />
               </Routes>
             </Suspense>
           </ErrorBoundary>
