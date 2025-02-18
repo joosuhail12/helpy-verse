@@ -15,6 +15,7 @@ import {
   arrayMove,
   SortableContext,
   verticalListSortingStrategy,
+  sortableKeyboardCoordinates,
 } from '@dnd-kit/sortable';
 import { useState, useEffect } from 'react';
 import { ParameterGroup } from './ParameterGroup';
