@@ -10,31 +10,39 @@ import {
   CardFooter,
 } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
-import { Edit2, Trash2 } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import type { CustomAction } from '@/types/action';
-import { useState } from 'react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { deleteAction, toggleAction } from '@/store/slices/actions/actionsSlice';
-import { EditActionDialog } from './EditActionDialog';
+import { useNavigate } from 'react-router-dom';
 
 interface ActionListItemProps {
   action: CustomAction;
 }
 
 export function ActionListItem({ action }: ActionListItemProps) {
-  const [showEditDialog, setShowEditDialog] = useState(false);
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
 
-  const handleToggle = () => {
+  const handleToggle = (e: React.MouseEvent) => {
+    e.stopPropagation();
     dispatch(toggleAction(action.id));
   };
 
-  const handleDelete = () => {
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
     dispatch(deleteAction(action.id));
   };
 
+  const handleCardClick = () => {
+    navigate(`/home/automation/ai/action-center/${action.id}`);
+  };
+
   return (
-    <Card>
+    <Card 
+      className="cursor-pointer transition-all duration-200 hover:shadow-md"
+      onClick={handleCardClick}
+    >
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
@@ -48,7 +56,8 @@ export function ActionListItem({ action }: ActionListItemProps) {
           </div>
           <Switch 
             checked={action.enabled} 
-            onCheckedChange={handleToggle}
+            onCheckedChange={() => dispatch(toggleAction(action.id))}
+            onClick={(e) => e.stopPropagation()}
           />
         </div>
       </CardHeader>
@@ -65,14 +74,6 @@ export function ActionListItem({ action }: ActionListItemProps) {
       </CardContent>
       <CardFooter className="flex justify-end gap-2">
         <Button 
-          variant="outline" 
-          size="sm"
-          onClick={() => setShowEditDialog(true)}
-        >
-          <Edit2 className="h-4 w-4 mr-2" />
-          Edit
-        </Button>
-        <Button 
           variant="destructive" 
           size="sm"
           onClick={handleDelete}
@@ -81,11 +82,6 @@ export function ActionListItem({ action }: ActionListItemProps) {
           Delete
         </Button>
       </CardFooter>
-      <EditActionDialog 
-        action={action}
-        open={showEditDialog}
-        onOpenChange={setShowEditDialog}
-      />
     </Card>
   );
 }
