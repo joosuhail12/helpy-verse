@@ -1,4 +1,3 @@
-
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, Key, ListFilter, FileStack, ChevronDown, ChevronUp } from 'lucide-react';
@@ -45,12 +44,47 @@ export const ActionParameters = ({ parameters, onParameterChange }: ActionParame
     ];
   });
 
+  const evaluateDependencies = (parameters: CustomAction['parameters']) => {
+    return parameters.map(param => {
+      if (!param.dependencies || param.dependencies.length === 0) {
+        return { ...param, visible: true };
+      }
+
+      const isVisible = param.dependencies.every(dependency => {
+        const dependentParam = parameters.find(p => p.id === dependency.paramId);
+        if (!dependentParam) return true;
+
+        const dependentValue = dependentParam.defaultValue || '';
+        const { value, operator } = dependency.condition;
+
+        switch (operator) {
+          case 'equals':
+            return dependentValue === value;
+          case 'notEquals':
+            return dependentValue !== value;
+          case 'contains':
+            return dependentValue.includes(String(value));
+          case 'greaterThan':
+            return Number(dependentValue) > Number(value);
+          case 'lessThan':
+            return Number(dependentValue) < Number(value);
+          default:
+            return true;
+        }
+      });
+
+      return { ...param, visible: isVisible };
+    });
+  };
+
   useEffect(() => {
+    const evaluatedParameters = evaluateDependencies(parameters);
+    
     setGroups([
       { 
         name: 'Authentication', 
         isOpen: true, 
-        parameters: parameters.filter(p => 
+        parameters: evaluatedParameters.filter(p => 
           p.name.toLowerCase().includes('token') || 
           p.name.toLowerCase().includes('key') || 
           p.name.toLowerCase().includes('auth')
@@ -59,7 +93,7 @@ export const ActionParameters = ({ parameters, onParameterChange }: ActionParame
       { 
         name: 'Pagination', 
         isOpen: true, 
-        parameters: parameters.filter(p => 
+        parameters: evaluatedParameters.filter(p => 
           p.name.toLowerCase().includes('page') || 
           p.name.toLowerCase().includes('limit') ||
           p.name.toLowerCase().includes('offset')
@@ -68,7 +102,7 @@ export const ActionParameters = ({ parameters, onParameterChange }: ActionParame
       { 
         name: 'Filtering', 
         isOpen: true, 
-        parameters: parameters.filter(p => 
+        parameters: evaluatedParameters.filter(p => 
           p.name.toLowerCase().includes('filter') || 
           p.name.toLowerCase().includes('sort') ||
           p.name.toLowerCase().includes('search')
@@ -77,7 +111,7 @@ export const ActionParameters = ({ parameters, onParameterChange }: ActionParame
       { 
         name: 'Other', 
         isOpen: true, 
-        parameters: parameters.filter(p => 
+        parameters: evaluatedParameters.filter(p => 
           !p.name.toLowerCase().includes('token') &&
           !p.name.toLowerCase().includes('key') &&
           !p.name.toLowerCase().includes('auth') &&
@@ -130,7 +164,8 @@ export const ActionParameters = ({ parameters, onParameterChange }: ActionParame
     const updatedParams = parameters.map(p => 
       p.id === updatedParam.id ? updatedParam : p
     );
-    onParameterChange(updatedParams);
+    const evaluatedParams = evaluateDependencies(updatedParams);
+    onParameterChange(evaluatedParams);
   };
 
   const handleDragEnd = (event: DragEndEvent) => {

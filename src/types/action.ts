@@ -1,6 +1,14 @@
 
 export type ActionMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
 
+export type ParameterDependency = {
+  paramId: string;
+  condition: {
+    value: string | number | boolean;
+    operator: 'equals' | 'notEquals' | 'contains' | 'greaterThan' | 'lessThan';
+  };
+};
+
 export type ActionParameter = {
   id: string;
   name: string;
@@ -8,6 +16,8 @@ export type ActionParameter = {
   description: string;
   required: boolean;
   defaultValue?: string;
+  dependencies?: ParameterDependency[];
+  visible?: boolean;
 };
 
 export interface CustomAction {
