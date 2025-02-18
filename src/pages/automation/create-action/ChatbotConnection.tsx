@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,7 +12,7 @@ interface ChatbotConnectionProps {
   form: UseFormReturn<FormValues>;
 }
 
-export const ChatbotConnection = ({ form }: ChatbotConnectionProps) => {
+export function ChatbotConnection({ form }: ChatbotConnectionProps) {
   const [isSelecting, setIsSelecting] = useState(false);
   const chatbots = useAppSelector(selectChatbots);
 
@@ -128,4 +127,6 @@ export const ChatbotConnection = ({ form }: ChatbotConnectionProps) => {
       </div>
     </Card>
   );
-};
+}
+
+export default ChatbotConnection;

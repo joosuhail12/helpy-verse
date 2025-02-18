@@ -10,7 +10,7 @@ interface BasicInformationProps {
   form: UseFormReturn<FormValues>;
 }
 
-export const BasicInformation = ({ form }: BasicInformationProps) => {
+export function BasicInformation({ form }: BasicInformationProps) {
   return (
     <div className="space-y-6">
       <FormField
@@ -85,4 +85,7 @@ export const BasicInformation = ({ form }: BasicInformationProps) => {
       />
     </div>
   );
-};
+}
+
+export default BasicInformation;
+

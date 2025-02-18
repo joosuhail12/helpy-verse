@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
-import { useEffect } from 'react';
+import { useEffect, Suspense, lazy } from 'react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { addAction } from '@/store/slices/actions/actionsSlice';
@@ -11,11 +11,21 @@ import { fetchChatbots, selectChatbotsLoading } from '@/store/slices/chatbots/ch
 import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
 import { useToast } from '@/components/ui/use-toast';
-import { BasicInformation } from './create-action/BasicInformation';
-import { ApiConfiguration } from './create-action/ApiConfiguration';
-import { ChatbotConnection } from './create-action/ChatbotConnection';
+import { LoadingState } from '@/components/automation/create-action/LoadingState';
 import { createActionSchema, type FormValues } from './create-action/schema';
 import type { ActionMethod } from '@/types/action';
+
+const BasicInformation = lazy(() => import('./create-action/BasicInformation').then(module => ({ 
+  default: module.BasicInformation 
+})));
+
+const ApiConfiguration = lazy(() => import('./create-action/ApiConfiguration').then(module => ({ 
+  default: module.ApiConfiguration 
+})));
+
+const ChatbotConnection = lazy(() => import('./create-action/ChatbotConnection').then(module => ({ 
+  default: module.ChatbotConnection 
+})));
 
 export default function CreateAction() {
   const dispatch = useAppDispatch();
@@ -107,9 +117,15 @@ export default function CreateAction() {
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <BasicInformation form={form} />
-          <ApiConfiguration form={form} />
-          <ChatbotConnection form={form} />
+          <Suspense fallback={<LoadingState />}>
+            <BasicInformation form={form} />
+          </Suspense>
+          <Suspense fallback={<LoadingState />}>
+            <ApiConfiguration form={form} />
+          </Suspense>
+          <Suspense fallback={<LoadingState />}>
+            <ChatbotConnection form={form} />
+          </Suspense>
 
           <div className="flex justify-end space-x-4">
             <Button
@@ -126,3 +142,4 @@ export default function CreateAction() {
     </div>
   );
 }
+

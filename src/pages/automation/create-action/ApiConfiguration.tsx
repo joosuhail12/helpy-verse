@@ -8,7 +8,7 @@ interface ApiConfigurationProps {
   form: UseFormReturn<FormValues>;
 }
 
-export const ApiConfiguration = ({ form }: ApiConfigurationProps) => {
+export function ApiConfiguration({ form }: ApiConfigurationProps) {
   return (
     <div className="space-y-6">
       <FormField
@@ -66,4 +66,7 @@ export const ApiConfiguration = ({ form }: ApiConfigurationProps) => {
       />
     </div>
   );
-};
+}
+
+export default ApiConfiguration;
+
