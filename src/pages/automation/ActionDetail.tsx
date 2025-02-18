@@ -19,27 +19,37 @@ const ActionDetail = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   
-  console.log('ActionDetail rendered with actionId:', actionId);
+  console.log('==================== Action Detail Debug ====================');
+  console.log('1. Component Rendered with actionId:', actionId);
+  console.log('2. ActionId type:', typeof actionId);
   
   const action = useAppSelector(state => {
-    console.log('Current state:', state);
-    console.log('Actions in state:', state.actions.items);
-    return state.actions.items.find(item => item.id === actionId);
+    console.log('3. Full Redux State:', state);
+    console.log('4. Actions Slice:', state.actions);
+    console.log('5. Actions Items:', state.actions.items);
+    console.log('6. ActionId we are looking for:', actionId);
+    const foundAction = state.actions.items.find(item => {
+      console.log('7. Comparing:', item.id, actionId, item.id === actionId);
+      return item.id === actionId;
+    });
+    console.log('8. Found Action:', foundAction);
+    return foundAction;
   });
-
-  console.log('Found action:', action);
 
   const [editedAction, setEditedAction] = useState<CustomAction | null>(null);
 
   useEffect(() => {
-    console.log('useEffect triggered with action:', action);
+    console.log('9. useEffect triggered');
+    console.log('10. Current action:', action);
     if (action) {
+      console.log('11. Setting edited action');
       setEditedAction(action);
     }
   }, [action]);
 
   useEffect(() => {
     if (!action) {
+      console.log('12. Action not found, showing toast');
       toast({
         title: "Action not found",
         description: "The requested action could not be found.",
@@ -59,7 +69,9 @@ const ActionDetail = () => {
   };
 
   if (!action || !editedAction) {
-    console.log('Rendering not found state');
+    console.log('13. Rendering not found state');
+    console.log('14. Action:', action);
+    console.log('15. EditedAction:', editedAction);
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center space-x-4">
@@ -73,7 +85,7 @@ const ActionDetail = () => {
     );
   }
 
-  console.log('Rendering full action detail view');
+  console.log('16. Rendering full action detail view');
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -204,4 +216,3 @@ const ActionDetail = () => {
 };
 
 export default ActionDetail;
-
