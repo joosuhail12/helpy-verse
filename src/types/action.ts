@@ -13,6 +13,7 @@ export type ActionParameter = {
 export interface CustomAction {
   id: string;
   name: string;
+  toolName: string;
   description: string;
   endpoint: string;
   method: ActionMethod;
@@ -27,3 +28,4 @@ export interface CustomAction {
   };
   enabled: boolean;
 }
+

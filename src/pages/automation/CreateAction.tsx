@@ -37,6 +37,7 @@ export default function CreateAction() {
     resolver: zodResolver(createActionSchema),
     defaultValues: {
       name: '',
+      toolName: '',
       endpoint: '',
       method: 'GET',
       description: '',
@@ -70,6 +71,7 @@ export default function CreateAction() {
       const newAction = {
         id: uuidv4(),
         name: values.name,
+        toolName: values.toolName,
         description: values.description,
         endpoint: values.endpoint,
         method: values.method as ActionMethod,

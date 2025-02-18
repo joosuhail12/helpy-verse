@@ -11,6 +11,7 @@ const initialState: ActionsState = {
     {
       id: '1',
       name: 'Get User Profile',
+      toolName: 'User Management API',
       description: 'Fetches user profile information from the API',
       endpoint: 'https://api.example.com/users/{userId}',
       method: 'GET',
@@ -38,6 +39,7 @@ const initialState: ActionsState = {
     {
       id: '2',
       name: 'Update Email Preferences',
+      toolName: 'User Management API',
       description: 'Updates user email notification preferences',
       endpoint: 'https://api.example.com/users/{userId}/preferences',
       method: 'PATCH',
@@ -72,6 +74,7 @@ const initialState: ActionsState = {
     {
       id: '3',
       name: 'Delete Account',
+      toolName: 'User Management API',
       description: 'Permanently deletes a user account',
       endpoint: 'https://api.example.com/users/{userId}',
       method: 'DELETE',

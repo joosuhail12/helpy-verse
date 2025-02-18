@@ -29,6 +29,20 @@ export function BasicInformation({ form }: BasicInformationProps) {
 
       <FormField
         control={form.control}
+        name="toolName"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Tool Name</FormLabel>
+            <FormControl>
+              <Input placeholder="Enter tool name" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
         name="endpoint"
         render={({ field }) => (
           <FormItem>
