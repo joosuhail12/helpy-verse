@@ -11,6 +11,13 @@ import { useSortable } from '@dnd-kit/sortable';
 import { useState } from 'react';
 import { toast } from '@/hooks/use-toast';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
@@ -56,6 +63,15 @@ export const ActionParameter = ({ parameter, onUpdate, onDelete }: ActionParamet
       default:
         return <Text className="h-4 w-4 text-gray-500" />;
     }
+  };
+
+  const handleTypeChange = (newType: string) => {
+    onUpdate({ 
+      ...parameter, 
+      type: newType as 'string' | 'number' | 'boolean' | 'object' | 'array'
+    });
+    setTestValue('');
+    setValidationError(null);
   };
 
   const getValidationRules = () => {
@@ -158,6 +174,18 @@ export const ActionParameter = ({ parameter, onUpdate, onDelete }: ActionParamet
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
+        <Select value={parameter.type} onValueChange={handleTypeChange}>
+          <SelectTrigger className="w-[120px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="string">String</SelectItem>
+            <SelectItem value="number">Number</SelectItem>
+            <SelectItem value="boolean">Boolean</SelectItem>
+            <SelectItem value="object">Object</SelectItem>
+            <SelectItem value="array">Array</SelectItem>
+          </SelectContent>
+        </Select>
         <Button
           type="button"
           variant="outline"

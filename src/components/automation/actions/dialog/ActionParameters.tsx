@@ -87,7 +87,8 @@ export const ActionParameters = ({ parameters, onParameterChange }: ActionParame
     onParameterChange([...parameters, newParameter]);
   };
 
-  const handleAddTemplate = (templateName: keyof typeof parameterTemplates) => {
+  const handleAddTemplate = (e: React.MouseEvent, templateName: keyof typeof parameterTemplates) => {
+    e.preventDefault();
     const newParameters = parameterTemplates[templateName].map(param => ({
       ...param,
       id: uuidv4(),
@@ -135,7 +136,7 @@ export const ActionParameters = ({ parameters, onParameterChange }: ActionParame
           <Button 
             variant="outline" 
             size="sm" 
-            onClick={() => handleAddTemplate('authentication')}
+            onClick={(e) => handleAddTemplate(e, 'authentication')}
             className="flex items-center gap-1"
           >
             <Key className="h-4 w-4" />
@@ -144,7 +145,7 @@ export const ActionParameters = ({ parameters, onParameterChange }: ActionParame
           <Button 
             variant="outline" 
             size="sm" 
-            onClick={() => handleAddTemplate('pagination')}
+            onClick={(e) => handleAddTemplate(e, 'pagination')}
             className="flex items-center gap-1"
           >
             <FileStack className="h-4 w-4" />
@@ -153,7 +154,7 @@ export const ActionParameters = ({ parameters, onParameterChange }: ActionParame
           <Button 
             variant="outline" 
             size="sm" 
-            onClick={() => handleAddTemplate('filtering')}
+            onClick={(e) => handleAddTemplate(e, 'filtering')}
             className="flex items-center gap-1"
           >
             <ListFilter className="h-4 w-4" />
@@ -223,4 +224,3 @@ export const ActionParameters = ({ parameters, onParameterChange }: ActionParame
     </Card>
   );
 };
-
