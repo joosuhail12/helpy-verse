@@ -9,6 +9,8 @@ import tagsReducer from './slices/tagsSlice';
 import teammatesReducer from './slices/teammates/teammatesSlice';
 import teamsReducer from './slices/teams/teamsSlice';
 import actionsReducer from './slices/actions/actionsSlice';
+import companiesReducer from './slices/companies/companiesSlice';
+import cannedResponsesReducer from './slices/cannedResponses/cannedResponsesSlice';
 
 export const store = configureStore({
   reducer: {
@@ -21,6 +23,8 @@ export const store = configureStore({
     teammates: teammatesReducer,
     teams: teamsReducer,
     actions: actionsReducer,
+    companies: companiesReducer,
+    cannedResponses: cannedResponsesReducer,
   },
 });
 

@@ -1,6 +1,5 @@
 
 import { Content } from '@/types/content';
-import { addDays, subDays } from 'date-fns';
 
 const today = new Date();
 
@@ -14,9 +13,9 @@ export const analyticsContent: Content[] = [
     status: 'queued',
     lastUpdated: today.toISOString(),
     messageCount: 0,
-    chatbot: {
+    chatbots: [{
       id: '3',
       name: 'Support Bot',
-    },
+    }],
   }
 ];

@@ -24,6 +24,7 @@ export interface ContentComment {
     id: string;
     name: string;
     avatar?: string;
+    role?: string;
   };
 }
 
@@ -53,6 +54,7 @@ export interface Content {
     id: string;
     name: string;
     avatar?: string;
+    role?: string;
   };
   versions?: ContentVersion[];
   tags?: ContentTag[];
@@ -61,5 +63,6 @@ export interface Content {
     id: string;
     name: string;
     avatar?: string;
+    role?: string;
   }[];
 }
