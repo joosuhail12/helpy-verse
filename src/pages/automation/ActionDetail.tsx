@@ -1,3 +1,4 @@
+
 import { useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -14,24 +15,31 @@ import { updateAction } from '@/store/slices/actions/actionsSlice';
 import type { CustomAction } from '@/types/action';
 
 const ActionDetail = () => {
+  console.log('ActionDetail: Component mounting');
   const { actionId } = useParams();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   
-  const action = useAppSelector(state => 
-    state.actions.items.find(item => item.id === actionId)
-  );
+  console.log('ActionDetail: Current actionId:', actionId);
+  
+  const action = useAppSelector(state => {
+    console.log('ActionDetail: Current Redux State:', state);
+    return state.actions.items.find(item => item.id === actionId)
+  });
 
   const [editedAction, setEditedAction] = useState<CustomAction | null>(null);
 
   useEffect(() => {
+    console.log('ActionDetail: Action from Redux:', action);
     if (action) {
+      console.log('ActionDetail: Setting edited action');
       setEditedAction(action);
     }
   }, [action]);
 
   useEffect(() => {
     if (!action) {
+      console.log('ActionDetail: Action not found, showing toast');
       toast({
         title: "Action not found",
         description: "The requested action could not be found.",
@@ -42,6 +50,7 @@ const ActionDetail = () => {
 
   const handleSave = () => {
     if (editedAction) {
+      console.log('ActionDetail: Saving changes:', editedAction);
       dispatch(updateAction(editedAction));
       toast({
         title: "Changes saved",
@@ -51,6 +60,7 @@ const ActionDetail = () => {
   };
 
   if (!action || !editedAction) {
+    console.log('ActionDetail: Rendering not found state');
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center space-x-4">
@@ -64,6 +74,7 @@ const ActionDetail = () => {
     );
   }
 
+  console.log('ActionDetail: Rendering main content');
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="mb-6 flex items-center justify-between">
