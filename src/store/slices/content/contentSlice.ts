@@ -1,4 +1,3 @@
-
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import type { Content, ContentStatus } from '@/types/content';
 import { mockContent } from '@/mock/content';
@@ -18,6 +17,11 @@ interface ContentState {
     field: SortField;
     direction: SortDirection;
   };
+  search: {
+    query: string;
+    suggestions: string[];
+    history: string[];
+  };
 }
 
 const initialState: ContentState = {
@@ -31,6 +35,11 @@ const initialState: ContentState = {
   sort: {
     field: 'lastUpdated',
     direction: 'desc',
+  },
+  search: {
+    query: '',
+    suggestions: [],
+    history: [],
   },
 };
 
@@ -84,6 +93,36 @@ export const contentSlice = createSlice({
       state.items = state.items.filter(item => !action.payload.includes(item.id));
       state.selectedIds = state.selectedIds.filter(id => !action.payload.includes(id));
     },
+    setSearchQuery: (state, action: PayloadAction<string>) => {
+      state.search.query = action.payload;
+      if (action.payload.trim() && !state.search.history.includes(action.payload)) {
+        state.search.history = [action.payload, ...state.search.history.slice(0, 4)];
+      }
+    },
+    updateSearchSuggestions: (state) => {
+      const query = state.search.query.toLowerCase();
+      if (!query) {
+        state.search.suggestions = [];
+        return;
+      }
+      
+      const suggestions = state.items
+        .filter(item => 
+          item.title.toLowerCase().includes(query) ||
+          item.description.toLowerCase().includes(query)
+        )
+        .map(item => item.title)
+        .slice(0, 5);
+      
+      state.search.suggestions = Array.from(new Set(suggestions));
+    },
+    clearSearchHistory: (state) => {
+      state.search.history = [];
+    },
+    clearSearch: (state) => {
+      state.search.query = '';
+      state.search.suggestions = [];
+    },
   },
 });
 
@@ -101,7 +140,10 @@ export const {
   updateContentStatus,
   reassignChatbot,
   deleteContent,
+  setSearchQuery,
+  updateSearchSuggestions,
+  clearSearchHistory,
+  clearSearch,
 } = contentSlice.actions;
 
 export default contentSlice.reducer;
-
