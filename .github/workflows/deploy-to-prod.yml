@@ -1,0 +1,93 @@
+name: Deploy to VM
+
+on:
+  push:
+    branches:
+      - production
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.14.0
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Build project
+        run: npm run build
+
+      - name: Copy package.json to dist
+        run: cp package.json dist/
+
+      - name: Rename dist folder
+        run: mv dist pullse_frontend_lovable_new
+
+      - name: Zip the folder for faster transfer
+        run: zip -r pullse_frontend_lovable_new.zip pullse_frontend_lovable_new
+
+      - name: Set up SSH keys
+        run: |
+          echo "${{ secrets.VM_PEM }}" > pullse-development-server-1.pem
+          chmod 600 pullse-development-server-1.pem
+
+      - name: Define variables
+        run: |
+          echo "VM_USERNAME=${{ secrets.VM_USERNAME }}" >> $GITHUB_ENV
+          echo "VM_IP=${{ secrets.VM_IP }}" >> $GITHUB_ENV
+
+      - name: SCP the zip file to VM
+        run: |
+          mkdir -p ~/.ssh
+          echo -e "Host *\n  StrictHostKeyChecking no\n  UserKnownHostsFile=/dev/null" > ~/.ssh/config
+
+          echo "Transferring zip file..."
+          scp -v -i pullse-development-server-1.pem pullse_frontend_lovable_new.zip pullse@$VM_IP:/home/pullse/
+
+      - name: SSH into VM and deploy
+        run: |
+          ssh -i pullse-development-server-1.pem pullse@$VM_IP << 'EOF'
+          set -e  # Exit immediately if a command fails
+
+          if [ -f "pullse_frontend_lovable_new.zip" ]; then
+            echo "Unzipping the new frontend..."
+            unzip -o /home/pullse/pullse_frontend_lovable_new.zip
+          else
+            echo "ERROR: pullse_frontend_lovable_new.zip not found!"
+            exit 1
+          fi
+
+          # Ensure the folder exists before using jq
+          if [ -d "/home/pullse/pullse_frontend_lovable_new" ]; then
+            echo "Extracting version from package.json..."
+            VERSION=$(jq -r .version /home/pullse/pullse_frontend_lovable_new/package.json || echo "unknown_version")
+
+            if [ "$VERSION" != "unknown_version" ]; then
+              echo "Renaming old frontend to pullse_frontend_lovable_$VERSION..."
+              if [ -d "/home/pullse/pullse_frontend_lovable" ]; then
+                mv /home/pullse/pullse_frontend_lovable /home/pullse/pullse_frontend_lovable_$VERSION
+              fi
+            else
+              echo "WARNING: Version extraction failed!"
+            fi
+
+            echo "Renaming new frontend..."
+            mv /home/pullse/pullse_frontend_lovable_new /home/pullse/pullse_frontend_lovable
+          else
+            echo "ERROR: Extracted folder pullse_frontend_lovable_new not found!"
+            exit 1
+          fi
+
+          # Clean up zip file
+          rm -f /home/pullse/pullse_frontend_lovable_new.zip
+          EOF
+
+      - name: Cleanup SSH Key
+        run: rm -f pullse-development-server-1.pem
