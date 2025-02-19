@@ -10,7 +10,19 @@ export interface Chatbot {
   customInstructions?: string;
   welcomeMessage: string;
   humanHandoffMessage: string;
+  dataCollection: {
+    enabled: boolean;
+    fields: DataCollectionField[];
+  };
 }
 
 export type ChatbotTone = 'friendly' | 'professional' | 'casual' | 'formal' | 'helpful' | 'custom';
+
+export interface DataCollectionField {
+  id: string;
+  label: string;
+  type: 'text' | 'email' | 'phone' | 'select';
+  required: boolean;
+  options?: string[]; // For select type fields
+}
 

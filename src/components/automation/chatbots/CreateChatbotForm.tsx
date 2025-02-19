@@ -12,7 +12,8 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useForm } from 'react-hook-form';
 import { toast } from '@/components/ui/use-toast';
 import { AvatarUpload } from './AvatarUpload';
-import type { ChatbotTone } from '@/types/chatbot';
+import { DataCollectionConfig } from './DataCollectionConfig';
+import type { ChatbotTone, DataCollectionField } from '@/types/chatbot';
 
 interface CreateChatbotFormValues {
   name: string;
@@ -22,6 +23,10 @@ interface CreateChatbotFormValues {
   customInstructions: string;
   welcomeMessage: string;
   humanHandoffMessage: string;
+  dataCollection: {
+    enabled: boolean;
+    fields: DataCollectionField[];
+  };
 }
 
 const TONE_OPTIONS: { value: ChatbotTone; label: string }[] = [
@@ -47,6 +52,10 @@ export const CreateChatbotForm = () => {
       customInstructions: '',
       welcomeMessage: 'Hi! How can I help you today?',
       humanHandoffMessage: "I'll connect you with a human agent who can better assist you with this.",
+      dataCollection: {
+        enabled: false,
+        fields: [],
+      },
     },
   });
 
@@ -62,6 +71,7 @@ export const CreateChatbotForm = () => {
         customInstructions: data.customInstructions,
         welcomeMessage: data.welcomeMessage,
         humanHandoffMessage: data.humanHandoffMessage,
+        dataCollection: data.dataCollection,
       })).unwrap();
 
       toast({
@@ -231,6 +241,29 @@ export const CreateChatbotForm = () => {
                 </FormItem>
               )}
             />
+
+            <FormField
+              control={form.control}
+              name="dataCollection"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Data Collection Form</FormLabel>
+                  <FormControl>
+                    <DataCollectionConfig
+                      enabled={field.value.enabled}
+                      fields={field.value.fields}
+                      onEnableChange={(enabled) => 
+                        form.setValue('dataCollection.enabled', enabled)
+                      }
+                      onFieldsChange={(fields) => 
+                        form.setValue('dataCollection.fields', fields)
+                      }
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </CardContent>
 
           <CardFooter className="flex justify-end space-x-4">
@@ -251,4 +284,3 @@ export const CreateChatbotForm = () => {
     </Card>
   );
 };
-
