@@ -9,6 +9,7 @@ import { Suspense, lazy } from 'react';
 import { useAppSelector } from "./hooks/useAppSelector";
 
 const SignIn = lazy(() => import(/* webpackChunkName: "signin" */ "./pages/SignIn"));
+const CreateChatbot = lazy(() => import(/* webpackChunkName: "create-chatbot" */ "./pages/automation/CreateChatbot"));
 const SignUp = lazy(() => import(/* webpackChunkName: "signup" */ "./pages/SignUp"));
 const ForgotPassword = lazy(() => import(/* webpackChunkName: "forgot-password" */ "./pages/ForgotPassword"));
 const Home = lazy(() => import(/* webpackChunkName: "home" */ "./pages/Dashboard"));
@@ -139,6 +140,7 @@ const App = () => (
                   <Route path="automation/ai/action-center" element={<ActionCenter />} />
                   <Route path="automation/ai/action-center/create" element={<CreateAction />} />
                   <Route path="automation/ai/chatbot-profiles" element={<ChatbotProfiles />} />
+                  <Route path="automation/ai/chatbot-profiles/create" element={<CreateChatbot />} />
                   <Route path="automation/ai/chatbot-profiles/:id" element={<ChatbotProfiles />} />
                 </Route>
                 <Route path="*" element={<Navigate to="/sign-in" replace />} />

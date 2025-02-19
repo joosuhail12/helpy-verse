@@ -10,7 +10,7 @@ interface ChatbotsState {
 }
 
 const initialState: ChatbotsState = {
-  items: mockChatbots, // Initially using mock data, replace with API call
+  items: mockChatbots,
   loading: false,
   error: null,
 };
@@ -18,8 +18,22 @@ const initialState: ChatbotsState = {
 export const fetchChatbots = createAsyncThunk(
   'chatbots/fetchChatbots',
   async () => {
-    // TODO: Replace with actual API call
     return mockChatbots;
+  }
+);
+
+export const createChatbot = createAsyncThunk(
+  'chatbots/createChatbot',
+  async (chatbot: Omit<Chatbot, 'id' | 'createdAt'>) => {
+    // Simulate API call delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    const newChatbot: Chatbot = {
+      ...chatbot,
+      id: Date.now().toString(),
+      createdAt: new Date().toISOString(),
+    };
+    return newChatbot;
   }
 );
 
@@ -40,6 +54,18 @@ const chatbotsSlice = createSlice({
       .addCase(fetchChatbots.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || 'Failed to fetch chatbots';
+      })
+      .addCase(createChatbot.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(createChatbot.fulfilled, (state, action) => {
+        state.items.push(action.payload);
+        state.loading = false;
+      })
+      .addCase(createChatbot.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Failed to create chatbot';
       });
   },
 });
