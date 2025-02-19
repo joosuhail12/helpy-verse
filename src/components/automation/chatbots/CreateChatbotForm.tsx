@@ -3,15 +3,14 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { createChatbot } from '@/store/slices/chatbots/chatbotsSlice';
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
+import { Form } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
-import { Textarea } from '@/components/ui/textarea';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useForm } from 'react-hook-form';
 import { toast } from '@/components/ui/use-toast';
-import { AvatarUpload } from './AvatarUpload';
+import { BasicInformation } from './form/BasicInformation';
+import { ToneSelection } from './form/ToneSelection';
+import { MessageConfiguration } from './form/MessageConfiguration';
 import { DataCollectionConfig } from './DataCollectionConfig';
 import type { ChatbotTone, DataCollectionField } from '@/types/chatbot';
 
@@ -28,15 +27,6 @@ interface CreateChatbotFormValues {
     fields: DataCollectionField[];
   };
 }
-
-const TONE_OPTIONS: { value: ChatbotTone; label: string }[] = [
-  { value: 'friendly', label: 'Friendly' },
-  { value: 'professional', label: 'Professional' },
-  { value: 'casual', label: 'Casual' },
-  { value: 'formal', label: 'Formal' },
-  { value: 'helpful', label: 'Helpful' },
-  { value: 'custom', label: 'Custom' },
-];
 
 export const CreateChatbotForm = () => {
   const dispatch = useAppDispatch();
@@ -90,8 +80,6 @@ export const CreateChatbotForm = () => {
     }
   };
 
-  const showCustomInstructions = form.watch('tone') === 'custom';
-
   return (
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
@@ -101,147 +89,9 @@ export const CreateChatbotForm = () => {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <CardContent className="space-y-6">
-            <FormField
-              control={form.control}
-              name="avatarUrl"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Avatar</FormLabel>
-                  <FormControl>
-                    <AvatarUpload 
-                      value={field.value}
-                      onChange={field.onChange}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Chatbot Name</FormLabel>
-                  <FormControl>
-                    <Input 
-                      placeholder="Enter chatbot name" 
-                      {...field} 
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="persona"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Persona Name</FormLabel>
-                  <FormControl>
-                    <Input 
-                      placeholder="Enter persona name" 
-                      {...field} 
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="tone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Tone</FormLabel>
-                  <FormControl>
-                    <RadioGroup
-                      onValueChange={field.onChange}
-                      value={field.value}
-                      className="grid grid-cols-3 gap-4"
-                    >
-                      {TONE_OPTIONS.map((tone) => (
-                        <FormItem key={tone.value}>
-                          <FormControl>
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value={tone.value} id={tone.value} />
-                              <FormLabel htmlFor={tone.value} className="font-normal">
-                                {tone.label}
-                              </FormLabel>
-                            </div>
-                          </FormControl>
-                        </FormItem>
-                      ))}
-                    </RadioGroup>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {showCustomInstructions && (
-              <FormField
-                control={form.control}
-                name="customInstructions"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Custom Instructions</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        placeholder="Enter custom instructions for the chatbot's behavior and tone" 
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
-
-            <FormField
-              control={form.control}
-              name="welcomeMessage"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Welcome Message</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="Enter the first message the chatbot will send" 
-                      {...field} 
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    This message will be sent when a user starts a new conversation
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="humanHandoffMessage"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Human Handoff Message</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="Enter the message to be sent when transferring to a human agent" 
-                      {...field} 
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    This message will be sent when the chatbot transfers the conversation to a human agent
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
+            <BasicInformation />
+            <ToneSelection />
+            <MessageConfiguration />
             <FormField
               control={form.control}
               name="dataCollection"
