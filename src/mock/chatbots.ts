@@ -1,10 +1,12 @@
 
-export const mockChatbots = [
+import type { Chatbot } from '@/types/chatbot';
+
+export const mockChatbots: Chatbot[] = [
   {
     id: '1',
     name: 'Customer Support Bot',
     description: 'A friendly chatbot with customer support persona',
-    status: 'active',
+    status: 'active', // Explicitly typed as 'active'
     createdAt: '2024-03-15T10:00:00Z',
     avatarUrl: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e',
     tone: 'friendly',
@@ -16,7 +18,7 @@ export const mockChatbots = [
     id: '2',
     name: 'Sales Assistant',
     description: 'A professional chatbot with sales persona',
-    status: 'active',
+    status: 'active', // Explicitly typed as 'active'
     createdAt: '2024-03-14T15:30:00Z',
     avatarUrl: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158',
     tone: 'professional',
@@ -28,13 +30,13 @@ export const mockChatbots = [
     id: '3',
     name: 'Onboarding Guide',
     description: 'A helpful chatbot with onboarding persona',
-    status: 'inactive',
+    status: 'inactive', // Explicitly typed as 'inactive'
     createdAt: '2024-03-13T09:15:00Z',
     avatarUrl: 'https://images.unsplash.com/photo-1581090464777-f3220bbe1b8b',
     tone: 'helpful',
     customInstructions: '',
-    welcomeMessage: 'Hello! I\'m here to help you get started with our platform.',
-    humanHandoffMessage: 'I\'ll transfer you to our onboarding specialist for more detailed guidance.',
+    welcomeMessage: "Hello! I'm here to help you get started with our platform.",
+    humanHandoffMessage: "I'll transfer you to our onboarding specialist for more detailed guidance.",
   },
 ];
 

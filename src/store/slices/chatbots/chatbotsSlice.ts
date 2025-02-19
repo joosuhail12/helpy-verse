@@ -18,6 +18,8 @@ const initialState: ChatbotsState = {
 export const fetchChatbots = createAsyncThunk(
   'chatbots/fetchChatbots',
   async () => {
+    // Simulate API call delay
+    await new Promise(resolve => setTimeout(resolve, 500));
     return mockChatbots;
   }
 );
