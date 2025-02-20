@@ -13,6 +13,13 @@ export const mockChatbots: Chatbot[] = [
     customInstructions: '',
     welcomeMessage: 'Hi! How can I help you today?',
     humanHandoffMessage: "I'll connect you with a human agent who can better assist you with this.",
+    behavior: {
+      queryHandling: 'continuous',
+      postAnswerAction: 'continue',
+      inactivityTimeout: 15,
+      inactivityAction: 'prompt',
+      enableHumanHandoff: true,
+    },
     dataCollection: {
       enabled: true,
       fields: [
@@ -49,6 +56,13 @@ export const mockChatbots: Chatbot[] = [
     customInstructions: '',
     welcomeMessage: 'Welcome! I can help you find the perfect solution for your needs.',
     humanHandoffMessage: 'Let me connect you with one of our sales representatives for more detailed assistance.',
+    behavior: {
+      queryHandling: 'continuous',
+      postAnswerAction: 'continue',
+      inactivityTimeout: 20,
+      inactivityAction: 'handoff',
+      enableHumanHandoff: true,
+    },
     dataCollection: {
       enabled: true,
       fields: [
@@ -84,9 +98,17 @@ export const mockChatbots: Chatbot[] = [
     customInstructions: '',
     welcomeMessage: "Hello! I'm here to help you get started with our platform.",
     humanHandoffMessage: "I'll transfer you to our onboarding specialist for more detailed guidance.",
+    behavior: {
+      queryHandling: 'continuous',
+      postAnswerAction: 'continue',
+      inactivityTimeout: 10,
+      inactivityAction: 'close',
+      enableHumanHandoff: true,
+    },
     dataCollection: {
       enabled: false,
       fields: []
     }
   },
 ];
+
