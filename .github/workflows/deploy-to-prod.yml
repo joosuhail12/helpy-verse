@@ -52,12 +52,24 @@ jobs:
           
           app.use(express.static(path.join(__dirname)));
           
-          app.get("*", (req, res) => {
-            res.sendFile(path.join(__dirname, "index.html"));
+          app.get("/*", (req, res) => {
+            console.log(`Serving request for: ${req.path}`);
+            res.sendFile(path.join(__dirname, "index.html"), err => {
+              if (err) {
+                console.error("Error sending file:", err);
+                res.status(500).send("Error loading application");
+              }
+            });
           });
           
-          app.listen(PORT, () => {
+          app.use((err, req, res, next) => {
+            console.error("Server error:", err);
+            res.status(500).send("Internal Server Error");
+          });
+          
+          app.listen(PORT, "0.0.0.0", () => {
             console.log(`Server is running on port ${PORT}`);
+            console.log(`Server directory: ${__dirname}`);
           });' > dist/server.js
 
       - name: Create PM2 config
@@ -73,7 +85,11 @@ jobs:
               "env": {
                 "PORT": 3000,
                 "NODE_ENV": "production"
-              }
+              },
+              "error_file": "logs/err.log",
+              "out_file": "logs/out.log",
+              "log_file": "logs/combined.log",
+              "merge_logs": true
             }]
           }' > dist/ecosystem.config.json
 
@@ -148,6 +164,9 @@ jobs:
             mv /home/pullse/pullse_frontend_lovable "/home/pullse/pullse_frontend_lovable_$VERSION"
           fi
 
+          echo "Creating logs directory..."
+          mkdir -p logs
+
           echo "Moving new frontend into place..."
           mv /home/pullse/pullse_frontend_lovable_new /home/pullse/pullse_frontend_lovable
 
@@ -155,6 +174,11 @@ jobs:
 
           echo "Starting PM2 process..."
           pm2 start ecosystem.config.json
+          pm2 save
+
+          echo "Checking PM2 status..."
+          pm2 list
+          pm2 logs pullse-frontend --lines 50
 
           # Clean up zip file
           rm -f /home/pullse/pullse_frontend_lovable_new.zip
@@ -162,4 +186,3 @@ jobs:
 
       - name: Cleanup SSH Key
         run: rm -f pullse-development-server-1.pem
-
