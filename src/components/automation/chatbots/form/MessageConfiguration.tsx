@@ -13,16 +13,17 @@ export const MessageConfiguration = () => {
         name="welcomeMessage"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Welcome Message</FormLabel>
-            <FormControl>
-              <Textarea 
-                placeholder="Enter the first message the chatbot will send" 
-                {...field} 
-              />
-            </FormControl>
+            <FormLabel className="text-base">Welcome Message</FormLabel>
             <FormDescription>
               This message will be sent when a user starts a new conversation
             </FormDescription>
+            <FormControl>
+              <Textarea 
+                placeholder="Enter the first message the chatbot will send" 
+                className="resize-none min-h-[100px]"
+                {...field} 
+              />
+            </FormControl>
             <FormMessage />
           </FormItem>
         )}
@@ -33,16 +34,17 @@ export const MessageConfiguration = () => {
         name="humanHandoffMessage"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Human Handoff Message</FormLabel>
-            <FormControl>
-              <Textarea 
-                placeholder="Enter the message to be sent when transferring to a human agent" 
-                {...field} 
-              />
-            </FormControl>
+            <FormLabel className="text-base">Human Handoff Message</FormLabel>
             <FormDescription>
               This message will be sent when the chatbot transfers the conversation to a human agent
             </FormDescription>
+            <FormControl>
+              <Textarea 
+                placeholder="Enter the message to be sent when transferring to a human agent" 
+                className="resize-none min-h-[100px]"
+                {...field} 
+              />
+            </FormControl>
             <FormMessage />
           </FormItem>
         )}
