@@ -160,8 +160,8 @@ jobs:
             pm2 delete pullse-frontend || true
             
             echo "Moving old frontend to backup..."
-            VERSION=$(jq -r .version package.json || echo "unknown_version")
-            mv /home/pullse/pullse_frontend_lovable "/home/pullse/pullse_frontend_lovable_$VERSION"
+            TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+            mv /home/pullse/pullse_frontend_lovable "/home/pullse/pullse_frontend_lovable_backup_${TIMESTAMP}"
           fi
 
           echo "Creating logs directory..."
@@ -186,3 +186,4 @@ jobs:
 
       - name: Cleanup SSH Key
         run: rm -f pullse-development-server-1.pem
+
