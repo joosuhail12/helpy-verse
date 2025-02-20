@@ -7,66 +7,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { useFormContext } from 'react-hook-form';
 import { Card, CardContent } from '@/components/ui/card';
-import { MessageSquare, Clock, HandHelping, Settings2 } from 'lucide-react';
+import { MessageSquare, Clock, HandHelping, ArrowRight } from 'lucide-react';
 
 export const BehaviorSettings = () => {
   const form = useFormContext();
 
-  return (
-    <div className="space-y-6">
-      <Card className="border-2 border-muted">
+  const renderSubSettings = () => (
+    <div className="space-y-6 pl-8 mt-4">
+      <Card className="border border-muted">
         <CardContent className="pt-6">
           <div className="flex items-center gap-2 mb-4">
-            <MessageSquare className="w-5 h-5 text-primary" />
-            <h3 className="font-medium">Conversation Style</h3>
-          </div>
-          <FormField
-            control={form.control}
-            name="behavior.queryHandling"
-            render={({ field }) => (
-              <FormItem className="space-y-3">
-                <FormLabel className="text-base">How should the chatbot handle conversations?</FormLabel>
-                <FormControl>
-                  <RadioGroup
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                    className="flex flex-col space-y-3"
-                  >
-                    <div className="flex items-start gap-2 p-3 rounded-lg border border-muted hover:bg-accent cursor-pointer">
-                      <RadioGroupItem value="single" id="single" className="mt-1" />
-                      <div>
-                        <label htmlFor="single" className="text-sm font-medium block">
-                          Answer and close
-                        </label>
-                        <p className="text-sm text-muted-foreground">
-                          Bot will provide a single answer and end the conversation
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-2 p-3 rounded-lg border border-muted hover:bg-accent cursor-pointer">
-                      <RadioGroupItem value="continuous" id="continuous" className="mt-1" />
-                      <div>
-                        <label htmlFor="continuous" className="text-sm font-medium block">
-                          Continue conversation
-                        </label>
-                        <p className="text-sm text-muted-foreground">
-                          Bot will maintain an ongoing dialogue until the conversation is complete
-                        </p>
-                      </div>
-                    </div>
-                  </RadioGroup>
-                </FormControl>
-              </FormItem>
-            )}
-          />
-        </CardContent>
-      </Card>
-
-      <Card className="border-2 border-muted">
-        <CardContent className="pt-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Settings2 className="w-5 h-5 text-primary" />
-            <h3 className="font-medium">Response Handling</h3>
+            <ArrowRight className="w-5 h-5 text-primary" />
+            <h3 className="font-medium">After Answering</h3>
           </div>
           <FormField
             control={form.control}
@@ -92,7 +44,7 @@ export const BehaviorSettings = () => {
         </CardContent>
       </Card>
 
-      <Card className="border-2 border-muted">
+      <Card className="border border-muted">
         <CardContent className="pt-6">
           <div className="flex items-center gap-2 mb-4">
             <Clock className="w-5 h-5 text-primary" />
@@ -104,7 +56,7 @@ export const BehaviorSettings = () => {
               name="behavior.inactivityTimeout"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-base">How long should the bot wait before marking a chat as inactive?</FormLabel>
+                  <FormLabel className="text-base">After how long should the chat be marked as inactive?</FormLabel>
                   <div className="flex items-center gap-2">
                     <FormControl>
                       <Input
@@ -127,7 +79,7 @@ export const BehaviorSettings = () => {
               name="behavior.inactivityAction"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-base">What should happen when a chat becomes inactive?</FormLabel>
+                  <FormLabel className="text-base">What should happen when inactive?</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
@@ -144,6 +96,63 @@ export const BehaviorSettings = () => {
               )}
             />
           </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
+  return (
+    <div className="space-y-6">
+      <Card className="border-2 border-muted">
+        <CardContent className="pt-6">
+          <div className="flex items-center gap-2 mb-4">
+            <MessageSquare className="w-5 h-5 text-primary" />
+            <h3 className="font-medium">Conversation Style</h3>
+          </div>
+          <FormField
+            control={form.control}
+            name="behavior.queryHandling"
+            render={({ field }) => (
+              <FormItem className="space-y-3">
+                <FormLabel className="text-base">How should the chatbot handle conversations?</FormLabel>
+                <FormControl>
+                  <RadioGroup
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                    className="flex flex-col space-y-3"
+                  >
+                    <div className="space-y-6">
+                      <div className="flex items-start gap-2 p-3 rounded-lg border border-muted hover:bg-accent cursor-pointer">
+                        <RadioGroupItem value="single" id="single" className="mt-1" />
+                        <div className="flex-1">
+                          <label htmlFor="single" className="text-sm font-medium block">
+                            Answer and close
+                          </label>
+                          <p className="text-sm text-muted-foreground mb-4">
+                            Bot will provide a single answer and end the conversation
+                          </p>
+                          {field.value === 'single' && renderSubSettings()}
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-2 p-3 rounded-lg border border-muted hover:bg-accent cursor-pointer">
+                        <RadioGroupItem value="continuous" id="continuous" className="mt-1" />
+                        <div className="flex-1">
+                          <label htmlFor="continuous" className="text-sm font-medium block">
+                            Continue conversation
+                          </label>
+                          <p className="text-sm text-muted-foreground mb-4">
+                            Bot will maintain an ongoing dialogue until the conversation is complete
+                          </p>
+                          {field.value === 'continuous' && renderSubSettings()}
+                        </div>
+                      </div>
+                    </div>
+                  </RadioGroup>
+                </FormControl>
+              </FormItem>
+            )}
+          />
         </CardContent>
       </Card>
 
@@ -178,4 +187,3 @@ export const BehaviorSettings = () => {
     </div>
   );
 };
-
