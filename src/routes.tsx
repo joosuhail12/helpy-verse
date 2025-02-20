@@ -11,6 +11,9 @@ const Home = lazy(() => import('@/pages/Home'));
 const Automation = lazy(() => import('@/pages/automation'));
 const ActionCenter = lazy(() => import('@/pages/automation/ActionCenter'));
 const CreateAction = lazy(() => import('@/pages/automation/CreateAction'));
+const ChatbotProfiles = lazy(() => import('@/pages/automation/ChatbotProfiles'));
+const ChatbotDetail = lazy(() => import('@/pages/automation/ChatbotDetail'));
+const CreateChatbot = lazy(() => import('@/pages/automation/CreateChatbot'));
 
 export const router = createBrowserRouter([
   {
@@ -38,6 +41,30 @@ export const router = createBrowserRouter([
                 element: (
                   <ProtectedRoute>
                     <CreateAction />
+                  </ProtectedRoute>
+                ),
+              },
+              {
+                path: 'ai/chatbot-profiles',
+                element: (
+                  <ProtectedRoute>
+                    <ChatbotProfiles />
+                  </ProtectedRoute>
+                ),
+              },
+              {
+                path: 'ai/chatbot-profiles/create',
+                element: (
+                  <ProtectedRoute>
+                    <CreateChatbot />
+                  </ProtectedRoute>
+                ),
+              },
+              {
+                path: 'ai/chatbot-profiles/:id',
+                element: (
+                  <ProtectedRoute>
+                    <ChatbotDetail />
                   </ProtectedRoute>
                 ),
               },
