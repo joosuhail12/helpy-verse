@@ -1,3 +1,4 @@
+
 name: Deploy to VM
 
 on:
@@ -12,14 +13,29 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22.14.0
 
+      - name: Configure Git
+        run: |
+          git config --global user.name "GitHub Actions Bot"
+          git config --global user.email "actions@github.com"
+
       - name: Install dependencies
         run: npm install --legacy-peer-deps
+
+      - name: Update version
+        run: |
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          IFS='.' read -ra VERSION_PARTS <<< "$CURRENT_VERSION"
+          PATCH=$((VERSION_PARTS[2] + 1))
+          NEW_VERSION="${VERSION_PARTS[0]}.${VERSION_PARTS[1]}.$PATCH"
+          npm version $NEW_VERSION --no-git-tag-version
 
       - name: Build project
         run: npm run build
@@ -91,3 +107,4 @@ jobs:
 
       - name: Cleanup SSH Key
         run: rm -f pullse-development-server-1.pem
+
