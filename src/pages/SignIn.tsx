@@ -3,10 +3,15 @@ import { memo } from "react";
 import { Logo } from "@/components/auth/Logo";
 import { FeatureList } from "@/components/auth/FeatureList";
 import { LoginForm } from "@/components/auth/LoginForm";
+import { Form } from "@/components/ui/form";
+import { FormProvider } from "react-hook-form";
+import { useForm } from "react-hook-form";
 
 export const SignIn = memo(() => {
   console.log('SignIn component rendering'); // Debug log
   
+  const methods = useForm();
+
   return (
     <div className="min-h-screen w-full gradient-background flex items-center justify-center p-6 md:p-8">
       <div className="w-full max-w-3xl auth-card grid md:grid-cols-2 gap-8">
@@ -23,7 +28,11 @@ export const SignIn = memo(() => {
           </div>
           <FeatureList />
         </div>
-        <LoginForm />
+        <Form {...methods}>
+          <FormProvider {...methods}>
+            <LoginForm />
+          </FormProvider>
+        </Form>
       </div>
     </div>
   );
@@ -32,3 +41,4 @@ export const SignIn = memo(() => {
 SignIn.displayName = 'SignIn';
 
 export default SignIn;
+
