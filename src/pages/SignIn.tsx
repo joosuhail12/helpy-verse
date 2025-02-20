@@ -5,6 +5,8 @@ import { FeatureList } from "@/components/auth/FeatureList";
 import { LoginForm } from "@/components/auth/LoginForm";
 
 export const SignIn = memo(() => {
+  console.log('SignIn component rendering'); // Debug log
+  
   return (
     <div className="min-h-screen w-full gradient-background flex items-center justify-center p-6 md:p-8">
       <div className="w-full max-w-3xl auth-card grid md:grid-cols-2 gap-8">
