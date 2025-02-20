@@ -14,6 +14,13 @@ export interface Chatbot {
     enabled: boolean;
     fields: DataCollectionField[];
   };
+  behavior: {
+    queryHandling: 'single' | 'continuous';
+    postAnswerAction: 'continue' | 'close' | 'handoff';
+    inactivityTimeout: number;
+    inactivityAction: 'close' | 'handoff' | 'prompt';
+    enableHumanHandoff: boolean;
+  };
 }
 
 export type ChatbotTone = 'friendly' | 'professional' | 'casual' | 'formal' | 'helpful' | 'custom';
@@ -25,4 +32,3 @@ export interface DataCollectionField {
   required: boolean;
   options?: string[]; // For select type fields
 }
-

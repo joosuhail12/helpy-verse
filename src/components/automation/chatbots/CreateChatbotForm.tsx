@@ -12,6 +12,7 @@ import { toast } from '@/components/ui/use-toast';
 import { BasicInformation } from './form/BasicInformation';
 import { ToneSelection } from './form/ToneSelection';
 import { MessageConfiguration } from './form/MessageConfiguration';
+import { BehaviorSettings } from './form/BehaviorSettings';
 import type { ChatbotTone, DataCollectionField } from '@/types/chatbot';
 
 interface CreateChatbotFormValues {
@@ -25,6 +26,13 @@ interface CreateChatbotFormValues {
   dataCollection: {
     enabled: boolean;
     fields: DataCollectionField[];
+  };
+  behavior: {
+    queryHandling: 'single' | 'continuous';
+    postAnswerAction: 'continue' | 'close' | 'handoff';
+    inactivityTimeout: number;
+    inactivityAction: 'close' | 'handoff' | 'prompt';
+    enableHumanHandoff: boolean;
   };
 }
 
@@ -46,6 +54,13 @@ export const CreateChatbotForm = () => {
         enabled: false,
         fields: [],
       },
+      behavior: {
+        queryHandling: 'continuous',
+        postAnswerAction: 'continue',
+        inactivityTimeout: 15,
+        inactivityAction: 'prompt',
+        enableHumanHandoff: true,
+      },
     },
   });
 
@@ -62,6 +77,7 @@ export const CreateChatbotForm = () => {
         welcomeMessage: data.welcomeMessage,
         humanHandoffMessage: data.humanHandoffMessage,
         dataCollection: data.dataCollection,
+        behavior: data.behavior,
       })).unwrap();
 
       toast({
@@ -106,6 +122,13 @@ export const CreateChatbotForm = () => {
             <div className="space-y-6">
               <h3 className="text-lg font-semibold">Message Settings</h3>
               <MessageConfiguration />
+            </div>
+
+            <Separator className="my-6" />
+
+            <div className="space-y-6">
+              <h3 className="text-lg font-semibold">Behavior Settings</h3>
+              <BehaviorSettings />
             </div>
           </CardContent>
 
