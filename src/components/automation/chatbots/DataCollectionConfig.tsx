@@ -1,7 +1,6 @@
 
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -13,6 +12,14 @@ import {
 } from "@/components/ui/select";
 import { PlusCircle, X } from "lucide-react";
 import type { DataCollectionField } from '@/types/chatbot';
+
+const AVAILABLE_CUSTOMER_FIELDS = [
+  { id: 'firstName', label: 'First Name', type: 'text' },
+  { id: 'lastName', label: 'Last Name', type: 'text' },
+  { id: 'email', label: 'Email', type: 'email' },
+  { id: 'phone', label: 'Phone Number', type: 'phone' },
+  { id: 'company', label: 'Company Name', type: 'text' },
+] as const;
 
 interface DataCollectionConfigProps {
   enabled: boolean;
@@ -27,16 +34,25 @@ export function DataCollectionConfig({
   onEnableChange,
   onFieldsChange,
 }: DataCollectionConfigProps) {
-  const [newFieldType, setNewFieldType] = useState<DataCollectionField['type']>('text');
+  const [selectedFieldId, setSelectedFieldId] = useState<string>('');
 
   const addField = () => {
+    if (!selectedFieldId) return;
+    
+    const fieldToAdd = AVAILABLE_CUSTOMER_FIELDS.find(f => f.id === selectedFieldId);
+    if (!fieldToAdd) return;
+
+    // Check if field is already added
+    if (fields.some(f => f.id === selectedFieldId)) return;
+
     const newField: DataCollectionField = {
-      id: Date.now().toString(),
-      label: '',
-      type: newFieldType,
+      id: fieldToAdd.id,
+      label: fieldToAdd.label,
+      type: fieldToAdd.type,
       required: false,
     };
     onFieldsChange([...fields, newField]);
+    setSelectedFieldId('');
   };
 
   const removeField = (id: string) => {
@@ -49,13 +65,17 @@ export function DataCollectionConfig({
     ));
   };
 
+  const availableFields = AVAILABLE_CUSTOMER_FIELDS.filter(
+    field => !fields.some(f => f.id === field.id)
+  );
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
           <Label>Enable Data Collection</Label>
           <p className="text-sm text-gray-500">
-            Collect information from unauthenticated users before starting a chat
+            Select which customer information to collect before starting a chat
           </p>
         </div>
         <Switch checked={enabled} onCheckedChange={onEnableChange} />
@@ -65,20 +85,29 @@ export function DataCollectionConfig({
         <div className="space-y-4">
           <div className="flex items-end gap-4">
             <div className="flex-1">
-              <Label>Field Type</Label>
-              <Select value={newFieldType} onValueChange={(value: DataCollectionField['type']) => setNewFieldType(value)}>
+              <Label>Add Customer Field</Label>
+              <Select 
+                value={selectedFieldId} 
+                onValueChange={setSelectedFieldId}
+              >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Select a field to add" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="text">Text</SelectItem>
-                  <SelectItem value="email">Email</SelectItem>
-                  <SelectItem value="phone">Phone</SelectItem>
-                  <SelectItem value="select">Select</SelectItem>
+                  {availableFields.map((field) => (
+                    <SelectItem key={field.id} value={field.id}>
+                      {field.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
-            <Button type="button" onClick={addField} className="mb-0.5">
+            <Button 
+              type="button" 
+              onClick={addField} 
+              className="mb-0.5"
+              disabled={!selectedFieldId}
+            >
               <PlusCircle className="h-4 w-4 mr-2" />
               Add Field
             </Button>
@@ -86,37 +115,11 @@ export function DataCollectionConfig({
 
           <div className="space-y-4">
             {fields.map((field) => (
-              <div key={field.id} className="flex items-start gap-4 p-4 border rounded-lg">
-                <div className="flex-1 space-y-4">
-                  <div>
-                    <Label>Field Label</Label>
-                    <Input
-                      value={field.label}
-                      onChange={(e) => updateField(field.id, { label: e.target.value })}
-                      placeholder="Enter field label"
-                    />
-                  </div>
-                  <div className="flex items-center space-x-4">
-                    <div className="flex-1">
-                      <Label>Field Type</Label>
-                      <Select
-                        value={field.type}
-                        onValueChange={(value: DataCollectionField['type']) => 
-                          updateField(field.id, { type: value })
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="text">Text</SelectItem>
-                          <SelectItem value="email">Email</SelectItem>
-                          <SelectItem value="phone">Phone</SelectItem>
-                          <SelectItem value="select">Select</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="flex items-center space-x-2 pt-6">
+              <div key={field.id} className="flex items-center gap-4 p-4 border rounded-lg">
+                <div className="flex-1">
+                  <div className="flex items-center justify-between">
+                    <Label>{field.label}</Label>
+                    <div className="flex items-center space-x-2">
                       <Switch
                         checked={field.required}
                         onCheckedChange={(checked) => updateField(field.id, { required: checked })}
@@ -124,6 +127,9 @@ export function DataCollectionConfig({
                       <Label>Required</Label>
                     </div>
                   </div>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Type: {field.type}
+                  </p>
                 </div>
                 <Button
                   type="button"

@@ -39,7 +39,7 @@ export const MessageConfiguration = () => {
             <FormItem>
               <FormLabel className="text-base">Data Collection Fields</FormLabel>
               <FormDescription>
-                Configure the fields you want to collect from users
+                Select which customer information to collect before starting a chat
               </FormDescription>
               <FormControl>
                 <DataCollectionConfig
