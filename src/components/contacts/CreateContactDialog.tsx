@@ -9,6 +9,7 @@ import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { addContact } from '@/store/slices/contacts/contactsSlice';
 import { toast } from '@/hooks/use-toast';
 import { v4 as uuidv4 } from 'uuid';
+import { Contact } from '@/types/contact';
 
 interface CreateContactDialogProps {
   open: boolean;
@@ -17,8 +18,8 @@ interface CreateContactDialogProps {
 
 const CreateContactDialog = ({ open, onOpenChange }: CreateContactDialogProps) => {
   const dispatch = useAppDispatch();
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
+  const [firstname, setFirstName] = useState('');
+  const [lastname, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [isCustomer, setIsCustomer] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -30,8 +31,8 @@ const CreateContactDialog = ({ open, onOpenChange }: CreateContactDialogProps) =
     try {
       const newContact = {
         id: uuidv4(),
-        firstName,
-        lastName,
+        firstname,
+        lastname,
         email,
         type: isCustomer ? 'customer' : 'visitor' as const,
         status: 'active' as const,
@@ -40,7 +41,7 @@ const CreateContactDialog = ({ open, onOpenChange }: CreateContactDialogProps) =
         updatedAt: new Date().toISOString(),
       };
 
-      dispatch(addContact(newContact));
+      dispatch(addContact(newContact as Partial<Contact>));
       
       toast({
         title: "Success",
@@ -72,10 +73,10 @@ const CreateContactDialog = ({ open, onOpenChange }: CreateContactDialogProps) =
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="firstName">First Name</Label>
+            <Label htmlFor="firstname">First Name</Label>
             <Input
-              id="firstName"
-              value={firstName}
+              id="firstname"
+              value={firstname}
               onChange={(e) => setFirstName(e.target.value)}
               placeholder="Enter first name"
               required
@@ -83,10 +84,10 @@ const CreateContactDialog = ({ open, onOpenChange }: CreateContactDialogProps) =
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="lastName">Last Name</Label>
+            <Label htmlFor="lastname">Last Name</Label>
             <Input
-              id="lastName"
-              value={lastName}
+              id="lastname"
+              value={lastname}
               onChange={(e) => setLastName(e.target.value)}
               placeholder="Enter last name"
               required

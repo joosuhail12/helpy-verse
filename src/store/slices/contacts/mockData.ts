@@ -4,8 +4,8 @@ import { Contact } from '@/types/contact';
 export const mockContacts: Contact[] = [
   {
     id: '1',
-    firstName: 'Sarah',
-    lastName: 'Johnson',
+    firstname: 'Sarah',
+    lastname: 'Johnson',
     email: 'sarah.johnson@techinnovators.com',
     phone: '+1 (555) 111-2233',
     company: 'Tech Innovators Inc.',
@@ -33,8 +33,8 @@ export const mockContacts: Contact[] = [
   },
   {
     id: '2',
-    firstName: 'Michael',
-    lastName: 'Chen',
+    firstname: 'Michael',
+    lastname: 'Chen',
     email: 'michael.chen@globalsolutions.com',
     phone: '+1 (555) 444-5555',
     company: 'Global Solutions Corp',
@@ -61,8 +61,8 @@ export const mockContacts: Contact[] = [
   },
   {
     id: '3',
-    firstName: 'Emma',
-    lastName: 'Rodriguez',
+    firstname: 'Emma',
+    lastname: 'Rodriguez',
     email: 'emma.rodriguez@ecotechventures.com',
     phone: '+1 (555) 777-8888',
     company: 'EcoTech Ventures',
@@ -89,8 +89,8 @@ export const mockContacts: Contact[] = [
   },
   {
     id: '4',
-    firstName: 'David',
-    lastName: 'Kim',
+    firstname: 'David',
+    lastname: 'Kim',
     email: 'david.kim@digitaldynamics.tech',
     phone: '+1 (555) 999-0000',
     company: 'Digital Dynamics Ltd',
@@ -118,8 +118,8 @@ export const mockContacts: Contact[] = [
   },
   {
     id: '5',
-    firstName: 'Jennifer',
-    lastName: 'Lee',
+    firstname: 'Jennifer',
+    lastname: 'Lee',
     email: 'jennifer.lee@healthtechsolutions.com',
     phone: '+1 (555) 222-3333',
     company: 'HealthTech Solutions',

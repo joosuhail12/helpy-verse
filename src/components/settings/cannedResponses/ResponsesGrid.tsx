@@ -2,7 +2,7 @@
 import React from 'react';
 import { CardContent } from '@/components/ui/card';
 import { ResponseCard } from './ResponseCard';
-import type { CannedResponse } from '@/mock/cannedResponses';
+import { CannedResponse } from '@/types/cannedResponse';
 
 interface ResponsesGridProps {
   responses: CannedResponse[];
@@ -11,16 +11,16 @@ interface ResponsesGridProps {
   view?: 'list' | 'grid';
 }
 
-export const ResponsesGrid = ({ 
-  responses, 
+export const ResponsesGrid = ({
+  responses,
   onSelect,
   onDelete,
   view = 'list'
 }: ResponsesGridProps) => {
   return (
     <CardContent className={`
-      ${view === 'grid' 
-        ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4' 
+      ${view === 'grid'
+        ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'
         : 'flex flex-col gap-4'
       }
     `}>

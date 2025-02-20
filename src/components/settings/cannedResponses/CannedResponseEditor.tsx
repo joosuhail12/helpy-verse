@@ -3,7 +3,6 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Mention from '@tiptap/extension-mention';
 import Placeholder from '@tiptap/extension-placeholder';
-import CannedResponseEditorToolbar from './CannedResponseEditorToolbar';
 import MentionList from '@/components/inbox/components/MentionList';
 import { cn } from '@/lib/utils';
 import { useCallback } from 'react';
@@ -90,7 +89,7 @@ export const CannedResponseEditor = ({
       },
       handleKeyDown: (view, event) => {
         if (event.ctrlKey || event.metaKey) {
-          switch(event.key) {
+          switch (event.key) {
             case 'b':
               event.preventDefault();
               view.dispatch(view.state.tr.setMeta('format', 'bold'));
@@ -128,10 +127,6 @@ export const CannedResponseEditor = ({
       "border rounded-md",
       disabled && "opacity-50"
     )}>
-      <CannedResponseEditorToolbar 
-        editor={editor}
-        disabled={disabled}
-      />
       <EditorContent editor={editor} />
       <div className="px-3 py-2 border-t text-xs text-muted-foreground flex justify-between items-center">
         <div>

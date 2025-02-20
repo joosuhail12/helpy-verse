@@ -4,13 +4,11 @@ export const mockTeams: Team[] = [
   {
     id: '1',
     name: 'Frontend Team',
-    members: [
+    teamMembers: [
       { id: '101', name: 'John Doe', email: 'john@example.com' },
       { id: '102', name: 'Jane Smith', email: 'jane@example.com' }
     ],
-    routing: {
-      type: 'round-robin'
-    },
+    routingStrategy: 'round-robin',
     officeHours: {
       monday: [{ start: '09:00', end: '17:00' }],
       tuesday: [{ start: '09:00', end: '17:00' }],
@@ -27,22 +25,20 @@ export const mockTeams: Team[] = [
   {
     id: '2',
     name: 'Backend Team',
-    members: [
+    teamMembers: [
       { id: '201', name: 'Mike Johnson', email: 'mike@example.com' },
       { id: '202', name: 'Sarah Wilson', email: 'sarah@example.com' },
       { id: '203', name: 'Tom Brown', email: 'tom@example.com' }
     ],
-    routing: {
-      type: 'load-balanced'
-    },
+    routingStrategy: 'load-balanced',
     officeHours: {
-      monday: [{ start: '08:00', end: '16:00' }],
-      tuesday: [{ start: '08:00', end: '16:00' }],
-      wednesday: [{ start: '08:00', end: '16:00' }],
-      thursday: [{ start: '08:00', end: '16:00' }],
-      friday: [{ start: '08:00', end: '16:00' }],
-      saturday: [],
-      sunday: []
+      "monday": [{ "start": "08:00", "end": "16:00" }],
+      "tuesday": [{ "start": "08:00", "end": "16:00" }],
+      "wednesday": [{ "start": "08:00", "end": "16:00" }],
+      "thursday": [{ "start": "08:00", "end": "16:00" }],
+      "friday": [{ "start": "08:00", "end": "16:00" }],
+      "saturday": [],
+      "sunday": []
     },
     holidays: ['2024-07-04', '2024-11-28'],
     createdAt: '2024-02-01T09:00:00Z',
@@ -51,13 +47,11 @@ export const mockTeams: Team[] = [
   {
     id: '3',
     name: 'Design Team',
-    members: [
+    teamMembers: [
       { id: '301', name: 'Alice Cooper', email: 'alice@example.com' },
       { id: '302', name: 'Bob Martin', email: 'bob@example.com' }
     ],
-    routing: {
-      type: 'manual'
-    },
+    routingStrategy: 'manual',
     officeHours: {
       monday: [{ start: '10:00', end: '18:00' }],
       tuesday: [{ start: '10:00', end: '18:00' }],

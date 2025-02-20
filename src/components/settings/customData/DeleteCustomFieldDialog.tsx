@@ -10,14 +10,14 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/components/ui/use-toast";
-import type { CustomField } from "@/types/customField";
+import type { CustomField } from "@/types/customData";
 import { useCustomDataMutations } from "@/hooks/useCustomDataMutations";
 
 interface DeleteCustomFieldDialogProps {
   isOpen: boolean;
   onClose: () => void;
   field: CustomField;
-  table: 'tickets' | 'contacts' | 'companies';
+  table: 'ticket' | 'customer' | 'company';
 }
 
 const DeleteCustomFieldDialog = ({

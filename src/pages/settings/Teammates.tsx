@@ -2,7 +2,8 @@
 import { useEffect, useState } from 'react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
-import { fetchTeammates, resendInvitation } from '@/store/slices/teammates/actions';
+import { resendInvitation } from '@/store/slices/teammates/actions';
+import { fetchTeammates } from '@/store/slices/teammates/teammatesSlice';
 import { useToast } from "@/hooks/use-toast";
 import AddTeammateDialog from '@/components/teammates/AddTeammateDialog';
 import TeammatesBulkActions from '@/components/teammates/TeammatesBulkActions';
@@ -100,16 +101,16 @@ const TeammatesPage = () => {
 
   const sortedTeammates = [...filteredTeammates].sort((a, b) => {
     if (!sortBy) return 0;
-    
+
     const aValue = a[sortBy];
     const bValue = b[sortBy];
-    
+
     if (typeof aValue === 'string' && typeof bValue === 'string') {
-      return sortDirection === 'asc' 
+      return sortDirection === 'asc'
         ? aValue.localeCompare(bValue)
         : bValue.localeCompare(aValue);
     }
-    
+
     return 0;
   });
 

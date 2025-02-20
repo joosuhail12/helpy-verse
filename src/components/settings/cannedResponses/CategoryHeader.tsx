@@ -9,7 +9,7 @@ interface CategoryHeaderProps {
 export const CategoryHeader = ({ title }: CategoryHeaderProps) => {
   return (
     <CardHeader>
-      <CardTitle>{title}</CardTitle>
+      <CardTitle>{title.charAt(0).toUpperCase() + title.slice(1)}</CardTitle>
     </CardHeader>
   );
 };

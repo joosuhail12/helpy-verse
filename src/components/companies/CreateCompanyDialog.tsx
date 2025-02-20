@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useState } from 'react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { addCompany } from '@/store/slices/companies/companiesSlice';
+import { createCompany } from '@/store/slices/companies/companiesSlice';
 import { toast } from '@/hooks/use-toast';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -33,7 +33,7 @@ const CreateCompanyDialog = ({ open, onOpenChange }: CreateCompanyDialogProps) =
         updatedAt: new Date().toISOString(),
       };
 
-      dispatch(addCompany(newCompany));
+      dispatch(createCompany(newCompany));
       
       toast({
         title: "Success",

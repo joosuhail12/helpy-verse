@@ -43,7 +43,7 @@ export const ContactTimeline = ({ contact }: ContactTimelineProps) => {
       id: '1',
       type: 'email',
       description: 'Sent follow-up email',
-      date: new Date(contact.lastContacted || new Date()).toISOString(),
+      date: new Date(contact?.lastContacted || new Date()).toISOString(),
       metadata: {
         category: 'positive',
         responseTime: 25,
@@ -53,7 +53,7 @@ export const ContactTimeline = ({ contact }: ContactTimelineProps) => {
       id: '2',
       type: 'note',
       description: 'Added new contact information',
-      date: new Date(contact.createdAt).toISOString(),
+      date: new Date(contact?.createdAt || new Date()).toISOString(),
       metadata: {
         category: 'update',
       },

@@ -1,9 +1,8 @@
-
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { deleteCompany } from '@/store/slices/companies/companiesSlice';
-import { useState } from 'react';
+import { deleteCompany, getCompany } from '@/store/slices/companies/companiesSlice';
+import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Activity } from '@/types/activity';
 import {
@@ -24,6 +23,7 @@ import { AssociatedContacts } from '@/components/companies/detail/AssociatedCont
 import { CompanyCustomFields } from '@/components/companies/detail/CompanyCustomFields';
 import { CompanyCustomObjectData } from '@/components/companies/detail/CompanyCustomObjectData';
 import { CompanyTickets } from '@/components/companies/detail/CompanyTickets';
+import { CompanyTags } from '@/components/companies/detail/CompanyTags';
 
 const CompanyDetail = () => {
   const { id } = useParams();
@@ -32,9 +32,13 @@ const CompanyDetail = () => {
   const { toast } = useToast();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-  const company = useAppSelector(state => 
-    state.companies.companies.find(c => c.id === id)
+  const company = useAppSelector(state =>
+    state.companies.companyDetails
   );
+
+  useEffect(() => {
+    dispatch(getCompany(id));
+  }, [id]);
 
   const activities: Activity[] = [
     {
@@ -58,6 +62,7 @@ const CompanyDetail = () => {
     );
   }
 
+  
   const handleDelete = async () => {
     try {
       dispatch(deleteCompany(company.id));
@@ -77,9 +82,9 @@ const CompanyDetail = () => {
 
   return (
     <div className="container mx-auto px-4 py-6 max-w-[1400px]">
-      <CompanyDetailHeader 
-        company={company} 
-        onDeleteClick={() => setShowDeleteDialog(true)} 
+      <CompanyDetailHeader
+        company={company}
+        onDeleteClick={() => setShowDeleteDialog(true)}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-8">
@@ -87,6 +92,7 @@ const CompanyDetail = () => {
           <CompanyMainInfo company={company} />
           <CompanyCustomFields company={company} />
           <CompanyCustomObjectData company={company} />
+          <CompanyTags company={{ id: company.id, tags: company.tags }} />
         </div>
 
         <div className="lg:col-span-8">
@@ -96,11 +102,11 @@ const CompanyDetail = () => {
               <TabsTrigger value="contacts">Manage Contacts</TabsTrigger>
               <TabsTrigger value="tickets">Tickets</TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="timeline">
               <CompanyActivityTimeline activities={activities} />
             </TabsContent>
-            
+
             <TabsContent value="contacts">
               <AssociatedContacts company={company} />
             </TabsContent>
@@ -132,4 +138,3 @@ const CompanyDetail = () => {
 };
 
 export default CompanyDetail;
-

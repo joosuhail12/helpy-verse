@@ -3,19 +3,24 @@ export interface Teammate {
   id: string;
   name: string;
   email: string;
-  role: 'admin' | 'supervisor' | 'agent' | 'viewer';
+  role?: 'WORKSPACE_AGENT' | 'ORGANIZATION_ADMIN' | 'WORKSPACE_ADMIN' | 'SUPER_ADMIN'; // Updated to match actual data
+  teamId: string | null; // Added to match actual data
+  createdBy: string; // Added to match actual data
   status: 'active' | 'inactive';
-  lastActive: string;
-  createdAt: string;
+  lastActive: string | null; // Matches lastLoggedInAt from actual data
+  createdAt: string; // Maps from created_at
   avatar?: string;
-  permissions: string[];
+  permissions: string[]; // Still present for local usage (if applicable)
   is2FAEnabled?: boolean;
 }
 
 export interface NewTeammate {
-  name: string;
+  first_name: string;
+  last_name: string;
+  password: string;
+  confirm_password: string;
   email: string;
-  role: 'admin' | 'supervisor' | 'agent' | 'viewer';
+  role: 'WORKSPACE_AGENT' | 'ORGANIZATION_ADMIN' | 'WORKSPACE_ADMIN' | 'SUPER_ADMIN';
 }
 
 export interface ActivityLog {

@@ -15,7 +15,7 @@ export const ContactTickets = ({ contact }: ContactTicketsProps) => {
     {
       id: '1',
       subject: 'Account Access Issue',
-      customer: `${contact.firstName} ${contact.lastName}`,
+      customer: `${contact.firstname} ${contact.lastname}`,
       lastMessage: 'Having trouble logging in to my account',
       assignee: 'Sarah Wilson',
       company: contact.company || '',
@@ -30,7 +30,7 @@ export const ContactTickets = ({ contact }: ContactTicketsProps) => {
     {
       id: '2',
       subject: 'Feature Request',
-      customer: `${contact.firstName} ${contact.lastName}`,
+      customer: `${contact.firstname} ${contact.lastname}`,
       lastMessage: 'Would like to discuss new feature possibilities',
       assignee: null,
       company: contact.company || '',
@@ -40,7 +40,7 @@ export const ContactTickets = ({ contact }: ContactTicketsProps) => {
       createdAt: '2024-03-14T15:30:00Z',
       isUnread: false,
     },
-  ].filter(ticket => ticket.customer === `${contact.firstName} ${contact.lastName}`);
+  ].filter(ticket => ticket.customer === `${contact.firstname} ${contact.lastname}`);
 
   return (
     <Card className="bg-white/60 backdrop-blur-sm border-purple-100/50 shadow-lg shadow-purple-500/5">

@@ -4,7 +4,7 @@ export interface Company {
   name: string;
   website?: string;
   industry?: string;
-  employeeCount?: number;
+  numberOfEmployees?: number;
   annualRevenue?: number;
   description?: string;
   location?: {
@@ -12,7 +12,7 @@ export interface Company {
     city?: string;
     state?: string;
     country?: string;
-    postalCode?: string;
+    zipcode?: string;
   };
   phone?: string;
   email?: string;
@@ -34,5 +34,7 @@ export interface Company {
   timezone?: string;
   createdAt: string;
   updatedAt: string;
+  tags?: { id: string; name: string }[]; // Explicitly defined
+
 }
 

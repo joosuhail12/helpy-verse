@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import type { Teammate } from '@/types/teammate';
 import TeammateHeader from './teammates/components/TeammateHeader';
@@ -12,26 +12,37 @@ import TeammatePermissions from './teammates/components/TeammatePermissions';
 import TeammateAssignments from './teammates/components/TeammateAssignments';
 import TeammateSecuritySettings from './teammates/components/TeammateSecuritySettings';
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { updateTeammate } from '@/store/slices/teammates/actions';
+import { getTeammate, updateTeammate } from '@/store/slices/teammates/teammatesSlice';
 
 const TeammateDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { toast } = useToast();
-  const teammate = useAppSelector(state => 
-    state.teammates.teammates.find(t => t.id === id)
-  );
-  const currentUserRole = useAppSelector(state => 
-    state.auth.user?.role || 'viewer'
-  );
-  const isAdmin = currentUserRole === 'admin';
+
+  const teammate = useAppSelector(state => state.teammates.teammatesDetails);
+  const currentUserRole = useAppSelector(state => state.teammates.teammatesDetails?.role || 'WORKSPACE_AGENT');
+  const isAdmin = currentUserRole === 'WORKSPACE_ADMIN' || currentUserRole === 'ORGANIZATION_ADMIN';
 
   const [isEditing, setIsEditing] = useState(false);
-  const [editedTeammate, setEditedTeammate] = useState<Teammate | null>(teammate || null);
+  const [editedTeammate, setEditedTeammate] = useState<Teammate | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+
+  // Fetch teammate by ID
+  useEffect(() => {
+    if (id) {
+      dispatch(getTeammate(id));
+    }
+  }, [id, dispatch]);
+
+  // Sync local state with fetched teammate
+  useEffect(() => {
+    if (teammate) {
+      setEditedTeammate(teammate);
+    }
+  }, [teammate]);
 
   if (!teammate || !editedTeammate) {
     return (
@@ -67,7 +78,7 @@ const TeammateDetail = () => {
     setIsSaving(true);
     try {
       await dispatch(updateTeammate(editedTeammate)).unwrap();
-      
+
       toast({
         description: "Changes saved successfully.",
       });
@@ -91,7 +102,7 @@ const TeammateDetail = () => {
 
   const handleUpdateTeammate = (updates: Partial<Teammate>) => {
     setEditedTeammate(prev => prev ? { ...prev, ...updates } : null);
-    setValidationErrors({}); // Clear validation errors when user makes changes
+    setValidationErrors({});
   };
 
   return (
@@ -115,27 +126,27 @@ const TeammateDetail = () => {
           />
 
           {isAdmin && !isEditing && (
-            <TeammateSecuritySettings 
+            <TeammateSecuritySettings
               teammateId={teammate.id}
               isEditing={isEditing}
             />
           )}
 
           {isAdmin && !isEditing && (
-            <TeammatePermissions 
+            <TeammatePermissions
               teammateId={teammate.id}
               currentPermissions={teammate.permissions}
             />
           )}
 
           {!isEditing && (
-            <TeammateAssignments 
+            <TeammateAssignments
               teammateId={teammate.id}
             />
           )}
 
           {!isEditing && (
-            <TeammateActivityLogs 
+            <TeammateActivityLogs
               teammateId={teammate.id}
             />
           )}

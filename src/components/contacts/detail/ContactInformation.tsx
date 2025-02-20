@@ -15,7 +15,7 @@ import { ContactDatesInfo } from './info/ContactDatesInfo';
 import { ContactCustomFields } from './info/ContactCustomFields';
 import { ContactSocialInfo } from './info/ContactSocialInfo';
 import { ContactPreferences } from './info/ContactPreferences';
-
+import { ContactTags } from './ContactTags';
 interface ContactInformationProps {
   contact: Contact;
   activities: Activity[];
@@ -28,6 +28,7 @@ export const ContactInformation = ({ contact, activities }: ContactInformationPr
         <CardTitle className="text-lg font-semibold text-purple-900">Contact Information</CardTitle>
       </CardHeader>
       <CardContent className="pt-6 space-y-8">
+        <ContactTags contact={contact} />
         <ContactStatusInfo contact={contact} />
         <ContactBasicInfo contact={contact} />
         <ContactCommunicationInfo contact={contact} />

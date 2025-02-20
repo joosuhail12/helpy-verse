@@ -1,5 +1,5 @@
 import { Table } from "@/components/ui/table";
-import { CustomField } from "@/types/customField";
+import { CustomField } from "@/types/customData";
 import BulkCustomFieldActions from "./BulkCustomFieldActions";
 import { useState, useEffect } from "react";
 import FieldHistory from "./FieldHistory";
@@ -28,7 +28,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 
 interface CustomDataTableProps {
-  table: 'tickets' | 'contacts' | 'companies';
+  table: 'ticket' | 'customer' | 'company';
   currentFields?: CustomField[];
   isLoading?: boolean;
   error?: any;
@@ -38,7 +38,6 @@ export const CustomDataTable = ({ table, currentFields = [], isLoading = false, 
   const [selectedFields, setSelectedFields] = useState<CustomField[]>([]);
   const [selectedHistory, setSelectedHistory] = useState<CustomField | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const { fields, isLoading: fieldLoading, error: fieldError, updateField, isUpdating } = useFieldCache(table);
   const [items, setItems] = useState<CustomField[]>(currentFields || []);
   const { toast } = useToast();
 
@@ -51,10 +50,10 @@ export const CustomDataTable = ({ table, currentFields = [], isLoading = false, 
 
   // Update items when fields change
   useEffect(() => {
-    setItems(fields);
-  }, [fields]);
+    setItems(currentFields);
+  }, [currentFields]);
 
-  const duplicateFields = getDuplicateFields(fields);
+  const duplicateFields = getDuplicateFields(currentFields);
   const filteredFields = filterFields(items, searchQuery);
 
   const handleSelectAll = (checked: boolean) => {
@@ -77,21 +76,21 @@ export const CustomDataTable = ({ table, currentFields = [], isLoading = false, 
         const oldIndex = items.findIndex((item) => item.id === active.id);
         const newIndex = items.findIndex((item) => item.id === over.id);
         const newItems = arrayMove(items, oldIndex, newIndex);
-        
+
         // Notify about the reorder
         toast({
           title: "Fields reordered",
           description: "The field order has been updated.",
           duration: 2000,
         });
-        
+
         return newItems;
       });
     }
   };
 
   useCustomFieldShortcuts({
-    onCreateField: () => {}, // This is handled at the parent level
+    onCreateField: () => { }, // This is handled at the parent level
     hasSelection: selectedFields.length > 0
   });
 
@@ -108,17 +107,19 @@ export const CustomDataTable = ({ table, currentFields = [], isLoading = false, 
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-4">
         <SearchField value={searchQuery} onChange={setSearchQuery} />
-        <BulkCustomFieldActions
+        {/* <BulkCustomFieldActions
           selectedFields={selectedFields}
           table={table}
           onSelectionChange={setSelectedFields}
         />
+          TODO: Implement BulkCustomFieldActions component
+        */}
       </div>
 
       <DuplicateFieldsWarning duplicateFields={duplicateFields} />
 
       <div className="rounded-md border relative">
-        {(isLoading || isUpdating) && (
+        {(isLoading) && (
           <div className="absolute inset-0 bg-white/50 backdrop-blur-sm flex items-center justify-center z-10">
             <Loader2 className="h-8 w-8 text-purple-500 animate-spin" />
           </div>
@@ -145,7 +146,7 @@ export const CustomDataTable = ({ table, currentFields = [], isLoading = false, 
                 duplicateFields={duplicateFields}
                 searchQuery={searchQuery}
                 table={table}
-                fields={fields}
+                fields={currentFields}
                 onSelectField={handleSelectField}
                 onHistoryClick={setSelectedHistory}
                 onReorder={handleDragEnd}
@@ -155,13 +156,15 @@ export const CustomDataTable = ({ table, currentFields = [], isLoading = false, 
         </DndContext>
       </div>
 
-      {selectedHistory && (
-        <FieldHistory 
+      {/* {selectedHistory && (
+        <FieldHistory
           isOpen={true}
           onClose={() => setSelectedHistory(null)}
           history={selectedHistory.history}
         />
       )}
+        TODO: Implement FieldHistory component
+      */}
     </div>
   );
 };

@@ -1,123 +1,188 @@
 
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { HttpClient } from "@/api/services/HttpClient";
+import { encryptBase64, setCookie, setWorkspaceId, handleSetToken, deleteCookie, getCookie } from '@/utils/helpers/helpers';
+import { get } from "lodash";
+
+export type ActionType = "create" | "read" | "update" | "delete" | "archive" | "manage";
+
+export interface Permission {
+  action: ActionType | ActionType[]; // Can be a single string or an array of actions
+  subject: string;
+  conditions?: {
+    clineId: string;
+  };
+}
+
+// Define Permissions Array Type
+export type Permissions = Permission[];
+
 
 export interface AuthState {
   isAuthenticated: boolean;
   user: {
-    email: string;
-    role: 'admin' | 'supervisor' | 'agent' | 'viewer' | null;
+    status: "success" | "error";
+    message: string;
+    data: {
+      id: string;
+      accessToken: {
+        token: string;
+        expiry: number;
+        issuedAt: string;
+        userAgent: string;
+        ip: string;
+      };
+      defaultWorkspaceId: string;
+    };
   } | null;
   loading: boolean;
   error: string | null;
+  permissions: Permissions;
 }
 
-// Initialize state from localStorage if available
-const getInitialState = (): AuthState => {
-  const savedAuth = localStorage.getItem('auth');
-  if (savedAuth) {
-    try {
-      return JSON.parse(savedAuth);
-    } catch (e) {
-      console.error('Failed to parse auth from localStorage:', e);
-    }
-  }
-  return {
-    isAuthenticated: false,
-    user: null,
-    loading: false,
-    error: null,
-  };
+const initialState: AuthState = {
+  isAuthenticated: !!getCookie("customerToken"),
+  user: null,
+  loading: false,
+  error: null,
+  permissions: [],
 };
 
-// Test admin credentials
 const TEST_ADMIN = {
   email: 'admin@test.com',
   password: 'admin123'
 };
 
+interface Credentials {
+  email: string;
+  password: string;
+}
+
 export const loginUser = createAsyncThunk(
-  'auth/login',
-  async (credentials: { email: string; password: string }) => {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Check if credentials match test admin
-    if (credentials.email === TEST_ADMIN.email && credentials.password === TEST_ADMIN.password) {
-      const userData = {
-        email: TEST_ADMIN.email,
-        role: 'admin' as const
-      };
-      // Save to localStorage
-      localStorage.setItem('auth', JSON.stringify({
-        isAuthenticated: true,
-        user: userData,
-        loading: false,
-        error: null,
-      }));
-      return userData;
+  "auth/login",
+  async (credentials: Credentials, { rejectWithValue }) => {
+    try {
+      const response = await HttpClient.apiClient.post("/auth/login", {
+        username: credentials.email,
+        password: credentials.password,
+        recaptchaId: "",
+      });
+
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || "Invalid credentials");
     }
-    
-    throw new Error('Invalid credentials');
   }
 );
 
-// Add requestPasswordReset action
-export const requestPasswordReset = createAsyncThunk(
-  'auth/requestPasswordReset',
-  async ({ email }: { email: string }) => {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // In production, this would make an API call to request password reset
-    console.log('Password reset requested for:', email);
-    
-    // Simulate successful request
-    return true;
+export const fetchUserData = createAsyncThunk(
+  "user/fetchData",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await HttpClient.apiClient.get("/user/profile");
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "An error occurred");
+    }
   }
 );
 
-// Add registerUser action
 export const registerUser = createAsyncThunk(
   'auth/register',
-  async (userData: { 
-    fullName: string; 
-    email: string; 
-    password: string; 
-    companyName: string; 
+  async (credentials: {
+    fullName: string;
+    email: string;
+    password: string;
+    companyName: string;
   }) => {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // In production, this would make an API call to register the user
-    console.log('Registering user:', userData);
-    
-    // Simulate successful registration
-    const newUser = {
-      email: userData.email,
-      role: 'agent' as const
-    };
-    
-    // Save to localStorage
-    localStorage.setItem('auth', JSON.stringify({
-      isAuthenticated: true,
-      user: newUser,
-      loading: false,
-      error: null,
-    }));
-    
-    return newUser;
+    try {
+      // TODO: Replace with actual API call
+      const response = await fetch('YOUR_API_URL/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(credentials),
+      });
+
+      if (!response.ok) throw new Error('Registration failed');
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      throw error;
+    }
+  }
+);
+
+export const getUserPermission = createAsyncThunk(
+  "auth/getUserPermission",
+  async () => {
+    try {
+      const response = await HttpClient.apiClient.get("/profile/abilities");
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
+);
+
+
+export const requestPasswordReset = createAsyncThunk(
+  'auth/requestPasswordReset',
+  async (credentials: { email: string }) => {
+    try {
+      const response = await fetch('YOUR_API_URL/auth/forgot-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(credentials),
+      });
+
+      if (!response.ok) throw new Error('Password reset request failed');
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      throw error;
+    }
+  }
+);
+
+export const fetchUserProfile = createAsyncThunk(
+  "auth/fetchUserProfile",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await HttpClient.apiClient.get("/profile");
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "Failed to fetch user profile");
+    }
+  }
+);
+
+export const fetchWorkspaceData = createAsyncThunk(
+  "auth/fetchWorkspaceData",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await HttpClient.apiClient.get("/workspace/6c22b22f-7bdf-43db-b7c1-9c5884125c63");
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "Failed to fetch workspace data");
+    }
   }
 );
 
 const authSlice = createSlice({
   name: 'auth',
-  initialState: getInitialState(),
+  initialState: initialState,
   reducers: {
     logout: (state) => {
       state.isAuthenticated = false;
       state.user = null;
       state.error = null;
-      localStorage.removeItem('auth');
+      deleteCookie("customerToken");
     },
     clearError: (state) => {
       state.error = null;
@@ -134,6 +199,19 @@ const authSlice = createSlice({
         state.loading = false;
         state.isAuthenticated = true;
         state.user = action.payload;
+
+        const loginData = action.payload?.data;
+        if (loginData) {
+          const email = loginData?.username || "";
+          const encryptedEmail = encryptBase64(email);
+          setCookie("agent_email", encryptedEmail);
+
+          handleSetToken(loginData?.accessToken?.token || "");
+
+          setWorkspaceId(get(action.payload, "data.defaultWorkspaceId", ""));
+
+          HttpClient.setAxiosDefaultConfig();
+        }
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
@@ -164,6 +242,54 @@ const authSlice = createSlice({
       .addCase(registerUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || 'Registration failed';
+      })
+      .addCase(fetchUserData.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchUserData.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload;
+      })
+      .addCase(fetchUserData.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'User data fetch failed';
+      })
+      .addCase(getUserPermission.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getUserPermission.fulfilled, (state, action) => {
+        state.loading = false;
+        state.permissions = action.payload;
+      })
+      .addCase(getUserPermission.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'User permission fetch failed';
+      })
+      .addCase(fetchUserProfile.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchUserProfile.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload;
+      })
+      .addCase(fetchUserProfile.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Failed to fetch user profile';
+      })
+      .addCase(fetchWorkspaceData.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchWorkspaceData.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload;
+      })
+      .addCase(fetchWorkspaceData.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Failed to fetch workspace data';
       });
   },
 });
