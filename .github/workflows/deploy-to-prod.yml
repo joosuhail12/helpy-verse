@@ -38,10 +38,44 @@ jobs:
           npm version $NEW_VERSION --no-git-tag-version
 
       - name: Build project
-        run: npm run build
+        run: |
+          echo "VITE_API_URL=${{ secrets.VITE_API_URL }}" > .env
+          npm run build
 
-      - name: Copy package.json to dist
-        run: cp package.json dist/
+      - name: Copy package.json and server files to dist
+        run: |
+          cp package.json dist/
+          echo 'const express = require("express");
+          const path = require("path");
+          const app = express();
+          const PORT = process.env.PORT || 3000;
+          
+          app.use(express.static(path.join(__dirname)));
+          
+          app.get("*", (req, res) => {
+            res.sendFile(path.join(__dirname, "index.html"));
+          });
+          
+          app.listen(PORT, () => {
+            console.log(`Server is running on port ${PORT}`);
+          });' > dist/server.js
+
+      - name: Create PM2 config
+        run: |
+          echo '{
+            "apps": [{
+              "name": "pullse-frontend",
+              "script": "server.js",
+              "instances": 1,
+              "autorestart": true,
+              "watch": false,
+              "time": true,
+              "env": {
+                "PORT": 3000,
+                "NODE_ENV": "production"
+              }
+            }]
+          }' > dist/ecosystem.config.json
 
       - name: Rename dist folder
         run: mv dist pullse_frontend_lovable_new
@@ -63,14 +97,22 @@ jobs:
         run: |
           mkdir -p ~/.ssh
           echo -e "Host *\n  StrictHostKeyChecking no\n  UserKnownHostsFile=/dev/null" > ~/.ssh/config
-
-          echo "Transferring zip file..."
           scp -v -i pullse-development-server-1.pem pullse_frontend_lovable_new.zip pullse@$VM_IP:/home/pullse/
 
       - name: SSH into VM and deploy
         run: |
           ssh -i pullse-development-server-1.pem pullse@$VM_IP << 'EOF'
-          set -e  # Exit immediately if a command fails
+          set -e
+
+          # Install required packages if not present
+          if ! command -v npm &> /dev/null; then
+            curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+            sudo apt-get install -y nodejs
+          fi
+
+          if ! command -v pm2 &> /dev/null; then
+            sudo npm install -g pm2
+          fi
 
           if [ -f "pullse_frontend_lovable_new.zip" ]; then
             echo "Unzipping the new frontend..."
@@ -80,26 +122,26 @@ jobs:
             exit 1
           fi
 
-          # Ensure the folder exists before using jq
-          if [ -d "/home/pullse/pullse_frontend_lovable_new" ]; then
-            echo "Extracting version from package.json..."
-            VERSION=$(jq -r .version /home/pullse/pullse_frontend_lovable_new/package.json || echo "unknown_version")
-
-            if [ "$VERSION" != "unknown_version" ]; then
-              echo "Renaming old frontend to pullse_frontend_lovable_$VERSION..."
-              if [ -d "/home/pullse/pullse_frontend_lovable" ]; then
-                mv /home/pullse/pullse_frontend_lovable /home/pullse/pullse_frontend_lovable_$VERSION
-              fi
-            else
-              echo "WARNING: Version extraction failed!"
-            fi
-
-            echo "Renaming new frontend..."
-            mv /home/pullse/pullse_frontend_lovable_new /home/pullse/pullse_frontend_lovable
-          else
-            echo "ERROR: Extracted folder pullse_frontend_lovable_new not found!"
-            exit 1
+          cd pullse_frontend_lovable_new
+          npm install express
+          
+          if [ -d "/home/pullse/pullse_frontend_lovable" ]; then
+            echo "Stopping existing PM2 process..."
+            pm2 stop pullse-frontend || true
+            pm2 delete pullse-frontend || true
+            
+            echo "Moving old frontend to backup..."
+            VERSION=$(jq -r .version package.json || echo "unknown_version")
+            mv /home/pullse/pullse_frontend_lovable "/home/pullse/pullse_frontend_lovable_$VERSION"
           fi
+
+          echo "Moving new frontend into place..."
+          mv /home/pullse/pullse_frontend_lovable_new /home/pullse/pullse_frontend_lovable
+
+          cd /home/pullse/pullse_frontend_lovable
+
+          echo "Starting PM2 process..."
+          pm2 start ecosystem.config.json
 
           # Clean up zip file
           rm -f /home/pullse/pullse_frontend_lovable_new.zip
