@@ -124,7 +124,7 @@ const TagList = ({ searchQuery, currentPage, itemsPerPage, onPageChange }: TagLi
   }
 
   const totalPages = Math.ceil(total / itemsPerPage);
-
+  console.log(tags);
   return (
     <div>
       <TagListControls

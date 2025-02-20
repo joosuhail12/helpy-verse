@@ -1,8 +1,7 @@
-
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import type { Tag, SortField, FilterEntity } from '@/types/tag';
-import { tagService, type TagParams } from '@/api/services/tagService';
-import type { RootState } from '../store';
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import type { Tag, SortField, FilterEntity } from "@/types/tag";
+import { tagService, type TagParams } from "@/api/services/tagService";
+import type { RootState } from "../store";
 
 interface TagsState {
   items: Tag[];
@@ -12,7 +11,7 @@ interface TagsState {
   currentPage: number;
   itemsPerPage: number;
   sortField: SortField;
-  sortDirection: 'asc' | 'desc';
+  sortDirection: "asc" | "desc";
   filterEntity: FilterEntity;
   searchQuery: string;
   selectedTags: string[];
@@ -25,44 +24,82 @@ const initialState: TagsState = {
   error: null,
   currentPage: 1,
   itemsPerPage: 10,
-  sortField: 'name',
-  sortDirection: 'asc',
-  filterEntity: 'all',
-  searchQuery: '',
+  sortField: "name",
+  sortDirection: "asc",
+  filterEntity: "all",
+  searchQuery: "",
   selectedTags: [],
 };
 
+// ✅ Fetch tags with pagination and filtering
 export const fetchTags = createAsyncThunk(
-  'tags/fetchTags',
+  "tags/fetchTags",
   async (params: TagParams) => {
-    return tagService.fetchTags(params);
+    const response = await tagService.fetchTags(params);
+    console.log(response);
+    return {
+      tags: response.data.map(tag => ({
+        id: tag.id,
+        name: tag.name,
+        color: tag.color || "#000000", // Default color
+        createdAt: tag.createdAt,
+        lastUsed: tag.lastUsed || new Date().toISOString(), // Default lastUsed
+        trend: tag.trend || "stable", // Default trend
+        counts: tag.counts || { tickets: 0, contacts: 0, companies: 0 }, // Default counts
+        history: tag.history || [], // Default empty history
+        preview: tag.preview || [], // Default empty preview
+      })),
+      total: response.total,
+    };
   }
 );
 
+// ✅ Create a new tag
 export const createTag = createAsyncThunk(
-  'tags/createTag',
+  "tags/createTag",
   async (tag: Partial<Tag>) => {
-    return tagService.createTag(tag);
+    const response = await tagService.createTag(tag);
+    return {
+      id: response.id,
+      name: response.name,
+      color: response.color || "#000000",
+      createdAt: response.createdAt,
+      lastUsed: response.lastUsed || new Date().toISOString(),
+      trend: response.trend || "stable",
+      counts: response.counts || { tickets: 0, contacts: 0, companies: 0 },
+      history: response.history || [],
+      preview: response.preview || [],
+    };
   }
 );
 
+// ✅ Update an existing tag
 export const updateTag = createAsyncThunk(
-  'tags/updateTag',
+  "tags/updateTag",
   async ({ id, tag }: { id: string; tag: Partial<Tag> }) => {
-    return tagService.updateTag(id, tag);
+    const response = await tagService.updateTag(id, tag);
+    return {
+      id: response.id,
+      name: response.name,
+      color: response.color || "#000000",
+      createdAt: response.createdAt,
+      lastUsed: response.lastUsed || new Date().toISOString(),
+      trend: response.trend || "stable",
+      counts: response.counts || { tickets: 0, contacts: 0, companies: 0 },
+      history: response.history || [],
+      preview: response.preview || [],
+    };
   }
 );
 
-export const deleteTags = createAsyncThunk(
-  'tags/deleteTags',
-  async (ids: string[]) => {
-    await tagService.deleteTags(ids);
-    return ids;
-  }
-);
+// ✅ Delete multiple tags
+export const deleteTags = createAsyncThunk("tags/deleteTags", async (ids: string[]) => {
+  await tagService.deleteTags(ids);
+  return ids;
+});
 
 const tagsSlice = createSlice({
-  name: 'tags',
+  name: "tags",
   initialState,
   reducers: {
     setPage: (state, action) => {
@@ -100,7 +137,7 @@ const tagsSlice = createSlice({
     },
     clearSelectedTags: (state) => {
       state.selectedTags = [];
-    }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -115,7 +152,7 @@ const tagsSlice = createSlice({
       })
       .addCase(fetchTags.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Failed to fetch tags';
+        state.error = action.error.message || "Failed to fetch tags";
       })
       .addCase(createTag.fulfilled, (state, action) => {
         state.items.push(action.payload);

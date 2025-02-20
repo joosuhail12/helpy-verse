@@ -1,6 +1,4 @@
-
-import { useState } from 'react';
-import { Tag as TagIcon } from 'lucide-react';
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -12,15 +10,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
+import { tagService } from "@/api/services/tagService";
 
 interface CreateTagDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onTagCreated?: () => void; // Callback to refresh tag list
 }
 
-const CreateTagDialog = ({ open, onOpenChange }: CreateTagDialogProps) => {
-  const [name, setName] = useState('');
-  const [color, setColor] = useState('#3B82F6');
+const CreateTagDialog = ({ open, onOpenChange, onTagCreated }: CreateTagDialogProps) => {
+  const [name, setName] = useState("");
+  const [color, setColor] = useState("#3B82F6");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -28,17 +28,21 @@ const CreateTagDialog = ({ open, onOpenChange }: CreateTagDialogProps) => {
     setIsSubmitting(true);
 
     try {
-      // Mock API call delay
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // ✅ Make actual API call to create the tag
+      await tagService.createTag({ name, color });
 
       toast({
         title: "Success",
         description: `Successfully created tag "${name}"`,
       });
-      
+
+      // ✅ Refresh tag list if callback is provided
+      onTagCreated?.();
+
+      // ✅ Close dialog and reset fields
       onOpenChange(false);
-      setName('');
-      setColor('#3B82F6');
+      setName("");
+      setColor("#3B82F6");
     } catch (error) {
       toast({
         title: "Error",
@@ -56,7 +60,7 @@ const CreateTagDialog = ({ open, onOpenChange }: CreateTagDialogProps) => {
         <DialogHeader>
           <DialogTitle>Create New Tag</DialogTitle>
           <DialogDescription>
-            Add a new tag to help organize tickets
+            Add a new tag to help organize tickets.
           </DialogDescription>
         </DialogHeader>
 
@@ -84,9 +88,7 @@ const CreateTagDialog = ({ open, onOpenChange }: CreateTagDialogProps) => {
                 onChange={(e) => setColor(e.target.value)}
                 className="w-20 h-10 p-1"
               />
-              <div className="text-sm text-gray-500">
-                Choose a color for the tag
-              </div>
+              <div className="text-sm text-gray-500">Choose a color for the tag</div>
             </div>
           </div>
 
@@ -100,7 +102,7 @@ const CreateTagDialog = ({ open, onOpenChange }: CreateTagDialogProps) => {
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting || !name.trim()}>
-              {isSubmitting ? 'Creating...' : 'Create Tag'}
+              {isSubmitting ? "Creating..." : "Create Tag"}
             </Button>
           </div>
         </form>
