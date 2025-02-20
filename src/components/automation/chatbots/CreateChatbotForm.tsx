@@ -3,14 +3,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { createChatbot } from '@/store/slices/chatbots/chatbotsSlice';
-import { 
-  Form,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage 
-} from '@/components/ui/form';
+import { Form } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -19,7 +12,6 @@ import { toast } from '@/components/ui/use-toast';
 import { BasicInformation } from './form/BasicInformation';
 import { ToneSelection } from './form/ToneSelection';
 import { MessageConfiguration } from './form/MessageConfiguration';
-import { DataCollectionConfig } from './DataCollectionConfig';
 import type { ChatbotTone, DataCollectionField } from '@/types/chatbot';
 
 interface CreateChatbotFormValues {
@@ -114,33 +106,6 @@ export const CreateChatbotForm = () => {
             <div className="space-y-6">
               <h3 className="text-lg font-semibold">Message Settings</h3>
               <MessageConfiguration />
-            </div>
-            
-            <Separator className="my-6" />
-            
-            <div className="space-y-6">
-              <h3 className="text-lg font-semibold">Data Collection</h3>
-              <FormField
-                control={form.control}
-                name="dataCollection"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <DataCollectionConfig
-                        enabled={field.value.enabled}
-                        fields={field.value.fields}
-                        onEnableChange={(enabled) => 
-                          form.setValue('dataCollection.enabled', enabled)
-                        }
-                        onFieldsChange={(fields) => 
-                          form.setValue('dataCollection.fields', fields)
-                        }
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
             </div>
           </CardContent>
 
