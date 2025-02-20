@@ -1,17 +1,17 @@
 
 import { configureStore } from '@reduxjs/toolkit';
-import actionsReducer from './slices/actions/actionsSlice';
-import chatbotsReducer from './slices/chatbots/chatbotsSlice';
-import contentReducer from './slices/content/contentSlice';
-import authReducer from './slices/authSlice';
-import companiesReducer from './slices/companies/companiesSlice';
-import contactsReducer from './slices/contacts/contactsSlice';
-import teammatesReducer from './slices/teammates/teammatesSlice';
-import teamsReducer from './slices/teams/teamsSlice';
-import securityReducer from './slices/securitySlice';
-import tagsReducer from './slices/tagsSlice';
-import emailChannelsReducer from './slices/emailChannels/emailChannelsSlice';
-import cannedResponsesReducer from './slices/cannedResponses/cannedResponsesSlice';
+import actionsReducer from '@/store/slices/actions/actionsSlice';
+import chatbotsReducer from '@/store/slices/chatbots/chatbotsSlice';
+import contentReducer from '@/store/slices/content/contentSlice';
+import authReducer from '@/store/slices/authSlice';
+import companiesReducer from '@/store/slices/companies/companiesSlice';
+import contactsReducer from '@/store/slices/contacts/contactsSlice';
+import teammatesReducer from '@/store/slices/teammates/teammatesSlice';
+import teamsReducer from '@/store/slices/teams/teamsSlice';
+import securityReducer from '@/store/slices/securitySlice';
+import tagsReducer from '@/store/slices/tagsSlice';
+import emailChannelsReducer from '@/store/slices/emailChannels/emailChannelsSlice';
+import cannedResponsesReducer from '@/store/slices/cannedResponses/cannedResponsesSlice';
 
 export const store = configureStore({
   reducer: {
