@@ -8,6 +8,7 @@ import { store } from './store/store';
 import { Suspense, lazy } from 'react';
 import { useAppSelector } from "./hooks/useAppSelector";
 
+// Lazy load components with explicit chunk names
 const SignIn = lazy(() => import(/* webpackChunkName: "signin" */ "./pages/SignIn"));
 const CreateChatbot = lazy(() => import(/* webpackChunkName: "create-chatbot" */ "./pages/automation/CreateChatbot"));
 const SignUp = lazy(() => import(/* webpackChunkName: "signup" */ "./pages/SignUp"));
@@ -52,23 +53,6 @@ const queryClient = new QueryClient({
   },
 });
 
-const RootComponent = () => {
-  const auth = useAppSelector((state) => state.auth);
-  const isAuthenticated = auth?.isAuthenticated ?? false;
-  return isAuthenticated ? <Navigate to="/home" replace /> : <Navigate to="/sign-in" replace />;
-};
-
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const auth = useAppSelector((state) => state.auth);
-  const isAuthenticated = auth?.isAuthenticated ?? false;
-  
-  if (!isAuthenticated) {
-    return <Navigate to="/sign-in" replace />;
-  }
-
-  return <>{children}</>;
-};
-
 const LoadingFallback = () => (
   <div className="min-h-screen w-full gradient-background flex items-center justify-center">
     <div className="w-full max-w-3xl p-6 md:p-8">
@@ -90,67 +74,93 @@ const ErrorBoundary = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-const App = () => (
-  <Provider store={store}>
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <ErrorBoundary>
-            <Suspense fallback={<LoadingFallback />}>
-              <Routes>
-                <Route path="/" element={<RootComponent />} />
-                <Route path="/sign-in" element={<SignIn />} />
-                <Route path="/sign-up" element={<SignUp />} />
-                <Route path="/forgot-password" element={<ForgotPassword />} />
-                <Route
-                  path="/home/*"
-                  element={
-                    <ProtectedRoute>
-                      <Home />
-                    </ProtectedRoute>
-                  }
-                >
-                  <Route path="inbox/all" element={<AllTickets />} />
-                  <Route path="contacts/all" element={<AllContacts />} />
-                  <Route path="contacts/companies" element={<Companies />} />
-                  <Route path="contacts/companies/:id" element={<CompanyDetail />} />
-                  <Route path="contacts/:id" element={<ContactDetail />} />
-                  <Route path="settings/tags" element={<Tags />} />
-                  <Route path="settings/teams" element={<Teams />} />
-                  <Route path="settings/teams/create" element={<CreateTeam />} />
-                  <Route path="settings/teammates" element={<Teammates />} />
-                  <Route path="settings/teammates/:id" element={<TeammateDetail />} />
-                  <Route path="settings/teams/:id" element={<TeamDetail />} />
-                  <Route path="settings/custom-data" element={<CustomData />} />
-                  <Route path="settings/custom-objects" element={<CustomObjects />} />
-                  <Route path="settings/custom-objects/:id" element={<CustomObjectDetail />} />
-                  <Route path="settings/canned-responses" element={<CannedResponses />} />
-                  <Route path="settings/canned-responses/create" element={<CreateCannedResponse />} />
-                  <Route path="settings/canned-responses/:id" element={<CannedResponseDetail />} />
-                  <Route path="settings/email/domains" element={<Domains />} />
-                  <Route path="settings/email/domains/:id" element={<DomainDetail />} />
-                  <Route path="settings/email/channels" element={<Channels />} />
-                  <Route path="settings/email/channels/create" element={<CreateChannel />} />
-                  <Route path="settings/email/channels/:id" element={<EmailChannelDetail />} />
-                  <Route path="automation/ai/content-center" element={<ContentCenter />} />
-                  <Route path="automation/ai/content-center/create" element={<CreateContent />} />
-                  <Route path="automation/ai/content-center/:id" element={<ContentDetail />} />
-                  <Route path="automation/ai/action-center" element={<ActionCenter />} />
-                  <Route path="automation/ai/action-center/create" element={<CreateAction />} />
-                  <Route path="automation/ai/chatbot-profiles" element={<ChatbotProfiles />} />
-                  <Route path="automation/ai/chatbot-profiles/create" element={<CreateChatbot />} />
-                  <Route path="automation/ai/chatbot-profiles/:id" element={<ChatbotProfiles />} />
-                </Route>
-                <Route path="*" element={<Navigate to="/sign-in" replace />} />
-              </Routes>
-            </Suspense>
-          </ErrorBoundary>
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
-  </Provider>
-);
+const RootComponent = () => {
+  const auth = useAppSelector((state) => state.auth);
+  const isAuthenticated = auth?.isAuthenticated ?? false;
+  
+  console.log('Auth state:', { isAuthenticated }); // Debug log
+  
+  return isAuthenticated ? <Navigate to="/home" replace /> : <Navigate to="/sign-in" replace />;
+};
+
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const auth = useAppSelector((state) => state.auth);
+  const isAuthenticated = auth?.isAuthenticated ?? false;
+  
+  console.log('Protected route check:', { isAuthenticated }); // Debug log
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/sign-in" replace />;
+  }
+
+  return <>{children}</>;
+};
+
+const App = () => {
+  console.log('App rendering'); // Debug log
+  
+  return (
+    <Provider store={store}>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <ErrorBoundary>
+              <Suspense fallback={<LoadingFallback />}>
+                <Routes>
+                  <Route path="/" element={<RootComponent />} />
+                  <Route path="/sign-in" element={<SignIn />} />
+                  <Route path="/sign-up" element={<SignUp />} />
+                  <Route path="/forgot-password" element={<ForgotPassword />} />
+                  <Route
+                    path="/home/*"
+                    element={
+                      <ProtectedRoute>
+                        <Home />
+                      </ProtectedRoute>
+                    }
+                  >
+                    <Route path="inbox/all" element={<AllTickets />} />
+                    <Route path="contacts/all" element={<AllContacts />} />
+                    <Route path="contacts/companies" element={<Companies />} />
+                    <Route path="contacts/companies/:id" element={<CompanyDetail />} />
+                    <Route path="contacts/:id" element={<ContactDetail />} />
+                    <Route path="settings/tags" element={<Tags />} />
+                    <Route path="settings/teams" element={<Teams />} />
+                    <Route path="settings/teams/create" element={<CreateTeam />} />
+                    <Route path="settings/teammates" element={<Teammates />} />
+                    <Route path="settings/teammates/:id" element={<TeammateDetail />} />
+                    <Route path="settings/teams/:id" element={<TeamDetail />} />
+                    <Route path="settings/custom-data" element={<CustomData />} />
+                    <Route path="settings/custom-objects" element={<CustomObjects />} />
+                    <Route path="settings/custom-objects/:id" element={<CustomObjectDetail />} />
+                    <Route path="settings/canned-responses" element={<CannedResponses />} />
+                    <Route path="settings/canned-responses/create" element={<CreateCannedResponse />} />
+                    <Route path="settings/canned-responses/:id" element={<CannedResponseDetail />} />
+                    <Route path="settings/email/domains" element={<Domains />} />
+                    <Route path="settings/email/domains/:id" element={<DomainDetail />} />
+                    <Route path="settings/email/channels" element={<Channels />} />
+                    <Route path="settings/email/channels/create" element={<CreateChannel />} />
+                    <Route path="settings/email/channels/:id" element={<EmailChannelDetail />} />
+                    <Route path="automation/ai/content-center" element={<ContentCenter />} />
+                    <Route path="automation/ai/content-center/create" element={<CreateContent />} />
+                    <Route path="automation/ai/content-center/:id" element={<ContentDetail />} />
+                    <Route path="automation/ai/action-center" element={<ActionCenter />} />
+                    <Route path="automation/ai/action-center/create" element={<CreateAction />} />
+                    <Route path="automation/ai/chatbot-profiles" element={<ChatbotProfiles />} />
+                    <Route path="automation/ai/chatbot-profiles/create" element={<CreateChatbot />} />
+                    <Route path="automation/ai/chatbot-profiles/:id" element={<ChatbotProfiles />} />
+                  </Route>
+                  <Route path="*" element={<Navigate to="/sign-in" replace />} />
+                </Routes>
+              </Suspense>
+            </ErrorBoundary>
+          </BrowserRouter>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </Provider>
+  );
+};
 
 export default App;

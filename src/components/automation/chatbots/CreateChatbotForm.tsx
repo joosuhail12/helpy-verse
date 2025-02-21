@@ -3,22 +3,16 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { createChatbot } from '@/store/slices/chatbots/chatbotsSlice';
-import { 
-  Form,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage 
-} from '@/components/ui/form';
+import { Form } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 import { useForm } from 'react-hook-form';
 import { toast } from '@/components/ui/use-toast';
 import { BasicInformation } from './form/BasicInformation';
 import { ToneSelection } from './form/ToneSelection';
 import { MessageConfiguration } from './form/MessageConfiguration';
-import { DataCollectionConfig } from './DataCollectionConfig';
+import { BehaviorSettings } from './form/BehaviorSettings';
 import type { ChatbotTone, DataCollectionField } from '@/types/chatbot';
 
 interface CreateChatbotFormValues {
@@ -32,6 +26,13 @@ interface CreateChatbotFormValues {
   dataCollection: {
     enabled: boolean;
     fields: DataCollectionField[];
+  };
+  behavior: {
+    queryHandling: 'single' | 'continuous';
+    postAnswerAction: 'continue' | 'close' | 'handoff';
+    inactivityTimeout: number;
+    inactivityAction: 'close' | 'handoff' | 'prompt';
+    enableHumanHandoff: boolean;
   };
 }
 
@@ -53,6 +54,13 @@ export const CreateChatbotForm = () => {
         enabled: false,
         fields: [],
       },
+      behavior: {
+        queryHandling: 'continuous',
+        postAnswerAction: 'continue',
+        inactivityTimeout: 15,
+        inactivityAction: 'prompt',
+        enableHumanHandoff: true,
+      },
     },
   });
 
@@ -69,6 +77,7 @@ export const CreateChatbotForm = () => {
         welcomeMessage: data.welcomeMessage,
         humanHandoffMessage: data.humanHandoffMessage,
         dataCollection: data.dataCollection,
+        behavior: data.behavior,
       })).unwrap();
 
       toast({
@@ -88,42 +97,42 @@ export const CreateChatbotForm = () => {
   };
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader>
-        <h2 className="text-2xl font-bold">Create New Chatbot</h2>
-        <p className="text-muted-foreground">Fill in the details to create a new chatbot</p>
+    <Card className="w-full max-w-3xl mx-auto bg-white/95 backdrop-blur-sm shadow-xl rounded-xl">
+      <CardHeader className="space-y-2 pb-6">
+        <h2 className="text-3xl font-bold tracking-tight">Create New Chatbot</h2>
+        <p className="text-muted-foreground">Configure your AI assistant by filling in the details below</p>
       </CardHeader>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
-          <CardContent className="space-y-6">
-            <BasicInformation />
-            <ToneSelection />
-            <MessageConfiguration />
-            <FormField
-              control={form.control}
-              name="dataCollection"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Data Collection Form</FormLabel>
-                  <FormControl>
-                    <DataCollectionConfig
-                      enabled={field.value.enabled}
-                      fields={field.value.fields}
-                      onEnableChange={(enabled) => 
-                        form.setValue('dataCollection.enabled', enabled)
-                      }
-                      onFieldsChange={(fields) => 
-                        form.setValue('dataCollection.fields', fields)
-                      }
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <CardContent className="space-y-8">
+            <div className="space-y-6">
+              <h3 className="text-lg font-semibold">Basic Information</h3>
+              <BasicInformation />
+            </div>
+            
+            <Separator className="my-6" />
+            
+            <div className="space-y-6">
+              <h3 className="text-lg font-semibold">Personality Configuration</h3>
+              <ToneSelection />
+            </div>
+            
+            <Separator className="my-6" />
+            
+            <div className="space-y-6">
+              <h3 className="text-lg font-semibold">Message Settings</h3>
+              <MessageConfiguration />
+            </div>
+
+            <Separator className="my-6" />
+
+            <div className="space-y-6">
+              <h3 className="text-lg font-semibold">Behavior Settings</h3>
+              <BehaviorSettings />
+            </div>
           </CardContent>
 
-          <CardFooter className="flex justify-end space-x-4">
+          <CardFooter className="flex justify-end space-x-4 pt-6 border-t">
             <Button
               type="button"
               variant="outline"
@@ -141,4 +150,3 @@ export const CreateChatbotForm = () => {
     </Card>
   );
 };
-

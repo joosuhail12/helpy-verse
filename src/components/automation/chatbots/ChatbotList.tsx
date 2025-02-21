@@ -4,7 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Plus, Search } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { selectChatbots, selectChatbotsLoading } from '@/store/slices/chatbots/chatbotsSlice';
 
@@ -54,9 +54,15 @@ export const ChatbotList = () => {
               <TableRow
                 key={chatbot.id}
                 className="cursor-pointer hover:bg-muted/50"
-                onClick={() => navigate(`/home/automation/ai/chatbot-profiles/${chatbot.id}`)}
               >
-                <TableCell className="font-medium">{chatbot.name}</TableCell>
+                <TableCell className="font-medium">
+                  <Link 
+                    to={`/home/automation/ai/chatbot-profiles/${chatbot.id}`}
+                    className="text-primary hover:underline"
+                  >
+                    {chatbot.name}
+                  </Link>
+                </TableCell>
                 <TableCell>{chatbot.description}</TableCell>
                 <TableCell>
                   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -74,4 +80,3 @@ export const ChatbotList = () => {
     </div>
   );
 };
-
