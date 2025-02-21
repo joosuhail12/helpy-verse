@@ -1,4 +1,3 @@
-
 name: Deploy to VM
 
 on:
@@ -13,101 +12,23 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22.14.0
 
-      - name: Configure Git
-        run: |
-          git config --global user.name "GitHub Actions Bot"
-          git config --global user.email "actions@github.com"
-
       - name: Install dependencies
         run: npm install --legacy-peer-deps
 
-      - name: Update version
-        run: |
-          CURRENT_VERSION=$(node -p "require('./package.json').version")
-          IFS='.' read -ra VERSION_PARTS <<< "$CURRENT_VERSION"
-          PATCH=$((VERSION_PARTS[2] + 1))
-          NEW_VERSION="${VERSION_PARTS[0]}.${VERSION_PARTS[1]}.$PATCH"
-          npm version $NEW_VERSION --no-git-tag-version
-
       - name: Build project
-        run: |
-          echo "VITE_API_URL=${{ secrets.VITE_API_URL }}" > .env
-          npm run build
+        run: npm run build
 
-      - name: Copy package.json and server files to dist
-        run: |
-          cp package.json dist/
-          echo 'const express = require("express");
-          const path = require("path");
-          const app = express();
-          const PORT = process.env.PORT || 3000;
-          
-          app.use(express.static(path.join(__dirname)));
-          
-          app.get("/*", (req, res) => {
-            console.log(`Serving request for: ${req.path}`);
-            res.sendFile(path.join(__dirname, "index.html"), err => {
-              if (err) {
-                console.error("Error sending file:", err);
-                res.status(500).send("Error loading application");
-              }
-            });
-          });
-          
-          app.use((err, req, res, next) => {
-            console.error("Server error:", err);
-            res.status(500).send("Internal Server Error");
-          });
-          
-          app.listen(PORT, "0.0.0.0", () => {
-            console.log(`Server is running on port ${PORT}`);
-            console.log(`Server directory: ${__dirname}`);
-          });' > dist/server.js
-
-      - name: Create PM2 config
-        run: |
-          echo '{
-            "apps": [{
-              "name": "pullse-frontend",
-              "script": "server.js",
-              "instances": 1,
-              "autorestart": true,
-              "watch": false,
-              "time": true,
-              "env": {
-                "PORT": 3000,
-                "NODE_ENV": "production"
-              },
-              "error_file": "logs/err.log",
-              "out_file": "logs/out.log",
-              "log_file": "logs/combined.log",
-              "merge_logs": true
-            }]
-          }' > dist/ecosystem.config.json
+      - name: Copy package.json to dist
+        run: cp package.json dist/
 
       - name: Rename dist folder
         run: mv dist pullse_frontend_lovable_new
-
-      - name: Create production package.json
-        run: |
-          cat > pullse_frontend_lovable_new/package.json << EOF
-          {
-            "name": "pullse-frontend",
-            "version": "1.0.0",
-            "private": true,
-            "dependencies": {
-              "express": "^4.18.2"
-            }
-          }
-          EOF
 
       - name: Zip the folder for faster transfer
         run: zip -r pullse_frontend_lovable_new.zip pullse_frontend_lovable_new
@@ -126,22 +47,14 @@ jobs:
         run: |
           mkdir -p ~/.ssh
           echo -e "Host *\n  StrictHostKeyChecking no\n  UserKnownHostsFile=/dev/null" > ~/.ssh/config
+
+          echo "Transferring zip file..."
           scp -v -i pullse-development-server-1.pem pullse_frontend_lovable_new.zip pullse@$VM_IP:/home/pullse/
 
       - name: SSH into VM and deploy
         run: |
           ssh -i pullse-development-server-1.pem pullse@$VM_IP << 'EOF'
-          set -e
-
-          # Install required packages if not present
-          if ! command -v npm &> /dev/null; then
-            curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-            sudo apt-get install -y nodejs
-          fi
-
-          if ! command -v pm2 &> /dev/null; then
-            sudo npm install -g pm2
-          fi
+          set -e  # Exit immediately if a command fails
 
           if [ -f "pullse_frontend_lovable_new.zip" ]; then
             echo "Unzipping the new frontend..."
@@ -151,34 +64,26 @@ jobs:
             exit 1
           fi
 
-          cd pullse_frontend_lovable_new
-          npm install --omit=dev
-          
-          if [ -d "/home/pullse/pullse_frontend_lovable" ]; then
-            echo "Stopping existing PM2 process..."
-            pm2 stop pullse-frontend || true
-            pm2 delete pullse-frontend || true
-            
-            echo "Moving old frontend to backup..."
-            TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-            mv /home/pullse/pullse_frontend_lovable "/home/pullse/pullse_frontend_lovable_backup_${TIMESTAMP}"
+          # Ensure the folder exists before using jq
+          if [ -d "/home/pullse/pullse_frontend_lovable_new" ]; then
+            echo "Extracting version from package.json..."
+            VERSION=$(jq -r .version /home/pullse/pullse_frontend_lovable_new/package.json || echo "unknown_version")
+
+            if [ "$VERSION" != "unknown_version" ]; then
+              echo "Renaming old frontend to pullse_frontend_lovable_$VERSION..."
+              if [ -d "/home/pullse/pullse_frontend_lovable" ]; then
+                mv /home/pullse/pullse_frontend_lovable /home/pullse/archives/pullse_frontend_lovable_$VERSION
+              fi
+            else
+              echo "WARNING: Version extraction failed!"
+            fi
+
+            echo "Renaming new frontend..."
+            mv /home/pullse/pullse_frontend_lovable_new /home/pullse/pullse_frontend_lovable
+          else
+            echo "ERROR: Extracted folder pullse_frontend_lovable_new not found!"
+            exit 1
           fi
-
-          echo "Creating logs directory..."
-          mkdir -p logs
-
-          echo "Moving new frontend into place..."
-          mv /home/pullse/pullse_frontend_lovable_new /home/pullse/pullse_frontend_lovable
-
-          cd /home/pullse/pullse_frontend_lovable
-
-          echo "Starting PM2 process..."
-          pm2 start ecosystem.config.json
-          pm2 save
-
-          echo "Checking PM2 status..."
-          pm2 list
-          pm2 logs pullse-frontend --lines 50
 
           # Clean up zip file
           rm -f /home/pullse/pullse_frontend_lovable_new.zip
@@ -186,4 +91,3 @@ jobs:
 
       - name: Cleanup SSH Key
         run: rm -f pullse-development-server-1.pem
-
