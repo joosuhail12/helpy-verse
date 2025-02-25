@@ -77,6 +77,38 @@ export const mockCustomObjects: CustomObject[] = [
           userName: 'System',
           action: 'created'
         }]
+      },
+      {
+        id: '3',
+        name: 'Status',
+        type: 'select',
+        required: true,
+        description: 'Current status of the order',
+        createdAt: '2024-03-10T10:00:00Z',
+        updatedAt: '2024-03-10T10:00:00Z',
+        history: [{
+          id: '1',
+          timestamp: '2024-03-10T10:00:00Z',
+          userId: 'system',
+          userName: 'System',
+          action: 'created'
+        }]
+      },
+      {
+        id: '4',
+        name: 'Order Date',
+        type: 'date',
+        required: true,
+        description: 'Date when the order was placed',
+        createdAt: '2024-03-10T10:00:00Z',
+        updatedAt: '2024-03-10T10:00:00Z',
+        history: [{
+          id: '1',
+          timestamp: '2024-03-10T10:00:00Z',
+          userId: 'system',
+          userName: 'System',
+          action: 'created'
+        }]
       }
     ]
   },
@@ -127,3 +159,4 @@ export const mockCustomObjects: CustomObject[] = [
     ]
   }
 ];
+

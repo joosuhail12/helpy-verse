@@ -30,7 +30,32 @@ const SAMPLE_FIELDS: QueryField[] = [
     label: 'Customer Type',
     type: 'select',
     source: 'contacts',
-    options: ['visitor', 'customer']
+    options: ['visitor', 'customer', 'lead', 'prospect']
+  },
+  {
+    id: 'tags',
+    label: 'Tags',
+    type: 'multi-select',
+    source: 'contacts',
+    options: ['VIP', 'Enterprise', 'SMB', 'Startup']
+  },
+  {
+    id: 'lastLogin',
+    label: 'Last Login Date',
+    type: 'date',
+    source: 'contacts'
+  },
+  {
+    id: 'isActive',
+    label: 'Is Active',
+    type: 'boolean',
+    source: 'contacts'
+  },
+  {
+    id: 'score',
+    label: 'Lead Score',
+    type: 'number',
+    source: 'contacts'
   },
   
   // Company fields
@@ -45,7 +70,7 @@ const SAMPLE_FIELDS: QueryField[] = [
     label: 'Industry',
     type: 'select',
     source: 'companies',
-    options: ['Technology', 'Healthcare', 'Finance', 'Retail', 'Other']
+    options: ['Technology', 'Healthcare', 'Finance', 'Retail', 'Manufacturing', 'Other']
   },
   {
     id: 'employeeCount',
@@ -59,20 +84,63 @@ const SAMPLE_FIELDS: QueryField[] = [
     type: 'number',
     source: 'companies'
   },
-
-  // Custom Object fields
   {
-    id: 'orderCount',
-    label: 'Order Count',
-    type: 'number',
-    source: 'custom_objects'
+    id: 'locations',
+    label: 'Office Locations',
+    type: 'multi-select',
+    source: 'companies',
+    options: ['North America', 'Europe', 'Asia', 'South America', 'Africa', 'Oceania']
   },
   {
-    id: 'subscription',
-    label: 'Subscription Type',
+    id: 'founded',
+    label: 'Founded Date',
+    type: 'date',
+    source: 'companies'
+  },
+  {
+    id: 'isPublic',
+    label: 'Is Publicly Traded',
+    type: 'boolean',
+    source: 'companies'
+  },
+
+  // Custom Object fields (for the Orders custom object)
+  {
+    id: 'orderNumber',
+    label: 'Order Number',
+    type: 'text',
+    source: 'custom_objects',
+    customObject: 'orders'
+  },
+  {
+    id: 'orderTotal',
+    label: 'Order Total',
+    type: 'number',
+    source: 'custom_objects',
+    customObject: 'orders'
+  },
+  {
+    id: 'orderStatus',
+    label: 'Order Status',
     type: 'select',
     source: 'custom_objects',
-    options: ['Free', 'Basic', 'Premium', 'Enterprise']
+    customObject: 'orders',
+    options: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled']
+  },
+  {
+    id: 'paymentMethods',
+    label: 'Payment Methods',
+    type: 'multi-select',
+    source: 'custom_objects',
+    customObject: 'orders',
+    options: ['Credit Card', 'PayPal', 'Bank Transfer', 'Crypto']
+  },
+  {
+    id: 'orderDate',
+    label: 'Order Date',
+    type: 'date',
+    source: 'custom_objects',
+    customObject: 'orders'
   }
 ];
 
@@ -88,8 +156,6 @@ export const AudienceRules = ({ onNextStep }: AudienceRulesProps) => {
   });
 
   const handleSubmit = () => {
-    // Here you would typically save the query group to your state management
-    // For now, we'll just move to the next step
     onNextStep();
   };
 
@@ -121,3 +187,4 @@ export const AudienceRules = ({ onNextStep }: AudienceRulesProps) => {
     </Card>
   );
 };
+
