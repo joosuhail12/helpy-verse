@@ -22,7 +22,11 @@ const CreateChatbot = () => {
       description: "Add content and actions for your chatbot",
       status: currentStep === 2 ? "current" : currentStep > 2 ? "complete" : "pending",
     },
-  ];
+  ] as const;
+
+  const handleNextStep = () => {
+    setCurrentStep((prev) => Math.min(prev + 1, steps.length - 1));
+  };
 
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-8">
@@ -37,7 +41,7 @@ const CreateChatbot = () => {
 
       <div className="mt-8">
         {currentStep === 0 && (
-          <CreateChatbotForm />
+          <CreateChatbotForm onNextStep={handleNextStep} />
         )}
         {currentStep === 1 && (
           <div className="p-6 bg-white/95 backdrop-blur-sm shadow-xl rounded-xl">

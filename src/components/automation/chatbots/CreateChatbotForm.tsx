@@ -15,6 +15,10 @@ import { MessageConfiguration } from './form/MessageConfiguration';
 import { BehaviorSettings } from './form/BehaviorSettings';
 import type { ChatbotTone, DataCollectionField } from '@/types/chatbot';
 
+interface CreateChatbotFormProps {
+  onNextStep: () => void;
+}
+
 interface CreateChatbotFormValues {
   name: string;
   persona: string;
@@ -36,7 +40,7 @@ interface CreateChatbotFormValues {
   };
 }
 
-export const CreateChatbotForm = () => {
+export const CreateChatbotForm = ({ onNextStep }: CreateChatbotFormProps) => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -85,10 +89,7 @@ export const CreateChatbotForm = () => {
         description: "Basic setup completed. Let's configure audience rules.",
       });
       
-      // Instead of navigating away, we'll handle step transition in the parent
-      if (typeof onNextStep === 'function') {
-        onNextStep();
-      }
+      onNextStep();
     } catch (error) {
       toast({
         title: "Error",
