@@ -22,7 +22,7 @@ const CreateChatbot = () => {
       description: "Add content and actions for your chatbot",
       status: currentStep === 2 ? "current" : currentStep > 2 ? "complete" : "pending",
     },
-  ] as const;
+  ];
 
   const handleNextStep = () => {
     setCurrentStep((prev) => Math.min(prev + 1, steps.length - 1));
