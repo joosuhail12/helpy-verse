@@ -39,4 +39,23 @@ export const mockAudienceFields: QueryField[] = [
     type: 'date',
     source: 'contacts',
   },
+  {
+    id: 'subscription_date',
+    label: 'Subscription Date',
+    type: 'date',
+    source: 'contacts',
+  },
+  {
+    id: 'last_purchase',
+    label: 'Last Purchase Date',
+    type: 'date',
+    source: 'contacts',
+  },
+  {
+    id: 'next_renewal',
+    label: 'Next Renewal Date',
+    type: 'date',
+    source: 'contacts',
+  },
 ];
+

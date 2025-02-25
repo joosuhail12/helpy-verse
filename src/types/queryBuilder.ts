@@ -30,7 +30,14 @@ export type ComparisonOperator =
   | 'this_year'
   | 'last_week'
   | 'last_month'
-  | 'last_year';
+  | 'last_year'
+  | 'next_week'
+  | 'next_month'
+  | 'next_year'
+  | 'rolling_days'
+  | 'rolling_months'
+  | 'rolling_years'
+  | 'custom_range';
 
 export type DataSource = 'contacts' | 'companies' | 'custom_objects';
 
