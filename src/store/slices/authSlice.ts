@@ -1,3 +1,4 @@
+
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
 export interface AuthState {
@@ -10,11 +11,22 @@ export interface AuthState {
   error: string | null;
 }
 
-const initialState: AuthState = {
-  isAuthenticated: false,
-  user: null,
-  loading: false,
-  error: null,
+// Initialize state from localStorage if available
+const getInitialState = (): AuthState => {
+  const savedAuth = localStorage.getItem('auth');
+  if (savedAuth) {
+    try {
+      return JSON.parse(savedAuth);
+    } catch (e) {
+      console.error('Failed to parse auth from localStorage:', e);
+    }
+  }
+  return {
+    isAuthenticated: false,
+    user: null,
+    loading: false,
+    error: null,
+  };
 };
 
 // Test admin credentials
@@ -31,75 +43,33 @@ export const loginUser = createAsyncThunk(
     
     // Check if credentials match test admin
     if (credentials.email === TEST_ADMIN.email && credentials.password === TEST_ADMIN.password) {
-      return {
+      const userData = {
         email: TEST_ADMIN.email,
         role: 'admin' as const
       };
+      // Save to localStorage
+      localStorage.setItem('auth', JSON.stringify({
+        isAuthenticated: true,
+        user: userData,
+        loading: false,
+        error: null,
+      }));
+      return userData;
     }
     
     throw new Error('Invalid credentials');
   }
 );
 
-export const registerUser = createAsyncThunk(
-  'auth/register',
-  async (credentials: { 
-    fullName: string;
-    email: string;
-    password: string;
-    companyName: string;
-  }) => {
-    try {
-      // TODO: Replace with actual API call
-      const response = await fetch('YOUR_API_URL/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(credentials),
-      });
-      
-      if (!response.ok) throw new Error('Registration failed');
-      
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      throw error;
-    }
-  }
-);
-
-export const requestPasswordReset = createAsyncThunk(
-  'auth/requestPasswordReset',
-  async (credentials: { email: string }) => {
-    try {
-      // TODO: Replace with actual API call
-      const response = await fetch('YOUR_API_URL/auth/forgot-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(credentials),
-      });
-      
-      if (!response.ok) throw new Error('Password reset request failed');
-      
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      throw error;
-    }
-  }
-);
-
 const authSlice = createSlice({
   name: 'auth',
-  initialState,
+  initialState: getInitialState(),
   reducers: {
     logout: (state) => {
       state.isAuthenticated = false;
       state.user = null;
       state.error = null;
+      localStorage.removeItem('auth');
     },
     clearError: (state) => {
       state.error = null;
@@ -119,33 +89,10 @@ const authSlice = createSlice({
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || 'Login failed';
-      })
-      .addCase(registerUser.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(registerUser.fulfilled, (state, action) => {
-        state.loading = false;
-        state.isAuthenticated = true;
-        state.user = action.payload;
-      })
-      .addCase(registerUser.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message || 'Registration failed';
-      })
-      .addCase(requestPasswordReset.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(requestPasswordReset.fulfilled, (state) => {
-        state.loading = false;
-      })
-      .addCase(requestPasswordReset.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message || 'Password reset request failed';
       });
   },
 });
 
 export const { logout, clearError } = authSlice.actions;
 export default authSlice.reducer;
+

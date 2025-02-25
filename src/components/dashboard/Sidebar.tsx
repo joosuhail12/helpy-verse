@@ -13,7 +13,7 @@ import { toast } from '@/components/ui/use-toast';
 const Sidebar = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const [activeMainNav, setActiveMainNav] = useState('home');
+  const [activeMainNav, setActiveMainNav] = useState(window.location.pathname.split('/')[1] || 'home');
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const [isSecondPanelCollapsed, setIsSecondPanelCollapsed] = useState(false);
 
@@ -23,7 +23,7 @@ const Sidebar = () => {
       title: "Logged out successfully",
       description: "You have been logged out of your account"
     });
-    navigate('/sign-in');
+    navigate('/sign-in', { replace: true });
   };
 
   const toggleExpanded = (itemTitle: string) => {
@@ -37,6 +37,11 @@ const Sidebar = () => {
   const toggleSecondPanel = () => {
     setIsSecondPanelCollapsed(prev => !prev);
   };
+
+  // Add debug logging
+  console.log('Current auth state:', localStorage.getItem('auth'));
+  console.log('Current path:', window.location.pathname);
+  console.log('Active main nav:', activeMainNav);
 
   return (
     <>
@@ -85,3 +90,4 @@ const Sidebar = () => {
 };
 
 export default Sidebar;
+
