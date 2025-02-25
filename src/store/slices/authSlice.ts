@@ -61,6 +61,54 @@ export const loginUser = createAsyncThunk(
   }
 );
 
+// Add requestPasswordReset action
+export const requestPasswordReset = createAsyncThunk(
+  'auth/requestPasswordReset',
+  async ({ email }: { email: string }) => {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // In production, this would make an API call to request password reset
+    console.log('Password reset requested for:', email);
+    
+    // Simulate successful request
+    return true;
+  }
+);
+
+// Add registerUser action
+export const registerUser = createAsyncThunk(
+  'auth/register',
+  async (userData: { 
+    fullName: string; 
+    email: string; 
+    password: string; 
+    companyName: string; 
+  }) => {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // In production, this would make an API call to register the user
+    console.log('Registering user:', userData);
+    
+    // Simulate successful registration
+    const newUser = {
+      email: userData.email,
+      role: 'agent' as const
+    };
+    
+    // Save to localStorage
+    localStorage.setItem('auth', JSON.stringify({
+      isAuthenticated: true,
+      user: newUser,
+      loading: false,
+      error: null,
+    }));
+    
+    return newUser;
+  }
+);
+
 const authSlice = createSlice({
   name: 'auth',
   initialState: getInitialState(),
@@ -77,6 +125,7 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      // Login actions
       .addCase(loginUser.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -89,6 +138,32 @@ const authSlice = createSlice({
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || 'Login failed';
+      })
+      // Password reset actions
+      .addCase(requestPasswordReset.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(requestPasswordReset.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(requestPasswordReset.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Password reset request failed';
+      })
+      // Register actions
+      .addCase(registerUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(registerUser.fulfilled, (state, action) => {
+        state.loading = false;
+        state.isAuthenticated = true;
+        state.user = action.payload;
+      })
+      .addCase(registerUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Registration failed';
       });
   },
 });
