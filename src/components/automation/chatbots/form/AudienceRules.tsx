@@ -4,87 +4,88 @@ import { QueryBuilder } from '@/components/common/query-builder/QueryBuilder';
 import type { QueryField, QueryGroup } from '@/types/queryBuilder';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
+import { mapFieldType } from '@/components/common/query-builder/utils/fieldTypeMapping';
 
 const SAMPLE_FIELDS: QueryField[] = [
   // Contact fields
   {
     id: 'firstName',
     label: 'First Name',
-    type: 'text',
+    type: mapFieldType('text'),
     source: 'contacts'
   },
   {
     id: 'lastName',
     label: 'Last Name',
-    type: 'text',
+    type: mapFieldType('text'),
     source: 'contacts'
   },
   {
     id: 'email',
     label: 'Email',
-    type: 'text',
+    type: mapFieldType('text'),
     source: 'contacts'
   },
   {
     id: 'description',
     label: 'Description',
-    type: 'rich-text',
+    type: mapFieldType('rich-text'),
     source: 'contacts'
   },
   {
     id: 'website',
     label: 'Website',
-    type: 'url',
+    type: mapFieldType('url'),
     source: 'contacts'
   },
   {
     id: 'type',
     label: 'Customer Type',
-    type: 'select',
+    type: mapFieldType('select'),
     source: 'contacts',
     options: ['visitor', 'customer', 'lead', 'prospect']
   },
   {
     id: 'tags',
     label: 'Tags',
-    type: 'multi-select',
+    type: mapFieldType('multi-select'),
     source: 'contacts',
     options: ['VIP', 'Enterprise', 'SMB', 'Startup']
   },
   {
     id: 'lastLogin',
     label: 'Last Login Date',
-    type: 'date',
+    type: mapFieldType('date'),
     source: 'contacts'
   },
   {
     id: 'createdAt',
     label: 'Created Date',
-    type: 'datetime',
+    type: mapFieldType('datetime'),
     source: 'contacts'
   },
   {
     id: 'isActive',
     label: 'Is Active',
-    type: 'boolean',
+    type: mapFieldType('boolean'),
     source: 'contacts'
   },
   {
     id: 'score',
     label: 'Lead Score',
-    type: 'number',
+    type: mapFieldType('number'),
     source: 'contacts'
   },
   {
     id: 'budget',
     label: 'Budget',
-    type: 'currency',
+    type: mapFieldType('currency'),
     source: 'contacts'
   },
   {
     id: 'phone',
     label: 'Phone Number',
-    type: 'tel',
+    type: mapFieldType('tel'),
     source: 'contacts'
   },
   
@@ -92,57 +93,57 @@ const SAMPLE_FIELDS: QueryField[] = [
   {
     id: 'companyName',
     label: 'Company Name',
-    type: 'text',
+    type: mapFieldType('text'),
     source: 'companies'
   },
   {
     id: 'companyDescription',
     label: 'Company Description',
-    type: 'rich-text',
+    type: mapFieldType('rich-text'),
     source: 'companies'
   },
   {
     id: 'industry',
     label: 'Industry',
-    type: 'select',
+    type: mapFieldType('select'),
     source: 'companies',
     options: ['Technology', 'Healthcare', 'Finance', 'Retail', 'Manufacturing', 'Other']
   },
   {
     id: 'employeeCount',
     label: 'Employee Count',
-    type: 'number',
+    type: mapFieldType('number'),
     source: 'companies'
   },
   {
     id: 'revenue',
     label: 'Annual Revenue',
-    type: 'currency',
+    type: mapFieldType('currency'),
     source: 'companies'
   },
   {
     id: 'locations',
     label: 'Office Locations',
-    type: 'multi-select',
+    type: mapFieldType('multi-select'),
     source: 'companies',
     options: ['North America', 'Europe', 'Asia', 'South America', 'Africa', 'Oceania']
   },
   {
     id: 'founded',
     label: 'Founded Date',
-    type: 'date',
+    type: mapFieldType('date'),
     source: 'companies'
   },
   {
     id: 'website',
     label: 'Website',
-    type: 'url',
+    type: mapFieldType('url'),
     source: 'companies'
   },
   {
     id: 'isPublic',
     label: 'Is Publicly Traded',
-    type: 'boolean',
+    type: mapFieldType('boolean'),
     source: 'companies'
   },
 
@@ -150,28 +151,28 @@ const SAMPLE_FIELDS: QueryField[] = [
   {
     id: 'orderNumber',
     label: 'Order Number',
-    type: 'text',
+    type: mapFieldType('text'),
     source: 'custom_objects',
     customObject: 'orders'
   },
   {
     id: 'orderDescription',
     label: 'Order Description',
-    type: 'rich-text',
+    type: mapFieldType('rich-text'),
     source: 'custom_objects',
     customObject: 'orders'
   },
   {
     id: 'orderTotal',
     label: 'Order Total',
-    type: 'currency',
+    type: mapFieldType('currency'),
     source: 'custom_objects',
     customObject: 'orders'
   },
   {
     id: 'orderStatus',
     label: 'Order Status',
-    type: 'select',
+    type: mapFieldType('select'),
     source: 'custom_objects',
     customObject: 'orders',
     options: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled']
@@ -179,7 +180,7 @@ const SAMPLE_FIELDS: QueryField[] = [
   {
     id: 'paymentMethods',
     label: 'Payment Methods',
-    type: 'multi-select',
+    type: mapFieldType('multi-select'),
     source: 'custom_objects',
     customObject: 'orders',
     options: ['Credit Card', 'PayPal', 'Bank Transfer', 'Crypto']
@@ -187,21 +188,21 @@ const SAMPLE_FIELDS: QueryField[] = [
   {
     id: 'orderDate',
     label: 'Order Date',
-    type: 'datetime',
+    type: mapFieldType('datetime'),
     source: 'custom_objects',
     customObject: 'orders'
   },
   {
     id: 'isUrgent',
     label: 'Is Urgent',
-    type: 'boolean',
+    type: mapFieldType('boolean'),
     source: 'custom_objects',
     customObject: 'orders'
   },
   {
     id: 'deliveryInstructions',
     label: 'Delivery Instructions',
-    type: 'rich-text',
+    type: mapFieldType('rich-text'),
     source: 'custom_objects',
     customObject: 'orders'
   }
@@ -250,4 +251,3 @@ export const AudienceRules = ({ onNextStep }: AudienceRulesProps) => {
     </Card>
   );
 };
-
