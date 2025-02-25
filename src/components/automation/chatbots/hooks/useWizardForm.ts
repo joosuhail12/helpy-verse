@@ -16,39 +16,37 @@ export const useWizardForm = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Define the initial values with explicit type annotations to ensure all required properties are present
-  const initialDataCollection = {
-    enabled: false,
-    fields: [{
-      id: 'default',
-      label: 'Default Field',
-      type: 'text' as const,
-      required: false,
-    }],
-  } satisfies DataCollection;
-
-  const initialBehavior = {
-    queryHandling: 'continuous' as const,
-    postAnswerAction: 'continue' as const,
-    inactivityTimeout: 300,
-    inactivityAction: 'prompt' as const,
-    enableHumanHandoff: true,
-  } satisfies ChatbotBehavior;
+  // Define the initial values as an object literal with explicit type annotation
+  const defaultValues: ChatbotFormData = {
+    name: '',
+    description: '',
+    avatarUrl: '',
+    tone: 'friendly' as const,
+    customInstructions: '',
+    welcomeMessage: 'Hi! How can I help you today?',
+    humanHandoffMessage: "I'll connect you with a human agent who can better assist you.",
+    status: 'active' as const,
+    dataCollection: {
+      enabled: false,
+      fields: [{
+        id: 'default',
+        label: 'Default Field',
+        type: 'text' as const,
+        required: false,
+      }],
+    } as DataCollection,
+    behavior: {
+      queryHandling: 'continuous' as const,
+      postAnswerAction: 'continue' as const,
+      inactivityTimeout: 300,
+      inactivityAction: 'prompt' as const,
+      enableHumanHandoff: true,
+    } as ChatbotBehavior,
+  };
 
   const form = useForm<ChatbotFormData>({
     resolver: zodResolver(chatbotFormSchema),
-    defaultValues: {
-      name: '',
-      description: '',
-      avatarUrl: '',
-      tone: 'friendly' as const,
-      customInstructions: '',
-      welcomeMessage: 'Hi! How can I help you today?',
-      humanHandoffMessage: "I'll connect you with a human agent who can better assist you.",
-      status: 'active' as const,
-      dataCollection: initialDataCollection,
-      behavior: initialBehavior,
-    },
+    defaultValues,
   });
 
   const onSubmit = async (values: ChatbotFormData) => {
@@ -98,3 +96,4 @@ export const useWizardForm = () => {
     prevStep,
   };
 };
+
