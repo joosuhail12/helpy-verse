@@ -24,6 +24,7 @@ const chatbotFormSchema = z.object({
   customInstructions: z.string().optional(),
   welcomeMessage: z.string().min(1, 'Welcome message is required'),
   humanHandoffMessage: z.string().min(1, 'Human handoff message is required'),
+  status: z.literal('active'), // Add status field with 'active' as default
   dataCollection: z.object({
     enabled: z.boolean(),
     fields: z.array(z.object({
@@ -77,6 +78,7 @@ export const CreateChatbotWizard = () => {
       customInstructions: '',
       welcomeMessage: 'Hi! How can I help you today?',
       humanHandoffMessage: "I'll connect you with a human agent who can better assist you.",
+      status: 'active' as const, // Add status with default value
       dataCollection: {
         enabled: false,
         fields: [],
@@ -178,3 +180,4 @@ export const CreateChatbotWizard = () => {
     </div>
   );
 };
+
