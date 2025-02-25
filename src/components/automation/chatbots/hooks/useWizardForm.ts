@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { createChatbot } from '@/store/slices/chatbots/chatbotsSlice';
 import { chatbotFormSchema } from '../schema/formSchema';
 import type { ChatbotFormData, ChatbotFormValues } from '../types/wizard';
-import type { DataCollectionField } from '@/types/chatbot';
+import type { DataCollectionField, DataCollection, ChatbotBehavior } from '@/types/chatbot';
 
 export const useWizardForm = () => {
   const [currentStep, setCurrentStep] = useState(0);
@@ -17,6 +17,19 @@ export const useWizardForm = () => {
   const { toast } = useToast();
 
   const defaultFields: DataCollectionField[] = [];
+
+  const defaultDataCollection: DataCollection = {
+    enabled: false,
+    fields: defaultFields,
+  };
+
+  const defaultBehavior: ChatbotBehavior = {
+    queryHandling: 'continuous',
+    postAnswerAction: 'continue',
+    inactivityTimeout: 300,
+    inactivityAction: 'prompt',
+    enableHumanHandoff: true,
+  };
 
   const form = useForm<ChatbotFormData>({
     resolver: zodResolver(chatbotFormSchema),
@@ -29,17 +42,8 @@ export const useWizardForm = () => {
       welcomeMessage: 'Hi! How can I help you today?',
       humanHandoffMessage: "I'll connect you with a human agent who can better assist you.",
       status: 'active',
-      dataCollection: {
-        enabled: false,
-        fields: defaultFields,
-      } as const,
-      behavior: {
-        queryHandling: 'continuous',
-        postAnswerAction: 'continue',
-        inactivityTimeout: 300,
-        inactivityAction: 'prompt',
-        enableHumanHandoff: true,
-      } as const,
+      dataCollection: defaultDataCollection,
+      behavior: defaultBehavior,
     },
   });
 
