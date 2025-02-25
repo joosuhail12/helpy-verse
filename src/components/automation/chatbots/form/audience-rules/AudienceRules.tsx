@@ -7,6 +7,7 @@ import { QueryGroup } from '@/types/queryBuilder';
 import { useAudienceFields } from './hooks/useAudienceFields';
 import { validateQueryGroup, type ValidationError } from './utils/validation';
 import { toast } from '@/hooks/use-toast';
+import { RulesSummary } from '@/components/common/query-builder/components/RulesSummary';
 
 interface AudienceRulesProps {
   onNextStep: () => void;
@@ -61,6 +62,8 @@ export const AudienceRules = ({ onNextStep }: AudienceRulesProps) => {
           errors={errors}
         />
         
+        <RulesSummary group={queryGroup} fields={fields} />
+        
         <div className="flex justify-end space-x-4 pt-6">
           <Button
             type="button"
@@ -73,3 +76,4 @@ export const AudienceRules = ({ onNextStep }: AudienceRulesProps) => {
     </Card>
   );
 };
+

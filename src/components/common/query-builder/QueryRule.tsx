@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { mockCustomObjects } from '@/mock/customObjects';
 import { useSourceFields } from './hooks/useSourceFields';
 import { OperatorSelect } from './components/OperatorSelect';
+import { FieldExamples } from './components/FieldExamples';
 import type { ValidationError } from '@/components/automation/chatbots/form/audience-rules/utils/validation';
 
 interface QueryRuleProps {
@@ -102,7 +103,7 @@ export const QueryRule = ({ rule, onChange, fields, errors = [] }: QueryRuleProp
           )}
         </div>
 
-        <div className="space-y-1">
+        <div className="space-y-1 relative">
           {selectedField?.type === 'select' ? (
             <Select
               value={rule.value as string}
@@ -121,19 +122,22 @@ export const QueryRule = ({ rule, onChange, fields, errors = [] }: QueryRuleProp
               </SelectContent>
             </Select>
           ) : (
-            <Input
-              type={selectedField?.type === 'number' ? 'number' : 'text'}
-              value={rule.value as string}
-              onChange={(e) =>
-                onChange({
-                  ...rule,
-                  value: selectedField?.type === 'number' ? Number(e.target.value) : e.target.value,
-                })
-              }
-              className={`w-[200px] ${getErrorMessage('value') ? 'border-red-500' : ''}`}
-              placeholder="Enter value"
-              disabled={!rule.operator}
-            />
+            <div className="flex items-center gap-2">
+              <Input
+                type={selectedField?.type === 'number' ? 'number' : 'text'}
+                value={rule.value as string}
+                onChange={(e) =>
+                  onChange({
+                    ...rule,
+                    value: selectedField?.type === 'number' ? Number(e.target.value) : e.target.value,
+                  })
+                }
+                className={`w-[200px] ${getErrorMessage('value') ? 'border-red-500' : ''}`}
+                placeholder="Enter value"
+                disabled={!rule.operator}
+              />
+              {selectedField && <FieldExamples type={selectedField.type} />}
+            </div>
           )}
           {getErrorMessage('value') && (
             <p className="text-sm text-red-500">{getErrorMessage('value')}</p>
@@ -143,3 +147,4 @@ export const QueryRule = ({ rule, onChange, fields, errors = [] }: QueryRuleProp
     </div>
   );
 };
+
