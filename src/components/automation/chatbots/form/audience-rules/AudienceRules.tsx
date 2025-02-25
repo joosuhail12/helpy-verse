@@ -2,47 +2,29 @@
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { QueryBuilder } from '@/components/common/query-builder/QueryBuilder';
 import { Button } from '@/components/ui/button';
-import { useState } from 'react';
 import { QueryGroup } from '@/types/queryBuilder';
 import { useAudienceFields } from './hooks/useAudienceFields';
-import { validateQueryGroup, type ValidationError } from './utils/validation';
-import { toast } from '@/hooks/use-toast';
-import { RulesSummary } from '@/components/common/query-builder/components/RulesSummary';
+import { useRuleBuilder } from './hooks/useRuleBuilder';
+import { RulePreview } from './components/RulePreview';
 
 interface AudienceRulesProps {
   onNextStep: () => void;
 }
 
 export const AudienceRules = ({ onNextStep }: AudienceRulesProps) => {
-  const [queryGroup, setQueryGroup] = useState<QueryGroup>({
+  const fields = useAudienceFields();
+  const initialGroup: QueryGroup = {
     id: '1',
     combinator: 'and',
-    rules: []
-  });
-
-  const [errors, setErrors] = useState<ValidationError[]>([]);
-  const fields = useAudienceFields();
-
-  const handleSubmit = () => {
-    const validationErrors = validateQueryGroup(queryGroup, fields);
-    setErrors(validationErrors);
-
-    if (validationErrors.length > 0) {
-      toast({
-        title: 'Validation Error',
-        description: 'Please fix the errors in your audience rules before continuing.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    onNextStep();
+    rules: [],
   };
 
-  const handleRuleChange = (newGroup: QueryGroup) => {
-    setQueryGroup(newGroup);
-    // Clear errors when rules change
-    setErrors([]);
+  const { queryGroup, errors, handleRuleChange, validateRules } = useRuleBuilder(initialGroup, fields);
+
+  const handleSubmit = () => {
+    if (validateRules()) {
+      onNextStep();
+    }
   };
 
   return (
@@ -62,7 +44,7 @@ export const AudienceRules = ({ onNextStep }: AudienceRulesProps) => {
           errors={errors}
         />
         
-        <RulesSummary group={queryGroup} fields={fields} />
+        <RulePreview group={queryGroup} fields={fields} />
         
         <div className="flex justify-end space-x-4 pt-6">
           <Button
@@ -76,4 +58,3 @@ export const AudienceRules = ({ onNextStep }: AudienceRulesProps) => {
     </Card>
   );
 };
-
