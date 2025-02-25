@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import { QueryGroup } from '@/types/queryBuilder';
 import { useAudienceFields } from './hooks/useAudienceFields';
+import { validateQueryGroup, type ValidationError } from './utils/validation';
+import { toast } from '@/hooks/use-toast';
 
 interface AudienceRulesProps {
   onNextStep: () => void;
@@ -17,7 +19,30 @@ export const AudienceRules = ({ onNextStep }: AudienceRulesProps) => {
     rules: []
   });
 
+  const [errors, setErrors] = useState<ValidationError[]>([]);
   const fields = useAudienceFields();
+
+  const handleSubmit = () => {
+    const validationErrors = validateQueryGroup(queryGroup, fields);
+    setErrors(validationErrors);
+
+    if (validationErrors.length > 0) {
+      toast({
+        title: 'Validation Error',
+        description: 'Please fix the errors in your audience rules before continuing.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    onNextStep();
+  };
+
+  const handleRuleChange = (newGroup: QueryGroup) => {
+    setQueryGroup(newGroup);
+    // Clear errors when rules change
+    setErrors([]);
+  };
 
   return (
     <Card className="w-full bg-white/95 backdrop-blur-sm shadow-xl rounded-xl">
@@ -31,14 +56,15 @@ export const AudienceRules = ({ onNextStep }: AudienceRulesProps) => {
       <CardContent className="space-y-6">
         <QueryBuilder
           value={queryGroup}
-          onChange={setQueryGroup}
+          onChange={handleRuleChange}
           fields={fields}
+          errors={errors}
         />
         
         <div className="flex justify-end space-x-4 pt-6">
           <Button
-            type="submit"
-            onClick={onNextStep}
+            type="button"
+            onClick={handleSubmit}
           >
             Continue to Knowledge Base
           </Button>

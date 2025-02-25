@@ -5,6 +5,7 @@ import { Plus, Trash } from 'lucide-react';
 import type { QueryGroup, QueryRule, QueryField } from '@/types/queryBuilder';
 import { QueryRule as QueryRuleComponent } from './QueryRule';
 import { generateId } from '@/lib/utils';
+import type { ValidationError } from '@/components/automation/chatbots/form/audience-rules/utils/validation';
 
 interface QueryGroupComponentProps {
   group: QueryGroup;
@@ -12,6 +13,7 @@ interface QueryGroupComponentProps {
   fields: QueryField[];
   depth: number;
   maxDepth: number;
+  errors?: ValidationError[];
 }
 
 export const QueryGroupComponent = ({
@@ -20,6 +22,7 @@ export const QueryGroupComponent = ({
   fields,
   depth,
   maxDepth,
+  errors = [],
 }: QueryGroupComponentProps) => {
   const handleCombinatorChange = (value: string) => {
     onChange({
@@ -116,6 +119,7 @@ export const QueryGroupComponent = ({
                   rule={rule}
                   onChange={(newRule) => handleRuleChange(index, newRule)}
                   fields={fields}
+                  errors={errors}
                 />
               ) : (
                 <QueryGroupComponent
@@ -124,6 +128,7 @@ export const QueryGroupComponent = ({
                   fields={fields}
                   depth={depth + 1}
                   maxDepth={maxDepth}
+                  errors={errors}
                 />
               )}
             </div>
@@ -141,4 +146,3 @@ export const QueryGroupComponent = ({
     </div>
   );
 };
-
