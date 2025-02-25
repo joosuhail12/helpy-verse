@@ -1,7 +1,7 @@
 
 import { Steps } from '@/components/ui/steps';
 import { CreateChatbotForm } from '@/components/automation/chatbots/CreateChatbotForm';
-import { AudienceRules } from '@/components/automation/chatbots/form/AudienceRules';
+import { AudienceRules } from '@/components/automation/chatbots/form/audience-rules/AudienceRules';
 import { useState } from 'react';
 
 const CreateChatbot = () => {
@@ -64,3 +64,4 @@ const CreateChatbot = () => {
 };
 
 export default CreateChatbot;
+
