@@ -10,6 +10,7 @@ export interface Chatbot {
   customInstructions?: string;
   welcomeMessage: string;
   humanHandoffMessage: string;
+  audienceRules: QueryGroup;
   dataCollection: {
     enabled: boolean;
     fields: DataCollectionField[];
@@ -32,3 +33,4 @@ export interface DataCollectionField {
   required: boolean;
   options?: string[]; // For select type fields
 }
+
