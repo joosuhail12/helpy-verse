@@ -1,12 +1,13 @@
 
-import { CreateChatbotWizard } from '@/components/automation/chatbots/CreateChatbotWizard';
+import { CreateChatbotForm } from '@/components/automation/chatbots/CreateChatbotForm';
 
 const CreateChatbot = () => {
   return (
-    <div className="container mx-auto py-6">
-      <CreateChatbotWizard />
+    <div className="p-6">
+      <CreateChatbotForm />
     </div>
   );
 };
 
 export default CreateChatbot;
+
