@@ -8,10 +8,29 @@ export type ComparisonOperator =
   | 'ends_with'
   | 'greater_than'
   | 'less_than'
+  | 'greater_than_equals'
+  | 'less_than_equals'
   | 'in'
   | 'not_in'
   | 'is_empty'
-  | 'is_not_empty';
+  | 'is_not_empty'
+  | 'between'
+  | 'not_between'
+  | 'contains_any'
+  | 'contains_all'
+  | 'has_none'
+  | 'has_any'
+  | 'has_all'
+  | 'after'
+  | 'before'
+  | 'last_n_days'
+  | 'next_n_days'
+  | 'this_week'
+  | 'this_month'
+  | 'this_year'
+  | 'last_week'
+  | 'last_month'
+  | 'last_year';
 
 export type DataSource = 'contacts' | 'companies' | 'custom_objects';
 
@@ -38,3 +57,4 @@ export interface QueryGroup {
   combinator: 'and' | 'or';
   rules: (QueryRule | QueryGroup)[];
 }
+
