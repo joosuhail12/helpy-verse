@@ -35,14 +35,14 @@ const chatbotFormSchema = z.object({
       required: z.boolean(),
       options: z.array(z.string()).optional(),
     })),
-  }),
+  }).required(),
   behavior: z.object({
     queryHandling: z.enum(['single', 'continuous']),
     postAnswerAction: z.enum(['continue', 'close', 'handoff']),
     inactivityTimeout: z.number(),
     inactivityAction: z.enum(['close', 'handoff', 'prompt']),
     enableHumanHandoff: z.boolean(),
-  }),
+  }).required(),
 });
 
 type ChatbotFormData = z.infer<typeof chatbotFormSchema>;
@@ -104,17 +104,7 @@ export const CreateChatbotWizard = () => {
 
   const onSubmit = async (values: ChatbotFormData) => {
     try {
-      const chatbotData: Omit<Chatbot, 'id' | 'createdAt'> = {
-        ...values,
-        name: values.name,
-        description: values.description,
-        status: 'active',
-        tone: values.tone,
-        welcomeMessage: values.welcomeMessage,
-        humanHandoffMessage: values.humanHandoffMessage,
-        dataCollection: values.dataCollection,
-        behavior: values.behavior,
-      };
+      const chatbotData: Omit<Chatbot, 'id' | 'createdAt'> = values;
       
       await dispatch(createChatbot(chatbotData)).unwrap();
       toast({
@@ -201,3 +191,4 @@ export const CreateChatbotWizard = () => {
     </div>
   );
 };
+
