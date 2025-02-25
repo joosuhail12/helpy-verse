@@ -8,6 +8,9 @@ export const mapFieldType = (type: string): FieldType => {
     case 'rich-text':
     case 'url':
     case 'description':
+    case 'tel':
+    case 'phone':
+    case 'email':
       return 'text';
     case 'number':
     case 'currency':
@@ -16,14 +19,19 @@ export const mapFieldType = (type: string): FieldType => {
       return 'boolean';
     case 'date':
     case 'datetime':
+    case 'timestamp':
       return 'date';
     case 'select':
     case 'dropdown':
+    case 'enum':
       return 'select';
     case 'multi-select':
     case 'multiple':
+    case 'tags':
+    case 'array':
       return 'multi-select';
     default:
       return 'text';
   }
 };
+

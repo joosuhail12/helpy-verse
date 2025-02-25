@@ -26,6 +26,18 @@ const SAMPLE_FIELDS: QueryField[] = [
     source: 'contacts'
   },
   {
+    id: 'description',
+    label: 'Description',
+    type: 'rich-text',
+    source: 'contacts'
+  },
+  {
+    id: 'website',
+    label: 'Website',
+    type: 'url',
+    source: 'contacts'
+  },
+  {
     id: 'type',
     label: 'Customer Type',
     type: 'select',
@@ -46,6 +58,12 @@ const SAMPLE_FIELDS: QueryField[] = [
     source: 'contacts'
   },
   {
+    id: 'createdAt',
+    label: 'Created Date',
+    type: 'datetime',
+    source: 'contacts'
+  },
+  {
     id: 'isActive',
     label: 'Is Active',
     type: 'boolean',
@@ -57,12 +75,30 @@ const SAMPLE_FIELDS: QueryField[] = [
     type: 'number',
     source: 'contacts'
   },
+  {
+    id: 'budget',
+    label: 'Budget',
+    type: 'currency',
+    source: 'contacts'
+  },
+  {
+    id: 'phone',
+    label: 'Phone Number',
+    type: 'tel',
+    source: 'contacts'
+  },
   
   // Company fields
   {
     id: 'companyName',
     label: 'Company Name',
     type: 'text',
+    source: 'companies'
+  },
+  {
+    id: 'companyDescription',
+    label: 'Company Description',
+    type: 'rich-text',
     source: 'companies'
   },
   {
@@ -81,7 +117,7 @@ const SAMPLE_FIELDS: QueryField[] = [
   {
     id: 'revenue',
     label: 'Annual Revenue',
-    type: 'number',
+    type: 'currency',
     source: 'companies'
   },
   {
@@ -95,6 +131,12 @@ const SAMPLE_FIELDS: QueryField[] = [
     id: 'founded',
     label: 'Founded Date',
     type: 'date',
+    source: 'companies'
+  },
+  {
+    id: 'website',
+    label: 'Website',
+    type: 'url',
     source: 'companies'
   },
   {
@@ -113,9 +155,16 @@ const SAMPLE_FIELDS: QueryField[] = [
     customObject: 'orders'
   },
   {
+    id: 'orderDescription',
+    label: 'Order Description',
+    type: 'rich-text',
+    source: 'custom_objects',
+    customObject: 'orders'
+  },
+  {
     id: 'orderTotal',
     label: 'Order Total',
-    type: 'number',
+    type: 'currency',
     source: 'custom_objects',
     customObject: 'orders'
   },
@@ -138,7 +187,21 @@ const SAMPLE_FIELDS: QueryField[] = [
   {
     id: 'orderDate',
     label: 'Order Date',
-    type: 'date',
+    type: 'datetime',
+    source: 'custom_objects',
+    customObject: 'orders'
+  },
+  {
+    id: 'isUrgent',
+    label: 'Is Urgent',
+    type: 'boolean',
+    source: 'custom_objects',
+    customObject: 'orders'
+  },
+  {
+    id: 'deliveryInstructions',
+    label: 'Delivery Instructions',
+    type: 'rich-text',
     source: 'custom_objects',
     customObject: 'orders'
   }
