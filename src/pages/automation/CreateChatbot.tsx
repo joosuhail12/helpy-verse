@@ -6,7 +6,11 @@ import { useState } from 'react';
 const CreateChatbot = () => {
   const [currentStep, setCurrentStep] = useState(0);
 
-  const steps = [
+  const steps: { 
+    title: string; 
+    description: string; 
+    status: "pending" | "current" | "complete";
+  }[] = [
     {
       title: "Basic Setup",
       description: "Configure your chatbot's basic information and behavior",
@@ -63,3 +67,4 @@ const CreateChatbot = () => {
 };
 
 export default CreateChatbot;
+
