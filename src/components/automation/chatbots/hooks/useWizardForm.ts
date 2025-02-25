@@ -41,7 +41,7 @@ export const useWizardForm = () => {
       customInstructions: '',
       welcomeMessage: 'Hi! How can I help you today?',
       humanHandoffMessage: "I'll connect you with a human agent who can better assist you.",
-      status: 'active',
+      status: 'active' as const,
       dataCollection: defaultDataCollection,
       behavior: defaultBehavior,
     },

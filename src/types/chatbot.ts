@@ -12,7 +12,7 @@ export interface DataCollectionField {
   label: string;
   type: 'text' | 'email' | 'phone' | 'select';
   required: boolean;
-  options?: string[]; // For select type fields
+  options?: string[];
 }
 
 /**
@@ -21,7 +21,7 @@ export interface DataCollectionField {
 export interface ChatbotBehavior {
   queryHandling: 'single' | 'continuous';
   postAnswerAction: 'continue' | 'close' | 'handoff';
-  inactivityTimeout: number; // in seconds
+  inactivityTimeout: number;
   inactivityAction: 'close' | 'handoff' | 'prompt';
   enableHumanHandoff: boolean;
 }
