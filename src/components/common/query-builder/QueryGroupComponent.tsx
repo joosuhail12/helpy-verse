@@ -1,11 +1,13 @@
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Plus, Trash } from 'lucide-react';
+import { Plus, Trash, Copy } from 'lucide-react';
 import type { QueryGroup, QueryRule, QueryField } from '@/types/queryBuilder';
 import { QueryRule as QueryRuleComponent } from './QueryRule';
 import { generateId } from '@/lib/utils';
 import type { ValidationError } from '@/components/automation/chatbots/form/audience-rules/utils/validation';
+import { toast } from '@/hooks/use-toast';
+import { useCallback } from 'react';
 
 interface QueryGroupComponentProps {
   group: QueryGroup;
@@ -73,6 +75,69 @@ export const QueryGroupComponent = ({
     onChange({ ...group, rules: newRules });
   };
 
+  const handleDuplicateRule = (index: number) => {
+    const ruleToDuplicate = group.rules[index];
+    const duplicatedRule = {
+      ...JSON.parse(JSON.stringify(ruleToDuplicate)),
+      id: generateId(),
+    };
+    
+    const newRules = [...group.rules];
+    newRules.splice(index + 1, 0, duplicatedRule);
+    onChange({ ...group, rules: newRules });
+    
+    toast({
+      description: "Rule duplicated successfully",
+    });
+  };
+
+  const copyRuleToClipboard = useCallback((rule: QueryRule | QueryGroup) => {
+    try {
+      const ruleString = JSON.stringify(rule);
+      navigator.clipboard.writeText(ruleString);
+      toast({
+        description: "Rule copied to clipboard",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        description: "Failed to copy rule",
+      });
+    }
+  }, []);
+
+  const handlePasteRule = useCallback(async () => {
+    try {
+      const clipboardText = await navigator.clipboard.readText();
+      const pastedRule = JSON.parse(clipboardText);
+      
+      // Validate the pasted content has the required structure
+      if (!('id' in pastedRule)) {
+        throw new Error('Invalid rule format');
+      }
+
+      // Generate new ID for the pasted rule
+      const newRule = {
+        ...pastedRule,
+        id: generateId(),
+      };
+
+      onChange({
+        ...group,
+        rules: [...group.rules, newRule],
+      });
+
+      toast({
+        description: "Rule pasted successfully",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        description: "Invalid rule format in clipboard",
+      });
+    }
+  }, [group, onChange]);
+
   return (
     <div className="space-y-4 p-4 border border-gray-200 rounded-lg">
       <div className="flex items-center gap-2">
@@ -107,6 +172,14 @@ export const QueryGroupComponent = ({
               Add Group
             </Button>
           )}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handlePasteRule}
+          >
+            Paste Rule
+          </Button>
         </div>
       </div>
 
@@ -132,17 +205,36 @@ export const QueryGroupComponent = ({
                 />
               )}
             </div>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={() => handleRemoveRule(index)}
-            >
-              <Trash className="w-4 h-4" />
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => copyRuleToClipboard(rule)}
+              >
+                <Copy className="w-4 h-4" />
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => handleDuplicateRule(index)}
+              >
+                <Copy className="w-4 h-4" />
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => handleRemoveRule(index)}
+              >
+                <Trash className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
         ))}
       </div>
     </div>
   );
 };
+
