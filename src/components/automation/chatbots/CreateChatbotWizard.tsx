@@ -20,11 +20,11 @@ const chatbotFormSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   description: z.string().min(10, 'Description must be at least 10 characters'),
   avatarUrl: z.string().optional(),
-  tone: z.string(),
+  tone: z.string().min(1, 'Tone is required'),
   customInstructions: z.string().optional(),
   welcomeMessage: z.string().min(1, 'Welcome message is required'),
   humanHandoffMessage: z.string().min(1, 'Human handoff message is required'),
-  status: z.literal('active'), // Add status field with 'active' as default
+  status: z.literal('active'),
   dataCollection: z.object({
     enabled: z.boolean(),
     fields: z.array(z.object({
@@ -44,21 +44,27 @@ const chatbotFormSchema = z.object({
   }),
 });
 
-const steps = [
+type Step = {
+  title: string;
+  description: string;
+  status: 'pending' | 'current' | 'complete';
+};
+
+const steps: Step[] = [
   {
     title: 'Basic Information',
     description: 'Configure the chatbot profile',
-    status: 'current' as const,
+    status: 'current',
   },
   {
     title: 'Personality',
     description: 'Set the tone and behavior',
-    status: 'pending' as const,
+    status: 'pending',
   },
   {
     title: 'Configuration',
     description: 'Define messages and settings',
-    status: 'pending' as const,
+    status: 'pending',
   },
 ];
 
@@ -68,7 +74,7 @@ export const CreateChatbotWizard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const form = useForm({
+  const form = useForm<z.infer<typeof chatbotFormSchema>>({
     resolver: zodResolver(chatbotFormSchema),
     defaultValues: {
       name: '',
@@ -78,7 +84,7 @@ export const CreateChatbotWizard = () => {
       customInstructions: '',
       welcomeMessage: 'Hi! How can I help you today?',
       humanHandoffMessage: "I'll connect you with a human agent who can better assist you.",
-      status: 'active' as const, // Add status with default value
+      status: 'active',
       dataCollection: {
         enabled: false,
         fields: [],
@@ -124,7 +130,7 @@ export const CreateChatbotWizard = () => {
       status: index === currentStep ? 'current'
         : index < currentStep ? 'complete'
         : 'pending'
-    }));
+    })) as Step[];
   };
 
   const renderStepContent = () => {
