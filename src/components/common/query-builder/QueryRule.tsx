@@ -1,7 +1,7 @@
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import type { QueryRule as QueryRuleType, QueryField, DataSource } from '@/types/queryBuilder';
+import type { QueryRule as QueryRuleType, QueryField, DataSource, FieldType } from '@/types/queryBuilder';
 import { useState, useMemo } from 'react';
 import { mockCustomObjects } from '@/mock/customObjects';
 import { mockCustomFields } from '@/mock/customFields';
@@ -13,6 +13,25 @@ interface QueryRuleProps {
 }
 
 type ExtendedDataSource = DataSource | `custom_objects.${string}` | '';
+
+const mapFieldType = (type: string): FieldType => {
+  switch (type) {
+    case 'text':
+      return 'text';
+    case 'number':
+      return 'number';
+    case 'boolean':
+      return 'boolean';
+    case 'date':
+      return 'date';
+    case 'select':
+      return 'select';
+    case 'multi-select':
+      return 'multi-select';
+    default:
+      return 'text';
+  }
+};
 
 export const QueryRule = ({ rule, onChange, fields }: QueryRuleProps) => {
   const [selectedSource, setSelectedSource] = useState<ExtendedDataSource>('');
@@ -44,8 +63,7 @@ export const QueryRule = ({ rule, onChange, fields }: QueryRuleProps) => {
           ...customObject.fields.map(field => ({
             id: `${customObject.slug}_${field.id}`,
             label: field.name,
-            type: field.type === 'text' ? 'text' : 
-                  field.type === 'number' ? 'number' : 'text',
+            type: mapFieldType(field.type),
             source: 'custom_objects',
             customObject: slug
           }))
@@ -61,11 +79,7 @@ export const QueryRule = ({ rule, onChange, fields }: QueryRuleProps) => {
         ...customFields.map(field => ({
           id: `custom_${field.id}`,
           label: field.name,
-          type: field.type === 'text' ? 'text' :
-                field.type === 'number' ? 'number' :
-                field.type === 'select' ? 'select' :
-                field.type === 'date' ? 'text' :
-                field.type === 'boolean' ? 'boolean' : 'text',
+          type: mapFieldType(field.type),
           source: selectedSource as DataSource,
           options: field.type === 'select' ? field.options : undefined
         }))
