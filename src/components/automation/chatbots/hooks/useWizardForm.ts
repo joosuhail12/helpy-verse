@@ -16,28 +16,28 @@ export const useWizardForm = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Define default fields with required properties
-  const defaultField: DataCollectionField = {
+  // Define default field as a constant to ensure type safety
+  const defaultField = {
     id: '',
     label: '',
-    type: 'text',
+    type: 'text' as const,
     required: false,
-  };
+  } satisfies DataCollectionField;
 
-  // Define default data collection with all required properties explicitly
-  const defaultDataCollection = {
+  // Define data collection default values with explicit types
+  const defaultDataCollection: DataCollection = {
     enabled: false,
     fields: [defaultField],
-  } satisfies DataCollection;
+  };
 
-  // Define default behavior with all required properties explicitly
-  const defaultBehavior = {
-    queryHandling: 'continuous' as const,
-    postAnswerAction: 'continue' as const,
+  // Define behavior default values with explicit types
+  const defaultBehavior: ChatbotBehavior = {
+    queryHandling: 'continuous',
+    postAnswerAction: 'continue',
     inactivityTimeout: 300,
-    inactivityAction: 'prompt' as const,
+    inactivityAction: 'prompt',
     enableHumanHandoff: true,
-  } satisfies ChatbotBehavior;
+  };
 
   const form = useForm<ChatbotFormData>({
     resolver: zodResolver(chatbotFormSchema),
