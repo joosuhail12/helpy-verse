@@ -8,19 +8,19 @@ const CreateChatbot = () => {
 
   const steps = [
     {
-      title: 'Basic Setup',
-      description: 'Configure your chatbot's basic information and behavior',
-      status: currentStep === 0 ? 'current' : currentStep > 0 ? 'complete' : 'pending',
+      title: "Basic Setup",
+      description: "Configure your chatbot's basic information and behavior",
+      status: currentStep === 0 ? "current" : currentStep > 0 ? "complete" : "pending",
     },
     {
-      title: 'Audience Rules',
-      description: 'Define who can interact with your chatbot',
-      status: currentStep === 1 ? 'current' : currentStep > 1 ? 'complete' : 'pending',
+      title: "Audience Rules",
+      description: "Define who can interact with your chatbot",
+      status: currentStep === 1 ? "current" : currentStep > 1 ? "complete" : "pending",
     },
     {
-      title: 'Knowledge Base',
-      description: 'Add content and actions for your chatbot',
-      status: currentStep === 2 ? 'current' : currentStep > 2 ? 'complete' : 'pending',
+      title: "Knowledge Base",
+      description: "Add content and actions for your chatbot",
+      status: currentStep === 2 ? "current" : currentStep > 2 ? "complete" : "pending",
     },
   ];
 
