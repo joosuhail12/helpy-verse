@@ -1,7 +1,8 @@
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import type { QueryRule as QueryRuleType, QueryField } from '@/types/queryBuilder';
+import type { QueryRule as QueryRuleType, QueryField, DataSource } from '@/types/queryBuilder';
+import { useState, useMemo } from 'react';
 
 interface QueryRuleProps {
   rule: QueryRuleType;
@@ -10,7 +11,23 @@ interface QueryRuleProps {
 }
 
 export const QueryRule = ({ rule, onChange, fields }: QueryRuleProps) => {
+  const [selectedSource, setSelectedSource] = useState<DataSource | ''>('');
   const selectedField = fields.find((f) => f.id === rule.field);
+
+  const availableSources = useMemo(() => {
+    const sources = new Set(fields.map(field => field.source));
+    return Array.from(sources);
+  }, [fields]);
+
+  const sourceFields = useMemo(() => {
+    return fields.filter(field => field.source === selectedSource);
+  }, [fields, selectedSource]);
+
+  const handleSourceChange = (source: DataSource) => {
+    setSelectedSource(source);
+    // Clear the field selection when source changes
+    onChange({ ...rule, field: '' });
+  };
 
   const getOperatorOptions = () => {
     if (!selectedField) return [];
@@ -48,14 +65,37 @@ export const QueryRule = ({ rule, onChange, fields }: QueryRuleProps) => {
     }
   };
 
+  const sourceLabels: Record<DataSource, string> = {
+    contacts: 'Contacts',
+    companies: 'Companies',
+    custom_objects: 'Custom Objects'
+  };
+
   return (
     <div className="flex items-center gap-2">
-      <Select value={rule.field} onValueChange={(value) => onChange({ ...rule, field: value })}>
+      <Select value={selectedSource} onValueChange={handleSourceChange}>
+        <SelectTrigger className="w-[200px]">
+          <SelectValue placeholder="Select table" />
+        </SelectTrigger>
+        <SelectContent>
+          {availableSources.map((source) => (
+            <SelectItem key={source} value={source}>
+              {sourceLabels[source as DataSource]}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      <Select 
+        value={rule.field} 
+        onValueChange={(value) => onChange({ ...rule, field: value })}
+        disabled={!selectedSource}
+      >
         <SelectTrigger className="w-[200px]">
           <SelectValue placeholder="Select field" />
         </SelectTrigger>
         <SelectContent>
-          {fields.map((field) => (
+          {sourceFields.map((field) => (
             <SelectItem key={field.id} value={field.id}>
               {field.label}
             </SelectItem>
@@ -66,6 +106,7 @@ export const QueryRule = ({ rule, onChange, fields }: QueryRuleProps) => {
       <Select
         value={rule.operator}
         onValueChange={(value: any) => onChange({ ...rule, operator: value })}
+        disabled={!rule.field}
       >
         <SelectTrigger className="w-[200px]">
           <SelectValue placeholder="Select operator" />
@@ -83,6 +124,7 @@ export const QueryRule = ({ rule, onChange, fields }: QueryRuleProps) => {
         <Select
           value={rule.value as string}
           onValueChange={(value) => onChange({ ...rule, value })}
+          disabled={!rule.operator}
         >
           <SelectTrigger className="w-[200px]">
             <SelectValue placeholder="Select value" />
@@ -106,9 +148,10 @@ export const QueryRule = ({ rule, onChange, fields }: QueryRuleProps) => {
             })
           }
           className="w-[200px]"
+          placeholder="Enter value"
+          disabled={!rule.operator}
         />
       )}
     </div>
   );
 };
-

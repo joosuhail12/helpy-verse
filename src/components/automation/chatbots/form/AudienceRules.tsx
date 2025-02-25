@@ -2,11 +2,11 @@
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { QueryBuilder } from '@/components/common/query-builder/QueryBuilder';
 import type { QueryField, QueryGroup } from '@/types/queryBuilder';
-import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 
 const SAMPLE_FIELDS: QueryField[] = [
+  // Contact fields
   {
     id: 'firstName',
     label: 'First Name',
@@ -32,6 +32,8 @@ const SAMPLE_FIELDS: QueryField[] = [
     source: 'contacts',
     options: ['visitor', 'customer']
   },
+  
+  // Company fields
   {
     id: 'companyName',
     label: 'Company Name',
@@ -44,6 +46,33 @@ const SAMPLE_FIELDS: QueryField[] = [
     type: 'select',
     source: 'companies',
     options: ['Technology', 'Healthcare', 'Finance', 'Retail', 'Other']
+  },
+  {
+    id: 'employeeCount',
+    label: 'Employee Count',
+    type: 'number',
+    source: 'companies'
+  },
+  {
+    id: 'revenue',
+    label: 'Annual Revenue',
+    type: 'number',
+    source: 'companies'
+  },
+
+  // Custom Object fields
+  {
+    id: 'orderCount',
+    label: 'Order Count',
+    type: 'number',
+    source: 'custom_objects'
+  },
+  {
+    id: 'subscription',
+    label: 'Subscription Type',
+    type: 'select',
+    source: 'custom_objects',
+    options: ['Free', 'Basic', 'Premium', 'Enterprise']
   }
 ];
 
@@ -69,7 +98,8 @@ export const AudienceRules = ({ onNextStep }: AudienceRulesProps) => {
       <CardHeader className="space-y-2 pb-6">
         <h2 className="text-xl font-semibold">Audience Rules</h2>
         <p className="text-muted-foreground">
-          Define who can interact with your chatbot by creating targeting rules
+          Define who can interact with your chatbot by creating targeting rules. First select a data source,
+          then choose the field, operator, and value for your condition.
         </p>
       </CardHeader>
       <CardContent className="space-y-6">
