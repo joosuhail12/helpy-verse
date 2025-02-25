@@ -20,12 +20,12 @@ export const useWizardForm = () => {
   const defaultFields: DataCollectionField[] = [];
 
   const defaultDataCollection: DataCollection = {
-    enabled: false,
+    enabled: false,  // This is now explicitly set as required
     fields: defaultFields,
   };
 
   const defaultBehavior: ChatbotBehavior = {
-    queryHandling: 'continuous',
+    queryHandling: 'continuous', // This is now explicitly set as required
     postAnswerAction: 'continue',
     inactivityTimeout: 300,
     inactivityAction: 'prompt',
