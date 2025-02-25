@@ -11,8 +11,10 @@ interface QueryRuleProps {
   fields: QueryField[];
 }
 
+type ExtendedDataSource = DataSource | `custom_objects.${string}` | '';
+
 export const QueryRule = ({ rule, onChange, fields }: QueryRuleProps) => {
-  const [selectedSource, setSelectedSource] = useState<DataSource | ''>('');
+  const [selectedSource, setSelectedSource] = useState<ExtendedDataSource>('');
   const selectedField = fields.find((f) => f.id === rule.field);
 
   const availableSources = useMemo(() => {
@@ -21,7 +23,7 @@ export const QueryRule = ({ rule, onChange, fields }: QueryRuleProps) => {
     // Get custom objects that are connected to either contacts or companies
     const connectedCustomObjects = mockCustomObjects.filter(obj => 
       obj.connectionType === 'customer' || obj.connectionType === 'ticket'
-    ).map(obj => `custom_objects.${obj.slug}`); // Create unique identifiers for each custom object
+    ).map(obj => `custom_objects.${obj.slug}`);
 
     return [...basicSources, ...connectedCustomObjects];
   }, []);
@@ -35,7 +37,7 @@ export const QueryRule = ({ rule, onChange, fields }: QueryRuleProps) => {
     return fields.filter(field => field.source === selectedSource);
   }, [fields, selectedSource]);
 
-  const handleSourceChange = (source: string) => {
+  const handleSourceChange = (source: ExtendedDataSource) => {
     setSelectedSource(source);
     // Clear the field selection when source changes
     onChange({ ...rule, field: '' });
@@ -77,7 +79,7 @@ export const QueryRule = ({ rule, onChange, fields }: QueryRuleProps) => {
     }
   };
 
-  const getSourceLabel = (source: string) => {
+  const getSourceLabel = (source: ExtendedDataSource) => {
     if (source === 'contacts') return 'Contact Information';
     if (source === 'companies') return 'Company Information';
     if (source.startsWith('custom_objects.')) {
@@ -97,7 +99,7 @@ export const QueryRule = ({ rule, onChange, fields }: QueryRuleProps) => {
         <SelectContent>
           {availableSources.map((source) => (
             <SelectItem key={source} value={source}>
-              {getSourceLabel(source)}
+              {getSourceLabel(source as ExtendedDataSource)}
             </SelectItem>
           ))}
         </SelectContent>
