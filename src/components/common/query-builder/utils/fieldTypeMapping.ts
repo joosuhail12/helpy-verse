@@ -34,4 +34,3 @@ export const mapFieldType = (type: string): FieldType => {
       return 'text';
   }
 };
-
