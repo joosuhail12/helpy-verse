@@ -21,22 +21,21 @@ export const QueryRule = ({ rule, onChange, fields }: QueryRuleProps) => {
     // Get custom objects that are connected to either contacts or companies
     const connectedCustomObjects = mockCustomObjects.filter(obj => 
       obj.connectionType === 'customer' || obj.connectionType === 'ticket'
-    );
+    ).map(obj => `custom_objects.${obj.slug}`); // Create unique identifiers for each custom object
 
-    // Only add custom_objects if there are any connected objects
-    const sources = new Set([
-      ...basicSources,
-      ...(connectedCustomObjects.length > 0 ? ['custom_objects'] : [])
-    ]);
-
-    return Array.from(sources);
+    return [...basicSources, ...connectedCustomObjects];
   }, []);
 
   const sourceFields = useMemo(() => {
+    if (selectedSource?.startsWith('custom_objects.')) {
+      // Extract the slug from the selected source
+      const slug = selectedSource.split('.')[1];
+      return fields.filter(field => field.source === 'custom_objects' && field.customObject === slug);
+    }
     return fields.filter(field => field.source === selectedSource);
   }, [fields, selectedSource]);
 
-  const handleSourceChange = (source: DataSource) => {
+  const handleSourceChange = (source: string) => {
     setSelectedSource(source);
     // Clear the field selection when source changes
     onChange({ ...rule, field: '' });
@@ -78,18 +77,15 @@ export const QueryRule = ({ rule, onChange, fields }: QueryRuleProps) => {
     }
   };
 
-  const getSourceLabel = (source: DataSource) => {
-    switch (source) {
-      case 'contacts':
-        return 'Contact Information';
-      case 'companies':
-        return 'Company Information';
-      case 'custom_objects':
-        const connectedObjects = mockCustomObjects.filter(obj => 
-          obj.connectionType === 'customer' || obj.connectionType === 'ticket'
-        );
-        return `Custom Objects (${connectedObjects.length})`;
+  const getSourceLabel = (source: string) => {
+    if (source === 'contacts') return 'Contact Information';
+    if (source === 'companies') return 'Company Information';
+    if (source.startsWith('custom_objects.')) {
+      const slug = source.split('.')[1];
+      const customObject = mockCustomObjects.find(obj => obj.slug === slug);
+      return customObject?.name || slug;
     }
+    return source;
   };
 
   return (
@@ -101,7 +97,7 @@ export const QueryRule = ({ rule, onChange, fields }: QueryRuleProps) => {
         <SelectContent>
           {availableSources.map((source) => (
             <SelectItem key={source} value={source}>
-              {getSourceLabel(source as DataSource)}
+              {getSourceLabel(source)}
             </SelectItem>
           ))}
         </SelectContent>
