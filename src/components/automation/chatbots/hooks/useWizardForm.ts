@@ -17,21 +17,21 @@ export const useWizardForm = () => {
   const { toast } = useToast();
 
   // Define default field as a constant to ensure type safety
-  const defaultField = {
+  const defaultField: DataCollectionField = {
     id: '',
     label: '',
-    type: 'text' as const,
+    type: 'text',
     required: false,
-  } satisfies DataCollectionField;
+  };
 
-  // Define data collection default values with explicit types
-  const defaultDataCollection: DataCollection = {
+  // Define data collection default values as required by DataCollection type
+  const defaultDataCollection: Required<DataCollection> = {
     enabled: false,
     fields: [defaultField],
   };
 
-  // Define behavior default values with explicit types
-  const defaultBehavior: ChatbotBehavior = {
+  // Define behavior default values as required by ChatbotBehavior type
+  const defaultBehavior: Required<ChatbotBehavior> = {
     queryHandling: 'continuous',
     postAnswerAction: 'continue',
     inactivityTimeout: 300,
