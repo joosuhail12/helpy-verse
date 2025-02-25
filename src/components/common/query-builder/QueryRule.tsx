@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon, Check } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import type { QueryRule as QueryRuleType, QueryField, DataSource } from '@/types/queryBuilder';
@@ -14,6 +14,8 @@ import { useSourceFields } from './hooks/useSourceFields';
 import { OperatorSelect } from './components/OperatorSelect';
 import { FieldExamples } from './components/FieldExamples';
 import type { ValidationError } from '@/components/automation/chatbots/form/audience-rules/utils/validation';
+import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface QueryRuleProps {
   rule: QueryRuleType;
@@ -67,6 +69,18 @@ export const QueryRule = ({ rule, onChange, fields, errors = [] }: QueryRuleProp
     }
   };
 
+  const handleMultiSelectChange = (value: string) => {
+    const currentValues = Array.isArray(rule.value) ? rule.value : [];
+    const newValues = currentValues.includes(value)
+      ? currentValues.filter((v) => v !== value)
+      : [...currentValues, value];
+    onChange({ ...rule, value: newValues });
+  };
+
+  const handleBooleanChange = (checked: boolean) => {
+    onChange({ ...rule, value: checked });
+  };
+
   const getSourceLabel = (source: ExtendedDataSource) => {
     if (source === 'contacts') return 'Contact Information';
     if (source === 'companies') return 'Company Information';
@@ -83,80 +97,163 @@ export const QueryRule = ({ rule, onChange, fields, errors = [] }: QueryRuleProp
     return error ? error.message : null;
   };
 
-  const renderDateInput = () => {
-    if (rule.operator === 'custom_range') {
-      return (
-        <div className="flex gap-2">
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  "w-[240px] justify-start text-left font-normal",
-                  !date && "text-muted-foreground"
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {date ? format(date, "PPP") : <span>Pick a date</span>}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={date}
-                onSelect={handleDateChange}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
-        </div>
-      );
-    }
+  const renderValueInput = () => {
+    if (!selectedField) return null;
 
-    if (rule.operator.includes('rolling') || 
-        rule.operator === 'last_n_days' || 
-        rule.operator === 'next_n_days') {
-      return (
-        <div className="flex items-center gap-2">
+    switch (selectedField.type) {
+      case 'boolean':
+        return (
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id={`value-${rule.id}`}
+              checked={Boolean(rule.value)}
+              onCheckedChange={handleBooleanChange}
+            />
+            <label htmlFor={`value-${rule.id}`} className="text-sm">
+              {Boolean(rule.value) ? 'True' : 'False'}
+            </label>
+          </div>
+        );
+
+      case 'date':
+        if (rule.operator === 'custom_range') {
+          return (
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-[240px] justify-start text-left font-normal",
+                    !date && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {date ? format(date, "PPP") : <span>Pick a date</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={date}
+                  onSelect={handleDateChange}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+          );
+        }
+
+        if (rule.operator.includes('rolling') || 
+            rule.operator === 'last_n_days' || 
+            rule.operator === 'next_n_days') {
+          return (
+            <div className="flex items-center gap-2">
+              <Input
+                type="number"
+                value={rule.value as string}
+                onChange={(e) => onChange({ ...rule, value: e.target.value })}
+                className="w-[100px]"
+                placeholder="Number"
+              />
+              <span className="text-muted-foreground">
+                {rule.operator.includes('rolling') ? 'Rolling days' : 
+                 rule.operator === 'last_n_days' ? 'Days ago' : 
+                 'Days from now'}
+              </span>
+            </div>
+          );
+        }
+
+        return (
+          <Select
+            value={rule.value as string}
+            onValueChange={(value) => onChange({ ...rule, value })}
+          >
+            <SelectTrigger className="w-[240px]">
+              <SelectValue placeholder="Select time period" />
+            </SelectTrigger>
+            <SelectContent>
+              {relativeDateOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        );
+
+      case 'select':
+        return (
+          <Select
+            value={rule.value as string}
+            onValueChange={(value) => onChange({ ...rule, value })}
+          >
+            <SelectTrigger className={cn("w-[200px]", getErrorMessage('value') && "border-red-500")}>
+              <SelectValue placeholder="Select value" />
+            </SelectTrigger>
+            <SelectContent>
+              {selectedField.options?.map((option) => (
+                <SelectItem key={option} value={option}>
+                  {option}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        );
+
+      case 'multi-select':
+        return (
+          <div className="space-y-2">
+            <div className="flex flex-wrap gap-2">
+              {selectedField.options?.map((option) => (
+                <div
+                  key={option}
+                  onClick={() => handleMultiSelectChange(option)}
+                  className="cursor-pointer"
+                >
+                  <Badge
+                    variant={
+                      Array.isArray(rule.value) && rule.value.includes(option)
+                        ? "default"
+                        : "outline"
+                    }
+                  >
+                    {option}
+                    {Array.isArray(rule.value) && rule.value.includes(option) && (
+                      <Check className="ml-1 h-3 w-3" />
+                    )}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+
+      case 'number':
+        return (
           <Input
             type="number"
             value={rule.value as string}
-            onChange={(e) => onChange({ ...rule, value: e.target.value })}
-            className="w-[100px]"
-            placeholder="Number"
+            onChange={(e) => onChange({ ...rule, value: Number(e.target.value) })}
+            className={cn("w-[200px]", getErrorMessage('value') && "border-red-500")}
+            placeholder="Enter number"
           />
-          <span className="text-muted-foreground">
-            {rule.operator.includes('rolling') ? 'Rolling days' : 
-             rule.operator === 'last_n_days' ? 'Days ago' : 
-             'Days from now'}
-          </span>
-        </div>
-      );
-    }
+        );
 
-    if (['this_week', 'this_month', 'this_year', 
-         'last_week', 'last_month', 'last_year',
-         'next_week', 'next_month', 'next_year'].includes(rule.operator)) {
-      return null;
+      default:
+        return (
+          <div className="flex items-center gap-2">
+            <Input
+              type="text"
+              value={rule.value as string}
+              onChange={(e) => onChange({ ...rule, value: e.target.value })}
+              className={cn("w-[200px]", getErrorMessage('value') && "border-red-500")}
+              placeholder="Enter value"
+            />
+            {selectedField && <FieldExamples type={selectedField.type} />}
+          </div>
+        );
     }
-
-    return (
-      <Select
-        value={rule.value as string}
-        onValueChange={(value) => onChange({ ...rule, value })}
-      >
-        <SelectTrigger className="w-[240px]">
-          <SelectValue placeholder="Select a time period" />
-        </SelectTrigger>
-        <SelectContent>
-          {relativeDateOptions.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
-              {option.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    );
   };
 
   return (
@@ -164,7 +261,7 @@ export const QueryRule = ({ rule, onChange, fields, errors = [] }: QueryRuleProp
       <div className="flex items-center gap-2">
         <div className="space-y-1">
           <Select value={selectedSource} onValueChange={handleSourceChange}>
-            <SelectTrigger className={`w-[200px] ${getErrorMessage('field') ? 'border-red-500' : ''}`}>
+            <SelectTrigger className={cn("w-[200px]", getErrorMessage('field') && "border-red-500")}>
               <SelectValue placeholder="Select data source" />
             </SelectTrigger>
             <SelectContent>
@@ -186,7 +283,7 @@ export const QueryRule = ({ rule, onChange, fields, errors = [] }: QueryRuleProp
             onValueChange={(value) => onChange({ ...rule, field: value })}
             disabled={!selectedSource}
           >
-            <SelectTrigger className={`w-[200px] ${getErrorMessage('field') ? 'border-red-500' : ''}`}>
+            <SelectTrigger className={cn("w-[200px]", getErrorMessage('field') && "border-red-500")}>
               <SelectValue placeholder="Select field" />
             </SelectTrigger>
             <SelectContent>
@@ -212,43 +309,7 @@ export const QueryRule = ({ rule, onChange, fields, errors = [] }: QueryRuleProp
         </div>
 
         <div className="space-y-1 relative">
-          {selectedField?.type === 'date' ? (
-            renderDateInput()
-          ) : selectedField?.type === 'select' ? (
-            <Select
-              value={rule.value as string}
-              onValueChange={(value) => onChange({ ...rule, value })}
-              disabled={!rule.operator}
-            >
-              <SelectTrigger className={`w-[200px] ${getErrorMessage('value') ? 'border-red-500' : ''}`}>
-                <SelectValue placeholder="Select value" />
-              </SelectTrigger>
-              <SelectContent>
-                {selectedField.options?.map((option) => (
-                  <SelectItem key={option} value={option}>
-                    {option}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          ) : (
-            <div className="flex items-center gap-2">
-              <Input
-                type={selectedField?.type === 'number' ? 'number' : 'text'}
-                value={rule.value as string}
-                onChange={(e) =>
-                  onChange({
-                    ...rule,
-                    value: selectedField?.type === 'number' ? Number(e.target.value) : e.target.value,
-                  })
-                }
-                className={`w-[200px] ${getErrorMessage('value') ? 'border-red-500' : ''}`}
-                placeholder="Enter value"
-                disabled={!rule.operator}
-              />
-              {selectedField && <FieldExamples type={selectedField.type} />}
-            </div>
-          )}
+          {renderValueInput()}
           {getErrorMessage('value') && (
             <p className="text-sm text-red-500">{getErrorMessage('value')}</p>
           )}

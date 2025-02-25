@@ -28,6 +28,25 @@ export const mockAudienceFields: QueryField[] = [
     options: ['Active', 'Inactive', 'Pending'],
   },
   {
+    id: 'interests',
+    label: 'Interests',
+    type: 'multi-select',
+    source: 'contacts',
+    options: ['Technology', 'Marketing', 'Sales', 'Support', 'Design'],
+  },
+  {
+    id: 'is_verified',
+    label: 'Is Verified',
+    type: 'boolean',
+    source: 'contacts',
+  },
+  {
+    id: 'age',
+    label: 'Age',
+    type: 'number',
+    source: 'contacts',
+  },
+  {
     id: 'created_at',
     label: 'Created Date',
     type: 'date',
@@ -56,6 +75,20 @@ export const mockAudienceFields: QueryField[] = [
     label: 'Next Renewal Date',
     type: 'date',
     source: 'contacts',
+  },
+  {
+    id: 'subscription_type',
+    label: 'Subscription Type',
+    type: 'select',
+    source: 'contacts',
+    options: ['Basic', 'Premium', 'Enterprise'],
+  },
+  {
+    id: 'tags',
+    label: 'Tags',
+    type: 'multi-select',
+    source: 'contacts',
+    options: ['VIP', 'New', 'At Risk', 'Champion', 'Qualified'],
   },
 ];
 
