@@ -27,15 +27,15 @@ export const useWizardForm = () => {
       humanHandoffMessage: "I'll connect you with a human agent who can better assist you.",
       status: 'active',
       dataCollection: {
-        enabled: false,
-        fields: [],
+        enabled: false,  // Now required
+        fields: [],      // Now required
       },
       behavior: {
-        queryHandling: 'continuous',
-        postAnswerAction: 'continue',
-        inactivityTimeout: 300,
-        inactivityAction: 'prompt',
-        enableHumanHandoff: true,
+        queryHandling: 'continuous',     // Now required
+        postAnswerAction: 'continue',    // Now required
+        inactivityTimeout: 300,          // Now required
+        inactivityAction: 'prompt',      // Now required
+        enableHumanHandoff: true,        // Now required
       },
     },
   });

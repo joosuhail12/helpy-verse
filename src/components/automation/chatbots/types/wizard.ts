@@ -1,6 +1,10 @@
 
-import type { Step } from '@/components/ui/steps';
-import type { Chatbot } from '@/types/chatbot';
+export interface Step {
+  title: string;
+  description: string;
+  status: 'pending' | 'current' | 'complete';
+}
+
 import type { z } from 'zod';
 import { chatbotFormSchema } from '../schema/formSchema';
 
