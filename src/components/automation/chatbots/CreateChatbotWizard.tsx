@@ -21,7 +21,7 @@ const chatbotFormSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   description: z.string().min(10, 'Description must be at least 10 characters'),
   avatarUrl: z.string().optional(),
-  tone: z.string().min(1, 'Tone is required'),
+  tone: z.enum(['friendly', 'professional', 'casual', 'formal', 'helpful', 'custom']),
   customInstructions: z.string().optional(),
   welcomeMessage: z.string().min(1, 'Welcome message is required'),
   humanHandoffMessage: z.string().min(1, 'Human handoff message is required'),
@@ -31,18 +31,18 @@ const chatbotFormSchema = z.object({
     fields: z.array(z.object({
       id: z.string(),
       label: z.string(),
-      type: z.string(),
+      type: z.enum(['text', 'email', 'phone', 'select']),
       required: z.boolean(),
       options: z.array(z.string()).optional(),
     })),
-  }).required(),
+  }),
   behavior: z.object({
     queryHandling: z.enum(['single', 'continuous']),
     postAnswerAction: z.enum(['continue', 'close', 'handoff']),
     inactivityTimeout: z.number(),
     inactivityAction: z.enum(['close', 'handoff', 'prompt']),
     enableHumanHandoff: z.boolean(),
-  }).required(),
+  }),
 });
 
 type ChatbotFormData = z.infer<typeof chatbotFormSchema>;
@@ -87,7 +87,7 @@ export const CreateChatbotWizard = () => {
       customInstructions: '',
       welcomeMessage: 'Hi! How can I help you today?',
       humanHandoffMessage: "I'll connect you with a human agent who can better assist you.",
-      status: 'active' as const,
+      status: 'active',
       dataCollection: {
         enabled: false,
         fields: [],
@@ -104,9 +104,10 @@ export const CreateChatbotWizard = () => {
 
   const onSubmit = async (values: ChatbotFormData) => {
     try {
-      // Since we've properly typed ChatbotFormData and set all required fields in defaultValues,
-      // this assignment is now type-safe
-      const chatbotData: Omit<Chatbot, 'id' | 'createdAt'> = values;
+      const chatbotData: Omit<Chatbot, 'id' | 'createdAt'> = {
+        ...values,
+        tone: values.tone,
+      };
       
       await dispatch(createChatbot(chatbotData)).unwrap();
       toast({
@@ -193,3 +194,4 @@ export const CreateChatbotWizard = () => {
     </div>
   );
 };
+
