@@ -1,10 +1,11 @@
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import type { QueryRule as QueryRuleType, QueryField, DataSource, FieldType } from '@/types/queryBuilder';
-import { useState, useMemo } from 'react';
+import type { QueryRule as QueryRuleType, QueryField, DataSource } from '@/types/queryBuilder';
+import { useState } from 'react';
 import { mockCustomObjects } from '@/mock/customObjects';
-import { mockCustomFields } from '@/mock/customFields';
+import { useSourceFields } from './hooks/useSourceFields';
+import { OperatorSelect } from './components/OperatorSelect';
 
 interface QueryRuleProps {
   rule: QueryRuleType;
@@ -14,122 +15,19 @@ interface QueryRuleProps {
 
 type ExtendedDataSource = DataSource | `custom_objects.${string}` | '';
 
-const mapFieldType = (type: string): FieldType => {
-  switch (type) {
-    case 'text':
-      return 'text';
-    case 'number':
-      return 'number';
-    case 'boolean':
-      return 'boolean';
-    case 'date':
-      return 'date';
-    case 'select':
-      return 'select';
-    case 'multi-select':
-      return 'multi-select';
-    default:
-      return 'text';
-  }
-};
-
 export const QueryRule = ({ rule, onChange, fields }: QueryRuleProps) => {
   const [selectedSource, setSelectedSource] = useState<ExtendedDataSource>('');
   const selectedField = fields.find((f) => f.id === rule.field);
+  
+  const availableSources = mockCustomObjects
+    .filter(obj => obj.connectionType === 'customer' || obj.connectionType === 'ticket')
+    .map(obj => `custom_objects.${obj.slug}` as ExtendedDataSource);
 
-  const availableSources = useMemo(() => {
-    const basicSources = ['contacts', 'companies'];
-    
-    // Get custom objects that are connected to either contacts or companies
-    const connectedCustomObjects = mockCustomObjects.filter(obj => 
-      obj.connectionType === 'customer' || obj.connectionType === 'ticket'
-    ).map(obj => `custom_objects.${obj.slug}`);
-
-    return [...basicSources, ...connectedCustomObjects];
-  }, []);
-
-  const sourceFields = useMemo(() => {
-    let selectedFields: QueryField[] = [];
-    
-    if (selectedSource?.startsWith('custom_objects.')) {
-      // Extract the slug from the selected source
-      const slug = selectedSource.split('.')[1];
-      selectedFields = fields.filter(field => field.source === 'custom_objects' && field.customObject === slug);
-      
-      // Add custom object fields
-      const customObject = mockCustomObjects.find(obj => obj.slug === slug);
-      if (customObject) {
-        selectedFields.push(
-          ...customObject.fields.map(field => ({
-            id: `${customObject.slug}_${field.id}`,
-            label: field.name,
-            type: mapFieldType(field.type),
-            source: 'custom_objects',
-            customObject: slug
-          }))
-        );
-      }
-    } else if (selectedSource) {
-      // Get regular fields for the source
-      selectedFields = fields.filter(field => field.source === selectedSource);
-      
-      // Add custom fields for the selected source
-      const customFields = mockCustomFields[selectedSource as keyof typeof mockCustomFields] || [];
-      selectedFields.push(
-        ...customFields.map(field => ({
-          id: `custom_${field.id}`,
-          label: field.name,
-          type: mapFieldType(field.type),
-          source: selectedSource as DataSource,
-          options: field.type === 'select' ? field.options : undefined
-        }))
-      );
-    }
-
-    // Sort fields alphabetically by label
-    return selectedFields.sort((a, b) => a.label.localeCompare(b.label));
-  }, [fields, selectedSource]);
+  const sourceFields = useSourceFields(selectedSource, fields);
 
   const handleSourceChange = (source: ExtendedDataSource) => {
     setSelectedSource(source);
-    // Clear the field selection when source changes
     onChange({ ...rule, field: '' });
-  };
-
-  const getOperatorOptions = () => {
-    if (!selectedField) return [];
-
-    const textOperators = [
-      { value: 'equals', label: 'Equals' },
-      { value: 'not_equals', label: 'Not Equals' },
-      { value: 'contains', label: 'Contains' },
-      { value: 'not_contains', label: 'Does Not Contain' },
-      { value: 'starts_with', label: 'Starts With' },
-      { value: 'ends_with', label: 'Ends With' },
-    ];
-
-    const numberOperators = [
-      { value: 'equals', label: 'Equals' },
-      { value: 'not_equals', label: 'Not Equals' },
-      { value: 'greater_than', label: 'Greater Than' },
-      { value: 'less_than', label: 'Less Than' },
-    ];
-
-    switch (selectedField.type) {
-      case 'text':
-      case 'select':
-      case 'multi-select':
-        return textOperators;
-      case 'number':
-        return numberOperators;
-      case 'boolean':
-        return [
-          { value: 'equals', label: 'Equals' },
-          { value: 'not_equals', label: 'Not Equals' },
-        ];
-      default:
-        return textOperators;
-    }
   };
 
   const getSourceLabel = (source: ExtendedDataSource) => {
@@ -150,7 +48,7 @@ export const QueryRule = ({ rule, onChange, fields }: QueryRuleProps) => {
           <SelectValue placeholder="Select data source" />
         </SelectTrigger>
         <SelectContent>
-          {availableSources.map((source) => (
+          {[...['contacts', 'companies'], ...availableSources].map((source) => (
             <SelectItem key={source} value={source}>
               {getSourceLabel(source as ExtendedDataSource)}
             </SelectItem>
@@ -175,22 +73,12 @@ export const QueryRule = ({ rule, onChange, fields }: QueryRuleProps) => {
         </SelectContent>
       </Select>
 
-      <Select
+      <OperatorSelect
+        selectedField={selectedField}
         value={rule.operator}
-        onValueChange={(value: any) => onChange({ ...rule, operator: value })}
+        onValueChange={(value) => onChange({ ...rule, operator: value })}
         disabled={!rule.field}
-      >
-        <SelectTrigger className="w-[200px]">
-          <SelectValue placeholder="Select operator" />
-        </SelectTrigger>
-        <SelectContent>
-          {getOperatorOptions().map((op) => (
-            <SelectItem key={op.value} value={op.value}>
-              {op.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      />
 
       {selectedField?.type === 'select' ? (
         <Select
@@ -227,4 +115,3 @@ export const QueryRule = ({ rule, onChange, fields }: QueryRuleProps) => {
     </div>
   );
 };
-
