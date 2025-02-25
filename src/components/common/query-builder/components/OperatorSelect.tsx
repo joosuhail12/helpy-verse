@@ -67,6 +67,9 @@ export const OperatorSelect = ({
       { value: 'last_year', label: 'Last Year' },
     ];
 
+    // Log the field type for debugging
+    console.log('Field type:', selectedField.type);
+
     switch (selectedField.type) {
       case 'text':
         return textOperators;
@@ -105,4 +108,3 @@ export const OperatorSelect = ({
     </Select>
   );
 };
-
