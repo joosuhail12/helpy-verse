@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import type { QueryRule as QueryRuleType, QueryField, DataSource } from '@/types/queryBuilder';
 import { useState, useMemo } from 'react';
 import { mockCustomObjects } from '@/mock/customObjects';
+import { mockCustomFields } from '@/mock/customFields';
 
 interface QueryRuleProps {
   rule: QueryRuleType;
@@ -29,12 +30,50 @@ export const QueryRule = ({ rule, onChange, fields }: QueryRuleProps) => {
   }, []);
 
   const sourceFields = useMemo(() => {
+    let selectedFields: QueryField[] = [];
+    
     if (selectedSource?.startsWith('custom_objects.')) {
       // Extract the slug from the selected source
       const slug = selectedSource.split('.')[1];
-      return fields.filter(field => field.source === 'custom_objects' && field.customObject === slug);
+      selectedFields = fields.filter(field => field.source === 'custom_objects' && field.customObject === slug);
+      
+      // Add custom object fields
+      const customObject = mockCustomObjects.find(obj => obj.slug === slug);
+      if (customObject) {
+        selectedFields.push(
+          ...customObject.fields.map(field => ({
+            id: `${customObject.slug}_${field.id}`,
+            label: field.name,
+            type: field.type === 'text' ? 'text' : 
+                  field.type === 'number' ? 'number' : 'text',
+            source: 'custom_objects',
+            customObject: slug
+          }))
+        );
+      }
+    } else if (selectedSource) {
+      // Get regular fields for the source
+      selectedFields = fields.filter(field => field.source === selectedSource);
+      
+      // Add custom fields for the selected source
+      const customFields = mockCustomFields[selectedSource as keyof typeof mockCustomFields] || [];
+      selectedFields.push(
+        ...customFields.map(field => ({
+          id: `custom_${field.id}`,
+          label: field.name,
+          type: field.type === 'text' ? 'text' :
+                field.type === 'number' ? 'number' :
+                field.type === 'select' ? 'select' :
+                field.type === 'date' ? 'text' :
+                field.type === 'boolean' ? 'boolean' : 'text',
+          source: selectedSource as DataSource,
+          options: field.type === 'select' ? field.options : undefined
+        }))
+      );
     }
-    return fields.filter(field => field.source === selectedSource);
+
+    // Sort fields alphabetically by label
+    return selectedFields.sort((a, b) => a.label.localeCompare(b.label));
   }, [fields, selectedSource]);
 
   const handleSourceChange = (source: ExtendedDataSource) => {
