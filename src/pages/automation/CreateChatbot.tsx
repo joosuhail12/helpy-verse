@@ -1,6 +1,7 @@
 
 import { Steps } from '@/components/ui/steps';
 import { CreateChatbotForm } from '@/components/automation/chatbots/CreateChatbotForm';
+import { AudienceRules } from '@/components/automation/chatbots/form/AudienceRules';
 import { useState } from 'react';
 
 const CreateChatbot = () => {
@@ -48,11 +49,7 @@ const CreateChatbot = () => {
           <CreateChatbotForm onNextStep={handleNextStep} />
         )}
         {currentStep === 1 && (
-          <div className="p-6 bg-white/95 backdrop-blur-sm shadow-xl rounded-xl">
-            <h2 className="text-xl font-semibold mb-4">Audience Rules</h2>
-            <p className="text-muted-foreground">Configure who can interact with your chatbot</p>
-            {/* Audience rules form will be implemented here */}
-          </div>
+          <AudienceRules onNextStep={handleNextStep} />
         )}
         {currentStep === 2 && (
           <div className="p-6 bg-white/95 backdrop-blur-sm shadow-xl rounded-xl">
@@ -67,4 +64,3 @@ const CreateChatbot = () => {
 };
 
 export default CreateChatbot;
-
