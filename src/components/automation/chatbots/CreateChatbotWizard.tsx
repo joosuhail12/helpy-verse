@@ -105,8 +105,16 @@ export const CreateChatbotWizard = () => {
   const onSubmit = async (values: ChatbotFormData) => {
     try {
       const chatbotData: Omit<Chatbot, 'id' | 'createdAt'> = {
-        ...values,
+        name: values.name,
+        description: values.description,
+        status: values.status,
+        avatarUrl: values.avatarUrl,
         tone: values.tone,
+        customInstructions: values.customInstructions,
+        welcomeMessage: values.welcomeMessage,
+        humanHandoffMessage: values.humanHandoffMessage,
+        dataCollection: values.dataCollection,
+        behavior: values.behavior,
       };
       
       await dispatch(createChatbot(chatbotData)).unwrap();
@@ -121,6 +129,7 @@ export const CreateChatbotWizard = () => {
         description: "Failed to create chatbot",
         variant: "destructive",
       });
+      console.error('Error creating chatbot:', error);
     }
   };
 
@@ -159,6 +168,8 @@ export const CreateChatbotWizard = () => {
     }
   };
 
+  console.log('Form values:', form.watch());
+
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
       <Steps steps={updateStepStatus()} />
@@ -194,4 +205,3 @@ export const CreateChatbotWizard = () => {
     </div>
   );
 };
-
