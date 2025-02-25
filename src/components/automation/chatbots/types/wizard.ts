@@ -6,6 +6,7 @@ export interface Step {
 }
 
 import type { z } from 'zod';
+import type { Chatbot } from '@/types/chatbot';
 import { chatbotFormSchema } from '../schema/formSchema';
 
 export type ChatbotFormData = z.infer<typeof chatbotFormSchema>;
