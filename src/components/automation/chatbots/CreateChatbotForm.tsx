@@ -82,13 +82,17 @@ export const CreateChatbotForm = () => {
 
       toast({
         title: "Success",
-        description: "Chatbot created successfully",
+        description: "Basic setup completed. Let's configure audience rules.",
       });
-      navigate('/home/automation/ai/chatbot-profiles');
+      
+      // Instead of navigating away, we'll handle step transition in the parent
+      if (typeof onNextStep === 'function') {
+        onNextStep();
+      }
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to create chatbot",
+        description: "Failed to save chatbot configuration",
         variant: "destructive",
       });
     } finally {
@@ -97,9 +101,9 @@ export const CreateChatbotForm = () => {
   };
 
   return (
-    <Card className="w-full max-w-3xl mx-auto bg-white/95 backdrop-blur-sm shadow-xl rounded-xl">
+    <Card className="w-full bg-white/95 backdrop-blur-sm shadow-xl rounded-xl">
       <CardHeader className="space-y-2 pb-6">
-        <h2 className="text-3xl font-bold tracking-tight">Create New Chatbot</h2>
+        <h2 className="text-xl font-semibold">Basic Setup</h2>
         <p className="text-muted-foreground">Configure your AI assistant by filling in the details below</p>
       </CardHeader>
       <Form {...form}>
@@ -142,7 +146,7 @@ export const CreateChatbotForm = () => {
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Creating...' : 'Create Chatbot'}
+              {isSubmitting ? 'Saving...' : 'Continue to Audience Rules'}
             </Button>
           </CardFooter>
         </form>
