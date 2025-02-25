@@ -8,12 +8,15 @@ import { useToast } from '@/hooks/use-toast';
 import { createChatbot } from '@/store/slices/chatbots/chatbotsSlice';
 import { chatbotFormSchema } from '../schema/formSchema';
 import type { ChatbotFormData, ChatbotFormValues } from '../types/wizard';
+import type { DataCollectionField } from '@/types/chatbot';
 
 export const useWizardForm = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const defaultFields: DataCollectionField[] = [];
 
   const form = useForm<ChatbotFormData>({
     resolver: zodResolver(chatbotFormSchema),
@@ -28,15 +31,15 @@ export const useWizardForm = () => {
       status: 'active',
       dataCollection: {
         enabled: false,
-        fields: [],
-      },
+        fields: defaultFields,
+      } as const,
       behavior: {
         queryHandling: 'continuous',
         postAnswerAction: 'continue',
         inactivityTimeout: 300,
         inactivityAction: 'prompt',
         enableHumanHandoff: true,
-      },
+      } as const,
     },
   });
 
@@ -87,3 +90,4 @@ export const useWizardForm = () => {
     prevStep,
   };
 };
+
