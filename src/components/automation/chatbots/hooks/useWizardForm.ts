@@ -16,6 +16,7 @@ export const useWizardForm = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Define required default values that match the types exactly
   const defaultFields: DataCollectionField[] = [];
 
   const defaultDataCollection: DataCollection = {
@@ -94,4 +95,3 @@ export const useWizardForm = () => {
     prevStep,
   };
 };
-
