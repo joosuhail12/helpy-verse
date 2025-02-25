@@ -16,30 +16,24 @@ export const useWizardForm = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Define initial field with all required properties
-  const defaultField = {
-    id: 'default',
-    label: 'Default Field',
-    type: 'text',
-    required: false,
-  } as const satisfies DataCollectionField;
-
-  // Initialize data collection with explicit type and all required properties
-  const defaultDataCollection = {
+  const initialDataCollection: DataCollection = {
     enabled: false,
-    fields: [defaultField],
-  } as const satisfies Required<DataCollection>;
+    fields: [{
+      id: 'default',
+      label: 'Default Field',
+      type: 'text',
+      required: false,
+    }],
+  };
 
-  // Initialize behavior with explicit type and all required properties
-  const defaultBehavior = {
-    queryHandling: 'continuous' as const,
-    postAnswerAction: 'continue' as const,
+  const initialBehavior: ChatbotBehavior = {
+    queryHandling: 'continuous',
+    postAnswerAction: 'continue',
     inactivityTimeout: 300,
-    inactivityAction: 'prompt' as const,
+    inactivityAction: 'prompt',
     enableHumanHandoff: true,
-  } as const satisfies Required<ChatbotBehavior>;
+  };
 
-  // Initialize form with explicitly typed default values
   const form = useForm<ChatbotFormData>({
     resolver: zodResolver(chatbotFormSchema),
     defaultValues: {
@@ -50,19 +44,10 @@ export const useWizardForm = () => {
       customInstructions: '',
       welcomeMessage: 'Hi! How can I help you today?',
       humanHandoffMessage: "I'll connect you with a human agent who can better assist you.",
-      status: 'active' as const,
-      dataCollection: {
-        enabled: defaultDataCollection.enabled,
-        fields: [...defaultDataCollection.fields],
-      },
-      behavior: {
-        queryHandling: defaultBehavior.queryHandling,
-        postAnswerAction: defaultBehavior.postAnswerAction,
-        inactivityTimeout: defaultBehavior.inactivityTimeout,
-        inactivityAction: defaultBehavior.inactivityAction,
-        enableHumanHandoff: defaultBehavior.enableHumanHandoff,
-      },
-    } satisfies ChatbotFormData,
+      status: 'active',
+      dataCollection: initialDataCollection,
+      behavior: initialBehavior,
+    },
   });
 
   const onSubmit = async (values: ChatbotFormData) => {
