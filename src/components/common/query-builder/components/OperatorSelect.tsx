@@ -18,9 +18,15 @@ export const OperatorSelect = ({
   const getOperatorOptions = () => {
     if (!selectedField) return [];
 
-    const textOperators = [
+    const baseOperators = [
       { value: 'equals', label: 'Equals' },
       { value: 'not_equals', label: 'Not Equals' },
+      { value: 'is_empty', label: 'Is Empty' },
+      { value: 'is_not_empty', label: 'Is Not Empty' },
+    ];
+
+    const textOperators = [
+      ...baseOperators,
       { value: 'contains', label: 'Contains' },
       { value: 'not_contains', label: 'Does Not Contain' },
       { value: 'starts_with', label: 'Starts With' },
@@ -28,23 +34,32 @@ export const OperatorSelect = ({
     ];
 
     const numberOperators = [
-      { value: 'equals', label: 'Equals' },
-      { value: 'not_equals', label: 'Not Equals' },
+      ...baseOperators,
       { value: 'greater_than', label: 'Greater Than' },
       { value: 'less_than', label: 'Less Than' },
     ];
 
+    const selectOperators = [
+      ...baseOperators,
+      { value: 'in', label: 'In List' },
+      { value: 'not_in', label: 'Not In List' },
+    ];
+
     switch (selectedField.type) {
       case 'text':
+        return textOperators;
       case 'select':
       case 'multi-select':
-        return textOperators;
+        return selectOperators;
       case 'number':
         return numberOperators;
       case 'boolean':
+        return baseOperators;
+      case 'date':
         return [
-          { value: 'equals', label: 'Equals' },
-          { value: 'not_equals', label: 'Not Equals' },
+          ...numberOperators,
+          { value: 'in', label: 'In Range' },
+          { value: 'not_in', label: 'Not In Range' },
         ];
       default:
         return textOperators;
@@ -66,3 +81,4 @@ export const OperatorSelect = ({
     </Select>
   );
 };
+
