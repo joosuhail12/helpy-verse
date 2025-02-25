@@ -15,6 +15,7 @@ import { BasicInformation } from './form/BasicInformation';
 import { ToneSelection } from './form/ToneSelection';
 import { MessageConfiguration } from './form/MessageConfiguration';
 import { BehaviorSettings } from './form/BehaviorSettings';
+import type { Chatbot } from '@/types/chatbot';
 
 const chatbotFormSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -43,6 +44,8 @@ const chatbotFormSchema = z.object({
     enableHumanHandoff: z.boolean(),
   }),
 });
+
+type ChatbotFormData = z.infer<typeof chatbotFormSchema>;
 
 type Step = {
   title: string;
@@ -74,7 +77,7 @@ export const CreateChatbotWizard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const form = useForm<z.infer<typeof chatbotFormSchema>>({
+  const form = useForm<ChatbotFormData>({
     resolver: zodResolver(chatbotFormSchema),
     defaultValues: {
       name: '',
@@ -99,9 +102,21 @@ export const CreateChatbotWizard = () => {
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof chatbotFormSchema>) => {
+  const onSubmit = async (values: ChatbotFormData) => {
     try {
-      await dispatch(createChatbot(values)).unwrap();
+      const chatbotData: Omit<Chatbot, 'id' | 'createdAt'> = {
+        ...values,
+        name: values.name,
+        description: values.description,
+        status: 'active',
+        tone: values.tone,
+        welcomeMessage: values.welcomeMessage,
+        humanHandoffMessage: values.humanHandoffMessage,
+        dataCollection: values.dataCollection,
+        behavior: values.behavior,
+      };
+      
+      await dispatch(createChatbot(chatbotData)).unwrap();
       toast({
         title: "Success",
         description: "Chatbot created successfully",
@@ -186,4 +201,3 @@ export const CreateChatbotWizard = () => {
     </div>
   );
 };
-
