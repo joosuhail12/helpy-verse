@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
-import type { QueryGroup, QueryRule } from '@/types/queryBuilder';
+import type { QueryGroup, QueryRule, QueryField } from '@/types/queryBuilder';
 import { QueryGroupComponent } from './QueryGroupComponent';
 import { generateId } from '@/lib/utils';
 

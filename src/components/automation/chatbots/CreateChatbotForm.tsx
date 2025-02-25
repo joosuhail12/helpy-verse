@@ -82,6 +82,11 @@ export const CreateChatbotForm = ({ onNextStep }: CreateChatbotFormProps) => {
         humanHandoffMessage: data.humanHandoffMessage,
         dataCollection: data.dataCollection,
         behavior: data.behavior,
+        audienceRules: {
+          id: 'default',
+          combinator: 'and',
+          rules: []
+        }
       })).unwrap();
 
       toast({

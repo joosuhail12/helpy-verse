@@ -1,4 +1,6 @@
 
+import type { QueryGroup } from './queryBuilder';
+
 export interface Chatbot {
   id: string;
   name: string;
@@ -33,4 +35,3 @@ export interface DataCollectionField {
   required: boolean;
   options?: string[]; // For select type fields
 }
-
