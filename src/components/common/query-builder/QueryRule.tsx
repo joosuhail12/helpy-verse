@@ -3,6 +3,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import type { QueryRule as QueryRuleType, QueryField, DataSource } from '@/types/queryBuilder';
 import { useState, useMemo } from 'react';
+import { mockCustomObjects } from '@/mock/customObjects';
 
 interface QueryRuleProps {
   rule: QueryRuleType;
@@ -15,9 +16,21 @@ export const QueryRule = ({ rule, onChange, fields }: QueryRuleProps) => {
   const selectedField = fields.find((f) => f.id === rule.field);
 
   const availableSources = useMemo(() => {
-    const sources = new Set(fields.map(field => field.source));
+    const basicSources = ['contacts', 'companies'];
+    
+    // Get custom objects that are connected to either contacts or companies
+    const connectedCustomObjects = mockCustomObjects.filter(obj => 
+      obj.connectionType === 'customer' || obj.connectionType === 'ticket'
+    );
+
+    // Only add custom_objects if there are any connected objects
+    const sources = new Set([
+      ...basicSources,
+      ...(connectedCustomObjects.length > 0 ? ['custom_objects'] : [])
+    ]);
+
     return Array.from(sources);
-  }, [fields]);
+  }, []);
 
   const sourceFields = useMemo(() => {
     return fields.filter(field => field.source === selectedSource);
@@ -65,22 +78,30 @@ export const QueryRule = ({ rule, onChange, fields }: QueryRuleProps) => {
     }
   };
 
-  const sourceLabels: Record<DataSource, string> = {
-    contacts: 'Contacts',
-    companies: 'Companies',
-    custom_objects: 'Custom Objects'
+  const getSourceLabel = (source: DataSource) => {
+    switch (source) {
+      case 'contacts':
+        return 'Contact Information';
+      case 'companies':
+        return 'Company Information';
+      case 'custom_objects':
+        const connectedObjects = mockCustomObjects.filter(obj => 
+          obj.connectionType === 'customer' || obj.connectionType === 'ticket'
+        );
+        return `Custom Objects (${connectedObjects.length})`;
+    }
   };
 
   return (
     <div className="flex items-center gap-2">
       <Select value={selectedSource} onValueChange={handleSourceChange}>
         <SelectTrigger className="w-[200px]">
-          <SelectValue placeholder="Select table" />
+          <SelectValue placeholder="Select data source" />
         </SelectTrigger>
         <SelectContent>
           {availableSources.map((source) => (
             <SelectItem key={source} value={source}>
-              {sourceLabels[source as DataSource]}
+              {getSourceLabel(source as DataSource)}
             </SelectItem>
           ))}
         </SelectContent>
@@ -155,3 +176,4 @@ export const QueryRule = ({ rule, onChange, fields }: QueryRuleProps) => {
     </div>
   );
 };
+
