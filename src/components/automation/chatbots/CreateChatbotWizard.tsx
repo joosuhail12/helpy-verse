@@ -87,7 +87,7 @@ export const CreateChatbotWizard = () => {
       customInstructions: '',
       welcomeMessage: 'Hi! How can I help you today?',
       humanHandoffMessage: "I'll connect you with a human agent who can better assist you.",
-      status: 'active',
+      status: 'active' as const,
       dataCollection: {
         enabled: false,
         fields: [],
@@ -104,6 +104,8 @@ export const CreateChatbotWizard = () => {
 
   const onSubmit = async (values: ChatbotFormData) => {
     try {
+      // Since we've properly typed ChatbotFormData and set all required fields in defaultValues,
+      // this assignment is now type-safe
       const chatbotData: Omit<Chatbot, 'id' | 'createdAt'> = values;
       
       await dispatch(createChatbot(chatbotData)).unwrap();
@@ -191,4 +193,3 @@ export const CreateChatbotWizard = () => {
     </div>
   );
 };
-
