@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import {
   Dialog,
@@ -11,6 +10,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
+import { tagService } from '@/api/services/tagService';
+import { updateTag } from '@/store/slices/tagsSlice';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
 
 interface Tag {
   id: string;
@@ -33,7 +35,7 @@ const EditTagDialog = ({ tag, open, onOpenChange }: EditTagDialogProps) => {
   const [name, setName] = useState(tag.name);
   const [color, setColor] = useState(tag.color);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  const dispatch = useAppDispatch();
   useEffect(() => {
     setName(tag.name);
     setColor(tag.color);
@@ -44,15 +46,20 @@ const EditTagDialog = ({ tag, open, onOpenChange }: EditTagDialogProps) => {
     setIsSubmitting(true);
 
     try {
-      // Mock API call delay - in the future, this will be replaced with actual API call
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Dispatch the Redux action instead of calling tagService directly
+      const resultAction = await dispatch(updateTag({ id: tag.id, tag: { name, color } }));
 
-      toast({
-        title: "Success",
-        description: `Successfully updated tag "${name}"`,
-      });
-      
-      onOpenChange(false);
+      // Check if the update was successful
+      if (updateTag.fulfilled.match(resultAction)) {
+        toast({
+          title: "Success",
+          description: `Successfully updated tag "${resultAction.payload.tags[0].name}"`,
+        });
+
+        onOpenChange(false); // Close dialog on success
+      } else {
+        throw new Error("Update failed");
+      }
     } catch (error) {
       toast({
         title: "Error",

@@ -1,5 +1,6 @@
 
 export interface Tag {
+  data: any;
   id: string;
   name: string;
   color: string;

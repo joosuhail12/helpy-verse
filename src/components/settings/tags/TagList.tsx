@@ -91,7 +91,8 @@ const TagList = ({ searchQuery, currentPage, itemsPerPage, onPageChange }: TagLi
       trend: 'stable',
       counts: { tickets: 0, contacts: 0, companies: 0 },
       history: [],
-      preview: []
+      preview: [],
+      data: undefined
     };
     setTagToDelete(bulkDeleteTag);
   };
@@ -106,7 +107,8 @@ const TagList = ({ searchQuery, currentPage, itemsPerPage, onPageChange }: TagLi
       trend: 'stable',
       counts: { tickets: 0, contacts: 0, companies: 0 },
       history: [],
-      preview: []
+      preview: [],
+      data: undefined
     };
     setTagToEdit(bulkEditTag);
   };
@@ -124,7 +126,6 @@ const TagList = ({ searchQuery, currentPage, itemsPerPage, onPageChange }: TagLi
   }
 
   const totalPages = Math.ceil(total / itemsPerPage);
-
   return (
     <div>
       <TagListControls

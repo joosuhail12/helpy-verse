@@ -5,8 +5,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Provider } from 'react-redux';
 import { store } from './store/store';
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useEffect } from 'react';
 import { useAppSelector } from "./hooks/useAppSelector";
+import CaslProvider from "./components/CaslProvider";
+import { getCookie } from "./utils/helpers/helpers";
 
 // Lazy load components with explicit chunk names
 const SignIn = lazy(() => import(/* webpackChunkName: "signin" */ "./pages/SignIn"));
@@ -53,6 +55,21 @@ const queryClient = new QueryClient({
   },
 });
 
+const RootComponent = () => {
+  const customerToken = getCookie("customerToken");
+  return customerToken ? <Navigate to="/home" replace /> : <Navigate to="/sign-in" replace />;
+};
+
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
+
+  if (!isAuthenticated) {
+    return <Navigate to="/sign-in" replace />;
+  }
+
+  return <>{children}</>;
+};
+
 const LoadingFallback = () => (
   <div className="min-h-screen w-full gradient-background flex items-center justify-center">
     <div className="w-full max-w-3xl p-6 md:p-8">
@@ -74,39 +91,15 @@ const ErrorBoundary = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-const RootComponent = () => {
-  const auth = useAppSelector((state) => state.auth);
-  const isAuthenticated = auth?.isAuthenticated ?? false;
-  
-  console.log('Auth state:', { isAuthenticated }); // Debug log
-  
-  return isAuthenticated ? <Navigate to="/home" replace /> : <Navigate to="/sign-in" replace />;
-};
-
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const auth = useAppSelector((state) => state.auth);
-  const isAuthenticated = auth?.isAuthenticated ?? false;
-  
-  console.log('Protected route check:', { isAuthenticated }); // Debug log
-  
-  if (!isAuthenticated) {
-    return <Navigate to="/sign-in" replace />;
-  }
-
-  return <>{children}</>;
-};
-
-const App = () => {
-  console.log('App rendering'); // Debug log
-  
-  return (
-    <Provider store={store}>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <ErrorBoundary>
+const App = () => (
+  <Provider store={store}>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <ErrorBoundary>
+            <CaslProvider>
               <Suspense fallback={<LoadingFallback />}>
                 <Routes>
                   <Route path="/" element={<RootComponent />} />
@@ -145,22 +138,16 @@ const App = () => {
                     <Route path="settings/email/channels/:id" element={<EmailChannelDetail />} />
                     <Route path="automation/ai/content-center" element={<ContentCenter />} />
                     <Route path="automation/ai/content-center/create" element={<CreateContent />} />
-                    <Route path="automation/ai/content-center/:id" element={<ContentDetail />} />
-                    <Route path="automation/ai/action-center" element={<ActionCenter />} />
-                    <Route path="automation/ai/action-center/create" element={<CreateAction />} />
-                    <Route path="automation/ai/chatbot-profiles" element={<ChatbotProfiles />} />
-                    <Route path="automation/ai/chatbot-profiles/create" element={<CreateChatbot />} />
-                    <Route path="automation/ai/chatbot-profiles/:id" element={<ChatbotProfiles />} />
                   </Route>
-                  <Route path="*" element={<Navigate to="/sign-in" replace />} />
+                  <Route path="*" element={<NotFound />} />
                 </Routes>
               </Suspense>
-            </ErrorBoundary>
-          </BrowserRouter>
-        </TooltipProvider>
-      </QueryClientProvider>
-    </Provider>
-  );
-};
+            </CaslProvider>
+          </ErrorBoundary>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </Provider>
+);
 
 export default App;
