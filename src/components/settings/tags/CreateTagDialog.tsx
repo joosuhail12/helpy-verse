@@ -10,7 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
-import { tagService } from "@/api/services/tagService";
+import { createTag } from "@/store/slices/tagsSlice";
+import { useAppDispatch } from "@/hooks/useAppDispatch";
 
 interface CreateTagDialogProps {
   open: boolean;
@@ -22,15 +23,14 @@ const CreateTagDialog = ({ open, onOpenChange, onTagCreated }: CreateTagDialogPr
   const [name, setName] = useState("");
   const [color, setColor] = useState("#3B82F6");
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  const dispatch = useAppDispatch();
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
       // ✅ Make actual API call to create the tag
-      await tagService.createTag({ name, color });
-
+      await dispatch(createTag({ name, color }));
       toast({
         title: "Success",
         description: `Successfully created tag "${name}"`,

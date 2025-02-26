@@ -4,6 +4,7 @@ import { HttpClient } from '@/api/services/HttpClient';
 const API_URL = '/tag';
 
 export interface TagsResponse {
+  data: any;
   tags: Tag[];
   total: number;
 }

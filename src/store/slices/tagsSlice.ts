@@ -36,7 +36,6 @@ export const fetchTags = createAsyncThunk(
   "tags/fetchTags",
   async (params: TagParams) => {
     const response = await tagService.fetchTags(params);
-    console.log(response);
     return {
       tags: response.data.map(tag => ({
         id: tag.id,
@@ -49,7 +48,7 @@ export const fetchTags = createAsyncThunk(
         history: tag.history || [], // Default empty history
         preview: tag.preview || [], // Default empty preview
       })),
-      total: response.total,
+      total: response.data.length,
     };
   }
 );
@@ -60,15 +59,18 @@ export const createTag = createAsyncThunk(
   async (tag: Partial<Tag>) => {
     const response = await tagService.createTag(tag);
     return {
-      id: response.id,
-      name: response.name,
-      color: response.color || "#000000",
-      createdAt: response.createdAt,
-      lastUsed: response.lastUsed || new Date().toISOString(),
-      trend: response.trend || "stable",
-      counts: response.counts || { tickets: 0, contacts: 0, companies: 0 },
-      history: response.history || [],
-      preview: response.preview || [],
+      tags: response.data.map(tag => ({
+        id: tag.id,
+        name: tag.name,
+        color: tag.color || "#000000", // Default color
+        createdAt: tag.createdAt,
+        lastUsed: tag.lastUsed || new Date().toISOString(), // Default lastUsed
+        trend: tag.trend || "stable", // Default trend
+        counts: tag.counts || { tickets: 0, contacts: 0, companies: 0 }, // Default counts
+        history: tag.history || [], // Default empty history
+        preview: tag.preview || [], // Default empty preview
+      })),
+      total: response.data.length,
     };
   }
 );
@@ -79,15 +81,18 @@ export const updateTag = createAsyncThunk(
   async ({ id, tag }: { id: string; tag: Partial<Tag> }) => {
     const response = await tagService.updateTag(id, tag);
     return {
-      id: response.id,
-      name: response.name,
-      color: response.color || "#000000",
-      createdAt: response.createdAt,
-      lastUsed: response.lastUsed || new Date().toISOString(),
-      trend: response.trend || "stable",
-      counts: response.counts || { tickets: 0, contacts: 0, companies: 0 },
-      history: response.history || [],
-      preview: response.preview || [],
+      tags: response.data.map(tag => ({
+        id: tag.id,
+        name: tag.name,
+        color: tag.color || "#000000", // Default color
+        createdAt: tag.createdAt,
+        lastUsed: tag.lastUsed || new Date().toISOString(), // Default lastUsed
+        trend: tag.trend || "stable", // Default trend
+        counts: tag.counts || { tickets: 0, contacts: 0, companies: 0 }, // Default counts
+        history: tag.history || [], // Default empty history
+        preview: tag.preview || [], // Default empty preview
+      })),
+      total: response.data.length,
     };
   }
 );
@@ -155,13 +160,12 @@ const tagsSlice = createSlice({
         state.error = action.error.message || "Failed to fetch tags";
       })
       .addCase(createTag.fulfilled, (state, action) => {
-        state.items.push(action.payload);
+        state.items = action.payload.tags;
+        state.total = action.payload.total;
       })
       .addCase(updateTag.fulfilled, (state, action) => {
-        const index = state.items.findIndex(tag => tag.id === action.payload.id);
-        if (index !== -1) {
-          state.items[index] = action.payload;
-        }
+        state.items = action.payload.tags;
+        state.total = action.payload.total;
       })
       .addCase(deleteTags.fulfilled, (state, action) => {
         state.items = state.items.filter(tag => !action.payload.includes(tag.id));
