@@ -48,7 +48,7 @@ export const ContactRelated = ({ contact }: ContactRelatedProps) => {
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="text-sm font-medium">{colleague.firstName} {colleague.lastName}</p>
+                  <p className="text-sm font-medium">{colleague.firstname} {colleague.lastname}</p>
                   <p className="text-xs text-muted-foreground">{colleague.title}</p>
                 </div>
               </div>

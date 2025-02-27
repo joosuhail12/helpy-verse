@@ -22,18 +22,18 @@ export const ContactBasicInfo = ({ contact }: ContactBasicInfoProps) => {
       <div className="space-y-1">
         <p className="text-sm font-medium text-muted-foreground">First Name</p>
         <InlineEditField
-          value={contact.firstName}
+          value={contact.firstname}
           contactId={contact.id}
-          field="firstName"
+          field="firstname"
           label="First Name"
         />
       </div>
       <div className="space-y-1">
         <p className="text-sm font-medium text-muted-foreground">Last Name</p>
         <InlineEditField
-          value={contact.lastName}
+          value={contact.lastname}
           contactId={contact.id}
-          field="lastName"
+          field="lastname"
           label="Last Name"
         />
       </div>

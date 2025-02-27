@@ -199,21 +199,20 @@ const authSlice = createSlice({
         state.loading = false;
         state.isAuthenticated = true;
         state.user = action.payload;
-    
+
         const loginData = action.payload?.data;
         if (loginData) {
-            const email = loginData?.username || "";
-            const encryptedEmail = encryptBase64(email);
-            setCookie("agent_email", encryptedEmail);
-    
-            handleSetToken(loginData?.accessToken?.token || "");
-    
-            setWorkspaceId(get(action.payload, "data.defaultWorkspaceId", ""));
-    
-            HttpClient.setAxiosDefaultConfig();
+          const email = loginData?.username || "";
+          const encryptedEmail = encryptBase64(email);
+          setCookie("agent_email", encryptedEmail);
+
+          handleSetToken(loginData?.accessToken?.token || "");
+
+          setWorkspaceId(get(action.payload, "data.defaultWorkspaceId", ""));
+
+          HttpClient.setAxiosDefaultConfig();
         }
-    })
-    
+      })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || 'Login failed';
@@ -243,17 +242,6 @@ const authSlice = createSlice({
       .addCase(registerUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || 'Registration failed';
-      })
-      .addCase(requestPasswordReset.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(requestPasswordReset.fulfilled, (state) => {
-        state.loading = false;
-      })
-      .addCase(requestPasswordReset.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message || 'Password reset request failed';
       })
       .addCase(fetchUserData.pending, (state) => {
         state.loading = true;

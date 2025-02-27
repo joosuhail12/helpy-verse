@@ -34,7 +34,7 @@ export const ContactDetailHeader = ({ contact }: ContactDetailHeaderProps) => {
         </Avatar>
         <div>
           <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">
-            {contact.firstName} {contact.lastName}
+            {contact.firstname} {contact.lastname}
           </h1>
           <p className="text-sm text-purple-600/70 mt-1">{contact.email}</p>
         </div>

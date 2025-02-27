@@ -3,6 +3,7 @@ import { Contact } from '@/types/contact';
 
 export interface ContactsState {
   contacts: Contact[];
+  contactDetails: Contact | null;
   loading: boolean;
   error: string | null;
   selectedContacts: string[];

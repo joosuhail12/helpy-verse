@@ -1,8 +1,8 @@
 
 export interface Contact {
   id: string;
-  firstName: string;
-  lastName: string;
+  firstname: string;
+  lastname: string;
   email: string;
   phone?: string;
   company?: string;
@@ -13,7 +13,7 @@ export interface Contact {
   timezone?: string;
   linkedinUrl?: string;
   twitterUrl?: string;
-  preferredLanguage?: string;
+  language?: string;
   source?: 'website' | 'referral' | 'marketing' | 'sales' | 'other';
   assignedTo?: string;
   accountValue?: number;

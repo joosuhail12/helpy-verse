@@ -1,15 +1,14 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { updateContact } from '@/store/slices/contacts/contactsSlice';
 import { useToast } from '@/hooks/use-toast';
 import { CustomFieldType } from '@/types/customField';
 import { validateFieldValue } from '@/components/settings/customData/utils/fieldValidation';
 import { EditButtons } from './inline-edit/EditButtons';
 import { EditField } from './inline-edit/EditField';
 import { DisplayValue } from './inline-edit/DisplayValue';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { updateCustomer } from '@/store/slices/contacts/contactsSlice';
 
 interface InlineEditFieldProps {
   value: string | number | boolean | string[];
@@ -38,9 +37,9 @@ export const InlineEditField = ({
   const [editValue, setEditValue] = useState<string | number | boolean | string[]>(value);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const dispatch = useAppDispatch();
   const { toast } = useToast();
   const inputRef = useRef<HTMLInputElement>(null);
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     if (isEditing && inputRef.current) {
@@ -49,6 +48,7 @@ export const InlineEditField = ({
   }, [isEditing]);
 
   const handleSave = async () => {
+    // Validate field before saving
     const mockField = {
       id: field,
       name: label,
@@ -75,7 +75,7 @@ export const InlineEditField = ({
     setIsSaving(true);
     setError(null);
     try {
-      await dispatch(updateContact({ id: contactId, [field]: editValue }));
+      await dispatch(updateCustomer({ customer_id: contactId, [field]: editValue }));
       setIsEditing(false);
       toast({
         title: 'Success',
@@ -135,4 +135,3 @@ export const InlineEditField = ({
     </div>
   );
 };
-

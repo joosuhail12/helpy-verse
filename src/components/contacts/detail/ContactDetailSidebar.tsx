@@ -36,11 +36,11 @@ export const ContactDetailSidebar = ({ contact }: ContactDetailSidebarProps) => 
         <QuickNoteInput contactId={contact.id} />
       </Card>
 
-      {contact.tags.length > 0 && (
+      {contact?.tags?.length > 0 && (
         <Card className="p-4 space-y-3 bg-white/60 backdrop-blur-sm border-purple-100/50 shadow-lg shadow-purple-500/5">
           <h3 className="font-medium text-sm text-purple-900">Tags</h3>
           <div className="flex flex-wrap gap-2">
-            {contact.tags.map((tag) => (
+            {contact?.tags?.map((tag) => (
               <div 
                 key={tag} 
                 className="flex items-center gap-1.5 text-xs bg-purple-50 text-purple-700 px-2.5 py-1.5 rounded-lg transition-all duration-300 hover:bg-purple-100"

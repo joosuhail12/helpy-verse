@@ -24,8 +24,8 @@ export const ImportExportActions = ({ contacts }: ImportExportActionsProps) => {
 
   const handleExport = () => {
     const exportData = contacts.map(contact => ({
-      'First Name': contact.firstName,
-      'Last Name': contact.lastName,
+      'First Name': contact.firstname,
+      'Last Name': contact.lastname,
       'Email': contact.email,
       'Company': contact.company || '',
       'Phone': contact.phone || '',

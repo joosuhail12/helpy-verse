@@ -46,8 +46,8 @@ export const AssociatedContacts = ({ company }: AssociatedContactsProps) => {
     state.contacts.contacts.filter(contact => 
       contact.company !== company.name && 
       (
-        contact.firstName.toLowerCase().includes(addContactSearch.toLowerCase()) ||
-        contact.lastName.toLowerCase().includes(addContactSearch.toLowerCase()) ||
+        contact.firstname.toLowerCase().includes(addContactSearch.toLowerCase()) ||
+        contact.lastname.toLowerCase().includes(addContactSearch.toLowerCase()) ||
         contact.email.toLowerCase().includes(addContactSearch.toLowerCase())
       )
     )
@@ -55,8 +55,8 @@ export const AssociatedContacts = ({ company }: AssociatedContactsProps) => {
 
   // Filter displayed contacts based on search
   const filteredContacts = contacts.filter(contact =>
-    contact.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    contact.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    contact.firstname.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    contact.lastname.toLowerCase().includes(searchQuery.toLowerCase()) ||
     contact.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -70,7 +70,7 @@ export const AssociatedContacts = ({ company }: AssociatedContactsProps) => {
       
       toast({
         title: "Contact added",
-        description: `${contact.firstName} ${contact.lastName} has been added to ${company.name}`,
+        description: `${contact.firstname} ${contact.lastname} has been added to ${company.name}`,
       });
     } catch (error) {
       toast({
@@ -114,12 +114,12 @@ export const AssociatedContacts = ({ company }: AssociatedContactsProps) => {
                 <div className="flex items-center space-x-3">
                   <Avatar>
                     <AvatarFallback>
-                      {contact.firstName[0]}
-                      {contact.lastName[0]}
+                      {contact.firstname[0]}
+                      {contact.lastname[0]}
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="font-medium text-gray-900">{contact.firstName} {contact.lastName}</p>
+                    <p className="font-medium text-gray-900">{contact.firstname} {contact.lastname}</p>
                     <p className="text-sm text-gray-500">{contact.title || 'No title'}</p>
                   </div>
                 </div>
@@ -157,12 +157,12 @@ export const AssociatedContacts = ({ company }: AssociatedContactsProps) => {
                     <div className="flex items-center space-x-3">
                       <Avatar>
                         <AvatarFallback>
-                          {contact.firstName[0]}
-                          {contact.lastName[0]}
+                          {contact.firstname[0]}
+                          {contact.lastname[0]}
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="font-medium">{contact.firstName} {contact.lastName}</p>
+                        <p className="font-medium">{contact.firstname} {contact.lastname}</p>
                         <p className="text-sm text-gray-500">{contact.email}</p>
                       </div>
                     </div>
