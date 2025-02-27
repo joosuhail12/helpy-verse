@@ -16,8 +16,8 @@ export const ExportAction = ({ selectedContacts, isDisabled }: ExportActionProps
     const csvContent = [
       ['First Name', 'Last Name', 'Email', 'Company', 'Type', 'Status'],
       ...selectedContacts.map(contact => [
-        contact.firstName,
-        contact.lastName,
+        contact.firstname,
+        contact.lastname,
         contact.email,
         contact.company || '',
         contact.type,

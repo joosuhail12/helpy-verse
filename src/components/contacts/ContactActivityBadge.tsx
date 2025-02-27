@@ -56,11 +56,11 @@ export const ContactActivityBadge = ({ contact }: ContactActivityBadgeProps) => 
           <TooltipTrigger asChild>
             <Badge variant="secondary" className="cursor-help">
               <Clock className="h-3 w-3 mr-1" />
-              {format(new Date(lastActivity), 'MMM d')}
+              {format(lastActivity ? new Date(lastActivity) : new Date(), 'MMM d')}
             </Badge>
           </TooltipTrigger>
           <TooltipContent>
-            <p>Last activity: {format(new Date(lastActivity), 'MMM d, yyyy')}</p>
+            <p>Last activity: {format(lastActivity ? new Date(lastActivity) : new Date(), 'MMM d, yyyy')}</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>

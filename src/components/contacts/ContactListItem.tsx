@@ -38,7 +38,7 @@ export const ContactListItem = ({ contact, isSelected }: ContactListItemProps) =
         <Checkbox checked={isSelected} />
       </TableCell>
       <TableCell>
-        {contact.firstName} {contact.lastName}
+        {contact.firstname} {contact.lastname}
       </TableCell>
       <TableCell>{contact.email}</TableCell>
       <TableCell>{contact.company || '-'}</TableCell>

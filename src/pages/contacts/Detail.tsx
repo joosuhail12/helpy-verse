@@ -1,6 +1,5 @@
-
+import { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { useAppSelector } from '@/hooks/useAppSelector';
 import { ContactDetailHeader } from '@/components/contacts/detail/ContactDetailHeader';
 import { ContactInformation } from '@/components/contacts/detail/ContactInformation';
 import { ContactTimeline } from '@/components/contacts/detail/ContactTimeline';
@@ -8,16 +7,24 @@ import { ContactDetailSidebar } from '@/components/contacts/detail/ContactDetail
 import { ContactCustomObjectData } from '@/components/contacts/detail/ContactCustomObjectData';
 import { ContactRelated } from '@/components/contacts/detail/ContactRelated';
 import { Card } from '@/components/ui/card';
-import { Bell } from 'lucide-react';
+import { Bell, Loader } from 'lucide-react';
 import { Activity } from '@/types/activity';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ContactTickets } from '@/components/contacts/detail/ContactTickets';
-
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { useAppSelector } from '@/hooks/useAppSelector';
+import { fetchCustomerDetails } from '@/store/slices/contacts/contactsSlice';
 const ContactDetail = () => {
   const { id } = useParams();
-  const contact = useAppSelector((state) => 
-    state.contacts.contacts.find((c) => c.id === id)
-  );
+  const dispatch = useAppDispatch();
+
+  const { contactDetails, loading, error } = useAppSelector((state) => state.contacts);
+  console.log(contactDetails);
+  useEffect(() => {
+    if (id) {
+      dispatch(fetchCustomerDetails(id));
+    }
+  }, [id, dispatch]);
 
   const activities: Activity[] = [
     {
@@ -31,7 +38,28 @@ const ContactDetail = () => {
     },
   ];
 
-  if (!contact) {
+  if (loading) {
+    return (
+      <div className="p-6">
+        <Card className="p-4 text-center">
+          <Loader /> {/* Show loading animation */}
+          <p className="mt-2 text-gray-500">Loading contact details...</p>
+        </Card>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6">
+        <Card className="p-4 text-red-500">
+          Error: {error}
+        </Card>
+      </div>
+    );
+  }
+
+  if (!contactDetails) {
     return (
       <div className="p-6">
         <Card className="p-4 text-red-500">
@@ -41,12 +69,12 @@ const ContactDetail = () => {
     );
   }
 
-  const needsAttention = contact.status === 'active' && !contact.lastContacted;
+  const needsAttention = contactDetails.status === 'active' && !contactDetails.lastContacted;
 
   return (
     <div className="container mx-auto px-4 py-6 max-w-[1400px]">
-      <ContactDetailHeader contact={contact} />
-      
+      <ContactDetailHeader contact={contactDetails} />
+
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-8">
         {/* Left Column (4/12 width) - Contact Information */}
         <div className="lg:col-span-4">
@@ -56,12 +84,12 @@ const ContactDetail = () => {
               <p className="text-sm text-yellow-700">This contact needs attention</p>
             </div>
           )}
-          
-          <ContactDetailSidebar contact={contact} />
+
+          <ContactDetailSidebar contact={contactDetails} />
           <div className="mt-4 space-y-4">
-            <ContactInformation contact={contact} activities={activities} />
-            <ContactRelated contact={contact} />
-            <ContactCustomObjectData contact={contact} />
+            <ContactInformation contact={contactDetails} activities={activities} />
+            <ContactRelated contact={contactDetails} />
+            <ContactCustomObjectData contact={contactDetails} />
           </div>
         </div>
 
@@ -72,13 +100,13 @@ const ContactDetail = () => {
               <TabsTrigger value="activities">Activity Timeline</TabsTrigger>
               <TabsTrigger value="tickets">Tickets</TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="activities">
-              <ContactTimeline contact={contact} />
+              <ContactTimeline contact={contactDetails} />
             </TabsContent>
-            
+
             <TabsContent value="tickets">
-              <ContactTickets contact={contact} />
+              <ContactTickets contact={contactDetails} />
             </TabsContent>
           </Tabs>
         </div>

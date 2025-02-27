@@ -15,14 +15,14 @@ import type { DataCollectionField } from '@/types/chatbot';
 
 const AVAILABLE_CUSTOMER_FIELDS = [
   { 
-    id: 'firstName', 
+    id: 'firstname', 
     label: 'First Name', 
     type: 'text',
     description: 'Visitor\'s first name',
     icon: User
   },
   { 
-    id: 'lastName', 
+    id: 'lastname', 
     label: 'Last Name', 
     type: 'text',
     description: 'Visitor\'s last name',

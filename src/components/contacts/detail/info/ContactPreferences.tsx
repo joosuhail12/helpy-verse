@@ -38,9 +38,9 @@ export const ContactPreferences = ({ contact }: ContactPreferencesProps) => {
         <div className="space-y-1.5">
           <p className="text-sm font-medium text-purple-900/70">Language</p>
           <InlineEditField
-            value={contact.preferredLanguage || ''}
+            value={contact.language || ''}
             contactId={contact.id}
-            field="preferredLanguage"
+            field="language"
             label="Preferred Language"
           />
         </div>
