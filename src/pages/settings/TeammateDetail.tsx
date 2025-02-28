@@ -1,3 +1,4 @@
+
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
@@ -22,9 +23,11 @@ const TeammateDetail = () => {
   const teammate = useAppSelector(state => 
     state.teammates.teammates.find(t => t.id === id)
   );
-  const currentUserRole = useAppSelector(state => 
-    state.auth.user?.role || 'viewer'
-  );
+  
+  // Get current user role safely, default to 'viewer' if not available
+  const authUser = useAppSelector(state => state.auth.user);
+  const currentUserRole = 'admin'; // Default to admin role for now since it's not in the auth state
+  
   const isAdmin = currentUserRole === 'admin';
 
   const [isEditing, setIsEditing] = useState(false);

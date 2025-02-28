@@ -1,16 +1,24 @@
-import { AbilityBuilder, createMongoAbility, MongoAbility } from "@casl/ability";
 
-export type Actions = "read" | "create" | "update" | "delete";
-export type Subjects = "User" | "Post" | "Comment" | "Nothing";
+import { AbilityBuilder, Ability, AbilityClass } from '@casl/ability';
+import { ActionType, Permission } from '@/store/slices/authSlice';
 
-export type AppAbility = MongoAbility<[Actions, Subjects]>;
+// Define the types of subjects in our application
+type Subjects = 'Article' | 'User' | 'Comment' | 'Contact' | 'Ticket' | 'Setting' | 'all';
+type Actions = 'create' | 'read' | 'update' | 'delete' | 'archive' | 'manage';
 
-export const defineAppAbility = (): AppAbility => {
-    const { can, rules } = new AbilityBuilder<AppAbility>(createMongoAbility);
+// Define the type of Ability instance
+export type AppAbility = Ability<[Actions, Subjects]>;
+type DefinePermissions = (builder: AbilityBuilder<AppAbility>) => void;
 
-    can("read", "Nothing");
+// Create a function to define the default permissions
+export const defineAppAbility = () => {
+  const { can, cannot, build } = new AbilityBuilder(Ability as AbilityClass<AppAbility>);
 
-    return createMongoAbility(rules);
+  // Default: users can read all resources
+  can('read', 'all');
+
+  return build({
+    // Ability detection behavior options
+    detectSubjectType: (subject) => subject.type
+  });
 };
-
-export const ability = defineAppAbility();

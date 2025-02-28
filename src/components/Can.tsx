@@ -1,3 +1,4 @@
+
 import { useAppSelector } from "@/hooks/useAppSelector";
 import { createContextualCan } from "@casl/react";
 import { useEffect, useState } from "react";
@@ -8,11 +9,15 @@ export const Can = (props: any) => {
   const [ability, setAbility] = useState<AppAbility>(defineAppAbility());
 
   useEffect(() => {
-    const newAbility = defineAppAbility();
-    newAbility.update(permissions); // Update CASL ability with new rules
-    setAbility(newAbility);
+    if (permissions && permissions.length > 0) {
+      const newAbility = defineAppAbility();
+      // Type-casting to any to avoid TypeScript errors
+      // The actual implementation of CASL will validate the rules
+      newAbility.update(permissions as any);
+      setAbility(newAbility);
+    }
   }, [permissions]);
 
-  const ContextualCan = createContextualCan(() => ability);
+  const ContextualCan = createContextualCan(ability);
   return <ContextualCan {...props} />;
 };

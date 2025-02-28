@@ -45,20 +45,38 @@ export const ContactCustomFields = ({ contact }: ContactCustomFieldsProps) => {
       </CardHeader>
       <CardContent className="pt-6">
         <div className="grid gap-6">
-          {customFields.contacts.map((field) => (
-            <div key={field.id} className="space-y-1">
-              <p className="text-sm font-medium text-muted-foreground">{field.name}</p>
-              <InlineEditField
-                value={contact[field.id] || ''}
-                contactId={contact.id}
-                field={field.id}
-                label={field.name}
-                type={field.type}
-                options={field.options}
-                validation={field.validationRules}
-              />
-            </div>
-          ))}
+          {customFields.contacts.map((field) => {
+            // Safely convert field value to the expected types
+            const fieldValue = contact[field.id];
+            let safeValue: string | number | boolean | string[] = '';
+            
+            if (typeof fieldValue === 'string' || 
+                typeof fieldValue === 'number' || 
+                typeof fieldValue === 'boolean' ||
+                Array.isArray(fieldValue)) {
+              safeValue = fieldValue;
+            } else if (fieldValue === null || fieldValue === undefined) {
+              safeValue = '';
+            } else if (typeof fieldValue === 'object') {
+              // Convert object to string representation
+              safeValue = JSON.stringify(fieldValue);
+            }
+            
+            return (
+              <div key={field.id} className="space-y-1">
+                <p className="text-sm font-medium text-muted-foreground">{field.name}</p>
+                <InlineEditField
+                  value={safeValue}
+                  contactId={contact.id}
+                  field={field.id}
+                  label={field.name}
+                  type={field.type}
+                  options={field.options}
+                  validation={field.validationRules}
+                />
+              </div>
+            );
+          })}
         </div>
       </CardContent>
     </Card>
