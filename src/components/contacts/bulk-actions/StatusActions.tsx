@@ -28,7 +28,7 @@ export const StatusActions = ({ selectedContacts }: StatusActionsProps) => {
     selectedContacts.forEach(contactId => {
       dispatch(updateContact({
         id: contactId,
-        status: selectedStatus as 'active' | 'inactive'
+        data: { status: selectedStatus as 'active' | 'inactive' }
       }));
     });
 
@@ -62,4 +62,3 @@ export const StatusActions = ({ selectedContacts }: StatusActionsProps) => {
     </div>
   );
 };
-

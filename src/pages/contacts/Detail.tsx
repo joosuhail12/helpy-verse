@@ -1,3 +1,4 @@
+
 import { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { ContactDetailHeader } from '@/components/contacts/detail/ContactDetailHeader';
@@ -14,12 +15,14 @@ import { ContactTickets } from '@/components/contacts/detail/ContactTickets';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { fetchCustomerDetails } from '@/store/slices/contacts/contactsSlice';
+
 const ContactDetail = () => {
   const { id } = useParams();
   const dispatch = useAppDispatch();
 
   const { contactDetails, loading, error } = useAppSelector((state) => state.contacts);
   console.log(contactDetails);
+  
   useEffect(() => {
     if (id) {
       dispatch(fetchCustomerDetails(id));
@@ -42,7 +45,7 @@ const ContactDetail = () => {
     return (
       <div className="p-6">
         <Card className="p-4 text-center">
-          <Loader /> {/* Show loading animation */}
+          <Loader className="h-6 w-6 animate-spin mx-auto text-gray-500" />
           <p className="mt-2 text-gray-500">Loading contact details...</p>
         </Card>
       </div>

@@ -34,7 +34,7 @@ export const TagActions = ({ selectedContacts, contacts }: TagActionsProps) => {
       if (!currentTags.includes(selectedTag)) {
         dispatch(updateContact({
           id: contactId,
-          tags: [...currentTags, selectedTag]
+          data: { tags: [...currentTags, selectedTag] }
         }));
       }
     });
@@ -72,4 +72,3 @@ export const TagActions = ({ selectedContacts, contacts }: TagActionsProps) => {
     </div>
   );
 };
-

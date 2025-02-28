@@ -25,7 +25,7 @@ export const QuickNoteInput = ({ contactId, initialNote = '' }: QuickNoteInputPr
     try {
       await dispatch(updateContact({
         id: contactId,
-        notes: note,
+        data: { notes: note }
       }));
       
       toast({

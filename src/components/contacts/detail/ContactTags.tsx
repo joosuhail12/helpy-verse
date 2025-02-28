@@ -1,25 +1,10 @@
 
-import { Contact } from '@/types/contact';
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-} from '@/components/ui/card';
-import { Tag, Plus, X } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { useState } from 'react';
+import { X, Plus, Tag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { useState } from 'react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { useAppSelector } from '@/hooks/useAppSelector';
+import { Contact } from '@/types/contact';
 import { updateContact } from '@/store/slices/contacts/contactsSlice';
 import { useToast } from '@/hooks/use-toast';
 
@@ -28,153 +13,136 @@ interface ContactTagsProps {
 }
 
 export const ContactTags = ({ contact }: ContactTagsProps) => {
-  const [isAddingTag, setIsAddingTag] = useState(false);
   const [newTag, setNewTag] = useState('');
+  const [isAddingTag, setIsAddingTag] = useState(false);
   const dispatch = useAppDispatch();
   const { toast } = useToast();
 
-  const allTags = useAppSelector((state) => 
-    // In a real app, this would come from a tags slice
-    ['important', 'follow-up', 'vip', 'lead', 'customer', 'prospect']
-  );
+  const tags = Array.isArray(contact.tags) ? contact.tags : [];
 
   const handleAddTag = () => {
     if (!newTag.trim()) return;
     
-    // Ensure tags is initialized as an array
-    const currentTags = Array.isArray(contact.tags) ? contact.tags : [];
-    if (currentTags.includes(newTag.trim())) {
+    if (tags.includes(newTag.trim())) {
       toast({
-        title: "Tag exists",
-        description: "This tag already exists on the contact.",
-        variant: "destructive",
+        title: "Tag already exists",
+        description: "This contact already has this tag.",
+        variant: "default",
       });
       return;
     }
     
-    const updatedTags = [...currentTags, newTag.trim()];
-    dispatch(updateContact({ 
-      id: contact.id, 
-      tags: updatedTags 
+    const updatedTags = [...tags, newTag.trim()];
+    dispatch(updateContact({
+      id: contact.id,
+      data: { tags: updatedTags }
     }));
+    
     setNewTag('');
     setIsAddingTag(false);
+    
     toast({
       title: "Tag added",
-      description: `Tag "${newTag}" has been added to the contact.`,
+      description: `Added tag "${newTag.trim()}" to contact.`,
     });
   };
 
   const handleRemoveTag = (tagToRemove: string) => {
-    const currentTags = Array.isArray(contact.tags) ? contact.tags : [];
-    const updatedTags = currentTags.filter(tag => tag !== tagToRemove);
-    dispatch(updateContact({ 
-      id: contact.id, 
-      tags: updatedTags 
+    const updatedTags = tags.filter(tag => tag !== tagToRemove);
+    dispatch(updateContact({
+      id: contact.id,
+      data: { tags: updatedTags }
     }));
+    
     toast({
       title: "Tag removed",
-      description: `Tag "${tagToRemove}" has been removed from the contact.`,
+      description: `Removed tag "${tagToRemove}" from contact.`,
     });
   };
 
-  const unusedTags = allTags.filter(tag => 
-    !contact.tags?.includes(tag)
-  );
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleAddTag();
+    } else if (e.key === 'Escape') {
+      setIsAddingTag(false);
+      setNewTag('');
+    }
+  };
 
   return (
-    <Card className="border-none shadow-none bg-gray-50/50">
-      <CardHeader className="border-b pb-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Tag className="h-4 w-4 text-gray-500" />
-            <CardTitle className="text-lg">Tags</CardTitle>
+    <div className="flex flex-col gap-2">
+      <div className="flex justify-between items-center">
+        <div className="flex items-center gap-2">
+          <Tag className="h-4 w-4 text-purple-900/70" />
+          <h4 className="text-sm font-medium text-purple-900/70">Tags</h4>
+        </div>
+        
+        {!isAddingTag && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsAddingTag(true)}
+            className="h-6 text-xs"
+          >
+            <Plus className="h-3 w-3 mr-1" />
+            Add Tag
+          </Button>
+        )}
+      </div>
+      
+      <div className="flex flex-wrap gap-2">
+        {tags.map((tag) => (
+          <div
+            key={tag}
+            className="bg-purple-100 text-purple-800 rounded-full px-2 py-1 text-xs flex items-center gap-1"
+          >
+            {tag}
+            <button
+              onClick={() => handleRemoveTag(tag)}
+              className="text-purple-800/70 hover:text-purple-800"
+            >
+              <X className="h-3 w-3" />
+            </button>
           </div>
-          {isAddingTag ? (
-            <div className="flex items-center gap-2">
-              <Select 
-                value={newTag} 
-                onValueChange={setNewTag}
-              >
-                <SelectTrigger className="h-8 w-40">
-                  <SelectValue placeholder="Select tag..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {unusedTags.map((tag) => (
-                    <SelectItem key={tag} value={tag}>
-                      {tag}
-                    </SelectItem>
-                  ))}
-                  <SelectItem value="_custom">Add custom tag...</SelectItem>
-                </SelectContent>
-              </Select>
-              {newTag === '_custom' && (
-                <Input
-                  value={newTag === '_custom' ? '' : newTag}
-                  onChange={(e) => setNewTag(e.target.value)}
-                  placeholder="Enter tag name..."
-                  className="h-8 w-40"
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      handleAddTag();
-                    }
-                  }}
-                />
-              )}
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={handleAddTag}
-                disabled={!newTag.trim() || newTag === '_custom'}
-                className="h-8 w-8 p-0"
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => {
-                  setIsAddingTag(false);
-                  setNewTag('');
-                }}
-                className="h-8 w-8 p-0"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-          ) : (
+        ))}
+        
+        {tags.length === 0 && !isAddingTag && (
+          <div className="text-gray-500 text-xs italic">No tags added yet</div>
+        )}
+        
+        {isAddingTag && (
+          <div className="flex items-center gap-1">
+            <Input
+              value={newTag}
+              onChange={(e) => setNewTag(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Add tag..."
+              className="h-7 text-xs"
+              autoFocus
+            />
             <Button
               size="sm"
-              variant="ghost"
-              onClick={() => setIsAddingTag(true)}
-              className="h-8 px-2"
+              className="h-7 text-xs"
+              onClick={handleAddTag}
+              disabled={!newTag.trim()}
             >
-              <Plus className="h-4 w-4 mr-1" />
-              Add Tag
+              Add
             </Button>
-          )}
-        </div>
-      </CardHeader>
-      <CardContent className="pt-6">
-        <div className="flex flex-wrap gap-2">
-          {Array.isArray(contact.tags) && contact.tags.map((tag) => (
-            <Badge 
-              key={tag} 
-              variant="secondary"
-              className="flex items-center gap-1"
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 text-xs"
+              onClick={() => {
+                setIsAddingTag(false);
+                setNewTag('');
+              }}
             >
-              {tag}
-              <button
-                onClick={() => handleRemoveTag(tag)}
-                className="ml-1 hover:text-red-500 transition-colors"
-              >
-                <X className="h-3 w-3" />
-              </button>
-            </Badge>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+              Cancel
+            </Button>
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
-

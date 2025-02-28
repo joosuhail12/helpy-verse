@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -8,7 +9,7 @@ import { EditButtons } from './inline-edit/EditButtons';
 import { EditField } from './inline-edit/EditField';
 import { DisplayValue } from './inline-edit/DisplayValue';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { updateCustomer } from '@/store/slices/contacts/contactsSlice';
+import { updateContact } from '@/store/slices/contacts/contactsSlice';
 
 interface InlineEditFieldProps {
   value: string | number | boolean | string[];
@@ -75,7 +76,14 @@ export const InlineEditField = ({
     setIsSaving(true);
     setError(null);
     try {
-      await dispatch(updateCustomer({ customer_id: contactId, [field]: editValue }));
+      const updateData: { [key: string]: any } = {};
+      updateData[field] = editValue;
+      
+      await dispatch(updateContact({ 
+        id: contactId, 
+        data: updateData 
+      }));
+      
       setIsEditing(false);
       toast({
         title: 'Success',
@@ -109,6 +117,7 @@ export const InlineEditField = ({
             options={options}
             isSaving={isSaving}
             inputRef={inputRef}
+            field={field}
           />
           <EditButtons
             onSave={handleSave}

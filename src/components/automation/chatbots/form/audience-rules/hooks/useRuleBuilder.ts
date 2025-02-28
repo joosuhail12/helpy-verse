@@ -2,11 +2,12 @@
 import { useState } from 'react';
 import { QueryGroup, QueryField } from '@/types/queryBuilder';
 import { validateQueryGroup, ValidationError } from '../utils/ruleValidator';
-import { toast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 export const useRuleBuilder = (initialGroup: QueryGroup, fields: QueryField[]) => {
   const [queryGroup, setQueryGroup] = useState<QueryGroup>(initialGroup);
   const [errors, setErrors] = useState<ValidationError[]>([]);
+  const { toast } = useToast();
 
   const handleRuleChange = (newGroup: QueryGroup) => {
     setQueryGroup(newGroup);

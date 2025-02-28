@@ -1,9 +1,10 @@
 
 import { useAppSelector } from "@/hooks/useAppSelector";
-import { createElement } from "react";
-import { AbilityContext } from "@casl/react";
-import { useEffect, useState } from "react";
-import { defineAppAbility, AppAbility } from "@/utils/ability";
+import { createContext, createElement, useContext, useEffect, useState } from "react";
+import { AppAbility, defineAppAbility } from "@/utils/ability";
+
+// Create our own AbilityContext since @casl/react doesn't export it directly in the version we're using
+export const AbilityContext = createContext<AppAbility | undefined>(undefined);
 
 export const Can = (props: any) => {
   const { permissions } = useAppSelector((state) => state.auth);
@@ -19,9 +20,14 @@ export const Can = (props: any) => {
     }
   }, [permissions]);
 
-  return createElement(AbilityContext.Provider, { value: ability }, 
-    createElement(AbilityContext.Consumer, null, (context) => 
-      props.do(context)
-    )
-  );
+  return createElement(AbilityContext.Provider, { value: ability }, props.do(ability));
+};
+
+// Hook to use ability context in components
+export const useAbility = () => {
+  const context = useContext(AbilityContext);
+  if (context === undefined) {
+    throw new Error('useAbility must be used within a Can provider');
+  }
+  return context;
 };

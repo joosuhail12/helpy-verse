@@ -31,7 +31,7 @@ export const SampleMatchesPreview = ({ queryGroup }: SampleMatchesPreviewProps) 
   const [targetEntityType, setTargetEntityType] = useState<'contacts' | 'companies'>('contacts');
   const [sampleMatches, setSampleMatches] = useState<any[]>([]);
   
-  const contacts = useAppSelector(state => state.contacts.contacts);
+  const { contacts } = useAppSelector(state => state.contacts);
   const companies = useAppSelector(state => state.companies.companies);
 
   // Function to fetch sample matches

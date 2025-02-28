@@ -1,41 +1,40 @@
 
+import { useState } from 'react';
 import { useAppSelector } from '@/hooks/useAppSelector';
-import { TagActions } from './bulk-actions/TagActions';
+import { Button } from '@/components/ui/button';
 import { StatusActions } from './bulk-actions/StatusActions';
-import { ExportAction } from './bulk-actions/ExportAction';
-import { DeleteAction } from './bulk-actions/DeleteAction';
+import { TagActions } from './bulk-actions/TagActions';
 
-export const BulkActions = () => {
-  const selectedContacts = useAppSelector(state => state.contacts.selectedContacts);
-  const contacts = useAppSelector(state => state.contacts.contacts);
-  
-  const selectedContactsData = contacts.filter(contact => 
-    selectedContacts.includes(contact.id)
-  );
-  
-  const isDisabled = selectedContacts.length === 0;
+const BulkActions = () => {
+  const { selectedContacts, contacts } = useAppSelector((state) => state.contacts);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
+  if (selectedContacts.length === 0) {
+    return null;
+  }
 
   return (
-    <div className="flex items-center gap-2">
-      <TagActions 
-        selectedContacts={selectedContacts}
-        contacts={contacts}
-      />
+    <div className="bg-white border border-gray-200 shadow-sm rounded-md p-3 flex flex-wrap gap-3 items-center mt-4">
+      <div className="font-medium text-sm text-gray-700">
+        {selectedContacts.length} {selectedContacts.length === 1 ? 'contact' : 'contacts'} selected
+      </div>
       
-      <StatusActions 
-        selectedContacts={selectedContacts}
-      />
-
-      <ExportAction 
-        selectedContacts={selectedContactsData}
-        isDisabled={isDisabled}
-      />
-
-      <DeleteAction 
-        selectedContacts={selectedContacts}
-        isDisabled={isDisabled}
-      />
+      <div className="flex flex-wrap gap-3 items-center ml-auto">
+        <StatusActions selectedContacts={selectedContacts} />
+        <TagActions selectedContacts={selectedContacts} contacts={contacts} />
+        
+        <Button 
+          variant="destructive" 
+          size="sm" 
+          onClick={() => setIsDeleteDialogOpen(true)}
+        >
+          Delete
+        </Button>
+      </div>
+      
+      {/* Delete confirmation dialog would go here */}
     </div>
   );
 };
 
+export default BulkActions;

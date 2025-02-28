@@ -1,31 +1,19 @@
 
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 import type { Contact } from '@/types/contact';
+import { ContactsState } from './types';
 import api from '@/services/api';
-
-interface ContactsState {
-  items: Contact[];
-  selectedContact: Contact | null;
-  selectedContacts: string[];
-  loading: boolean;
-  error: string | null;
-  filters: {
-    type: string | null;
-    status: string | null;
-    search: string;
-  };
-  sort: {
-    field: keyof Contact;
-    direction: 'asc' | 'desc';
-  };
-}
+import { customerService } from '@/api/services/customerService';
 
 const initialState: ContactsState = {
   items: [],
+  contacts: [],
+  contactDetails: null,
   selectedContact: null,
   selectedContacts: [],
   loading: false,
   error: null,
+  lastFetchTime: null,
   filters: {
     type: null,
     status: null,
@@ -42,6 +30,32 @@ export const fetchContacts = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await api.get('/contacts');
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+// Add the fetchCustomers function that was missing
+export const fetchCustomers = createAsyncThunk(
+  'contacts/fetchCustomers',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await customerService.fetchCustomers();
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+// Add the fetchCustomerDetails function that was missing
+export const fetchCustomerDetails = createAsyncThunk(
+  'contacts/fetchCustomerDetails',
+  async (id: string, { rejectWithValue }) => {
+    try {
+      const response = await customerService.getCustomerDetails(id);
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data || error.message);
@@ -73,11 +87,37 @@ export const createContact = createAsyncThunk(
   }
 );
 
+// Add the missing addContact function
+export const addContact = createAsyncThunk(
+  'contacts/addContact',
+  async (contactData: Partial<Contact>, { rejectWithValue }) => {
+    try {
+      const response = await customerService.createCustomer(contactData as any);
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
 export const updateContact = createAsyncThunk(
   'contacts/updateContact',
   async ({ id, data }: { id: string; data: Partial<Contact> }, { rejectWithValue }) => {
     try {
       const response = await api.patch(`/contacts/${id}`, data);
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+// Add the missing updateCustomer function
+export const updateCustomer = createAsyncThunk(
+  'contacts/updateCustomer',
+  async ({ customer_id, ...data }: { customer_id: string; [key: string]: any }, { rejectWithValue }) => {
+    try {
+      const response = await customerService.updateCustomer(customer_id, data);
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data || error.message);
@@ -157,8 +197,37 @@ const contactsSlice = createSlice({
       .addCase(fetchContacts.fulfilled, (state, action) => {
         state.loading = false;
         state.items = action.payload;
+        state.contacts = action.payload; // Update contacts property
       })
       .addCase(fetchContacts.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Add cases for fetchCustomers
+      .addCase(fetchCustomers.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchCustomers.fulfilled, (state, action) => {
+        state.loading = false;
+        state.contacts = action.payload;
+        state.items = action.payload;
+        state.lastFetchTime = Date.now();
+      })
+      .addCase(fetchCustomers.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Add cases for fetchCustomerDetails
+      .addCase(fetchCustomerDetails.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchCustomerDetails.fulfilled, (state, action) => {
+        state.loading = false;
+        state.contactDetails = action.payload;
+      })
+      .addCase(fetchCustomerDetails.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })
@@ -176,29 +245,79 @@ const contactsSlice = createSlice({
       })
       .addCase(createContact.fulfilled, (state, action) => {
         state.items.push(action.payload);
+        state.contacts.push(action.payload);
+      })
+      // Add cases for addContact
+      .addCase(addContact.fulfilled, (state, action) => {
+        state.items.push(action.payload);
+        state.contacts.push(action.payload);
       })
       .addCase(updateContact.fulfilled, (state, action) => {
         const index = state.items.findIndex(contact => contact.id === action.payload.id);
         if (index !== -1) {
           state.items[index] = action.payload;
         }
+        
+        const contactIndex = state.contacts.findIndex(contact => contact.id === action.payload.id);
+        if (contactIndex !== -1) {
+          state.contacts[contactIndex] = action.payload;
+        }
+        
         if (state.selectedContact?.id === action.payload.id) {
           state.selectedContact = action.payload;
+        }
+        
+        if (state.contactDetails?.id === action.payload.id) {
+          state.contactDetails = action.payload;
+        }
+      })
+      // Add cases for updateCustomer
+      .addCase(updateCustomer.fulfilled, (state, action) => {
+        const index = state.items.findIndex(contact => contact.id === action.payload.id);
+        if (index !== -1) {
+          state.items[index] = action.payload;
+        }
+        
+        const contactIndex = state.contacts.findIndex(contact => contact.id === action.payload.id);
+        if (contactIndex !== -1) {
+          state.contacts[contactIndex] = action.payload;
+        }
+        
+        if (state.selectedContact?.id === action.payload.id) {
+          state.selectedContact = action.payload;
+        }
+        
+        if (state.contactDetails?.id === action.payload.id) {
+          state.contactDetails = action.payload;
         }
       })
       .addCase(deleteContact.fulfilled, (state, action) => {
         state.items = state.items.filter(contact => contact.id !== action.payload);
+        state.contacts = state.contacts.filter(contact => contact.id !== action.payload);
+        
         if (state.selectedContact?.id === action.payload) {
           state.selectedContact = null;
         }
+        
+        if (state.contactDetails?.id === action.payload) {
+          state.contactDetails = null;
+        }
+        
         state.selectedContacts = state.selectedContacts.filter(id => id !== action.payload);
       })
       .addCase(bulkDeleteContacts.fulfilled, (state, action) => {
         const deletedIds = new Set(action.payload);
         state.items = state.items.filter(contact => !deletedIds.has(contact.id));
+        state.contacts = state.contacts.filter(contact => !deletedIds.has(contact.id));
+        
         if (state.selectedContact && deletedIds.has(state.selectedContact.id)) {
           state.selectedContact = null;
         }
+        
+        if (state.contactDetails && deletedIds.has(state.contactDetails.id)) {
+          state.contactDetails = null;
+        }
+        
         state.selectedContacts = state.selectedContacts.filter(id => !deletedIds.has(id));
       });
   }

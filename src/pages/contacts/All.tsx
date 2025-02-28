@@ -1,3 +1,4 @@
+
 import { useEffect } from 'react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
@@ -14,6 +15,7 @@ const AllContacts = () => {
   const { contacts, loading, error, lastFetchTime } = useAppSelector((state) => state.contacts);
   const workspace_id = useAppSelector((state) => state.auth.user?.data.defaultWorkspaceId);
   console.log(contacts, loading, error, lastFetchTime, workspace_id);
+  
   useEffect(() => {
     dispatch(fetchCustomers());
   }, [dispatch]);

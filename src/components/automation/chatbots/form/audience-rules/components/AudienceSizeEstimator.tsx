@@ -4,7 +4,6 @@ import { useAppSelector } from '@/hooks/useAppSelector';
 import { Gauge, Users, User } from 'lucide-react';
 import { QueryGroup } from '@/types/queryBuilder';
 import { useAudienceFields } from '../hooks/useAudienceFields';
-import { supabase } from '@/integrations/supabase/client';
 
 interface AudienceSizeEstimatorProps {
   queryGroup: QueryGroup;
@@ -14,7 +13,7 @@ export const AudienceSizeEstimator = ({ queryGroup }: AudienceSizeEstimatorProps
   const [estimatedSize, setEstimatedSize] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [targetEntityType, setTargetEntityType] = useState<'contacts' | 'companies'>('contacts');
-  const contacts = useAppSelector(state => state.contacts.contacts);
+  const { contacts } = useAppSelector(state => state.contacts);
   const companies = useAppSelector(state => state.companies.companies);
 
   // Determine the entity type based on the rules
