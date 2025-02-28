@@ -8,12 +8,17 @@ import { fetchUserProfile } from '@/store/slices/user/userSlice';
 
 const Dashboard = () => {
   const dispatch = useAppDispatch();
+<<<<<<< HEAD
   const userState = useAppSelector((state) => state.user);
   const auth = useAppSelector((state) => state.auth);
   
   // Safe access to user with fallback for undefined
   const user = userState?.user || null;
   const loading = userState?.loading || false;
+=======
+  const { user, loading } = useAppSelector((state) => state.user);
+  const auth = useAppSelector((state) => state.auth);
+>>>>>>> c756439 (Update frontend code)
 
   useEffect(() => {
     if (auth.isAuthenticated) {

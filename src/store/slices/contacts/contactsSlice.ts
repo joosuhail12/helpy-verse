@@ -1,159 +1,168 @@
 
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import type { ContactsState } from './types';
+import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 import type { Contact } from '@/types/contact';
-import { CreateCustomerData, customerService } from '@/api/services/customerService';
+import api from '@/services/api';
+
+interface ContactsState {
+  items: Contact[];
+  selectedContact: Contact | null;
+  selectedContacts: string[];
+  loading: boolean;
+  error: string | null;
+  filters: {
+    type: string | null;
+    status: string | null;
+    search: string;
+  };
+  sort: {
+    field: keyof Contact;
+    direction: 'asc' | 'desc';
+  };
+}
 
 const initialState: ContactsState = {
-  contacts: [],
-  contactDetails: null,
+  items: [],
+  selectedContact: null,
+  selectedContacts: [],
   loading: false,
   error: null,
-  selectedContacts: [],
-  lastFetchTime: null,
+  filters: {
+    type: null,
+    status: null,
+    search: '',
+  },
+  sort: {
+    field: 'createdAt',
+    direction: 'desc',
+  }
 };
 
-// ✅ Fetch customers from API
-export const fetchCustomers = createAsyncThunk(
-  'customers/fetchCustomers',
+export const fetchContacts = createAsyncThunk(
+  'contacts/fetchContacts',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await customerService.fetchCustomers();
+      const response = await api.get('/contacts');
       return response.data;
     } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to fetch customers');
+      return rejectWithValue(error.response?.data || error.message);
     }
   }
 );
 
-// ✅ Get customer details
-export const fetchCustomerDetails = createAsyncThunk(
-  'customers/fetchCustomerDetails',
-  async (customer_id: string, { rejectWithValue }) => {
+export const fetchContactById = createAsyncThunk(
+  'contacts/fetchContactById',
+  async (id: string, { rejectWithValue }) => {
     try {
-      const customer = await customerService.getCustomerDetails(customer_id);
-      return customer.data;
+      const response = await api.get(`/contacts/${id}`);
+      return response.data;
     } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to fetch customer details');
+      return rejectWithValue(error.response?.data || error.message);
     }
   }
 );
 
-// ✅ Create a new customer
-export const createCustomer = createAsyncThunk(
-  'customers/createCustomer',
-  async (customerData: Partial<Contact> & { workspace_id: string }, { rejectWithValue }) => {
+export const createContact = createAsyncThunk(
+  'contacts/createContact',
+  async (contact: Partial<Contact>, { rejectWithValue }) => {
     try {
-      // Ensure required fields are strictly strings
-      const formattedCustomerData: CreateCustomerData = {
-        firstname: String(customerData.firstname || ''),
-        lastname: String(customerData.lastname || ''),
-        email: String(customerData.email || ''),
-        workspace_id: customerData.workspace_id,
-        type: customerData.type ? String(customerData.type) : undefined,
-        phone: customerData.phone ? String(customerData.phone) : undefined,
-        phoneCountry: customerData.phoneCountry ? String(customerData.phoneCountry) : undefined,
-        companyId: customerData.companyId ? String(customerData.companyId) : undefined,
-      };
-
-      const newCustomer = await customerService.createCustomer(formattedCustomerData);
-      return newCustomer;
+      const response = await api.post('/contacts', contact);
+      return response.data;
     } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to create customer');
+      return rejectWithValue(error.response?.data || error.message);
     }
   }
 );
 
-// ✅ Update a customer
-export const updateCustomer = createAsyncThunk(
-  'customers/updateCustomer',
-  async (customerData: Partial<Contact> & { customer_id: string }, { rejectWithValue }) => {
+export const updateContact = createAsyncThunk(
+  'contacts/updateContact',
+  async ({ id, data }: { id: string; data: Partial<Contact> }, { rejectWithValue }) => {
     try {
-      const updatedCustomer = await customerService.updateCustomer(customerData.customer_id, customerData);
-      return updatedCustomer.data;
+      const response = await api.patch(`/contacts/${id}`, data);
+      return response.data;
     } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to update customer');
+      return rejectWithValue(error.response?.data || error.message);
     }
   }
 );
 
-
-// ✅ Import customers from CSV
-export const importCustomers = createAsyncThunk(
-  'customers/importCustomers',
-  async (csvFile: File, { rejectWithValue }) => {
+export const deleteContact = createAsyncThunk(
+  'contacts/deleteContact',
+  async (id: string, { rejectWithValue }) => {
     try {
-      await customerService.importCustomers(csvFile);
-      return 'Customers imported successfully';
+      await api.delete(`/contacts/${id}`);
+      return id;
     } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to import customers');
+      return rejectWithValue(error.response?.data || error.message);
     }
   }
 );
-// ✅ Add a new contact
-export const addContact = createAsyncThunk(
-  'customers/addContact',
-  async (contactData: Partial<Contact>, { rejectWithValue }) => {
+
+export const bulkDeleteContacts = createAsyncThunk(
+  'contacts/bulkDeleteContacts',
+  async (ids: string[], { rejectWithValue }) => {
     try {
-      // Format contact data to match CreateCustomerData requirements
-      const formattedContactData: CreateCustomerData = {
-        firstname: String(contactData.firstname || ''),
-        lastname: String(contactData.lastname || ''),
-        email: String(contactData.email || ''),
-        workspace_id: String(contactData.workspace_id || ''),
-        type: contactData.type ? String(contactData.type) : undefined,
-        phone: contactData.phone ? String(contactData.phone) : undefined,
-        phoneCountry: contactData.phoneCountry ? String(contactData.phoneCountry) : undefined,
-        companyId: contactData.companyId ? String(contactData.companyId) : undefined,
-      };
-      const newContact = await customerService.createCustomer(formattedContactData);
-      return newContact.data;
+      await api.post('/contacts/bulk-delete', { ids });
+      return ids;
     } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to add contact');
+      return rejectWithValue(error.response?.data || error.message);
     }
   }
 );
 
-
-const customerSlice = createSlice({
-  name: 'customers',
+const contactsSlice = createSlice({
+  name: 'contacts',
   initialState,
   reducers: {
-    setSelectedContacts: (state, action) => {
+    setSelectedContact: (state, action: PayloadAction<Contact | null>) => {
+      state.selectedContact = action.payload;
+    },
+    setSelectedContacts: (state, action: PayloadAction<string[]>) => {
       state.selectedContacts = action.payload;
     },
-    toggleContactSelection: (state, action) => {
-      const contactId = action.payload;
-      const index = state.selectedContacts.indexOf(contactId);
-      if (index === -1) {
-        state.selectedContacts.push(contactId);
+    toggleContactSelection: (state, action: PayloadAction<string>) => {
+      const id = action.payload;
+      if (state.selectedContacts.includes(id)) {
+        state.selectedContacts = state.selectedContacts.filter((contactId) => contactId !== id);
       } else {
-        state.selectedContacts.splice(index, 1);
+        state.selectedContacts.push(id);
       }
     },
-    updateContact: (state, action) => {
-      const { id, ...updates } = action.payload;
-      const contact = state.contacts.find((c) => c.id === id);
+    clearSelectedContacts: (state) => {
+      state.selectedContacts = [];
+    },
+    setContactFilter: (state, action: PayloadAction<{ key: string; value: string | null }>) => {
+      const { key, value } = action.payload;
+      if (key in state.filters) {
+        (state.filters as any)[key] = value;
+      }
+    },
+    setContactSort: (state, action: PayloadAction<{ field: keyof Contact; direction: 'asc' | 'desc' }>) => {
+      state.sort = action.payload;
+    },
+    updateContactField: (state, action: PayloadAction<{ id: string; field: keyof Contact; value: any }>) => {
+      const { id, field, value } = action.payload;
+      const contact = state.items.find(contact => contact.id === id);
       if (contact) {
-        Object.assign(contact, updates);
+        // Use type assertion to handle dynamic field updates safely
+        (contact as any)[field] = value;
       }
-    },
+    }
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchCustomers.pending, (state) => {
+      .addCase(fetchContacts.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchCustomers.fulfilled, (state, action) => {
+      .addCase(fetchContacts.fulfilled, (state, action) => {
         state.loading = false;
-        state.contacts = action.payload;
-        state.lastFetchTime = Date.now();
+        state.items = action.payload;
       })
-      .addCase(fetchCustomers.rejected, (state, action) => {
+      .addCase(fetchContacts.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })
+<<<<<<< HEAD
       .addCase(fetchCustomerDetails.fulfilled, (state, action) => {
         state.loading = false;
         state.contactDetails = action.payload;
@@ -163,25 +172,33 @@ const customerSlice = createSlice({
         state.error = action.payload as string;
       })
       .addCase(importCustomers.pending, (state) => {
+=======
+      .addCase(fetchContactById.pending, (state) => {
+>>>>>>> c756439 (Update frontend code)
         state.loading = true;
         state.error = null;
       })
-      .addCase(importCustomers.fulfilled, (state) => {
+      .addCase(fetchContactById.fulfilled, (state, action) => {
         state.loading = false;
+        state.selectedContact = action.payload;
       })
-      .addCase(importCustomers.rejected, (state, action) => {
+      .addCase(fetchContactById.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })
-      .addCase(updateCustomer.pending, (state) => {
-        state.error = null;
+      .addCase(createContact.fulfilled, (state, action) => {
+        state.items.push(action.payload);
       })
-      .addCase(updateCustomer.fulfilled, (state, action) => {
-        // Safely assign contact details
-        if (action.payload) {
-          state.contactDetails = action.payload;
+      .addCase(updateContact.fulfilled, (state, action) => {
+        const index = state.items.findIndex(contact => contact.id === action.payload.id);
+        if (index !== -1) {
+          state.items[index] = action.payload;
+        }
+        if (state.selectedContact?.id === action.payload.id) {
+          state.selectedContact = action.payload;
         }
       })
+<<<<<<< HEAD
       .addCase(updateCustomer.rejected, (state, action) => {
         state.error = action.payload as string;
       })
@@ -192,14 +209,27 @@ const customerSlice = createSlice({
       .addCase(addContact.fulfilled, (state, action) => {
         state.loading = false;
         state.contacts = [...state.contacts, action.payload];
+=======
+      .addCase(deleteContact.fulfilled, (state, action) => {
+        state.items = state.items.filter(contact => contact.id !== action.payload);
+        if (state.selectedContact?.id === action.payload) {
+          state.selectedContact = null;
+        }
+        state.selectedContacts = state.selectedContacts.filter(id => id !== action.payload);
+>>>>>>> c756439 (Update frontend code)
       })
-      .addCase(addContact.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
+      .addCase(bulkDeleteContacts.fulfilled, (state, action) => {
+        const deletedIds = new Set(action.payload);
+        state.items = state.items.filter(contact => !deletedIds.has(contact.id));
+        if (state.selectedContact && deletedIds.has(state.selectedContact.id)) {
+          state.selectedContact = null;
+        }
+        state.selectedContacts = state.selectedContacts.filter(id => !deletedIds.has(id));
       });
-  },
+  }
 });
 
+<<<<<<< HEAD
 export const { setSelectedContacts, toggleContactSelection, updateContact } = customerSlice.actions;
 
 export const selectContacts = (state: { customers: ContactsState }) => state.customers.contacts;
@@ -207,3 +237,16 @@ export const selectContactsLoading = (state: { customers: ContactsState }) => st
 export const selectContactsError = (state: { customers: ContactsState }) => state.customers.error;
 
 export default customerSlice.reducer;
+=======
+export const {
+  setSelectedContact,
+  setSelectedContacts,
+  toggleContactSelection,
+  clearSelectedContacts,
+  setContactFilter,
+  setContactSort,
+  updateContactField
+} = contactsSlice.actions;
+
+export default contactsSlice.reducer;
+>>>>>>> c756439 (Update frontend code)
