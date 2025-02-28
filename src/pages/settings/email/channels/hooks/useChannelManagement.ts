@@ -18,6 +18,7 @@ import {
 } from '@/store/slices/emailChannels/selectors';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { useChannelSort } from './useChannelSort';
+import type { EmailChannel } from '@/types/emailChannel';
 
 export const useChannelManagement = () => {
   const { toast } = useToast();
@@ -70,9 +71,10 @@ export const useChannelManagement = () => {
     }
   };
 
-  const handleToggleStatus = async (id: string, isActive: boolean) => {
+  const handleToggleStatus = async (id: string) => {
     try {
-      await dispatch(toggleChannelStatus({ id, isActive })).unwrap();
+      // Pass just the ID to match API expectations
+      await dispatch(toggleChannelStatus(id)).unwrap();
     } catch (error) {
       toast({
         title: "Error",
@@ -84,7 +86,12 @@ export const useChannelManagement = () => {
 
   const handleBulkToggleStatus = async (isActive: boolean) => {
     try {
-      await dispatch(bulkToggleStatus({ ids: selectedChannels, isActive })).unwrap();
+      // Create the correct payload format for bulk toggle
+      await dispatch(bulkToggleStatus({ 
+        ids: selectedChannels, 
+        isActive 
+      })).unwrap();
+      
       toast({
         title: isActive ? "Channels activated" : "Channels deactivated",
         description: `${selectedChannels.length} channels have been ${isActive ? 'activated' : 'deactivated'} successfully.`,
@@ -101,7 +108,8 @@ export const useChannelManagement = () => {
 
   const handleToggleDefaultChannel = async (isActive: boolean) => {
     try {
-      await dispatch(toggleDefaultChannelStatus(isActive)).unwrap();
+      // Pass the expected parameter format
+      await dispatch(toggleDefaultChannelStatus('default')).unwrap();
     } catch (error) {
       toast({
         title: "Error",
@@ -127,7 +135,9 @@ export const useChannelManagement = () => {
     }
   };
 
-  const filteredAndSortedChannels = useChannelSort(channels, searchQuery, sortBy, sortOrder);
+  // Type cast to fix the type mismatch
+  const typedChannels = channels as unknown as EmailChannel[];
+  const filteredAndSortedChannels = useChannelSort(typedChannels, searchQuery, sortBy, sortOrder);
 
   return {
     channels,

@@ -27,11 +27,12 @@ export const ContentTags = ({ content }: ContentTagsProps) => {
       color: `#${Math.floor(Math.random()*16777215).toString(16)}`, // Random color
     };
 
-    const updatedTags = [...(content.tags || []), newTag];
+    const currentTags = Array.isArray(content.tags) ? [...content.tags] : [];
+    const updatedTags = [...currentTags, newTag];
     
     dispatch(updateContent({ 
       id: content.id, 
-      updates: { tags: updatedTags }
+      data: { tags: updatedTags }
     }));
 
     setNewTagName('');
@@ -43,17 +44,33 @@ export const ContentTags = ({ content }: ContentTagsProps) => {
   };
 
   const handleRemoveTag = (tagId: string) => {
-    const updatedTags = content.tags?.filter(tag => tag.id !== tagId) || [];
+    if (!content.tags) return;
+    
+    const updatedTags = content.tags.filter(tag => 
+      typeof tag === 'string' ? tag !== tagId : tag.id !== tagId
+    );
     
     dispatch(updateContent({ 
       id: content.id, 
-      updates: { tags: updatedTags }
+      data: { tags: updatedTags }
     }));
 
     toast({
       title: 'Tag removed',
       description: 'Tag has been removed from content',
     });
+  };
+
+  const getTagName = (tag: ContentTag | string): string => {
+    return typeof tag === 'string' ? tag : tag.name;
+  };
+
+  const getTagColor = (tag: ContentTag | string): string => {
+    return typeof tag === 'string' ? '#6b7280' : tag.color;
+  };
+
+  const getTagId = (tag: ContentTag | string): string => {
+    return typeof tag === 'string' ? tag : tag.id;
   };
 
   return (
@@ -90,15 +107,18 @@ export const ContentTags = ({ content }: ContentTagsProps) => {
       )}
 
       <div className="flex flex-wrap gap-2">
-        {content.tags?.map((tag) => (
+        {content.tags?.map((tag, index) => (
           <div
-            key={tag.id}
+            key={index}
             className="flex items-center gap-1 px-2 py-1 rounded-full text-sm"
-            style={{ backgroundColor: `${tag.color}15`, color: tag.color }}
+            style={{ 
+              backgroundColor: `${getTagColor(tag)}15`, 
+              color: getTagColor(tag) 
+            }}
           >
-            {tag.name}
+            {getTagName(tag)}
             <button
-              onClick={() => handleRemoveTag(tag.id)}
+              onClick={() => handleRemoveTag(getTagId(tag))}
               className="hover:opacity-75 transition-opacity"
             >
               <X className="h-3 w-3" />

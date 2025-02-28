@@ -24,7 +24,7 @@ export const ContactBasicInfo = ({ contact }: ContactBasicInfoProps) => {
         <InlineEditField
           value={contact.firstname}
           contactId={contact.id}
-          field="firstname"
+          fieldName="firstname"
           label="First Name"
         />
       </div>
@@ -33,7 +33,7 @@ export const ContactBasicInfo = ({ contact }: ContactBasicInfoProps) => {
         <InlineEditField
           value={contact.lastname}
           contactId={contact.id}
-          field="lastname"
+          fieldName="lastname"
           label="Last Name"
         />
       </div>

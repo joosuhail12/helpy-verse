@@ -1,5 +1,5 @@
 
-import { RootState } from '@/store/store';
+import { RootState } from '../../store';
 
 export const selectEmailChannels = (state: RootState) => state.emailChannels.channels;
 export const selectEmailChannelsLoading = (state: RootState) => state.emailChannels.loading;

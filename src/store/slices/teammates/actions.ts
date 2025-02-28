@@ -4,33 +4,16 @@ import type { Teammate, NewTeammate, ActivityLog } from '@/types/teammate';
 import { mockTeammates, mockActivityLogs, mockAssignments } from './mockData';
 import { CACHE_DURATION } from './types';
 import type { TeammatesState } from './types';
+import { fetchTeammates as fetchTeammatesThunk } from './thunks';
+import { updateTeammate as updateTeammateThunk } from './thunks';
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-export const fetchTeammates = createAsyncThunk(
-  'teammates/fetchTeammates',
-  async (_, { getState, rejectWithValue }) => {
-    const state = getState() as { teammates: TeammatesState };
-    
-    if (state.teammates.lastFetchTime) {
-      const timeSinceLastFetch = Date.now() - state.teammates.lastFetchTime;
-      if (timeSinceLastFetch < CACHE_DURATION) {
-        return state.teammates.teammates;
-      }
-    }
+// Re-export the fetchTeammates action for backward compatibility
+export const fetchTeammates = fetchTeammatesThunk;
 
-    try {
-      await delay(1000);
-      return mockTeammates;
-    } catch (error) {
-      if (state.teammates.retryCount < 3) {
-        await delay(1000 * (state.teammates.retryCount + 1));
-        return rejectWithValue('Failed to fetch teammates. Retrying...');
-      }
-      return rejectWithValue('Failed to fetch teammates after multiple retries');
-    }
-  }
-);
+// Re-export the updateTeammate action for backward compatibility
+export const updateTeammate = updateTeammateThunk;
 
 export const addTeammate = createAsyncThunk(
   'teammates/addTeammate',
@@ -90,14 +73,6 @@ export const exportTeammates = createAsyncThunk(
     } catch (error) {
       return rejectWithValue('Failed to export teammates');
     }
-  }
-);
-
-export const updateTeammate = createAsyncThunk(
-  'teammates/updateTeammate',
-  async (teammate: Teammate) => {
-    await delay(1000);
-    return teammate;
   }
 );
 

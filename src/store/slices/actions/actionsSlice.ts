@@ -1,232 +1,139 @@
 
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import type { CustomAction } from '@/types/action';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { RootState } from '../../store';
+import { CustomAction, ActionParameter } from '@/types/action';
 
-interface ActionsState {
-  items: CustomAction[];
-}
+export type ActionsState = {
+  actions: CustomAction[];
+  loading: boolean;
+  error: string | null;
+  items: CustomAction[]; // Used by some components
+};
 
 const initialState: ActionsState = {
-  items: [
-    {
-      id: "1",
-      name: 'Create Support Ticket',
-      toolName: 'Support API',
-      description: 'Creates a new support ticket in the help desk system',
-      endpoint: 'https://api.support.com/v1/tickets',
-      method: 'POST',
-      parameters: [
-        {
-          id: '1',
-          name: 'subject',
-          type: 'string',
-          description: 'The subject line of the ticket',
-          required: true,
-        },
-        {
-          id: '2',
-          name: 'description',
-          type: 'string',
-          description: 'Detailed description of the issue',
-          required: true,
-        },
-        {
-          id: '3',
-          name: 'priority',
-          type: 'string',
-          description: 'Ticket priority (low, medium, high)',
-          required: true,
-          defaultValue: 'medium'
-        },
-        {
-          id: '4',
-          name: 'attachments',
-          type: 'array',
-          description: 'Array of file attachments',
-          required: false,
-        }
-      ],
-      headers: {
-        'Authorization': 'Bearer {token}',
-        'Content-Type': 'application/json'
-      },
-      createdAt: '2024-03-15T10:00:00Z',
-      updatedAt: '2024-03-15T10:00:00Z',
-      createdBy: {
-        id: '1',
-        name: 'Support Admin',
-      },
-      enabled: true,
-    },
-    {
-      id: '2',
-      name: 'Send Customer Email',
-      toolName: 'Email Service API',
-      description: 'Sends a transactional email to a customer',
-      endpoint: 'https://api.email-service.com/v2/send',
-      method: 'POST',
-      parameters: [
-        {
-          id: '5',
-          name: 'to',
-          type: 'string',
-          description: 'Recipient email address',
-          required: true,
-        },
-        {
-          id: '6',
-          name: 'template_id',
-          type: 'string',
-          description: 'Email template identifier',
-          required: true,
-        },
-        {
-          id: '7',
-          name: 'variables',
-          type: 'object',
-          description: 'Template variables to populate',
-          required: true,
-        },
-        {
-          id: '8',
-          name: 'schedule_time',
-          type: 'string',
-          description: 'Optional time to schedule the email (ISO 8601)',
-          required: false,
-        }
-      ],
-      headers: {
-        'X-API-Key': '{api_key}',
-        'Content-Type': 'application/json'
-      },
-      createdAt: '2024-03-16T09:30:00Z',
-      updatedAt: '2024-03-16T09:30:00Z',
-      createdBy: {
-        id: '2',
-        name: 'Marketing Manager',
-      },
-      enabled: true,
-    },
-    {
-      id: '3',
-      name: 'Update Customer Profile',
-      toolName: 'Customer Database API',
-      description: 'Updates customer information in the database',
-      endpoint: 'https://api.customer-db.com/v1/customers/{customer_id}',
-      method: 'PATCH',
-      parameters: [
-        {
-          id: '9',
-          name: 'customer_id',
-          type: 'string',
-          description: 'Unique identifier of the customer',
-          required: true,
-        },
-        {
-          id: '10',
-          name: 'profile_data',
-          type: 'object',
-          description: 'Customer profile information to update',
-          required: true,
-        },
-        {
-          id: '11',
-          name: 'notify_customer',
-          type: 'boolean',
-          description: 'Whether to notify the customer of changes',
-          required: false,
-          defaultValue: 'false'
-        }
-      ],
-      headers: {
-        'Authorization': 'Bearer {token}',
-        'Content-Type': 'application/json'
-      },
-      createdAt: '2024-03-17T14:20:00Z',
-      updatedAt: '2024-03-17T14:20:00Z',
-      createdBy: {
-        id: '3',
-        name: 'Customer Success Manager',
-      },
-      enabled: true,
-    },
-    {
-      id: '4',
-      name: 'Generate Invoice',
-      toolName: 'Billing API',
-      description: 'Generates a new invoice for a customer',
-      endpoint: 'https://api.billing.com/v1/invoices',
-      method: 'POST',
-      parameters: [
-        {
-          id: '12',
-          name: 'customer_id',
-          type: 'string',
-          description: 'Customer identifier',
-          required: true,
-        },
-        {
-          id: '13',
-          name: 'items',
-          type: 'array',
-          description: 'Array of line items for the invoice',
-          required: true,
-        },
-        {
-          id: '14',
-          name: 'due_date',
-          type: 'string',
-          description: 'Invoice due date (ISO 8601)',
-          required: true,
-        },
-        {
-          id: '15',
-          name: 'notes',
-          type: 'string',
-          description: 'Additional notes to appear on the invoice',
-          required: false,
-        }
-      ],
-      headers: {
-        'Authorization': 'Bearer {token}',
-        'Content-Type': 'application/json'
-      },
-      createdAt: '2024-03-18T11:45:00Z',
-      updatedAt: '2024-03-18T11:45:00Z',
-      createdBy: {
-        id: '4',
-        name: 'Billing Administrator',
-      },
-      enabled: false,
-    }
-  ],
+  actions: [],
+  items: [], // Initialize items array
+  loading: false,
+  error: null,
 };
+
+// Async thunks
+export const fetchActions = createAsyncThunk(
+  'actions/fetchActions',
+  async (_, { rejectWithValue }) => {
+    try {
+      // Replace with actual API call
+      const response = await fetch('/api/actions');
+      if (!response.ok) {
+        throw new Error('Failed to fetch actions');
+      }
+      return await response.json();
+    } catch (error: any) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const addAction = createAsyncThunk(
+  'actions/addAction',
+  async (action: Omit<CustomAction, 'id' | 'createdAt' | 'updatedAt'>, { rejectWithValue }) => {
+    try {
+      // Replace with actual API call
+      const response = await fetch('/api/actions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(action),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to add action');
+      }
+      return await response.json();
+    } catch (error: any) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const updateAction = createAsyncThunk(
+  'actions/updateAction',
+  async ({ id, updates }: { id: string; updates: Partial<CustomAction> }, { rejectWithValue }) => {
+    try {
+      // Replace with actual API call
+      const response = await fetch(`/api/actions/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to update action');
+      }
+      return await response.json();
+    } catch (error: any) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
 
 const actionsSlice = createSlice({
   name: 'actions',
   initialState,
-  reducers: {
-    addAction: (state, action: PayloadAction<CustomAction>) => {
-      state.items.push(action.payload);
-    },
-    updateAction: (state, action: PayloadAction<CustomAction>) => {
-      const index = state.items.findIndex(item => item.id === action.payload.id);
-      if (index !== -1) {
-        state.items[index] = action.payload;
-      }
-    },
-    deleteAction: (state, action: PayloadAction<string>) => {
-      state.items = state.items.filter(item => item.id !== action.payload);
-    },
-    toggleAction: (state, action: PayloadAction<string>) => {
-      const index = state.items.findIndex(item => item.id === action.payload);
-      if (index !== -1) {
-        state.items[index].enabled = !state.items[index].enabled;
-      }
-    },
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      // Fetch actions
+      .addCase(fetchActions.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchActions.fulfilled, (state, action) => {
+        state.loading = false;
+        state.actions = action.payload;
+        state.items = action.payload; // Update items as well
+      })
+      .addCase(fetchActions.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Add action
+      .addCase(addAction.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(addAction.fulfilled, (state, action) => {
+        state.loading = false;
+        state.actions.push(action.payload);
+        state.items.push(action.payload); // Add to items as well
+      })
+      .addCase(addAction.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Update action
+      .addCase(updateAction.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateAction.fulfilled, (state, action) => {
+        state.loading = false;
+        const index = state.actions.findIndex(a => a.id === action.payload.id);
+        if (index !== -1) {
+          state.actions[index] = action.payload;
+        }
+        const itemIndex = state.items.findIndex(a => a.id === action.payload.id);
+        if (itemIndex !== -1) {
+          state.items[itemIndex] = action.payload;
+        }
+      })
+      .addCase(updateAction.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      });
   },
 });
 
-export const { addAction, updateAction, deleteAction, toggleAction } = actionsSlice.actions;
-export default actionsSlice.reducer;
+// Selectors
+export const selectActions = (state: RootState) => state.actions.actions;
+export const selectActionsLoading = (state: RootState) => state.actions.loading;
+export const selectActionsError = (state: RootState) => state.actions.error;
 
+export const actionsReducer = actionsSlice.reducer;

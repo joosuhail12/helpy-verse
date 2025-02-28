@@ -2,7 +2,7 @@
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Contact } from '@/types/contact';
-import { 
+import {
   Ticket, Tag
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -18,12 +18,12 @@ export const ContactDetailSidebar = ({ contact }: ContactDetailSidebarProps) => 
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-2">
-        <Button 
-          variant="default" 
-          size="sm" 
+        <Button
+          variant="default"
+          size="sm"
           className="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 transition-all duration-300 shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30"
-          onClick={() => navigate('/home/tickets/new', { 
-            state: { contactId: contact.id } 
+          onClick={() => navigate('/home/tickets/new', {
+            state: { contactId: contact.id }
           })}
         >
           <Ticket className="h-4 w-4 mr-2" />

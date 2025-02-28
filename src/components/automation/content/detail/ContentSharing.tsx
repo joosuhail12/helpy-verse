@@ -6,7 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Share2, X } from 'lucide-react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { updateContent } from '@/store/slices/content/contentSlice';
-import type { Content } from '@/types/content';
+import type { Content, User } from '@/types/content';
 
 interface ContentSharingProps {
   content: Content;
@@ -20,18 +20,19 @@ export const ContentSharing = ({ content }: ContentSharingProps) => {
   const handleShare = () => {
     if (!email.trim()) return;
 
-    const newSharedUser = {
+    const newSharedUser: User = {
       id: `user-${Date.now()}`,
       name: email.split('@')[0],
       avatar: `https://api.dicebear.com/7.x/avatars/svg?seed=${email}`,
-      role: 'viewer' as const,
+      role: 'viewer',
     };
 
-    const updatedSharedWith = [...(content.sharedWith || []), newSharedUser];
+    const currentSharedUsers = Array.isArray(content.sharedWith) ? [...content.sharedWith] : [];
+    const updatedSharedWith = [...currentSharedUsers, newSharedUser];
     
     dispatch(updateContent({ 
       id: content.id, 
-      updates: { sharedWith: updatedSharedWith }
+      data: { sharedWith: updatedSharedWith }
     }));
 
     setEmail('');
@@ -42,11 +43,13 @@ export const ContentSharing = ({ content }: ContentSharingProps) => {
   };
 
   const handleRemoveShare = (userId: string) => {
-    const updatedSharedWith = content.sharedWith?.filter(user => user.id !== userId) || [];
+    if (!content.sharedWith) return;
+    
+    const updatedSharedWith = content.sharedWith.filter(user => user.id !== userId);
     
     dispatch(updateContent({ 
       id: content.id, 
-      updates: { sharedWith: updatedSharedWith }
+      data: { sharedWith: updatedSharedWith }
     }));
 
     toast({

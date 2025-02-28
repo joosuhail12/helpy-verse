@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import TicketList from '@/components/inbox/TicketList';
-import { setClientId, setWorkspaceId } from '@/utils/helpers/helpers';
-
+import { setWorkspaceId } from '@/utils/helpers/helpers';
 const ITEMS_PER_PAGE = 5;
 
 const tickets = [
@@ -162,7 +161,7 @@ const AllTickets = () => {
       setWorkspaceId(workspaceId);
 
       // Store the workspaceId in cookies
-      setClientId(clientId);
+      // setClientId(clientId);
     }
   }, []);
 

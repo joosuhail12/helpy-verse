@@ -4,6 +4,7 @@ import type { TeammatesState } from './types';
 import { mockActivityLogs, mockAssignments } from './mockData';
 import type { ActivityLog, NewTeammate, Teammate } from '@/types/teammate';
 import { teammatesService } from '@/api/services/teammateService';
+import { disable2FA, verify2FA } from './thunks';
 
 const initialState: TeammatesState = {
   teammates: [],
@@ -18,21 +19,13 @@ const initialState: TeammatesState = {
 
 // fetchTeammates
 export const fetchTeammates = createAsyncThunk('teammates/fetchTeammates', async () => {
-  try {
-    const response = await teammatesService.fetchTeammates();
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
+  const response = await teammatesService.fetchTeammates();
+  return response.data;
 });
 
 export const createTeammate = createAsyncThunk('teammates/createTeammate', async (teammate: NewTeammate) => {
-  try {
-    const response = await teammatesService.createTeammate(teammate);
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
+  const response = await teammatesService.createTeammate(teammate);
+  return response.data;
 });
 
 export const updateTeammate = createAsyncThunk('teammates/updateTeammate', async (teammate: Teammate) => {
@@ -112,7 +105,27 @@ const teammatesSlice = createSlice({
       .addCase(getTeammate.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || 'Failed to get teammate';
-      });
+      })
+      // 2FA operations
+      .addCase(verify2FA.fulfilled, (state, action) => {
+        if (state.selectedTeammate && state.selectedTeammate.id === action.payload.teammateId) {
+          state.selectedTeammate.is2FAEnabled = true;
+        }
+        const teammateIndex = state.teammates.findIndex(t => t.id === action.payload.teammateId);
+        if (teammateIndex !== -1) {
+          state.teammates[teammateIndex].is2FAEnabled = true;
+        }
+      })
+      .addCase(disable2FA.fulfilled, (state, action) => {
+        if (state.selectedTeammate && state.selectedTeammate.id === action.payload.teammateId) {
+          state.selectedTeammate.is2FAEnabled = false;
+        }
+        const teammateIndex = state.teammates.findIndex(t => t.id === action.payload.teammateId);
+        if (teammateIndex !== -1) {
+          state.teammates[teammateIndex].is2FAEnabled = false;
+        }
+      })
+
   },
 });
 

@@ -19,7 +19,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CompanyDetailHeader } from '@/components/companies/detail/CompanyDetailHeader';
 import { CompanyMainInfo } from '@/components/companies/detail/CompanyMainInfo';
 import { CompanyActivityTimeline } from '@/components/companies/detail/CompanyActivityTimeline';
-import { AssociatedContacts } from '@/components/companies/detail/AssociatedContacts';
+import AssociatedContacts from '@/components/companies/detail/AssociatedContacts';
 import { CompanyCustomFields } from '@/components/companies/detail/CompanyCustomFields';
 import { CompanyCustomObjectData } from '@/components/companies/detail/CompanyCustomObjectData';
 import { CompanyTickets } from '@/components/companies/detail/CompanyTickets';
@@ -62,7 +62,7 @@ const CompanyDetail = () => {
     );
   }
 
-  
+
   const handleDelete = async () => {
     try {
       dispatch(deleteCompany(company.id));

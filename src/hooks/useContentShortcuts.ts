@@ -1,38 +1,43 @@
 
-import { useEffect } from 'react';
-import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { useCallback } from 'react';
+import { useAppDispatch } from './useAppDispatch';
 import { updateContent } from '@/store/slices/content/contentSlice';
+import { useToast } from '@/hooks/use-toast';
 import type { Content } from '@/types/content';
 
-export const useContentShortcuts = (
-  content: Content,
-  editableContent: string,
-  isEditing: boolean,
-  setIsEditing: (value: boolean) => void,
-  showDiscardDialog: () => void,
-) => {
+export const useContentShortcuts = () => {
   const dispatch = useAppDispatch();
+  const { toast } = useToast();
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Save: Cmd/Ctrl + S
-      if ((e.metaKey || e.ctrlKey) && e.key === 's' && isEditing) {
-        e.preventDefault();
-        dispatch(updateContent({ 
-          id: content.id, 
-          updates: { content: editableContent }
-        }));
-        setIsEditing(false);
-      }
+  const updateContentField = useCallback(async (
+    contentId: string, 
+    fieldName: keyof Content, 
+    value: any
+  ) => {
+    try {
+      await dispatch(updateContent({
+        id: contentId,
+        data: { [fieldName]: value }
+      })).unwrap();
       
-      // Cancel: Esc
-      if (e.key === 'Escape' && isEditing) {
-        e.preventDefault();
-        showDiscardDialog();
-      }
-    };
+      toast({
+        title: 'Content updated',
+        description: `Successfully updated ${fieldName}`,
+      });
+      
+      return true;
+    } catch (error) {
+      toast({
+        title: 'Update failed',
+        description: `Failed to update ${fieldName}`,
+        variant: 'destructive',
+      });
+      
+      return false;
+    }
+  }, [dispatch, toast]);
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [content.id, editableContent, isEditing, dispatch, setIsEditing, showDiscardDialog]);
+  return {
+    updateContentField
+  };
 };

@@ -27,6 +27,6 @@ export interface Contact {
   state?: string;
   postalCode?: string;
   country?: string;
-  // Adjusted index signature to exclude complex object types
-  [key: string]: string | number | boolean | string[] | undefined | { id: string; name: string }[] | unknown;
+  // Add index signature for custom fields
+  [key: string]: string | number | string[] | undefined | boolean;
 }

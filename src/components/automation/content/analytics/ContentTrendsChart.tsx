@@ -20,7 +20,8 @@ import { useState } from 'react';
 type TimeInterval = 'daily' | 'weekly' | 'monthly';
 
 export const ContentTrendsChart = () => {
-  const items = useAppSelector((state) => state.content.items);
+  const contentState = useAppSelector((state) => state.content);
+  const items = contentState?.items || [];
   const [timeInterval, setTimeInterval] = useState<TimeInterval>('daily');
 
   // Group content by date and count creations per interval
@@ -119,4 +120,3 @@ export const ContentTrendsChart = () => {
     </Card>
   );
 };
-

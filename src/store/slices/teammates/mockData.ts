@@ -1,6 +1,18 @@
 
 import type { Teammate, ActivityLog, TeamAssignment } from '@/types/teammate';
 
+export const mockSessions = [
+  {
+    id: '1',
+    teammateId: '1',
+    deviceType: 'desktop',
+    deviceName: 'Chrome on Windows',
+    location: 'New York, USA',
+    lastActive: new Date().toISOString(),
+    ipAddress: '192.168.1.1'
+  }
+];
+
 export const mockTeammates: Teammate[] = [
   {
     id: '373c643f-0109-485e-b614-c96c7816a63d',

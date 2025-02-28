@@ -1,5 +1,7 @@
 
-import { Contact } from '@/types/contact';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 import {
   Table,
   TableBody,
@@ -8,132 +10,113 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { ContactListItem } from './ContactListItem';
-import { LoadingState } from './LoadingState';
 import { Checkbox } from '@/components/ui/checkbox';
+import type { Contact } from '@/types/contact';
+import ContactListItem from './ContactListItem';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { selectContact, fetchCustomers, setSelectedContacts } from '@/store/slices/contacts/contactsSlice';
 import { useAppSelector } from '@/hooks/useAppSelector';
-import { setSelectedContacts } from '@/store/slices/contacts/contactsSlice';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { Tag as TagIcon } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { ImportExportActions } from './ImportExportActions';
-import { ContactListPagination } from './ContactListPagination';
-import { useState } from 'react';
+import { LoadingState } from './LoadingState';
 
 interface ContactListProps {
   contacts: Contact[];
-  loading: boolean;
+  loading?: boolean;
 }
 
-export const ContactList = ({ contacts, loading }: ContactListProps) => {
+const ContactList = ({ contacts, loading = false }: ContactListProps) => {
+  const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const selectedContacts = useAppSelector(state => state.contacts.selectedContacts);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const { selectedContacts } = useAppSelector(state => state.contacts);
+  const [initialLoadAttempted, setInitialLoadAttempted] = useState(false);
 
-  const handleSelectAll = () => {
-    if (selectedContacts.length === contacts.length) {
-      dispatch(setSelectedContacts([]));
-    } else {
+  useEffect(() => {
+    console.log('ContactList mount - contacts:', contacts?.length, 'loading:', loading);
+    
+    if (!initialLoadAttempted && contacts.length === 0 && !loading) {
+      console.log('No contacts found, fetching customers...');
+      setInitialLoadAttempted(true);
+      dispatch(fetchCustomers())
+        .unwrap()
+        .then((result) => {
+          console.log('Fetch customers successful:', result);
+        })
+        .catch((error) => {
+          console.error('Fetch customers failed:', error);
+        });
+    }
+  }, [dispatch, contacts.length, loading, initialLoadAttempted]);
+
+  const handleSelectAll = (checked: boolean) => {
+    console.log('Select all toggled:', checked);
+    if (checked) {
       dispatch(setSelectedContacts(contacts.map(contact => contact.id)));
+    } else {
+      dispatch(setSelectedContacts([]));
     }
   };
 
-  const handleQuickTag = () => {
-    // This would be implemented in a real app to handle quick tag assignment
-    console.log('Quick tag for selected contacts:', selectedContacts);
+  const handleContactClick = (contact: Contact) => {
+    console.log('Contact clicked:', contact.id);
+    dispatch(selectContact(contact.id));
+    navigate(`/home/contacts/${contact.id}`);
   };
 
-  // Calculate pagination values
-  const totalPages = Math.ceil(contacts.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedContacts = contacts.slice(startIndex, endIndex);
-
   if (loading) {
+    console.log('Rendering loading state');
     return <LoadingState />;
   }
 
-  return (
-    <div className="bg-white rounded-lg shadow">
-      <div className="p-4 border-b flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <Checkbox
-            checked={selectedContacts.length === contacts.length && contacts.length > 0}
-            onCheckedChange={handleSelectAll}
-          />
-          <span className="text-sm text-gray-500">
-            {selectedContacts.length > 0 && (
-              `${selectedContacts.length} selected`
-            )}
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          {selectedContacts.length > 0 && (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleQuickTag}
-                  >
-                    <TagIcon className="h-4 w-4 mr-2" />
-                    Quick Tag
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Quickly assign tags to selected contacts</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          )}
-          <ImportExportActions contacts={contacts} />
-        </div>
+  if (contacts.length === 0) {
+    console.log('Rendering empty state');
+    return (
+      <div className="p-6 text-center border rounded-md bg-white">
+        <p className="text-muted-foreground">No contacts found</p>
+        <Button 
+          onClick={() => {
+            console.log('Refresh contacts clicked');
+            dispatch(fetchCustomers());
+          }} 
+          className="mt-4"
+          variant="outline"
+        >
+          Refresh Contacts
+        </Button>
       </div>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-12">
-              <Checkbox
-                checked={selectedContacts.length === contacts.length && contacts.length > 0}
-                onCheckedChange={handleSelectAll}
+    );
+  }
+
+  console.log('Rendering contact list with', contacts.length, 'contacts');
+  return (
+    <div className="border rounded-md bg-white">
+      <div className="w-full overflow-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-12">
+                <Checkbox 
+                  onCheckedChange={handleSelectAll}
+                  checked={selectedContacts.length > 0 && selectedContacts.length === contacts.length}
+                />
+              </TableHead>
+              <TableHead>Contact</TableHead>
+              <TableHead>Company</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {contacts.map((contact) => (
+              <ContactListItem
+                key={contact.id}
+                contact={contact}
+                onClick={() => handleContactClick(contact)}
               />
-            </TableHead>
-            <TableHead>Name</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>Company</TableHead>
-            <TableHead>Type</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Last Contacted</TableHead>
-            <TableHead>Activity</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {paginatedContacts.map((contact) => (
-            <ContactListItem 
-              key={contact.id} 
-              contact={contact}
-              isSelected={selectedContacts.includes(contact.id)}
-            />
-          ))}
-        </TableBody>
-      </Table>
-      <ContactListPagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        itemsPerPage={itemsPerPage}
-        totalItems={contacts.length}
-        onPageChange={setCurrentPage}
-        onItemsPerPageChange={setItemsPerPage}
-      />
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 };
+
+export default ContactList;

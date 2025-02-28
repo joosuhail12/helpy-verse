@@ -1,10 +1,11 @@
 
-import { useNavigate } from 'react-router-dom';
+import React from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Building2, Trash2 } from 'lucide-react';
+import { ChevronLeft, Trash2, Share2, MoreHorizontal } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Company } from '@/types/company';
 
-interface CompanyDetailHeaderProps {
+export interface CompanyDetailHeaderProps {
   company: Company;
   onDeleteClick: () => void;
 }
@@ -13,39 +14,31 @@ export const CompanyDetailHeader = ({ company, onDeleteClick }: CompanyDetailHea
   const navigate = useNavigate();
 
   return (
-    <div className="border-b border-purple-100/20 pb-6 backdrop-blur-sm">
-      <div className="flex items-start justify-between mb-6">
-        <Button 
-          variant="ghost" 
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-4">
+        <Button
+          variant="ghost"
           size="icon"
           onClick={() => navigate('/home/contacts/companies')}
-          className="mt-1 hover:bg-purple-50/50 transition-colors"
+          className="h-9 w-9"
         >
-          <ArrowLeft className="h-4 w-4 text-purple-600" />
+          <ChevronLeft className="h-5 w-5" />
         </Button>
-        
-        <Button
-          variant="destructive"
-          size="sm"
-          onClick={onDeleteClick}
-        >
-          <Trash2 className="h-4 w-4 mr-2" />
-          Delete Company
-        </Button>
+        <h1 className="text-2xl font-semibold text-gray-900">{company.name}</h1>
       </div>
-      
-      <div className="flex items-center gap-6">
-        <div className="p-4 bg-purple-100 rounded-lg">
-          <Building2 className="h-8 w-8 text-purple-600" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">
-            {company.name}
-          </h1>
-          <p className="text-sm text-purple-600/70 mt-1">
-            {company.website}
-          </p>
-        </div>
+
+      <div className="flex items-center gap-2">
+        <Button variant="outline" size="sm">
+          <Share2 className="h-4 w-4 mr-2" />
+          Share
+        </Button>
+        <Button variant="outline" size="sm" onClick={onDeleteClick}>
+          <Trash2 className="h-4 w-4 mr-2" />
+          Delete
+        </Button>
+        <Button variant="ghost" size="icon" className="h-9 w-9">
+          <MoreHorizontal className="h-5 w-5" />
+        </Button>
       </div>
     </div>
   );

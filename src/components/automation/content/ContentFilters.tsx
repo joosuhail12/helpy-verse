@@ -1,4 +1,3 @@
-
 import { Check, ChevronDown, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -22,9 +21,10 @@ import { mockChatbots } from '@/mock/chatbots';
 
 export const ContentFilters = () => {
   const dispatch = useAppDispatch();
-  const filters = useAppSelector((state) => state.content.filters);
+  const contentState = useAppSelector((state) => state.content);
+  const filters = contentState?.filters || {};
 
-  const statuses: ContentStatus[] = ['completed', 'processing', 'queued', 'failed'];
+  const statuses: ContentStatus[] = ['completed', 'processing', 'queued', 'failed', 'active', 'inactive', 'draft'];
 
   const handleClearFilters = () => {
     dispatch(clearFilters());
@@ -73,8 +73,8 @@ export const ContentFilters = () => {
       );
     }
 
-    if (filters.chatbotId) {
-      const chatbot = mockChatbots.find(c => c.id === filters.chatbotId);
+    if (filters.chatbot) {
+      const chatbot = mockChatbots.find(c => c.id === filters.chatbot);
       badges.push(
         <Badge
           key="chatbot"
@@ -160,7 +160,7 @@ export const ContentFilters = () => {
               >
                 <Check
                   className={`mr-2 h-4 w-4 ${
-                    filters.chatbotId === chatbot.id ? 'opacity-100' : 'opacity-0'
+                    filters.chatbot === chatbot.id ? 'opacity-100' : 'opacity-0'
                   }`}
                 />
                 {chatbot.name}

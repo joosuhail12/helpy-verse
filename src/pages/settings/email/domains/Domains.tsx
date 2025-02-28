@@ -12,6 +12,7 @@ import { emailService } from '@/api/services/emailService';
 import { AddNewDomain, Domain } from '@/types/domains';
 
 const Domains = () => {
+  console.log('Domains');
   const navigate = useNavigate();
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');

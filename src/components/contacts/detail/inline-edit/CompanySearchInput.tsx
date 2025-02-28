@@ -1,33 +1,12 @@
 
-import { useState } from 'react';
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-} from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Button } from '@/components/ui/button';
-import { Check, ChevronsUpDown, Building, Plus } from 'lucide-react';
-import { cn } from "@/lib/utils";
-import { useToast } from '@/hooks/use-toast';
-
-interface Company {
-  id: string;
-  name: string;
-}
-
-// Mock companies data - replace with actual API call
-const companies: Company[] = [
-  { id: '1', name: 'Acme Corp' },
-  { id: '2', name: 'TechCo' },
-  { id: '3', name: 'Innovate Inc' },
-];
+import { useState, useEffect } from 'react';
+import { Search } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem } from '@/components/ui/command';
+import { companiesService } from '@/api/services/companiesService';
+import { useQuery } from '@tanstack/react-query';
+import { toast } from '@/components/ui/use-toast';
 
 interface CompanySearchInputProps {
   value: string;
@@ -35,84 +14,80 @@ interface CompanySearchInputProps {
   disabled?: boolean;
 }
 
-export const CompanySearchInput = ({ 
-  value, 
-  onChange,
-  disabled = false 
-}: CompanySearchInputProps) => {
+export const CompanySearchInput = ({ value, onChange, disabled }: CompanySearchInputProps) => {
   const [open, setOpen] = useState(false);
-  const { toast } = useToast();
+  const [inputValue, setInputValue] = useState(value);
+  const [searchQuery, setSearchQuery] = useState('');
+  
+  // Fetch companies from the API
+  const { data: companiesResponse, isLoading, error } = useQuery({
+    queryKey: ['companies', searchQuery],
+    queryFn: () => companiesService.fetchCompanies({ 
+      searchQuery,
+      limit: 10
+    }),
+    enabled: open,
+    staleTime: 60000, // 1 minute
+  });
 
-  // Filter companies based on search
-  const [searchTerm, setSearchTerm] = useState('');
-  const filteredCompanies = companies.filter(company => 
-    company.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const companies = companiesResponse?.companies || [];
 
-  const handleCreateNewCompany = () => {
-    // In a real implementation, this would open a modal to create a new company
-    // For now, we'll just create it with the search term
-    if (!searchTerm.trim()) return;
-    
-    // Mock creating a new company
-    const newCompany = searchTerm.trim();
-    onChange(newCompany);
-    setOpen(false);
-    toast({
-      title: 'Company created',
-      description: `Created new company: ${newCompany}`,
-    });
+  useEffect(() => {
+    setInputValue(value);
+  }, [value]);
+
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: "Error loading companies",
+        description: "Could not load the company list. Please try again.",
+        variant: "destructive",
+      });
+    }
+  }, [error]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setInputValue(value);
+    setSearchQuery(value);
   };
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className="w-full justify-between h-8"
-          disabled={disabled}
-        >
-          {value || "Select company..."}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
+        <div className="flex items-center w-full relative">
+          <Input
+            value={inputValue}
+            onChange={handleInputChange}
+            onFocus={() => setOpen(true)}
+            className="h-8 pr-8"
+            disabled={disabled}
+          />
+          <Search className="absolute right-2 h-4 w-4 text-gray-400" />
+        </div>
       </PopoverTrigger>
-      <PopoverContent className="w-[300px] p-0">
+      <PopoverContent className="p-0 w-[220px]">
         <Command>
           <CommandInput 
             placeholder="Search companies..." 
-            onValueChange={setSearchTerm}
+            value={searchQuery}
+            onValueChange={setSearchQuery}
           />
-          <CommandEmpty className="py-2">
-            <div className="flex flex-col items-center gap-2">
-              <p className="text-sm">No companies found</p>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handleCreateNewCompany}
-                className="flex items-center gap-2"
-              >
-                <Plus className="h-4 w-4" />
-                Create "{searchTerm}"
-              </Button>
-            </div>
+          <CommandEmpty>
+            {isLoading ? 'Loading...' : 'No company found.'}
           </CommandEmpty>
           <CommandGroup>
-            {filteredCompanies.map((company) => (
+            {companies.map((company) => (
               <CommandItem
                 key={company.id}
                 value={company.name}
-                onSelect={() => {
-                  onChange(company.name);
+                onSelect={(value) => {
+                  onChange(value);
+                  setInputValue(value);
                   setOpen(false);
                 }}
               >
-                <Building className="mr-2 h-4 w-4" />
                 {company.name}
-                {company.name === value && (
-                  <Check className="ml-auto h-4 w-4" />
-                )}
               </CommandItem>
             ))}
           </CommandGroup>

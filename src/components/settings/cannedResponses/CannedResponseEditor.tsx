@@ -1,11 +1,12 @@
 
-import { useEditor, EditorContent } from '@tiptap/react';
+import { useEditor, EditorContent, ReactRenderer } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Mention from '@tiptap/extension-mention';
 import Placeholder from '@tiptap/extension-placeholder';
 import MentionList from '@/components/inbox/components/MentionList';
 import { cn } from '@/lib/utils';
 import { useCallback } from 'react';
+import tippy from 'tippy.js';
 
 interface CannedResponseEditorProps {
   content: string;
@@ -41,34 +42,43 @@ export const CannedResponseEditor = ({
 
             return {
               onStart: (props: any) => {
-                component = new MentionList({
-                  items: props.items,
-                  command: props.command,
+                component = new ReactRenderer(MentionList, {
+                  props,
+                  editor: props.editor,
                 });
 
-                popup = document.createElement('div');
-                popup.className = 'mention-popup';
-                popup.appendChild(component.element);
-                document.body.appendChild(popup);
-
-                popup.style.position = 'absolute';
-                popup.style.left = `${props.clientRect.x}px`;
-                popup.style.top = `${props.clientRect.y}px`;
+                popup = tippy('body', {
+                  getReferenceClientRect: props.clientRect,
+                  appendTo: () => document.body,
+                  content: component.element,
+                  showOnCreate: true,
+                  interactive: true,
+                  trigger: 'manual',
+                  placement: 'bottom-start',
+                });
               },
               onUpdate: (props: any) => {
-                component.update(props);
-                popup.style.left = `${props.clientRect.x}px`;
-                popup.style.top = `${props.clientRect.y}px`;
+                component.updateProps(props);
+                
+                popup[0].setProps({
+                  getReferenceClientRect: props.clientRect,
+                });
               },
               onKeyDown: (props: any) => {
                 if (props.event.key === 'Escape') {
-                  popup.remove();
+                  popup[0].hide();
                   return true;
                 }
-                return component.onKeyDown(props);
+                
+                return component.ref?.onKeyDown(props);
               },
               onExit: () => {
-                popup.remove();
+                if (popup && popup[0]) {
+                  popup[0].destroy();
+                }
+                if (component) {
+                  component.destroy();
+                }
               },
             };
           },
@@ -139,4 +149,3 @@ export const CannedResponseEditor = ({
     </div>
   );
 };
-

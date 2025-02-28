@@ -1,3 +1,4 @@
+
 import { 
   Home, 
   Inbox, 
@@ -29,7 +30,7 @@ import {
 
 export const mainNavItems = [
   { id: 'home', title: 'Home', icon: Home, path: '/home' },
-  { id: 'inbox', title: 'Inbox', icon: Inbox, path: '/home/inbox' },
+  { id: 'inbox', title: 'Inbox', icon: Inbox, path: '/inbox' },
   { id: 'contacts', title: 'Contacts', icon: Users, path: '/home/contacts' },
   { id: 'automation', title: 'AI & Automation', icon: Bot, path: '/home/automation' },
   { id: 'reporting', title: 'Reporting', icon: BarChart, path: '/home/reporting' },
@@ -38,27 +39,27 @@ export const mainNavItems = [
 
 export const subNavItems = {
   inbox: [
-    { title: 'Your Inbox', icon: InboxIcon, path: '/home/inbox/your-inbox' },
-    { title: 'Mentions', icon: AtSign, path: '/home/inbox/mentions' },
-    { title: 'All', icon: ListFilter, path: '/home/inbox/all' },
-    { title: 'Unassigned', icon: MessageSquare, path: '/home/inbox/unassigned' },
+    { title: 'Your Inbox', icon: InboxIcon, path: '/inbox/your-inbox' },
+    { title: 'Mentions', icon: AtSign, path: '/inbox/mentions' },
+    { title: 'All', icon: ListFilter, path: '/inbox/all' },
+    { title: 'Unassigned', icon: MessageSquare, path: '/inbox/unassigned' },
     {
       title: 'Teams',
       icon: UsersRound,
       children: [
-        { title: 'All Teams', path: '/home/inbox/teams' },
-        { title: 'Team 1 View', path: '/home/inbox/teams/1' },
-        { title: 'Team 2 View', path: '/home/inbox/teams/2' },
-        { title: 'Team 3 View', path: '/home/inbox/teams/3' },
+        { title: 'All Teams', path: '/inbox/teams' },
+        { title: 'Team 1 View', path: '/inbox/teams/1' },
+        { title: 'Team 2 View', path: '/inbox/teams/2' },
+        { title: 'Team 3 View', path: '/inbox/teams/3' },
       ]
     },
     {
       title: 'Teammates',
       icon: User,
       children: [
-        { title: 'Teammate 1 View', path: '/home/inbox/teammates/1' },
-        { title: 'Teammate 2 View', path: '/home/inbox/teammates/2' },
-        { title: 'Teammate 3 View', path: '/home/inbox/teammates/3' },
+        { title: 'Teammate 1 View', path: '/inbox/teammates/1' },
+        { title: 'Teammate 2 View', path: '/inbox/teammates/2' },
+        { title: 'Teammate 3 View', path: '/inbox/teammates/3' },
       ]
     }
   ],

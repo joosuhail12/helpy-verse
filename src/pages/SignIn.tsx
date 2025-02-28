@@ -6,14 +6,19 @@ import { LoginForm } from "@/components/auth/LoginForm";
 import { Form } from "@/components/ui/form";
 import { FormProvider } from "react-hook-form";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import ErrorBoundary from "@/components/common/ErrorBoundary";
+import { isAuthenticated } from "@/utils/auth/tokenManager";
 
 export const SignIn = memo(() => {
   console.log('SignIn component rendering'); // Debug log
   const navigate = useNavigate();
+  const location = useLocation();
   const auth = useAppSelector((state) => state.auth);
+  
+  // Get redirect path from location state or default to /home
+  const from = location.state?.from || '/home';
   
   const methods = useForm({
     defaultValues: {
@@ -22,13 +27,18 @@ export const SignIn = memo(() => {
     },
   });
 
-  // Redirect if already authenticated
+  // Redirect if already authenticated - FIXED: use tokenManager's isAuthenticated
+  // instead of cookie directly to avoid conflicting checks
   useEffect(() => {
-    if (auth?.isAuthenticated) {
-      console.log('User is authenticated, redirecting to home'); // Debug log
-      navigate('/home');
+    if (isAuthenticated()) {
+      console.log('User is authenticated, redirecting to:', from); // Debug log
+      
+      // Navigate to target location
+      navigate(from, { replace: true });
+    } else {
+      console.log('User is NOT authenticated, staying on login page');
     }
-  }, [auth?.isAuthenticated, navigate]);
+  }, [from, navigate]);
 
   console.log('Auth state:', auth); // Debug log
 

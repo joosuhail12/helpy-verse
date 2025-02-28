@@ -197,4 +197,9 @@ const customerSlice = createSlice({
 });
 
 export const { setSelectedContacts, toggleContactSelection, updateContact } = customerSlice.actions;
+
+export const selectContacts = (state: { customers: ContactsState }) => state.customers.contacts;
+export const selectContactsLoading = (state: { customers: ContactsState }) => state.customers.loading;
+export const selectContactsError = (state: { customers: ContactsState }) => state.customers.error;
+
 export default customerSlice.reducer;

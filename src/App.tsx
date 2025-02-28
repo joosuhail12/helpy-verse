@@ -9,6 +9,7 @@ import { Suspense, lazy, useEffect } from 'react';
 import { useAppSelector } from "./hooks/useAppSelector";
 import CaslProvider from "./components/CaslProvider";
 import { getCookie } from "./utils/helpers/helpers";
+import DashboardLayout from "./layouts/DashboardLayout";
 
 // Lazy load components with explicit chunk names
 const SignIn = lazy(() => import(/* webpackChunkName: "signin" */ "./pages/SignIn"));
@@ -94,10 +95,10 @@ const ErrorBoundary = ({ children }: { children: React.ReactNode }) => {
 const App = () => (
   <Provider store={store}>
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
+      <BrowserRouter>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
           <ErrorBoundary>
             <CaslProvider>
               <Suspense fallback={<LoadingFallback />}>
@@ -107,13 +108,14 @@ const App = () => (
                   <Route path="/sign-up" element={<SignUp />} />
                   <Route path="/forgot-password" element={<ForgotPassword />} />
                   <Route
-                    path="/home/*"
+                    path="/home"
                     element={
                       <ProtectedRoute>
-                        <Home />
+                        <DashboardLayout />
                       </ProtectedRoute>
                     }
                   >
+                    <Route index element={<Home />} />
                     <Route path="inbox/all" element={<AllTickets />} />
                     <Route path="contacts/all" element={<AllContacts />} />
                     <Route path="contacts/companies" element={<Companies />} />
@@ -144,8 +146,8 @@ const App = () => (
               </Suspense>
             </CaslProvider>
           </ErrorBoundary>
-        </BrowserRouter>
-      </TooltipProvider>
+        </TooltipProvider>
+      </BrowserRouter>
     </QueryClientProvider>
   </Provider>
 );

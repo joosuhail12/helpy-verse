@@ -1,3 +1,4 @@
+
 export interface Team {
   id: string;
   name: string;
@@ -22,6 +23,36 @@ export interface Team {
   holidays: string[]; // Array of ISO date strings
   createdAt: string;
   updatedAt: string;
+}
+
+// For backward compatibility with existing components
+export interface RoutingRule {
+  id: string;
+  name: string;
+  type: 'manual' | 'round-robin' | 'load-balanced';
+}
+
+export interface Channel {
+  id: string;
+  name: string;
+  type: string;
+  email: string[];
+}
+
+export interface Holiday {
+  id: string;
+  date: string;
+  name: string;
+}
+
+export interface OfficeHours {
+  monday: TimeSlot[];
+  tuesday: TimeSlot[];
+  wednesday: TimeSlot[];
+  thursday: TimeSlot[];
+  friday: TimeSlot[];
+  saturday: TimeSlot[];
+  sunday: TimeSlot[];
 }
 
 export type DayOfWeek = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';

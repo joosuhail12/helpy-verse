@@ -17,7 +17,8 @@ const mockTicket = {
   createdAt: '2024-03-15T11:00:00Z',
   updatedAt: '2024-03-15T11:05:00Z',
   isUnread: true,
-  categories: ['technical', 'api']
+  categories: ['technical', 'api'],
+  recipients: ['david.lee@example.com'] // Added recipients array
 };
 
 describe('MessageInput', () => {

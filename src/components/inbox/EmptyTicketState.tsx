@@ -1,18 +1,25 @@
 
-import { Inbox } from 'lucide-react';
+import { Inbox, Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
-const EmptyTicketState = () => {
+interface EmptyTicketStateProps {
+  onCreateTicket: () => void;
+}
+
+const EmptyTicketState = ({ onCreateTicket }: EmptyTicketStateProps) => {
   return (
-    <div className="flex flex-col items-center justify-center h-[calc(100vh-12rem)] bg-white/50 backdrop-blur-sm rounded-lg border border-purple-100">
-      <div className="text-center max-w-md mx-auto p-6 space-y-4">
-        <div className="w-16 h-16 mx-auto bg-primary/5 rounded-full flex items-center justify-center">
-          <Inbox className="w-8 h-8 text-primary" />
-        </div>
-        <h3 className="text-xl font-semibold text-gray-900">No tickets yet</h3>
-        <p className="text-gray-500">
-          When customers reach out for support, their tickets will appear here. You'll be able to manage and respond to them from this dashboard.
-        </p>
+    <div className="flex flex-col items-center justify-center p-8 text-center h-full">
+      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+        <Inbox className="h-8 w-8 text-gray-400" />
       </div>
+      <h3 className="text-lg font-medium mb-2">No tickets yet</h3>
+      <p className="text-gray-500 max-w-md mb-6">
+        When customers contact you, their tickets will appear here. You can also create tickets manually.
+      </p>
+      <Button onClick={onCreateTicket}>
+        <Plus className="h-4 w-4 mr-2" />
+        Create Ticket
+      </Button>
     </div>
   );
 };

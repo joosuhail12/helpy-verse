@@ -44,14 +44,6 @@ export const getWorkspaceId = (): string => {
     return getCookie("workspaceId");
 };
 
-export const getClientIdFromCookie = (): string | undefined => {
-    return getCookie('clientId');
-};
-
-export const setClientId = (id: string): void => {
-    setCookie('clientId', id)
-}
-
 // 🟢 Debounce Function with Immediate Execution
 export const debounceWithImmediate = <T>(
     func: (props: T) => void,

@@ -1,73 +1,94 @@
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import React, { useState, useEffect } from 'react';
 import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { Send, Loader2 } from 'lucide-react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { StickyNote, Loader2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
 import { updateContact } from '@/store/slices/contacts/contactsSlice';
+import { useToast } from '@/hooks/use-toast';
 
 interface QuickNoteInputProps {
   contactId: string;
   initialNote?: string;
+  onAddNote?: (note: string) => void;
 }
 
-export const QuickNoteInput = ({ contactId, initialNote = '' }: QuickNoteInputProps) => {
+export const QuickNoteInput: React.FC<QuickNoteInputProps> = ({ 
+  contactId, 
+  initialNote = '', 
+  onAddNote 
+}) => {
   const [note, setNote] = useState(initialNote);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const dispatch = useAppDispatch();
   const { toast } = useToast();
-
-  const handleSubmit = async () => {
+  
+  useEffect(() => {
+    if (initialNote) {
+      setNote(initialNote);
+    }
+  }, [initialNote]);
+  
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
     if (!note.trim()) return;
     
     setIsSubmitting(true);
     try {
       await dispatch(updateContact({
-        id: contactId,
-        notes: note,
-      }));
+        contactId,
+        data: { 
+          notes: note // In a real app, you would append to existing notes
+        }
+      })).unwrap();
       
       toast({
-        title: "Note saved",
-        description: "Your note has been saved successfully.",
+        title: "Note added",
+        description: "Your note has been added successfully",
       });
+      
+      if (onAddNote) {
+        onAddNote(note);
+      }
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to save note. Please try again.",
+        description: "Failed to add note",
         variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);
     }
   };
-
+  
   return (
-    <div className="space-y-2">
-      <div className="relative">
-        <Textarea
-          placeholder="Add a note..."
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
-          className="min-h-[80px] pr-8"
-        />
-        {isSubmitting ? (
-          <div className="absolute right-2 top-2">
-            <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
-          </div>
-        ) : (
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={handleSubmit}
-            className="absolute right-2 top-2"
-            disabled={!note.trim() || note === initialNote}
-          >
-            <StickyNote className="h-4 w-4" />
-          </Button>
-        )}
+    <form onSubmit={handleSubmit} className="space-y-2">
+      <Textarea
+        placeholder="Add a quick note..."
+        value={note}
+        onChange={(e) => setNote(e.target.value)}
+        className="min-h-[100px]"
+        disabled={isSubmitting}
+      />
+      <div className="flex justify-end">
+        <Button 
+          type="submit" 
+          disabled={!note.trim() || isSubmitting}
+        >
+          {isSubmitting ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Saving...
+            </>
+          ) : (
+            <>
+              <Send className="mr-2 h-4 w-4" />
+              Add Note
+            </>
+          )}
+        </Button>
       </div>
-    </div>
+    </form>
   );
 };
