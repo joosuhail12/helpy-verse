@@ -49,7 +49,7 @@ export const ContactCustomFields = ({ contact }: ContactCustomFieldsProps) => {
             // Safely convert field value to the expected types
             const fieldValue = contact[field.id];
             let safeValue = '';
-            
+
             if (typeof fieldValue === 'string') {
               safeValue = fieldValue;
             } else if (typeof fieldValue === 'number') {
@@ -58,40 +58,48 @@ export const ContactCustomFields = ({ contact }: ContactCustomFieldsProps) => {
               safeValue = fieldValue ? 'Yes' : 'No';
             } else if (Array.isArray(fieldValue)) {
               safeValue = fieldValue.join(', ');
-            } else if (fieldValue === null || fieldValue === undefined) {
-              safeValue = '';
-            } else if (typeof fieldValue === 'object') {
-              // Convert object to string representation
-              safeValue = JSON.stringify(fieldValue);
-            }
-            
-            // Convert type if needed
-            const typeMapping: Record<string, "text" | "url" | "email" | "date" | "phone" | "select"> = {
-              'text': 'text',
-              'email': 'email',
-              'phone': 'phone',
-              'date': 'date',
-              'select': 'select',
-              'url': 'url',
-              'number': 'text'  // Map number to text type for input
-            };
-            
-            const mappedType = typeMapping[field.type] || 'text';
-            
-            return (
-              <div key={field.id} className="space-y-1">
-                <p className="text-sm font-medium text-muted-foreground">{field.name}</p>
-                <InlineEditField
-                  value={safeValue}
-                  contactId={contact.id}
-                  field={field.id}
-                  label={field.name}
-                  type={mappedType}
-                  options={field.options}
-                />
-              </div>
-            );
-          })}
+              let safeValue: string | number | boolean | string[] = '';
+
+              if (typeof fieldValue === 'string' ||
+                typeof fieldValue === 'number' ||
+                typeof fieldValue === 'boolean' ||
+                Array.isArray(fieldValue)) {
+                safeValue = fieldValue;
+              } else if (fieldValue === null || fieldValue === undefined) {
+                safeValue = '';
+              } else if (typeof fieldValue === 'object') {
+                // Convert object to string representation
+                safeValue = JSON.stringify(fieldValue);
+              }
+
+              // Convert type if needed
+              const typeMapping: Record<string, "text" | "url" | "email" | "date" | "phone" | "select"> = {
+                'text': 'text',
+                'email': 'email',
+                'phone': 'phone',
+                'date': 'date',
+                'select': 'select',
+                'url': 'url',
+                'number': 'text'  // Map number to text type for input
+              };
+
+              const mappedType = typeMapping[field.type] || 'text';
+
+              return (
+                <div key={field.id} className="space-y-1">
+                  <p className="text-sm font-medium text-muted-foreground">{field.name}</p>
+                  <InlineEditField
+                    value={safeValue}
+                    contactId={contact.id}
+                    field={field.id}
+                    label={field.name}
+                    type={mappedType}
+                    options={field.options}
+                    validation={field.validationRules}
+                  />
+                </div>
+              );
+            })}
         </div>
       </CardContent>
     </Card>

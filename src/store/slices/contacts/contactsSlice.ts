@@ -1,3 +1,4 @@
+
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import type { ContactsState } from './types';
 import type { Contact } from '@/types/contact';
@@ -176,7 +177,10 @@ const customerSlice = createSlice({
         state.error = null;
       })
       .addCase(updateCustomer.fulfilled, (state, action) => {
-        state.contactDetails = action.payload as unknown as Contact;
+        // Safely assign contact details
+        if (action.payload) {
+          state.contactDetails = action.payload;
+        }
       })
       .addCase(updateCustomer.rejected, (state, action) => {
         state.error = action.payload as string;
