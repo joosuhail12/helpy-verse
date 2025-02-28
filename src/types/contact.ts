@@ -28,7 +28,21 @@ export interface Contact {
   state?: string;
   postalCode?: string;
   country?: string;
+  // Communication preferences
+  emailOptIn?: boolean;
+  smsOptIn?: boolean;
+  communicationPreferences?: {
+    email: boolean;
+    sms: boolean;
+    phone: boolean;
+    mail: boolean;
+  };
+  // Activity tracking
+  totalOrders?: number;
+  totalSpent?: number;
+  lastActivity?: string;
+  visitCount?: number;
+  leadScore?: number;
   // Add index signature for custom fields
-  [key: string]: string | number | string[] | undefined | boolean;
+  [key: string]: string | number | string[] | undefined | boolean | object;
 }
-

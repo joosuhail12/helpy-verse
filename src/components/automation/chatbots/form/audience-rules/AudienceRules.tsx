@@ -6,6 +6,7 @@ import { QueryGroup } from '@/types/queryBuilder';
 import { useAudienceFields } from './hooks/useAudienceFields';
 import { useRuleBuilder } from './hooks/useRuleBuilder';
 import { RulePreview } from './components/RulePreview';
+import { toast } from '@/hooks/use-toast';
 
 interface AudienceRulesProps {
   onNextStep: () => void;
@@ -23,6 +24,10 @@ export const AudienceRules = ({ onNextStep }: AudienceRulesProps) => {
 
   const handleSubmit = () => {
     if (validateRules()) {
+      toast({
+        title: "Audience rules saved",
+        description: "Your audience targeting rules have been successfully saved.",
+      });
       onNextStep();
     }
   };
