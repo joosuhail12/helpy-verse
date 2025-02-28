@@ -1,6 +1,7 @@
 
 import { useAppSelector } from "@/hooks/useAppSelector";
-import { createContextualCan } from "@casl/react";
+import { createElement } from "react";
+import { AbilityContext } from "@casl/react";
 import { useEffect, useState } from "react";
 import { defineAppAbility, AppAbility } from "@/utils/ability";
 
@@ -18,6 +19,9 @@ export const Can = (props: any) => {
     }
   }, [permissions]);
 
-  const ContextualCan = createContextualCan(ability);
-  return <ContextualCan {...props} />;
+  return createElement(AbilityContext.Provider, { value: ability }, 
+    createElement(AbilityContext.Consumer, null, (context) => 
+      props.do(context)
+    )
+  );
 };

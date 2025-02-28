@@ -1,125 +1,117 @@
 
-import { QueryGroup, QueryRule, QueryField } from '@/types/queryBuilder';
-import type { ValidationError } from './validation';
+import { QueryGroup, QueryRule } from '@/types/queryBuilder';
 
-export const validateQueryGroup = (group: QueryGroup, fields: QueryField[]): ValidationError[] => {
+export interface ValidationError {
+  ruleId: string;
+  field: string;
+  message: string;
+}
+
+export const validateRules = (group: QueryGroup): ValidationError[] => {
   const errors: ValidationError[] = [];
-
-  // Validate each rule in the group
-  group.rules.forEach((rule) => {
-    if ('field' in rule) {
-      // This is a rule
-      validateRule(rule, fields, errors);
-    } else {
-      // This is a nested group
-      errors.push(...validateQueryGroup(rule, fields));
+  
+  // Recursively check all nested groups
+  group.groups.forEach(nestedGroup => {
+    errors.push(...validateRules(nestedGroup));
+  });
+  
+  // Check rules in the current group
+  group.rules.forEach(rule => {
+    // Check for empty fields
+    if (!rule.field) {
+      errors.push({
+        ruleId: rule.id,
+        field: 'field',
+        message: 'Field is required'
+      });
+    }
+    
+    // Check for empty operators
+    if (!rule.operator) {
+      errors.push({
+        ruleId: rule.id,
+        field: 'operator',
+        message: 'Operator is required'
+      });
+    }
+    
+    // Check for empty values (except for 'exists' and 'not_exists' operators)
+    if (
+      rule.value === undefined || 
+      rule.value === null || 
+      rule.value === '' || 
+      (Array.isArray(rule.value) && rule.value.length === 0)
+    ) {
+      if (
+        rule.operator !== 'exists' && 
+        rule.operator !== 'not_exists' && 
+        rule.operator !== 'is_empty' && 
+        rule.operator !== 'is_not_empty'
+      ) {
+        errors.push({
+          ruleId: rule.id,
+          field: 'value',
+          message: 'Value is required'
+        });
+      }
     }
   });
-
+  
   return errors;
 };
 
-const validateRule = (rule: QueryRule, fields: QueryField[], errors: ValidationError[]) => {
-  // Check if field is selected
-  if (!rule.field) {
-    errors.push({
-      ruleId: rule.id,
-      field: 'field',
-      message: 'Field is required',
-    });
-    return; // Don't validate further if no field is selected
-  }
-
-  // Check if the field exists in the list of available fields
-  const fieldConfig = fields.find((f) => f.id === rule.field);
-  if (!fieldConfig) {
-    errors.push({
-      ruleId: rule.id,
-      field: 'field',
-      message: 'Selected field is not valid',
-    });
-    return; // Don't validate further if the field is not found
-  }
-
-  // Skip value validation for these operators
-  const noValueOperators = ['is_empty', 'is_not_empty', 'this_week', 'this_month', 'this_year', 
-                           'last_week', 'last_month', 'last_year', 'next_week', 'next_month', 'next_year'];
+export const detectRuleConflicts = (group: QueryGroup): ValidationError[] => {
+  const errors: ValidationError[] = [];
+  const fieldsWithOperators: Record<string, string[]> = {};
   
-  if (!noValueOperators.includes(rule.operator) && rule.value === undefined) {
-    errors.push({
-      ruleId: rule.id,
-      field: 'value',
-      message: 'Value is required for this operator',
+  // Helper function to check conflicts in a rule set
+  const checkConflictsInRules = (rules: QueryRule[]) => {
+    rules.forEach(rule => {
+      if (!rule.field) return;
+      
+      if (!fieldsWithOperators[rule.field]) {
+        fieldsWithOperators[rule.field] = [];
+      }
+      
+      // Check for conflicting operators on the same field
+      if (fieldsWithOperators[rule.field].includes(rule.operator)) {
+        errors.push({
+          ruleId: rule.id,
+          field: 'operator',
+          message: `Duplicate operator "${rule.operator}" for field "${rule.field}"`
+        });
+      } else {
+        fieldsWithOperators[rule.field].push(rule.operator);
+      }
+      
+      // Check for logical conflicts
+      if (
+        fieldsWithOperators[rule.field].includes('equals') &&
+        fieldsWithOperators[rule.field].includes('not_equals')
+      ) {
+        errors.push({
+          ruleId: rule.id,
+          field: 'operator',
+          message: `Conflicting operators for field "${rule.field}": equals and not_equals`
+        });
+      }
     });
-  }
-
-  // Type-specific validations
-  if (!noValueOperators.includes(rule.operator)) {
-    switch (fieldConfig.type) {
-      case 'number':
-        if (rule.value !== undefined && isNaN(Number(rule.value))) {
-          errors.push({
-            ruleId: rule.id,
-            field: 'value',
-            message: 'Value must be a number',
-          });
-        }
-        break;
-      case 'date':
-        // For date fields with specific date values
-        if (rule.value && typeof rule.value === 'string' && 
-            !noValueOperators.includes(rule.value) && 
-            !['last_n_days', 'next_n_days', 'rolling_days', 'rolling_months', 'rolling_years', 'custom_range'].includes(rule.operator) &&
-            isNaN(Date.parse(rule.value))) {
-          errors.push({
-            ruleId: rule.id,
-            field: 'value',
-            message: 'Invalid date format',
-          });
-        }
-        break;
-      case 'select':
-        // For select fields with predefined options
-        if (fieldConfig.options && rule.value !== undefined && 
-            !fieldConfig.options.includes(rule.value as string)) {
-          errors.push({
-            ruleId: rule.id,
-            field: 'value',
-            message: 'Value must be one of the available options',
-          });
-        }
-        break;
+  };
+  
+  // Check current group's rules
+  checkConflictsInRules(group.rules);
+  
+  // Recursively check nested groups if combinator is the same
+  group.groups.forEach(nestedGroup => {
+    if (nestedGroup.combinator === group.combinator) {
+      // Only check conflicts if the combinators match (e.g., both are 'and')
+      // For 'or' combinators, rules can be contradictory without being a conflict
+      checkConflictsInRules(nestedGroup.rules);
     }
-  }
-
-  // Operator-specific validations
-  switch (rule.operator) {
-    case 'between':
-    case 'not_between':
-      // These operators should have an array of two values
-      if (!Array.isArray(rule.value) || rule.value.length !== 2) {
-        errors.push({
-          ruleId: rule.id,
-          field: 'value',
-          message: 'This operator requires two values',
-        });
-      }
-      break;
-    case 'in':
-    case 'not_in':
-    case 'contains_any':
-    case 'contains_all':
-    case 'has_any':
-    case 'has_all':
-    case 'has_none':
-      // These operators should have an array of values
-      if (!Array.isArray(rule.value)) {
-        errors.push({
-          ruleId: rule.id,
-          field: 'value',
-          message: 'This operator requires an array of values',
-        });
-      }
-      break;
-  }
+    
+    // Always recursively check deeper nested groups
+    errors.push(...detectRuleConflicts(nestedGroup));
+  });
+  
+  return errors;
 };
