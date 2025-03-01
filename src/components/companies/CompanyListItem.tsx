@@ -69,7 +69,7 @@ export const CompanyListItem = ({ company }: CompanyListItemProps) => {
           `${company.location.city}, ${company.location.country}` : '-'}
       </TableCell>
       <TableCell>
-        {company.employeeCount ? `${company.employeeCount}` : '-'}
+        {company.numberOfEmployees ? `${company.numberOfEmployees}` : '-'}
       </TableCell>
       <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
         <Button variant="ghost" size="icon">
