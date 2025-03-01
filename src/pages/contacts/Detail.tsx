@@ -21,8 +21,6 @@ const ContactDetail = () => {
   const dispatch = useAppDispatch();
 
   const { contactDetails, loading, error } = useAppSelector((state) => state.contacts);
-  console.log(contactDetails);
-  
   useEffect(() => {
     if (id) {
       dispatch(fetchCustomerDetails(id));
@@ -45,7 +43,7 @@ const ContactDetail = () => {
     return (
       <div className="p-6">
         <Card className="p-4 text-center">
-          <Loader className="h-6 w-6 animate-spin mx-auto text-gray-500" />
+          <Loader className="animate-spin" /> {/* Show loading animation */}
           <p className="mt-2 text-gray-500">Loading contact details...</p>
         </Card>
       </div>
