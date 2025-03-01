@@ -4,7 +4,8 @@ import { getCookie } from '@/utils/helpers/helpers';
 
 // Create an axios instance
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'https://api.example.com',
+  // baseURL: 'http://localhost:4000/api',
+  baseURL: 'https://dev-socket.pullseai.com/api',
   headers: {
     'Content-Type': 'application/json',
   },
