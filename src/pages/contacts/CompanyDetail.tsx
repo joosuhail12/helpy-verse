@@ -62,6 +62,7 @@ const CompanyDetail = () => {
     );
   }
 
+  
   const handleDelete = async () => {
     try {
       dispatch(deleteCompany(company.id));
