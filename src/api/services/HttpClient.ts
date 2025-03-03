@@ -6,7 +6,7 @@ import { get } from "lodash";
 const API_BASE_URL = 'https://dev-socket.pullseai.com';
 
 // const LLM_SERVICE_URL = 'http://localhost:4000/api';
-const LLM_SERVICE_URL = 'https://dev-socket.pullseai.com';
+const LLM_SERVICE_URL = 'https://dev-socket.pullseai.com/api';
 
 export const setAxiosDefaultConfig = (): void => {
     axios.defaults.baseURL = API_BASE_URL;
