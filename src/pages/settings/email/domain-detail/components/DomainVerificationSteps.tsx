@@ -1,9 +1,9 @@
 
+import { DomainDetails } from '@/api/services/emailService';
 import { Steps } from '@/components/ui/steps';
-import type { Domain } from '@/mock/domains';
 
 interface DomainVerificationStepsProps {
-  domain: Domain;
+  domain: DomainDetails;
 }
 
 type Step = {
@@ -15,14 +15,9 @@ type Step = {
 export const DomainVerificationSteps = ({ domain }: DomainVerificationStepsProps) => {
   const steps: Step[] = [
     {
-      title: 'Add Domain',
-      description: 'Add your domain to the platform',
-      status: domain.ownerConfirmed ? 'complete' : 'current',
-    },
-    {
       title: 'Configure DNS',
       description: 'Add required DNS records',
-      status: domain.ownerConfirmed && domain.status === 'pending' ? 'current' : 'pending',
+      status: domain.isVerified ? 'verified' : 'pending',
     },
     {
       title: 'Verify',

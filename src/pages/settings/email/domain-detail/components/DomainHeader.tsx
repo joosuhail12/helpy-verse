@@ -2,10 +2,10 @@
 import { ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import type { Domain } from '@/mock/domains';
+import { DomainDetails } from '@/api/services/emailService';
 
 interface DomainHeaderProps {
-  domain: Domain;
+  domain: DomainDetails;
 }
 
 export const DomainHeader = ({ domain }: DomainHeaderProps) => {
