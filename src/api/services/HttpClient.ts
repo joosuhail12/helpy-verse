@@ -2,8 +2,11 @@ import { getWorkspaceId, handleLogout, getCookie } from "@/utils/helpers/helpers
 import axios, { AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from "axios";
 import { get } from "lodash";
 
-const API_BASE_URL = 'http://localhost:4000/api';
-const LLM_SERVICE_URL = 'http://localhost:4000/api';
+// const API_BASE_URL = 'http://localhost:4000/api';
+const API_BASE_URL = 'https://dev-socket.pullseai.com';
+
+// const LLM_SERVICE_URL = 'http://localhost:4000/api';
+const LLM_SERVICE_URL = 'https://dev-socket.pullseai.com';
 
 export const setAxiosDefaultConfig = (): void => {
     axios.defaults.baseURL = API_BASE_URL;
