@@ -1,25 +1,30 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { mockDomains, type Domain } from '@/mock/domains';
 import { Card } from '@/components/ui/card';
 import { DomainListItem } from './components/DomainListItem';
 import { AddDomainDialog } from './components/AddDomainDialog';
 import { useToast } from '@/hooks/use-toast';
-import { Globe } from 'lucide-react';
+import { Globe, Loader2 } from 'lucide-react';
 import { DomainControls } from './components/DomainControls';
 import { DomainBulkActions } from './components/DomainBulkActions';
+import { emailService } from '@/api/services/emailService';
+import { AddNewDomain, Domain } from '@/types/domains';
 
 const Domains = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<Domain['status'] | 'all'>('all');
+  const [statusFilter, setStatusFilter] = useState<'verified' | "pending" | 'all'>('all');
   const [sortBy, setSortBy] = useState<'date' | 'name'>('date');
   const [selectedDomains, setSelectedDomains] = useState<string[]>([]);
+  const [domains, setDomains] = useState<Domain[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const filteredDomains = useMemo(() => {
-    let filtered = [...mockDomains];
+    if (domains.length === 0) return [];
+
+    let filtered = [...domains];
 
     if (searchQuery) {
       filtered = filtered.filter(domain =>
@@ -28,41 +33,98 @@ const Domains = () => {
     }
 
     if (statusFilter !== 'all') {
-      filtered = filtered.filter(domain => domain.status === statusFilter);
+      filtered = filtered.filter(domain => domain.isVerified === (statusFilter == "verified" ? true : false));
     }
 
     filtered.sort((a, b) => {
       if (sortBy === 'date') {
-        return new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime();
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       } else {
         return a.domain.localeCompare(b.domain);
       }
     });
 
     return filtered;
-  }, [mockDomains, searchQuery, statusFilter, sortBy]);
+  }, [domains, searchQuery, statusFilter, sortBy]);
 
-  const handleAddDomain = (domain: Domain) => {
-    toast({
-      title: "Domain added",
-      description: "The domain has been added successfully.",
+  useEffect(() => {
+    const getDomains = async () => {
+      const data = await emailService.getDomains();
+      if (data?.status === 'success') {
+        setDomains(data.data);
+        setLoading(false);
+      } else {
+        setLoading(false);
+        toast({
+          title: "Error",
+          description: "Failed to fetch domains.",
+        });
+      }
+    };
+    getDomains();
+  }, []);
+
+  const handleAddDomain = async (domain: AddNewDomain) => {
+    await emailService.addDomain(domain).then((response) => {
+      if (!response) {
+        throw new Error('Failed to add domain');
+      }
+
+      toast({
+        title: "Domain added",
+        description: "The domain has been added successfully.",
+      });
+
+      setTimeout(() => {
+        navigate(`/home/settings/email/domains/${response.data.id}`);
+      }, 500);
+    }).catch((error) => {
+      toast({
+        title: "Error",
+        description: "Failed to add domain.",
+      });
     });
-    navigate(`/home/settings/email/domains/${domain.id}`);
   };
 
-  const handleVerify = (id: string) => {
-    toast({
-      title: "Verification initiated",
-      description: "Domain verification process has started.",
+  const handleVerify = async (id: string) => {
+    await emailService.verifyDomain(id).then((response) => {
+      if (response?.data?.isVerified) {
+        toast({
+          title: "Domain Verified",
+          description: "Your domain has been successfully verified.",
+        });
+
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to verify domain.",
+        });
+      }
+    }).catch((error) => {
+      console.error(error);
     });
   };
 
-  const handleDelete = (id: string) => {
-    toast({
-      title: "Domain deleted",
-      description: "The domain has been removed successfully.",
+  const handleDelete = async (id: string) => {
+    await emailService.deleteDomain(id).then((response) => {
+      if (!response) {
+        throw new Error('Failed to delete domain');
+      }
+
+      toast({
+        title: "Domain deleted",
+        description: "The domain has been removed successfully.",
+      });
+      setDomains(prev => prev.filter(domainId => domainId.id !== id));
+    }).catch((error) => {
+      toast({
+        title: "Error",
+        description: "Failed to add domain.",
+      });
     });
-    setSelectedDomains(prev => prev.filter(domainId => domainId !== id));
   };
 
   const handleNavigate = (id: string) => {
@@ -97,11 +159,11 @@ const Domains = () => {
   };
 
   const handleBulkExport = () => {
-    const selectedDomainsData = mockDomains.filter(d => selectedDomains.includes(d.id));
-    const csvContent = "data:text/csv;charset=utf-8," + 
+    const selectedDomainsData = domains.filter(d => selectedDomains.includes(d.id));
+    const csvContent = "data:text/csv;charset=utf-8," +
       "Domain,Status,Date Added\n" +
-      selectedDomainsData.map(d => `${d.domain},${d.status},${d.dateAdded}`).join("\n");
-    
+      selectedDomainsData.map(d => `${d.domain},${d.isVerified},${d.createdAt}`).join("\n");
+
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
@@ -150,14 +212,22 @@ const Domains = () => {
         />
       )}
 
+      {
+        loading && (
+          <div className="flex items-center justify-center py-16">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        )
+      }
+
       <Card className="overflow-hidden border-t-2 border-t-primary/10 shadow-sm">
-        {filteredDomains.length === 0 ? (
+        {!loading && filteredDomains.length === 0 ? (
           <div className="text-center py-16">
             <Globe className="mx-auto h-12 w-12 text-muted-foreground/50" />
             <h3 className="mt-4 text-lg font-semibold">No domains found</h3>
             <p className="mt-2 text-sm text-muted-foreground">
-              {searchQuery || statusFilter !== 'all' 
-                ? "Try adjusting your filters" 
+              {searchQuery || statusFilter !== 'all'
+                ? "Try adjusting your filters"
                 : "Add your first domain to start sending emails"}
             </p>
             {!searchQuery && statusFilter === 'all' && (
@@ -171,8 +241,8 @@ const Domains = () => {
         ) : (
           <div className="divide-y divide-border">
             {filteredDomains.map((domain) => (
-              <DomainListItem 
-                key={domain.id} 
+              <DomainListItem
+                key={domain.id}
                 domain={domain}
                 selected={selectedDomains.includes(domain.id)}
                 onSelect={handleSelectDomain}

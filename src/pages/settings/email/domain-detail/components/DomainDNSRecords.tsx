@@ -16,7 +16,8 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { toast } from '@/components/ui/use-toast';
-import type { Domain } from '@/mock/domains';
+import { DomainDetails } from '@/api/services/emailService';
+import DomainBadge from './DomainBadge';
 
 const DNS_RECORD_ICONS = {
   'TXT': Database,
@@ -37,7 +38,7 @@ const DNS_RECORD_DESCRIPTIONS = {
 } as const;
 
 interface DomainDNSRecordsProps {
-  domain: Domain;
+  domain: DomainDetails;
 }
 
 export const DomainDNSRecords = ({ domain }: DomainDNSRecordsProps) => {
@@ -56,30 +57,30 @@ export const DomainDNSRecords = ({ domain }: DomainDNSRecordsProps) => {
           <TableHead>Type</TableHead>
           <TableHead>Name</TableHead>
           <TableHead>Value</TableHead>
-          <TableHead>TTL</TableHead>
           <TableHead>Priority</TableHead>
+          <TableHead>Status</TableHead>
           <TableHead />
         </TableRow>
       </TableHeader>
       <TableBody>
         {domain.dnsRecords?.map((record, index) => {
-          const RecordIcon = DNS_RECORD_ICONS[record.type];
+          const RecordIcon = DNS_RECORD_ICONS[record.record_type];
           return (
             <TableRow key={index}>
               <TableCell>
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger>
-                      <Badge 
+                      <Badge
                         variant="outline"
-                        className={`flex items-center gap-1 ${DNS_RECORD_COLORS[record.type]}`}
+                        className={`flex items-center gap-1 ${DNS_RECORD_COLORS[record.record_type]}`}
                       >
                         <RecordIcon className="h-3 w-3" />
-                        {record.type}
+                        {record.record_type}
                       </Badge>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>{DNS_RECORD_DESCRIPTIONS[record.type]}</p>
+                      <p>{DNS_RECORD_DESCRIPTIONS[record.record_type]}</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -106,8 +107,10 @@ export const DomainDNSRecords = ({ domain }: DomainDNSRecordsProps) => {
                   <Copy className="h-4 w-4" />
                 </Button>
               </TableCell>
-              <TableCell>{record.ttl}</TableCell>
               <TableCell>{record.priority || '-'}</TableCell>
+              <TableCell>
+                <DomainBadge status={record.is_active ? "verified" : "pending"} />
+              </TableCell>
             </TableRow>
           );
         })}

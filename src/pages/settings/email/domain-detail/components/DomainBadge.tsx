@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/tooltip";
 
 interface DomainBadgeProps {
-  status: 'pending' | 'verified' | 'failed';
+  status: 'pending' | 'verified';
   className?: string;
 }
 
@@ -25,11 +25,11 @@ export const DomainBadge = ({ status, className }: DomainBadgeProps) => {
       icon: Check,
       tooltip: "Domain is verified and ready to use."
     },
-    failed: {
-      className: "bg-red-100 text-red-800 border-red-200 hover:bg-red-100",
-      icon: AlertTriangle,
-      tooltip: "Domain verification failed. Please check your DNS settings and try again."
-    },
+    // failed: {
+    //   className: "bg-red-100 text-red-800 border-red-200 hover:bg-red-100",
+    //   icon: AlertTriangle,
+    //   tooltip: "Domain verification failed. Please check your DNS settings and try again."
+    // },
   };
 
   const Icon = variants[status].icon;
@@ -37,12 +37,12 @@ export const DomainBadge = ({ status, className }: DomainBadgeProps) => {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <Badge 
+        <Badge
           className={cn(
             variants[status].className,
             "inline-flex items-center gap-1 font-medium px-2 py-0.5",
             className
-          )} 
+          )}
           variant="secondary"
         >
           <Icon className="h-3 w-3" />
