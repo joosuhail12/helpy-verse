@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { mockCannedResponses, type CannedResponse } from '@/mock/cannedResponses';
+import { CannedResponse } from '@/types/cannedResponse';
 import { useToast } from "@/hooks/use-toast";
 import { CannedResponsesHeader } from '@/components/settings/cannedResponses/CannedResponsesHeader';
 import { CannedResponsesSearch } from '@/components/settings/cannedResponses/CannedResponsesSearch';
@@ -7,18 +7,21 @@ import { CannedResponsesBulkActions } from '@/components/settings/cannedResponse
 import { CategoryGroup } from '@/components/settings/cannedResponses/CategoryGroup';
 import { RecentlyUsedSection } from '@/components/settings/cannedResponses/RecentlyUsedSection';
 import { ViewToggle } from '@/components/settings/cannedResponses/ViewToggle';
+import { cannedResponseService } from '@/api/services/cannedResponse.service';
+import { Loader2 } from 'lucide-react';
 
 const CannedResponses = () => {
-  const [responses] = useState<CannedResponse[]>(mockCannedResponses);
+  const [responses, setResponses] = useState<CannedResponse[]>([]);
   const [view, setView] = useState<'list' | 'grid'>('list');
   const [selectedResponses, setSelectedResponses] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   // Filter responses based on search query
-  const filteredResponses = responses.filter(response => 
-    response.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    response.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  const filteredResponses = responses.filter(response =>
+    response.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    response.message.toLowerCase().includes(searchQuery.toLowerCase()) ||
     response.shortcut.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -37,7 +40,7 @@ const CannedResponses = () => {
   };
 
   const handleSelectResponse = (id: string) => {
-    setSelectedResponses(prev => 
+    setSelectedResponses(prev =>
       prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
     );
   };
@@ -79,6 +82,37 @@ const CannedResponses = () => {
     };
 
     window.addEventListener('keydown', handleKeyPress);
+
+    const getCannedResponses = async () => {
+      try {
+        const cannedResponses = await cannedResponseService.getCannedResponses();
+
+        if (cannedResponses.status === 'success') {
+          setResponses(cannedResponses.data);
+        } else {
+          toast({
+            title: "Error",
+            description: "Failed to fetch canned responses",
+            variant: "destructive",
+          });
+        }
+
+        setLoading(false);
+
+      } catch (error) {
+        setLoading(false);
+        console.error('Error fetching canned responses:', error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch canned responses",
+          variant: "destructive",
+        });
+      }
+    };
+
+    getCannedResponses();
+
+
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, []);
 
@@ -101,16 +135,18 @@ const CannedResponses = () => {
               <ViewToggle view={view} onViewChange={setView} />
             )}
           </div>
-          <CannedResponsesSearch 
+          <CannedResponsesSearch
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
           />
         </div>
 
-        <RecentlyUsedSection 
+        {/* <RecentlyUsedSection 
           responses={responses}
           onResponseClick={handleResponseClick}
         />
+              // TODO: Implement RecentlyUsedSection component
+        */}
 
         <div className="space-y-6">
           {Object.entries(groupedResponses).map(([category, categoryResponses]) => (
@@ -125,7 +161,14 @@ const CannedResponses = () => {
               onSelect={handleResponseSelect}
             />
           ))}
-          {Object.keys(groupedResponses).length === 0 && (
+          {
+            loading && (
+              <div className="flex items-center justify-center py-16">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            )
+          }
+          {!loading && Object.keys(groupedResponses).length === 0 && (
             <div className="text-center py-12 bg-white rounded-lg shadow-sm">
               <p className="text-muted-foreground">
                 No responses found matching your search

@@ -6,39 +6,45 @@ import { toast } from '@/components/ui/use-toast';
 import { ArrowLeft } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { createCannedResponse } from '@/store/slices/cannedResponses/actions';
+// import { useAppDispatch } from '@/hooks/useAppDispatch';
+// import { createCannedResponse } from '@/store/slices/cannedResponses/actions';
 import { ResponsePreview } from '@/components/settings/cannedResponses/form/ResponsePreview';
 import { BasicInformationSection } from './cannedResponses/form/BasicInformationSection';
 import { OrganizationSection } from './cannedResponses/form/OrganizationSection';
 import { SharingSettingsSection } from './cannedResponses/form/SharingSettingsSection';
 import { formSchema, type FormValues } from './cannedResponses/formSchema';
-import type { CannedResponse } from '@/mock/cannedResponses';
+import { cannedResponseService } from '@/api/services/cannedResponse.service';
+import { CreateCannedResponse as CreateCannedResponseType } from '@/types/cannedResponse';
 
 const CreateCannedResponse = () => {
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
+  // const dispatch = useAppDispatch();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      title: '',
-      content: '',
+      name: '',
+      message: '',
       shortcut: '',
       category: '',
       isShared: false,
-      createdBy: 'Current User',
+      sharedTeams: [],
     },
   });
 
   const onSubmit = async (data: FormValues) => {
     try {
-      await dispatch(createCannedResponse(data as Omit<CannedResponse, 'id' | 'createdAt' | 'updatedAt'>)).unwrap();
+      console.log(data);
+      // await dispatch(createCannedResponse(data as Omit<CannedResponse, 'id' | 'createdAt' | 'updatedAt'>)).unwrap();
+
+      // await cannedResponseService.createCannedResponse(data as CreateCannedResponse).then((response) => {
+      //   console.log(response);
+      // });
       toast({
         title: "Success",
         description: "Canned response created successfully",
       });
-      navigate('/home/settings/canned-responses');
+      // navigate('/home/settings/canned-responses');
     } catch (error) {
       toast({
         title: "Error",
@@ -48,8 +54,8 @@ const CreateCannedResponse = () => {
     }
   };
 
-  const watchTitle = form.watch('title');
-  const watchContent = form.watch('content');
+  const watchTitle = form.watch('name');
+  const watchContent = form.watch('message');
 
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-6">
