@@ -1,10 +1,10 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DomainHealthStatus } from './DomainHealthStatus';
-import type { Domain } from '@/mock/domains';
+import { DomainDetails } from '@/api/services/emailService';
 
 interface DomainHealthCardProps {
-  domain: Domain;
+  domain: DomainDetails;
 }
 
 export const DomainHealthCard = ({ domain }: DomainHealthCardProps) => {

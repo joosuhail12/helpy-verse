@@ -1,10 +1,10 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DomainDNSRecords } from './DomainDNSRecords';
-import type { Domain } from '@/mock/domains';
+import { DomainDetails } from '@/api/services/emailService';
 
 interface DomainDNSCardProps {
-  domain: Domain;
+  domain: DomainDetails;
 }
 
 export const DomainDNSCard = ({ domain }: DomainDNSCardProps) => {
