@@ -139,10 +139,8 @@ const TeammateProfileCard = ({
                   <SelectValue placeholder="Select role" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="admin">Admin</SelectItem>
-                  <SelectItem value="supervisor">Supervisor</SelectItem>
-                  <SelectItem value="agent">Agent</SelectItem>
-                  <SelectItem value="viewer">Viewer</SelectItem>
+                  <SelectItem value="WORKSPACE_ADMIN">Workspace Admin</SelectItem>
+                  <SelectItem value="WORKSPACE_AGENT">Agent</SelectItem>
                 </SelectContent>
               </Select>
             ) : (

@@ -8,7 +8,8 @@ export interface TeammatesState {
   loading: boolean;
   error: string | null;
   lastFetchTime: number | null;
-  retryCount: number;
+  retryCount: number; 
+  teammatesDetails: Teammate | null;
 }
 
 export const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes

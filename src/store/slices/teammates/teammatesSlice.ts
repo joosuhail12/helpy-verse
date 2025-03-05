@@ -1,16 +1,9 @@
 
-import { createSlice } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import type { TeammatesState } from './types';
 import { mockActivityLogs, mockAssignments } from './mockData';
-import {
-  fetchTeammates,
-  addTeammate,
-  updateTeammate,
-  updateTeammatePermissions,
-  updateTeammatesRole,
-  exportTeammates
-} from './actions';
-import type { ActivityLog } from '@/types/teammate';
+import type { ActivityLog, NewTeammate, Teammate } from '@/types/teammate';
+import { teammatesService } from '@/api/services/teammateService';
 
 const initialState: TeammatesState = {
   teammates: [],
@@ -19,8 +12,48 @@ const initialState: TeammatesState = {
   loading: false,
   error: null,
   lastFetchTime: null,
-  retryCount: 0
+  retryCount: 0,
+  teammatesDetails: null
 };
+
+// fetchTeammates
+export const fetchTeammates = createAsyncThunk('teammates/fetchTeammates', async () => {
+  try {
+    const response = await teammatesService.fetchTeammates();
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+});
+
+export const createTeammate = createAsyncThunk('teammates/createTeammate', async (teammate: NewTeammate) => {
+  try {
+    const response = await teammatesService.createTeammate(teammate);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+});
+
+export const updateTeammate = createAsyncThunk('teammates/updateTeammate', async (teammate: Teammate) => {
+  try {
+    const response = await teammatesService.updateTeammate(teammate.id, teammate);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+});
+
+export const getTeammate = createAsyncThunk('teammates/getTeammate', async (teammateId: string) => {
+  try {
+    const response = await teammatesService.getTeammate(teammateId);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+});
+
+
 
 const teammatesSlice = createSlice({
   name: 'teammates',
@@ -31,7 +64,7 @@ const teammatesSlice = createSlice({
     },
     updateRolesOptimistic: (state, action) => {
       const { teammateIds, role } = action.payload;
-      state.teammates = state.teammates.map(teammate => 
+      state.teammates = state.teammates.map(teammate =>
         teammateIds.includes(teammate.id)
           ? { ...teammate, role }
           : teammate
@@ -43,45 +76,42 @@ const teammatesSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchTeammates.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
       .addCase(fetchTeammates.fulfilled, (state, action) => {
-        state.loading = false;
         state.teammates = action.payload;
-        state.activityLogs = mockActivityLogs;
-        state.assignments = mockAssignments;
-        state.lastFetchTime = Date.now();
-        state.retryCount = 0;
+        state.loading = false;
+        state.error = null;
       })
       .addCase(fetchTeammates.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || 'Failed to fetch teammates';
-        state.retryCount += 1;
       })
-      .addCase(addTeammate.rejected, (state, action) => {
+      .addCase(fetchTeammates.pending, (state, action) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(createTeammate.fulfilled, (state, action) => {
+        state.teammates = action.payload;
+      })
+      .addCase(createTeammate.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Failed to add teammate';
+        state.error = action.error.message || 'Failed to create teammate';
+      })
+      .addCase(updateTeammate.fulfilled, (state, action) => {
+        state.teammates = state.teammates.map(teammate =>
+          teammate.id === action.payload.id ? action.payload : teammate
+        );
       })
       .addCase(updateTeammate.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || 'Failed to update teammate';
       })
-      .addCase(updateTeammatePermissions.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message || 'Failed to update teammate permissions';
+      .addCase(getTeammate.fulfilled, (state, action) => {
+        console.log(action.payload);
+        state.teammatesDetails = action.payload;
       })
-      .addCase(exportTeammates.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(exportTeammates.fulfilled, (state) => {
+      .addCase(getTeammate.rejected, (state, action) => {
         state.loading = false;
-      })
-      .addCase(exportTeammates.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message || 'Failed to export teammates';
+        state.error = action.error.message || 'Failed to get teammate';
       });
   },
 });
