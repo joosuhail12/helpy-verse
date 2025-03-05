@@ -1,10 +1,9 @@
-
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { addTeammate } from '@/store/slices/teammates/actions';
+import { createTeammate } from '@/store/slices/teammates/teammatesSlice';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -14,14 +13,18 @@ import { useToast } from "@/hooks/use-toast";
 import { Plus } from "lucide-react";
 import type { NewTeammate } from '@/types/teammate';
 
-// Define the schema to match NewTeammate type exactly
 const formSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters').max(50),
+  first_name: z.string().min(2, 'First name must be at least 2 characters').max(50),
+  last_name: z.string().min(2, 'Last name must be at least 2 characters').max(50),
   email: z.string().email('Please enter a valid email address'),
-  role: z.enum(['admin', 'supervisor', 'agent', 'viewer'])
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+  confirm_password: z.string(),
+  role: z.enum(['WORKSPACE_AGENT', 'ORGANIZATION_ADMIN', 'WORKSPACE_ADMIN', 'SUPER_ADMIN'])
+}).refine((data) => data.password === data.confirm_password, {
+  message: "Passwords do not match",
+  path: ["confirm_password"],
 });
 
-// This ensures the type matches NewTeammate
 type FormData = z.infer<typeof formSchema>;
 
 const AddTeammateDialog = () => {
@@ -32,21 +35,26 @@ const AddTeammateDialog = () => {
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: '',
+      first_name: '',
+      last_name: '',
       email: '',
-      role: 'agent',
+      password: '',
+      confirm_password: '',
+      role: 'WORKSPACE_AGENT',
     },
   });
 
   const onSubmit = async (data: FormData) => {
     try {
-      // FormData type matches NewTeammate type exactly, so this is safe
       const newTeammate: NewTeammate = {
-        name: data.name,
+        first_name: data.first_name,
+        last_name: data.last_name,
         email: data.email,
-        role: data.role
+        password: data.password,
+        role: data.role,
+        confirm_password: data.confirm_password,
       };
-      await dispatch(addTeammate(newTeammate)).unwrap();
+      await dispatch(createTeammate(newTeammate)).unwrap();
       toast({
         title: "Success",
         description: "Teammate has been added successfully.",
@@ -81,12 +89,25 @@ const AddTeammateDialog = () => {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
-              name="name"
+              name="first_name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name</FormLabel>
+                  <FormLabel>First Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="John Doe" {...field} />
+                    <Input placeholder="John" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="last_name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Last Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Doe" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -107,6 +128,32 @@ const AddTeammateDialog = () => {
             />
             <FormField
               control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Password</FormLabel>
+                  <FormControl>
+                    <Input type="password" placeholder="Enter password" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="confirm_password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Confirm Password</FormLabel>
+                  <FormControl>
+                    <Input type="password" placeholder="Re-enter password" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
               name="role"
               render={({ field }) => (
                 <FormItem>
@@ -118,10 +165,8 @@ const AddTeammateDialog = () => {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="viewer">Viewer</SelectItem>
-                      <SelectItem value="agent">Agent</SelectItem>
-                      <SelectItem value="supervisor">Supervisor</SelectItem>
-                      <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="WORKSPACE_AGENT">Agent</SelectItem>
+                      <SelectItem value="WORKSPACE_ADMIN">Admin</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -139,4 +184,3 @@ const AddTeammateDialog = () => {
 };
 
 export default AddTeammateDialog;
-
