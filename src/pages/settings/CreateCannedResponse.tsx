@@ -14,7 +14,7 @@ import { OrganizationSection } from './cannedResponses/form/OrganizationSection'
 import { SharingSettingsSection } from './cannedResponses/form/SharingSettingsSection';
 import { formSchema, type FormValues } from './cannedResponses/formSchema';
 import { cannedResponseService } from '@/api/services/cannedResponse.service';
-import { CreateCannedResponse as CreateCannedResponseType } from '@/types/cannedResponse';
+import { CreateCannedResponse as CreateNewCannedResponse } from '@/types/cannedResponse';
 
 const CreateCannedResponse = () => {
   const navigate = useNavigate();
@@ -34,21 +34,32 @@ const CreateCannedResponse = () => {
 
   const onSubmit = async (data: FormValues) => {
     try {
-      console.log(data);
       // await dispatch(createCannedResponse(data as Omit<CannedResponse, 'id' | 'createdAt' | 'updatedAt'>)).unwrap();
 
-      // await cannedResponseService.createCannedResponse(data as CreateCannedResponse).then((response) => {
-      //   console.log(response);
-      // });
-      toast({
-        title: "Success",
-        description: "Canned response created successfully",
+      await cannedResponseService.createCannedResponse(data as CreateNewCannedResponse).then((response) => {
+        if (response.status == "success") {
+          toast({
+            title: "Success",
+            description: "Canned response created successfully",
+          });
+
+          navigate('/home/settings/canned-responses');
+        } else {
+          throw new Error(response.message ?? "Failed to create canned response");
+        }
+      }).catch((error) => {
+        console.error('Error creating canned response:', error.data);
+        toast({
+          title: "Error",
+          description: "Failed to create canned response: " + error?.message,
+          variant: "destructive",
+        });
       });
       // navigate('/home/settings/canned-responses');
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to create canned response",
+        description: "Failed to create canned response: " + error?.message,
         variant: "destructive",
       });
     }

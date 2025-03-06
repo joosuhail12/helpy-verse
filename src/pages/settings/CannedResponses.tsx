@@ -35,8 +35,24 @@ const CannedResponses = () => {
     return acc;
   }, {} as Record<string, CannedResponse[]>);
 
-  const handleResponseClick = (id: string) => {
-    window.location.href = `/home/settings/canned-responses/${id}`;
+  const handleResponseClick = async (id: string) => {
+    console.log("Response clicked:", id);
+
+    const deleteResponse = await cannedResponseService.deleteCannedResponse(id);
+
+    if (deleteResponse.status === 'success') {
+      toast({
+        title: "Response deleted",
+        description: "The response has been deleted.",
+      });
+      window.location.href = `/home/settings/canned-responses`;
+    } else {
+      toast({
+        title: "Error",
+        description: "Failed to delete the response",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleSelectResponse = (id: string) => {

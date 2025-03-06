@@ -22,4 +22,23 @@ export type CannedResponse = {
     category: 'greeting' | 'support' | 'technical' | 'closing';
     isShared: boolean;
     numberOfTimesUsed: number;
+    sharedTeams?: [{
+        teamId: string,
+        name: string,
+        typeOfSharing: "view" | "edit"
+    }]
+};
+
+export type UpdateCannedResponse = {
+    id: string;
+    name?: string;
+    message?: string;
+    shortcut?: string;
+    category?: 'greeting' | 'support' | 'technical' | 'closing';
+    isShared?: boolean;
+    sharedTeams?: [{
+        teamId: string,
+        name: string,
+        typeOfSharing: "view" | "edit"
+    }]
 }

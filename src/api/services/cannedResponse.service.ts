@@ -1,7 +1,7 @@
 // src/api/services/cannedResponse.ts
 
 import { HttpClient } from './HttpClient';
-import { CannedResponse, CreateCannedResponse } from '@/types/cannedResponse';
+import { CannedResponse, CreateCannedResponse, UpdateCannedResponse } from '@/types/cannedResponse';
 
 const API_URL = '/canned-response';
 
@@ -15,6 +15,23 @@ export interface GetAllCannedResponses {
     status: string;
     data: CannedResponse[];
 }
+
+export interface GetCannedResponseDetail {
+    message: string;
+    status: string;
+    data: CannedResponse;
+}
+
+export interface UpdateCannedResponseResponse {
+    message: string;
+    status: string;
+}
+
+export interface DeleteCannedResponse {
+    message: string;
+    status: string;
+}
+
 
 export const cannedResponseService = {
     async getCannedResponses(): Promise<GetAllCannedResponses> {
@@ -33,37 +50,40 @@ export const cannedResponseService = {
             return response.data;
         } catch (error) {
             console.error('Error creating canned response:', error);
-            throw new Error('Failed to create canned response');
+            return {
+                status: 'error',
+                message: error?.response?.data?.message ?? 'Failed to create canned response'
+            }
         }
     },
 
-    // async deleteDomain(id: string): Promise<DeleteDomainResponse> {
-    //     try {
-    //         const response = await HttpClient.apiClient.delete<DeleteDomainResponse>(`${API_URL}/${id}`);
-    //         return response.data;
-    //     } catch (error) {
-    //         console.error('Error deleting domain:', error);
-    //         throw new Error('Failed to delete domain');
-    //     }
-    // },
+    async getCannedResponseDetails(id: string): Promise<GetCannedResponseDetail> {
+        try {
+            const response = await HttpClient.apiClient.get<GetCannedResponseDetail>(`${API_URL}/${id}`);
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching canned responses:', error);
+            throw new Error('Failed to fetch canned responses');
+        }
+    },
 
-    // async getSingleDomainDetails(id: string): Promise<DomainDetailsResponse> {
-    //     try {
-    //         const response = await HttpClient.apiClient.get<DomainDetailsResponse>(`${API_URL}/${id}`);
-    //         return response.data;
-    //     } catch (error) {
-    //         console.error('Error fetching domain details:', error);
-    //         throw new Error('Failed to fetch domain details');
-    //     }
-    // },
+    async updateCannedResponse(body: UpdateCannedResponse): Promise<UpdateCannedResponseResponse> {
+        try {
+            const response = await HttpClient.apiClient.patch<UpdateCannedResponseResponse>(`${API_URL}/${body.id}`, body);
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching canned responses:', error);
+            throw new Error('Failed to fetch canned responses');
+        }
+    },
 
-    // async verifyDomain(id: string): Promise<DomainDetailsResponse> {
-    //     try {
-    //         const response = await HttpClient.apiClient.post<DomainDetailsResponse>(`${API_URL}/${id}`);
-    //         return response.data;
-    //     } catch (error) {
-    //         console.error('Error verifying domain:', error);
-    //         throw new Error('Failed to verify domain');
-    //     }
-    // }
+    async deleteCannedResponse(id: string): Promise<DeleteCannedResponse> {
+        try {
+            const response = await HttpClient.apiClient.delete<DeleteCannedResponse>(`${API_URL}/${id}`);
+            return response.data;
+        } catch (error) {
+            console.error('Error deleting domain:', error);
+            throw new Error('Failed to delete domain');
+        }
+    },
 };

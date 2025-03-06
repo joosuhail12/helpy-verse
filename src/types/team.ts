@@ -106,3 +106,10 @@ export interface TeamOfficeHoursSelectorProps {
   };
   onOfficeHoursChange: (officeHours: { [key in DayOfWeek]: TimeSlot[] }) => void;
 }
+
+
+export interface TeamNew { // TODO: Rename to Team
+  name: string;
+  description: string | null;
+  id: string;
+}
