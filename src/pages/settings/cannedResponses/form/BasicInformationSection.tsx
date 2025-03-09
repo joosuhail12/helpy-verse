@@ -15,12 +15,12 @@ export const BasicInformationSection = ({ form }: BasicInformationSectionProps) 
     <CollapsibleFormSection title="Basic Information">
       <FormField
         control={form.control}
-        name="title"
+        name="name"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Title</FormLabel>
+            <FormLabel>Name</FormLabel>
             <FormControl>
-              <Input {...field} placeholder="Enter a title" />
+              <Input {...field} placeholder="Enter a name" />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -29,10 +29,10 @@ export const BasicInformationSection = ({ form }: BasicInformationSectionProps) 
 
       <FormField
         control={form.control}
-        name="content"
+        name="message"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Content</FormLabel>
+            <FormLabel>Message</FormLabel>
             <FormControl>
               <CannedResponseEditor
                 content={field.value}

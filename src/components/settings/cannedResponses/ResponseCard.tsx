@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Star, Share2, Edit, Trash2 } from 'lucide-react';
-import type { CannedResponse } from '@/mock/cannedResponses';
+import { CannedResponse } from '@/types/cannedResponse';
 import { Link } from 'react-router-dom';
 
 interface ResponseCardProps {
@@ -16,15 +16,15 @@ interface ResponseCardProps {
   style?: React.CSSProperties;
 }
 
-export const ResponseCard = ({ 
-  response, 
-  onSelect, 
+export const ResponseCard = ({
+  response,
+  onSelect,
   onDelete,
   view = 'list',
   className = '',
   style
 }: ResponseCardProps) => {
-  const isFrequentlyUsed = response.usageStats?.totalUses > 100;
+  const isFrequentlyUsed = response.numberOfTimesUsed > 100;
 
   const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -35,12 +35,12 @@ export const ResponseCard = ({
   };
 
   return (
-    <Link 
+    <Link
       to={`/home/settings/canned-responses/${response.id}`}
       className={`block ${className}`}
       style={style}
     >
-      <div 
+      <div
         className={`
           p-4 rounded-lg border border-gray-200 hover:border-[#9b87f5] cursor-pointer 
           transition-all duration-200 hover:shadow-md
@@ -49,7 +49,7 @@ export const ResponseCard = ({
       >
         <div className={`flex-1 ${view === 'list' ? 'space-y-1' : 'space-y-2'}`}>
           <div className="flex items-center justify-between">
-            <h4 className="font-medium">{response.title}</h4>
+            <h4 className="font-medium">{response.name}</h4>
             <div className="flex gap-1">
               {isFrequentlyUsed && (
                 <Badge variant="secondary" className="bg-[#9b87f5]/10 text-[#9b87f5]">
@@ -66,18 +66,18 @@ export const ResponseCard = ({
             </div>
           </div>
           <p className={`text-sm text-gray-600 ${view === 'list' ? 'line-clamp-1' : 'line-clamp-2'}`}>
-            {response.content}
+            {response.message}
           </p>
           <div className="flex items-center justify-between">
             <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded">/{response.shortcut}</span>
-            {response.usageStats && (
+            {response?.numberOfTimesUsed >= 0 && (
               <span className="text-xs text-gray-500">
-                Used {response.usageStats.totalUses} times
+                Used {response.numberOfTimesUsed} times
               </span>
             )}
           </div>
         </div>
-        
+
         <div className={`flex items-center gap-2 ${view === 'list' ? 'justify-end' : 'justify-end mt-4'}`}>
           <Button
             variant="ghost"
