@@ -3,7 +3,7 @@ import React from 'react';
 import { Card } from '@/components/ui/card';
 import { CategoryHeader } from './CategoryHeader';
 import { ResponsesGrid } from './ResponsesGrid';
-import type { CannedResponse } from '@/mock/cannedResponses';
+import { CannedResponse } from '@/types/cannedResponse';
 
 export interface CategoryGroupProps {
   title: string;
@@ -16,9 +16,9 @@ export interface CategoryGroupProps {
   onResponseClick?: (id: string) => void;
 }
 
-export const CategoryGroup = ({ 
-  title, 
-  responses, 
+export const CategoryGroup = ({
+  title,
+  responses,
   onSelect,
   onResponseClick,
   view = 'list',
@@ -30,8 +30,8 @@ export const CategoryGroup = ({
   return (
     <Card>
       <CategoryHeader title={title} />
-      <ResponsesGrid 
-        responses={responses} 
+      <ResponsesGrid
+        responses={responses}
         onSelect={onSelect}
         onDelete={handleDelete}
         view={view}

@@ -4,17 +4,14 @@ import { validateShortcut } from '@/utils/shortcutUtils';
 
 export const shareSchema = z.object({
   teamId: z.string().optional(),
-  userId: z.string().optional(),
-  teamName: z.string().optional(),
-  userName: z.string().optional(),
-  permissions: z.enum(['view', 'edit']),
+  typeOfSharing: z.string(),
 });
 
 export const formSchema = z.object({
-  title: z.string()
+  name: z.string()
     .min(1, "Title is required")
     .max(50, "Title must be 50 characters or less"),
-  content: z.string()
+  message: z.string()
     .min(1, "Content is required"),
   shortcut: z.string()
     .min(1, "Shortcut is required")
@@ -26,8 +23,7 @@ export const formSchema = z.object({
   category: z.string()
     .min(1, "Category is required"),
   isShared: z.boolean(),
-  createdBy: z.string(),
-  sharedWith: z.array(shareSchema).optional(),
+  sharedTeams: z.array(shareSchema).optional(),
 });
 
 export type FormValues = z.infer<typeof formSchema>;

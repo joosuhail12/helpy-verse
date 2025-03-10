@@ -19,7 +19,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { mockCategories } from "@/mock/categories";
 
 interface CategoryComboboxProps {
   value: string;
@@ -29,6 +28,25 @@ interface CategoryComboboxProps {
 export function CategoryCombobox({ value, onChange }: CategoryComboboxProps) {
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [newCategory, setNewCategory] = React.useState("");
+
+  const categories = [
+    {
+      id: "1",
+      name: "greeting",
+    },
+    {
+      id: "2",
+      name: "support",
+    },
+    {
+      id: "3",
+      name: "closing",
+    },
+    {
+      id: "4",
+      name: "technical",
+    },
+  ]
 
   const handleCreateCategory = () => {
     if (newCategory.trim()) {
@@ -46,9 +64,9 @@ export function CategoryCombobox({ value, onChange }: CategoryComboboxProps) {
         </SelectTrigger>
         <SelectContent>
           <SelectGroup>
-            {mockCategories.map((category) => (
+            {categories.map((category) => (
               <SelectItem key={category.id} value={category.name}>
-                {category.name}
+                {category.name.charAt(0).toUpperCase() + category.name.slice(1)}
               </SelectItem>
             ))}
           </SelectGroup>
@@ -85,9 +103,13 @@ export function CategoryCombobox({ value, onChange }: CategoryComboboxProps) {
             >
               Cancel
             </Button>
-            <Button onClick={handleCreateCategory}>
+            {/* <Button onClick={handleCreateCategory}>
               Add Category
-            </Button>
+            </Button> 
+            // TODO: Uncomment this line after implementing handleCreateCategory function
+            */}
+
+
           </DialogFooter>
         </DialogContent>
       </Dialog>
