@@ -2,7 +2,7 @@ export interface Team {
   id: string;
   name: string;
   icon?: string;
-  members: Array<{
+  teamMembers: Array<{
     id: string;
     name: string;
     email: string;
@@ -11,14 +11,10 @@ export interface Team {
     chat?: string;
     email: string[];
   };
-  routing: {
-    type: 'manual' | 'round-robin' | 'load-balanced';
-    limits?: {
-      maxTickets?: number;
-      maxOpenTickets?: number;
-      maxActiveChats?: number;
-    };
-  };
+  routingStrategy: 'manual' | 'round-robin' | 'load-balanced';
+  maxTickets?: number;
+  maxOpenTickets?: number;
+  maxActiveChats?: number;
   officeHours: {
     [key in DayOfWeek]: TimeSlot[];
   };
@@ -38,6 +34,7 @@ export interface TeamsState {
   teams: Team[];
   loading: boolean;
   error: string | null;
+  teamDetails: Team | null
 }
 
 export interface TeamCreatePayload {

@@ -1,4 +1,3 @@
-
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
@@ -8,7 +7,7 @@ import TeamsEmptyState from '@/components/teams/TeamsEmptyState';
 import TeamsList from '@/components/teams/TeamsList';
 import { Button } from "@/components/ui/button";
 import { Plus, Users } from "lucide-react";
-import { setLoading, setError, setTeams } from '@/store/slices/teams/teamsSlice';
+import { fetchTeams } from '@/store/slices/teams/teamsSlice';
 import { mockTeams } from '@/store/slices/teams/mockData';
 
 const Teams = () => {
@@ -17,22 +16,16 @@ const Teams = () => {
   const { teams, loading, error } = useAppSelector((state) => state.teams);
 
   useEffect(() => {
-    const fetchTeams = async () => {
+    const loadTeams = async () => {
       try {
-        dispatch(setLoading(true));
-        const response = await fetch('/api/teams');
-        if (!response.ok) {
-          throw new Error('API request failed');
-        }
-        const data = await response.json();
-        dispatch(setTeams(data));
+        console.log('Fetching teams');
+        await dispatch(fetchTeams()).unwrap();
       } catch (err) {
-        console.log('Using mock data as fallback:', mockTeams);
-        dispatch(setTeams(mockTeams));
+        console.log('Using mock data as fallback:', err);
+       
       }
     };
-
-    fetchTeams();
+    loadTeams();
   }, [dispatch]);
 
   if (error) {

@@ -27,7 +27,7 @@ const TeamsList = ({ teams }: TeamsListProps) => {
                   <Users className="h-6 w-6 text-gray-400" />
                   <div>
                     <h3 className="font-medium text-gray-900">{team.name}</h3>
-                    <p className="text-sm text-gray-500">{team.members.length} members</p>
+                    <p className="text-sm text-gray-500">{team?.members?.length} members</p>
                   </div>
                 </div>
                 <ChevronRight className="h-5 w-5 text-gray-400" />
