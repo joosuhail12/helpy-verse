@@ -10,7 +10,7 @@ import {
 import { Import, FileDown } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { exportFieldsToCSV, exportFieldsToJSON, parseImportedCSV, parseImportedJSON } from './utils/importExportUtils';
-import type { CustomField } from '@/types/customField';
+import type { CustomField } from '@/types/customData';
 
 interface ImportExportFieldsProps {
   fields: CustomField[];
@@ -28,7 +28,7 @@ const ImportExportFields = ({ fields, table, onImport }: ImportExportFieldsProps
 
     try {
       let importedFields: CustomField[];
-      
+
       if (file.name.endsWith('.csv')) {
         importedFields = await parseImportedCSV(file);
       } else if (file.name.endsWith('.json')) {
@@ -65,16 +65,21 @@ const ImportExportFields = ({ fields, table, onImport }: ImportExportFieldsProps
         accept=".csv,.json"
         className="hidden"
       />
-      
-      <Button
+      {/*
+TODO: Implement ImportExportFields component
+
+*/}
+
+
+      {/* <Button
         variant="outline"
         onClick={() => fileInputRef.current?.click()}
       >
         <Import className="w-4 h-4 mr-2" />
         Import Fields
-      </Button>
+      </Button> */}
 
-      <DropdownMenu>
+      {/* <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="outline">
             <FileDown className="w-4 h-4 mr-2" />
@@ -89,7 +94,7 @@ const ImportExportFields = ({ fields, table, onImport }: ImportExportFieldsProps
             Export as JSON
           </DropdownMenuItem>
         </DropdownMenuContent>
-      </DropdownMenu>
+      </DropdownMenu> */}
     </div>
   );
 };

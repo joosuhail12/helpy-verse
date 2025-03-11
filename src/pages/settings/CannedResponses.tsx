@@ -9,6 +9,7 @@ import { RecentlyUsedSection } from '@/components/settings/cannedResponses/Recen
 import { ViewToggle } from '@/components/settings/cannedResponses/ViewToggle';
 import { cannedResponseService } from '@/api/services/cannedResponse.service';
 import { Loader2 } from 'lucide-react';
+import { useNavigate } from 'react-router';
 
 const CannedResponses = () => {
   const [responses, setResponses] = useState<CannedResponse[]>([]);
@@ -17,6 +18,7 @@ const CannedResponses = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   // Filter responses based on search query
   const filteredResponses = responses.filter(response =>
@@ -36,8 +38,6 @@ const CannedResponses = () => {
   }, {} as Record<string, CannedResponse[]>);
 
   const handleResponseClick = async (id: string) => {
-    console.log("Response clicked:", id);
-
     const deleteResponse = await cannedResponseService.deleteCannedResponse(id);
 
     if (deleteResponse.status === 'success') {
@@ -78,7 +78,7 @@ const CannedResponses = () => {
   };
 
   const handleResponseSelect = (response: CannedResponse) => {
-    handleResponseClick(response.id);
+    navigate(`/home/settings/canned-responses/${response.id}`);
   };
 
   // Keyboard shortcuts

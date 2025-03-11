@@ -1,18 +1,17 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { mockCustomFields } from '@/mock/customFields';
-import type { CustomFields } from '@/types/customField';
+import { CustomField } from '@/types/customData';
+import { customDataService } from '@/api/services/customData.service';
 
-// This would normally fetch from your Node.js backend
-const fetchCustomFields = async (): Promise<CustomFields> => {
-  // Simulating API call
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  return mockCustomFields;
+const fetchCustomFields = async (table: string): Promise<CustomField[]> => {
+  const response = await customDataService.getAllCustomData(table);
+
+  return response;
 };
 
-export const useCustomFields = (table: 'tickets' | 'contacts' | 'companies') => {
+export const useCustomFields = (table: 'ticket' | 'customer' | 'company') => {
   return useQuery({
     queryKey: ['customFields', table],
-    queryFn: fetchCustomFields
+    queryFn: () => fetchCustomFields(table),
   });
 };
