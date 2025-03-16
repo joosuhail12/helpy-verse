@@ -1,36 +1,39 @@
-
-import { useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import TeamAvailability from '@/components/teams/detail/TeamAvailability';
+import TeamChannels from '@/components/teams/detail/TeamChannels';
+import TeamMembers from '@/components/teams/detail/TeamMembers';
+import TeamRouting from '@/components/teams/detail/TeamRouting';
+import TeamsLoadingState from '@/components/teams/TeamsLoadingState';
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
-import { Card } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { Button } from "@/components/ui/button";
-import { Users, ArrowLeft, Building2 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import TeamMembers from '@/components/teams/detail/TeamMembers';
-import TeamChannels from '@/components/teams/detail/TeamChannels';
-import TeamRouting from '@/components/teams/detail/TeamRouting';
-import TeamAvailability from '@/components/teams/detail/TeamAvailability';
-import TeamsLoadingState from '@/components/teams/TeamsLoadingState';
+import { fetchTeamById } from '@/store/slices/teams/teamsSlice';
+import { ArrowLeft, Building2 } from "lucide-react";
+import { useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 
 const TeamDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { toast } = useToast();
-  const { teams, loading, error } = useAppSelector((state) => state.teams);
-  const team = teams.find(t => t.id === id);
+  const { loading, error, teamDetails } = useAppSelector((state) => state.teams);
+  const team = teamDetails
+
+  useEffect(() => {
+    if (id) {
+      dispatch(fetchTeamById(id));
+    }
+  }, [dispatch, id]);
 
   if (loading) {
     return <TeamsLoadingState />;
   }
 
-  if (!team) {
+  if (!team || error) {
     return (
       <div className="p-6">
         <div className="bg-red-50 text-red-500 p-4 rounded-lg">
-          Team not found. The team might have been deleted or you may not have access to it.
+          {error || "Team not found. The team might have been deleted or you may not have access to it."}
         </div>
       </div>
     );
@@ -58,7 +61,7 @@ const TeamDetail = () => {
       <div className="grid gap-8">
         <Card className="p-6">
           <h2 className="text-lg font-semibold mb-6">Team Members</h2>
-          <TeamMembers members={team.members} />
+          <TeamMembers teamMembers={team.teamMembers} />
         </Card>
 
         <Card className="p-6">
@@ -68,7 +71,7 @@ const TeamDetail = () => {
 
         <Card className="p-6">
           <h2 className="text-lg font-semibold mb-6">Ticket Routing</h2>
-          <TeamRouting routing={team.routing} />
+          <TeamRouting routingStrategy={team.routingStrategy} maxTotalTickets={team.maxTotalTickets} maxOpenTickets={team.maxOpenTickets} maxActiveChats={team.maxActiveChats} />
         </Card>
 
         <Card className="p-6">

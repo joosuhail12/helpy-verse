@@ -10,8 +10,8 @@ import TeamBasicInfo from './teams/components/TeamBasicInfo';
 import TeamCommunicationSection from './teams/components/TeamCommunicationSection';
 import TeamRoutingSection from './teams/components/TeamRoutingSection';
 import TeamAvailabilitySection from './teams/components/TeamAvailabilitySection';
-import { createTeam } from './teams/utils/createTeamUtils';
 import type { DayOfWeek, TimeSlot } from '@/types/team';
+import { createTeam } from '@/store/slices/teams/teamsSlice';
 
 const CreateTeam = () => {
   const navigate = useNavigate();
@@ -23,10 +23,10 @@ const CreateTeam = () => {
   const [selectedIcon, setSelectedIcon] = useState<string>('');
   const [selectedTeammates, setSelectedTeammates] = useState<string[]>([]);
   const [selectedChatChannel, setSelectedChatChannel] = useState<string>();
-  const [selectedEmailChannels, setSelectedEmailChannels] = useState<string[]>([]);
+  const [selectedEmailChannels, setSelectedEmailChannels] = useState<string[]>();
   const [routingType, setRoutingType] = useState<'manual' | 'round-robin' | 'load-balanced'>('manual');
   const [routingLimits, setRoutingLimits] = useState<{
-    maxTickets?: number;
+    maxTotalTickets?: number;
     maxOpenTickets?: number;
     maxActiveChats?: number;
   }>({});
@@ -66,9 +66,10 @@ const CreateTeam = () => {
       });
       return;
     }
-
+    console.log(selectedEmailChannels, 'selectedEmailChannels', selectedChatChannel, 'selectedChatChannel');
     try {
-      const success = await createTeam({
+      // Dispatch Redux action instead of calling createTeamUtils
+      const resultAction = await dispatch(createTeam({
         name: teamName,
         icon: selectedIcon,
         members: selectedTeammates,
@@ -76,22 +77,27 @@ const CreateTeam = () => {
           chat: selectedChatChannel,
           email: selectedEmailChannels,
         },
-        routing: {
-          type: routingType,
-          ...(routingType === 'load-balanced' && {
-            limits: routingLimits
-          })
-        },
+        routingStrategy: routingType,
+        maxTotalTickets: routingLimits.maxTotalTickets,
+        maxActiveChats: routingLimits.maxActiveChats,
+        maxOpenTickets: routingLimits.maxOpenTickets,
         officeHours,
         holidays: selectedHolidays,
-      });
+        id: '',
+        teamMembers: [],
+        createdAt: '',
+        updatedAt: ''
+      }));
 
-      if (success) {
+      // Check if the team was created successfully
+      if (createTeam.fulfilled.match(resultAction)) {
         toast({
           title: "Success",
           description: "Team created successfully",
         });
         navigate('/home/settings/teams');
+      } else {
+        throw new Error("Failed to create team");
       }
     } catch (error) {
       toast({

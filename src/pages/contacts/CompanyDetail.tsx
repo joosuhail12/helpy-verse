@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
@@ -24,6 +23,7 @@ import { AssociatedContacts } from '@/components/companies/detail/AssociatedCont
 import { CompanyCustomFields } from '@/components/companies/detail/CompanyCustomFields';
 import { CompanyCustomObjectData } from '@/components/companies/detail/CompanyCustomObjectData';
 import { CompanyTickets } from '@/components/companies/detail/CompanyTickets';
+import { CompanyTags } from '@/components/companies/detail/CompanyTags';
 
 const CompanyDetail = () => {
   const { id } = useParams();
@@ -92,6 +92,7 @@ const CompanyDetail = () => {
           <CompanyMainInfo company={company} />
           <CompanyCustomFields company={company} />
           <CompanyCustomObjectData company={company} />
+          <CompanyTags company={{ id: company.id, tags: company.tags }} />
         </div>
 
         <div className="lg:col-span-8">

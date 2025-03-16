@@ -27,6 +27,7 @@ export const teammatesService = {
     async fetchTeammates(): Promise<TeammatesResponse> {
         try {
             const response = await HttpClient.apiClient.get<TeammatesResponse>(API_URL);
+            console.log('response', response.data);
             return response.data;
         } catch (error) {
             console.error('Error fetching teammates:', error);
