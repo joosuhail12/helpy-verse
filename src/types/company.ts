@@ -34,5 +34,7 @@ export interface Company {
   timezone?: string;
   createdAt: string;
   updatedAt: string;
+  tags?: { id: string; name: string }[]; // Explicitly defined
+
 }
 

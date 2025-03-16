@@ -36,7 +36,7 @@ export const ContactDetailSidebar = ({ contact }: ContactDetailSidebarProps) => 
         <QuickNoteInput contactId={contact.id} />
       </Card>
 
-      {contact?.tags?.length > 0 && (
+      {/* {contact?.tags?.length > 0 && (
         <Card className="p-4 space-y-3 bg-white/60 backdrop-blur-sm border-purple-100/50 shadow-lg shadow-purple-500/5">
           <h3 className="font-medium text-sm text-purple-900">Tags</h3>
           <div className="flex flex-wrap gap-2">
@@ -51,7 +51,7 @@ export const ContactDetailSidebar = ({ contact }: ContactDetailSidebarProps) => 
             ))}
           </div>
         </Card>
-      )}
+      )} */}
     </div>
   );
 };

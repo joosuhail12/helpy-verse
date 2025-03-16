@@ -71,7 +71,7 @@ const TeamDetail = () => {
 
         <Card className="p-6">
           <h2 className="text-lg font-semibold mb-6">Ticket Routing</h2>
-          <TeamRouting routingStrategy={team.routingStrategy} maxTickets={team.maxTickets} maxOpenTickets={team.maxOpenTickets} maxActiveChats={team.maxActiveChats} />
+          <TeamRouting routingStrategy={team.routingStrategy} maxTotalTickets={team.maxTotalTickets} maxOpenTickets={team.maxOpenTickets} maxActiveChats={team.maxActiveChats} />
         </Card>
 
         <Card className="p-6">
