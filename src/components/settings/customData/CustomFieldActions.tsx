@@ -8,14 +8,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Pencil, Trash2, TestTube } from "lucide-react";
 import { useState } from "react";
-import { CustomField } from "@/types/customField";
+import { CustomField } from "@/types/customData";
 import DeleteCustomFieldDialog from "./DeleteCustomFieldDialog";
 import EditCustomFieldDialog from "./EditCustomFieldDialog";
 import TestFieldDialog from "./TestFieldDialog";
 
 interface CustomFieldActionsProps {
   field: CustomField;
-  table: 'tickets' | 'contacts' | 'companies';
+  table: 'ticket' | 'customer' | 'company';
   existingFields: CustomField[];
 }
 
@@ -33,10 +33,10 @@ const CustomFieldActions = ({ field, table, existingFields }: CustomFieldActions
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={() => setIsTestOpen(true)}>
+          {/* <DropdownMenuItem onClick={() => setIsTestOpen(true)}>
             <TestTube className="mr-2 h-4 w-4" />
             Test Field
-          </DropdownMenuItem>
+          </DropdownMenuItem> */}
           <DropdownMenuItem onClick={() => setIsEditOpen(true)}>
             <Pencil className="mr-2 h-4 w-4" />
             Edit
@@ -57,7 +57,7 @@ const CustomFieldActions = ({ field, table, existingFields }: CustomFieldActions
         field={field}
         table={table}
       />
-      
+
       <EditCustomFieldDialog
         isOpen={isEditOpen}
         onClose={() => setIsEditOpen(false)}
