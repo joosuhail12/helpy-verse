@@ -2,7 +2,7 @@
 import { TableBody, TableCell } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Star } from "lucide-react";
-import { CustomField } from "@/types/customField";
+import { CustomField } from "@/types/customData";
 import {
   Tooltip,
   TooltipContent,
@@ -22,7 +22,7 @@ interface TableBodyProps {
   selectedFields: CustomField[];
   duplicateFields: string[];
   searchQuery: string;
-  table: 'tickets' | 'contacts' | 'companies';
+  table: 'ticket' | 'customer' | 'company';
   fields: CustomField[];
   onSelectField: (field: CustomField, checked: boolean) => void;
   onHistoryClick: (field: CustomField) => void;
@@ -72,7 +72,7 @@ const TableBodyComponent = ({
             <TableCell className="font-medium">
               <div className="flex items-center gap-2">
                 {field.name}
-                {field.required && (
+                {field.isRequired && (
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger>
@@ -91,11 +91,11 @@ const TableBodyComponent = ({
             </TableCell>
             <TableCell>
               <div className="flex items-center gap-2">
-                {getFieldTypeIcon(field.type)}
-                <span className="text-sm text-gray-600">{field.type}</span>
+                {getFieldTypeIcon(field.fieldType)}
+                <span className="text-sm text-gray-600">{field.fieldType}</span>
               </div>
             </TableCell>
-            <TableCell>{field.required ? "Yes" : "No"}</TableCell>
+            <TableCell>{field.isRequired ? "Yes" : "No"}</TableCell>
             <TableCell>
               {field.description && (
                 <TooltipProvider>

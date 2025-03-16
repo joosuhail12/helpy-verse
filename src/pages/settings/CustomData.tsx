@@ -1,19 +1,30 @@
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import AddCustomFieldDialog from '@/components/settings/customData/AddCustomFieldDialog';
 import { useCustomFields } from '@/hooks/useCustomFields';
 import { useCustomFieldShortcuts } from '@/hooks/useCustomFieldShortcuts';
 import { useCustomFieldImport } from '@/hooks/useCustomFieldImport';
 import CustomDataHeader from '@/components/settings/customData/CustomDataHeader';
 import CustomDataTabs from '@/components/settings/customData/CustomDataTabs';
+import { CustomField } from '@/types/customData';
 
 const CustomData = () => {
-  const [selectedTable, setSelectedTable] = useState<'tickets' | 'contacts' | 'companies'>('tickets');
+  const [selectedTable, setSelectedTable] = useState<'ticket' | 'customer' | 'company'>('ticket');
   const [isAddFieldOpen, setIsAddFieldOpen] = useState(false);
   const { data: customFields, isLoading, error } = useCustomFields(selectedTable);
   const { handleImport } = useCustomFieldImport();
+  const [currentFields, setCurrentFields] = useState<CustomField[]>([]);
 
-  const currentFields = customFields?.[selectedTable] || [];
+  useEffect(() => {
+    const fields = customFields?.reduce((acc: CustomField[], field: CustomField) => {
+      if (field.entityType === selectedTable) {
+        acc.push(field);
+      }
+      return acc;
+    }, []) || [];
+
+    setCurrentFields(fields);
+  }, [selectedTable, customFields]);
 
   // Setup keyboard shortcuts
   useCustomFieldShortcuts({
@@ -22,7 +33,7 @@ const CustomData = () => {
   });
 
   const handleImportWrapper = async (importedFields: any[]) => {
-    await handleImport(importedFields, selectedTable);
+    // await handleImport(importedFields, selectedTable);
   };
 
   return (
@@ -42,8 +53,8 @@ const CustomData = () => {
         error={error}
       />
 
-      <AddCustomFieldDialog 
-        isOpen={isAddFieldOpen} 
+      <AddCustomFieldDialog
+        isOpen={isAddFieldOpen}
         onClose={() => setIsAddFieldOpen(false)}
         table={selectedTable}
         existingFields={currentFields}

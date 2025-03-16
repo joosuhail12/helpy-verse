@@ -14,7 +14,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { useState, useEffect } from "react";
-import type { CustomField } from "@/types/customField";
+import type { CustomField } from "@/types/customData";
 import { useCustomDataMutations } from "@/hooks/useCustomDataMutations";
 import ValidationRulesSection from "./ValidationRulesSection";
 import DependenciesSection from "./DependenciesSection";
@@ -23,7 +23,7 @@ interface EditCustomFieldDialogProps {
   isOpen: boolean;
   onClose: () => void;
   field: CustomField;
-  table: 'tickets' | 'contacts' | 'companies';
+  table: 'ticket' | 'customer' | 'company';
   existingFields: CustomField[];
 }
 
@@ -35,44 +35,44 @@ const EditCustomFieldDialog = ({
   existingFields,
 }: EditCustomFieldDialogProps) => {
   const [name, setName] = useState(field.name);
-  const [required, setRequired] = useState(field.required);
+  const [required, setRequired] = useState(field.isRequired);
   const [description, setDescription] = useState(field.description);
-  const [validationRules, setValidationRules] = useState(field.validationRules || []);
-  const [dependencies, setDependencies] = useState(field.dependencies || []);
+  // const [validationRules, setValidationRules] = useState(field.validationRules || []);
+  // const [dependencies, setDependencies] = useState(field.dependencies || []);
   const { toast } = useToast();
   const { updateCustomField, isLoading } = useCustomDataMutations();
 
   useEffect(() => {
     if (isOpen) {
       setName(field.name);
-      setRequired(field.required);
+      setRequired(field.isRequired);
       setDescription(field.description);
-      setValidationRules(field.validationRules || []);
-      setDependencies(field.dependencies || []);
+      // setValidationRules(field.validationRules || []);
+      // setDependencies(field.dependencies || []);
     }
   }, [isOpen, field]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       await updateCustomField({
         table,
         fieldId: field.id,
         updates: {
           name,
-          required,
+          isRequired: required,
           description,
-          validationRules,
-          dependencies,
+          // validationRules,
+          // dependencies,
         }
       });
-      
+
       toast({
         title: "Custom field updated",
         description: "The custom field has been updated successfully.",
       });
-      
+
       onClose();
     } catch (error) {
       toast({
@@ -122,7 +122,7 @@ const EditCustomFieldDialog = ({
               />
             </div>
 
-            <ValidationRulesSection
+            {/* <ValidationRulesSection
               rules={validationRules}
               onRulesChange={setValidationRules}
             />
@@ -131,7 +131,7 @@ const EditCustomFieldDialog = ({
               dependencies={dependencies}
               onDependenciesChange={setDependencies}
               availableFields={existingFields.filter(f => f.id !== field.id)}
-            />
+            /> */}
           </div>
           <DialogFooter>
             <Button variant="outline" type="button" onClick={onClose}>
