@@ -32,6 +32,33 @@ export interface ContentVersion {
 
 export type ContentStatus = 'completed' | 'processing' | 'queued' | 'failed' | 'active' | 'inactive' | 'draft';
 
+export type SortField = 'title' | 'createdAt' | 'updatedAt' | 'lastUpdated' | 'messageCount' | 'category';
+
+export interface ContentSearch {
+  query: string;
+  suggestions: string[];
+  history: string[];
+}
+
+export interface ContentState {
+  items: Content[];
+  loading: boolean;
+  error: string | null;
+  selectedContent: Content | null;
+  selectedContentId: string | null;
+  filters: {
+    status: ContentStatus | null;
+    category: string | null;
+    chatbot: string | null;
+  };
+  sort: {
+    field: SortField;
+    direction: 'asc' | 'desc';
+  };
+  search: ContentSearch;
+  selectedIds: string[];
+}
+
 export interface Content {
   id: string;
   title: string;
@@ -43,6 +70,7 @@ export interface Content {
   tags: ContentTag[];
   chatbots: { id: string; name: string }[];
   createdAt: string;
+  updatedAt: string;
   lastUpdated: string;
   lastEditedBy?: {
     id: string;

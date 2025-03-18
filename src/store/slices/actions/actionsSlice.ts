@@ -1,6 +1,7 @@
 
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../store';
+import { CustomAction, ActionParameter } from '@/types/action';
 
 export type Action = {
   id: string;
@@ -8,16 +9,21 @@ export type Action = {
   description: string;
   category: string;
   isActive: boolean;
-  parameters: any[];
+  toolName: string;
+  endpoint: string;
+  method: string;
+  parameters: ActionParameter[];
+  headers: Record<string, string>;
   createdAt: string;
   updatedAt: string;
+  connectedChatbots?: Array<{ id: string; name: string }>;
 };
 
 export type ActionsState = {
   actions: Action[];
   loading: boolean;
   error: string | null;
-  items: Action[]; // Add items field to match what components expect
+  items: Action[]; // Used by some components
 };
 
 const initialState: ActionsState = {

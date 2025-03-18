@@ -1,3 +1,4 @@
+
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
@@ -12,7 +13,7 @@ import { Form } from '@/components/ui/form';
 import { useToast } from '@/components/ui/use-toast';
 import { LoadingState } from '@/components/automation/create-action/LoadingState';
 import { createActionSchema, type FormValues } from './create-action/schema';
-import type { CustomAction, ActionMethod } from '@/types/action';
+import type { ActionMethod } from '@/types/action';
 
 const BasicInformation = lazy(() => import('./create-action/BasicInformation').then(module => ({ 
   default: module.BasicInformation 
@@ -67,8 +68,7 @@ export default function CreateAction() {
         required: true,
       }));
 
-      const newAction: CustomAction = {
-        id: uuidv4(),
+      dispatch(addAction({
         name: values.name,
         toolName: values.toolName,
         description: values.description,
@@ -76,20 +76,13 @@ export default function CreateAction() {
         method: values.method as ActionMethod,
         parameters,
         headers,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        createdBy: {
-          id: '1',
-          name: 'Current User',
-        },
-        enabled: true,
+        category: 'Custom', // Adding required category
+        isActive: true, // Adding required isActive
         connectedChatbots: values.connectedChatbots.map(id => ({
           id,
           name: 'Chatbot ' + id // You might want to fetch actual names from your chatbot store
         }))
-      };
-
-      dispatch(addAction(newAction));
+      }));
       
       toast({
         title: "Success",

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import {
   Table,
@@ -10,7 +11,8 @@ import {
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { useAppDispatch, useAppSelector } from '@/hooks/useAppSelector';
+import { useAppSelector } from '@/hooks/useAppSelector';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { fetchCustomers, updateContactCompany } from '@/store/slices/contacts/contactsSlice';
 import { Contact } from '@/types/contact';
 import { MoreVertical, Plus } from 'lucide-react';
@@ -57,17 +59,20 @@ const AssociatedContacts: React.FC<AssociatedContactsProps> = ({ companyId }) =>
     setSearchQuery(e.target.value);
   };
 
-  const filteredContacts = availableContacts.filter(contact =>
-    contact.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    contact.lastName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    contact.email?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredContacts = availableContacts.filter(contact => {
+    const firstName = typeof contact.firstName === 'string' ? contact.firstName.toLowerCase() : '';
+    const lastName = typeof contact.lastName === 'string' ? contact.lastName.toLowerCase() : '';
+    const email = typeof contact.email === 'string' ? contact.email.toLowerCase() : '';
+    const query = searchQuery.toLowerCase();
+    
+    return firstName.includes(query) || lastName.includes(query) || email.includes(query);
+  });
 
   const handleAssociateContact = (contactId: string) => {
     dispatch(
       updateContactCompany({
         id: contactId,
-        data: { companyId: companyId }  // Use companyId instead of company object
+        data: { companyId: companyId }
       })
     );
     
@@ -102,8 +107,10 @@ const AssociatedContacts: React.FC<AssociatedContactsProps> = ({ companyId }) =>
         <TableBody>
           {associatedContacts.map(contact => (
             <TableRow key={contact.id}>
-              <TableCell>{contact.firstName} {contact.lastName}</TableCell>
-              <TableCell>{contact.email}</TableCell>
+              <TableCell>
+                {typeof contact.firstName === 'string' ? contact.firstName : ''} {typeof contact.lastName === 'string' ? contact.lastName : ''}
+              </TableCell>
+              <TableCell>{typeof contact.email === 'string' ? contact.email : ''}</TableCell>
               <TableCell className="text-right">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -154,8 +161,10 @@ const AssociatedContacts: React.FC<AssociatedContactsProps> = ({ companyId }) =>
             <TableBody>
               {filteredContacts.map(contact => (
                 <TableRow key={contact.id}>
-                  <TableCell>{contact.firstName} {contact.lastName}</TableCell>
-                  <TableCell>{contact.email}</TableCell>
+                  <TableCell>
+                    {typeof contact.firstName === 'string' ? contact.firstName : ''} {typeof contact.lastName === 'string' ? contact.lastName : ''}
+                  </TableCell>
+                  <TableCell>{typeof contact.email === 'string' ? contact.email : ''}</TableCell>
                   <TableCell className="text-right">
                     <Button onClick={() => handleAssociateContact(contact.id)}>Associate</Button>
                   </TableCell>

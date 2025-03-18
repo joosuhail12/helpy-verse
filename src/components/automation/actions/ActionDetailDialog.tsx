@@ -194,7 +194,17 @@ export const ActionDetailDialog = ({ action, open, onOpenChange }: ActionDetailD
                 onUpdate={(updatedAction) => {
                   dispatch(updateAction({
                     id: updatedAction.id, 
-                    updates: updatedAction
+                    updates: {
+                      name: updatedAction.name,
+                      description: updatedAction.description,
+                      toolName: updatedAction.toolName,
+                      endpoint: updatedAction.endpoint,
+                      method: updatedAction.method,
+                      parameters: updatedAction.parameters,
+                      headers: updatedAction.headers,
+                      connectedChatbots: updatedAction.connectedChatbots,
+                      enabled: updatedAction.enabled
+                    }
                   }));
                   setIsDirty(true);
                 }}
