@@ -25,31 +25,52 @@ export const loginUser = createAsyncThunk(
         recaptchaId: "",
       });
 
-      console.log("Login successful, received token");
+      console.log("Login response:", response.data);
       
       const loginData = response.data?.data;
       if (loginData) {
-        const email = loginData?.username || "";
+        const email = loginData?.username || credentials.email;
         const encryptedEmail = encryptBase64(email);
         setCookie("agent_email", encryptedEmail);
 
         // Set the token in the cookie and Axios headers
-        handleSetToken(loginData?.accessToken?.token || "");
+        const token = loginData?.accessToken?.token || "";
+        if (token) {
+          console.log("Setting token from login response");
+          handleSetToken(token);
+        } else {
+          console.error("No token received in login response");
+        }
 
-        // Set workspace ID
-        setWorkspaceId(get(response.data, "data.defaultWorkspaceId", ""));
+        // Set workspace ID if available
+        const workspaceId = get(response.data, "data.defaultWorkspaceId", "");
+        if (workspaceId) {
+          setWorkspaceId(workspaceId);
+        }
 
         // Configure Axios with the new token
         HttpClient.setAxiosDefaultConfig();
+      } else {
+        console.error("Login response missing data structure:", response.data);
+        return rejectWithValue("Invalid server response format");
       }
       
       return response.data;
     } catch (error: any) {
-      console.error("Login error:", error.message);
+      console.error("Login error:", error);
+      
       // Provide more specific error messages based on the error type
       if (error.code === 'ERR_NETWORK') {
         return rejectWithValue("Cannot connect to the server. Please check your network connection or try again later.");
       }
+      
+      // Log detailed error information for debugging
+      console.error("Error details:", {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message
+      });
+      
       return rejectWithValue(error.response?.data?.message || "Login failed. Please check your credentials and try again.");
     }
   }

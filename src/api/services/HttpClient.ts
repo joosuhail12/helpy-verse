@@ -1,5 +1,5 @@
 
-import { getWorkspaceId, handleLogout, getCookie } from "@/utils/helpers/helpers";
+import { getWorkspaceId, handleLogout, getCookie, getAuthToken } from "@/utils/helpers/helpers";
 import axios, { AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from "axios";
 import { get } from "lodash";
 
@@ -23,7 +23,7 @@ const apiClient = axios.create({
 
 // ✅ Set up default axios configuration
 export const setAxiosDefaultConfig = (): void => {
-    const token = getCookie("customerToken");
+    const token = getAuthToken();
     console.log("Setting Axios default config with token:", !!token);
 
     // Set the Authorization header if token exists
@@ -39,7 +39,9 @@ export const setAxiosDefaultConfig = (): void => {
 
 // ✅ Request Interceptor - Adds Token & Workspace ID to all requests
 const requestInterceptor = (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
-    const token = getCookie("customerToken");
+    // Always get fresh token for each request
+    const token = getAuthToken();
+    
     if (token) {
         config.headers.set("Authorization", `Bearer ${token}`);
     }
@@ -73,7 +75,7 @@ const responseErrorInterceptor = (error: any) => {
     const errorCode = get(error, "response.data.code", "");
     const requestUrl = error.config?.url;
 
-    console.error(`API Error: ${status} ${errorMessage} (${errorCode}) on ${requestUrl}`);
+    console.error(`API Error: ${status || 'network'} ${errorMessage} (${errorCode}) on ${requestUrl}`);
 
     // Handle authentication errors
     if (status === 401 || errorCode === "UNAUTHORIZED") {
@@ -105,6 +107,9 @@ const llmService = axios.create({
 // Add the same interceptors to the LLM service
 llmService.interceptors.request.use(requestInterceptor, requestErrorInterceptor);
 llmService.interceptors.response.use(responseInterceptor, responseErrorInterceptor);
+
+// Initialize the default config
+setAxiosDefaultConfig();
 
 // ✅ API Call Wrapper
 export const HttpClient = {

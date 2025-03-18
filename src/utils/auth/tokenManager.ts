@@ -3,7 +3,7 @@
  * Token and authentication management utility functions
  */
 import { HttpClient } from "@/api/services/HttpClient";
-import { getCookie, setCookie, deleteCookie } from "../cookies/cookieManager";
+import { getCookie, setCookie, deleteCookie, cookieExists } from "../cookies/cookieManager";
 
 // 🟢 Logout User
 export const handleLogout = (): void => {
@@ -45,24 +45,43 @@ export const handleSetToken = (token: string): boolean => {
         
         // Configure axios with the new token - both in the default config and the specific client
         HttpClient.apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-        HttpClient.setAxiosDefaultConfig();
         
-        console.log("Token set successfully:", !!token);
-        console.log("Authorization header set for future requests");
-        return true;
+        console.log("Token set successfully:", token.substring(0, 10) + "...");
+        
+        // Verify that the token was set correctly
+        const tokenInCookie = getCookie("customerToken");
+        if (!tokenInCookie) {
+            console.error("Failed to verify token in cookie after setting");
+        } else {
+            console.log("Token verified in cookie");
+        }
+        
+        return !!tokenInCookie;
     } catch (error) {
         console.error("Error setting token:", error);
         return false;
     }
 };
 
+// 🟢 Check if user is authenticated
+export const isAuthenticated = (): boolean => {
+    return cookieExists("customerToken");
+};
+
+// 🟢 Get auth token
+export const getAuthToken = (): string => {
+    return getCookie("customerToken") || localStorage.getItem("token") || "";
+};
+
 // 🟢 Workspace ID Management
 export const setWorkspaceId = (id: string): void => {
-    setCookie("workspaceId", id);
+    if (id) {
+        setCookie("workspaceId", id);
+    }
 };
 
 export const getWorkspaceId = (): string => {
-    return getCookie("workspaceId");
+    return getCookie("workspaceId") || "";
 };
 
 // 🟢 Role Checks
