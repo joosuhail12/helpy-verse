@@ -1,33 +1,17 @@
+import { AbilityBuilder, AbilityClass, InferSubjects, PureAbility } from "@casl/ability";
+import { Permission } from "@/store/slices/auth/types";
 
-import { AbilityBuilder, Ability, AbilityClass } from '@casl/ability';
-import { ActionType, Permission } from '@/store/slices/authSlice';
+// Create/export the ActionType type if it doesn't already exist
+export type ActionType = "create" | "read" | "update" | "delete" | "archive" | "manage";
 
-// Define the types of subjects in our application
-export type Subjects = 'Article' | 'User' | 'Comment' | 'Contact' | 'Ticket' | 'Setting' | 'all';
-export type Actions = 'create' | 'read' | 'update' | 'delete' | 'archive' | 'manage';
+type Subjects = InferSubjects<{ subject: string } | 'all'>;
+export type AppAbility = PureAbility<[ActionType, Subjects]>;
 
-// Define the type of Ability instance
-export type AppAbility = Ability<[Actions, Subjects]>;
-export type DefinePermissions = (builder: AbilityBuilder<AppAbility>) => void;
-
-// Define a subject type guard
-export function subjectType(subject: any): Subjects {
-  if (!subject) return 'all';
-  
-  return subject.type || 
-         (subject.constructor && subject.constructor.modelName) || 
-         typeof subject === 'string' ? subject : 'all';
-}
-
-// Create a function to define the default permissions
 export const defineAppAbility = () => {
-  const { can, cannot, build } = new AbilityBuilder(Ability as AbilityClass<AppAbility>);
+  const { can, build } = new AbilityBuilder(PureAbility as AbilityClass<AppAbility>);
 
-  // Default: users can read all resources
-  can('read', 'all');
+  // Define default abilities (if any)
+  // can('read', 'Article'); // Example: can read articles
 
-  return build({
-    // Ability detection behavior options
-    detectSubjectType: subjectType
-  });
+  return build();
 };
