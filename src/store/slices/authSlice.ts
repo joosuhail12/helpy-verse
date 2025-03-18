@@ -1,3 +1,4 @@
+
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { HttpClient } from "@/api/services/HttpClient";
 import { encryptBase64, setCookie, setWorkspaceId, handleSetToken, deleteCookie, getCookie } from '@/utils/helpers/helpers';
@@ -198,6 +199,8 @@ const authSlice = createSlice({
       state.user = null;
       state.error = null;
       deleteCookie("customerToken");
+      deleteCookie("agent_email");
+      deleteCookie("workspaceId");
     },
     clearError: (state) => {
       state.error = null;

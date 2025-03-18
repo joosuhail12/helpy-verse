@@ -1,4 +1,3 @@
-
 import { ArrowRight } from "lucide-react";
 import { useState, memo, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -6,6 +5,7 @@ import { useAppDispatch } from "../../hooks/useAppDispatch";
 import { useAppSelector } from "../../hooks/useAppSelector";
 import { loginUser } from "../../store/slices/authSlice";
 import { toast } from "../../components/ui/use-toast";
+import { getCookie } from "@/utils/helpers/helpers";
 
 export const LoginForm = memo(() => {
   const [email, setEmail] = useState("");
@@ -29,36 +29,33 @@ export const LoginForm = memo(() => {
 
   // Auto-redirect if already authenticated
   useEffect(() => {
-    if (auth.isAuthenticated) {
-      navigate('/home');
+    const token = getCookie("customerToken");
+    
+    if (auth.isAuthenticated || token) {
+      navigate('/home', { replace: true });
     }
   }, [auth.isAuthenticated, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isSubmitting) return;
+    if (isSubmitting || !email || !password) return;
     
     try {
       setIsSubmitting(true);
       
-      // For testing/demo purposes - allow a test login
-      if (email === "admin@test.com" && password === "admin123") {
-        await dispatch(loginUser({ email, password })).unwrap();
+      const result = await dispatch(loginUser({ email, password })).unwrap();
+      
+      if (result && result.data && result.data.accessToken) {
         toast({
           title: "Success",
           description: "Logged in successfully",
         });
-        navigate('/home');
-        return;
+        
+        // Force navigation to home
+        window.location.href = '/home';
       }
-      
-      await dispatch(loginUser({ email, password })).unwrap();
-      toast({
-        title: "Success",
-        description: "Logged in successfully",
-      });
-      navigate('/home');
     } catch (error) {
+      console.error("Login error:", error);
       toast({
         title: "Error",
         description: "Login failed. Please try again.",

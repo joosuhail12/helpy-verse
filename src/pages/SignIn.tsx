@@ -9,6 +9,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import ErrorBoundary from "@/components/common/ErrorBoundary";
+import { getCookie } from "@/utils/helpers/helpers";
 
 export const SignIn = memo(() => {
   console.log('SignIn component rendering'); // Debug log
@@ -24,7 +25,9 @@ export const SignIn = memo(() => {
 
   // Redirect if already authenticated
   useEffect(() => {
-    if (auth?.isAuthenticated) {
+    const token = getCookie("customerToken");
+    
+    if (auth?.isAuthenticated || token) {
       console.log('User is authenticated, redirecting to home'); // Debug log
       navigate('/home');
     }

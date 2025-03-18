@@ -9,6 +9,7 @@ import { Suspense, lazy, useEffect } from 'react';
 import { useAppSelector } from "./hooks/useAppSelector";
 import CaslProvider from "./components/CaslProvider";
 import { getCookie } from "./utils/helpers/helpers";
+import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 
 // Lazy load components with explicit chunk names
 const SignIn = lazy(() => import(/* webpackChunkName: "signin" */ "./pages/SignIn"));
@@ -56,18 +57,8 @@ const queryClient = new QueryClient({
 });
 
 const RootComponent = () => {
-  const customerToken = getCookie("customerToken");
-  return customerToken ? <Navigate to="/home" replace /> : <Navigate to="/sign-in" replace />;
-};
-
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isAuthenticated } = useAppSelector((state) => state.auth);
-
-  if (!isAuthenticated) {
-    return <Navigate to="/sign-in" replace />;
-  }
-
-  return <>{children}</>;
+  const token = getCookie("customerToken");
+  return token ? <Navigate to="/home" replace /> : <Navigate to="/sign-in" replace />;
 };
 
 const LoadingFallback = () => (
