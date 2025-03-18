@@ -17,6 +17,22 @@ export const ChatbotConnection = ({ content, availableChatbots }: ChatbotConnect
   const dispatch = useAppDispatch();
   const { toast } = useToast();
 
+  // Helper to convert string IDs to chatbot objects if needed
+  const normalizeChatbots = (chatbots: any[] | undefined): { id: string; name: string }[] => {
+    if (!chatbots || chatbots.length === 0) return [];
+    
+    return chatbots.map(chatbot => {
+      if (typeof chatbot === 'string') {
+        // Try to find the chatbot in available chatbots
+        const found = availableChatbots.find(c => c.id === chatbot);
+        return found || { id: chatbot, name: `Unknown (${chatbot})` };
+      }
+      return chatbot;
+    });
+  };
+
+  const normalizedChatbots = normalizeChatbots(content.chatbots);
+
   const handleConnect = async () => {
     if (!selectedChatbot) return;
     
@@ -25,11 +41,11 @@ export const ChatbotConnection = ({ content, availableChatbots }: ChatbotConnect
       const chatbotToConnect = availableChatbots.find(c => c.id === selectedChatbot);
       if (!chatbotToConnect) throw new Error('Chatbot not found');
       
-      const updatedChatbots = [...(content.chatbots || []), selectedChatbot];
+      const updatedChatbots = [...normalizedChatbots, chatbotToConnect];
       
       await dispatch(updateContent({ 
         id: content.id, 
-        updates: { chatbots: updatedChatbots }
+        data: { chatbots: updatedChatbots }
       })).unwrap();
       
       toast({
@@ -54,11 +70,11 @@ export const ChatbotConnection = ({ content, availableChatbots }: ChatbotConnect
       const chatbotToDisconnect = availableChatbots.find(c => c.id === chatbotId);
       if (!chatbotToDisconnect) throw new Error('Chatbot not found');
       
-      const updatedChatbots = (content.chatbots || []).filter(id => id !== chatbotId);
+      const updatedChatbots = normalizedChatbots.filter(chatbot => chatbot.id !== chatbotId);
       
       await dispatch(updateContent({ 
         id: content.id, 
-        updates: { chatbots: updatedChatbots }
+        data: { chatbots: updatedChatbots }
       })).unwrap();
       
       toast({
@@ -72,6 +88,10 @@ export const ChatbotConnection = ({ content, availableChatbots }: ChatbotConnect
         variant: 'destructive',
       });
     }
+  };
+
+  const isChatbotConnected = (chatbotId: string): boolean => {
+    return normalizedChatbots.some(chatbot => chatbot.id === chatbotId);
   };
 
   return (
@@ -88,7 +108,7 @@ export const ChatbotConnection = ({ content, availableChatbots }: ChatbotConnect
           >
             <option value="">Select a chatbot</option>
             {availableChatbots
-              .filter(chatbot => !(content.chatbots || []).includes(chatbot.id))
+              .filter(chatbot => !isChatbotConnected(chatbot.id))
               .map(chatbot => (
                 <option key={chatbot.id} value={chatbot.id}>
                   {chatbot.name}
@@ -107,30 +127,27 @@ export const ChatbotConnection = ({ content, availableChatbots }: ChatbotConnect
       
       <div className="space-y-2">
         <label className="text-sm font-medium">Connected Chatbots</label>
-        {(content.chatbots || []).length === 0 ? (
+        {normalizedChatbots.length === 0 ? (
           <p className="text-sm text-muted-foreground">
             No chatbots connected yet
           </p>
         ) : (
           <ul className="space-y-2">
-            {(content.chatbots || []).map(chatbotId => {
-              const chatbot = availableChatbots.find(c => c.id === chatbotId);
-              return chatbot ? (
-                <li 
-                  key={chatbot.id} 
-                  className="flex items-center justify-between p-2 bg-secondary/30 rounded"
+            {normalizedChatbots.map(chatbot => (
+              <li 
+                key={chatbot.id} 
+                className="flex items-center justify-between p-2 bg-secondary/30 rounded"
+              >
+                <span>{chatbot.name}</span>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => handleDisconnect(chatbot.id)}
                 >
-                  <span>{chatbot.name}</span>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => handleDisconnect(chatbot.id)}
-                  >
-                    Disconnect
-                  </Button>
-                </li>
-              ) : null;
-            })}
+                  Disconnect
+                </Button>
+              </li>
+            ))}
           </ul>
         )}
       </div>

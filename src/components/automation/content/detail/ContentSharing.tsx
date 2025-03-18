@@ -27,11 +27,12 @@ export const ContentSharing = ({ content }: ContentSharingProps) => {
       role: 'viewer',
     };
 
-    const updatedSharedWith = [...(content.sharedWith || []), newSharedUser];
+    const currentSharedUsers = Array.isArray(content.sharedWith) ? [...content.sharedWith] : [];
+    const updatedSharedWith = [...currentSharedUsers, newSharedUser];
     
     dispatch(updateContent({ 
       id: content.id, 
-      updates: { sharedWith: updatedSharedWith }
+      data: { sharedWith: updatedSharedWith }
     }));
 
     setEmail('');
@@ -42,11 +43,13 @@ export const ContentSharing = ({ content }: ContentSharingProps) => {
   };
 
   const handleRemoveShare = (userId: string) => {
-    const updatedSharedWith = content.sharedWith?.filter(user => user.id !== userId) || [];
+    if (!content.sharedWith) return;
+    
+    const updatedSharedWith = content.sharedWith.filter(user => user.id !== userId);
     
     dispatch(updateContent({ 
       id: content.id, 
-      updates: { sharedWith: updatedSharedWith }
+      data: { sharedWith: updatedSharedWith }
     }));
 
     toast({

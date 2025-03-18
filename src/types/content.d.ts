@@ -29,24 +29,35 @@ export interface ContentTag {
   color: string;
 }
 
+export type ContentStatus = 
+  | 'active' 
+  | 'inactive' 
+  | 'draft' 
+  | 'processing' 
+  | 'queued' 
+  | 'completed' 
+  | 'failed';
+
+export type ContentType = 'snippet' | 'file' | 'website';
+
 export interface Content {
   id: string;
   title: string;
   description: string;
-  status: 'active' | 'inactive' | 'draft' | 'processing' | 'queued' | 'completed' | 'failed';
+  status: ContentStatus;
   contentType: string;
   category: string;
   createdAt: string;
   lastUpdated: string;
   author: User;
-  chatbots?: string[] | { id: string; name: string }[];
-  tags?: ContentTag[] | string[];
+  chatbots?: Array<{ id: string; name: string }>;
+  tags?: ContentTag[];
   sharedWith?: User[];
   comments?: ContentComment[];
   versions?: ContentVersion[];
   lastEditedBy?: User;
   content?: string;
-  type?: 'snippet' | 'file' | 'website';
+  type?: ContentType;
   messageCount?: number;
 }
 
@@ -63,7 +74,11 @@ export interface ContentState {
     field: SortField;
     direction: 'asc' | 'desc';
   };
-  filters: Record<string, any>;
+  filters: {
+    status: ContentStatus | null;
+    category: string | null;
+    chatbot: string | null;
+  };
   selectedIds: string[];
   searchQuery: string;
   lastFetchTime: number | null;

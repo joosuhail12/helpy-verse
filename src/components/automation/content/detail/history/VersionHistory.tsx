@@ -1,9 +1,9 @@
 
 import React from 'react';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { formatDistanceToNow } from 'date-fns';
-import { History, RotateCcw } from 'lucide-react';
 import type { ContentVersion } from '@/types/content';
 
 interface VersionHistoryProps {
@@ -13,57 +13,47 @@ interface VersionHistoryProps {
 
 export const VersionHistory = ({ versions, onRestore }: VersionHistoryProps) => {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center">
-          <History className="h-5 w-5 mr-2" />
-          Version History
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
+    <Card className="p-6">
+      <h3 className="text-lg font-semibold mb-4">Version History</h3>
+      
+      <ScrollArea className="h-[300px]">
         <div className="space-y-4">
-          {versions.length === 0 && (
-            <p className="text-center text-muted-foreground">No version history available</p>
-          )}
-          
-          {versions
-            .slice()
-            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-            .map((version) => (
-              <div 
-                key={version.id}
-                className="border rounded-md p-3 space-y-2"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <img
-                      src={version.createdBy.avatar}
-                      alt={version.createdBy.name}
-                      className="w-6 h-6 rounded-full"
-                    />
-                    <span className="font-medium">{version.createdBy.name}</span>
-                  </div>
-                  
-                  <span className="text-sm text-muted-foreground">
-                    {formatDistanceToNow(new Date(version.createdAt))} ago
-                  </span>
+          {versions.map((version, index) => (
+            <div
+              key={version.id}
+              className="p-3 border rounded-lg hover:bg-secondary/20 transition-colors"
+            >
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <h4 className="font-medium">
+                    Version {versions.length - index}
+                    {index === 0 && (
+                      <span className="ml-2 text-xs bg-primary/20 text-primary rounded-full px-2 py-0.5">
+                        Current
+                      </span>
+                    )}
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    {formatDistanceToNow(new Date(version.createdAt))} ago by {version.createdBy.name}
+                  </p>
+                  {version.changes && (
+                    <p className="text-sm mt-1">Changes: {version.changes}</p>
+                  )}
                 </div>
-                
-                <p className="text-sm text-muted-foreground">{version.changes}</p>
-                
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full"
-                  onClick={() => onRestore(version)}
-                >
-                  <RotateCcw className="h-3 w-3 mr-2" />
-                  Restore this version
-                </Button>
+                {index > 0 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onRestore(version)}
+                  >
+                    Restore
+                  </Button>
+                )}
               </div>
-            ))}
+            </div>
+          ))}
         </div>
-      </CardContent>
+      </ScrollArea>
     </Card>
   );
 };

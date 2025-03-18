@@ -67,8 +67,8 @@ export const validateQueryRule = (rule: QueryRule): ValidationResult => {
 
   // Validate value based on operator
   if (
-    rule.operator !== "exists" && 
-    rule.operator !== "not_exists" &&
+    rule.operator !== ("exists" as ComparisonOperator) && 
+    rule.operator !== ("not_exists" as ComparisonOperator) &&
     rule.value === undefined
   ) {
     return { isValid: false, error: 'Value is required for this operator' };
@@ -88,7 +88,7 @@ export const validateQueryRule = (rule: QueryRule): ValidationResult => {
 };
 
 export const ruleHasValue = (rule: QueryRule): boolean => {
-  if (rule.operator === "exists" || rule.operator === "not_exists") {
+  if (rule.operator === ("exists" as ComparisonOperator) || rule.operator === ("not_exists" as ComparisonOperator)) {
     return true;
   }
   

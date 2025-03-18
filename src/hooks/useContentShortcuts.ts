@@ -5,35 +5,39 @@ import { updateContent } from '@/store/slices/content/contentSlice';
 import { useToast } from './use-toast';
 import type { Content } from '@/types/content';
 
-export const useContentShortcuts = (content: Content) => {
+export const useContentShortcuts = () => {
   const dispatch = useAppDispatch();
   const { toast } = useToast();
 
-  const handleAddShortcut = useCallback(async (shortcutText: string) => {
+  const updateContentField = useCallback(async (
+    contentId: string, 
+    fieldName: string, 
+    value: any
+  ) => {
     try {
-      // Update the content with the new shortcut text
       await dispatch(updateContent({
-        id: content.id,
-        updates: {
-          content: shortcutText
-        }
+        id: contentId,
+        data: { [fieldName]: value }
       })).unwrap();
-
+      
       toast({
-        title: 'Shortcut updated',
-        description: 'The shortcut content has been updated successfully.',
+        title: 'Content updated',
+        description: `Successfully updated ${fieldName}`,
       });
-
+      
       return true;
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'Failed to update shortcut. Please try again.',
+        title: 'Update failed',
+        description: `Failed to update ${fieldName}`,
         variant: 'destructive',
       });
+      
       return false;
     }
-  }, [content, dispatch, toast]);
+  }, [dispatch, toast]);
 
-  return { handleAddShortcut };
+  return {
+    updateContentField
+  };
 };

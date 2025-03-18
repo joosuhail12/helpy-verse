@@ -8,29 +8,29 @@ import type { SortField } from '@/types/content';
 
 export const ContentSorting = () => {
   const dispatch = useAppDispatch();
-  const sort = useAppSelector((state) => state.content.sortBy);
+  const { field, direction } = useAppSelector((state) => state.content.sortBy);
 
   const handleSort = (field: SortField) => {
-    if (sort.field === field) {
-      dispatch(setSortDirection(sort.direction === 'asc' ? 'desc' : 'asc'));
+    if (field === field) {
+      dispatch(setSortDirection(direction === 'asc' ? 'desc' : 'asc'));
     } else {
       dispatch(setSortField(field));
       dispatch(setSortDirection('asc'));
     }
   };
 
-  const renderSortButton = (field: SortField, label: string) => (
+  const renderSortButton = (sortField: SortField, label: string) => (
     <Button
       variant="ghost"
       size="sm"
-      onClick={() => handleSort(field)}
+      onClick={() => handleSort(sortField)}
       className={`flex items-center gap-1 ${
-        sort.field === field ? 'text-purple-600' : 'text-gray-600'
+        field === sortField ? 'text-purple-600' : 'text-gray-600'
       }`}
     >
       {label}
-      {sort.field === field && (
-        sort.direction === 'asc' ? (
+      {field === sortField && (
+        direction === 'asc' ? (
           <ArrowUp className="h-4 w-4" />
         ) : (
           <ArrowDown className="h-4 w-4" />

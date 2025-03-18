@@ -1,10 +1,10 @@
 
-import React, { useRef, useState } from 'react';
-import { Copy, Check, Loader2 } from 'lucide-react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/hooks/use-toast';
-import Prism from 'prismjs';
+import { Loader2, Pencil } from 'lucide-react';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import type { Content } from '@/types/content';
 
 interface SnippetPreviewProps {
@@ -17,7 +17,7 @@ interface SnippetPreviewProps {
   isSaving: boolean;
 }
 
-export const SnippetPreview = ({
+export function SnippetPreview({
   content,
   isEditing,
   editableContent,
@@ -25,86 +25,79 @@ export const SnippetPreview = ({
   handleSave,
   handleCancel,
   isSaving
-}: SnippetPreviewProps) => {
-  const { toast } = useToast();
-  const [isCopied, setIsCopied] = useState(false);
-  const preRef = useRef<HTMLPreElement>(null);
-
-  React.useEffect(() => {
-    if (preRef.current) {
-      Prism.highlightElement(preRef.current);
-    }
-  }, [content.content, isEditing]);
-
-  const copyToClipboard = async () => {
-    if (content.content) {
-      try {
-        await navigator.clipboard.writeText(content.content);
-        setIsCopied(true);
-        toast({
-          title: "Copied!",
-          description: "Content copied to clipboard",
-        });
-        setTimeout(() => setIsCopied(false), 2000);
-      } catch (err) {
-        toast({
-          title: "Error",
-          description: "Failed to copy content",
-          variant: "destructive",
-        });
-      }
-    }
+}: SnippetPreviewProps) {
+  const detectLanguage = (): string => {
+    // Simple heuristic to detect language based on file extension in the title or content
+    const title = content.title.toLowerCase();
+    
+    if (title.endsWith('.js') || title.endsWith('.jsx')) return 'javascript';
+    if (title.endsWith('.ts') || title.endsWith('.tsx')) return 'typescript';
+    if (title.endsWith('.html')) return 'html';
+    if (title.endsWith('.css')) return 'css';
+    if (title.endsWith('.py')) return 'python';
+    if (title.endsWith('.java')) return 'java';
+    if (title.endsWith('.rb')) return 'ruby';
+    if (title.endsWith('.php')) return 'php';
+    if (title.endsWith('.go')) return 'go';
+    if (title.endsWith('.rs')) return 'rust';
+    if (title.endsWith('.c') || title.endsWith('.cpp') || title.endsWith('.h')) return 'c';
+    
+    // Default to javascript
+    return 'javascript';
   };
 
-  if (isEditing) {
-    return (
-      <div className="space-y-4">
-        <Textarea
-          value={editableContent}
-          onChange={(e) => setEditableContent(e.target.value)}
-          className="min-h-[200px] font-mono"
-        />
-        <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={handleCancel} disabled={isSaving}>
-            Cancel
-          </Button>
-          <Button onClick={handleSave} disabled={isSaving}>
-            {isSaving ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              'Save Changes'
-            )}
-          </Button>
-        </div>
-      </div>
-    );
-  }
+  const language = detectLanguage();
 
   return (
     <div className="space-y-4">
-      <div className="relative">
-        <pre ref={preRef} className="whitespace-pre-wrap font-mono text-sm bg-muted p-4 rounded-md overflow-x-auto">
-          <code className="language-javascript">
-            {content.content}
-          </code>
-        </pre>
-        <Button
-          variant="outline"
-          size="sm"
-          className="absolute top-2 right-2"
-          onClick={copyToClipboard}
-        >
-          {isCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-        </Button>
-      </div>
-      <div className="flex justify-end">
-        <Button onClick={() => setEditableContent(content.content || '')}>
-          Edit Content
-        </Button>
-      </div>
+      {isEditing ? (
+        <>
+          <Textarea
+            value={editableContent}
+            onChange={(e) => setEditableContent(e.target.value)}
+            className="font-mono min-h-[300px]"
+            placeholder="Enter code snippet here..."
+          />
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={handleCancel} disabled={isSaving}>
+              Cancel
+            </Button>
+            <Button onClick={handleSave} disabled={isSaving}>
+              {isSaving ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                'Save Changes'
+              )}
+            </Button>
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="relative">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="absolute top-2 right-2 z-10"
+              onClick={() => setEditableContent(content.content || '')}
+            >
+              <Pencil className="mr-2 h-4 w-4" />
+              Edit
+            </Button>
+            <div className="border rounded-md overflow-hidden">
+              <SyntaxHighlighter 
+                language={language} 
+                style={atomDark}
+                customStyle={{ margin: 0, minHeight: '300px' }}
+              >
+                {content.content || '// No content available'}
+              </SyntaxHighlighter>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
-};
+}

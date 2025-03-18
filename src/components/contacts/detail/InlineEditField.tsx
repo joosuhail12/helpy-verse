@@ -11,15 +11,31 @@ export interface InlineEditFieldProps {
   value: string;
   contactId: string;
   label: string;
+  fieldName?: string; // New prop for backward compatibility
+  field?: string;     // Keep for backward compatibility
+  type?: 'text' | 'date' | 'select' | 'email' | 'phone' | 'url';
+  options?: Array<{ value: string; label: string }> | string[];
   onSave?: (value: string) => void;
 }
 
-export const InlineEditField = ({ value, contactId, label, onSave }: InlineEditFieldProps) => {
+export const InlineEditField = ({ 
+  value, 
+  contactId, 
+  label, 
+  fieldName, 
+  field,
+  type = 'text',
+  options,
+  onSave 
+}: InlineEditFieldProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value);
   const inputRef = useRef<HTMLInputElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const dispatch = useAppDispatch();
+
+  // Use the fieldName if provided, otherwise fallback to field for backward compatibility
+  const actualFieldName = fieldName || field || label.toLowerCase();
 
   useOnClickOutside(wrapperRef, () => {
     if (isEditing) {
@@ -48,18 +64,12 @@ export const InlineEditField = ({ value, contactId, label, onSave }: InlineEditF
     }
 
     try {
-      // Create an update object dynamically based on label
+      // Create an update object dynamically based on field name
       const updateData: Record<string, string> = {};
-      
-      // Convert label to camelCase for field name
-      const fieldName = label
-        .toLowerCase()
-        .replace(/[^a-zA-Z0-9]+(.)/g, (_, chr) => chr.toUpperCase());
-      
-      updateData[fieldName] = editValue;
+      updateData[actualFieldName] = editValue;
 
       await dispatch(updateContact({
-        id: contactId, 
+        contactId,
         data: updateData
       }));
 
@@ -86,17 +96,63 @@ export const InlineEditField = ({ value, contactId, label, onSave }: InlineEditF
     }
   };
 
-  return (
-    <div ref={wrapperRef} className="group relative w-full">
-      {isEditing ? (
-        <div className="flex w-full gap-2">
+  const renderInput = () => {
+    switch(type) {
+      case 'select':
+        return (
+          <select 
+            ref={inputRef as React.RefObject<HTMLSelectElement>}
+            value={editValue}
+            onChange={(e) => setEditValue(e.target.value)}
+            className="w-full border rounded px-2 py-1"
+          >
+            {Array.isArray(options) && options.map((option, index) => {
+              if (typeof option === 'string') {
+                return (
+                  <option key={index} value={option}>
+                    {option}
+                  </option>
+                );
+              } else {
+                return (
+                  <option key={index} value={option.value}>
+                    {option.label}
+                  </option>
+                );
+              }
+            })}
+          </select>
+        );
+      case 'date':
+        return (
           <Input
             ref={inputRef}
+            type="date"
             value={editValue}
             onChange={(e) => setEditValue(e.target.value)}
             onKeyDown={handleKeyDown}
             className="w-full"
           />
+        );
+      default:
+        return (
+          <Input
+            ref={inputRef}
+            type={type}
+            value={editValue}
+            onChange={(e) => setEditValue(e.target.value)}
+            onKeyDown={handleKeyDown}
+            className="w-full"
+          />
+        );
+    }
+  };
+
+  return (
+    <div ref={wrapperRef} className="group relative w-full">
+      {isEditing ? (
+        <div className="flex w-full gap-2">
+          {renderInput()}
           <div className="flex gap-1">
             <Button
               type="button"

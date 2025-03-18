@@ -1,6 +1,6 @@
 
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import type { Content, ContentState, SortField } from '@/types/content';
+import type { Content, ContentState, SortField, ContentStatus } from '@/types/content';
 
 // Initial state
 const initialState: ContentState = {
@@ -16,7 +16,11 @@ const initialState: ContentState = {
     field: 'lastUpdated',
     direction: 'desc'
   },
-  filters: {},
+  filters: {
+    status: null,
+    category: null,
+    chatbot: null
+  },
   selectedIds: [],
   searchQuery: '',
   lastFetchTime: null,
@@ -45,11 +49,11 @@ export const fetchContents = createAsyncThunk(
 
 export const updateContent = createAsyncThunk(
   'content/updateContent',
-  async ({ id, updates }: { id: string, updates: Partial<Content> }, { rejectWithValue }) => {
+  async ({ id, data }: { id: string, data: Partial<Content> }, { rejectWithValue }) => {
     try {
       // Mock API call
       const response = await new Promise<Content>(resolve => {
-        setTimeout(() => resolve({ id, ...updates } as Content), 500);
+        setTimeout(() => resolve({ id, ...data } as Content), 500);
       });
       return { id, updates: response };
     } catch (error: any) {
@@ -60,10 +64,10 @@ export const updateContent = createAsyncThunk(
 
 export const updateContentStatus = createAsyncThunk(
   'content/updateContentStatus',
-  async ({ ids, status }: { ids: string[], status: string }, { dispatch }) => {
+  async ({ ids, status }: { ids: string[], status: ContentStatus }, { dispatch }) => {
     // Implementation for bulk status update
     for (const id of ids) {
-      await dispatch(updateContent({ id, updates: { status } }));
+      await dispatch(updateContent({ id, data: { status } }));
     }
     return { ids, status };
   }
@@ -89,7 +93,7 @@ export const reassignChatbot = createAsyncThunk(
     for (const id of contentIds) {
       await dispatch(updateContent({ 
         id, 
-        updates: { 
+        data: { 
           chatbots: [{ id: chatbotId, name: chatbotName }] 
         } 
       }));
