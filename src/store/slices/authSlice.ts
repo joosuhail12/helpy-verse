@@ -1,4 +1,3 @@
-
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { HttpClient } from "@/api/services/HttpClient";
 import { encryptBase64, setCookie, setWorkspaceId, handleSetToken, deleteCookie, getCookie } from '@/utils/helpers/helpers';
@@ -127,7 +126,6 @@ export const getUserPermission = createAsyncThunk(
   }
 );
 
-
 export const requestPasswordReset = createAsyncThunk(
   'auth/requestPasswordReset',
   async (credentials: { email: string }) => {
@@ -146,6 +144,23 @@ export const requestPasswordReset = createAsyncThunk(
       return data;
     } catch (error) {
       throw error;
+    }
+  }
+);
+
+export const confirmPasswordReset = createAsyncThunk(
+  'auth/confirmPasswordReset',
+  async (credentials: {
+    token: string;
+    password: string;
+    rid?: string;
+    tenantId?: string;
+  }, { rejectWithValue }) => {
+    try {
+      const response = await HttpClient.apiClient.post('/auth/reset-password', credentials);
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Password reset failed');
     }
   }
 );
@@ -290,10 +305,21 @@ const authSlice = createSlice({
       .addCase(fetchWorkspaceData.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || 'Failed to fetch workspace data';
+      })
+      // Password reset confirmation cases
+      .addCase(confirmPasswordReset.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(confirmPasswordReset.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(confirmPasswordReset.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string || 'Password reset failed';
       });
   },
 });
 
 export const { logout, clearError } = authSlice.actions;
 export default authSlice.reducer;
-
