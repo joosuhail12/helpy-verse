@@ -9,16 +9,16 @@ export function useChannelSort(
   sortOrder: 'asc' | 'desc'
 ) {
   return useMemo(() => {
-    let filtered = channels.filter(channel => 
-      channel.channelName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      channel.email.toLowerCase().includes(searchQuery.toLowerCase())
+    const filtered = channels.filter(channel =>
+      channel.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      channel.emailAddress.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     return filtered.sort((a, b) => {
       let comparison = 0;
       switch (sortBy) {
         case 'name':
-          comparison = a.channelName.localeCompare(b.channelName);
+          comparison = a.name.localeCompare(b.name);
           break;
         case 'date':
           comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();

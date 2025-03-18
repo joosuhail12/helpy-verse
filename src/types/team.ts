@@ -35,7 +35,8 @@ export interface TeamsState {
   teams: Team[];
   loading: boolean;
   error: string | null;
-  teamDetails: Team | null
+  teamDetails: Team | null;
+  areTeamsLoaded: boolean;
 }
 
 export interface TeamCreatePayload {

@@ -25,7 +25,7 @@ export const ChannelEditForm: React.FC<ChannelEditFormProps> = ({
       <div className="space-y-2">
         <label className="text-sm font-medium">Email Address</label>
         <Input
-          value={editedChannel.email}
+          value={editedChannel.emailAddress}
           disabled
           className="bg-muted"
         />
@@ -33,16 +33,16 @@ export const ChannelEditForm: React.FC<ChannelEditFormProps> = ({
       <div className="space-y-2">
         <label className="text-sm font-medium">Auto BCC Email (Optional)</label>
         <Input
-          value={editedChannel.autoBccEmail || ''}
-          onChange={(e) => onChange('autoBccEmail', e.target.value)}
+          value={editedChannel.autoBccMail || ''}
+          onChange={(e) => onChange('autoBccMail', e.target.value)}
           placeholder="archive@company.com"
         />
       </div>
       <div className="space-y-2">
         <label className="text-sm font-medium">No Reply Email (Optional)</label>
         <Input
-          value={editedChannel.noReplyEmail || ''}
-          onChange={(e) => onChange('noReplyEmail', e.target.value)}
+          value={editedChannel.noReplyMail || ''}
+          onChange={(e) => onChange('noReplyMail', e.target.value)}
           placeholder="no-reply@company.com"
         />
       </div>

@@ -7,6 +7,7 @@ import { createChannel } from '@/store/slices/emailChannels/emailChannelsSlice';
 import { ChannelFormFields } from './ChannelFormFields';
 import { useChannelForm } from '../hooks/useChannelForm';
 import { Button } from '@/components/ui/button';
+import { EmailChannel } from '@/types/emailChannel';
 
 interface AddChannelDialogProps {
   isOpen: boolean;
@@ -18,19 +19,19 @@ export function AddChannelDialog({ isOpen, onClose }: AddChannelDialogProps) {
   const dispatch = useAppDispatch();
 
   const {
-    channelName,
-    setChannelName,
+    name,
+    setName,
     senderName,
     setSenderName,
-    email,
-    setEmail,
-    autoBccEmail,
-    setAutoBccEmail,
-    noReplyEmail,
-    setNoReplyEmail,
+    emailAddress,
+    setEmailAddress,
+    autoBccMail,
+    setAutoBccMail,
+    noReplyMail,
+    setNoReplyMail,
     selectedEmoji,
     setSelectedEmoji,
-    selectedTeamId,
+    teamId,
     setSelectedTeamId,
     handleSubmit,
     errors,
@@ -39,7 +40,7 @@ export function AddChannelDialog({ isOpen, onClose }: AddChannelDialogProps) {
   } = useChannelForm({
     onAddChannel: async (channel) => {
       try {
-        await dispatch(createChannel(channel)).unwrap();
+        await dispatch(createChannel(channel as EmailChannel)).unwrap();
         toast({
           title: "Channel added",
           description: "The email channel has been added successfully.",
@@ -63,19 +64,19 @@ export function AddChannelDialog({ isOpen, onClose }: AddChannelDialogProps) {
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-6">
           <ChannelFormFields
-            channelName={channelName}
-            setChannelName={setChannelName}
+            channelName={name}
+            setChannelName={setName}
             senderName={senderName}
             setSenderName={setSenderName}
-            email={email}
-            setEmail={setEmail}
-            autoBccEmail={autoBccEmail}
-            setAutoBccEmail={setAutoBccEmail}
-            noReplyEmail={noReplyEmail}
-            setNoReplyEmail={setNoReplyEmail}
+            email={emailAddress}
+            setEmail={setEmailAddress}
+            autoBccEmail={autoBccMail}
+            setAutoBccEmail={setAutoBccMail}
+            noReplyEmail={noReplyMail}
+            setNoReplyEmail={setNoReplyMail}
             selectedEmoji={selectedEmoji}
             setSelectedEmoji={setSelectedEmoji}
-            selectedTeamId={selectedTeamId}
+            selectedTeamId={teamId}
             setSelectedTeamId={setSelectedTeamId}
             errors={errors as unknown as Record<string, string>}
             touched={touched}
