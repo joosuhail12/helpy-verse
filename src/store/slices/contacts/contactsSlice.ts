@@ -157,6 +157,10 @@ const customerSlice = createSlice({
         state.loading = false;
         state.contactDetails = action.payload;
       })
+      .addCase(fetchCustomerDetails.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
       .addCase(importCustomers.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -183,7 +187,7 @@ const customerSlice = createSlice({
       })
       .addCase(addContact.fulfilled, (state, action) => {
         state.loading = false;
-        state.contacts = action.payload;
+        state.contacts = [...state.contacts, action.payload];
       })
       .addCase(addContact.rejected, (state, action) => {
         state.loading = false;
