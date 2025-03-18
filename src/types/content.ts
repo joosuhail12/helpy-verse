@@ -12,13 +12,10 @@ export interface User {
   role?: 'admin' | 'editor' | 'viewer';
 }
 
-export interface ContentVersion {
+export interface ContentTag {
   id: string;
-  contentId: string;
-  content: string;
-  createdAt: string;
-  createdBy: User;
-  changes: string;
+  name: string;
+  color: string;
 }
 
 export interface ContentComment {
@@ -29,10 +26,13 @@ export interface ContentComment {
   createdBy: User;
 }
 
-export interface ContentTag {
+export interface ContentVersion {
   id: string;
-  name: string;
-  color: string;
+  contentId: string;
+  content: string;
+  createdAt: string;
+  createdBy: User;
+  changes: string;
 }
 
 export interface Content {
@@ -54,6 +54,8 @@ export interface Content {
   lastEditedBy?: User;
   content?: string;
   type?: ContentType;
+  progress?: number;
+  errorMessage?: string;
 }
 
 export interface ContentState {

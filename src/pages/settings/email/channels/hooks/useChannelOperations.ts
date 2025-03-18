@@ -29,7 +29,12 @@ export const useChannelOperations = (channel: EmailChannel) => {
 
   const handleUpdate = async (updatedChannel: Partial<EmailChannel>): Promise<boolean> => {
     try {
-      await dispatch(updateChannel({ id: channel.id, ...updatedChannel })).unwrap();
+      // Wrap the update data in the expected format
+      await dispatch(updateChannel({ 
+        id: channel.id, 
+        updates: updatedChannel 
+      })).unwrap();
+      
       toast({
         title: 'Channel updated',
         description: 'The email channel has been updated successfully.',

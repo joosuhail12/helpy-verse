@@ -16,6 +16,7 @@ export interface InlineEditFieldProps {
   type?: 'text' | 'date' | 'select' | 'email' | 'phone' | 'url';
   options?: Array<{ value: string; label: string }> | string[];
   onSave?: (value: string) => void;
+  validation?: Record<string, any>;
 }
 
 export const InlineEditField = ({ 
@@ -30,7 +31,8 @@ export const InlineEditField = ({
 }: InlineEditFieldProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const selectRef = useRef<HTMLSelectElement | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const dispatch = useAppDispatch();
 
@@ -44,10 +46,14 @@ export const InlineEditField = ({
   });
 
   useEffect(() => {
-    if (isEditing && inputRef.current) {
-      inputRef.current.focus();
+    if (isEditing) {
+      if (type === 'select' && selectRef.current) {
+        selectRef.current.focus();
+      } else if (inputRef.current) {
+        inputRef.current.focus();
+      }
     }
-  }, [isEditing]);
+  }, [isEditing, type]);
 
   useEffect(() => {
     setEditValue(value);
@@ -88,7 +94,7 @@ export const InlineEditField = ({
     setIsEditing(false);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>) => {
     if (e.key === 'Enter') {
       handleSave();
     } else if (e.key === 'Escape') {
@@ -101,9 +107,10 @@ export const InlineEditField = ({
       case 'select':
         return (
           <select 
-            ref={inputRef as React.RefObject<HTMLSelectElement>}
+            ref={selectRef}
             value={editValue}
             onChange={(e) => setEditValue(e.target.value)}
+            onKeyDown={handleKeyDown}
             className="w-full border rounded px-2 py-1"
           >
             {Array.isArray(options) && options.map((option, index) => {

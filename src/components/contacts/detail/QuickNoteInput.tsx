@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Send, Loader2 } from 'lucide-react';
@@ -9,14 +9,25 @@ import { useToast } from '@/hooks/use-toast';
 
 interface QuickNoteInputProps {
   contactId: string;
+  initialNote?: string;
   onAddNote?: (note: string) => void;
 }
 
-export const QuickNoteInput: React.FC<QuickNoteInputProps> = ({ contactId, onAddNote }) => {
-  const [note, setNote] = useState('');
+export const QuickNoteInput: React.FC<QuickNoteInputProps> = ({ 
+  contactId, 
+  initialNote = '', 
+  onAddNote 
+}) => {
+  const [note, setNote] = useState(initialNote);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const dispatch = useAppDispatch();
   const { toast } = useToast();
+  
+  useEffect(() => {
+    if (initialNote) {
+      setNote(initialNote);
+    }
+  }, [initialNote]);
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,7 +48,6 @@ export const QuickNoteInput: React.FC<QuickNoteInputProps> = ({ contactId, onAdd
         description: "Your note has been added successfully",
       });
       
-      setNote('');
       if (onAddNote) {
         onAddNote(note);
       }

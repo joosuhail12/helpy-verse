@@ -1,21 +1,22 @@
-
-import { useParams } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useAppSelector } from '@/hooks/useAppSelector';
-import { Edit, Mail, Phone, Globe, Building, MapPin, UserGroup, DollarSign, Calendar, Briefcase, Package } from 'lucide-react';
-import { Separator } from '@/components/ui/separator';
-import ContactsTable from '@/components/contacts/ContactsTable';
-import CompanyActivity from '@/components/companies/detail/CompanyActivity';
-import CompanyNotes from '@/components/companies/detail/CompanyNotes';
-import CompanyDeals from '@/components/companies/detail/CompanyDeals';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Users } from 'lucide-react';
+import { fetchCompanyDetails } from '@/store/slices/companies/companiesSlice';
 
 const CompanyDetail = () => {
   const { id } = useParams<{ id: string }>();
-  
-  // Since we're mocking for now, create a dummy company object
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    dispatch(fetchCompanyDetails(id));
+  }, [dispatch, id]);
+
   const mockCompany = {
     id: id || '1',
     name: 'Acme Corporation',
@@ -131,7 +132,7 @@ const CompanyDetail = () => {
               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">Employees</p>
                 <p className="flex items-center">
-                  <UserGroup className="h-4 w-4 mr-2 text-muted-foreground" />
+                  <Users className="h-4 w-4 mr-2 text-muted-foreground" />
                   {mockCompany.numberOfEmployees}
                 </p>
               </div>
@@ -194,7 +195,7 @@ const CompanyDetail = () => {
               <div className="bg-muted p-4 rounded-lg">
                 <p className="text-sm text-muted-foreground">Total Contacts</p>
                 <p className="flex items-center text-2xl font-bold">
-                  <UserGroup className="h-5 w-5 mr-1 text-blue-600" />
+                  <Users className="h-5 w-5 mr-1 text-blue-600" />
                   {mockCompany.contacts.length}
                 </p>
               </div>

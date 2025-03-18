@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { fetchCustomers } from '@/store/slices/contacts/contactsSlice';
-import { ContactList } from '@/components/contacts/ContactList';
+import ContactList from '@/components/contacts/ContactList';
 import { ContactsHeader } from '@/components/contacts/ContactsHeader';
 import { ContactListControls } from '@/components/contacts/ContactListControls';
 import { Card } from '@/components/ui/card';
@@ -12,9 +12,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 const AllContacts = () => {
   const dispatch = useAppDispatch();
-  const { contacts, loading, error, lastFetchTime } = useAppSelector((state) => state.contacts);
+  const { contacts, loading, error } = useAppSelector((state) => state.contacts);
   const workspace_id = useAppSelector((state) => state.auth.user?.data.defaultWorkspaceId);
-  console.log(contacts, loading, error, lastFetchTime, workspace_id);
   
   useEffect(() => {
     dispatch(fetchCustomers());

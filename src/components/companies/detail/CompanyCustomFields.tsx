@@ -2,20 +2,20 @@
 import { Company } from '@/types/company';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCustomFields } from '@/hooks/useCustomFields';
-import { InlineEditField } from '@/components/contacts/detail/InlineEditField';
 import {
   Card,
   CardHeader,
   CardTitle,
   CardContent,
 } from '@/components/ui/card';
+import { InlineEditField } from '@/components/contacts/detail/InlineEditField';
 
 interface CompanyCustomFieldsProps {
   company: Company;
 }
 
 export const CompanyCustomFields = ({ company }: CompanyCustomFieldsProps) => {
-  const { data: customFields, isLoading } = useCustomFields('companies');
+  const { fields, isLoading } = useCustomFields('companies');
 
   if (isLoading) {
     return (
@@ -34,9 +34,20 @@ export const CompanyCustomFields = ({ company }: CompanyCustomFieldsProps) => {
     );
   }
 
-  if (!customFields?.companies.length) {
+  if (!fields?.length) {
     return null;
   }
+
+  // Type mapping from custom field types to InlineEditField types
+  const typeMapping: Record<string, "select" | "text" | "url" | "email" | "date" | "phone"> = {
+    'text': 'text',
+    'email': 'email',
+    'phone': 'phone',
+    'date': 'date',
+    'select': 'select',
+    'url': 'url',
+    'number': 'text'  // Map number field to text type for input
+  };
 
   return (
     <Card className="border-none shadow-none bg-gray-50/50">
@@ -45,20 +56,27 @@ export const CompanyCustomFields = ({ company }: CompanyCustomFieldsProps) => {
       </CardHeader>
       <CardContent className="pt-6">
         <div className="grid gap-6">
-          {customFields.companies.map((field) => (
-            <div key={field.id} className="space-y-1">
-              <p className="text-sm font-medium text-muted-foreground">{field.name}</p>
-              <InlineEditField
-                value={company[field.id] || ''}
-                contactId={company.id}
-                field={field.id}
-                label={field.name}
-                type={field.type}
-                options={field.options}
-                validation={field.validationRules}
-              />
-            </div>
-          ))}
+          {fields.map((field) => {
+            // Convert field value to string for display
+            const fieldValue = company[field.id];
+            const safeValue = fieldValue !== undefined && fieldValue !== null 
+              ? String(fieldValue) 
+              : '';
+            
+            return (
+              <div key={field.id} className="space-y-1">
+                <p className="text-sm font-medium text-muted-foreground">{field.name}</p>
+                <InlineEditField
+                  value={safeValue}
+                  contactId={company.id} // Using contactId for company is ok here as it's just used for identification
+                  field={field.id}
+                  label={field.name}
+                  type={typeMapping[field.type] || 'text'} // Default to text if type not recognized
+                  options={field.options}
+                />
+              </div>
+            );
+          })}
         </div>
       </CardContent>
     </Card>

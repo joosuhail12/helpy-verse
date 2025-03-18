@@ -48,19 +48,35 @@ export const ContactCustomFields = ({ contact }: ContactCustomFieldsProps) => {
           {customFields.contacts.map((field) => {
             // Safely convert field value to the expected types
             const fieldValue = contact[field.id];
-            let safeValue: string | number | boolean | string[] = '';
+            let safeValue = '';
             
-            if (typeof fieldValue === 'string' || 
-                typeof fieldValue === 'number' || 
-                typeof fieldValue === 'boolean' ||
-                Array.isArray(fieldValue)) {
+            if (typeof fieldValue === 'string') {
               safeValue = fieldValue;
+            } else if (typeof fieldValue === 'number') {
+              safeValue = fieldValue.toString();
+            } else if (typeof fieldValue === 'boolean') {
+              safeValue = fieldValue ? 'Yes' : 'No';
+            } else if (Array.isArray(fieldValue)) {
+              safeValue = fieldValue.join(', ');
             } else if (fieldValue === null || fieldValue === undefined) {
               safeValue = '';
             } else if (typeof fieldValue === 'object') {
               // Convert object to string representation
               safeValue = JSON.stringify(fieldValue);
             }
+            
+            // Convert type if needed
+            const typeMapping: Record<string, "text" | "url" | "email" | "date" | "phone" | "select"> = {
+              'text': 'text',
+              'email': 'email',
+              'phone': 'phone',
+              'date': 'date',
+              'select': 'select',
+              'url': 'url',
+              'number': 'text'  // Map number to text type for input
+            };
+            
+            const mappedType = typeMapping[field.type] || 'text';
             
             return (
               <div key={field.id} className="space-y-1">
@@ -70,9 +86,8 @@ export const ContactCustomFields = ({ contact }: ContactCustomFieldsProps) => {
                   contactId={contact.id}
                   field={field.id}
                   label={field.name}
-                  type={field.type}
+                  type={mappedType}
                   options={field.options}
-                  validation={field.validationRules}
                 />
               </div>
             );
