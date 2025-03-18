@@ -1,38 +1,39 @@
 
-import { useEffect } from 'react';
-import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { useCallback } from 'react';
+import { useAppDispatch } from './useAppDispatch';
 import { updateContent } from '@/store/slices/content/contentSlice';
+import { useToast } from './use-toast';
 import type { Content } from '@/types/content';
 
-export const useContentShortcuts = (
-  content: Content,
-  editableContent: string,
-  isEditing: boolean,
-  setIsEditing: (value: boolean) => void,
-  showDiscardDialog: () => void,
-) => {
+export const useContentShortcuts = (content: Content) => {
   const dispatch = useAppDispatch();
+  const { toast } = useToast();
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Save: Cmd/Ctrl + S
-      if ((e.metaKey || e.ctrlKey) && e.key === 's' && isEditing) {
-        e.preventDefault();
-        dispatch(updateContent({ 
-          id: content.id, 
-          updates: { content: editableContent }
-        }));
-        setIsEditing(false);
-      }
-      
-      // Cancel: Esc
-      if (e.key === 'Escape' && isEditing) {
-        e.preventDefault();
-        showDiscardDialog();
-      }
-    };
+  const handleAddShortcut = useCallback(async (shortcutText: string) => {
+    try {
+      // Update the content with the new shortcut text
+      await dispatch(updateContent({
+        id: content.id,
+        updates: {
+          content: shortcutText
+        }
+      })).unwrap();
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [content.id, editableContent, isEditing, dispatch, setIsEditing, showDiscardDialog]);
+      toast({
+        title: 'Shortcut updated',
+        description: 'The shortcut content has been updated successfully.',
+      });
+
+      return true;
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to update shortcut. Please try again.',
+        variant: 'destructive',
+      });
+      return false;
+    }
+  }, [content, dispatch, toast]);
+
+  return { handleAddShortcut };
 };

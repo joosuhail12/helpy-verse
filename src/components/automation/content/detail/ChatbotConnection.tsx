@@ -1,140 +1,139 @@
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { updateContent } from '@/store/slices/content/contentSlice';
-import { Plus, X } from 'lucide-react';
-import { useAppSelector } from '@/hooks/useAppSelector';
-import { mockChatbots } from '@/mock/chatbots';
+import { useToast } from '@/hooks/use-toast';
 import type { Content } from '@/types/content';
 
 interface ChatbotConnectionProps {
   content: Content;
+  availableChatbots: { id: string; name: string }[];
 }
 
-export const ChatbotConnection = ({ content }: ChatbotConnectionProps) => {
-  const [showSelect, setShowSelect] = useState(false);
-  const { toast } = useToast();
+export const ChatbotConnection = ({ content, availableChatbots }: ChatbotConnectionProps) => {
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [selectedChatbot, setSelectedChatbot] = useState<string | null>(null);
   const dispatch = useAppDispatch();
+  const { toast } = useToast();
 
-  const handleAddChatbot = (chatbotId: string, chatbotName: string) => {
-    // Check if already connected
-    if (content.chatbots?.some(c => c.id === chatbotId)) {
+  const handleConnect = async () => {
+    if (!selectedChatbot) return;
+    
+    setIsConnecting(true);
+    try {
+      const chatbotToConnect = availableChatbots.find(c => c.id === selectedChatbot);
+      if (!chatbotToConnect) throw new Error('Chatbot not found');
+      
+      const updatedChatbots = [...(content.chatbots || []), selectedChatbot];
+      
+      await dispatch(updateContent({ 
+        id: content.id, 
+        updates: { chatbots: updatedChatbots }
+      })).unwrap();
+      
       toast({
-        description: "This chatbot is already connected to this content",
+        title: 'Content connected',
+        description: `Successfully connected to "${chatbotToConnect.name}" chatbot.`,
       });
-      return;
+      
+      setSelectedChatbot(null);
+    } catch (error) {
+      toast({
+        title: 'Connection failed',
+        description: 'Could not connect content to chatbot. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsConnecting(false);
     }
-
-    const updatedChatbots = [...(content.chatbots || []), { id: chatbotId, name: chatbotName }];
-    
-    dispatch(updateContent({ 
-      id: content.id, 
-      updates: { chatbots: updatedChatbots }
-    }));
-    
-    toast({
-      title: "Chatbot connected",
-      description: `Connected to ${chatbotName}`,
-    });
-    
-    setShowSelect(false);
   };
 
-  const handleRemoveChatbot = (chatbotId: string) => {
-    const updatedChatbots = content.chatbots?.filter(c => c.id !== chatbotId) || [];
-    
-    dispatch(updateContent({ 
-      id: content.id, 
-      updates: { chatbots: updatedChatbots }
-    }));
-    
-    toast({
-      title: "Chatbot disconnected",
-      description: "The chatbot has been disconnected from this content",
-    });
+  const handleDisconnect = async (chatbotId: string) => {
+    try {
+      const chatbotToDisconnect = availableChatbots.find(c => c.id === chatbotId);
+      if (!chatbotToDisconnect) throw new Error('Chatbot not found');
+      
+      const updatedChatbots = (content.chatbots || []).filter(id => id !== chatbotId);
+      
+      await dispatch(updateContent({ 
+        id: content.id, 
+        updates: { chatbots: updatedChatbots }
+      })).unwrap();
+      
+      toast({
+        title: 'Content disconnected',
+        description: `Successfully disconnected from "${chatbotToDisconnect.name}" chatbot.`,
+      });
+    } catch (error) {
+      toast({
+        title: 'Disconnection failed',
+        description: 'Could not disconnect content from chatbot. Please try again.',
+        variant: 'destructive',
+      });
+    }
   };
-
-  // Filter out chatbots that are already connected
-  const availableChatbots = mockChatbots.filter(
-    chatbot => !content.chatbots?.some(c => c.id === chatbot.id)
-  );
 
   return (
-    <Card>
-      <CardHeader className="border-b pb-3">
-        <CardTitle className="text-lg">Connected Chatbots</CardTitle>
-      </CardHeader>
-      <CardContent className="pt-4">
-        <div className="space-y-4">
-          {content.chatbots && content.chatbots.length > 0 ? (
-            <div className="grid gap-2">
-              {content.chatbots.map((chatbot) => (
-                <div 
+    <div className="space-y-4">
+      <h3 className="font-semibold">Chatbot Connections</h3>
+      
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Connect to a Chatbot</label>
+        <div className="flex gap-2">
+          <select
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+            value={selectedChatbot || ''}
+            onChange={(e) => setSelectedChatbot(e.target.value || null)}
+          >
+            <option value="">Select a chatbot</option>
+            {availableChatbots
+              .filter(chatbot => !(content.chatbots || []).includes(chatbot.id))
+              .map(chatbot => (
+                <option key={chatbot.id} value={chatbot.id}>
+                  {chatbot.name}
+                </option>
+              ))
+            }
+          </select>
+          <Button 
+            onClick={handleConnect} 
+            disabled={!selectedChatbot || isConnecting}
+          >
+            Connect
+          </Button>
+        </div>
+      </div>
+      
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Connected Chatbots</label>
+        {(content.chatbots || []).length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            No chatbots connected yet
+          </p>
+        ) : (
+          <ul className="space-y-2">
+            {(content.chatbots || []).map(chatbotId => {
+              const chatbot = availableChatbots.find(c => c.id === chatbotId);
+              return chatbot ? (
+                <li 
                   key={chatbot.id} 
-                  className="flex items-center justify-between p-2 bg-muted rounded-md"
+                  className="flex items-center justify-between p-2 bg-secondary/30 rounded"
                 >
                   <span>{chatbot.name}</span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleRemoveChatbot(chatbot.id)}
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => handleDisconnect(chatbot.id)}
                   >
-                    <X className="h-4 w-4" />
+                    Disconnect
                   </Button>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              No chatbots are connected to this content yet.
-            </p>
-          )}
-
-          {showSelect ? (
-            <div className="border rounded-md p-3">
-              <p className="text-sm mb-2">Select a chatbot to connect:</p>
-              <div className="grid gap-2 max-h-40 overflow-y-auto">
-                {availableChatbots.length > 0 ? (
-                  availableChatbots.map((chatbot) => (
-                    <Button
-                      key={chatbot.id}
-                      variant="outline"
-                      className="justify-start"
-                      onClick={() => handleAddChatbot(chatbot.id, chatbot.name)}
-                    >
-                      {chatbot.name}
-                    </Button>
-                  ))
-                ) : (
-                  <p className="text-sm text-muted-foreground">All chatbots are already connected.</p>
-                )}
-              </div>
-              <div className="flex justify-end mt-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowSelect(false)}
-                >
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowSelect(true)}
-              disabled={availableChatbots.length === 0}
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Connect Chatbot
-            </Button>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+                </li>
+              ) : null;
+            })}
+          </ul>
+        )}
+      </div>
+    </div>
   );
 };

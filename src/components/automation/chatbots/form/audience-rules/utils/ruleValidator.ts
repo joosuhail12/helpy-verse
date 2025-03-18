@@ -9,6 +9,8 @@ export type ValidationResult = {
 export type ValidationError = {
   message: string;
   path?: string;
+  ruleId?: string;
+  field?: string;
 };
 
 type ComparisonOperator = 

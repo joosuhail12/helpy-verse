@@ -1,20 +1,9 @@
 
-export interface ContentTag {
+export interface User {
   id: string;
   name: string;
-  color: string;
-}
-
-export interface ContentComment {
-  id: string;
-  contentId: string;
-  text: string;
-  createdAt: string;
-  createdBy: {
-    id: string;
-    name: string;
-    avatar: string;
-  };
+  avatar: string;
+  role?: 'admin' | 'editor' | 'viewer';
 }
 
 export interface ContentVersion {
@@ -22,69 +11,67 @@ export interface ContentVersion {
   contentId: string;
   content: string;
   createdAt: string;
-  createdBy: {
-    id: string;
-    name: string;
-    avatar: string;
-  };
+  createdBy: User;
   changes: string;
 }
 
-export type ContentStatus = 'completed' | 'processing' | 'queued' | 'failed' | 'active' | 'inactive' | 'draft';
-
-export type SortField = 'title' | 'createdAt' | 'updatedAt' | 'lastUpdated' | 'messageCount' | 'category';
-
-export interface ContentSearch {
-  query: string;
-  suggestions: string[];
-  history: string[];
+export interface ContentComment {
+  id: string;
+  contentId: string;
+  text: string;
+  createdAt: string;
+  createdBy: User;
 }
 
-export interface ContentState {
-  items: Content[];
-  loading: boolean;
-  error: string | null;
-  selectedContent: Content | null;
-  selectedContentId: string | null;
-  filters: {
-    status: ContentStatus | null;
-    category: string | null;
-    chatbot: string | null;
-  };
-  sort: {
-    field: SortField;
-    direction: 'asc' | 'desc';
-  };
-  search: ContentSearch;
-  selectedIds: string[];
+export interface ContentTag {
+  id: string;
+  name: string;
+  color: string;
 }
 
 export interface Content {
   id: string;
   title: string;
   description: string;
-  content?: string;
-  contentType: 'file' | 'website' | 'snippet';
-  type: 'snippet' | 'file' | 'website';
-  status: ContentStatus;
+  status: 'active' | 'inactive' | 'draft' | 'processing' | 'queued' | 'completed' | 'failed';
+  contentType: string;
   category: string;
-  tags: ContentTag[];
-  chatbots: { id: string; name: string }[];
   createdAt: string;
-  updatedAt: string;
   lastUpdated: string;
-  lastEditedBy?: {
-    id: string;
-    name: string;
-    avatar: string;
-  };
-  messageCount: number;
-  versions?: ContentVersion[];
+  author: User;
+  chatbots?: string[];
+  tags?: ContentTag[];
+  sharedWith?: User[];
   comments?: ContentComment[];
-  sharedWith?: {
-    id: string;
-    name: string;
-    avatar: string;
-    role: 'editor' | 'viewer';
-  }[];
+  versions?: ContentVersion[];
+  lastEditedBy?: User;
+  content?: string;
+  type?: 'snippet' | 'file' | 'website';
 }
+
+export interface ContentState {
+  items: Content[];
+  loading: boolean;
+  error: string | null;
+  selectedContentId: string | null;
+  selectedContent: Content | null;
+  statusFilter: string | null;
+  categoryFilter: string | null;
+  chatbotFilter: string | null;
+  sortBy: {
+    field: SortField;
+    direction: 'asc' | 'desc';
+  };
+  filters: Record<string, any>;
+  selectedContents: string[];
+  searchQuery: string;
+  lastFetchTime: number | null;
+}
+
+export type SortField = 
+  | 'title'
+  | 'createdAt'
+  | 'lastUpdated'
+  | 'status'
+  | 'category'
+  | 'author';

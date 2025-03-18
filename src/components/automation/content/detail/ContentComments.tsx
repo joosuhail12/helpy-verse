@@ -80,6 +80,11 @@ export const ContentComments = ({ content }: ContentCommentsProps) => {
               <p className="text-sm">{comment.text}</p>
             </div>
           ))}
+          {!content.comments?.length && (
+            <p className="text-center text-muted-foreground py-4">
+              No comments yet
+            </p>
+          )}
         </div>
       </ScrollArea>
     </div>
