@@ -37,8 +37,8 @@ const Channels = () => {
       <ChannelHeader hasDomainVerified={hasDomainVerified} />
 
       <DefaultEmailChannel
-        email={typeof defaultChannel === 'object' ? defaultChannel.email : 'default@example.com'}
-        isActive={typeof defaultChannel === 'object' ? defaultChannel.isActive : false}
+        email={defaultChannel && typeof defaultChannel === 'object' ? defaultChannel.email : 'default@example.com'}
+        isActive={defaultChannel && typeof defaultChannel === 'object' ? defaultChannel.isActive : false}
         onToggle={handleToggleDefaultChannel}
         disabled={filteredAndSortedChannels.length > 0}
       />

@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Steps, Step } from '@/components/ui/steps';
+import { Steps } from '@/components/ui/steps';
 import { ChatbotBasicInfo } from '@/components/automation/chatbots/form/basic-info/ChatbotBasicInfo';
 import { AudienceRules } from '@/components/automation/chatbots/form/audience-rules/AudienceRules';
 import { ContentConnector } from '@/components/automation/chatbots/form/content-connector/ContentConnector';
@@ -75,14 +75,11 @@ const CreateChatbot = () => {
     <div className="container mx-auto px-4 py-8 max-w-6xl space-y-8">
       <h1 className="text-3xl font-bold">Create New Chatbot</h1>
       
-      <Steps
-        currentStep={currentStep}
-        onStepClick={handleStepClick}
-      >
-        <Step title="Basic Information" />
-        <Step title="Audience Rules" />
-        <Step title="Connect Content" />
-        <Step title="Deploy" />
+      <Steps currentStep={currentStep} onStepClick={handleStepClick}>
+        <div>Basic Information</div>
+        <div>Audience Rules</div>
+        <div>Connect Content</div>
+        <div>Deploy</div>
       </Steps>
       
       <Card>

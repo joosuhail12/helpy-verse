@@ -71,9 +71,9 @@ export const useChannelManagement = () => {
     }
   };
 
-  const handleToggleStatus = async (id: string, isActive: boolean) => {
+  const handleToggleStatus = async (id: string) => {
     try {
-      // Modify to match expected parameter type
+      // Pass just the ID to match API expectations
       await dispatch(toggleChannelStatus(id)).unwrap();
     } catch (error) {
       toast({
@@ -86,8 +86,12 @@ export const useChannelManagement = () => {
 
   const handleBulkToggleStatus = async (isActive: boolean) => {
     try {
-      // Modify to match expected parameter type
-      await dispatch(bulkToggleStatus(selectedChannels)).unwrap();
+      // Create the correct payload format for bulk toggle
+      await dispatch(bulkToggleStatus({ 
+        ids: selectedChannels, 
+        isActive 
+      })).unwrap();
+      
       toast({
         title: isActive ? "Channels activated" : "Channels deactivated",
         description: `${selectedChannels.length} channels have been ${isActive ? 'activated' : 'deactivated'} successfully.`,
@@ -104,7 +108,7 @@ export const useChannelManagement = () => {
 
   const handleToggleDefaultChannel = async (isActive: boolean) => {
     try {
-      // Modify to match expected parameter type
+      // Pass the expected parameter format
       await dispatch(toggleDefaultChannelStatus('default')).unwrap();
     } catch (error) {
       toast({

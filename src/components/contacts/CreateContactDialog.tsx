@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { addContact } from '@/store/slices/contacts/contactsSlice';
-import { toast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { v4 as uuidv4 } from 'uuid';
 import { Contact } from '@/types/contact';
 
@@ -18,6 +18,7 @@ interface CreateContactDialogProps {
 
 const CreateContactDialog = ({ open, onOpenChange }: CreateContactDialogProps) => {
   const dispatch = useAppDispatch();
+  const { toast } = useToast();
   const [firstname, setFirstName] = useState('');
   const [lastname, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -41,7 +42,7 @@ const CreateContactDialog = ({ open, onOpenChange }: CreateContactDialogProps) =
         updatedAt: new Date().toISOString(),
       };
 
-      dispatch(addContact(newContact as Partial<Contact>));
+      await dispatch(addContact(newContact as Partial<Contact>)).unwrap();
       
       toast({
         title: "Success",

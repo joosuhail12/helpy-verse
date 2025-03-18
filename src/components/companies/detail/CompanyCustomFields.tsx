@@ -15,7 +15,7 @@ interface CompanyCustomFieldsProps {
 }
 
 export const CompanyCustomFields = ({ company }: CompanyCustomFieldsProps) => {
-  const { fields, isLoading } = useCustomFields('companies');
+  const { data, isLoading } = useCustomFields('companies');
 
   if (isLoading) {
     return (
@@ -34,7 +34,7 @@ export const CompanyCustomFields = ({ company }: CompanyCustomFieldsProps) => {
     );
   }
 
-  if (!fields?.length) {
+  if (!data?.fields?.length) {
     return null;
   }
 
@@ -56,7 +56,7 @@ export const CompanyCustomFields = ({ company }: CompanyCustomFieldsProps) => {
       </CardHeader>
       <CardContent className="pt-6">
         <div className="grid gap-6">
-          {fields.map((field) => {
+          {data.fields.map((field) => {
             // Convert field value to string for display
             const fieldValue = company[field.id];
             const safeValue = fieldValue !== undefined && fieldValue !== null 

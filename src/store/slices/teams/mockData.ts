@@ -1,74 +1,151 @@
-import type { Team } from '@/types/team';
+
+import { Team } from './teamsSlice';
 
 export const mockTeams: Team[] = [
   {
-    id: '1',
-    name: 'Frontend Team',
+    id: 'team-1',
+    name: 'Customer Support',
+    description: 'Front-line team handling customer inquiries and issues',
+    icon: '🎯',
+    color: '#4F46E5',
     members: [
-      { id: '101', name: 'John Doe', email: 'john@example.com' },
-      { id: '102', name: 'Jane Smith', email: 'jane@example.com' }
+      {
+        id: 'member-1',
+        name: 'Sarah Johnson',
+        email: 'sarah.j@example.com',
+        avatar: 'https://api.dicebear.com/7.x/avatars/svg?seed=Sarah',
+        role: 'manager',
+        status: 'active'
+      },
+      {
+        id: 'member-2',
+        name: 'Michael Chen',
+        email: 'michael.c@example.com',
+        avatar: 'https://api.dicebear.com/7.x/avatars/svg?seed=Michael',
+        role: 'agent',
+        status: 'active'
+      },
+      {
+        id: 'member-3',
+        name: 'Emily Davis',
+        email: 'emily.d@example.com',
+        avatar: 'https://api.dicebear.com/7.x/avatars/svg?seed=Emily',
+        role: 'agent',
+        status: 'active'
+      }
     ],
-    routing: {
-      type: 'round-robin'
-    },
+    channels: [
+      {
+        id: 'channel-1',
+        name: 'Support Email',
+        type: 'email',
+        isActive: true
+      },
+      {
+        id: 'channel-2',
+        name: 'Live Chat',
+        type: 'chat',
+        isActive: true
+      }
+    ],
+    routing: [
+      {
+        id: 'rule-1',
+        name: 'Priority Customers',
+        priority: 1,
+        isActive: true
+      },
+      {
+        id: 'rule-2',
+        name: 'Standard Routing',
+        priority: 2,
+        isActive: true
+      }
+    ],
     officeHours: {
-      monday: [{ start: '09:00', end: '17:00' }],
-      tuesday: [{ start: '09:00', end: '17:00' }],
-      wednesday: [{ start: '09:00', end: '17:00' }],
-      thursday: [{ start: '09:00', end: '17:00' }],
-      friday: [{ start: '09:00', end: '17:00' }],
-      saturday: [],
-      sunday: []
+      days: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
+      startTime: '09:00',
+      endTime: '17:00',
+      timezone: 'America/New_York'
     },
-    holidays: ['2024-12-25', '2024-12-31', '2025-01-01'],
-    createdAt: '2024-01-15T10:00:00Z',
-    updatedAt: '2024-03-15T14:30:00Z'
+    holidays: [
+      {
+        id: 'holiday-1',
+        name: 'New Year\'s Day',
+        date: '2023-01-01',
+        isRecurring: true
+      },
+      {
+        id: 'holiday-2',
+        name: 'Independence Day',
+        date: '2023-07-04',
+        isRecurring: true
+      }
+    ],
+    createdAt: '2023-01-10T08:30:00Z',
+    updatedAt: '2023-06-15T14:45:00Z'
   },
   {
-    id: '2',
-    name: 'Backend Team',
+    id: 'team-2',
+    name: 'Technical Support',
+    description: 'Specialized team handling complex technical issues',
+    icon: '🔧',
+    color: '#10B981',
     members: [
-      { id: '201', name: 'Mike Johnson', email: 'mike@example.com' },
-      { id: '202', name: 'Sarah Wilson', email: 'sarah@example.com' },
-      { id: '203', name: 'Tom Brown', email: 'tom@example.com' }
+      {
+        id: 'member-4',
+        name: 'Alex Rivera',
+        email: 'alex.r@example.com',
+        avatar: 'https://api.dicebear.com/7.x/avatars/svg?seed=Alex',
+        role: 'supervisor',
+        status: 'active'
+      },
+      {
+        id: 'member-5',
+        name: 'Jamie Smith',
+        email: 'jamie.s@example.com',
+        avatar: 'https://api.dicebear.com/7.x/avatars/svg?seed=Jamie',
+        role: 'agent',
+        status: 'active'
+      }
     ],
-    routing: {
-      type: 'load-balanced'
-    },
-    officeHours: {
-      monday: [{ start: '08:00', end: '16:00' }],
-      tuesday: [{ start: '08:00', end: '16:00' }],
-      wednesday: [{ start: '08:00', end: '16:00' }],
-      thursday: [{ start: '08:00', end: '16:00' }],
-      friday: [{ start: '08:00', end: '16:00' }],
-      saturday: [],
-      sunday: []
-    },
-    holidays: ['2024-07-04', '2024-11-28'],
-    createdAt: '2024-02-01T09:00:00Z',
-    updatedAt: '2024-03-14T11:20:00Z'
-  },
-  {
-    id: '3',
-    name: 'Design Team',
-    members: [
-      { id: '301', name: 'Alice Cooper', email: 'alice@example.com' },
-      { id: '302', name: 'Bob Martin', email: 'bob@example.com' }
+    channels: [
+      {
+        id: 'channel-3',
+        name: 'Tech Support Email',
+        type: 'email',
+        isActive: true
+      },
+      {
+        id: 'channel-4',
+        name: 'Support Phone Line',
+        type: 'voice',
+        isActive: true
+      }
     ],
-    routing: {
-      type: 'manual'
-    },
+    routing: [
+      {
+        id: 'rule-3',
+        name: 'Technical Issues',
+        priority: 1,
+        isActive: true
+      }
+    ],
     officeHours: {
-      monday: [{ start: '10:00', end: '18:00' }],
-      tuesday: [{ start: '10:00', end: '18:00' }],
-      wednesday: [{ start: '10:00', end: '18:00' }],
-      thursday: [{ start: '10:00', end: '18:00' }],
-      friday: [{ start: '10:00', end: '18:00' }],
-      saturday: [],
-      sunday: []
+      days: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'],
+      startTime: '08:00',
+      endTime: '20:00',
+      timezone: 'America/Los_Angeles'
     },
-    holidays: ['2024-05-27', '2024-09-02'],
-    createdAt: '2024-02-15T08:00:00Z',
-    updatedAt: '2024-03-10T16:45:00Z'
+    holidays: [
+      {
+        id: 'holiday-3',
+        name: 'Christmas Day',
+        date: '2023-12-25',
+        isRecurring: true
+      }
+    ],
+    createdAt: '2023-02-18T10:15:00Z',
+    updatedAt: '2023-05-22T16:30:00Z'
   }
 ];
