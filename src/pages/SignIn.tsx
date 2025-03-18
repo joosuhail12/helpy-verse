@@ -35,13 +35,15 @@ export const SignIn = memo(() => {
     if (token) {
       console.log('User has token, redirecting to:', from); // Debug log
       
-      // Use a small delay to ensure state is settled
+      // Try first with navigate
+      navigate(from, { replace: true });
+      
+      // Use a small delay and direct location change as fallback for more reliable redirect
       setTimeout(() => {
-        // Use hard navigation for more reliable redirect
         window.location.href = from;
       }, 500);
     }
-  }, [from]);
+  }, [from, navigate]);
 
   console.log('Auth state:', auth); // Debug log
 

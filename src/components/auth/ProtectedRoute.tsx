@@ -12,20 +12,22 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const dispatch = useAppDispatch();
   const [isChecking, setIsChecking] = useState(true);
   const { isAuthenticated, loading } = useAppSelector((state) => state.auth);
+  const [hasToken, setHasToken] = useState(false);
   
   useEffect(() => {
     const checkAuth = async () => {
       console.log('ProtectedRoute: Checking authentication status');
       
-      // Get token from cookie
+      // Get token from cookie and set state variable
       const token = getCookie("customerToken");
+      setHasToken(!!token);
       
       // If we have a token but Redux state says we're not authenticated,
-      // try to refresh user data, but don't block the user if it fails
-      if (token && !isAuthenticated && !loading) {
+      // try to refresh user data
+      if (token && !isAuthenticated) {
         try {
           console.log('ProtectedRoute: Have token but not authenticated in Redux, fetching user data');
-          dispatch(fetchUserData());
+          await dispatch(fetchUserData());
         } catch (error) {
           console.error("Error fetching user data:", error);
           // Continue anyway since we have a token
@@ -35,11 +37,11 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
       // Short delay to ensure state is settled
       setTimeout(() => {
         setIsChecking(false);
-      }, 300);
+      }, 500);
     };
     
     checkAuth();
-  }, [dispatch, isAuthenticated, loading]);
+  }, [dispatch, isAuthenticated, location.pathname]);
 
   // Show loading state while checking
   if (isChecking || loading) {
@@ -52,9 +54,6 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
   // CRITICAL: We prioritize token existence over Redux state
   // If a token exists, the user should be considered authenticated
-  // even if the Redux state hasn't caught up yet
-  const hasToken = !!getCookie("customerToken");
-  
   if (hasToken) {
     console.log('ProtectedRoute: Token exists, rendering protected content');
     return <>{children}</>;

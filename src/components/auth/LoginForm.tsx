@@ -1,7 +1,7 @@
 
 import { ArrowRight } from "lucide-react";
 import { useState, memo, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAppDispatch } from "../../hooks/useAppDispatch";
 import { useAppSelector } from "../../hooks/useAppSelector";
 import { loginUser } from "../../store/slices/authSlice";
@@ -13,6 +13,7 @@ export const LoginForm = memo(() => {
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const dispatch = useAppDispatch();
+  const navigate = useNavigate(); 
   const location = useLocation();
   const auth = useAppSelector((state) => state.auth);
   const loading = auth?.loading ?? false;
@@ -37,10 +38,19 @@ export const LoginForm = memo(() => {
     
     if (auth.isAuthenticated || token) {
       console.log('Already authenticated, redirecting to:', from);
-      // Use hard redirect for reliability
-      window.location.href = from;
+      
+      // Add a delay to ensure state is settled
+      setTimeout(() => {
+        // First try using navigate
+        navigate(from, { replace: true });
+        
+        // As a fallback, use window.location for more reliable redirect
+        setTimeout(() => {
+          window.location.href = from;
+        }, 300);
+      }, 300);
     }
-  }, [auth.isAuthenticated, from]);
+  }, [auth.isAuthenticated, from, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,19 +64,28 @@ export const LoginForm = memo(() => {
       // Handle successful login even if subsequent API calls might fail
       if (result && result.data && result.data.accessToken) {
         // Set token in cookie and Axios headers
-        handleSetToken(result.data.accessToken.token);
+        const tokenSet = handleSetToken(result.data.accessToken.token);
         
-        toast({
-          title: "Success",
-          description: "Logged in successfully",
-        });
-        
-        // Add a delay to ensure toast is visible before redirect
-        setTimeout(() => {
-          // Force navigation using window.location for reliability
-          console.log('Login successful, redirecting to:', from);
-          window.location.href = from;
-        }, 1000);
+        if (tokenSet) {
+          toast({
+            title: "Success",
+            description: "Logged in successfully",
+          });
+          
+          // Add a delay to ensure toast is visible before redirect
+          setTimeout(() => {
+            // First try using navigate
+            navigate(from, { replace: true });
+            
+            // As a fallback, use window.location for more reliable redirect
+            setTimeout(() => {
+              console.log('Login successful, redirecting to:', from);
+              window.location.href = from;
+            }, 300);
+          }, 1000);
+        } else {
+          throw new Error("Failed to set authentication token");
+        }
       }
     } catch (error) {
       console.error("Login error:", error);

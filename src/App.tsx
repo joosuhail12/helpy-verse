@@ -58,7 +58,7 @@ const queryClient = new QueryClient({
 });
 
 const initializeApp = () => {
-  const token = getCookie("customerToken");
+  const token = getCookie("customerToken") || localStorage.getItem("token");
   if (token) {
     console.log("App initialization: Found token, setting up auth");
     handleSetToken(token);
@@ -73,7 +73,7 @@ const RootRedirect = () => {
     initializeApp();
   }, []);
 
-  const token = getCookie("customerToken");
+  const token = getCookie("customerToken") || localStorage.getItem("token");
   return token ? <Navigate to="/home" replace /> : <Navigate to="/sign-in" replace />;
 };
 
@@ -102,6 +102,20 @@ const App = () => {
   useEffect(() => {
     // Initialize app with authentication if token exists
     initializeApp();
+    
+    // Set up event listener for storage changes (for multi-tab synchronization)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "token" && !e.newValue) {
+        // Token was removed in another tab, log out here too
+        window.location.href = "/sign-in";
+      }
+    };
+    
+    window.addEventListener("storage", handleStorageChange);
+    
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
   }, []);
 
   return (

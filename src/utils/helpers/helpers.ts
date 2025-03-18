@@ -2,24 +2,30 @@ import { HttpClient } from "@/api/services/HttpClient";
 
 // 🟢 Get Cookie
 export const getCookie = (cname: string): string => {
-    return document.cookie
+    const cookieValue = document.cookie
         .split("; ")
         .find((row) => row.startsWith(`${cname}=`))
         ?.split("=")[1]
         ?.trim() || "";
+    
+    console.log(`Getting cookie ${cname}:`, !!cookieValue);
+    return cookieValue;
 };
 
 // 🟢 Set Cookie
-export const setCookie = (cname: string, cvalue: string, exdays: number = 10): void => {
+export const setCookie = (cname: string, cvalue: string, exdays: number = 30): void => {
     const d = new Date();
     d.setTime(d.getTime() + exdays * 24 * 60 * 60 * 1000);
     const expires = `expires=${d.toUTCString()}`;
-    document.cookie = `${cname}=${cvalue};${expires};path=/;SameSite=Lax`;
+    const cookieString = `${cname}=${cvalue};${expires};path=/;SameSite=Lax`;
+    document.cookie = cookieString;
+    console.log(`Setting cookie ${cname}:`, cookieString);
 };
 
 // 🟢 Delete Cookie
 export const deleteCookie = (name: string): void => {
     document.cookie = `${name}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Lax`;
+    console.log(`Deleted cookie ${name}`);
 };
 
 // 🟢 Logout User
@@ -31,6 +37,12 @@ export const handleLogout = (): void => {
     
     // Reset HTTP client configuration
     HttpClient.apiClient.defaults.headers.common["Authorization"] = "";
+    
+    // Force clear browser storage too
+    localStorage.removeItem("token");
+    sessionStorage.removeItem("token");
+    
+    console.log("User logged out");
     
     // Don't use router here, use direct navigation for reliability
     setTimeout(() => {
@@ -47,8 +59,11 @@ export const handleSetToken = (token: string): boolean => {
     }
     
     try {
-        // Set the cookie with a long expiration
+        // Set the cookie with a long expiration (30 days)
         setCookie("customerToken", token, 30);
+        
+        // Also store in localStorage as backup
+        localStorage.setItem("token", token);
         
         // Configure axios with the new token
         HttpClient.apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
