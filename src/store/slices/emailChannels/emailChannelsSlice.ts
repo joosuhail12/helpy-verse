@@ -1,25 +1,15 @@
 
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../store';
+import { EmailChannel } from '@/types/emailChannel';
 
-export type EmailChannel = {
-  id: string;
-  name: string;
-  email: string;
-  isActive: boolean;
-  isDefault: boolean;
-  createdAt: string;
-  updatedAt: string;
-  domainStatus: 'verified' | 'pending' | 'failed';
-};
-
-export type EmailChannelsState = {
+export interface EmailChannelsState {
   channels: EmailChannel[];
-  defaultChannel: string | null;
+  defaultChannel: EmailChannel | null;
   hasDomainVerified: boolean;
   loading: boolean;
   error: string | null;
-};
+}
 
 const initialState: EmailChannelsState = {
   channels: [],
@@ -218,7 +208,7 @@ const emailChannelsSlice = createSlice({
         state.loading = false;
         state.channels.push(action.payload);
         if (action.payload.isDefault) {
-          state.defaultChannel = action.payload.id;
+          state.defaultChannel = action.payload;
         }
       })
       .addCase(createChannel.rejected, (state, action) => {
@@ -232,13 +222,13 @@ const emailChannelsSlice = createSlice({
           state.channels[index] = action.payload;
         }
         if (action.payload.isDefault) {
-          state.defaultChannel = action.payload.id;
+          state.defaultChannel = action.payload;
         }
       })
       // Delete channel
       .addCase(deleteChannel.fulfilled, (state, action) => {
         state.channels = state.channels.filter(channel => channel.id !== action.payload);
-        if (state.defaultChannel === action.payload) {
+        if (state.defaultChannel && state.defaultChannel.id === action.payload) {
           state.defaultChannel = null;
         }
       })
@@ -255,12 +245,12 @@ const emailChannelsSlice = createSlice({
           ...channel,
           isDefault: channel.id === action.payload.id
         }));
-        state.defaultChannel = action.payload.id;
+        state.defaultChannel = action.payload;
       })
       // Bulk delete channels
       .addCase(bulkDeleteChannels.fulfilled, (state, action) => {
         state.channels = state.channels.filter(channel => !action.payload.includes(channel.id));
-        if (state.defaultChannel && action.payload.includes(state.defaultChannel)) {
+        if (state.defaultChannel && action.payload.includes(state.defaultChannel.id)) {
           state.defaultChannel = null;
         }
       })

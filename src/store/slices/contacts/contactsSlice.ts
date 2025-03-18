@@ -84,6 +84,9 @@ export const fetchContactDetails = createAsyncThunk(
   }
 );
 
+// Add for backward compatibility
+export const fetchCustomerDetails = fetchContactDetails;
+
 export const createContact = createAsyncThunk(
   'contacts/createContact',
   async (contact: Partial<Contact>, { rejectWithValue }) => {
@@ -104,6 +107,21 @@ export const createContact = createAsyncThunk(
       return newContact;
     } catch (error) {
       return rejectWithValue('Failed to create contact');
+    }
+  }
+);
+
+// Alias for addContact
+export const addContact = createContact;
+
+export const updateContact = createAsyncThunk(
+  'contacts/updateContact',
+  async ({ contactId, data }: { contactId: string; data: Partial<Contact> }, { rejectWithValue }) => {
+    try {
+      // Mock API call - in a real app, you would update the contact on your backend
+      return { contactId, ...data };
+    } catch (error) {
+      return rejectWithValue('Failed to update contact');
     }
   }
 );
@@ -147,7 +165,10 @@ const contactsSlice = createSlice({
         state.selectedContacts.push(id);
       }
     },
-    // Add more reducers as needed
+    // Add clearSelection action
+    clearSelection: (state) => {
+      state.selectedContacts = [];
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -181,6 +202,20 @@ const contactsSlice = createSlice({
         state.contacts.push(action.payload);
         state.items.push(action.payload);
       })
+      .addCase(updateContact.fulfilled, (state, action) => {
+        const { contactId, ...updates } = action.payload;
+        const contact = state.contacts.find(c => c.id === contactId);
+        if (contact) {
+          Object.assign(contact, updates);
+        }
+        const item = state.items.find(c => c.id === contactId);
+        if (item) {
+          Object.assign(item, updates);
+        }
+        if (state.contactDetails && state.contactDetails.id === contactId) {
+          Object.assign(state.contactDetails, updates);
+        }
+      })
       .addCase(updateContactCompany.fulfilled, (state, action) => {
         const { contactId, companyId } = action.payload;
         const contact = state.contacts.find(c => c.id === contactId);
@@ -191,6 +226,6 @@ const contactsSlice = createSlice({
   },
 });
 
-export const { toggleSelectContact, selectContact, toggleSelection } = contactsSlice.actions;
+export const { toggleSelectContact, selectContact, toggleSelection, clearSelection } = contactsSlice.actions;
 
 export default contactsSlice.reducer;

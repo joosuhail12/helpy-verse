@@ -1,135 +1,250 @@
 
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { Teammate, ActivityLog, Session } from '@/types/teammate';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { Teammate, ActivityLog, TeamAssignment, Session } from '@/types/teammate';
 
-interface TeammatesState {
+export interface TeammatesState {
   teammates: Teammate[];
-  sessions: Session[];
-  activityLogs: ActivityLog[];
+  selectedTeammate: Teammate | null;
+  activities: Record<string, ActivityLog[]>;
+  assignments: Record<string, TeamAssignment[]>;
+  sessions: Record<string, Session[]>;
   loading: boolean;
   error: string | null;
 }
 
 const initialState: TeammatesState = {
-  teammates: [
-    {
-      id: '1',
-      name: 'John Doe',
-      email: 'john@example.com',
-      role: 'admin',
-      status: 'active',
-      lastActive: new Date().toISOString(),
-      createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30).toISOString(), // 30 days ago
-      avatar: 'https://api.dicebear.com/7.x/avatars/svg?seed=john',
-      permissions: ['manage_users', 'manage_content', 'manage_settings'],
-      is2FAEnabled: true,
-    },
-    {
-      id: '2',
-      name: 'Jane Smith',
-      email: 'jane@example.com',
-      role: 'agent',
-      status: 'active',
-      lastActive: new Date(Date.now() - 1000 * 60 * 30).toISOString(), // 30 minutes ago
-      createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 15).toISOString(), // 15 days ago
-      avatar: 'https://api.dicebear.com/7.x/avatars/svg?seed=jane',
-      permissions: ['view_tickets', 'reply_tickets'],
-      is2FAEnabled: false,
-    }
-  ],
-  sessions: [
-    {
-      id: 's1',
-      teammateId: '1',
-      deviceType: 'Desktop',
-      deviceName: 'Chrome on Windows',
-      location: 'San Francisco, USA',
-      lastActive: new Date().toISOString(),
-      ipAddress: '192.168.1.1',
-    },
-    {
-      id: 's2',
-      teammateId: '1',
-      deviceType: 'Mobile',
-      deviceName: 'Safari on iPhone',
-      location: 'San Francisco, USA',
-      lastActive: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
-      ipAddress: '192.168.1.2',
-    }
-  ],
-  activityLogs: [
-    {
-      id: 'al1',
-      teammateId: '1',
-      type: 'login',
-      description: 'Logged in from San Francisco, USA',
-      timestamp: new Date().toISOString(),
-      metadata: {
-        ip: '192.168.1.1',
-        device: 'Chrome on Windows',
-      },
-    },
-    {
-      id: 'al2',
-      teammateId: '1',
-      type: 'settings_change',
-      description: 'Updated email notification preferences',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60).toISOString(), // 1 hour ago
-      metadata: {
-        change: 'email_notifications',
-        old_value: 'all',
-        new_value: 'mentions_only',
-      },
-    }
-  ],
+  teammates: [],
+  selectedTeammate: null,
+  activities: {},
+  assignments: {},
+  sessions: {},
   loading: false,
   error: null,
 };
 
-export const fetchTeammate = (id: string) => ({
-  type: 'teammates/fetchTeammate',
-  payload: id,
-});
+// Async thunks
+export const fetchTeammates = createAsyncThunk(
+  'teammates/fetchTeammates',
+  async (_, { rejectWithValue }) => {
+    try {
+      // Mock API call
+      return mockTeammates;
+    } catch (error: any) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
 
-export const update2FAStatus = (teammateId: string, code: string) => ({
-  type: 'teammates/update2FAStatus',
-  payload: { teammateId, code },
-});
+export const fetchTeammateDetails = createAsyncThunk(
+  'teammates/fetchTeammateDetails',
+  async (id: string, { rejectWithValue }) => {
+    try {
+      // Mock API call
+      const teammate = mockTeammates.find(t => t.id === id);
+      if (!teammate) {
+        throw new Error('Teammate not found');
+      }
+      return teammate;
+    } catch (error: any) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
 
-export const disableTwoFactor = (teammateId: string) => ({
-  type: 'teammates/disableTwoFactor',
-  payload: teammateId,
-});
+export const fetchTeammateActivities = createAsyncThunk(
+  'teammates/fetchTeammateActivities',
+  async (teammateId: string, { rejectWithValue }) => {
+    try {
+      // Mock API call
+      return { teammateId, activities: [] };
+    } catch (error: any) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
 
-export const resetPassword = ({ teammateId, newPassword, currentPassword }: any) => ({
-  type: 'teammates/resetPassword',
-  payload: { teammateId, newPassword, currentPassword },
-});
+export const fetchTeammateAssignments = createAsyncThunk(
+  'teammates/fetchTeammateAssignments',
+  async (teammateId: string, { rejectWithValue }) => {
+    try {
+      // Mock API call
+      return { teammateId, assignments: [] };
+    } catch (error: any) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
 
-export const terminateSession = (payload: { teammateId: string; sessionId: string }) => ({
-  type: 'teammates/terminateSession',
-  payload,
-});
+export const fetchTeammateSessions = createAsyncThunk(
+  'teammates/fetchTeammateSessions',
+  async (teammateId: string, { rejectWithValue }) => {
+    try {
+      // Mock API call
+      return { teammateId, sessions: [] };
+    } catch (error: any) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const enable2FA = createAsyncThunk(
+  'teammates/enable2FA',
+  async (teammateId: string, { rejectWithValue }) => {
+    try {
+      // Mock API call
+      return { teammateId, setupKey: 'MOCK-2FA-SETUP-KEY' };
+    } catch (error: any) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const verify2FA = createAsyncThunk(
+  'teammates/verify2FA',
+  async ({ teammateId, code }: { teammateId: string; code: string }, { rejectWithValue }) => {
+    try {
+      // Mock API call
+      return { teammateId, success: true };
+    } catch (error: any) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const disable2FA = createAsyncThunk(
+  'teammates/disable2FA',
+  async (teammateId: string, { rejectWithValue }) => {
+    try {
+      // Mock API call
+      return { teammateId, success: true };
+    } catch (error: any) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const resetPassword = createAsyncThunk(
+  'teammates/resetPassword',
+  async ({ teammateId, newPassword }: { teammateId: string; newPassword: string }, { rejectWithValue }) => {
+    try {
+      // Mock API call
+      return { teammateId, success: true };
+    } catch (error: any) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const terminateSession = createAsyncThunk(
+  'teammates/terminateSession',
+  async ({ teammateId, sessionId }: { teammateId: string; sessionId: string }, { rejectWithValue }) => {
+    try {
+      // Mock API call
+      return { teammateId, sessionId };
+    } catch (error: any) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+// Mock data
+const mockTeammates: Teammate[] = [
+  {
+    id: '1',
+    name: 'Jane Smith',
+    email: 'jane@example.com',
+    role: 'admin',
+    status: 'active',
+    lastActive: '2023-05-15T10:30:00Z',
+    createdAt: '2023-01-01T08:00:00Z',
+    permissions: ['manage_users', 'manage_settings', 'manage_content'],
+    is2FAEnabled: true,
+  },
+  {
+    id: '2',
+    name: 'John Doe',
+    email: 'john@example.com',
+    role: 'agent',
+    status: 'active',
+    lastActive: '2023-05-14T14:45:00Z',
+    createdAt: '2023-01-15T09:30:00Z',
+    permissions: ['view_tickets', 'respond_tickets'],
+    is2FAEnabled: false,
+  },
+];
 
 const teammatesSlice = createSlice({
   name: 'teammates',
   initialState,
-  reducers: {
-    startLoading: (state) => {
-      state.loading = true;
-      state.error = null;
-    },
-    setTeammates: (state, action: PayloadAction<Teammate[]>) => {
-      state.teammates = action.payload;
-      state.loading = false;
-    },
-    setError: (state, action: PayloadAction<string>) => {
-      state.error = action.payload;
-      state.loading = false;
-    },
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchTeammates.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchTeammates.fulfilled, (state, action) => {
+        state.loading = false;
+        state.teammates = action.payload;
+      })
+      .addCase(fetchTeammates.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(fetchTeammateDetails.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchTeammateDetails.fulfilled, (state, action) => {
+        state.loading = false;
+        state.selectedTeammate = action.payload;
+      })
+      .addCase(fetchTeammateDetails.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(fetchTeammateActivities.fulfilled, (state, action) => {
+        const { teammateId, activities } = action.payload;
+        state.activities[teammateId] = activities;
+      })
+      .addCase(fetchTeammateAssignments.fulfilled, (state, action) => {
+        const { teammateId, assignments } = action.payload;
+        state.assignments[teammateId] = assignments;
+      })
+      .addCase(fetchTeammateSessions.fulfilled, (state, action) => {
+        const { teammateId, sessions } = action.payload;
+        state.sessions[teammateId] = sessions;
+      })
+      .addCase(enable2FA.fulfilled, (state, action) => {
+        // Handle 2FA setup key response if needed
+      })
+      .addCase(verify2FA.fulfilled, (state, action) => {
+        if (state.selectedTeammate && state.selectedTeammate.id === action.payload.teammateId) {
+          state.selectedTeammate.is2FAEnabled = true;
+        }
+        const teammateIndex = state.teammates.findIndex(t => t.id === action.payload.teammateId);
+        if (teammateIndex !== -1) {
+          state.teammates[teammateIndex].is2FAEnabled = true;
+        }
+      })
+      .addCase(disable2FA.fulfilled, (state, action) => {
+        if (state.selectedTeammate && state.selectedTeammate.id === action.payload.teammateId) {
+          state.selectedTeammate.is2FAEnabled = false;
+        }
+        const teammateIndex = state.teammates.findIndex(t => t.id === action.payload.teammateId);
+        if (teammateIndex !== -1) {
+          state.teammates[teammateIndex].is2FAEnabled = false;
+        }
+      })
+      .addCase(terminateSession.fulfilled, (state, action) => {
+        const { teammateId, sessionId } = action.payload;
+        if (state.sessions[teammateId]) {
+          state.sessions[teammateId] = state.sessions[teammateId].filter(
+            session => session.id !== sessionId
+          );
+        }
+      });
   },
 });
 
-export const { startLoading, setTeammates, setError } = teammatesSlice.actions;
-
-export default teammatesSlice.reducer;
+export const teammatesReducer = teammatesSlice.reducer;

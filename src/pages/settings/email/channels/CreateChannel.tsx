@@ -9,8 +9,6 @@ import { ChannelFormFields } from './components/ChannelFormFields';
 import { useChannelForm } from './hooks/useChannelForm';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2 } from 'lucide-react';
-import type { FieldErrors } from 'react-hook-form';
-import type { EmailChannel } from '@/types/emailChannel';
 
 const CreateChannel = () => {
   const { toast } = useToast();
@@ -45,7 +43,7 @@ const CreateChannel = () => {
           ...channel,
           // Add these fields to make it compatible with the expected type
           name: channel.channelName,
-          domainStatus: 'unverified',
+          domainStatus: 'pending' as const, // use correct literal type
         };
         
         const result = await dispatch(createChannel(completeChannel)).unwrap();

@@ -13,7 +13,7 @@ import { securityReducer } from './slices/securitySlice';
 import { emailChannelsReducer } from './slices/emailChannels/emailChannelsSlice';
 import { cannedResponsesReducer } from './slices/cannedResponses/cannedResponsesSlice';
 import teamsReducer from './slices/teams/teamsSlice';
-import teammatesReducer from './slices/teammates/teammatesSlice';
+import { teammatesReducer } from './slices/teammates/teammatesSlice';
 
 export const store = configureStore({
   reducer: {

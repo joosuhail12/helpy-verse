@@ -79,6 +79,11 @@ export default function CreateAction() {
         headers,
         category: values.category || 'Custom',
         isActive: true,
+        enabled: true, // Add missing required field
+        createdBy: {
+          id: '1', // Mock user ID
+          name: 'Current User', // Mock user name
+        },
         connectedChatbots: values.connectedChatbots.map(id => ({
           id,
           name: 'Chatbot ' + id // You might want to fetch actual names from your chatbot store

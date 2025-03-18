@@ -49,6 +49,8 @@ export const useChannelOperations = (channel: EmailChannel) => {
         isActive: 'isActive' in updatedChannel
           ? updatedChannel.isActive
           : channel.isActive,
+        // Ensure domainStatus is the correct type
+        domainStatus: updatedChannel.domainStatus || channel.domainStatus,
       };
       
       // Wrap the update data in the expected format

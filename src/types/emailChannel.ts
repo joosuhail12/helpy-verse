@@ -12,7 +12,7 @@ export interface EmailChannel {
   createdAt: string;
   updatedAt?: string;
   teamId?: string;
-  domainStatus?: string;
+  domainStatus?: 'verified' | 'pending' | 'failed';
   allowAgentConversations: boolean;
   useAgentNames: boolean;
   useOriginalSender: boolean;
@@ -35,5 +35,5 @@ export interface CreateEmailChannelDto {
   useOriginalSender: boolean;
   isActive: boolean;
   name?: string;
-  domainStatus?: string;
+  domainStatus?: 'verified' | 'pending' | 'failed';
 }

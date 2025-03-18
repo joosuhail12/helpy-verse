@@ -36,6 +36,7 @@ export interface CustomAction {
   createdBy: {
     id: string;
     name: string;
+    avatar?: string; // Make avatar optional
   };
   enabled: boolean;
   category: string;
@@ -45,3 +46,5 @@ export interface CustomAction {
     name: string;
   }>;
 }
+
+export type Action = CustomAction;

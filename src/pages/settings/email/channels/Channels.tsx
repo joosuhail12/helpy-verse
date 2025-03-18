@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { ChannelList } from './components/ChannelList';
 import { LoadingState } from './components/LoadingState';
@@ -8,8 +9,16 @@ import { ChannelHeader } from './components/ChannelHeader';
 import { ChannelSearch } from './components/ChannelSearch';
 import { BulkActions } from './components/BulkActions';
 import { useChannelManagement } from './hooks/useChannelManagement';
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, Button, MoreHorizontal } from '@radix-ui/react-dropdown-menu';
+import { 
+  DropdownMenu, 
+  DropdownMenuTrigger, 
+  DropdownMenuContent, 
+  DropdownMenuItem 
+} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
+import { MoreHorizontal } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { EmailChannel } from '@/types/emailChannel';
 
 const Channels = () => {
   const {
@@ -34,6 +43,14 @@ const Channels = () => {
   } = useChannelManagement();
 
   const navigate = useNavigate();
+  const [channelToDelete, setChannelToDelete] = useState<EmailChannel | null>(null);
+
+  const handleSetDefault = (id: string) => {
+    // This function would call the handleToggleDefaultChannel function or something similar
+    if (defaultChannel) {
+      handleToggleDefaultChannel(true);
+    }
+  };
 
   const renderActionOptions = (channel: EmailChannel) => {
     const isDefault = defaultChannel && channel.id === defaultChannel.id;
@@ -55,7 +72,7 @@ const Channels = () => {
               Set as Default
             </DropdownMenuItem>
           )}
-          <DropdownMenuItem onClick={() => handleToggleStatus(channel.id, !channel.isActive)}>
+          <DropdownMenuItem onClick={() => handleToggleStatus(channel.id)}>
             {channel.isActive ? 'Disable' : 'Enable'}
           </DropdownMenuItem>
           {!isDefault && (
@@ -73,8 +90,8 @@ const Channels = () => {
       <ChannelHeader hasDomainVerified={hasDomainVerified} />
 
       <DefaultEmailChannel
-        email={defaultChannel && typeof defaultChannel === 'object' ? defaultChannel.email : 'default@example.com'}
-        isActive={defaultChannel && typeof defaultChannel === 'object' ? defaultChannel.isActive : false}
+        email={defaultChannel ? defaultChannel.email : 'default@example.com'}
+        isActive={defaultChannel ? defaultChannel.isActive : false}
         onToggle={handleToggleDefaultChannel}
         disabled={filteredAndSortedChannels.length > 0}
       />

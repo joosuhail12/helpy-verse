@@ -43,7 +43,7 @@ export function AddChannelDialog({ isOpen, onClose }: AddChannelDialogProps) {
         const completeChannel = {
           ...channel,
           name: channel.channelName,
-          domainStatus: 'unverified',
+          domainStatus: 'pending' as const, // Use proper type
         };
 
         await dispatch(createChannel(completeChannel)).unwrap();

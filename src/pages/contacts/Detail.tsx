@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ContactTickets } from '@/components/contacts/detail/ContactTickets';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
-import { fetchCustomerDetails } from '@/store/slices/contacts/contactsSlice';
+import { fetchContactDetails } from '@/store/slices/contacts/contactsSlice';
 
 const ContactDetail = () => {
   const { id } = useParams();
@@ -23,7 +23,7 @@ const ContactDetail = () => {
   const { contactDetails, loading, error } = useAppSelector((state) => state.contacts);
   useEffect(() => {
     if (id) {
-      dispatch(fetchCustomerDetails(id));
+      dispatch(fetchContactDetails(id));
     }
   }, [id, dispatch]);
 
