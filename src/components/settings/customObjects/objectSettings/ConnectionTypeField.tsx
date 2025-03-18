@@ -13,12 +13,12 @@ export function ConnectionTypeField({ form }: ConnectionTypeFieldProps) {
   return (
     <FormField
       control={form.control}
-      name="connectionType"
+      name="connectiontype"
       render={({ field }) => (
         <FormItem>
           <FormLabel>Connect to</FormLabel>
-          <Select 
-            onValueChange={field.onChange} 
+          <Select
+            onValueChange={field.onChange}
             defaultValue={field.value || undefined}
           >
             <FormControl>

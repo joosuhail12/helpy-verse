@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
-import type { CustomObject } from "@/mock/customObjects";
+import { CustomObject } from "@/types/customObject";
 import { BasicInfoFields } from "./objectSettings/BasicInfoFields";
 import { ConnectionTypeField } from "./objectSettings/ConnectionTypeField";
 import { VisibilitySettings } from "./objectSettings/VisibilitySettings";

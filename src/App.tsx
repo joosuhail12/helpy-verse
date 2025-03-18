@@ -22,13 +22,13 @@ const ContactDetail = lazy(() => import(/* webpackChunkName: "contact-detail" */
 const Tags = lazy(() => import(/* webpackChunkName: "tags" */ "./pages/settings/Tags"));
 const TeammateDetail = lazy(() => import(/* webpackChunkName: "teammate-detail" */ "./pages/settings/TeammateDetail"));
 const CustomData = lazy(() => import(/* webpackChunkName: "custom-data" */ "./pages/settings/CustomData"));
-const CustomObjects = lazy(() => import(/* webpackChunkName: "custom-objects" */ "./pages/settings/CustomObjects"));
+const CustomObjects = lazy(() => import(/* webpackChunkName: "custom-objects" */ "./pages/settings/customObjects"));
 const Teams = lazy(() => import(/* webpackChunkName: "teams" */ "./pages/settings/Teams"));
 const Teammates = lazy(() => import(/* webpackChunkName: "teammates" */ "./pages/settings/Teammates"));
 const NotFound = lazy(() => import(/* webpackChunkName: "not-found" */ "./pages/NotFound"));
 const CreateTeam = lazy(() => import(/* webpackChunkName: "create-team" */ "./pages/settings/CreateTeam"));
 const TeamDetail = lazy(() => import(/* webpackChunkName: "team-detail" */ "./pages/settings/TeamDetail"));
-const CustomObjectDetail = lazy(() => import(/* webpackChunkName: "custom-object-detail" */ "./pages/settings/CustomObjectDetail"));
+const CustomObjectDetail = lazy(() => import(/* webpackChunkName: "custom-object-detail" */ "./pages/settings/customObjects/CustomObjectDetail"));
 const CannedResponses = lazy(() => import(/* webpackChunkName: "canned-responses" */ "./pages/settings/CannedResponses"));
 const CannedResponseDetail = lazy(() => import(/* webpackChunkName: "canned-response-detail" */ "./pages/settings/CannedResponseDetail"));
 const CreateCannedResponse = lazy(() => import(/* webpackChunkName: "create-canned-response" */ "./pages/settings/CreateCannedResponse"));
