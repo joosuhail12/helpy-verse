@@ -28,6 +28,7 @@ export {
   getUserPermission
 };
 
+// Use 'export type' when re-exporting types with isolatedModules enabled
 export type { Permission, Permissions, AuthState } from './auth/types';
 export { ActionType } from '@/utils/ability';
 
