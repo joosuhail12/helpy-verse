@@ -5,7 +5,6 @@ import { useAppDispatch } from './useAppDispatch';
 import { useAppSelector } from './useAppSelector';
 import { loginUser } from '../store/slices/authSlice';
 import { toast } from '../components/ui/use-toast';
-import { getCookie } from '@/utils/cookies/cookieManager';
 import { handleSetToken, isAuthenticated } from '@/utils/auth/tokenManager';
 import { HttpClient } from '@/api/services/HttpClient';
 
@@ -34,12 +33,15 @@ export const useLogin = (redirectPath: string = '/home') => {
 
   // Auto-redirect if already authenticated
   useEffect(() => {
-    if (isAuthenticated()) {
-      console.log('Already authenticated, redirecting to:', redirectPath);
-      
-      // Navigate to redirect path
-      navigate(redirectPath, { replace: true });
-    }
+    const checkAuth = async () => {
+      if (isAuthenticated()) {
+        console.log('Already authenticated, redirecting to:', redirectPath);
+        // Navigate to redirect path
+        navigate(redirectPath, { replace: true });
+      }
+    };
+    
+    checkAuth();
   }, [redirectPath, navigate]);
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
@@ -57,13 +59,32 @@ export const useLogin = (redirectPath: string = '/home') => {
         
         // Set a mock token in development mode
         const mockToken = 'mock-token-for-development-' + Date.now();
+        
+        // Store in localStorage first (more reliable than cookies in some environments)
+        localStorage.setItem("token", mockToken);
+        
+        // Then try to set the cookie
         const success = handleSetToken(mockToken);
         
-        if (success) {
+        // Configure HttpClient with the token
+        HttpClient.setAxiosDefaultConfig(mockToken);
+        
+        if (success || localStorage.getItem("token")) {
           // Show success toast
           toast({
             title: 'Development Mode',
             description: 'Logged in with development credentials',
+          });
+          
+          // Trigger auth state update in Redux
+          dispatch({
+            type: 'auth/login/fulfilled',
+            payload: { 
+              data: { 
+                accessToken: { token: mockToken },
+                username: email
+              }
+            }
           });
           
           // Small delay before redirect
@@ -73,10 +94,15 @@ export const useLogin = (redirectPath: string = '/home') => {
         } else {
           // Show error toast if token setting failed
           toast({
-            title: 'Error',
-            description: 'Failed to set development mode token',
-            variant: 'destructive',
+            title: 'Warning',
+            description: 'Using fallback login mechanism - cookies may be blocked',
+            variant: 'default',
           });
+          
+          // Try direct navigation as fallback
+          setTimeout(() => {
+            window.location.href = redirectPath;
+          }, 1000);
         }
         
         setIsSubmitting(false);

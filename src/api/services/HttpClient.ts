@@ -26,7 +26,7 @@ const LLM_SERVICE_URL = API_BASE_URL;
 const apiClient = axios.create({
     baseURL: API_BASE_URL,
     headers: {
-        "Content-Type": "application/json",
+      "Content-Type": "application/json",
     },
     timeout: 30000, // 30 seconds timeout
     withCredentials: true, // Important for handling cookies across domains if needed
@@ -60,6 +60,55 @@ const getCookieValue = (cname: string): string => {
     }
     
     return "";
+};
+
+// Helper function to set cookies (added to avoid circular dependencies)
+const setCookieValue = (cname: string, cvalue: string, exdays: number = 30): void => {
+    try {
+        const d = new Date();
+        d.setTime(d.getTime() + exdays * 24 * 60 * 60 * 1000);
+        const expires = `expires=${d.toUTCString()}`;
+        
+        // Use a more compatible cookie string with explicit path and SameSite
+        const cookieString = `${cname}=${cvalue};${expires};path=/;SameSite=Lax`;
+        document.cookie = cookieString;
+        console.log(`Setting cookie ${cname}: ${cvalue ? (cvalue.length > 10 ? cvalue.substring(0, 10) + '...' : cvalue) : "empty"}`);
+
+        // Verify the cookie was set properly
+        const verifyCookie = getCookieValue(cname);
+        if (verifyCookie) {
+            console.log(`Cookie ${cname} verified successfully`);
+        } else {
+            console.error(`Failed to set cookie ${cname}`);
+        }
+    } catch (error) {
+        console.error("Error setting cookie:", error);
+    }
+};
+
+// Logout function to avoid circular dependencies
+const handleApiLogout = (): void => {
+    // Clear all authentication-related cookies
+    document.cookie = `customerToken=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Lax`;
+    document.cookie = `agent_email=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Lax`;
+    document.cookie = `workspaceId=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Lax`;
+    
+    // Reset HTTP client configuration - clear Authorization header
+    if (apiClient) {
+        delete apiClient.defaults.headers.common["Authorization"];
+        console.log("Cleared Authorization headers during logout");
+    }
+    
+    // Force clear browser storage too
+    localStorage.removeItem("token");
+    sessionStorage.removeItem("token");
+    
+    console.log("User logged out by API client");
+    
+    // Don't use router here, use direct navigation for reliability
+    setTimeout(() => {
+        window.location.href = "/sign-in";
+    }, 100);
 };
 
 // ✅ Request Interceptor - Adds Token & Workspace ID to all requests
@@ -112,10 +161,8 @@ const responseErrorInterceptor = (error: any) => {
     // Handle authentication errors
     if (status === 401 || errorCode === "UNAUTHORIZED") {
         console.warn("Authentication error detected, logging out");
-        // Import dynamically to avoid circular dependency
-        import('../../utils/auth/tokenManager').then(({ handleLogout }) => {
-            handleLogout();
-        });
+        // Use our internal logout function instead of importing
+        handleApiLogout();
         return Promise.reject(new Error("Authentication failed. Please log in again."));
     }
 
@@ -142,6 +189,13 @@ const llmService = axios.create({
 // Add the same interceptors to the LLM service
 llmService.interceptors.request.use(requestInterceptor, requestErrorInterceptor);
 llmService.interceptors.response.use(responseInterceptor, responseErrorInterceptor);
+
+// Export cookie helper functions to reduce circular dependencies
+export const cookieFunctions = {
+    getCookie: getCookieValue,
+    setCookie: setCookieValue,
+    handleLogout: handleApiLogout
+};
 
 // ✅ API Call Wrapper
 export const HttpClient = {

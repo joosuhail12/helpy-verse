@@ -2,32 +2,15 @@
 /**
  * Token and authentication management utility functions
  */
-import { HttpClient } from "@/api/services/HttpClient";
-import { getCookie, setCookie, deleteCookie, cookieExists } from "../cookies/cookieManager";
+import { HttpClient, cookieFunctions } from "@/api/services/HttpClient";
+
+// Get cookie helpers from HttpClient to avoid circular dependencies
+const { getCookie, setCookie } = cookieFunctions;
 
 // 🟢 Logout User
 export const handleLogout = (): void => {
-    // Clear all authentication-related cookies
-    deleteCookie("customerToken");
-    deleteCookie("agent_email");
-    deleteCookie("workspaceId");
-    
-    // Reset HTTP client configuration - clear Authorization header
-    if (HttpClient && HttpClient.apiClient) {
-        delete HttpClient.apiClient.defaults.headers.common["Authorization"];
-        console.log("Cleared Authorization headers during logout");
-    }
-    
-    // Force clear browser storage too
-    localStorage.removeItem("token");
-    sessionStorage.removeItem("token");
-    
-    console.log("User logged out");
-    
-    // Don't use router here, use direct navigation for reliability
-    setTimeout(() => {
-        window.location.href = "/sign-in";
-    }, 100);
+    // Use the logout function from HttpClient to avoid circular dependencies
+    cookieFunctions.handleLogout();
 };
 
 // 🟢 Set Auth Token
@@ -59,7 +42,7 @@ export const handleSetToken = (token: string): boolean => {
             localStorage: !!tokenInStorage
         });
         
-        return !!tokenInCookie;
+        return !!tokenInCookie || !!tokenInStorage; // Consider successful if either is set
     } catch (error) {
         console.error("Error setting token:", error);
         return false;
@@ -68,7 +51,7 @@ export const handleSetToken = (token: string): boolean => {
 
 // 🟢 Check if user is authenticated - check both cookie and localStorage
 export const isAuthenticated = (): boolean => {
-    const tokenInCookie = cookieExists("customerToken");
+    const tokenInCookie = !!getCookie("customerToken");
     const tokenInStorage = !!localStorage.getItem("token");
     
     // Consider authenticated if token exists in either place
