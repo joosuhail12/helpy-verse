@@ -29,7 +29,7 @@ export const SignIn = memo(() => {
     
     if (auth?.isAuthenticated || token) {
       console.log('User is authenticated, redirecting to home'); // Debug log
-      navigate('/home');
+      navigate('/home', { replace: true });
     }
   }, [auth?.isAuthenticated, navigate]);
 

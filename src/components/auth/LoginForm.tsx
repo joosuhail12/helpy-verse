@@ -1,6 +1,7 @@
+
 import { ArrowRight } from "lucide-react";
 import { useState, memo, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAppDispatch } from "../../hooks/useAppDispatch";
 import { useAppSelector } from "../../hooks/useAppSelector";
 import { loginUser } from "../../store/slices/authSlice";
@@ -14,7 +15,6 @@ export const LoginForm = memo(() => {
   const dispatch = useAppDispatch();
   const auth = useAppSelector((state) => state.auth);
   const loading = auth?.loading ?? false;
-  const navigate = useNavigate();
 
   // Check for auth errors and show toast
   useEffect(() => {
@@ -32,9 +32,9 @@ export const LoginForm = memo(() => {
     const token = getCookie("customerToken");
     
     if (auth.isAuthenticated || token) {
-      navigate('/home', { replace: true });
+      window.location.href = '/home'; // Using hard redirect for reliability
     }
-  }, [auth.isAuthenticated, navigate]);
+  }, [auth.isAuthenticated]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

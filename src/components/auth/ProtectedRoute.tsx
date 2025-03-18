@@ -9,10 +9,12 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   const [isChecking, setIsChecking] = useState(true);
   const { isAuthenticated, loading } = useAppSelector((state) => state.auth);
+  const [hasToken, setHasToken] = useState(false);
   
   useEffect(() => {
     // Check if token exists, this is more reliable than state when page refreshes
-    const hasToken = !!getCookie("customerToken");
+    const token = getCookie("customerToken");
+    setHasToken(!!token);
     
     // Wait a short moment to ensure auth state is properly loaded
     const timer = setTimeout(() => {
@@ -30,9 +32,6 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  // Check token directly from cookie as a fallback
-  const hasToken = !!getCookie("customerToken");
-  
   if (!isAuthenticated && !hasToken) {
     console.log('ProtectedRoute: Not authenticated, redirecting to login');
     return <Navigate to="/sign-in" state={{ from: location }} replace />;

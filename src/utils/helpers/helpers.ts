@@ -1,3 +1,4 @@
+
 import { HttpClient } from "@/api/services/HttpClient";
 
 // 🟢 Get Cookie
@@ -25,7 +26,11 @@ export const deleteCookie = (name: string): void => {
 // 🟢 Logout User
 export const handleLogout = (): void => {
     deleteCookie("customerToken");
-    window.location.href = "/";
+    deleteCookie("agent_email");
+    deleteCookie("workspaceId");
+    
+    // Don't use router here, use direct navigation
+    window.location.href = "/sign-in";
 };
 
 // 🟢 Set Auth Token

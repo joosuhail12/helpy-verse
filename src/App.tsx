@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -56,7 +57,7 @@ const queryClient = new QueryClient({
   },
 });
 
-const RootComponent = () => {
+const RootRedirect = () => {
   const token = getCookie("customerToken");
   return token ? <Navigate to="/home" replace /> : <Navigate to="/sign-in" replace />;
 };
@@ -93,12 +94,12 @@ const App = () => (
             <CaslProvider>
               <Suspense fallback={<LoadingFallback />}>
                 <Routes>
-                  <Route path="/" element={<RootComponent />} />
+                  <Route path="/" element={<RootRedirect />} />
                   <Route path="/sign-in" element={<SignIn />} />
                   <Route path="/sign-up" element={<SignUp />} />
                   <Route path="/forgot-password" element={<ForgotPassword />} />
                   <Route
-                    path="/home/*"
+                    path="/home"
                     element={
                       <ProtectedRoute>
                         <Home />
@@ -129,6 +130,11 @@ const App = () => (
                     <Route path="settings/email/channels/:id" element={<EmailChannelDetail />} />
                     <Route path="automation/ai/content-center" element={<ContentCenter />} />
                     <Route path="automation/ai/content-center/create" element={<CreateContent />} />
+                    <Route path="automation/ai/content-center/:id" element={<ContentDetail />} />
+                    <Route path="automation/ai/action-center" element={<ActionCenter />} />
+                    <Route path="automation/ai/action-center/create" element={<CreateAction />} />
+                    <Route path="automation/ai/chatbot-profiles" element={<ChatbotProfiles />} />
+                    <Route path="automation/ai/chatbot-profiles/create" element={<CreateChatbot />} />
                   </Route>
                   <Route path="*" element={<NotFound />} />
                 </Routes>
