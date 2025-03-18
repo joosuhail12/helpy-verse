@@ -3,18 +3,20 @@ export interface ValidationError {
   ruleId: string;
   field: string;
   message: string;
-  path?: string; // Add path to match useRuleBuilder's ValidationError
+  path: string;
 }
 
-export interface RuleConflict {
-  ruleIds: string[];
-  type: 'exclusive' | 'redundant' | 'contradicting';
-  message: string;
-}
-
-export interface ConstraintIssue {
-  ruleId: string;
-  field: string;
-  message: string;
-  severity: 'warning' | 'error';
-}
+export const validateField = (value: any, fieldName: string): ValidationError[] => {
+  const errors: ValidationError[] = [];
+  
+  if (!value && fieldName === 'field') {
+    errors.push({
+      ruleId: 'unknown',
+      field: 'field',
+      message: 'Field is required',
+      path: 'field'
+    });
+  }
+  
+  return errors;
+};

@@ -13,7 +13,7 @@ import { LoadingState } from './LoadingState';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
-import { setSelectedContacts } from '@/store/slices/contacts/contactsSlice';
+import { selectContact, deselectContact } from '@/store/slices/contacts/contactsSlice';
 import {
   Tooltip,
   TooltipContent,
@@ -39,9 +39,9 @@ export const ContactList = ({ contacts, loading }: ContactListProps) => {
 
   const handleSelectAll = () => {
     if (selectedContacts.length === contacts.length) {
-      dispatch(setSelectedContacts([]));
+      contacts.forEach(contact => dispatch(deselectContact(contact.id)));
     } else {
-      dispatch(setSelectedContacts(contacts.map(contact => contact.id)));
+      contacts.forEach(contact => dispatch(selectContact(contact.id)));
     }
   };
 

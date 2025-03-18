@@ -3,7 +3,8 @@ import { ArrowDown, ArrowUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
-import { setSortField, setSortDirection, type SortField } from '@/store/slices/content/contentSlice';
+import { setSortField, setSortDirection } from '@/store/slices/content/contentSlice';
+import type { SortField } from '@/types/content';
 
 export const ContentSorting = () => {
   const dispatch = useAppDispatch();

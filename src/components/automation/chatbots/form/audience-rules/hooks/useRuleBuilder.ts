@@ -3,18 +3,11 @@ import { useState, useCallback } from 'react';
 import { QueryGroup, QueryRule } from '@/types/queryBuilder';
 import { validateQueryGroup, ValidationResult } from '../utils/ruleValidator';
 import { generateId } from '@/lib/utils';
-import { ValidationError as RuleValidationError } from '../utils/validation';
-
-export type ValidationError = {
-  path: string;
-  message: string;
-  ruleId?: string;
-  field?: string;
-};
+import { ValidationError } from '../utils/validation';
 
 export const useRuleBuilder = (initialGroup: QueryGroup = { id: generateId(), combinator: 'and', rules: [] }) => {
   const [queryGroup, setQueryGroup] = useState<QueryGroup>(initialGroup);
-  const [errors, setErrors] = useState<RuleValidationError[]>([]);
+  const [errors, setErrors] = useState<ValidationError[]>([]);
 
   const validate = useCallback(() => {
     const result = validateQueryGroup(queryGroup);

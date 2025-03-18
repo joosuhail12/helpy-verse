@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { toggleContactSelection } from '@/store/slices/contacts/contactsSlice';
+import { selectContact, deselectContact } from '@/store/slices/contacts/contactsSlice';
 import { ContactActivityBadge } from './ContactActivityBadge';
 
 interface ContactListItemProps {
@@ -26,7 +26,11 @@ export const ContactListItem = ({ contact, isSelected }: ContactListItemProps) =
 
   const handleCheckboxClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    dispatch(toggleContactSelection(contact.id));
+    if (isSelected) {
+      dispatch(deselectContact(contact.id));
+    } else {
+      dispatch(selectContact(contact.id));
+    }
   };
 
   return (
