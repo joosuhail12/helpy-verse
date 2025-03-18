@@ -8,7 +8,7 @@ import companiesReducer from './slices/contacts/companiesSlice';
 import contentCenterReducer from './slices/automation/contentCenterSlice';
 import { actionsReducer } from './slices/actions/actionsSlice';
 import { chatbotsReducer } from './slices/chatbots/chatbotsSlice';
-import { contentReducer } from './slices/content/contentSlice';
+import contentReducer from './slices/content/contentSlice';
 import { securityReducer } from './slices/securitySlice';
 import { emailChannelsReducer } from './slices/emailChannels/emailChannelsSlice';
 import { cannedResponsesReducer } from './slices/cannedResponses/cannedResponsesSlice';

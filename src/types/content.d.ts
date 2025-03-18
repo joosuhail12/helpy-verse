@@ -39,14 +39,15 @@ export interface Content {
   createdAt: string;
   lastUpdated: string;
   author: User;
-  chatbots?: string[];
-  tags?: ContentTag[];
+  chatbots?: string[] | { id: string; name: string }[];
+  tags?: ContentTag[] | string[];
   sharedWith?: User[];
   comments?: ContentComment[];
   versions?: ContentVersion[];
   lastEditedBy?: User;
   content?: string;
   type?: 'snippet' | 'file' | 'website';
+  messageCount?: number;
 }
 
 export interface ContentState {
@@ -63,9 +64,14 @@ export interface ContentState {
     direction: 'asc' | 'desc';
   };
   filters: Record<string, any>;
-  selectedContents: string[];
+  selectedIds: string[];
   searchQuery: string;
   lastFetchTime: number | null;
+  search?: {
+    query: string;
+    suggestions: string[];
+    history: string[];
+  };
 }
 
 export type SortField = 
@@ -74,4 +80,5 @@ export type SortField =
   | 'lastUpdated'
   | 'status'
   | 'category'
-  | 'author';
+  | 'author'
+  | 'messageCount';

@@ -8,7 +8,7 @@ import type { SortField } from '@/types/content';
 
 export const ContentSorting = () => {
   const dispatch = useAppDispatch();
-  const sort = useAppSelector((state) => state.content.sort);
+  const sort = useAppSelector((state) => state.content.sortBy);
 
   const handleSort = (field: SortField) => {
     if (sort.field === field) {

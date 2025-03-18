@@ -1,138 +1,138 @@
 
-import React, { useState } from 'react';
-import { Input } from '@/components/ui/input';
+import { useState, useRef, useEffect } from 'react';
+import { Pencil, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Check, X, Pencil } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { updateContact } from '@/store/slices/contacts/contactsSlice';
-import { useToast } from '@/hooks/use-toast';
+import { useOnClickOutside } from '@/hooks/useOnClickOutside';
 
 export interface InlineEditFieldProps {
   value: string;
   contactId: string;
-  fieldName: string;
   label: string;
-  type?: 'text' | 'date' | 'select';
-  options?: { value: string; label: string }[];
-  disabled?: boolean;
+  onSave?: (value: string) => void;
 }
 
-export const InlineEditField = ({ 
-  value, 
-  contactId, 
-  fieldName, 
-  label,
-  type = 'text',
-  options = [],
-  disabled = false
-}: InlineEditFieldProps) => {
+export const InlineEditField = ({ value, contactId, label, onSave }: InlineEditFieldProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
   const dispatch = useAppDispatch();
-  const { toast } = useToast();
+
+  useOnClickOutside(wrapperRef, () => {
+    if (isEditing) {
+      handleCancel();
+    }
+  });
+
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isEditing]);
+
+  useEffect(() => {
+    setEditValue(value);
+  }, [value]);
 
   const handleEdit = () => {
-    if (disabled) return;
     setIsEditing(true);
-    setEditValue(value);
   };
 
-  const handleCancel = () => {
-    setIsEditing(false);
-    setEditValue(value);
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setEditValue(e.target.value);
-  };
-
-  const handleSubmit = async () => {
+  const handleSave = async () => {
     if (editValue === value) {
       setIsEditing(false);
       return;
     }
 
-    setIsSubmitting(true);
     try {
-      await dispatch(updateContact({ 
-        contactId, 
-        data: { [fieldName]: editValue } 
-      })).unwrap();
+      // Create an update object dynamically based on label
+      const updateData: Record<string, string> = {};
       
-      setIsEditing(false);
-      toast({
-        title: "Updated Successfully",
-        description: `${label} has been updated.`,
-      });
+      // Convert label to camelCase for field name
+      const fieldName = label
+        .toLowerCase()
+        .replace(/[^a-zA-Z0-9]+(.)/g, (_, chr) => chr.toUpperCase());
+      
+      updateData[fieldName] = editValue;
+
+      await dispatch(updateContact({
+        id: contactId, 
+        data: updateData
+      }));
+
+      if (onSave) {
+        onSave(editValue);
+      }
     } catch (error) {
-      toast({
-        title: "Update Failed",
-        description: "An error occurred while updating the field.",
-        variant: "destructive",
-      });
+      console.error('Failed to update field:', error);
     } finally {
-      setIsSubmitting(false);
+      setIsEditing(false);
     }
   };
 
-  if (isEditing) {
-    return (
-      <div className="flex items-center space-x-2">
-        {type === 'select' && options.length > 0 ? (
-          <select 
-            value={editValue} 
-            onChange={handleChange}
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {options.map(option => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        ) : (
-          <Input 
-            type={type === 'date' ? 'date' : 'text'} 
-            value={editValue} 
-            onChange={handleChange} 
-            autoFocus
-          />
-        )}
-        <Button 
-          variant="ghost"
-          size="icon"
-          onClick={handleSubmit}
-          disabled={isSubmitting}
-        >
-          <Check className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleCancel}
-          disabled={isSubmitting}
-        >
-          <X className="h-4 w-4" />
-        </Button>
-      </div>
-    );
-  }
+  const handleCancel = () => {
+    setEditValue(value);
+    setIsEditing(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSave();
+    } else if (e.key === 'Escape') {
+      handleCancel();
+    }
+  };
 
   return (
-    <div 
-      className="group flex items-center space-x-2 py-1" 
-      onClick={handleEdit}
-    >
-      <p className="text-base">{value || '-'}</p>
-      {!disabled && (
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          className="opacity-0 group-hover:opacity-100 transition-opacity"
-        >
-          <Pencil className="h-3 w-3" />
-        </Button>
+    <div ref={wrapperRef} className="group relative w-full">
+      {isEditing ? (
+        <div className="flex w-full gap-2">
+          <Input
+            ref={inputRef}
+            value={editValue}
+            onChange={(e) => setEditValue(e.target.value)}
+            onKeyDown={handleKeyDown}
+            className="w-full"
+          />
+          <div className="flex gap-1">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={handleSave}
+              className="h-8 w-8 p-0"
+            >
+              <Check className="h-4 w-4" />
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={handleCancel}
+              className="h-8 w-8 p-0"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <div className="flex items-center justify-between">
+          <span className={`block ${!value ? 'text-muted-foreground italic' : ''}`}>
+            {value || 'Not set'}
+          </span>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={handleEdit}
+            className="opacity-0 group-hover:opacity-100 h-8 w-8 p-0"
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
+        </div>
       )}
     </div>
   );
