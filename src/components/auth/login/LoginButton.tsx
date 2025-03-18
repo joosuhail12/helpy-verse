@@ -16,6 +16,7 @@ export const LoginButton: React.FC<LoginButtonProps> = ({ isLoading }) => {
                active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
       disabled={isLoading}
       aria-busy={isLoading}
+      data-testid="login-button"
     >
       {isLoading ? (
         <>

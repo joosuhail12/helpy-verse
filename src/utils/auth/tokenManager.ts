@@ -13,8 +13,10 @@ export const handleLogout = (): void => {
     deleteCookie("workspaceId");
     
     // Reset HTTP client configuration - clear Authorization header
-    delete HttpClient.apiClient.defaults.headers.common["Authorization"];
-    console.log("Cleared Authorization headers during logout");
+    if (HttpClient && HttpClient.apiClient) {
+        delete HttpClient.apiClient.defaults.headers.common["Authorization"];
+        console.log("Cleared Authorization headers during logout");
+    }
     
     // Force clear browser storage too
     localStorage.removeItem("token");
@@ -46,7 +48,7 @@ export const handleSetToken = (token: string): boolean => {
         localStorage.setItem("token", token);
         
         // Configure axios with the new token
-        HttpClient.apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+        HttpClient.setAxiosDefaultConfig(token);
         
         // Verify that the token was set correctly
         const tokenInCookie = getCookie("customerToken");

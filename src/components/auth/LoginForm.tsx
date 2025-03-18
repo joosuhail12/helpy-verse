@@ -55,7 +55,7 @@ export const LoginForm = memo(() => {
       {/* Development mode message for testing */}
       {(process.env.NODE_ENV === 'development' || import.meta.env.DEV) && (
         <div className="mt-4 text-xs text-gray-500 border-t pt-4">
-          <p>Development Mode: Login uses automatic authentication.</p>
+          <p>Development Mode: Enter any email and password to log in.</p>
         </div>
       )}
     </div>

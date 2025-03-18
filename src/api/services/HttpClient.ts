@@ -1,5 +1,4 @@
 
-import { getWorkspaceId, handleLogout, getCookie, getAuthToken } from "@/utils/helpers/helpers";
 import axios, { AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from "axios";
 import { get } from "lodash";
 
@@ -34,32 +33,46 @@ const apiClient = axios.create({
 });
 
 // ✅ Set up default axios configuration
-export const setAxiosDefaultConfig = (): void => {
-    const token = getAuthToken();
-    console.log("Setting Axios default config with token:", !!token);
-
-    // Set the Authorization header if token exists
+const setAxiosDefaultConfig = (token?: string): void => {
+    // If token is provided, use it; otherwise try to get it from cookie (imported dynamically to avoid circular dependency)
     if (token) {
         apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-        console.log("Authorization header set for API client");
+        console.log("Authorization header set for API client with provided token");
     } else {
-        // Clear the Authorization header if no token
-        delete apiClient.defaults.headers.common["Authorization"];
-        console.log("No token found, Authorization header removed");
+        // We'll handle this in the request interceptor instead
+        console.log("No token provided, will check in interceptor");
     }
+};
+
+// Helper function to get cookies (moved here to avoid circular dependencies)
+const getCookieValue = (cname: string): string => {
+    const name = `${cname}=`;
+    const decodedCookie = decodeURIComponent(document.cookie);
+    const ca = decodedCookie.split(';');
+    for (let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) === ' ') {
+            c = c.substring(1);
+        }
+        if (c.indexOf(name) === 0) {
+            return c.substring(name.length, c.length);
+        }
+    }
+    
+    return "";
 };
 
 // ✅ Request Interceptor - Adds Token & Workspace ID to all requests
 const requestInterceptor = (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
-    // Always get fresh token for each request
-    const token = getAuthToken();
+    // Always get fresh token for each request from cookie directly
+    const token = getCookieValue("customerToken");
     
     if (token) {
         config.headers.set("Authorization", `Bearer ${token}`);
     }
 
     // Add workspace_id to all requests
-    const workspaceId = getWorkspaceId();
+    const workspaceId = getCookieValue("workspaceId");
     if (workspaceId && config.url) {
         const separator = config.url.includes("?") ? "&" : "?";
         config.url += `${separator}workspace_id=${workspaceId}`;
@@ -99,7 +112,10 @@ const responseErrorInterceptor = (error: any) => {
     // Handle authentication errors
     if (status === 401 || errorCode === "UNAUTHORIZED") {
         console.warn("Authentication error detected, logging out");
-        handleLogout();
+        // Import dynamically to avoid circular dependency
+        import('../utils/auth/tokenManager').then(({ handleLogout }) => {
+            handleLogout();
+        });
         return Promise.reject(new Error("Authentication failed. Please log in again."));
     }
 
@@ -126,9 +142,6 @@ const llmService = axios.create({
 // Add the same interceptors to the LLM service
 llmService.interceptors.request.use(requestInterceptor, requestErrorInterceptor);
 llmService.interceptors.response.use(responseInterceptor, responseErrorInterceptor);
-
-// Initialize the default config
-setAxiosDefaultConfig();
 
 // ✅ API Call Wrapper
 export const HttpClient = {

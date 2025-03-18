@@ -1,6 +1,6 @@
 
 import { HttpClient } from '@/api/services/HttpClient';
-import { getCookie } from '@/utils/helpers/helpers';
+import { getCookie } from '@/utils/cookies/cookieManager';
 
 // Re-export the main API client for direct usage
 const api = HttpClient.apiClient;
@@ -9,12 +9,12 @@ const api = HttpClient.apiClient;
 const setupApi = () => {
   const token = getCookie('customerToken');
   if (token) {
-    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    // Make sure to properly configure all API client instances
-    HttpClient.setAxiosDefaultConfig();
+    // Use the HttpClient's method to set the token to avoid duplicating logic
+    HttpClient.setAxiosDefaultConfig(token);
+    console.log('API service initialized with auth token:', !!token);
+  } else {
+    console.log('API service initialized without auth token');
   }
-  
-  console.log('API service initialized with auth token:', !!token);
 };
 
 // Initialize on import

@@ -5,7 +5,8 @@ import { useAppDispatch } from './useAppDispatch';
 import { useAppSelector } from './useAppSelector';
 import { loginUser } from '../store/slices/authSlice';
 import { toast } from '../components/ui/use-toast';
-import { getCookie, handleSetToken, isAuthenticated } from '@/utils/helpers/helpers';
+import { getCookie } from '@/utils/cookies/cookieManager';
+import { handleSetToken, isAuthenticated } from '@/utils/auth/tokenManager';
 import { HttpClient } from '@/api/services/HttpClient';
 
 /**
@@ -36,9 +37,6 @@ export const useLogin = (redirectPath: string = '/home') => {
     if (isAuthenticated()) {
       console.log('Already authenticated, redirecting to:', redirectPath);
       
-      // Ensure token is properly set in Axios headers
-      HttpClient.setAxiosDefaultConfig();
-      
       // Navigate to redirect path
       navigate(redirectPath, { replace: true });
     }
@@ -55,25 +53,31 @@ export const useLogin = (redirectPath: string = '/home') => {
       // Add development mode login for easier testing
       if (process.env.NODE_ENV === 'development' || import.meta.env.DEV) {
         // Mock successful login for development mode
-        // This helps us test the UI without needing a working API
         console.log('Using development mode login');
         
         // Set a mock token in development mode
         const mockToken = 'mock-token-for-development-' + Date.now();
-        handleSetToken(mockToken);
+        const success = handleSetToken(mockToken);
         
-        // Configure axios with the token
-        HttpClient.setAxiosDefaultConfig();
-        
-        toast({
-          title: 'Development Mode',
-          description: 'Logged in with development credentials',
-        });
-        
-        // Small delay before redirect
-        setTimeout(() => {
-          navigate(redirectPath, { replace: true });
-        }, 500);
+        if (success) {
+          // Show success toast
+          toast({
+            title: 'Development Mode',
+            description: 'Logged in with development credentials',
+          });
+          
+          // Small delay before redirect
+          setTimeout(() => {
+            navigate(redirectPath, { replace: true });
+          }, 500);
+        } else {
+          // Show error toast if token setting failed
+          toast({
+            title: 'Error',
+            description: 'Failed to set development mode token',
+            variant: 'destructive',
+          });
+        }
         
         setIsSubmitting(false);
         return;
@@ -90,9 +94,6 @@ export const useLogin = (redirectPath: string = '/home') => {
           title: 'Success',
           description: 'Logged in successfully',
         });
-        
-        // Ensure Axios is configured with the token
-        HttpClient.setAxiosDefaultConfig();
         
         // Navigate after successful login
         setTimeout(() => {
