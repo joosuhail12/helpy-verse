@@ -3,10 +3,13 @@ import { getWorkspaceId, handleLogout, getCookie } from "@/utils/helpers/helpers
 import axios, { AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from "axios";
 import { get } from "lodash";
 
-const API_BASE_URL = 'https://dev-socket.pullseai.com/api';
-// const API_BASE_URL = 'http://localhost:4000/api';
-const LLM_SERVICE_URL = 'https://dev-socket.pullseai.com/api';
-// const LLM_SERVICE_URL = 'http://localhost:4000/api';
+// Configure API endpoints
+const API_BASE_URL = process.env.NODE_ENV === 'production' 
+  ? 'https://dev-socket.pullseai.com/api'
+  : 'https://dev-socket.pullseai.com/api'; // Use same URL for development for now
+
+// LLM service URL (same as API for now)
+const LLM_SERVICE_URL = API_BASE_URL;
 
 // ✅ Initialize Axios instance with proper configuration
 const apiClient = axios.create({
@@ -35,7 +38,7 @@ export const setAxiosDefaultConfig = (): void => {
 };
 
 // ✅ Request Interceptor - Adds Token & Workspace ID to all requests
-const requestInterceptor = (config: InternalAxiosRequestConfig) => {
+const requestInterceptor = (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
     const token = getCookie("customerToken");
     if (token) {
         config.headers.set("Authorization", `Bearer ${token}`);

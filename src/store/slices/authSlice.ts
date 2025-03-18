@@ -1,4 +1,3 @@
-
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { HttpClient } from "@/api/services/HttpClient";
 import { encryptBase64, setCookie, setWorkspaceId, handleSetToken, deleteCookie, getCookie, handleLogout } from '@/utils/helpers/helpers';
@@ -47,11 +46,6 @@ const initialState: AuthState = {
   permissions: [],
 };
 
-const TEST_ADMIN = {
-  email: 'admin@test.com',
-  password: 'admin123'
-};
-
 interface Credentials {
   email: string;
   password: string;
@@ -62,6 +56,8 @@ export const loginUser = createAsyncThunk(
   async (credentials: Credentials, { rejectWithValue }) => {
     try {
       console.log("Attempting login for:", credentials.email);
+      
+      // Make sure to use the correct endpoint and payload structure
       const response = await HttpClient.apiClient.post("/auth/login", {
         username: credentials.email,
         password: credentials.password,
@@ -227,10 +223,13 @@ const authSlice = createSlice({
           const encryptedEmail = encryptBase64(email);
           setCookie("agent_email", encryptedEmail);
 
+          // Set the token in the cookie and Axios headers
           handleSetToken(loginData?.accessToken?.token || "");
 
+          // Set workspace ID
           setWorkspaceId(get(action.payload, "data.defaultWorkspaceId", ""));
 
+          // Configure Axios with the new token
           HttpClient.setAxiosDefaultConfig();
         }
       })

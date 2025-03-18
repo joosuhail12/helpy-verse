@@ -7,6 +7,7 @@ import { useAppSelector } from "../../hooks/useAppSelector";
 import { loginUser } from "../../store/slices/authSlice";
 import { toast } from "../../components/ui/use-toast";
 import { getCookie, handleSetToken } from "@/utils/helpers/helpers";
+import { HttpClient } from "@/api/services/HttpClient";
 
 export const LoginForm = memo(() => {
   const [email, setEmail] = useState("");
@@ -39,6 +40,12 @@ export const LoginForm = memo(() => {
     if (auth.isAuthenticated || token) {
       console.log('Already authenticated, redirecting to:', from);
       
+      // Ensure token is properly set in Axios headers
+      if (token) {
+        HttpClient.apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+        HttpClient.setAxiosDefaultConfig();
+      }
+      
       // Add a delay to ensure state is settled
       setTimeout(() => {
         // First try using navigate
@@ -67,6 +74,9 @@ export const LoginForm = memo(() => {
         const tokenSet = handleSetToken(result.data.accessToken.token);
         
         if (tokenSet) {
+          // Ensure Axios is configured with the token
+          HttpClient.setAxiosDefaultConfig();
+          
           toast({
             title: "Success",
             description: "Logged in successfully",

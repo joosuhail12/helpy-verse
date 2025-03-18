@@ -10,6 +10,8 @@ const setupApi = () => {
   const token = getCookie('customerToken');
   if (token) {
     api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    // Make sure to properly configure all API client instances
+    HttpClient.setAxiosDefaultConfig();
   }
   
   console.log('API service initialized with auth token:', !!token);

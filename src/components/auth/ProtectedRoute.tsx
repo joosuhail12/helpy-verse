@@ -27,6 +27,7 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
       // Ensure axios is configured with the token
       if (hasValidToken) {
         HttpClient.apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+        HttpClient.setAxiosDefaultConfig();
         console.log('ProtectedRoute: Found valid token, configuring axios');
       }
       
