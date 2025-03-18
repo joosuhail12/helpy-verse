@@ -10,7 +10,7 @@ import TeammateProfileCard from './teammates/components/TeammateProfileCard';
 import SaveConfirmDialog from './teammates/components/SaveConfirmDialog';
 import TeammateActivityLogs from './teammates/components/TeammateActivityLogs';
 import TeammatePermissions from './teammates/components/TeammatePermissions';
-import TeammateAssignments from './teammates/components/TeammateAssignments';
+import { TeammateAssignments } from './teammates/components/TeammateAssignments';
 import TeammateSecuritySettings from './teammates/components/TeammateSecuritySettings';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { updateTeammate } from '@/store/slices/teammates/actions';

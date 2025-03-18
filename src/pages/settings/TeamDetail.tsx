@@ -1,3 +1,4 @@
+
 import { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
@@ -12,6 +13,7 @@ import TeamChannels from '@/components/teams/detail/TeamChannels';
 import TeamRouting from '@/components/teams/detail/TeamRouting';
 import TeamAvailability from '@/components/teams/detail/TeamAvailability';
 import TeamsLoadingState from '@/components/teams/TeamsLoadingState';
+import type { TimeSlot } from '@/types/team';
 
 const TeamDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -67,13 +69,47 @@ const TeamDetail = () => {
     };
   };
 
+  // Convert OfficeHours from store format to component format
+  const formatOfficeHours = (officeHours: any) => {
+    if (!officeHours) {
+      return {
+        monday: [] as TimeSlot[],
+        tuesday: [] as TimeSlot[],
+        wednesday: [] as TimeSlot[],
+        thursday: [] as TimeSlot[],
+        friday: [] as TimeSlot[],
+        saturday: [] as TimeSlot[],
+        sunday: [] as TimeSlot[],
+      };
+    }
+    
+    if (officeHours.monday) return officeHours; // Already in the correct format
+    
+    // Convert from store format if needed
+    return {
+      monday: officeHours.days?.includes('monday') ? [{ start: officeHours.startTime, end: officeHours.endTime }] : [],
+      tuesday: officeHours.days?.includes('tuesday') ? [{ start: officeHours.startTime, end: officeHours.endTime }] : [],
+      wednesday: officeHours.days?.includes('wednesday') ? [{ start: officeHours.startTime, end: officeHours.endTime }] : [],
+      thursday: officeHours.days?.includes('thursday') ? [{ start: officeHours.startTime, end: officeHours.endTime }] : [],
+      friday: officeHours.days?.includes('friday') ? [{ start: officeHours.startTime, end: officeHours.endTime }] : [],
+      saturday: officeHours.days?.includes('saturday') ? [{ start: officeHours.startTime, end: officeHours.endTime }] : [],
+      sunday: officeHours.days?.includes('sunday') ? [{ start: officeHours.startTime, end: officeHours.endTime }] : [],
+    };
+  };
+
+  // Convert Holiday objects to string dates
+  const formatHolidays = (holidays: any[]) => {
+    if (!holidays) return [];
+    
+    return holidays.map((h: any) => typeof h === 'string' ? h : h.date);
+  };
+
   const formattedTeam = {
     ...team,
     channels: formatChannels(team),
     routing: formatRouting(team),
-    holidays: Array.isArray(team.holidays) 
-      ? team.holidays.map((h: any) => typeof h === 'string' ? h : h.date) 
-      : []
+    officeHours: formatOfficeHours(team.officeHours),
+    holidays: formatHolidays(team.holidays)
   };
 
   return (

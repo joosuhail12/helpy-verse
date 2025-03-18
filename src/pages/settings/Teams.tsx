@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, Users } from "lucide-react";
 import { setLoading, setError, setTeams } from '@/store/slices/teams/teamsSlice';
 import { mockTeams } from '@/store/slices/teams/mockData';
+import type { Team as TeamType } from '@/types/team';
 
 const Teams = () => {
   const navigate = useNavigate();
@@ -28,7 +29,36 @@ const Teams = () => {
         dispatch(setTeams(data));
       } catch (err) {
         console.log('Using mock data as fallback:', mockTeams);
-        dispatch(setTeams(mockTeams));
+        // Convert the mockTeams to the expected Team type format before dispatching
+        const formattedTeams = mockTeams.map(team => {
+          const formattedTeam: TeamType = {
+            ...team,
+            channels: {
+              chat: team.channels.find(c => c.type === 'chat')?.id,
+              email: team.channels.filter(c => c.type === 'email').map(c => c.id)
+            },
+            routing: {
+              type: team.routing[0]?.type || 'manual',
+              limits: team.routing[0]?.limits || {}
+            },
+            officeHours: {
+              monday: [],
+              tuesday: [],
+              wednesday: [],
+              thursday: [],
+              friday: [],
+              saturday: [],
+              sunday: []
+            },
+            holidays: team.holidays.map(h => h.date),
+            // Add any missing required properties
+            createdAt: team.createdAt || new Date().toISOString(),
+            updatedAt: team.updatedAt || new Date().toISOString()
+          };
+          return formattedTeam;
+        });
+        
+        dispatch(setTeams(formattedTeams));
       }
     };
 

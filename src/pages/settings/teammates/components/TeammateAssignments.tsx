@@ -17,7 +17,7 @@ export const TeammateAssignments: React.FC<TeammateAssignmentsProps> = ({ teamma
   const dispatch = useAppDispatch();
   // Create an empty array if assignments for this teammate don't exist yet
   const assignments = useAppSelector((state) => 
-    state.teammates.assignments[teammateId] || []
+    state.teammates.assignments?.[teammateId] || []
   );
 
   useEffect(() => {

@@ -12,7 +12,7 @@ interface TeammateActivityLogsProps {
 
 const TeammateActivityLogs = ({ teammateId }: TeammateActivityLogsProps) => {
   const activities = useAppSelector(state => 
-    state.teammates.activityLogs.filter(log => log.teammateId === teammateId)
+    state.teammates.activities?.[teammateId] || []
   );
 
   const getActivityIcon = (type: string) => {
