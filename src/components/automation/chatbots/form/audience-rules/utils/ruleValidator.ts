@@ -1,7 +1,7 @@
 
 import { QueryGroup, QueryRule } from "@/types/queryBuilder";
 
-type ValidationResult = {
+export type ValidationResult = {
   isValid: boolean;
   error?: string;
 };
@@ -17,7 +17,9 @@ type ComparisonOperator =
   | "less_than" 
   | "between" 
   | "in" 
-  | "not_in";
+  | "not_in"
+  | "exists"
+  | "not_exists";
 
 export const validateQueryGroup = (group: QueryGroup): ValidationResult => {
   // Check if group has rules or groups

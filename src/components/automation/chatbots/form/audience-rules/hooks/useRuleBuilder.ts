@@ -1,39 +1,55 @@
 
-import { useState } from 'react';
-import { QueryGroup, QueryField } from '@/types/queryBuilder';
-import { validateQueryGroup, ValidationError } from '../utils/ruleValidator';
-import { useToast } from '@/hooks/use-toast';
+import { useState, useCallback } from 'react';
+import { QueryGroup, QueryRule } from '@/types/queryBuilder';
+import { validateQueryGroup, ValidationResult } from '../utils/ruleValidator';
 
-export const useRuleBuilder = (initialGroup: QueryGroup, fields: QueryField[]) => {
+export type ValidationError = {
+  path: string;
+  message: string;
+};
+
+export const useRuleBuilder = (initialGroup: QueryGroup = { condition: 'AND', rules: [] }) => {
   const [queryGroup, setQueryGroup] = useState<QueryGroup>(initialGroup);
   const [errors, setErrors] = useState<ValidationError[]>([]);
-  const { toast } = useToast();
 
-  const handleRuleChange = (newGroup: QueryGroup) => {
-    setQueryGroup(newGroup);
-    setErrors([]);
-  };
-
-  const validateRules = () => {
-    const validationErrors = validateQueryGroup(queryGroup, fields);
-    setErrors(validationErrors);
-
-    if (validationErrors.length > 0) {
-      toast({
-        title: 'Validation Error',
-        description: 'Please fix the errors in your audience rules before continuing.',
-        variant: 'destructive',
-      });
+  const validate = useCallback(() => {
+    const result = validateQueryGroup(queryGroup);
+    if (!result.isValid && result.error) {
+      setErrors([{ path: 'root', message: result.error }]);
       return false;
     }
-
+    setErrors([]);
     return true;
-  };
+  }, [queryGroup]);
+
+  const updateQueryGroup = useCallback((newGroup: QueryGroup) => {
+    setQueryGroup(newGroup);
+  }, []);
+
+  const addRule = useCallback(() => {
+    const newGroup = { ...queryGroup };
+    newGroup.rules = [
+      ...queryGroup.rules,
+      { field: '', operator: 'equals', value: '' } as QueryRule
+    ];
+    setQueryGroup(newGroup);
+  }, [queryGroup]);
+
+  const addGroup = useCallback(() => {
+    const newGroup = { ...queryGroup };
+    newGroup.rules = [
+      ...queryGroup.rules,
+      { condition: 'AND', rules: [] } as QueryGroup
+    ];
+    setQueryGroup(newGroup);
+  }, [queryGroup]);
 
   return {
     queryGroup,
+    updateQueryGroup,
+    addRule,
+    addGroup,
+    validate,
     errors,
-    handleRuleChange,
-    validateRules,
   };
 };
