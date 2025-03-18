@@ -51,7 +51,7 @@ export const ContentList = ({ searchQuery }: ContentListProps) => {
     if (filters.category && item.category !== filters.category) {
       return false;
     }
-    if (filters.chatbotId && !item.chatbots?.some(bot => bot.id === filters.chatbotId)) {
+    if (filters.chatbot && !item.chatbots?.some(bot => bot.id === filters.chatbot)) {
       return false;
     }
     if (searchQuery && !item.title.toLowerCase().includes(searchQuery.toLowerCase()) && !item.description.toLowerCase().includes(searchQuery.toLowerCase())) {
@@ -68,6 +68,10 @@ export const ContentList = ({ searchQuery }: ContentListProps) => {
 
     if (sortField === 'title') {
       comparison = a.title.localeCompare(b.title);
+    } else if (sortField === 'lastUpdated') {
+      const dateA = new Date(a.lastUpdated).getTime();
+      const dateB = new Date(b.lastUpdated).getTime();
+      comparison = dateA - dateB;
     } else if (sortField === 'messageCount') {
       comparison = a.messageCount - b.messageCount;
     } else {

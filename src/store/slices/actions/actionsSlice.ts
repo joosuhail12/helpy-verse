@@ -17,10 +17,12 @@ export type ActionsState = {
   actions: Action[];
   loading: boolean;
   error: string | null;
+  items: Action[]; // Add items field to match what components expect
 };
 
 const initialState: ActionsState = {
   actions: [],
+  items: [], // Initialize items array
   loading: false,
   error: null,
 };
@@ -96,6 +98,7 @@ const actionsSlice = createSlice({
       .addCase(fetchActions.fulfilled, (state, action) => {
         state.loading = false;
         state.actions = action.payload;
+        state.items = action.payload; // Update items as well
       })
       .addCase(fetchActions.rejected, (state, action) => {
         state.loading = false;
@@ -109,6 +112,7 @@ const actionsSlice = createSlice({
       .addCase(addAction.fulfilled, (state, action) => {
         state.loading = false;
         state.actions.push(action.payload);
+        state.items.push(action.payload); // Add to items as well
       })
       .addCase(addAction.rejected, (state, action) => {
         state.loading = false;
@@ -124,6 +128,10 @@ const actionsSlice = createSlice({
         const index = state.actions.findIndex(a => a.id === action.payload.id);
         if (index !== -1) {
           state.actions[index] = action.payload;
+        }
+        const itemIndex = state.items.findIndex(a => a.id === action.payload.id);
+        if (itemIndex !== -1) {
+          state.items[itemIndex] = action.payload;
         }
       })
       .addCase(updateAction.rejected, (state, action) => {

@@ -2,13 +2,14 @@
 import { useState, useCallback } from 'react';
 import { QueryGroup, QueryRule } from '@/types/queryBuilder';
 import { validateQueryGroup, ValidationResult } from '../utils/ruleValidator';
+import { generateId } from '@/lib/utils';
 
 export type ValidationError = {
   path: string;
   message: string;
 };
 
-export const useRuleBuilder = (initialGroup: QueryGroup = { condition: 'AND', rules: [] }) => {
+export const useRuleBuilder = (initialGroup: QueryGroup = { id: generateId(), combinator: 'and', rules: [] }) => {
   const [queryGroup, setQueryGroup] = useState<QueryGroup>(initialGroup);
   const [errors, setErrors] = useState<ValidationError[]>([]);
 
@@ -30,7 +31,7 @@ export const useRuleBuilder = (initialGroup: QueryGroup = { condition: 'AND', ru
     const newGroup = { ...queryGroup };
     newGroup.rules = [
       ...queryGroup.rules,
-      { field: '', operator: 'equals', value: '' } as QueryRule
+      { id: generateId(), field: '', operator: 'equals', value: '' } as QueryRule
     ];
     setQueryGroup(newGroup);
   }, [queryGroup]);
@@ -39,7 +40,7 @@ export const useRuleBuilder = (initialGroup: QueryGroup = { condition: 'AND', ru
     const newGroup = { ...queryGroup };
     newGroup.rules = [
       ...queryGroup.rules,
-      { condition: 'AND', rules: [] } as QueryGroup
+      { id: generateId(), combinator: 'and', rules: [] } as QueryGroup
     ];
     setQueryGroup(newGroup);
   }, [queryGroup]);
