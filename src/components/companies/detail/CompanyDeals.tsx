@@ -1,151 +1,123 @@
 
 import React from 'react';
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-} from '@/components/ui/card';
-import { DollarSign, Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { DollarSign, BarChart2 } from 'lucide-react';
+import { Company } from '@/types/company';
 import { Progress } from '@/components/ui/progress';
-
-interface Deal {
-  id: string;
-  name: string;
-  amount: number;
-  stage: 'prospecting' | 'qualification' | 'proposal' | 'negotiation' | 'closed-won' | 'closed-lost';
-  probability: number;
-  expectedCloseDate: string;
-}
+import { Badge } from '@/components/ui/badge';
 
 interface CompanyDealsProps {
-  companyId: string;
+  company: Company;
 }
 
-const CompanyDeals: React.FC<CompanyDealsProps> = ({ companyId }) => {
-  // This would be fetched from the API in a real application
-  const deals: Deal[] = [
+export const CompanyDeals: React.FC<CompanyDealsProps> = ({ company }) => {
+  // Mock deals for demonstration
+  const deals = [
     {
       id: '1',
-      name: 'Enterprise License',
-      amount: 25000,
-      stage: 'proposal',
+      name: 'Annual Service Contract',
+      value: 25000,
+      stage: 'Proposal',
       probability: 60,
-      expectedCloseDate: '2023-07-30',
+      expectedCloseDate: '2023-12-15',
     },
     {
       id: '2',
-      name: 'Professional Services',
-      amount: 15000,
-      stage: 'negotiation',
+      name: 'Software Implementation',
+      value: 75000,
+      stage: 'Negotiation',
       probability: 80,
-      expectedCloseDate: '2023-06-15',
+      expectedCloseDate: '2023-11-30',
     },
     {
       id: '3',
-      name: 'Support Renewal',
-      amount: 10000,
-      stage: 'closed-won',
-      probability: 100,
-      expectedCloseDate: '2023-05-01',
+      name: 'Hardware Upgrade',
+      value: 35000,
+      stage: 'Qualification',
+      probability: 40,
+      expectedCloseDate: '2024-01-20',
     },
   ];
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
+  const totalValue = deals.reduce((sum, deal) => sum + deal.value, 0);
+  const weightedValue = deals.reduce((sum, deal) => sum + (deal.value * deal.probability / 100), 0);
 
-  const getStageBadgeVariant = (stage: Deal['stage']) => {
+  const getStageBadgeVariant = (stage: string) => {
     switch (stage) {
-      case 'prospecting':
-        return 'secondary';
-      case 'qualification':
+      case 'Qualification':
         return 'outline';
-      case 'proposal':
-        return 'default';
-      case 'negotiation':
+      case 'Proposal':
         return 'secondary';
-      case 'closed-won':
+      case 'Negotiation':
+        return 'default';
+      case 'Closed Won':
         return 'success';
-      case 'closed-lost':
+      case 'Closed Lost':
         return 'destructive';
       default:
         return 'outline';
     }
   };
 
-  const getTotalAmount = () => {
-    return deals.reduce((sum, deal) => sum + deal.amount, 0);
-  };
-
   return (
-    <Card className="border-none shadow-none bg-gray-50/50">
-      <CardHeader className="border-b pb-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <DollarSign className="h-4 w-4 text-gray-500" />
-            <CardTitle className="text-lg">Deals</CardTitle>
-          </div>
-          <Button size="sm" variant="outline">
-            <Plus className="h-4 w-4 mr-2" />
-            Add Deal
-          </Button>
+    <Card>
+      <CardHeader className="border-b pb-3">
+        <div className="flex items-center gap-2">
+          <DollarSign className="h-5 w-5 text-gray-500" />
+          <CardTitle className="text-lg">Deals</CardTitle>
         </div>
       </CardHeader>
-      <CardContent className="pt-6">
-        <div className="space-y-4">
-          {deals.length > 0 ? (
-            <>
-              <div className="flex justify-between mb-2">
-                <div className="text-sm font-medium">Total Value</div>
-                <div className="font-bold">{formatCurrency(getTotalAmount())}</div>
+      <CardContent className="p-4">
+        {deals.length > 0 ? (
+          <div className="space-y-6">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <p className="text-sm text-muted-foreground">Total Value</p>
+                <p className="text-2xl font-bold">${totalValue.toLocaleString()}</p>
               </div>
-              <div className="space-y-4">
-                {deals.map((deal) => (
-                  <div key={deal.id} className="bg-white p-4 rounded-lg border">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h4 className="font-medium">{deal.name}</h4>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Badge variant={getStageBadgeVariant(deal.stage)}>
-                            {deal.stage.replace('-', ' ')}
-                          </Badge>
-                          <span className="text-sm text-muted-foreground">
-                            {formatCurrency(deal.amount)}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="text-sm">
-                        <div className="flex items-center justify-end mb-1">
-                          <span className="text-muted-foreground mr-2">Probability:</span>
-                          <span className="font-medium">{deal.probability}%</span>
-                        </div>
-                        <Progress value={deal.probability} className="h-2 w-24" />
-                      </div>
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <p className="text-sm text-muted-foreground">Weighted Value</p>
+                <p className="text-2xl font-bold">${Math.round(weightedValue).toLocaleString()}</p>
+              </div>
+            </div>
+            
+            <div className="space-y-4">
+              {deals.map((deal) => (
+                <div key={deal.id} className="border rounded-lg p-4">
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="font-medium">{deal.name}</h3>
+                    <Badge variant={getStageBadgeVariant(deal.stage)}>{deal.stage}</Badge>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-sm mb-3">
+                    <div>
+                      <span className="text-muted-foreground">Value:</span>{' '}
+                      <span className="font-medium">${deal.value.toLocaleString()}</span>
                     </div>
-                    <div className="text-xs text-muted-foreground mt-2">
-                      Expected close: {new Date(deal.expectedCloseDate).toLocaleDateString()}
+                    <div>
+                      <span className="text-muted-foreground">Close Date:</span>{' '}
+                      <span className="font-medium">
+                        {new Date(deal.expectedCloseDate).toLocaleDateString()}
+                      </span>
                     </div>
                   </div>
-                ))}
-              </div>
-            </>
-          ) : (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">No deals associated with this company</p>
-              <Button className="mt-4" size="sm" variant="outline">
-                <Plus className="h-4 w-4 mr-2" />
-                Create Deal
-              </Button>
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-sm">
+                      <span>Probability</span>
+                      <span>{deal.probability}%</span>
+                    </div>
+                    <Progress value={deal.probability} className="h-2" />
+                  </div>
+                </div>
+              ))}
             </div>
-          )}
-        </div>
+          </div>
+        ) : (
+          <div className="text-center py-8 text-muted-foreground">
+            <BarChart2 className="h-10 w-10 mx-auto mb-3 text-muted-foreground/50" />
+            <p>No deals found</p>
+            <p className="text-sm mt-1">Create deals to track opportunities with this company</p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

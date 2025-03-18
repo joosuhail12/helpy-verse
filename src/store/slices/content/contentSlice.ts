@@ -1,13 +1,32 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+
+import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
+import { Content, ContentStatus, SortField } from '@/types/content';
 import { RootState } from '../../store';
-import type { Content, ContentState, ContentStatus, SortField } from '@/types/content';
+
+interface ContentState {
+  items: Content[];
+  selectedIds: string[];
+  filters: {
+    status: ContentStatus | null;
+    category: string | null;
+    chatbot: string | null;
+  };
+  sort: {
+    field: SortField;
+    direction: 'asc' | 'desc';
+  };
+  search: {
+    query: string;
+    suggestions: string[];
+    history: string[];
+  };
+  loading: boolean;
+  error: string | null;
+}
 
 const initialState: ContentState = {
   items: [],
-  loading: false,
-  error: null,
-  selectedContent: null,
-  selectedContentId: null,
+  selectedIds: [],
   filters: {
     status: null,
     category: null,
@@ -22,121 +41,111 @@ const initialState: ContentState = {
     suggestions: [],
     history: [],
   },
-  selectedIds: [],
+  loading: false,
+  error: null,
 };
 
-// Async Thunks
-export const fetchContents = createAsyncThunk(
-  'content/fetchContents',
+// Async thunks
+export const fetchContent = createAsyncThunk(
+  'content/fetchContent',
   async (_, { rejectWithValue }) => {
     try {
-      // API call placeholder
-      const response = await fetch('/api/contents');
-      const data = await response.json();
-      return data;
-    } catch (error: any) {
-      return rejectWithValue(error.message);
-    }
-  }
-);
-
-export const fetchContentById = createAsyncThunk(
-  'content/fetchContentById',
-  async (id: string, { rejectWithValue }) => {
-    try {
-      // API call placeholder
-      const response = await fetch(`/api/contents/${id}`);
-      const data = await response.json();
-      return data;
-    } catch (error: any) {
-      return rejectWithValue(error.message);
+      // Replace with actual API call
+      const response = await fetch('/api/content');
+      if (!response.ok) {
+        throw new Error('Failed to fetch content');
+      }
+      return await response.json();
+    } catch (error) {
+      return rejectWithValue((error as Error).message);
     }
   }
 );
 
 export const updateContent = createAsyncThunk(
   'content/updateContent',
-  async ({ id, updates }: { id: string; updates: Partial<Content> }, { rejectWithValue }) => {
+  async ({ id, data }: { id: string; data: Partial<Content> }, { rejectWithValue }) => {
     try {
-      // API call placeholder
-      const response = await fetch(`/api/contents/${id}`, {
+      // Replace with actual API call
+      const response = await fetch(`/api/content/${id}`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updates),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
       });
-      const data = await response.json();
-      return data;
-    } catch (error: any) {
-      return rejectWithValue(error.message);
+      if (!response.ok) {
+        throw new Error('Failed to update content');
+      }
+      return await response.json();
+    } catch (error) {
+      return rejectWithValue((error as Error).message);
+    }
+  }
+);
+
+export const deleteContent = createAsyncThunk(
+  'content/deleteContent',
+  async (ids: string[], { rejectWithValue }) => {
+    try {
+      // Replace with actual API call
+      const response = await fetch(`/api/content`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids }),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to delete content');
+      }
+      return ids;
+    } catch (error) {
+      return rejectWithValue((error as Error).message);
     }
   }
 );
 
 export const updateContentStatus = createAsyncThunk(
-  'content/updateContentStatus',
-  async ({ id, status }: { id: string; status: ContentStatus }, { rejectWithValue }) => {
+  'content/updateStatus',
+  async ({ ids, status }: { ids: string[]; status: ContentStatus }, { rejectWithValue }) => {
     try {
-      // API call placeholder
-      const response = await fetch(`/api/contents/${id}/status`, {
+      // Replace with actual API call
+      const response = await fetch(`/api/content/status`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ status }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids, status }),
       });
-      const data = await response.json();
-      return { id, status, content: data };
-    } catch (error: any) {
-      return rejectWithValue(error.message);
+      if (!response.ok) {
+        throw new Error('Failed to update content status');
+      }
+      return { ids, status };
+    } catch (error) {
+      return rejectWithValue((error as Error).message);
     }
   }
 );
 
 export const reassignChatbot = createAsyncThunk(
   'content/reassignChatbot',
-  async ({ ids, chatbotId, add }: { ids: string[]; chatbotId: string; add: boolean }, { rejectWithValue }) => {
+  async ({ ids, chatbotId, chatbotName }: { ids: string[]; chatbotId: string; chatbotName: string }, { rejectWithValue }) => {
     try {
-      // API call placeholder
-      const response = await fetch(`/api/contents/chatbots`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ ids, chatbotId, action: add ? 'add' : 'remove' }),
+      // Replace with actual API call
+      const response = await fetch(`/api/content/chatbot`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids, chatbotId }),
       });
-      const data = await response.json();
-      return { ids, chatbotId, add, results: data };
-    } catch (error: any) {
-      return rejectWithValue(error.message);
+      if (!response.ok) {
+        throw new Error('Failed to reassign chatbot');
+      }
+      return { ids, chatbot: { id: chatbotId, name: chatbotName } };
+    } catch (error) {
+      return rejectWithValue((error as Error).message);
     }
   }
 );
 
-// Slice
 const contentSlice = createSlice({
   name: 'content',
   initialState,
   reducers: {
-    setStatusFilter: (state, action: PayloadAction<ContentStatus | null>) => {
-      state.filters.status = action.payload;
-    },
-    setCategoryFilter: (state, action: PayloadAction<string | null>) => {
-      state.filters.category = action.payload;
-    },
-    setChatbotFilter: (state, action: PayloadAction<string | null>) => {
-      state.filters.chatbot = action.payload;
-    },
-    clearFilters: (state) => {
-      state.filters = { status: null, category: null, chatbot: null };
-    },
-    setSortField: (state, action: PayloadAction<SortField>) => {
-      state.sort.field = action.payload;
-    },
-    setSortDirection: (state, action: PayloadAction<'asc' | 'desc'>) => {
-      state.sort.direction = action.payload;
-    },
     selectContent: (state, action: PayloadAction<string>) => {
       if (!state.selectedIds.includes(action.payload)) {
         state.selectedIds.push(action.payload);
@@ -148,8 +157,30 @@ const contentSlice = createSlice({
     clearSelection: (state) => {
       state.selectedIds = [];
     },
+    setStatusFilter: (state, action: PayloadAction<ContentStatus | null>) => {
+      state.filters.status = action.payload;
+    },
+    setCategoryFilter: (state, action: PayloadAction<string | null>) => {
+      state.filters.category = action.payload;
+    },
+    setChatbotFilter: (state, action: PayloadAction<string | null>) => {
+      state.filters.chatbot = action.payload;
+    },
+    clearFilters: (state) => {
+      state.filters = initialState.filters;
+    },
+    setSortField: (state, action: PayloadAction<SortField>) => {
+      state.sort.field = action.payload;
+    },
+    setSortDirection: (state, action: PayloadAction<'asc' | 'desc'>) => {
+      state.sort.direction = action.payload;
+    },
     setSearchQuery: (state, action: PayloadAction<string>) => {
       state.search.query = action.payload;
+      if (action.payload && !state.search.history.includes(action.payload)) {
+        state.search.history.unshift(action.payload);
+        state.search.history = state.search.history.slice(0, 10);
+      }
     },
     updateSearchSuggestions: (state, action: PayloadAction<string[]>) => {
       state.search.suggestions = action.payload;
@@ -164,76 +195,78 @@ const contentSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchContents.pending, (state) => {
+      // Fetch content
+      .addCase(fetchContent.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchContents.fulfilled, (state, action) => {
+      .addCase(fetchContent.fulfilled, (state, action) => {
         state.loading = false;
         state.items = action.payload;
       })
-      .addCase(fetchContents.rejected, (state, action) => {
+      .addCase(fetchContent.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })
-      .addCase(fetchContentById.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(fetchContentById.fulfilled, (state, action) => {
-        state.loading = false;
-        state.selectedContent = action.payload;
-        state.selectedContentId = action.payload.id;
-      })
-      .addCase(fetchContentById.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
+      // Update content
       .addCase(updateContent.fulfilled, (state, action) => {
         const index = state.items.findIndex(item => item.id === action.payload.id);
         if (index !== -1) {
-          state.items[index] = { ...state.items[index], ...action.payload };
-        }
-        if (state.selectedContent && state.selectedContent.id === action.payload.id) {
-          state.selectedContent = { ...state.selectedContent, ...action.payload };
+          state.items[index] = action.payload;
         }
       })
+      // Delete content
+      .addCase(deleteContent.fulfilled, (state, action) => {
+        state.items = state.items.filter(item => !action.payload.includes(item.id));
+        state.selectedIds = state.selectedIds.filter(id => !action.payload.includes(id));
+      })
+      // Update content status
       .addCase(updateContentStatus.fulfilled, (state, action) => {
-        const index = state.items.findIndex(item => item.id === action.payload.id);
-        if (index !== -1) {
-          state.items[index].status = action.payload.status;
-        }
-        if (state.selectedContent && state.selectedContent.id === action.payload.id) {
-          state.selectedContent.status = action.payload.status;
-        }
+        const { ids, status } = action.payload;
+        state.items = state.items.map(item => {
+          if (ids.includes(item.id)) {
+            return { ...item, status };
+          }
+          return item;
+        });
+      })
+      // Reassign chatbot
+      .addCase(reassignChatbot.fulfilled, (state, action) => {
+        const { ids, chatbot } = action.payload;
+        state.items = state.items.map(item => {
+          if (ids.includes(item.id)) {
+            const existingChatbots = item.chatbots || [];
+            const updatedChatbots = existingChatbots.filter(bot => bot.id !== chatbot.id);
+            updatedChatbots.push(chatbot);
+            return { ...item, chatbots: updatedChatbots };
+          }
+          return item;
+        });
       });
   },
 });
 
-export const { 
-  setStatusFilter, 
-  setCategoryFilter, 
-  setChatbotFilter, 
-  clearFilters,
-  setSortField,
-  setSortDirection,
+export const {
   selectContent,
   deselectContent,
   clearSelection,
+  setStatusFilter,
+  setCategoryFilter,
+  setChatbotFilter,
+  clearFilters,
+  setSortField,
+  setSortDirection,
   setSearchQuery,
   updateSearchSuggestions,
   clearSearch,
-  clearSearchHistory
+  clearSearchHistory,
 } = contentSlice.actions;
 
-// Selectors
 export const selectContentItems = (state: RootState) => state.content.items;
-export const selectContentLoading = (state: RootState) => state.content.loading;
-export const selectContentError = (state: RootState) => state.content.error;
-export const selectSelectedContent = (state: RootState) => state.content.selectedContent;
+export const selectSelectedIds = (state: RootState) => state.content.selectedIds;
 export const selectContentFilters = (state: RootState) => state.content.filters;
 export const selectContentSort = (state: RootState) => state.content.sort;
-export const selectContentSearch = (state: RootState) => state.content.search;
-export const selectSelectedContentIds = (state: RootState) => state.content.selectedIds;
+export const selectContentLoading = (state: RootState) => state.content.loading;
+export const selectContentError = (state: RootState) => state.content.error;
 
 export const contentReducer = contentSlice.reducer;

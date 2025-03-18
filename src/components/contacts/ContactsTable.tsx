@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
-import { format } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
+import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -9,160 +10,155 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
-import { Search, Plus, ArrowDown, ArrowUp } from 'lucide-react';
-import { Input } from '@/components/ui/input';
+import { formatDistanceToNow } from 'date-fns';
 import { Contact } from '@/types/contact';
 
 interface ContactsTableProps {
   contacts: Contact[];
-  title?: string;
-  showAddButton?: boolean;
+  selectedContactIds: string[];
+  onSelectAll: () => void;
+  onSelectContact: (id: string) => void;
+  companyView?: boolean;
 }
 
 export const ContactsTable: React.FC<ContactsTableProps> = ({
   contacts,
-  title = 'Contacts',
-  showAddButton = true,
+  selectedContactIds,
+  onSelectAll,
+  onSelectContact,
+  companyView = false,
 }) => {
   const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState<keyof Contact>('lastname');
+  const [sortField, setSortField] = useState<keyof Contact>('lastname');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
-  const handleRowClick = (contactId: string) => {
-    navigate(`/home/contacts/${contactId}`);
-  };
-
-  const handleSort = (column: keyof Contact) => {
-    if (sortBy === column) {
+  const handleSort = (field: keyof Contact) => {
+    if (sortField === field) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
     } else {
-      setSortBy(column);
+      setSortField(field);
       setSortDirection('asc');
     }
   };
 
-  // Filter contacts based on search query
-  const filteredContacts = contacts.filter((contact) => {
-    const fullName = `${contact.firstname} ${contact.lastname}`.toLowerCase();
-    const email = contact.email?.toLowerCase() || '';
-    const company = contact.company?.toLowerCase() || '';
-    return (
-      fullName.includes(searchQuery.toLowerCase()) ||
-      email.includes(searchQuery.toLowerCase()) ||
-      company.includes(searchQuery.toLowerCase())
-    );
-  });
+  const sortedContacts = [...contacts].sort((a, b) => {
+    const valueA = a[sortField];
+    const valueB = b[sortField];
 
-  // Sort contacts based on current sort criteria
-  const sortedContacts = [...filteredContacts].sort((a, b) => {
-    if (sortBy in a && sortBy in b) {
-      const aValue = String(a[sortBy]);
-      const bValue = String(b[sortBy]);
+    if (valueA === undefined || valueB === undefined) return 0;
+
+    // Handle different types of values
+    if (typeof valueA === 'string' && typeof valueB === 'string') {
       return sortDirection === 'asc'
-        ? aValue.localeCompare(bValue)
-        : bValue.localeCompare(aValue);
+        ? valueA.localeCompare(valueB)
+        : valueB.localeCompare(valueA);
     }
+
+    if (typeof valueA === 'number' && typeof valueB === 'number') {
+      return sortDirection === 'asc'
+        ? valueA - valueB
+        : valueB - valueA;
+    }
+
+    // Default case for other types or mixed types
     return 0;
   });
 
-  return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-lg font-semibold">{title}</h2>
-        <div className="flex gap-2">
-          <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search contacts..."
-              className="pl-8 h-9"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-          {showAddButton && (
-            <Button size="sm" onClick={() => navigate('/home/contacts/new')}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Contact
-            </Button>
-          )}
-        </div>
-      </div>
+  const allSelected = contacts.length > 0 && selectedContactIds.length === contacts.length;
 
-      <div className="bg-white rounded-lg border overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead 
-                className="cursor-pointer"
-                onClick={() => handleSort('lastname')}
-              >
-                <div className="flex items-center">
-                  Name
-                  {sortBy === 'lastname' && (
-                    sortDirection === 'asc' ? (
-                      <ArrowUp className="ml-1 h-3 w-3" />
-                    ) : (
-                      <ArrowDown className="ml-1 h-3 w-3" />
-                    )
-                  )}
-                </div>
-              </TableHead>
-              <TableHead 
-                className="cursor-pointer"
-                onClick={() => handleSort('email')}
-              >
-                <div className="flex items-center">
-                  Email
-                  {sortBy === 'email' && (
-                    sortDirection === 'asc' ? (
-                      <ArrowUp className="ml-1 h-3 w-3" />
-                    ) : (
-                      <ArrowDown className="ml-1 h-3 w-3" />
-                    )
-                  )}
-                </div>
-              </TableHead>
-              <TableHead>Phone</TableHead>
-              <TableHead>Job Title</TableHead>
-              <TableHead>Status</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {sortedContacts.length > 0 ? (
-              sortedContacts.map((contact) => (
-                <TableRow 
-                  key={contact.id} 
-                  className="cursor-pointer"
-                  onClick={() => handleRowClick(contact.id)}
-                >
-                  <TableCell>
-                    {contact.firstname} {contact.lastname}
-                  </TableCell>
-                  <TableCell>{contact.email || '-'}</TableCell>
-                  <TableCell>{contact.phone || '-'}</TableCell>
-                  <TableCell>{contact.jobTitle || '-'}</TableCell>
-                  <TableCell>
-                    <Badge variant={contact.status === 'active' ? 'default' : 'secondary'}>
-                      {contact.status}
-                    </Badge>
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center py-4">
-                  {searchQuery ? 'No contacts match your search' : 'No contacts available'}
-                </TableCell>
-              </TableRow>
+  const handleRowClick = (id: string) => {
+    navigate(`/home/contacts/${id}`);
+  };
+
+  const SortableHeader = ({ field, label }: { field: keyof Contact; label: string }) => (
+    <Button
+      variant="ghost"
+      onClick={() => handleSort(field)}
+      className="flex items-center font-medium"
+    >
+      {label}
+      {sortField === field ? (
+        sortDirection === 'asc' ? (
+          <ChevronUpIcon className="ml-1 h-4 w-4" />
+        ) : (
+          <ChevronDownIcon className="ml-1 h-4 w-4" />
+        )
+      ) : null}
+    </Button>
+  );
+
+  return (
+    <Table className="border rounded-md">
+      <TableHeader className="bg-muted/50">
+        <TableRow>
+          <TableHead className="w-12">
+            <Checkbox
+              checked={allSelected}
+              onCheckedChange={onSelectAll}
+              aria-label="Select all contacts"
+            />
+          </TableHead>
+          <TableHead>
+            <SortableHeader field="firstname" label="Name" />
+          </TableHead>
+          <TableHead>
+            <SortableHeader field="email" label="Email" />
+          </TableHead>
+          {!companyView && (
+            <TableHead>
+              <SortableHeader field="company" label="Company" />
+            </TableHead>
+          )}
+          <TableHead>
+            <SortableHeader field="status" label="Status" />
+          </TableHead>
+          <TableHead className="text-right">
+            <SortableHeader field="lastContacted" label="Last Contacted" />
+          </TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {sortedContacts.map((contact) => (
+          <TableRow
+            key={contact.id}
+            className="cursor-pointer hover:bg-muted/50"
+            onClick={() => handleRowClick(contact.id)}
+          >
+            <TableCell className="w-12" onClick={(e) => e.stopPropagation()}>
+              <Checkbox
+                checked={selectedContactIds.includes(contact.id)}
+                onCheckedChange={() => onSelectContact(contact.id)}
+                aria-label={`Select ${contact.firstname} ${contact.lastname}`}
+              />
+            </TableCell>
+            <TableCell className="font-medium">
+              {contact.firstname} {contact.lastname}
+            </TableCell>
+            <TableCell>{contact.email}</TableCell>
+            {!companyView && (
+              <TableCell>{contact.company || '-'}</TableCell>
             )}
-          </TableBody>
-        </Table>
-      </div>
-    </div>
+            <TableCell>
+              <div className="flex items-center">
+                <span
+                  className={`inline-block w-2 h-2 rounded-full mr-2 ${
+                    contact.status === 'active' ? 'bg-green-500' : 'bg-gray-300'
+                  }`}
+                />
+                {contact.status === 'active' ? 'Active' : 'Inactive'}
+              </div>
+            </TableCell>
+            <TableCell className="text-right">
+              {contact.lastContacted
+                ? formatDistanceToNow(new Date(contact.lastContacted), { addSuffix: true })
+                : 'Never'}
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
   );
 };
 

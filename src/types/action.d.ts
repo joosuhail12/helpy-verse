@@ -26,7 +26,7 @@ export interface CustomAction {
   createdAt: string;
   updatedAt: string;
   connectedChatbots?: Array<{ id: string; name: string }>;
-  createdBy?: {
+  createdBy: {
     id: string;
     name: string;
     avatar: string;

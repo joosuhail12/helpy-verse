@@ -1,68 +1,44 @@
 
-export type ContentStatus = 'processing' | 'completed' | 'failed' | 'queued';
-export type ContentType = 'file' | 'snippet' | 'website';
+export type ContentStatus = 'queued' | 'processing' | 'completed' | 'failed' | 'active' | 'inactive' | 'draft';
 
-export interface ContentVersion {
-  id: string;
-  contentId: string;
-  content: string;
-  createdAt: string;
-  createdBy: {
-    id: string;
-    name: string;
-    avatar?: string;
-  };
-  changes: string;
-}
-
-export interface ContentComment {
-  id: string;
-  contentId: string;
-  text: string;
-  createdAt: string;
-  createdBy: {
-    id: string;
-    name: string;
-    avatar?: string;
-    role?: string;
-  };
-}
-
-export interface ContentTag {
-  id: string;
-  name: string;
-  color: string;
-}
+export type SortField = 'title' | 'lastUpdated' | 'messageCount';
 
 export interface Content {
   id: string;
   title: string;
   description: string;
-  category: string;
+  contentType: 'file' | 'website' | 'snippet';
   status: ContentStatus;
-  type: ContentType;
+  category: string;
   lastUpdated: string;
+  createdAt: string;
   messageCount: number;
-  progress?: number;
-  errorMessage?: string;
-  content?: string;
-  chatbots?: {
-    id: string;
-    name: string;
-  }[];
-  lastEditedBy?: {
+  chatbots?: Array<{ id: string; name: string }>;
+  tags?: string[];
+  createdBy?: {
     id: string;
     name: string;
     avatar?: string;
-    role?: string;
   };
-  versions?: ContentVersion[];
-  tags?: ContentTag[];
-  comments?: ContentComment[];
-  sharedWith?: {
-    id: string;
-    name: string;
-    avatar?: string;
-    role?: string;
-  }[];
+}
+
+export interface ContentState {
+  items: Content[];
+  selectedIds: string[];
+  filters: {
+    status: ContentStatus | null;
+    category: string | null;
+    chatbot: string | null;
+  };
+  sort: {
+    field: SortField;
+    direction: 'asc' | 'desc';
+  };
+  search: {
+    query: string;
+    suggestions: string[];
+    history: string[];
+  };
+  loading: boolean;
+  error: string | null;
 }

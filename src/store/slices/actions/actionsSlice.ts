@@ -3,27 +3,11 @@ import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../store';
 import { CustomAction, ActionParameter } from '@/types/action';
 
-export type Action = {
-  id: string;
-  name: string;
-  description: string;
-  category: string;
-  isActive: boolean;
-  toolName: string;
-  endpoint: string;
-  method: string;
-  parameters: ActionParameter[];
-  headers: Record<string, string>;
-  createdAt: string;
-  updatedAt: string;
-  connectedChatbots?: Array<{ id: string; name: string }>;
-};
-
 export type ActionsState = {
-  actions: Action[];
+  actions: CustomAction[];
   loading: boolean;
   error: string | null;
-  items: Action[]; // Used by some components
+  items: CustomAction[]; // Used by some components
 };
 
 const initialState: ActionsState = {
@@ -52,7 +36,7 @@ export const fetchActions = createAsyncThunk(
 
 export const addAction = createAsyncThunk(
   'actions/addAction',
-  async (action: Omit<Action, 'id' | 'createdAt' | 'updatedAt'>, { rejectWithValue }) => {
+  async (action: Omit<CustomAction, 'id' | 'createdAt' | 'updatedAt'>, { rejectWithValue }) => {
     try {
       // Replace with actual API call
       const response = await fetch('/api/actions', {
@@ -72,7 +56,7 @@ export const addAction = createAsyncThunk(
 
 export const updateAction = createAsyncThunk(
   'actions/updateAction',
-  async ({ id, updates }: { id: string; updates: Partial<Action> }, { rejectWithValue }) => {
+  async ({ id, updates }: { id: string; updates: Partial<CustomAction> }, { rejectWithValue }) => {
     try {
       // Replace with actual API call
       const response = await fetch(`/api/actions/${id}`, {

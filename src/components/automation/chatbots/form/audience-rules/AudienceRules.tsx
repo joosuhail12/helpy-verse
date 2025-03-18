@@ -17,9 +17,7 @@ export const AudienceRules = () => {
     addRule,
     addGroup,
     validate,
-    errors,
-    handleRuleChange,
-    validateRules
+    errors
   } = useRuleBuilder();
 
   useEffect(() => {

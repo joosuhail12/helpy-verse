@@ -1,100 +1,86 @@
 
 import React from 'react';
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-} from '@/components/ui/card';
-import { Activity } from 'lucide-react';
-import { ScrollArea } from '@/components/ui/scroll-area';
-
-interface Activity {
-  id: string;
-  type: 'email' | 'call' | 'meeting' | 'note' | 'task';
-  title: string;
-  description: string;
-  date: string;
-  user: {
-    id: string;
-    name: string;
-    avatar: string;
-  };
-}
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { ActivityIcon, Calendar } from 'lucide-react';
+import { format } from 'date-fns';
+import { Company } from '@/types/company';
 
 interface CompanyActivityProps {
-  companyId: string;
+  company: Company;
 }
 
-export const CompanyActivity: React.FC<CompanyActivityProps> = ({ companyId }) => {
-  // This would be fetched from the API in a real application
-  const activities: Activity[] = [
+export const CompanyActivity: React.FC<CompanyActivityProps> = ({ company }) => {
+  // Mock activities for now
+  const activities = [
     {
       id: '1',
-      type: 'email',
-      title: 'Email sent',
-      description: 'Follow-up email about partnership opportunity',
-      date: '2023-06-15T10:30:00',
+      type: 'note',
+      description: 'Added a new note about the company strategy',
+      createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
       user: {
-        id: '1',
-        name: 'John Doe',
-        avatar: '/avatars/john-doe.png',
+        name: 'Alex Johnson',
+        avatar: '/assets/avatars/avatar-1.png',
       },
     },
     {
       id: '2',
-      type: 'meeting',
-      title: 'Video call',
-      description: 'Quarterly business review',
-      date: '2023-06-10T14:00:00',
+      type: 'email',
+      description: 'Sent follow-up email about the new proposal',
+      createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
       user: {
-        id: '2',
-        name: 'Jane Smith',
-        avatar: '/avatars/jane-smith.png',
+        name: 'Sarah Miller',
+        avatar: '/assets/avatars/avatar-2.png',
+      },
+    },
+    {
+      id: '3',
+      type: 'meeting',
+      description: 'Scheduled quarterly review meeting',
+      createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+      user: {
+        name: 'David Chen',
+        avatar: '/assets/avatars/avatar-3.png',
       },
     },
   ];
 
   return (
-    <Card className="border-none shadow-none bg-gray-50/50">
-      <CardHeader className="border-b pb-4">
+    <Card>
+      <CardHeader className="border-b pb-3">
         <div className="flex items-center gap-2">
-          <Activity className="h-4 w-4 text-gray-500" />
-          <CardTitle className="text-lg">Activity</CardTitle>
+          <ActivityIcon className="h-5 w-5 text-gray-500" />
+          <CardTitle className="text-lg">Recent Activity</CardTitle>
         </div>
       </CardHeader>
-      <CardContent className="pt-6">
-        <ScrollArea className="h-[300px]">
+      <CardContent className="p-4">
+        {activities.length > 0 ? (
           <div className="space-y-4">
-            {activities.length > 0 ? (
-              activities.map((activity) => (
-                <div key={activity.id} className="bg-white p-4 rounded-lg border">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h4 className="font-medium">{activity.title}</h4>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {activity.description}
-                      </p>
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {new Date(activity.date).toLocaleString()}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 mt-2">
-                    <div className="h-6 w-6 rounded-full bg-gray-200 overflow-hidden">
-                      <img src={activity.user.avatar} alt={activity.user.name} />
-                    </div>
-                    <span className="text-xs">{activity.user.name}</span>
+            {activities.map((activity) => (
+              <div key={activity.id} className="flex gap-4">
+                <div className="flex-shrink-0 mt-1">
+                  <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <ActivityIcon className="h-4 w-4 text-primary" />
                   </div>
                 </div>
-              ))
-            ) : (
-              <div className="text-center py-8">
-                <p className="text-muted-foreground">No activity recorded yet</p>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">{activity.user.name}</span>
+                    <span className="text-sm text-muted-foreground">
+                      {format(new Date(activity.createdAt), 'MMM d, yyyy')}
+                    </span>
+                  </div>
+                  <p className="text-sm mt-1">{activity.description}</p>
+                </div>
               </div>
-            )}
+            ))}
           </div>
-        </ScrollArea>
+        ) : (
+          <div className="text-center py-8 text-muted-foreground">
+            <Calendar className="h-10 w-10 mx-auto mb-3 text-muted-foreground/50" />
+            <p>No recent activity recorded</p>
+            <p className="text-sm mt-1">Activities will appear here when they happen</p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
