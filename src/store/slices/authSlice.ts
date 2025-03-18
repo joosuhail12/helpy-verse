@@ -1,6 +1,7 @@
+
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { HttpClient } from "@/api/services/HttpClient";
-import { encryptBase64, setCookie, setWorkspaceId, handleSetToken, deleteCookie, getCookie } from '@/utils/helpers/helpers';
+import { encryptBase64, setCookie, setWorkspaceId, handleSetToken, deleteCookie, getCookie, handleLogout } from '@/utils/helpers/helpers';
 import { get } from "lodash";
 
 export type ActionType = "create" | "read" | "update" | "delete" | "archive" | "manage";

@@ -35,7 +35,7 @@ export const setAxiosDefaultConfig = (): void => {
 };
 
 // ✅ Request Interceptor - Adds Token & Workspace ID to all requests
-apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
+const requestInterceptor = (config: InternalAxiosRequestConfig) => {
     const token = getCookie("customerToken");
     if (token) {
         config.headers.set("Authorization", `Bearer ${token}`);
@@ -50,43 +50,48 @@ apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
 
     console.log(`API Request to: ${config.url}`);
     return config;
-}, (error) => {
+};
+
+const requestErrorInterceptor = (error: any) => {
     console.error("Request interceptor error:", error);
     return Promise.reject(error);
-});
+};
 
 // ✅ Response Interceptor - Handles Successful Responses and Errors
-apiClient.interceptors.response.use(
-    (response: AxiosResponse) => {
-        console.log(`API Response from ${response.config.url}: Status ${response.status}`);
-        return response;
-    },
-    (error) => {
-        // Extract the meaningful error information
-        const status = error.response?.status;
-        const errorMessage = get(error, "response.data.message", "Unknown error occurred");
-        const errorCode = get(error, "response.data.code", "");
-        const requestUrl = error.config?.url;
+const responseInterceptor = (response: AxiosResponse) => {
+    console.log(`API Response from ${response.config.url}: Status ${response.status}`);
+    return response;
+};
 
-        console.error(`API Error: ${status} ${errorMessage} (${errorCode}) on ${requestUrl}`);
+const responseErrorInterceptor = (error: any) => {
+    // Extract the meaningful error information
+    const status = error.response?.status;
+    const errorMessage = get(error, "response.data.message", "Unknown error occurred");
+    const errorCode = get(error, "response.data.code", "");
+    const requestUrl = error.config?.url;
 
-        // Handle authentication errors
-        if (status === 401 || errorCode === "UNAUTHORIZED") {
-            console.warn("Authentication error detected, logging out");
-            handleLogout();
-            return Promise.reject(new Error("Authentication failed. Please log in again."));
-        }
+    console.error(`API Error: ${status} ${errorMessage} (${errorCode}) on ${requestUrl}`);
 
-        // For server errors, provide a clearer message
-        if (status >= 500) {
-            return Promise.reject(new Error("Server error. Please try again later."));
-        }
-
-        return Promise.reject(error);
+    // Handle authentication errors
+    if (status === 401 || errorCode === "UNAUTHORIZED") {
+        console.warn("Authentication error detected, logging out");
+        handleLogout();
+        return Promise.reject(new Error("Authentication failed. Please log in again."));
     }
-);
 
-// ✅ LLM Service Instance (reuses the same interceptors)
+    // For server errors, provide a clearer message
+    if (status >= 500) {
+        return Promise.reject(new Error("Server error. Please try again later."));
+    }
+
+    return Promise.reject(error);
+};
+
+// Add interceptors to the API client
+apiClient.interceptors.request.use(requestInterceptor, requestErrorInterceptor);
+apiClient.interceptors.response.use(responseInterceptor, responseErrorInterceptor);
+
+// ✅ LLM Service Instance
 const llmService = axios.create({
     baseURL: LLM_SERVICE_URL,
     headers: { "Content-Type": "application/json" },
@@ -95,15 +100,8 @@ const llmService = axios.create({
 });
 
 // Add the same interceptors to the LLM service
-llmService.interceptors.request.use(
-    apiClient.interceptors.request.handlers[0].fulfilled,
-    apiClient.interceptors.request.handlers[0].rejected
-);
-
-llmService.interceptors.response.use(
-    apiClient.interceptors.response.handlers[0].fulfilled,
-    apiClient.interceptors.response.handlers[0].rejected
-);
+llmService.interceptors.request.use(requestInterceptor, requestErrorInterceptor);
+llmService.interceptors.response.use(responseInterceptor, responseErrorInterceptor);
 
 // ✅ API Call Wrapper
 export const HttpClient = {
