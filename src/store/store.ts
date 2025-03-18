@@ -13,6 +13,7 @@ import { securityReducer } from './slices/securitySlice';
 import { emailChannelsReducer } from './slices/emailChannels/emailChannelsSlice';
 import { cannedResponsesReducer } from './slices/cannedResponses/cannedResponsesSlice';
 import teamsReducer from './slices/teams/teamsSlice';
+import teammatesReducer from './slices/teammates/teammatesSlice';
 
 export const store = configureStore({
   reducer: {
@@ -29,6 +30,7 @@ export const store = configureStore({
     emailChannels: emailChannelsReducer,
     cannedResponses: cannedResponsesReducer,
     teams: teamsReducer,
+    teammates: teammatesReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

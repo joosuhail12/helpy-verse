@@ -1,12 +1,85 @@
+
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
+import {
+  Edit,
+  Users,
+  Globe,
+  Briefcase,
+  Mail,
+  Phone,
+  Calendar,
+  MapPin,
+  DollarSign,
+  Package
+} from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Users } from 'lucide-react';
-import { fetchCompanyDetails } from '@/store/slices/companies/companiesSlice';
+import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { fetchCompanies } from '@/store/slices/companies/companiesSlice';
+
+// Placeholder components - these would need to be implemented
+const ContactsTable = ({ contacts }: { contacts: any[] }) => (
+  <div className="p-4">
+    <h3 className="text-lg font-semibold mb-4">Associated Contacts</h3>
+    <table className="w-full">
+      <thead>
+        <tr>
+          <th className="text-left pb-2">Name</th>
+          <th className="text-left pb-2">Email</th>
+          <th className="text-left pb-2">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {contacts.map(contact => (
+          <tr key={contact.id}>
+            <td className="py-2">{contact.firstname} {contact.lastname}</td>
+            <td className="py-2">{contact.email}</td>
+            <td className="py-2">{contact.status}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+);
+
+const CompanyDeals = ({ company }: { company: any }) => (
+  <div className="p-4">
+    <h3 className="text-lg font-semibold mb-4">Deals</h3>
+    <p>No deals found for this company.</p>
+  </div>
+);
+
+const CompanyActivity = ({ company }: { company: any }) => (
+  <div className="p-4">
+    <h3 className="text-lg font-semibold mb-4">Activity</h3>
+    <p>No recent activity.</p>
+  </div>
+);
+
+const CompanyNotes = ({ company, initialNotes }: { company: any, initialNotes: any[] }) => (
+  <div className="p-4">
+    <h3 className="text-lg font-semibold mb-4">Notes</h3>
+    {initialNotes.length > 0 ? (
+      <div className="space-y-4">
+        {initialNotes.map(note => (
+          <Card key={note.id} className="p-4">
+            <p>{note.text}</p>
+            <div className="mt-2 text-sm text-muted-foreground">
+              By {note.createdBy.name} on {new Date(note.createdAt).toLocaleDateString()}
+            </div>
+          </Card>
+        ))}
+      </div>
+    ) : (
+      <p>No notes found.</p>
+    )}
+  </div>
+);
 
 const CompanyDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -14,8 +87,9 @@ const CompanyDetail = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    dispatch(fetchCompanyDetails(id));
-  }, [dispatch, id]);
+    // Use fetchCompanies instead of fetchCompanyDetails
+    dispatch(fetchCompanies());
+  }, [dispatch]);
 
   const mockCompany = {
     id: id || '1',

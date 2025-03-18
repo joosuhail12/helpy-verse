@@ -7,7 +7,7 @@ import { Contact } from '@/types/contact';
 import { Badge } from '@/components/ui/badge';
 import { MoreVertical } from 'lucide-react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { toggleSelection, selectContact } from '@/store/slices/contacts/contactsSlice';
+import { toggleSelectContact, selectContact } from '@/store/slices/contacts/contactsSlice';
 import { useAppSelector } from '@/hooks/useAppSelector';
 
 interface ContactListItemProps {
@@ -22,7 +22,7 @@ const ContactListItem: React.FC<ContactListItemProps> = ({ contact, onClick }) =
 
   const handleCheckboxChange = (e: React.MouseEvent) => {
     e.stopPropagation();
-    dispatch(toggleSelection(contact.id));
+    dispatch(toggleSelectContact(contact.id));
   };
 
   const handleRowClick = () => {

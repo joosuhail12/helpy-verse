@@ -40,7 +40,15 @@ const CreateChannel = () => {
   } = useChannelForm({
     onAddChannel: async (channel) => {
       try {
-        const result = await dispatch(createChannel(channel)).unwrap();
+        // Ensure required properties are present for the Redux action
+        const completeChannel = {
+          ...channel,
+          // Add these fields to make it compatible with the expected type
+          name: channel.channelName,
+          domainStatus: 'unverified',
+        };
+        
+        const result = await dispatch(createChannel(completeChannel)).unwrap();
         toast({
           title: "Channel created successfully",
           description: `${result.channelName} has been created with ${result.email} as the sender.`,

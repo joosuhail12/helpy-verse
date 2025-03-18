@@ -38,9 +38,10 @@ export interface CustomAction {
     name: string;
   };
   enabled: boolean;
+  category: string;
+  isActive: boolean;
   connectedChatbots?: Array<{
     id: string;
     name: string;
   }>;
 }
-

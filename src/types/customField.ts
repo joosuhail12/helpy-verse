@@ -58,5 +58,5 @@ export interface CustomFields {
   tickets: CustomField[];
   contacts: CustomField[];
   companies: CustomField[];
+  fields?: CustomField[]; // Adding this field to support existing code
 }
-

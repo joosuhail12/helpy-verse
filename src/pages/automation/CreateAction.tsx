@@ -45,6 +45,7 @@ export default function CreateAction() {
       parameters: '',
       parameterDescriptions: '',
       connectedChatbots: [],
+      category: 'Custom',
     },
   });
 
@@ -76,8 +77,8 @@ export default function CreateAction() {
         method: values.method as ActionMethod,
         parameters,
         headers,
-        category: 'Custom', // Adding required category
-        isActive: true, // Adding required isActive
+        category: values.category || 'Custom',
+        isActive: true,
         connectedChatbots: values.connectedChatbots.map(id => ({
           id,
           name: 'Chatbot ' + id // You might want to fetch actual names from your chatbot store

@@ -1,4 +1,3 @@
-
 import { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
@@ -36,6 +35,47 @@ const TeamDetail = () => {
     );
   }
 
+  const formatChannels = (team: any) => {
+    if (!team.channels) return { chat: undefined, email: [] };
+    
+    if ('email' in team.channels) return team.channels;
+    
+    const emailChannels = team.channels
+      .filter((c: any) => c.type === 'email')
+      .map((c: any) => c.id);
+      
+    const chatChannel = team.channels.find((c: any) => c.type === 'chat')?.id;
+    
+    return {
+      chat: chatChannel,
+      email: emailChannels,
+    };
+  };
+
+  const formatRouting = (team: any) => {
+    if (!team.routing) return { type: 'manual' };
+    
+    if ('type' in team.routing) return team.routing;
+    
+    const routingRule = Array.isArray(team.routing) && team.routing.length > 0 
+      ? team.routing[0] 
+      : { type: 'manual' };
+      
+    return {
+      type: routingRule.type || 'manual',
+      limits: team.limits || {},
+    };
+  };
+
+  const formattedTeam = {
+    ...team,
+    channels: formatChannels(team),
+    routing: formatRouting(team),
+    holidays: Array.isArray(team.holidays) 
+      ? team.holidays.map((h: any) => typeof h === 'string' ? h : h.date) 
+      : []
+  };
+
   return (
     <div className="max-w-5xl mx-auto px-6 py-8">
       <div className="flex items-center justify-between mb-8">
@@ -63,17 +103,17 @@ const TeamDetail = () => {
 
         <Card className="p-6">
           <h2 className="text-lg font-semibold mb-6">Communication Channels</h2>
-          <TeamChannels channels={team.channels} />
+          <TeamChannels channels={formattedTeam.channels} />
         </Card>
 
         <Card className="p-6">
           <h2 className="text-lg font-semibold mb-6">Ticket Routing</h2>
-          <TeamRouting routing={team.routing} />
+          <TeamRouting routing={formattedTeam.routing} />
         </Card>
 
         <Card className="p-6">
           <h2 className="text-lg font-semibold mb-6">Team Availability</h2>
-          <TeamAvailability officeHours={team.officeHours} holidays={team.holidays} />
+          <TeamAvailability officeHours={formattedTeam.officeHours} holidays={formattedTeam.holidays} />
         </Card>
       </div>
     </div>

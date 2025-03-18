@@ -34,7 +34,10 @@ export const CompanyCustomFields = ({ company }: CompanyCustomFieldsProps) => {
     );
   }
 
-  if (!data?.fields?.length) {
+  // Check data.companies for backward compatibility
+  const fields = data?.fields || data?.companies || [];
+  
+  if (!fields || fields.length === 0) {
     return null;
   }
 
@@ -56,7 +59,7 @@ export const CompanyCustomFields = ({ company }: CompanyCustomFieldsProps) => {
       </CardHeader>
       <CardContent className="pt-6">
         <div className="grid gap-6">
-          {data.fields.map((field) => {
+          {fields.map((field) => {
             // Convert field value to string for display
             const fieldValue = company[field.id];
             const safeValue = fieldValue !== undefined && fieldValue !== null 

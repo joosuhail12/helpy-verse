@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { ChannelList } from './components/ChannelList';
 import { LoadingState } from './components/LoadingState';
@@ -9,6 +8,8 @@ import { ChannelHeader } from './components/ChannelHeader';
 import { ChannelSearch } from './components/ChannelSearch';
 import { BulkActions } from './components/BulkActions';
 import { useChannelManagement } from './hooks/useChannelManagement';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, Button, MoreHorizontal } from '@radix-ui/react-dropdown-menu';
+import { useNavigate } from 'react-router-dom';
 
 const Channels = () => {
   const {
@@ -31,6 +32,41 @@ const Channels = () => {
     handleSelectChannel,
     filteredAndSortedChannels,
   } = useChannelManagement();
+
+  const navigate = useNavigate();
+
+  const renderActionOptions = (channel: EmailChannel) => {
+    const isDefault = defaultChannel && channel.id === defaultChannel.id;
+    
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="h-8 w-8 p-0">
+            <span className="sr-only">Open menu</span>
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onClick={() => navigate(`/home/settings/email/channels/${channel.id}`)}>
+            Edit
+          </DropdownMenuItem>
+          {!isDefault && (
+            <DropdownMenuItem onClick={() => handleSetDefault(channel.id)}>
+              Set as Default
+            </DropdownMenuItem>
+          )}
+          <DropdownMenuItem onClick={() => handleToggleStatus(channel.id, !channel.isActive)}>
+            {channel.isActive ? 'Disable' : 'Enable'}
+          </DropdownMenuItem>
+          {!isDefault && (
+            <DropdownMenuItem onClick={() => setChannelToDelete(channel)}>
+              Delete
+            </DropdownMenuItem>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+  };
 
   return (
     <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-8">

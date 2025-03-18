@@ -39,7 +39,15 @@ export function AddChannelDialog({ isOpen, onClose }: AddChannelDialogProps) {
   } = useChannelForm({
     onAddChannel: async (channel) => {
       try {
-        await dispatch(createChannel(channel)).unwrap();
+        // Add required fields for the API
+        const completeChannel = {
+          ...channel,
+          name: channel.channelName,
+          domainStatus: 'unverified',
+        };
+
+        await dispatch(createChannel(completeChannel)).unwrap();
+        
         toast({
           title: "Channel added",
           description: "The email channel has been added successfully.",

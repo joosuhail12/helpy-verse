@@ -29,10 +29,32 @@ export const useChannelOperations = (channel: EmailChannel) => {
 
   const handleUpdate = async (updatedChannel: Partial<EmailChannel>): Promise<boolean> => {
     try {
+      // Merge the updated values with any required fields that might be missing
+      const mergedChannel = {
+        ...updatedChannel,
+        // Ensure required fields are present
+        channelName: updatedChannel.channelName || channel.channelName,
+        senderName: updatedChannel.senderName || channel.senderName,
+        email: updatedChannel.email || channel.email,
+        type: updatedChannel.type || channel.type,
+        allowAgentConversations: 'allowAgentConversations' in updatedChannel 
+          ? updatedChannel.allowAgentConversations 
+          : channel.allowAgentConversations,
+        useAgentNames: 'useAgentNames' in updatedChannel
+          ? updatedChannel.useAgentNames
+          : channel.useAgentNames,
+        useOriginalSender: 'useOriginalSender' in updatedChannel
+          ? updatedChannel.useOriginalSender
+          : channel.useOriginalSender,
+        isActive: 'isActive' in updatedChannel
+          ? updatedChannel.isActive
+          : channel.isActive,
+      };
+      
       // Wrap the update data in the expected format
       await dispatch(updateChannel({ 
         id: channel.id, 
-        updates: updatedChannel 
+        updates: mergedChannel
       })).unwrap();
       
       toast({
