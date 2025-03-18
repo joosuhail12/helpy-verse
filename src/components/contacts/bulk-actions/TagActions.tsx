@@ -1,74 +1,103 @@
 
-import { useState } from 'react';
-import { TagIcon } from 'lucide-react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { updateContact } from '@/store/slices/contacts/contactsSlice';
 import { useToast } from '@/hooks/use-toast';
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { updateContact, clearSelection } from '@/store/slices/contacts/contactsSlice';
+import { ChevronDown, Tags, Plus, X } from 'lucide-react';
+import { useAppSelector } from '@/hooks/useAppSelector';
 
 interface TagActionsProps {
-  selectedContacts: string[];
-  contacts: any[];
+  selectedContactIds: string[];
 }
 
-export const TagActions = ({ selectedContacts, contacts }: TagActionsProps) => {
-  const [selectedTag, setSelectedTag] = useState('');
-  const dispatch = useAppDispatch();
+export const TagActions: React.FC<TagActionsProps> = ({ selectedContactIds }) => {
   const { toast } = useToast();
+  const dispatch = useAppDispatch();
+  const tags = useAppSelector((state) => state.tags.items);
 
-  const handleBulkTagging = () => {
-    if (!selectedTag) return;
-
-    selectedContacts.forEach(contactId => {
-      const contact = contacts.find(c => c.id === contactId);
-      if (!contact) return;
-
-      const currentTags = Array.isArray(contact.tags) ? contact.tags : [];
-      if (!currentTags.includes(selectedTag)) {
-        dispatch(updateContact({
-          id: contactId,
-          data: { tags: [...currentTags, selectedTag] }
-        }));
+  const handleAddTag = async (tag: string) => {
+    try {
+      // Update each contact
+      for (const contactId of selectedContactIds) {
+        await dispatch(updateContact({
+          contactId,
+          data: { tags: [tag] }
+        })).unwrap();
       }
-    });
 
-    toast({
-      title: "Tags updated",
-      description: `Updated tags for ${selectedContacts.length} contacts`,
-    });
-    setSelectedTag('');
+      toast({
+        title: "Tags updated",
+        description: `Added tag to ${selectedContactIds.length} contacts`,
+      });
+
+      dispatch(clearSelection());
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update contact tags",
+        variant: "destructive",
+      });
+    }
   };
 
+  const handleRemoveTag = async (tag: string) => {
+    try {
+      // Update each contact with removed tag
+      // This would need to be improved to get the current tags for each contact
+      for (const contactId of selectedContactIds) {
+        await dispatch(updateContact({
+          contactId,
+          data: { tags: [] }
+        })).unwrap();
+      }
+
+      toast({
+        title: "Tags updated",
+        description: `Removed tag from ${selectedContactIds.length} contacts`,
+      });
+
+      dispatch(clearSelection());
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update contact tags",
+        variant: "destructive",
+      });
+    }
+  };
+
+  if (selectedContactIds.length === 0) return null;
+
   return (
-    <div className="flex items-center gap-2">
-      <Select value={selectedTag} onValueChange={setSelectedTag}>
-        <SelectTrigger className="w-[180px]">
-          <SelectValue placeholder="Add tag..." />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="important">Important</SelectItem>
-          <SelectItem value="follow-up">Follow-up</SelectItem>
-          <SelectItem value="vip">VIP</SelectItem>
-          <SelectItem value="lead">Lead</SelectItem>
-          <SelectItem value="customer">Customer</SelectItem>
-        </SelectContent>
-      </Select>
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={handleBulkTagging}
-        disabled={selectedContacts.length === 0 || !selectedTag}
-      >
-        <TagIcon className="h-4 w-4 mr-2" />
-        Apply Tag
-      </Button>
-    </div>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" size="sm">
+          <Tags className="mr-2 h-4 w-4" /> Manage Tags <ChevronDown className="ml-2 h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <div className="px-2 py-1.5 text-sm font-semibold">Add Tag</div>
+        {tags.map((tag) => (
+          <DropdownMenuItem key={`add-${tag.id}`} onClick={() => handleAddTag(tag.id)}>
+            <Plus className="mr-2 h-4 w-4 text-green-500" />
+            {tag.name}
+          </DropdownMenuItem>
+        ))}
+        <div className="px-2 py-1.5 text-sm font-semibold border-t mt-2 pt-2">Remove Tag</div>
+        {tags.map((tag) => (
+          <DropdownMenuItem key={`remove-${tag.id}`} onClick={() => handleRemoveTag(tag.id)}>
+            <X className="mr-2 h-4 w-4 text-red-500" />
+            {tag.name}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };

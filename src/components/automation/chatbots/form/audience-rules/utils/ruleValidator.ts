@@ -6,6 +6,11 @@ export type ValidationResult = {
   error?: string;
 };
 
+export type ValidationError = {
+  message: string;
+  path?: string;
+};
+
 type ComparisonOperator = 
   | "equals" 
   | "not_equals" 

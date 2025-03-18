@@ -2,7 +2,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { selectContent, deselectContent } from '@/store/slices/content/contentSlice';
+import { selectContent, toggleContentSelection } from '@/store/slices/content/contentSlice';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import type { Content } from '@/types/content';
 import {
@@ -29,11 +29,7 @@ export const ContentList = ({ searchQuery }: ContentListProps) => {
   const sort = useAppSelector((state) => state.content.sort);
 
   const handleSelect = (id: string) => {
-    if (selectedIds.includes(id)) {
-      dispatch(deselectContent(id));
-    } else {
-      dispatch(selectContent(id));
-    }
+    dispatch(toggleContentSelection(id));
   };
 
   const handleRowClick = (content: Content, event: React.MouseEvent) => {
@@ -41,6 +37,7 @@ export const ContentList = ({ searchQuery }: ContentListProps) => {
     if ((event.target as HTMLElement).closest('.checkbox-wrapper')) {
       return;
     }
+    dispatch(selectContent(content.id));
     navigate(`/home/automation/ai/content-center/${content.id}`);
   };
 

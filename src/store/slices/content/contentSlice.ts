@@ -1,6 +1,6 @@
 
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { Content, ContentStatus, ContentState } from '@/types/content';
+import { Content, ContentStatus, ContentState, SortField } from '@/types/content';
 
 const initialState: ContentState = {
   items: [],
@@ -41,9 +41,11 @@ export const contentSlice = createSlice({
       state.selectedContentId = action.payload;
       state.selectedContent = state.items.find(item => item.id === action.payload) || null;
     },
-    deselectContent: (state) => {
-      state.selectedContentId = null;
-      state.selectedContent = null;
+    deselectContent: (state, action: PayloadAction<string>) => {
+      if (state.selectedContentId === action.payload) {
+        state.selectedContentId = null;
+        state.selectedContent = null;
+      }
     },
     toggleContentSelection: (state, action: PayloadAction<string>) => {
       const id = action.payload;
@@ -59,12 +61,34 @@ export const contentSlice = createSlice({
     deselectAllContent: (state) => {
       state.selectedIds = [];
     },
+    clearSelection: (state) => {
+      state.selectedIds = [];
+    },
     setContentFilter: (state, action: PayloadAction<{ key: 'status' | 'category' | 'chatbot'; value: string | null }>) => {
       const { key, value } = action.payload;
-      state.filters[key] = value;
+      state.filters[key] = value as any;
     },
-    setSortField: (state, action: PayloadAction<{ field: string; direction: 'asc' | 'desc' }>) => {
-      state.sort = action.payload;
+    setStatusFilter: (state, action: PayloadAction<ContentStatus | null>) => {
+      state.filters.status = action.payload;
+    },
+    setCategoryFilter: (state, action: PayloadAction<string | null>) => {
+      state.filters.category = action.payload;
+    },
+    setChatbotFilter: (state, action: PayloadAction<string | null>) => {
+      state.filters.chatbot = action.payload;
+    },
+    clearFilters: (state) => {
+      state.filters = {
+        status: null,
+        category: null,
+        chatbot: null,
+      };
+    },
+    setSortField: (state, action: PayloadAction<SortField>) => {
+      state.sort.field = action.payload;
+    },
+    setSortDirection: (state, action: PayloadAction<'asc' | 'desc'>) => {
+      state.sort.direction = action.payload;
     },
     setSearchQuery: (state, action: PayloadAction<string>) => {
       state.search.query = action.payload;
@@ -88,11 +112,11 @@ export const contentSlice = createSlice({
     clearSearchHistory: (state) => {
       state.search.history = [];
     },
-    updateContent: (state, action: PayloadAction<{ id: string; updates: Partial<Content> }>) => {
-      const { id, updates } = action.payload;
+    updateContent: (state, action: PayloadAction<{ id: string; data: Partial<Content> }>) => {
+      const { id, data } = action.payload;
       const contentIndex = state.items.findIndex(item => item.id === id);
       if (contentIndex !== -1) {
-        state.items[contentIndex] = { ...state.items[contentIndex], ...updates };
+        state.items[contentIndex] = { ...state.items[contentIndex], ...data };
         if (state.selectedContentId === id) {
           state.selectedContent = state.items[contentIndex];
         }
@@ -103,6 +127,15 @@ export const contentSlice = createSlice({
       state.items = state.items.filter(item => item.id !== id);
       state.selectedIds = state.selectedIds.filter(selectedId => selectedId !== id);
       if (state.selectedContentId === id) {
+        state.selectedContentId = null;
+        state.selectedContent = null;
+      }
+    },
+    deleteContents: (state, action: PayloadAction<string[]>) => {
+      const ids = action.payload;
+      state.items = state.items.filter(item => !ids.includes(item.id));
+      state.selectedIds = state.selectedIds.filter(id => !ids.includes(id));
+      if (state.selectedContentId && ids.includes(state.selectedContentId)) {
         state.selectedContentId = null;
         state.selectedContent = null;
       }
@@ -151,8 +184,14 @@ export const {
   toggleContentSelection,
   selectAllContent,
   deselectAllContent,
+  clearSelection,
   setContentFilter,
+  setStatusFilter,
+  setCategoryFilter,
+  setChatbotFilter,
+  clearFilters,
   setSortField,
+  setSortDirection,
   setSearchQuery,
   updateSearchSuggestions,
   addToSearchHistory,
@@ -160,6 +199,7 @@ export const {
   clearSearchHistory,
   updateContent,
   deleteContent,
+  deleteContents,
   updateContentStatus,
   reassignChatbot,
 } = contentSlice.actions;

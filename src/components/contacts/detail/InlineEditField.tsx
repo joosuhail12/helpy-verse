@@ -1,146 +1,171 @@
 
-import { useState, useEffect, useRef } from 'react';
-import { Pencil } from 'lucide-react';
+import React, { useState } from 'react';
+import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
-import { CustomFieldType } from '@/types/customField';
-import { validateFieldValue } from '@/components/settings/customData/utils/fieldValidation';
-import { EditButtons } from './inline-edit/EditButtons';
-import { EditField } from './inline-edit/EditField';
-import { DisplayValue } from './inline-edit/DisplayValue';
+import { Pencil, Check, X } from 'lucide-react';
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { updateContact } from '@/store/slices/contacts/contactsSlice';
+import { useToast } from '@/hooks/use-toast';
 
 interface InlineEditFieldProps {
-  value: string | number | boolean | string[];
-  contactId: string;
-  field: string;
   label: string;
-  type?: CustomFieldType;
-  options?: string[];
-  validation?: {
-    type: 'required' | 'minLength' | 'maxLength' | 'regex' | 'min' | 'max';
-    value: string | number;
-    message: string;
-  }[];
+  value: string | null | undefined;
+  fieldName: string;
+  contactId: string;
+  type?: 'text' | 'select' | 'date';
+  options?: Array<{ value: string; label: string }>;
 }
 
-export const InlineEditField = ({
-  value,
-  contactId,
-  field,
+export const InlineEditField: React.FC<InlineEditFieldProps> = ({
   label,
+  value,
+  fieldName,
+  contactId,
   type = 'text',
   options = [],
-  validation = []
-}: InlineEditFieldProps) => {
+}) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [editValue, setEditValue] = useState<string | number | boolean | string[]>(value);
-  const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const { toast } = useToast();
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [editValue, setEditValue] = useState(value || '');
+  const [isLoading, setIsLoading] = useState(false);
   const dispatch = useAppDispatch();
-
-  useEffect(() => {
-    if (isEditing && inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [isEditing]);
-
+  const { toast } = useToast();
+  
+  const handleEdit = () => {
+    setIsEditing(true);
+  };
+  
+  const handleCancel = () => {
+    setEditValue(value || '');
+    setIsEditing(false);
+  };
+  
   const handleSave = async () => {
-    // Validate field before saving
-    const mockField = {
-      id: field,
-      name: label,
-      type,
-      required: validation.some(v => v.type === 'required'),
-      validationRules: validation,
-      description: '',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      history: []
-    };
-
-    const validationErrors = validateFieldValue(editValue, mockField);
-    if (validationErrors.length > 0) {
-      setError(validationErrors[0]);
-      toast({
-        title: 'Validation Error',
-        description: validationErrors[0],
-        variant: 'destructive',
-      });
+    if (editValue === value) {
+      setIsEditing(false);
       return;
     }
-
-    setIsSaving(true);
-    setError(null);
+    
+    setIsLoading(true);
     try {
-      const updateData: { [key: string]: any } = {};
-      updateData[field] = editValue;
+      await dispatch(updateContact({
+        contactId,
+        data: { [fieldName]: editValue }
+      })).unwrap();
       
-      await dispatch(updateContact({ 
-        id: contactId, 
-        data: updateData 
-      }));
-      
-      setIsEditing(false);
       toast({
-        title: 'Success',
-        description: `${label} has been updated.`,
+        title: "Updated",
+        description: `Successfully updated ${label.toLowerCase()}`,
       });
+      setIsEditing(false);
     } catch (error) {
       toast({
-        title: 'Error',
-        description: `Failed to update ${label.toLowerCase()}.`,
-        variant: 'destructive',
+        title: "Error",
+        description: `Failed to update ${label.toLowerCase()}`,
+        variant: "destructive",
       });
     } finally {
-      setIsSaving(false);
+      setIsLoading(false);
     }
   };
-
-  const handleCancel = () => {
-    setEditValue(value);
-    setIsEditing(false);
-    setError(null);
-  };
-
-  if (isEditing) {
-    return (
-      <div className="space-y-1">
-        <div className="flex items-center gap-2">
-          <EditField
-            type={type}
+  
+  const renderEditMode = () => {
+    switch (type) {
+      case 'select':
+        return (
+          <Select
             value={editValue}
-            onChange={(newValue) => setEditValue(newValue)}
-            options={options}
-            isSaving={isSaving}
-            inputRef={inputRef}
-            field={field}
+            onValueChange={setEditValue}
+            disabled={isLoading}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select..." />
+            </SelectTrigger>
+            <SelectContent>
+              {options.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        );
+      case 'date':
+        return (
+          <Input
+            type="date"
+            value={editValue}
+            onChange={(e) => setEditValue(e.target.value)}
+            disabled={isLoading}
           />
-          <EditButtons
-            onSave={handleSave}
-            onCancel={handleCancel}
-            isSaving={isSaving}
+        );
+      default:
+        return (
+          <Input
+            type="text"
+            value={editValue}
+            onChange={(e) => setEditValue(e.target.value)}
+            disabled={isLoading}
+            autoFocus
           />
-        </div>
-        {error && <p className="text-sm text-red-500">{error}</p>}
-      </div>
-    );
-  }
-
+        );
+    }
+  };
+  
   return (
-    <div className="group flex items-center gap-2">
-      <DisplayValue type={type} value={value} />
-      <Button
-        size="sm"
-        variant="ghost"
-        onClick={() => setIsEditing(true)}
-        className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-      >
-        <Pencil className="h-4 w-4 text-gray-500" />
-      </Button>
+    <div className="space-y-1">
+      <div className="text-sm text-muted-foreground">{label}</div>
+      
+      {isEditing ? (
+        <div className="space-y-2">
+          {renderEditMode()}
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleCancel}
+              disabled={isLoading}
+            >
+              <X className="h-4 w-4 mr-1" />
+              Cancel
+            </Button>
+            <Button 
+              size="sm" 
+              onClick={handleSave}
+              disabled={isLoading}
+            >
+              <Check className="h-4 w-4 mr-1" />
+              Save
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <div className="flex justify-between items-center group">
+          <div className="font-medium">
+            {value ? (
+              type === 'date' && value 
+                ? new Date(value).toLocaleDateString() 
+                : value
+            ) : (
+              <span className="text-muted-foreground italic">Not set</span>
+            )}
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="opacity-0 group-hover:opacity-100 transition-opacity"
+            onClick={handleEdit}
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
