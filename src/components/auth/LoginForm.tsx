@@ -51,8 +51,9 @@ export const LoginForm = memo(() => {
       
       const result = await dispatch(loginUser({ email, password })).unwrap();
       
+      // Handle successful login even if subsequent API calls might fail
       if (result && result.data && result.data.accessToken) {
-        // Ensure token is properly set in cookie regardless of API response
+        // Set token in cookie and Axios headers
         handleSetToken(result.data.accessToken.token);
         
         toast({
@@ -60,12 +61,12 @@ export const LoginForm = memo(() => {
           description: "Logged in successfully",
         });
         
-        // Add a small delay to ensure toast is visible before redirect
+        // Add a delay to ensure toast is visible before redirect
         setTimeout(() => {
           // Force navigation using window.location for reliability
           console.log('Login successful, redirecting to:', from);
           window.location.href = from;
-        }, 800);
+        }, 1000);
       }
     } catch (error) {
       console.error("Login error:", error);

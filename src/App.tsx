@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -59,8 +60,11 @@ const queryClient = new QueryClient({
 const initializeApp = () => {
   const token = getCookie("customerToken");
   if (token) {
+    console.log("App initialization: Found token, setting up auth");
     handleSetToken(token);
     HttpClient.setAxiosDefaultConfig();
+  } else {
+    console.log("App initialization: No token found");
   }
 };
 
@@ -96,6 +100,7 @@ const ErrorBoundary = ({ children }: { children: React.ReactNode }) => {
 
 const App = () => {
   useEffect(() => {
+    // Initialize app with authentication if token exists
     initializeApp();
   }, []);
 

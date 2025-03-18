@@ -31,16 +31,17 @@ export const SignIn = memo(() => {
   useEffect(() => {
     const token = getCookie("customerToken");
     
-    if (auth?.isAuthenticated || token) {
-      console.log('User is authenticated, redirecting to:', from); // Debug log
+    // Only redirect if we have a token - this is the source of truth for authentication
+    if (token) {
+      console.log('User has token, redirecting to:', from); // Debug log
       
       // Use a small delay to ensure state is settled
       setTimeout(() => {
         // Use hard navigation for more reliable redirect
         window.location.href = from;
-      }, 300);
+      }, 500);
     }
-  }, [auth?.isAuthenticated, from]);
+  }, [from]);
 
   console.log('Auth state:', auth); // Debug log
 

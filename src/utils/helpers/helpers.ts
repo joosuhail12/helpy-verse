@@ -1,4 +1,3 @@
-
 import { HttpClient } from "@/api/services/HttpClient";
 
 // 🟢 Get Cookie
@@ -41,14 +40,26 @@ export const handleLogout = (): void => {
 
 // 🟢 Set Auth Token
 export const handleSetToken = (token: string): boolean => {
-    // Set the cookie with a long expiration
-    setCookie("customerToken", token, 30);
+    // Check if token is valid
+    if (!token) {
+        console.error("Cannot set empty token");
+        return false;
+    }
     
-    // Configure axios with the new token
-    HttpClient.setAxiosDefaultConfig();
-    
-    console.log("Token set successfully:", !!token);
-    return true;
+    try {
+        // Set the cookie with a long expiration
+        setCookie("customerToken", token, 30);
+        
+        // Configure axios with the new token
+        HttpClient.apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+        HttpClient.setAxiosDefaultConfig();
+        
+        console.log("Token set successfully:", !!token);
+        return true;
+    } catch (error) {
+        console.error("Error setting token:", error);
+        return false;
+    }
 };
 
 // 🟢 Workspace ID Management
