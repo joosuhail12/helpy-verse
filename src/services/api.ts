@@ -4,8 +4,8 @@ import { getCookie } from '@/utils/helpers/helpers';
 
 // Create an axios instance
 const api = axios.create({
-  // baseURL: 'http://localhost:4000/api',
-  baseURL: 'https://dev-socket.pullseai.com/api',
+  // Use the production API endpoint
+  baseURL: 'https://api.pullseai.com/api',
   headers: {
     'Content-Type': 'application/json',
   },
