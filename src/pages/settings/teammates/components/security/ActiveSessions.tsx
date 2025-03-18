@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { fetchTeammateSessions, terminateSession } from '@/store/slices/teammates/teammatesSlice';
-import { Monitor, Smartphone, Desktop as DesktopIcon, Globe, Loader, X } from 'lucide-react';
+import { Monitor, Smartphone, Globe, Loader, X } from 'lucide-react';
+import { DesktopIcon } from 'lucide-react';
 import { formatDistance } from 'date-fns';
 
 interface ActiveSessionsProps {

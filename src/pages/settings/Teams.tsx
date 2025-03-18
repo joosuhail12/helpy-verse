@@ -62,7 +62,8 @@ const Teams = () => {
           return formattedTeam;
         });
         
-        dispatch(setTeams(formattedTeams as any)); // Type assertion to avoid dispatch type errors
+        // Using type assertion to resolve dispatch type errors
+        dispatch(setTeams(formattedTeams as any));
       }
     };
 
@@ -99,7 +100,8 @@ const Teams = () => {
       {teams.length === 0 ? (
         <TeamsEmptyState />
       ) : (
-        <TeamsList teams={teams as any} /> {/* Type assertion to fix the incompatible types */}
+        // Using type assertion to fix incompatible types
+        <TeamsList teams={teams as any} />
       )}
     </div>
   );
