@@ -1,179 +1,172 @@
-
-import { useAppSelector } from '@/hooks/useAppSelector';
-import { useAppDispatch } from '@/hooks/useAppDispatch';
+import React, { useState, useEffect } from 'react';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { useAppDispatch, useAppSelector } from '@/hooks/useAppSelector';
+import { fetchCustomers, updateContactCompany } from '@/store/slices/contacts/contactsSlice';
 import { Contact } from '@/types/contact';
-import { Company } from '@/types/company';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { User, Plus, Search, Check } from 'lucide-react';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Input } from '@/components/ui/input';
-import { useState } from 'react';
-import { updateContact } from '@/store/slices/contacts/contactsSlice';
-import { useToast } from '@/hooks/use-toast';
+import { MoreVertical, Plus } from 'lucide-react';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Command,
-  CommandInput,
-  CommandEmpty,
-  CommandGroup,
-  CommandItem,
-} from "@/components/ui/command";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 interface AssociatedContactsProps {
-  company: Company;
+  companyId: string;
 }
 
-export const AssociatedContacts = ({ company }: AssociatedContactsProps) => {
-  const dispatch = useAppDispatch();
-  const { toast } = useToast();
+const AssociatedContacts: React.FC<AssociatedContactsProps> = ({ companyId }) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [showAddDialog, setShowAddDialog] = useState(false);
-  const [addContactSearch, setAddContactSearch] = useState('');
+  const [associatedContacts, setAssociatedContacts] = useState<Contact[]>([]);
+  const [availableContacts, setAvailableContacts] = useState<Contact[]>([]);
+  const [associateDialogOpen, setAssociateDialogOpen] = useState(false);
+  const contacts = useAppSelector((state) => state.contacts.contacts);
+  const dispatch = useAppDispatch();
 
-  // Get all contacts and filter for those associated with this company
-  const contacts = useAppSelector((state) => 
-    state.contacts.contacts.filter(contact => contact.company === company.name)
-  );
+  useEffect(() => {
+    dispatch(fetchCustomers());
+  }, [dispatch]);
 
-  // Get all contacts not associated with this company for adding
-  const availableContacts = useAppSelector((state) => 
-    state.contacts.contacts.filter(contact => 
-      contact.company !== company.name && 
-      (
-        contact.firstname.toLowerCase().includes(addContactSearch.toLowerCase()) ||
-        contact.lastname.toLowerCase().includes(addContactSearch.toLowerCase()) ||
-        contact.email.toLowerCase().includes(addContactSearch.toLowerCase())
-      )
-    )
-  );
+  const fetchAssociatedContacts = () => {
+    const associated = contacts.filter(contact => contact.companyId === companyId);
+    setAssociatedContacts(associated);
 
-  // Filter displayed contacts based on search
-  const filteredContacts = contacts.filter(contact =>
-    contact.firstname.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    contact.lastname.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    contact.email.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+    const available = contacts.filter(contact => !contact.companyId);
+    setAvailableContacts(available);
+  };
 
-  const handleAddContact = async (contact: Contact) => {
-    try {
-      dispatch(updateContact({ 
-        id: contact.id,
-        company: company.name,
-        updatedAt: new Date().toISOString(),
-      }));
-      
-      toast({
-        title: "Contact added",
-        description: `${contact.firstname} ${contact.lastname} has been added to ${company.name}`,
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to add contact to company",
-        variant: "destructive",
-      });
+  useEffect(() => {
+    if (contacts.length > 0) {
+      fetchAssociatedContacts();
     }
+  }, [contacts, companyId]);
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
+
+  const filteredContacts = availableContacts.filter(contact =>
+    contact.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    contact.lastName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    contact.email?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const handleAssociateContact = (contactId: string) => {
+    dispatch(
+      updateContactCompany({
+        id: contactId,
+        data: { companyId: companyId }  // Use companyId instead of company object
+      })
+    );
+    
+    // Refresh associated contacts
+    fetchAssociatedContacts();
+    
+    // Close dialog
+    setAssociateDialogOpen(false);
+  };
+
+  const handleRemoveAssociation = (contactId: string) => {
+    dispatch(
+      updateContactCompany({
+        id: contactId,
+        data: { companyId: null }
+      })
+    );
+    fetchAssociatedContacts();
   };
 
   return (
-    <Card className="bg-white/60 backdrop-blur-sm border-purple-100/50 shadow-lg shadow-purple-500/5">
-      <CardHeader className="border-b border-purple-100/20 pb-4">
-        <CardTitle className="text-lg font-semibold text-purple-900">Associated Contacts</CardTitle>
-      </CardHeader>
-      <CardContent className="pt-6">
-        <div className="mb-4 relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+    <div>
+      <h3>Associated Contacts</h3>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Name</TableHead>
+            <TableHead>Email</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {associatedContacts.map(contact => (
+            <TableRow key={contact.id}>
+              <TableCell>{contact.firstName} {contact.lastName}</TableCell>
+              <TableCell>{contact.email}</TableCell>
+              <TableCell className="text-right">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="h-8 w-8 p-0">
+                      <span className="sr-only">Open menu</span>
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => handleRemoveAssociation(contact.id)}>
+                      Remove Association
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+
+      <Dialog open={associateDialogOpen} onOpenChange={setAssociateDialogOpen}>
+        <DialogTrigger asChild>
+          <Button>
+            <Plus className="mr-2 h-4 w-4" />
+            Associate Contact
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Associate Contact</DialogTitle>
+          </DialogHeader>
           <Input
+            type="search"
             placeholder="Search contacts..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
+            onChange={handleSearch}
           />
-        </div>
-
-        {filteredContacts.length === 0 ? (
-          <div className="text-center py-8">
-            <div className="mx-auto w-12 h-12 rounded-full bg-purple-50 flex items-center justify-center mb-3">
-              <User className="h-6 w-6 text-purple-400" />
-            </div>
-            <h3 className="text-sm font-medium text-gray-900 mb-1">No Contacts Found</h3>
-            <p className="text-sm text-gray-500">
-              {searchQuery ? "Try adjusting your search terms." : "Start by adding contacts to this company."}
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {filteredContacts.map((contact) => (
-              <div key={contact.id} className="flex items-center justify-between p-3 bg-purple-50/50 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <Avatar>
-                    <AvatarFallback>
-                      {contact.firstname[0]}
-                      {contact.lastname[0]}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="font-medium text-gray-900">{contact.firstname} {contact.lastname}</p>
-                    <p className="text-sm text-gray-500">{contact.title || 'No title'}</p>
-                  </div>
-                </div>
-                <Button variant="ghost" size="sm" className="text-purple-600">
-                  View Details
-                </Button>
-              </div>
-            ))}
-          </div>
-        )}
-
-        <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-          <DialogContent className="sm:max-w-[475px]">
-            <DialogHeader>
-              <DialogTitle>Add Contact to {company.name}</DialogTitle>
-            </DialogHeader>
-            <Command className="rounded-lg border shadow-md">
-              <CommandInput
-                placeholder="Search contacts..."
-                value={addContactSearch}
-                onValueChange={setAddContactSearch}
-              />
-              <CommandEmpty>No contacts found.</CommandEmpty>
-              <CommandGroup className="max-h-[300px] overflow-auto">
-                {availableContacts.map((contact) => (
-                  <CommandItem
-                    key={contact.id}
-                    className="flex items-center justify-between py-2 px-2 cursor-pointer"
-                    onSelect={() => {
-                      handleAddContact(contact);
-                      setShowAddDialog(false);
-                      setAddContactSearch('');
-                    }}
-                  >
-                    <div className="flex items-center space-x-3">
-                      <Avatar>
-                        <AvatarFallback>
-                          {contact.firstname[0]}
-                          {contact.lastname[0]}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-medium">{contact.firstname} {contact.lastname}</p>
-                        <p className="text-sm text-gray-500">{contact.email}</p>
-                      </div>
-                    </div>
-                    <Check className="h-4 w-4 text-gray-400" />
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            </Command>
-          </DialogContent>
-        </Dialog>
-      </CardContent>
-    </Card>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredContacts.map(contact => (
+                <TableRow key={contact.id}>
+                  <TableCell>{contact.firstName} {contact.lastName}</TableCell>
+                  <TableCell>{contact.email}</TableCell>
+                  <TableCell className="text-right">
+                    <Button onClick={() => handleAssociateContact(contact.id)}>Associate</Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 };
+
+export default AssociatedContacts;

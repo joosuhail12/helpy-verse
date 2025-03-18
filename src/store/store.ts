@@ -1,35 +1,37 @@
-
 import { configureStore } from '@reduxjs/toolkit';
-import actionsReducer from './slices/actions/actionsSlice';
-import chatbotsReducer from './slices/chatbots/chatbotsSlice';
-import contentReducer from './slices/content/contentSlice';
 import authReducer from './slices/authSlice';
-import companiesReducer from './slices/companies/companiesSlice';
+import userReducer from './slices/user/userSlice';
 import contactsReducer from './slices/contacts/contactsSlice';
-import teammatesReducer from './slices/teammates/teammatesSlice';
-import teamsReducer from './slices/teams/teamsSlice';
-import securityReducer from './slices/securitySlice';
-import tagsReducer from './slices/tagsSlice';
-import emailChannelsReducer from './slices/emailChannels/emailChannelsSlice';
-import cannedResponsesReducer from './slices/cannedResponses/cannedResponsesSlice';
+import tagsReducer from './slices/settings/tags/tagsSlice';
+import teamsReducer from './slices/settings/teams/teamsSlice';
+import teammatesReducer from './slices/settings/teammates/teammatesSlice';
+import customDataReducer from './slices/settings/customData/customDataSlice';
+import cannedResponsesReducer from './slices/settings/cannedResponses/cannedResponsesSlice';
+import emailDomainsReducer from './slices/settings/email/domains/emailDomainsSlice';
+import emailChannelsReducer from './slices/settings/email/channels/emailChannelsSlice';
+import companiesReducer from './slices/contacts/companiesSlice';
+import contentCenterReducer from './slices/automation/contentCenterSlice';
 
 export const store = configureStore({
   reducer: {
-    actions: actionsReducer,
-    chatbots: chatbotsReducer,
-    content: contentReducer,
     auth: authReducer,
-    companies: companiesReducer,
+    user: userReducer,
     contacts: contactsReducer,
-    teammates: teammatesReducer,
-    teams: teamsReducer,
-    security: securityReducer,
     tags: tagsReducer,
-    emailChannels: emailChannelsReducer,
+    teams: teamsReducer,
+    teammates: teammatesReducer,
+    customData: customDataReducer,
     cannedResponses: cannedResponsesReducer,
+    emailDomains: emailDomainsReducer,
+    emailChannels: emailChannelsReducer,
+    companies: companiesReducer,
+    contentCenter: contentCenterReducer,
   },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: false,
+    }),
 });
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
-

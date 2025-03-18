@@ -1,7 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { createBrowserRouter } from 'react-router-dom';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
-import DashboardLayout from './layouts/DashboardLayout';
+import { Loader2 } from 'lucide-react';
 import SignIn from './pages/SignIn';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
@@ -11,9 +11,7 @@ import NotFound from './pages/NotFound';
 // Lazy load pages
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Companies = lazy(() => import('./pages/contacts/Companies'));
-
-// Layout components
-const DashboardLayout = lazy(() => import('./layouts/DashboardLayout').catch(() => {
+const DashboardLayoutComponent = lazy(() => import('./layouts/DashboardLayout').catch(() => {
   console.error('Failed to load DashboardLayout');
   throw new Error('Failed to load DashboardLayout');
 }));
@@ -79,17 +77,25 @@ export const router = createBrowserRouter([
     path: '/',
     element: (
       <ProtectedRoute>
-        <DashboardLayout />
+        <DashboardLayoutComponent />
       </ProtectedRoute>
     ),
     children: [
       {
         path: 'home',
-        element: <Dashboard />,
+        element: (
+          <Suspense fallback={<LoadingSpinner />}>
+            <Dashboard />
+          </Suspense>
+        ),
       },
       {
         path: 'companies',
-        element: <Companies />,
+        element: (
+          <Suspense fallback={<LoadingSpinner />}>
+            <Companies />
+          </Suspense>
+        ),
       },
       {
         path: 'automation',
