@@ -6,70 +6,70 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { updateContact, clearSelection } from '@/store/slices/contacts/contactsSlice';
-import { ChevronDown, Tags, Plus, X } from 'lucide-react';
-import { useAppSelector } from '@/hooks/useAppSelector';
+import { Tag, ChevronDown, Plus } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import type { Contact } from '@/types/contact';
 
 interface TagActionsProps {
   selectedContactIds: string[];
+  contacts: Contact[];
 }
 
-export const TagActions: React.FC<TagActionsProps> = ({ selectedContactIds }) => {
+export const TagActions: React.FC<TagActionsProps> = ({ selectedContactIds, contacts }) => {
+  const [newTag, setNewTag] = useState('');
+  const [showAddTag, setShowAddTag] = useState(false);
   const { toast } = useToast();
   const dispatch = useAppDispatch();
-  const tags = useAppSelector((state) => state.tags.items);
+
+  // Get all existing tags from contacts
+  const allTags = Array.from(
+    new Set(
+      contacts
+        .flatMap(contact => contact.tags || [])
+        .filter(tag => tag) // Filter out null/undefined
+    )
+  ).sort();
 
   const handleAddTag = async (tag: string) => {
     try {
-      // Update each contact
       for (const contactId of selectedContactIds) {
-        await dispatch(updateContact({
-          contactId,
-          data: { tags: [tag] }
-        })).unwrap();
+        const contact = contacts.find(c => c.id === contactId);
+        if (contact) {
+          const existingTags = contact.tags || [];
+          if (!existingTags.includes(tag)) {
+            await dispatch(updateContact({
+              contactId,
+              data: { tags: [...existingTags, tag] }
+            })).unwrap();
+          }
+        }
       }
 
       toast({
-        title: "Tags updated",
-        description: `Added tag to ${selectedContactIds.length} contacts`,
+        title: "Tags added",
+        description: `Added tag "${tag}" to ${selectedContactIds.length} contacts`,
       });
-
-      dispatch(clearSelection());
+      
+      setNewTag('');
+      setShowAddTag(false);
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to update contact tags",
+        description: "Failed to add tags",
         variant: "destructive",
       });
     }
   };
 
-  const handleRemoveTag = async (tag: string) => {
-    try {
-      // Update each contact with removed tag
-      // This would need to be improved to get the current tags for each contact
-      for (const contactId of selectedContactIds) {
-        await dispatch(updateContact({
-          contactId,
-          data: { tags: [] }
-        })).unwrap();
-      }
-
-      toast({
-        title: "Tags updated",
-        description: `Removed tag from ${selectedContactIds.length} contacts`,
-      });
-
-      dispatch(clearSelection());
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update contact tags",
-        variant: "destructive",
-      });
+  const handleCreateTag = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newTag.trim()) {
+      handleAddTag(newTag.trim());
     }
   };
 
@@ -79,24 +79,62 @@ export const TagActions: React.FC<TagActionsProps> = ({ selectedContactIds }) =>
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm">
-          <Tags className="mr-2 h-4 w-4" /> Manage Tags <ChevronDown className="ml-2 h-4 w-4" />
+          <Tag className="mr-2 h-4 w-4" />
+          Manage Tags <ChevronDown className="ml-2 h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent>
-        <div className="px-2 py-1.5 text-sm font-semibold">Add Tag</div>
-        {tags.map((tag) => (
-          <DropdownMenuItem key={`add-${tag.id}`} onClick={() => handleAddTag(tag.id)}>
-            <Plus className="mr-2 h-4 w-4 text-green-500" />
-            {tag.name}
+      <DropdownMenuContent className="w-56">
+        {allTags.length > 0 ? (
+          <>
+            <div className="p-2 text-sm font-medium">Add existing tag</div>
+            {allTags.map(tag => (
+              <DropdownMenuItem key={tag} onClick={() => handleAddTag(tag)}>
+                <span className="text-sm">{tag}</span>
+              </DropdownMenuItem>
+            ))}
+          </>
+        ) : (
+          <div className="p-2 text-sm text-muted-foreground">No existing tags</div>
+        )}
+        
+        <DropdownMenuSeparator />
+        
+        {showAddTag ? (
+          <form onSubmit={handleCreateTag} className="p-2">
+            <Input
+              size={1}
+              value={newTag}
+              onChange={(e) => setNewTag(e.target.value)}
+              placeholder="Enter new tag"
+              className="mb-2"
+              autoFocus
+            />
+            <div className="flex gap-2">
+              <Button 
+                type="submit" 
+                variant="outline" 
+                size="sm" 
+                className="w-full"
+                disabled={!newTag.trim()}
+              >
+                Add
+              </Button>
+              <Button 
+                type="button" 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setShowAddTag(false)}
+              >
+                Cancel
+              </Button>
+            </div>
+          </form>
+        ) : (
+          <DropdownMenuItem onClick={() => setShowAddTag(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            <span>Create new tag</span>
           </DropdownMenuItem>
-        ))}
-        <div className="px-2 py-1.5 text-sm font-semibold border-t mt-2 pt-2">Remove Tag</div>
-        {tags.map((tag) => (
-          <DropdownMenuItem key={`remove-${tag.id}`} onClick={() => handleRemoveTag(tag.id)}>
-            <X className="mr-2 h-4 w-4 text-red-500" />
-            {tag.name}
-          </DropdownMenuItem>
-        ))}
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

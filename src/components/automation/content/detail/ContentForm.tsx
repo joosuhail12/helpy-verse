@@ -57,16 +57,14 @@ export const ContentForm = ({ content }: ContentFormProps) => {
         changes: 'Updated content',
       };
 
-      const updates = {
-        ...values,
-        versions: [...(content.versions || []), newVersion],
-        lastEditedBy: newVersion.createdBy,
-        lastUpdated: new Date().toISOString(),
-      };
-
       dispatch(updateContent({ 
         id: content.id, 
-        updates 
+        updates: {
+          ...values,
+          versions: [...(content.versions || []), newVersion],
+          lastEditedBy: newVersion.createdBy,
+          lastUpdated: new Date().toISOString(),
+        }
       }));
 
       toast({

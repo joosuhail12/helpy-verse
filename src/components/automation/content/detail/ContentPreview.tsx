@@ -38,13 +38,15 @@ export const ContentPreview = ({ content }: ContentPreviewProps) => {
         changes: 'Updated content',
       };
 
-      const updates = {
-        content: editableContent,
-        versions: [...(content.versions || []), newVersion],
-        lastEditedBy: newVersion.createdBy,
-      };
-
-      dispatch(updateContent({ id: content.id, updates }));
+      dispatch(updateContent({ 
+        id: content.id, 
+        updates: { 
+          content: editableContent,
+          versions: [...(content.versions || []), newVersion],
+          lastEditedBy: newVersion.createdBy
+        } 
+      }));
+      
       setIsEditing(false);
       toast({
         title: 'Success',

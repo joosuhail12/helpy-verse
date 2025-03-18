@@ -1,67 +1,105 @@
 
-import { Steps } from '@/components/ui/steps';
-import { CreateChatbotForm } from '@/components/automation/chatbots/CreateChatbotForm';
-import { AudienceRules } from '@/components/automation/chatbots/form/audience-rules/AudienceRules';
 import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Steps, Step } from '@/components/ui/steps';
+import { ChatbotBasicInfo } from '@/components/automation/chatbots/form/basic-info/ChatbotBasicInfo';
+import { AudienceRules } from '@/components/automation/chatbots/form/audience-rules/AudienceRules';
+import { ContentConnector } from '@/components/automation/chatbots/form/content-connector/ContentConnector';
+import { Deployment } from '@/components/automation/chatbots/form/deployment/Deployment';
+import { useToast } from '@/hooks/use-toast';
 
-const CreateChatbot = () => {
-  const [currentStep, setCurrentStep] = useState(0);
+// Define a prop interface for AudienceRules to include onNextStep
+interface AudienceRulesWithNextProps {
+  onNextStep: () => void;
+}
 
-  const steps: { 
-    title: string; 
-    description: string; 
-    status: "pending" | "current" | "complete";
-  }[] = [
-    {
-      title: "Basic Setup",
-      description: "Configure your chatbot's basic information and behavior",
-      status: currentStep === 0 ? "current" : currentStep > 0 ? "complete" : "pending",
-    },
-    {
-      title: "Audience Rules",
-      description: "Define who can interact with your chatbot",
-      status: currentStep === 1 ? "current" : currentStep > 1 ? "complete" : "pending",
-    },
-    {
-      title: "Knowledge Base",
-      description: "Add content and actions for your chatbot",
-      status: currentStep === 2 ? "current" : currentStep > 2 ? "complete" : "pending",
-    },
-  ];
-
-  const handleNextStep = () => {
-    setCurrentStep((prev) => Math.min(prev + 1, steps.length - 1));
-  };
-
+// Create a wrapped component that provides the onNextStep prop
+const AudienceRulesWithNext: React.FC<AudienceRulesWithNextProps> = ({ onNextStep }) => {
   return (
-    <div className="max-w-5xl mx-auto p-6 space-y-8">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold tracking-tight mb-2">Create Chatbot</h1>
-        <p className="text-muted-foreground">
-          Complete the following steps to set up your new chatbot
-        </p>
-      </div>
-
-      <Steps steps={steps} />
-
-      <div className="mt-8">
-        {currentStep === 0 && (
-          <CreateChatbotForm onNextStep={handleNextStep} />
-        )}
-        {currentStep === 1 && (
-          <AudienceRules onNextStep={handleNextStep} />
-        )}
-        {currentStep === 2 && (
-          <div className="p-6 bg-white/95 backdrop-blur-sm shadow-xl rounded-xl">
-            <h2 className="text-xl font-semibold mb-4">Knowledge Base</h2>
-            <p className="text-muted-foreground">Add content and actions for your chatbot to use</p>
-            {/* Knowledge base form will be implemented here */}
-          </div>
-        )}
+    <div>
+      <AudienceRules />
+      <div className="mt-6 flex justify-end">
+        <Button onClick={onNextStep}>Continue</Button>
       </div>
     </div>
   );
 };
 
-export default CreateChatbot;
+const CreateChatbot = () => {
+  const [currentStep, setCurrentStep] = useState(0);
+  const { toast } = useToast();
 
+  const handleNextStep = () => {
+    if (currentStep < 3) {
+      setCurrentStep(currentStep + 1);
+      window.scrollTo(0, 0);
+    }
+  };
+
+  const handlePrevStep = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
+      window.scrollTo(0, 0);
+    }
+  };
+
+  const handleStepClick = (step: number) => {
+    if (step < currentStep) {
+      setCurrentStep(step);
+      window.scrollTo(0, 0);
+    }
+  };
+
+  const renderStep = () => {
+    switch (currentStep) {
+      case 0:
+        return <ChatbotBasicInfo onNextStep={handleNextStep} />;
+      case 1:
+        return <AudienceRulesWithNext onNextStep={handleNextStep} />;
+      case 2:
+        return <ContentConnector onNextStep={handleNextStep} />;
+      case 3:
+        return <Deployment onComplete={() => {
+          toast({
+            title: "Chatbot created",
+            description: "Your chatbot has been created and is ready to use.",
+          });
+        }} />;
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="container mx-auto px-4 py-8 max-w-6xl space-y-8">
+      <h1 className="text-3xl font-bold">Create New Chatbot</h1>
+      
+      <Steps
+        currentStep={currentStep}
+        onStepClick={handleStepClick}
+      >
+        <Step title="Basic Information" />
+        <Step title="Audience Rules" />
+        <Step title="Connect Content" />
+        <Step title="Deploy" />
+      </Steps>
+      
+      <Card>
+        <CardContent className="pt-6">
+          {renderStep()}
+        </CardContent>
+      </Card>
+      
+      {currentStep > 0 && currentStep < 3 && (
+        <div className="flex justify-between">
+          <Button variant="outline" onClick={handlePrevStep}>
+            Back
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default CreateChatbot;

@@ -1,4 +1,3 @@
-
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { Contact } from '@/types/contact';
 import { ContactsState, CACHE_DURATION } from './types';
@@ -68,11 +67,12 @@ const contactsSlice = createSlice({
       state.selectedContact = null;
     },
     toggleContactSelection: (state, action: PayloadAction<string>) => {
-      const id = action.payload;
-      if (state.selectedContacts.includes(id)) {
-        state.selectedContacts = state.selectedContacts.filter(contactId => contactId !== id);
+      const contactId = action.payload;
+      const index = state.selectedContacts.findIndex(id => id === contactId);
+      if (index === -1) {
+        state.selectedContacts.push(contactId);
       } else {
-        state.selectedContacts.push(id);
+        state.selectedContacts.splice(index, 1);
       }
     },
     selectAllContacts: (state) => {
@@ -115,6 +115,13 @@ const contactsSlice = createSlice({
       } else {
         state.sort.field = action.payload;
         state.sort.direction = 'asc';
+      }
+    },
+    updateContactCompany: (state, action: PayloadAction<{ contactId: string; companyId: string }>) => {
+      const { contactId, companyId } = action.payload;
+      const contactIndex = state.items.findIndex(contact => contact.id === contactId);
+      if (contactIndex !== -1) {
+        state.items[contactIndex].company = companyId;
       }
     },
   },
@@ -193,6 +200,8 @@ export const {
   updateContactFilters,
   clearFilters,
   setSortField,
+  updateContactCompany,
+  toggleSelection,
 } = contactsSlice.actions;
 
 export default contactsSlice.reducer;

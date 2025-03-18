@@ -1,6 +1,6 @@
 
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { Content, ContentStatus, ContentState, SortField } from '@/types/content';
+import { Content, ContentState, ContentStatus, SortField } from '@/types/content';
 
 const initialState: ContentState = {
   items: [],
@@ -112,11 +112,11 @@ export const contentSlice = createSlice({
     clearSearchHistory: (state) => {
       state.search.history = [];
     },
-    updateContent: (state, action: PayloadAction<{ id: string; data: Partial<Content> }>) => {
-      const { id, data } = action.payload;
+    updateContent: (state, action: PayloadAction<{ id: string; updates: Partial<Content> }>) => {
+      const { id, updates } = action.payload;
       const contentIndex = state.items.findIndex(item => item.id === id);
       if (contentIndex !== -1) {
-        state.items[contentIndex] = { ...state.items[contentIndex], ...data };
+        state.items[contentIndex] = { ...state.items[contentIndex], ...updates };
         if (state.selectedContentId === id) {
           state.selectedContent = state.items[contentIndex];
         }

@@ -1,5 +1,5 @@
-
-import React, { useState } from 'react';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Table,
   TableBody,
@@ -8,112 +8,79 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Contact } from '@/types/contact';
-import { useNavigate } from 'react-router-dom';
-import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, Search } from 'lucide-react';
+import { MoreHorizontal } from 'lucide-react';
+import type { Contact } from '@/types/contact';
 
 interface ContactsTableProps {
   contacts: Contact[];
 }
 
-export const ContactsTable: React.FC<ContactsTableProps> = ({ contacts }) => {
-  const [searchQuery, setSearchQuery] = useState('');
+const ContactsTable: React.FC<ContactsTableProps> = ({ contacts }) => {
   const navigate = useNavigate();
 
-  const filteredContacts = contacts.filter(contact => {
-    if (!searchQuery) return true;
-    
-    const query = searchQuery.toLowerCase();
+  if (!contacts || contacts.length === 0) {
     return (
-      contact.firstname.toLowerCase().includes(query) ||
-      contact.lastname.toLowerCase().includes(query) ||
-      contact.email.toLowerCase().includes(query) ||
-      (contact.phone && contact.phone.includes(query))
+      <div className="text-center p-6 text-muted-foreground">
+        No contacts found
+      </div>
     );
-  });
-
-  const handleViewContact = (id: string) => {
-    navigate(`/contacts/${id}`);
-  };
+  }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-2">
-        <div className="relative flex-1">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search contacts..."
-            className="pl-8"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-      </div>
-
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>Phone</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead className="w-[50px]">
+            <Checkbox />
+          </TableHead>
+          <TableHead>Name</TableHead>
+          <TableHead>Email</TableHead>
+          <TableHead>Status</TableHead>
+          <TableHead className="text-right">Actions</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {contacts.map((contact) => (
+          <TableRow
+            key={contact.id}
+            className="cursor-pointer hover:bg-muted/50"
+            onClick={() => navigate(`/home/contacts/${contact.id}`)}
+          >
+            <TableCell>
+              <Checkbox onClick={(e) => e.stopPropagation()} />
+            </TableCell>
+            <TableCell>
+              <div className="font-medium">
+                {contact.firstname} {contact.lastname}
+              </div>
+            </TableCell>
+            <TableCell>{contact.email}</TableCell>
+            <TableCell>
+              <Badge
+                variant={contact.status === 'active' ? 'default' : 'secondary'}
+              >
+                {contact.status}
+              </Badge>
+            </TableCell>
+            <TableCell className="text-right">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  // Additional actions logic here
+                }}
+              >
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </TableCell>
           </TableRow>
-        </TableHeader>
-        <TableBody>
-          {filteredContacts.length > 0 ? (
-            filteredContacts.map((contact) => (
-              <TableRow key={contact.id}>
-                <TableCell>
-                  {contact.firstname} {contact.lastname}
-                </TableCell>
-                <TableCell>{contact.email}</TableCell>
-                <TableCell>{contact.phone || '-'}</TableCell>
-                <TableCell>
-                  <span className={`inline-block px-2 py-1 rounded-full text-xs capitalize ${
-                    contact.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                  }`}>
-                    {contact.status}
-                  </span>
-                </TableCell>
-                <TableCell className="text-right">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => handleViewContact(contact.id)}>
-                        View Details
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={5} className="text-center py-6 text-muted-foreground">
-                No contacts found
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
-    </div>
+        ))}
+      </TableBody>
+    </Table>
   );
 };
 
