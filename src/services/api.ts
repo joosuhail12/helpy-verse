@@ -1,38 +1,21 @@
 
-import axios from 'axios';
+import { HttpClient } from '@/api/services/HttpClient';
 import { getCookie } from '@/utils/helpers/helpers';
 
-// Create an axios instance
-const api = axios.create({
-  // baseURL: 'http://localhost:4000/api',
-  baseURL: 'https://dev-socket.pullseai.com/api',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+// Re-export the main API client for direct usage
+const api = HttpClient.apiClient;
 
-// Request interceptor
-api.interceptors.request.use(
-  (config) => {
-    // Add auth token to request if available
-    const token = getCookie('customerToken');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
+// Configure the API client on import
+const setupApi = () => {
+  const token = getCookie('customerToken');
+  if (token) {
+    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
   }
-);
+  
+  console.log('API service initialized with auth token:', !!token);
+};
 
-// Response interceptor
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    // Handle global error responses
-    return Promise.reject(error);
-  }
-);
+// Initialize on import
+setupApi();
 
 export default api;

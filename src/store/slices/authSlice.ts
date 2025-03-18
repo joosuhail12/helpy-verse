@@ -1,4 +1,3 @@
-
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { HttpClient } from "@/api/services/HttpClient";
 import { encryptBase64, setCookie, setWorkspaceId, handleSetToken, deleteCookie, getCookie } from '@/utils/helpers/helpers';
@@ -16,7 +15,6 @@ export interface Permission {
 
 // Define Permissions Array Type
 export type Permissions = Permission[];
-
 
 export interface AuthState {
   isAuthenticated: boolean;
@@ -62,15 +60,18 @@ export const loginUser = createAsyncThunk(
   "auth/login",
   async (credentials: Credentials, { rejectWithValue }) => {
     try {
+      console.log("Attempting login for:", credentials.email);
       const response = await HttpClient.apiClient.post("/auth/login", {
         username: credentials.email,
         password: credentials.password,
         recaptchaId: "",
       });
 
+      console.log("Login successful, received token");
       return response.data;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data || "Invalid credentials");
+      console.error("Login error:", error.message);
+      return rejectWithValue(error.response?.data?.message || "Login failed. Please check your credentials and try again.");
     }
   }
 );
@@ -79,10 +80,13 @@ export const fetchUserData = createAsyncThunk(
   "user/fetchData",
   async (_, { rejectWithValue }) => {
     try {
+      console.log("Fetching user profile data");
       const response = await HttpClient.apiClient.get("/user/profile");
+      console.log("User profile data fetched successfully");
       return response.data;
-    } catch (error) {
-      return rejectWithValue(error.response?.data || "An error occurred");
+    } catch (error: any) {
+      console.error("Error fetching user data:", error.message);
+      return rejectWithValue(error.response?.data?.message || "Failed to load user profile");
     }
   }
 );
@@ -198,9 +202,7 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
       state.user = null;
       state.error = null;
-      deleteCookie("customerToken");
-      deleteCookie("agent_email");
-      deleteCookie("workspaceId");
+      handleLogout(); // Use our improved logout function
     },
     clearError: (state) => {
       state.error = null;

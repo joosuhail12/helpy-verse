@@ -1,3 +1,4 @@
+
 import { getWorkspaceId, handleLogout, getCookie } from "@/utils/helpers/helpers";
 import axios, { AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from "axios";
 import { get } from "lodash";
@@ -7,61 +8,102 @@ const API_BASE_URL = 'https://dev-socket.pullseai.com/api';
 const LLM_SERVICE_URL = 'https://dev-socket.pullseai.com/api';
 // const LLM_SERVICE_URL = 'http://localhost:4000/api';
 
-export const setAxiosDefaultConfig = (): void => {
-    axios.defaults.baseURL = API_BASE_URL;
-
-    const token = getCookie("customerToken");
-
-    axios.defaults.headers.common["Authorization"] = token ? `Bearer ${token}` : "";
-    axios.defaults.headers.post["Content-Type"] = "application/json";
-};
-// ✅ Initialize Axios instance
+// ✅ Initialize Axios instance with proper configuration
 const apiClient = axios.create({
     baseURL: API_BASE_URL,
     headers: {
         "Content-Type": "application/json",
     },
+    timeout: 30000, // 30 seconds timeout
+    withCredentials: true, // Important for handling cookies across domains if needed
 });
 
-// ✅ Request Interceptor - Adds Token & Workspace ID
+// ✅ Set up default axios configuration
+export const setAxiosDefaultConfig = (): void => {
+    const token = getCookie("customerToken");
+    console.log("Setting Axios default config with token:", !!token);
+
+    // Set the Authorization header if token exists
+    if (token) {
+        apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+        console.log("Authorization header set for API client");
+    } else {
+        // Clear the Authorization header if no token
+        delete apiClient.defaults.headers.common["Authorization"];
+        console.log("No token found, Authorization header removed");
+    }
+};
+
+// ✅ Request Interceptor - Adds Token & Workspace ID to all requests
 apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
     const token = getCookie("customerToken");
     if (token) {
         config.headers.set("Authorization", `Bearer ${token}`);
     }
 
-    // ✅ Ensure config.url exists before modifying it
-    if (config.url) {
+    // Add workspace_id to all requests
+    const workspaceId = getWorkspaceId();
+    if (workspaceId && config.url) {
         const separator = config.url.includes("?") ? "&" : "?";
-        config.url += `${separator}workspace_id=${getWorkspaceId()}`;
+        config.url += `${separator}workspace_id=${workspaceId}`;
     }
 
+    console.log(`API Request to: ${config.url}`);
     return config;
 }, (error) => {
+    console.error("Request interceptor error:", error);
     return Promise.reject(error);
 });
 
-
-
-// ✅ Response Interceptor - Handles Unauthorized Errors
+// ✅ Response Interceptor - Handles Successful Responses and Errors
 apiClient.interceptors.response.use(
-    (response: AxiosResponse) => response,
+    (response: AxiosResponse) => {
+        console.log(`API Response from ${response.config.url}: Status ${response.status}`);
+        return response;
+    },
     (error) => {
-        const errorResponse = get(error, "response.data.code", "");
+        // Extract the meaningful error information
+        const status = error.response?.status;
+        const errorMessage = get(error, "response.data.message", "Unknown error occurred");
+        const errorCode = get(error, "response.data.code", "");
+        const requestUrl = error.config?.url;
 
-        if (errorResponse === "UNAUTHORIZED") {
+        console.error(`API Error: ${status} ${errorMessage} (${errorCode}) on ${requestUrl}`);
+
+        // Handle authentication errors
+        if (status === 401 || errorCode === "UNAUTHORIZED") {
+            console.warn("Authentication error detected, logging out");
             handleLogout();
+            return Promise.reject(new Error("Authentication failed. Please log in again."));
+        }
+
+        // For server errors, provide a clearer message
+        if (status >= 500) {
+            return Promise.reject(new Error("Server error. Please try again later."));
         }
 
         return Promise.reject(error);
     }
 );
 
-// ✅ LLM Service Instance
+// ✅ LLM Service Instance (reuses the same interceptors)
 const llmService = axios.create({
     baseURL: LLM_SERVICE_URL,
     headers: { "Content-Type": "application/json" },
+    timeout: 60000, // 60 second timeout for LLM operations which may take longer
+    withCredentials: true,
 });
+
+// Add the same interceptors to the LLM service
+llmService.interceptors.request.use(
+    apiClient.interceptors.request.handlers[0].fulfilled,
+    apiClient.interceptors.request.handlers[0].rejected
+);
+
+llmService.interceptors.response.use(
+    apiClient.interceptors.response.handlers[0].fulfilled,
+    apiClient.interceptors.response.handlers[0].rejected
+);
 
 // ✅ API Call Wrapper
 export const HttpClient = {
@@ -69,4 +111,3 @@ export const HttpClient = {
     llmService, // LLM-specific instance
     setAxiosDefaultConfig,
 };
-

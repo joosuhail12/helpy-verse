@@ -6,6 +6,7 @@ import { Loader2 } from 'lucide-react';
 import { getCookie } from '@/utils/helpers/helpers';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { fetchUserData } from '@/store/slices/authSlice';
+import { HttpClient } from '@/api/services/HttpClient';
 
 export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
@@ -18,13 +19,20 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     const checkAuth = async () => {
       console.log('ProtectedRoute: Checking authentication status');
       
-      // Get token from cookie and set state variable
+      // Get token from cookie
       const token = getCookie("customerToken");
-      setHasToken(!!token);
+      const hasValidToken = !!token;
+      setHasToken(hasValidToken);
+      
+      // Ensure axios is configured with the token
+      if (hasValidToken) {
+        HttpClient.apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+        console.log('ProtectedRoute: Found valid token, configuring axios');
+      }
       
       // If we have a token but Redux state says we're not authenticated,
       // try to refresh user data
-      if (token && !isAuthenticated) {
+      if (hasValidToken && !isAuthenticated) {
         try {
           console.log('ProtectedRoute: Have token but not authenticated in Redux, fetching user data');
           await dispatch(fetchUserData());
