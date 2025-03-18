@@ -3,10 +3,22 @@ import { getWorkspaceId, handleLogout, getCookie, getAuthToken } from "@/utils/h
 import axios, { AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from "axios";
 import { get } from "lodash";
 
-// Configure API endpoints
-const API_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? import.meta.env.REACT_APP_API_URL || 'http://localhost:4000/api'
-  : import.meta.env.REACT_APP_API_URL || 'http://localhost:4000/api';
+// Configure API endpoints with better fallbacks
+// In development mode, we'll default to localhost if not set
+const getApiBaseUrl = () => {
+  if (process.env.NODE_ENV === 'development' || import.meta.env.DEV) {
+    // In development, provide a clear fallback
+    console.log('Running in development mode, using local API endpoint');
+    return import.meta.env.VITE_API_URL || import.meta.env.REACT_APP_API_URL || 'http://localhost:4000/api';
+  }
+  
+  // In production, check for environment variables
+  return import.meta.env.VITE_API_URL || import.meta.env.REACT_APP_API_URL || '/api';
+};
+
+// Set API base URL
+const API_BASE_URL = getApiBaseUrl();
+console.log('API Base URL:', API_BASE_URL);
 
 // LLM service URL (same as API for now)
 const LLM_SERVICE_URL = API_BASE_URL;
@@ -76,6 +88,13 @@ const responseErrorInterceptor = (error: any) => {
     const requestUrl = error.config?.url;
 
     console.error(`API Error: ${status || 'network'} ${errorMessage} (${errorCode}) on ${requestUrl}`);
+
+    // Network errors - provide a clearer message
+    if (error.code === 'ERR_NETWORK') {
+        console.log('Network error detected - server might be unavailable');
+        // Don't log out on network errors, just report the issue
+        return Promise.reject(new Error("Cannot connect to the server. Please check your network connection or try again later."));
+    }
 
     // Handle authentication errors
     if (status === 401 || errorCode === "UNAUTHORIZED") {

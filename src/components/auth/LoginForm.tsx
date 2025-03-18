@@ -8,12 +8,17 @@ import { PasswordInput } from './login/PasswordInput';
 import { LoginButton } from './login/LoginButton';
 import { LoginLinks } from './login/LoginLinks';
 
+/**
+ * The main login form component
+ * Handles login functionality and renders all login-related UI
+ */
 export const LoginForm = memo(() => {
   const location = useLocation();
   
   // Get redirect path from location state or default to /home
   const from = location.state?.from || '/home';
   
+  // Use the login hook to handle login functionality
   const {
     email,
     setEmail,
@@ -40,10 +45,19 @@ export const LoginForm = memo(() => {
           disabled={loading} 
         />
 
-        <LoginButton isLoading={loading} />
+        <div className="pt-2">
+          <LoginButton isLoading={loading} />
+        </div>
       </form>
 
       <LoginLinks />
+      
+      {/* Development mode message for testing */}
+      {(process.env.NODE_ENV === 'development' || import.meta.env.DEV) && (
+        <div className="mt-4 text-xs text-gray-500 border-t pt-4">
+          <p>Development Mode: Login uses automatic authentication.</p>
+        </div>
+      )}
     </div>
   );
 });

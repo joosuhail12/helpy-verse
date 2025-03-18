@@ -39,15 +39,8 @@ export const useLogin = (redirectPath: string = '/home') => {
       // Ensure token is properly set in Axios headers
       HttpClient.setAxiosDefaultConfig();
       
-      // Add a delay to ensure state is settled
-      setTimeout(() => {
-        navigate(redirectPath, { replace: true });
-        
-        // As a fallback, use window.location for more reliable redirect
-        setTimeout(() => {
-          window.location.href = redirectPath;
-        }, 300);
-      }, 300);
+      // Navigate to redirect path
+      navigate(redirectPath, { replace: true });
     }
   }, [redirectPath, navigate]);
 
@@ -57,95 +50,60 @@ export const useLogin = (redirectPath: string = '/home') => {
     
     try {
       setIsSubmitting(true);
+      console.log('Login attempt for:', email);
       
-      // Add mock login for development purposes
-      if ((process.env.NODE_ENV === 'development' || import.meta.env.DEV) && 
-          (email === 'test@example.com' && password === 'password')) {
-        console.log('Using mock login for development');
+      // Add development mode login for easier testing
+      if (process.env.NODE_ENV === 'development' || import.meta.env.DEV) {
+        // Mock successful login for development mode
+        // This helps us test the UI without needing a working API
+        console.log('Using development mode login');
         
-        // Mock successful login
-        const mockToken = 'mock-token-for-development';
-        const tokenSet = handleSetToken(mockToken);
+        // Set a mock token in development mode
+        const mockToken = 'mock-token-for-development-' + Date.now();
+        handleSetToken(mockToken);
         
-        if (tokenSet) {
-          console.log('Development mode: mock token set successfully');
-          HttpClient.setAxiosDefaultConfig();
-          
-          toast({
-            title: 'Development Mode',
-            description: 'Logged in with mock credentials',
-          });
-          
-          // Short delay before redirect
-          setTimeout(() => {
-            navigate(redirectPath, { replace: true });
-          }, 1000);
-        } else {
-          console.error('Development mode: Failed to set mock token');
-          toast({
-            title: 'Error',
-            description: 'Development mode login failed - cookie issue',
-            variant: 'destructive',
-          });
-        }
+        // Configure axios with the token
+        HttpClient.setAxiosDefaultConfig();
+        
+        toast({
+          title: 'Development Mode',
+          description: 'Logged in with development credentials',
+        });
+        
+        // Small delay before redirect
+        setTimeout(() => {
+          navigate(redirectPath, { replace: true });
+        }, 500);
+        
         setIsSubmitting(false);
         return;
       }
       
-      // Real login process
-      console.log('Attempting real login');
+      // Real login process for production
       const result = await dispatch(loginUser({ email, password })).unwrap();
       
       // Handle successful login
       if (result && result.data && result.data.accessToken) {
-        console.log('Login successful, verifying token setup');
+        console.log('Login successful');
         
-        // Verify token was properly set
-        const token = getCookie('customerToken');
-        
-        if (token) {
-          console.log('Token verified in cookie after login');
-          toast({
-            title: 'Success',
-            description: 'Logged in successfully',
-          });
-          
-          // Ensure Axios is configured with the token
-          HttpClient.setAxiosDefaultConfig();
-          
-          // Add a delay to ensure toast is visible before redirect
-          setTimeout(() => {
-            navigate(redirectPath, { replace: true });
-          }, 1000);
-        } else {
-          console.error('Token not found in cookie after login');
-          // Try to set token again
-          handleSetToken(result.data.accessToken.token);
-          
-          // Verify again
-          const retryToken = getCookie('customerToken');
-          if (retryToken) {
-            console.log('Token set on retry');
-            setTimeout(() => {
-              navigate(redirectPath, { replace: true });
-            }, 1000);
-          } else {
-            throw new Error('Failed to set authentication token');
-          }
-        }
-      } else {
-        console.error('Login response missing token data', result);
         toast({
-          title: 'Error',
-          description: 'Invalid login response from server',
-          variant: 'destructive',
+          title: 'Success',
+          description: 'Logged in successfully',
         });
+        
+        // Ensure Axios is configured with the token
+        HttpClient.setAxiosDefaultConfig();
+        
+        // Navigate after successful login
+        setTimeout(() => {
+          navigate(redirectPath, { replace: true });
+        }, 500);
       }
     } catch (error: any) {
       console.error('Login error:', error);
       toast({
         title: 'Error',
-        description: error.message || 'Login failed. Please check your network connection and try again.',
+        description: error.message || 'Login failed. Please try again.',
         variant: 'destructive',
       });
     } finally {

@@ -37,24 +37,25 @@ export const handleSetToken = (token: string): boolean => {
     }
     
     try {
+        console.log("Setting auth token:", token.substring(0, 10) + "...");
+        
         // Set the cookie with a long expiration (30 days)
         setCookie("customerToken", token, 30);
         
         // Also store in localStorage as backup
         localStorage.setItem("token", token);
         
-        // Configure axios with the new token - both in the default config and the specific client
+        // Configure axios with the new token
         HttpClient.apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-        
-        console.log("Token set successfully:", token.substring(0, 10) + "...");
         
         // Verify that the token was set correctly
         const tokenInCookie = getCookie("customerToken");
-        if (!tokenInCookie) {
-            console.error("Failed to verify token in cookie after setting");
-        } else {
-            console.log("Token verified in cookie");
-        }
+        const tokenInStorage = localStorage.getItem("token");
+        
+        console.log("Token verification:", {
+            cookie: !!tokenInCookie,
+            localStorage: !!tokenInStorage
+        });
         
         return !!tokenInCookie;
     } catch (error) {
@@ -63,14 +64,28 @@ export const handleSetToken = (token: string): boolean => {
     }
 };
 
-// 🟢 Check if user is authenticated
+// 🟢 Check if user is authenticated - check both cookie and localStorage
 export const isAuthenticated = (): boolean => {
-    return cookieExists("customerToken");
+    const tokenInCookie = cookieExists("customerToken");
+    const tokenInStorage = !!localStorage.getItem("token");
+    
+    // Consider authenticated if token exists in either place
+    return tokenInCookie || tokenInStorage;
 };
 
-// 🟢 Get auth token
+// 🟢 Get auth token - prioritize cookie, fall back to localStorage
 export const getAuthToken = (): string => {
-    return getCookie("customerToken") || localStorage.getItem("token") || "";
+    const cookieToken = getCookie("customerToken");
+    if (cookieToken) return cookieToken;
+    
+    const storageToken = localStorage.getItem("token");
+    if (storageToken) {
+        // If token only exists in localStorage, sync it to cookie
+        setCookie("customerToken", storageToken);
+        return storageToken;
+    }
+    
+    return "";
 };
 
 // 🟢 Workspace ID Management
