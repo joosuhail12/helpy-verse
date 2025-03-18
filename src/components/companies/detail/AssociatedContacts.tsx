@@ -42,10 +42,10 @@ const AssociatedContacts: React.FC<AssociatedContactsProps> = ({ companyId }) =>
   }, [dispatch]);
 
   const fetchAssociatedContacts = () => {
-    const associated = contacts.filter(contact => contact.companyId === companyId);
+    const associated = contacts.filter(contact => contact.company === companyId);
     setAssociatedContacts(associated);
 
-    const available = contacts.filter(contact => !contact.companyId);
+    const available = contacts.filter(contact => !contact.company);
     setAvailableContacts(available);
   };
 
@@ -60,9 +60,9 @@ const AssociatedContacts: React.FC<AssociatedContactsProps> = ({ companyId }) =>
   };
 
   const filteredContacts = availableContacts.filter(contact => {
-    const firstName = typeof contact.firstName === 'string' ? contact.firstName.toLowerCase() : '';
-    const lastName = typeof contact.lastName === 'string' ? contact.lastName.toLowerCase() : '';
-    const email = typeof contact.email === 'string' ? contact.email.toLowerCase() : '';
+    const firstName = contact.firstname.toLowerCase();
+    const lastName = contact.lastname.toLowerCase();
+    const email = contact.email.toLowerCase();
     const query = searchQuery.toLowerCase();
     
     return firstName.includes(query) || lastName.includes(query) || email.includes(query);
@@ -71,8 +71,8 @@ const AssociatedContacts: React.FC<AssociatedContactsProps> = ({ companyId }) =>
   const handleAssociateContact = (contactId: string) => {
     dispatch(
       updateContactCompany({
-        id: contactId,
-        data: { companyId: companyId }
+        contactId,
+        companyId
       })
     );
     
@@ -86,8 +86,8 @@ const AssociatedContacts: React.FC<AssociatedContactsProps> = ({ companyId }) =>
   const handleRemoveAssociation = (contactId: string) => {
     dispatch(
       updateContactCompany({
-        id: contactId,
-        data: { companyId: null }
+        contactId,
+        companyId: null
       })
     );
     fetchAssociatedContacts();
@@ -108,9 +108,9 @@ const AssociatedContacts: React.FC<AssociatedContactsProps> = ({ companyId }) =>
           {associatedContacts.map(contact => (
             <TableRow key={contact.id}>
               <TableCell>
-                {typeof contact.firstName === 'string' ? contact.firstName : ''} {typeof contact.lastName === 'string' ? contact.lastName : ''}
+                {contact.firstname} {contact.lastname}
               </TableCell>
-              <TableCell>{typeof contact.email === 'string' ? contact.email : ''}</TableCell>
+              <TableCell>{contact.email}</TableCell>
               <TableCell className="text-right">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -162,9 +162,9 @@ const AssociatedContacts: React.FC<AssociatedContactsProps> = ({ companyId }) =>
               {filteredContacts.map(contact => (
                 <TableRow key={contact.id}>
                   <TableCell>
-                    {typeof contact.firstName === 'string' ? contact.firstName : ''} {typeof contact.lastName === 'string' ? contact.lastName : ''}
+                    {contact.firstname} {contact.lastname}
                   </TableCell>
-                  <TableCell>{typeof contact.email === 'string' ? contact.email : ''}</TableCell>
+                  <TableCell>{contact.email}</TableCell>
                   <TableCell className="text-right">
                     <Button onClick={() => handleAssociateContact(contact.id)}>Associate</Button>
                   </TableCell>

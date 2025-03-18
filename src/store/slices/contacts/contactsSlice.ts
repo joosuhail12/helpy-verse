@@ -1,113 +1,115 @@
 
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { RootState } from '@/store/store';
 import { Contact } from '@/types/contact';
 
-export interface ContactsState {
+interface ContactsState {
   contacts: Contact[];
+  selectedContact: Contact | null;
+  selectedContactId: string | null;
   selectedContacts: string[];
-  contactDetails: Contact | null;
-  lastFetchTime: string | null;
-  filter: {
-    search: string;
-    status: 'all' | 'active' | 'inactive';
-    tags: string[];
-  };
   loading: boolean;
   error: string | null;
+  filters: {
+    status: string | null;
+    tags: string[];
+    search: string;
+  };
 }
 
 const initialState: ContactsState = {
   contacts: [],
+  selectedContact: null,
+  selectedContactId: null,
   selectedContacts: [],
-  contactDetails: null,
-  lastFetchTime: null,
-  filter: {
-    search: '',
-    status: 'all',
-    tags: [],
-  },
   loading: false,
   error: null,
+  filters: {
+    status: null,
+    tags: [],
+    search: '',
+  },
 };
 
 export const fetchCustomers = createAsyncThunk(
   'contacts/fetchCustomers',
   async (_, { rejectWithValue }) => {
     try {
-      // Mock API call
-      return []; // Replace with actual API call
-    } catch (error: any) {
-      return rejectWithValue(error.message);
+      // Implement your API call here
+      return [];
+    } catch (error) {
+      return rejectWithValue(error);
     }
   }
 );
 
-export const fetchCustomerDetails = createAsyncThunk(
-  'contacts/fetchCustomerDetails',
-  async (id: string, { rejectWithValue }) => {
+export const updateContactTags = createAsyncThunk(
+  'contacts/updateTags',
+  async ({ contactId, tags }: { contactId: string; tags: string[] }, { getState, rejectWithValue }) => {
     try {
-      // Mock API call
-      return null; // Replace with actual API call
-    } catch (error: any) {
-      return rejectWithValue(error.message);
+      // Implementation
+      return { contactId, tags };
+    } catch (error) {
+      return rejectWithValue(error);
     }
   }
 );
 
-export const addContact = createAsyncThunk(
-  'contacts/addContact',
-  async (contact: Omit<Contact, 'id' | 'createdAt' | 'updatedAt'>, { rejectWithValue }) => {
+export const updateContactStatus = createAsyncThunk(
+  'contacts/updateStatus',
+  async ({ contactIds, status }: { contactIds: string[]; status: 'active' | 'inactive' }, { rejectWithValue }) => {
     try {
-      // Mock API call
-      const newContact: Contact = {
-        id: Math.random().toString(36).substring(2, 9),
-        ...contact,
-        status: contact.status || 'active',
-        type: contact.type || 'customer',
-        tags: contact.tags || [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      return newContact;
-    } catch (error: any) {
-      return rejectWithValue(error.message);
+      // Implementation
+      return { contactIds, status };
+    } catch (error) {
+      return rejectWithValue(error);
+    }
+  }
+);
+
+export const updateContactCompany = createAsyncThunk(
+  'contacts/updateCompany',
+  async ({ contactId, companyId }: { contactId: string; companyId: string | null }, { rejectWithValue }) => {
+    try {
+      // Implementation
+      return { contactId, companyId };
+    } catch (error) {
+      return rejectWithValue(error);
     }
   }
 );
 
 export const updateContact = createAsyncThunk(
   'contacts/updateContact',
-  async ({ id, data }: { id: string; data: Partial<Contact> }, { rejectWithValue }) => {
+  async ({ contactId, data }: { contactId: string; data: Partial<Contact> }, { rejectWithValue }) => {
     try {
-      // Mock API call
-      return { id, ...data };
-    } catch (error: any) {
-      return rejectWithValue(error.message);
+      // Implementation
+      return { contactId, data };
+    } catch (error) {
+      return rejectWithValue(error);
     }
   }
 );
 
-export const updateContactTags = createAsyncThunk(
-  'contacts/updateContactTags',
-  async ({ id, tags }: { id: string; tags: string[] }, { rejectWithValue }) => {
+export const fetchContactById = createAsyncThunk(
+  'contacts/fetchContactById',
+  async (contactId: string, { rejectWithValue }) => {
     try {
-      // Mock API call
-      return { id, tags };
-    } catch (error: any) {
-      return rejectWithValue(error.message);
-    }
-  }
-);
-
-export const updateContactCompany = createAsyncThunk(
-  'contacts/updateContactCompany',
-  async ({ contactId, companyId }: { contactId: string; companyId: string }, { rejectWithValue }) => {
-    try {
-      // Mock API call
-      return { id: contactId, company: companyId };
-    } catch (error: any) {
-      return rejectWithValue(error.message);
+      // Implementation
+      const mockContact: Contact = {
+        id: contactId,
+        firstname: "John",
+        lastname: "Doe",
+        email: "john.doe@example.com",
+        phone: "+1234567890",
+        status: "active",
+        type: "customer",
+        tags: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      return mockContact;
+    } catch (error) {
+      return rejectWithValue(error);
     }
   }
 );
@@ -116,44 +118,37 @@ const contactsSlice = createSlice({
   name: 'contacts',
   initialState,
   reducers: {
-    selectContact: (state, action: PayloadAction<string>) => {
-      if (!state.selectedContacts.includes(action.payload)) {
-        state.selectedContacts.push(action.payload);
-      }
-    },
-    deselectContact: (state, action: PayloadAction<string>) => {
-      state.selectedContacts = state.selectedContacts.filter(id => id !== action.payload);
+    selectContact: (state, action: PayloadAction<string | null>) => {
+      const contactId = action.payload;
+      state.selectedContactId = contactId;
+      state.selectedContact = contactId ? state.contacts.find(contact => contact.id === contactId) || null : null;
     },
     setSelectedContacts: (state, action: PayloadAction<string[]>) => {
       state.selectedContacts = action.payload;
     },
+    toggleContactSelection: (state, action: PayloadAction<string>) => {
+      const contactId = action.payload;
+      if (state.selectedContacts.includes(contactId)) {
+        state.selectedContacts = state.selectedContacts.filter(id => id !== contactId);
+      } else {
+        state.selectedContacts.push(contactId);
+      }
+    },
     clearSelectedContacts: (state) => {
       state.selectedContacts = [];
     },
-    toggleContactSelection: (state, action: PayloadAction<string>) => {
-      const index = state.selectedContacts.indexOf(action.payload);
-      if (index === -1) {
-        state.selectedContacts.push(action.payload);
-      } else {
-        state.selectedContacts.splice(index, 1);
+    setFilter: (state, action: PayloadAction<{ key: string; value: any }>) => {
+      const { key, value } = action.payload;
+      if (key in state.filters) {
+        (state.filters as any)[key] = value;
       }
     },
-    setSearchFilter: (state, action: PayloadAction<string>) => {
-      state.filter.search = action.payload;
-    },
-    setStatusFilter: (state, action: PayloadAction<'all' | 'active' | 'inactive'>) => {
-      state.filter.status = action.payload;
-    },
-    setTagsFilter: (state, action: PayloadAction<string[]>) => {
-      state.filter.tags = action.payload;
-    },
-    clearFilters: (state) => {
-      state.filter = initialState.filter;
+    resetFilters: (state) => {
+      state.filters = initialState.filters;
     },
   },
   extraReducers: (builder) => {
     builder
-      // Fetch customers
       .addCase(fetchCustomers.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -161,78 +156,57 @@ const contactsSlice = createSlice({
       .addCase(fetchCustomers.fulfilled, (state, action) => {
         state.loading = false;
         state.contacts = action.payload;
-        state.lastFetchTime = new Date().toISOString();
       })
       .addCase(fetchCustomers.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload as string;
+        state.error = action.error.message || 'An error occurred';
       })
-      // Fetch customer details
-      .addCase(fetchCustomerDetails.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(fetchCustomerDetails.fulfilled, (state, action) => {
-        state.loading = false;
-        state.contactDetails = action.payload;
-      })
-      .addCase(fetchCustomerDetails.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
-      // Add contact
-      .addCase(addContact.fulfilled, (state, action) => {
-        state.contacts.push(action.payload);
-      })
-      // Update contact
-      .addCase(updateContact.fulfilled, (state, action) => {
-        const { id, ...updates } = action.payload;
-        const contactIndex = state.contacts.findIndex(contact => contact.id === id);
-        
+      .addCase(updateContactTags.fulfilled, (state, action) => {
+        const { contactId, tags } = action.payload;
+        const contactIndex = state.contacts.findIndex(contact => contact.id === contactId);
         if (contactIndex !== -1) {
           state.contacts[contactIndex] = {
             ...state.contacts[contactIndex],
-            ...updates,
-            updatedAt: new Date().toISOString(),
-          };
-        }
-        
-        if (state.contactDetails && state.contactDetails.id === id) {
-          state.contactDetails = {
-            ...state.contactDetails,
-            ...updates,
-            updatedAt: new Date().toISOString(),
+            tags
           };
         }
       })
-      // Update contact tags
-      .addCase(updateContactTags.fulfilled, (state, action) => {
-        const { id, tags } = action.payload;
-        const contactIndex = state.contacts.findIndex(contact => contact.id === id);
-        
-        if (contactIndex !== -1) {
-          state.contacts[contactIndex].tags = tags;
-          state.contacts[contactIndex].updatedAt = new Date().toISOString();
-        }
-        
-        if (state.contactDetails && state.contactDetails.id === id) {
-          state.contactDetails.tags = tags;
-          state.contactDetails.updatedAt = new Date().toISOString();
-        }
+      .addCase(updateContactStatus.fulfilled, (state, action) => {
+        const { contactIds, status } = action.payload;
+        state.contacts = state.contacts.map(contact => 
+          contactIds.includes(contact.id) ? { ...contact, status } : contact
+        );
       })
-      // Update contact company
       .addCase(updateContactCompany.fulfilled, (state, action) => {
-        const { id, company } = action.payload;
-        const contactIndex = state.contacts.findIndex(contact => contact.id === id);
-        
+        const { contactId, companyId } = action.payload;
+        const contactIndex = state.contacts.findIndex(contact => contact.id === contactId);
         if (contactIndex !== -1) {
-          state.contacts[contactIndex].company = company;
-          state.contacts[contactIndex].updatedAt = new Date().toISOString();
+          state.contacts[contactIndex] = {
+            ...state.contacts[contactIndex],
+            company: companyId
+          };
         }
-        
-        if (state.contactDetails && state.contactDetails.id === id) {
-          state.contactDetails.company = company;
-          state.contactDetails.updatedAt = new Date().toISOString();
+      })
+      .addCase(updateContact.fulfilled, (state, action) => {
+        const { contactId, data } = action.payload;
+        const contactIndex = state.contacts.findIndex(contact => contact.id === contactId);
+        if (contactIndex !== -1) {
+          state.contacts[contactIndex] = {
+            ...state.contacts[contactIndex],
+            ...data
+          };
+        }
+      })
+      .addCase(fetchContactById.fulfilled, (state, action) => {
+        if (action.payload) {
+          const existingIndex = state.contacts.findIndex(c => c.id === action.payload.id);
+          if (existingIndex >= 0) {
+            state.contacts[existingIndex] = action.payload;
+          } else {
+            state.contacts.push(action.payload);
+          }
+          state.selectedContact = action.payload;
+          state.selectedContactId = action.payload.id;
         }
       });
   },
@@ -240,14 +214,11 @@ const contactsSlice = createSlice({
 
 export const {
   selectContact,
-  deselectContact,
   setSelectedContacts,
-  clearSelectedContacts,
   toggleContactSelection,
-  setSearchFilter,
-  setStatusFilter,
-  setTagsFilter,
-  clearFilters,
+  clearSelectedContacts,
+  setFilter,
+  resetFilters,
 } = contactsSlice.actions;
 
 export default contactsSlice.reducer;

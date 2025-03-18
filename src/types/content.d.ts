@@ -64,6 +64,7 @@ export interface Content {
   title: string;
   description: string;
   content?: string;
+  contentType: 'file' | 'website' | 'snippet';
   type: 'snippet' | 'file' | 'website';
   status: ContentStatus;
   category: string;
