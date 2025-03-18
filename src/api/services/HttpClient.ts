@@ -113,7 +113,7 @@ const responseErrorInterceptor = (error: any) => {
     if (status === 401 || errorCode === "UNAUTHORIZED") {
         console.warn("Authentication error detected, logging out");
         // Import dynamically to avoid circular dependency
-        import('../utils/auth/tokenManager').then(({ handleLogout }) => {
+        import('../../utils/auth/tokenManager').then(({ handleLogout }) => {
             handleLogout();
         });
         return Promise.reject(new Error("Authentication failed. Please log in again."));
