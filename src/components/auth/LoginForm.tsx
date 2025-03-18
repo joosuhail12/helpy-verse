@@ -1,7 +1,7 @@
 
 import { ArrowRight } from "lucide-react";
 import { useState, memo, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useAppDispatch } from "../../hooks/useAppDispatch";
 import { useAppSelector } from "../../hooks/useAppSelector";
 import { loginUser } from "../../store/slices/authSlice";
@@ -13,8 +13,12 @@ export const LoginForm = memo(() => {
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const dispatch = useAppDispatch();
+  const location = useLocation();
   const auth = useAppSelector((state) => state.auth);
   const loading = auth?.loading ?? false;
+  
+  // Get redirect path from location state or default to /home
+  const from = location.state?.from || '/home';
 
   // Check for auth errors and show toast
   useEffect(() => {
@@ -32,9 +36,10 @@ export const LoginForm = memo(() => {
     const token = getCookie("customerToken");
     
     if (auth.isAuthenticated || token) {
-      window.location.href = '/home'; // Using hard redirect for reliability
+      // Use hard redirect for reliability
+      window.location.href = from;
     }
-  }, [auth.isAuthenticated]);
+  }, [auth.isAuthenticated, from]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,8 +56,11 @@ export const LoginForm = memo(() => {
           description: "Logged in successfully",
         });
         
-        // Force navigation to home
-        window.location.href = '/home';
+        // Use a timeout to ensure the toast is visible before redirect
+        setTimeout(() => {
+          // Force navigation for reliability
+          window.location.href = from;
+        }, 500);
       }
     } catch (error) {
       console.error("Login error:", error);

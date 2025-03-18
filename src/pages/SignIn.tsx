@@ -6,7 +6,7 @@ import { LoginForm } from "@/components/auth/LoginForm";
 import { Form } from "@/components/ui/form";
 import { FormProvider } from "react-hook-form";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import ErrorBoundary from "@/components/common/ErrorBoundary";
 import { getCookie } from "@/utils/helpers/helpers";
@@ -14,7 +14,11 @@ import { getCookie } from "@/utils/helpers/helpers";
 export const SignIn = memo(() => {
   console.log('SignIn component rendering'); // Debug log
   const navigate = useNavigate();
+  const location = useLocation();
   const auth = useAppSelector((state) => state.auth);
+  
+  // Get redirect path from location state or default to /home
+  const from = location.state?.from || '/home';
   
   const methods = useForm({
     defaultValues: {
@@ -28,10 +32,12 @@ export const SignIn = memo(() => {
     const token = getCookie("customerToken");
     
     if (auth?.isAuthenticated || token) {
-      console.log('User is authenticated, redirecting to home'); // Debug log
-      navigate('/home', { replace: true });
+      console.log('User is authenticated, redirecting to:', from); // Debug log
+      
+      // Use hard navigation for more reliable redirect
+      window.location.href = from;
     }
-  }, [auth?.isAuthenticated, navigate]);
+  }, [auth?.isAuthenticated, from]);
 
   console.log('Auth state:', auth); // Debug log
 

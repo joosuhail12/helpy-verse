@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -7,7 +6,6 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Provider } from 'react-redux';
 import { store } from './store/store';
 import { Suspense, lazy, useEffect } from 'react';
-import { useAppSelector } from "./hooks/useAppSelector";
 import CaslProvider from "./components/CaslProvider";
 import { getCookie } from "./utils/helpers/helpers";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
@@ -98,14 +96,13 @@ const App = () => (
                   <Route path="/sign-in" element={<SignIn />} />
                   <Route path="/sign-up" element={<SignUp />} />
                   <Route path="/forgot-password" element={<ForgotPassword />} />
-                  <Route
-                    path="/home"
-                    element={
-                      <ProtectedRoute>
-                        <Home />
-                      </ProtectedRoute>
-                    }
-                  >
+                  
+                  <Route path="/home" element={
+                    <ProtectedRoute>
+                      <Home />
+                    </ProtectedRoute>
+                  }>
+                    <Route index element={<Navigate to="/home/inbox/all" replace />} />
                     <Route path="inbox/all" element={<AllTickets />} />
                     <Route path="contacts/all" element={<AllContacts />} />
                     <Route path="contacts/companies" element={<Companies />} />
@@ -136,7 +133,8 @@ const App = () => (
                     <Route path="automation/ai/chatbot-profiles" element={<ChatbotProfiles />} />
                     <Route path="automation/ai/chatbot-profiles/create" element={<CreateChatbot />} />
                   </Route>
-                  <Route path="*" element={<NotFound />} />
+                  
+                  <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </Suspense>
             </CaslProvider>

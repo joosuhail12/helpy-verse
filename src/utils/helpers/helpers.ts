@@ -15,12 +15,12 @@ export const setCookie = (cname: string, cvalue: string, exdays: number = 10): v
     const d = new Date();
     d.setTime(d.getTime() + exdays * 24 * 60 * 60 * 1000);
     const expires = `expires=${d.toUTCString()}`;
-    document.cookie = `${cname}=${cvalue};${expires};path=/`;
+    document.cookie = `${cname}=${cvalue};${expires};path=/;SameSite=Lax`;
 };
 
 // 🟢 Delete Cookie
 export const deleteCookie = (name: string): void => {
-    document.cookie = `${name}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;`;
+    document.cookie = `${name}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Lax`;
 };
 
 // 🟢 Logout User
