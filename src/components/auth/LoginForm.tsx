@@ -6,7 +6,7 @@ import { useAppDispatch } from "../../hooks/useAppDispatch";
 import { useAppSelector } from "../../hooks/useAppSelector";
 import { loginUser } from "../../store/slices/authSlice";
 import { toast } from "../../components/ui/use-toast";
-import { getCookie } from "@/utils/helpers/helpers";
+import { getCookie, handleSetToken } from "@/utils/helpers/helpers";
 
 export const LoginForm = memo(() => {
   const [email, setEmail] = useState("");
@@ -22,20 +22,21 @@ export const LoginForm = memo(() => {
 
   // Check for auth errors and show toast
   useEffect(() => {
-    if (auth.error && !loading) {
+    if (auth.error && !loading && !isSubmitting) {
       toast({
         title: "Error",
         description: auth.error || "Login failed. Please try again.",
         variant: "destructive",
       });
     }
-  }, [auth.error, loading]);
+  }, [auth.error, loading, isSubmitting]);
 
   // Auto-redirect if already authenticated
   useEffect(() => {
     const token = getCookie("customerToken");
     
     if (auth.isAuthenticated || token) {
+      console.log('Already authenticated, redirecting to:', from);
       // Use hard redirect for reliability
       window.location.href = from;
     }
@@ -51,16 +52,20 @@ export const LoginForm = memo(() => {
       const result = await dispatch(loginUser({ email, password })).unwrap();
       
       if (result && result.data && result.data.accessToken) {
+        // Ensure token is properly set in cookie regardless of API response
+        handleSetToken(result.data.accessToken.token);
+        
         toast({
           title: "Success",
           description: "Logged in successfully",
         });
         
-        // Use a timeout to ensure the toast is visible before redirect
+        // Add a small delay to ensure toast is visible before redirect
         setTimeout(() => {
-          // Force navigation for reliability
+          // Force navigation using window.location for reliability
+          console.log('Login successful, redirecting to:', from);
           window.location.href = from;
-        }, 500);
+        }, 800);
       }
     } catch (error) {
       console.error("Login error:", error);

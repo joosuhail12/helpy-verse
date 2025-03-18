@@ -11,28 +11,35 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   const dispatch = useAppDispatch();
   const [isChecking, setIsChecking] = useState(true);
-  const { isAuthenticated, loading } = useAppSelector((state) => state.auth);
-  const [hasToken, setHasToken] = useState(false);
+  const { isAuthenticated, loading, error } = useAppSelector((state) => state.auth);
   
   useEffect(() => {
-    // Check if token exists, this is more reliable than state when page refreshes
-    const token = getCookie("customerToken");
-    setHasToken(!!token);
+    const checkAuth = async () => {
+      // Get token from cookie
+      const token = getCookie("customerToken");
+      
+      // If we have a token but Redux state says we're not authenticated,
+      // try to refresh user data, but don't wait for the result
+      if (token && !isAuthenticated && !loading) {
+        try {
+          dispatch(fetchUserData());
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+          // Continue anyway since we have a token
+        }
+      }
+      
+      // Short delay to ensure state is settled
+      setTimeout(() => {
+        setIsChecking(false);
+      }, 300);
+    };
     
-    // If there's a token but not authenticated in state, try to fetch user data
-    if (token && !isAuthenticated) {
-      dispatch(fetchUserData());
-    }
-    
-    // Wait a short moment to ensure auth state is properly loaded
-    const timer = setTimeout(() => {
-      setIsChecking(false);
-    }, 500);
-    
-    return () => clearTimeout(timer);
-  }, [dispatch, isAuthenticated]);
+    checkAuth();
+  }, [dispatch, isAuthenticated, loading]);
 
-  if (loading || isChecking) {
+  // Show loading state while checking
+  if (isChecking || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -40,13 +47,16 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  // If we have a token OR we're authenticated in state, render children
+  // Consider authenticated if either Redux state OR token exists
+  const hasToken = !!getCookie("customerToken");
+  
+  // Critical: Both conditions are checked to determine authentication status
   if (isAuthenticated || hasToken) {
-    console.log('ProtectedRoute: Authenticated, rendering protected content');
+    console.log('ProtectedRoute: Authentication verified, rendering protected content');
     return <>{children}</>;
   }
 
+  // Not authenticated, redirect to login
   console.log('ProtectedRoute: Not authenticated, redirecting to login');
-  // Save the attempted URL for after login redirect
   return <Navigate to="/sign-in" state={{ from: location.pathname }} replace />;
 };

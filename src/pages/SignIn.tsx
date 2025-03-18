@@ -34,8 +34,11 @@ export const SignIn = memo(() => {
     if (auth?.isAuthenticated || token) {
       console.log('User is authenticated, redirecting to:', from); // Debug log
       
-      // Use hard navigation for more reliable redirect
-      window.location.href = from;
+      // Use a small delay to ensure state is settled
+      setTimeout(() => {
+        // Use hard navigation for more reliable redirect
+        window.location.href = from;
+      }, 300);
     }
   }, [auth?.isAuthenticated, from]);
 

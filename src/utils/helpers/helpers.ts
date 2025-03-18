@@ -25,18 +25,29 @@ export const deleteCookie = (name: string): void => {
 
 // 🟢 Logout User
 export const handleLogout = (): void => {
+    // Clear all authentication-related cookies
     deleteCookie("customerToken");
     deleteCookie("agent_email");
     deleteCookie("workspaceId");
     
-    // Don't use router here, use direct navigation
-    window.location.href = "/sign-in";
+    // Reset HTTP client configuration
+    HttpClient.apiClient.defaults.headers.common["Authorization"] = "";
+    
+    // Don't use router here, use direct navigation for reliability
+    setTimeout(() => {
+        window.location.href = "/sign-in";
+    }, 100);
 };
 
 // 🟢 Set Auth Token
 export const handleSetToken = (token: string): boolean => {
-    setCookie("customerToken", token);
+    // Set the cookie with a long expiration
+    setCookie("customerToken", token, 30);
+    
+    // Configure axios with the new token
     HttpClient.setAxiosDefaultConfig();
+    
+    console.log("Token set successfully:", !!token);
     return true;
 };
 
