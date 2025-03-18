@@ -8,7 +8,8 @@ const initialState: TeamsState = {
   teams: [],
   loading: false,
   error: null,
-  teamDetails: null
+  teamDetails: null,
+  areTeamsLoaded: false
 };
 
 // fetch teams
@@ -56,6 +57,7 @@ const teamsSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     builder.addCase(fetchTeams.pending, (state) => {
       state.loading = true;
     }),
@@ -63,10 +65,12 @@ const teamsSlice = createSlice({
         state.teams = action.payload;
         state.loading = false;
         state.error = null;
+        state.areTeamsLoaded = true;
       }),
       builder.addCase(fetchTeams.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
+        state.areTeamsLoaded = true;
       }),
       builder.addCase(fetchTeamById.pending, (state) => {
         state.loading = true;
@@ -75,10 +79,12 @@ const teamsSlice = createSlice({
         state.teamDetails = action.payload;
         state.loading = false;
         state.error = null;
+        state.areTeamsLoaded = true;
       }),
       builder.addCase(fetchTeamById.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
+        state.areTeamsLoaded = true;
       }),
       builder.addCase(createTeam.pending, (state) => {
         state.loading = true;
@@ -86,10 +92,12 @@ const teamsSlice = createSlice({
       builder.addCase(createTeam.fulfilled, (state, action) => {
         state.teams = [...state.teams, action.payload];
         state.loading = false;
+        state.areTeamsLoaded = true;
       }),
       builder.addCase(createTeam.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
+        state.areTeamsLoaded = true;
       }),
       builder.addCase(updateTeam.pending, (state) => {
         state.loading = true;
@@ -97,10 +105,12 @@ const teamsSlice = createSlice({
       builder.addCase(updateTeam.fulfilled, (state, action) => {
         state.teams = state.teams.map((team) => team.id === action.payload.id ? action.payload : team);
         state.loading = false;
+        state.areTeamsLoaded = true;
       }),
       builder.addCase(updateTeam.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
+        state.areTeamsLoaded = true;
       });
   },
 });
