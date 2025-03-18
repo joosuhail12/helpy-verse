@@ -1,4 +1,3 @@
-
 import { ArrowRight } from "lucide-react";
 import { useState, memo, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -66,6 +65,24 @@ export const LoginForm = memo(() => {
     try {
       setIsSubmitting(true);
       
+      // Add mock login for development purposes
+      if (process.env.NODE_ENV === 'development' && email === 'test@example.com' && password === 'password') {
+        // Mock successful login
+        const mockToken = 'mock-token-for-development';
+        handleSetToken(mockToken);
+        HttpClient.setAxiosDefaultConfig();
+        
+        toast({
+          title: "Development Mode",
+          description: "Logged in with mock credentials",
+        });
+        
+        setTimeout(() => {
+          navigate(from, { replace: true });
+        }, 1000);
+        return;
+      }
+      
       const result = await dispatch(loginUser({ email, password })).unwrap();
       
       // Handle successful login even if subsequent API calls might fail
@@ -101,7 +118,7 @@ export const LoginForm = memo(() => {
       console.error("Login error:", error);
       toast({
         title: "Error",
-        description: "Login failed. Please try again.",
+        description: "Login failed. Please check your network connection and try again.",
         variant: "destructive",
       });
     } finally {

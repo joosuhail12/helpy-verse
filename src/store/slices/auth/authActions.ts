@@ -46,6 +46,10 @@ export const loginUser = createAsyncThunk(
       return response.data;
     } catch (error: any) {
       console.error("Login error:", error.message);
+      // Provide more specific error messages based on the error type
+      if (error.code === 'ERR_NETWORK') {
+        return rejectWithValue("Cannot connect to the server. Please check your network connection or try again later.");
+      }
       return rejectWithValue(error.response?.data?.message || "Login failed. Please check your credentials and try again.");
     }
   }

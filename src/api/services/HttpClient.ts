@@ -5,8 +5,8 @@ import { get } from "lodash";
 
 // Configure API endpoints
 const API_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://dev-socket.pullseai.com/api'
-  : 'https://dev-socket.pullseai.com/api'; // Use same URL for development for now
+  ? import.meta.env.REACT_APP_API_URL || 'http://localhost:4000/api'
+  : import.meta.env.REACT_APP_API_URL || 'http://localhost:4000/api';
 
 // LLM service URL (same as API for now)
 const LLM_SERVICE_URL = API_BASE_URL;
