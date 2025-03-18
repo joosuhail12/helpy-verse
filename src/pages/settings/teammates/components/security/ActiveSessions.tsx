@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { fetchTeammateSessions, terminateSession } from '@/store/slices/teammates/teammatesSlice';
-import { Monitor, Smartphone, Desktop, Globe, Loader, X } from 'lucide-react';
+import { Monitor, Smartphone, Desktop as DesktopIcon, Globe, Loader, X } from 'lucide-react';
 import { formatDistance } from 'date-fns';
 
 interface ActiveSessionsProps {
@@ -28,7 +28,7 @@ export const ActiveSessions: React.FC<ActiveSessionsProps> = ({ teammateId }) =>
   const getDeviceIcon = (deviceType: string) => {
     switch (deviceType.toLowerCase()) {
       case 'desktop':
-        return <Desktop className="h-4 w-4 mr-2" />;
+        return <DesktopIcon className="h-4 w-4 mr-2" />;
       case 'mobile':
         return <Smartphone className="h-4 w-4 mr-2" />;
       case 'tablet':
