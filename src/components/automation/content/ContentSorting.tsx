@@ -8,13 +8,13 @@ import type { SortField } from '@/types/content';
 
 export const ContentSorting = () => {
   const dispatch = useAppDispatch();
-  const { field, direction } = useAppSelector((state) => state.content.sortBy);
+  const { field, direction } = useAppSelector((state) => state.content.sort);
 
-  const handleSort = (field: SortField) => {
-    if (field === field) {
+  const handleSort = (sortField: SortField) => {
+    if (sortField === field) {
       dispatch(setSortDirection(direction === 'asc' ? 'desc' : 'asc'));
     } else {
-      dispatch(setSortField(field));
+      dispatch(setSortField(sortField));
       dispatch(setSortDirection('asc'));
     }
   };

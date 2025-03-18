@@ -76,7 +76,9 @@ export const ContentPreview = ({ content }: ContentPreviewProps) => {
   };
 
   const renderPreview = () => {
-    switch (content.type) {
+    const contentType = content.type || 'snippet';
+    
+    switch (contentType) {
       case 'snippet':
         return (
           <SnippetPreview

@@ -12,7 +12,7 @@ const initialState: ContentState = {
   statusFilter: null,
   categoryFilter: null,
   chatbotFilter: null,
-  sortBy: {
+  sort: {
     field: 'lastUpdated',
     direction: 'desc'
   },
@@ -130,10 +130,10 @@ const contentSlice = createSlice({
       state.searchQuery = action.payload;
     },
     setSortField: (state, action: PayloadAction<SortField>) => {
-      state.sortBy.field = action.payload;
+      state.sort.field = action.payload;
     },
     setSortDirection: (state, action: PayloadAction<'asc' | 'desc'>) => {
-      state.sortBy.direction = action.payload;
+      state.sort.direction = action.payload;
     },
     clearFilters: (state) => {
       state.statusFilter = null;

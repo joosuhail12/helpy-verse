@@ -70,7 +70,7 @@ export interface ContentState {
   statusFilter: string | null;
   categoryFilter: string | null;
   chatbotFilter: string | null;
-  sortBy: {
+  sort: {
     field: SortField;
     direction: 'asc' | 'desc';
   };

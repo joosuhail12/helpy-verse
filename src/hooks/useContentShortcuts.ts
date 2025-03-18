@@ -2,7 +2,7 @@
 import { useCallback } from 'react';
 import { useAppDispatch } from './useAppDispatch';
 import { updateContent } from '@/store/slices/content/contentSlice';
-import { useToast } from './use-toast';
+import { useToast } from '@/hooks/use-toast';
 import type { Content } from '@/types/content';
 
 export const useContentShortcuts = () => {
@@ -11,7 +11,7 @@ export const useContentShortcuts = () => {
 
   const updateContentField = useCallback(async (
     contentId: string, 
-    fieldName: string, 
+    fieldName: keyof Content, 
     value: any
   ) => {
     try {

@@ -56,7 +56,7 @@ export const ContentForm = ({ content }: ContentFormProps) => {
         content: content.content || '',
         createdAt: new Date().toISOString(),
         createdBy: currentUser,
-        changes: 'Updated content',
+        changes: 'Updated content details',
       };
 
       const currentVersions = Array.isArray(content.versions) ? [...content.versions] : [];
