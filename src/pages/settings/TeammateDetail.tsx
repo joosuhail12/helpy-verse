@@ -22,9 +22,8 @@ const TeammateDetail = () => {
   const { toast } = useToast();
   
   // Get the teammate from the store
-  const teammate = useAppSelector(state => 
-    state.teammates.teammates.find(t => t.id === id)
-  );
+  const teammatesState = useAppSelector(state => state.teammates);
+  const teammate = teammatesState?.items?.find(t => t.id === id);
   
   // Get current user role safely, default to 'viewer' if not available
   const authUser = useAppSelector(state => state.auth.user);
@@ -77,7 +76,18 @@ const TeammateDetail = () => {
   const handleConfirmSave = async () => {
     setIsSaving(true);
     try {
-      await dispatch(updateTeammate(editedTeammate as Teammate)).unwrap();
+      // Update the teammate with the correct parameter structure
+      await dispatch(updateTeammate({
+        id: editedTeammate.id,
+        data: {
+          name: editedTeammate.name,
+          email: editedTeammate.email,
+          role: editedTeammate.role,
+          status: editedTeammate.status,
+          permissions: editedTeammate.permissions,
+          teams: editedTeammate.teams
+        }
+      })).unwrap();
       
       toast({
         description: "Changes saved successfully.",

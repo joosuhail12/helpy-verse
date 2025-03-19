@@ -1,128 +1,54 @@
 
-import { createSlice } from '@reduxjs/toolkit';
-import { mockTeammates, mockActivityLogs, mockAssignments } from './mockData';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { TeammatesState } from './types';
 import { 
   fetchTeammates, 
-  addTeammate, 
-  deleteTeammate, 
-  updateTeammate,
-  resendInvitation,
+  updateTeammate, 
   updateTeammatesRole,
-  exportTeammates
+  fetchTeammateActivityLogs,
+  fetchTeammateAssignments,
+  fetchTeammateSessions,
+  terminateSession,
+  resetPassword,
+  enable2FA,
+  verify2FA,
+  disable2FA
 } from './actions';
-import { Teammate, ActivityLog, TeamAssignment, TeammateSession } from '@/types/teammate';
-
-interface TeammatesState {
-  items: Teammate[];
-  selectedTeammate: Teammate | null;
-  selectedTeammates: string[];
-  loading: boolean;
-  error: string | null;
-  activityLogs: ActivityLog[];
-  assignments: TeamAssignment[];
-  sessions: TeammateSession[];
-  pagination: {
-    currentPage: number;
-    itemsPerPage: number;
-    totalItems: number;
-    totalPages: number;
-  };
-  filters: {
-    role: string | null;
-    status: string | null;
-    search: string;
-  };
-  sort: {
-    field: keyof Teammate;
-    direction: 'asc' | 'desc';
-  };
-}
+import { Teammate, TeamAssignment, ActivityLog, TeammateStatus } from '@/types/teammate';
+import { mockTeammates, mockActivityLogs, mockAssignments } from './mockData';
 
 const initialState: TeammatesState = {
-  items: mockTeammates,
-  selectedTeammate: null,
-  selectedTeammates: [],
+  items: mockTeammates, // Use mock data for initial state
   loading: false,
   error: null,
+  lastFetchTime: null,
+  retryCount: 0,
   activityLogs: mockActivityLogs,
   assignments: mockAssignments,
-  sessions: [],
-  pagination: {
-    currentPage: 1,
-    itemsPerPage: 10,
-    totalItems: mockTeammates.length,
-    totalPages: Math.ceil(mockTeammates.length / 10),
-  },
-  filters: {
-    role: null,
-    status: null,
-    search: '',
-  },
-  sort: {
-    field: 'name',
-    direction: 'asc',
-  },
+  teammates: mockTeammates, // Add missing property
+  sessions: []
 };
 
 const teammatesSlice = createSlice({
   name: 'teammates',
   initialState,
   reducers: {
-    selectTeammate: (state, action) => {
-      state.selectedTeammate = state.items.find(
-        (teammate) => teammate.id === action.payload
-      ) || null;
+    setSelectedTeammate: (state, action: PayloadAction<string>) => {
+      state.selectedTeammateId = action.payload;
     },
-    toggleTeammateSelection: (state, action) => {
-      const teammateId = action.payload;
-      if (state.selectedTeammates.includes(teammateId)) {
-        state.selectedTeammates = state.selectedTeammates.filter(
-          (id) => id !== teammateId
-        );
-      } else {
-        state.selectedTeammates.push(teammateId);
-      }
+    clearSelectedTeammate: (state) => {
+      state.selectedTeammateId = undefined;
     },
-    clearSelectedTeammates: (state) => {
-      state.selectedTeammates = [];
-    },
-    setFilter: (state, action) => {
-      const { key, value } = action.payload;
-      state.filters[key as keyof typeof state.filters] = value;
-    },
-    resetFilters: (state) => {
-      state.filters = initialState.filters;
-    },
-    setSortField: (state, action) => {
-      const field = action.payload;
-      if (state.sort.field === field) {
-        state.sort.direction = state.sort.direction === 'asc' ? 'desc' : 'asc';
-      } else {
-        state.sort.field = field;
-        state.sort.direction = 'asc';
-      }
-    },
-    setCurrentPage: (state, action) => {
-      state.pagination.currentPage = action.payload;
-    },
-    setItemsPerPage: (state, action) => {
-      state.pagination.itemsPerPage = action.payload;
-      state.pagination.totalPages = Math.ceil(
-        state.pagination.totalItems / action.payload
-      );
-      // Reset to first page when changing items per page
-      state.pagination.currentPage = 1;
-    },
-    setTeammateAssignments: (state, action) => {
+    setTeammateAssignments: (state, action: PayloadAction<TeamAssignment[]>) => {
       state.assignments = action.payload;
     },
-    setTeammateSessions: (state, action) => {
+    setTeammateSessions: (state, action: PayloadAction<any[]>) => {
       state.sessions = action.payload;
-    },
+    }
   },
   extraReducers: (builder) => {
     builder
-      // Handle fetchTeammates action states
+      // Fetch teammates
       .addCase(fetchTeammates.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -130,126 +56,93 @@ const teammatesSlice = createSlice({
       .addCase(fetchTeammates.fulfilled, (state, action) => {
         state.loading = false;
         state.items = action.payload;
-        state.pagination.totalItems = action.payload.length;
-        state.pagination.totalPages = Math.ceil(
-          action.payload.length / state.pagination.itemsPerPage
-        );
+        state.teammates = action.payload; // Update both items and teammates arrays
+        state.lastFetchTime = Date.now();
       })
       .addCase(fetchTeammates.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+        state.retryCount += 1;
       })
-      // Handle addTeammate action states
-      .addCase(addTeammate.fulfilled, (state, action) => {
-        state.items.push(action.payload);
-        state.pagination.totalItems = state.items.length;
-        state.pagination.totalPages = Math.ceil(
-          state.items.length / state.pagination.itemsPerPage
-        );
+
+      // Update teammate
+      .addCase(updateTeammate.pending, (state) => {
+        state.loading = true;
+        state.error = null;
       })
-      // Handle deleteTeammate action states
-      .addCase(deleteTeammate.fulfilled, (state, action) => {
-        const teammateId = action.payload;
-        state.items = state.items.filter((teammate) => teammate.id !== teammateId);
-        state.selectedTeammates = state.selectedTeammates.filter(
-          (id) => id !== teammateId
-        );
-        state.pagination.totalItems = state.items.length;
-        state.pagination.totalPages = Math.ceil(
-          state.items.length / state.pagination.itemsPerPage
-        );
-        if (state.selectedTeammate?.id === teammateId) {
-          state.selectedTeammate = null;
-        }
-      })
-      // Handle updateTeammate action states
       .addCase(updateTeammate.fulfilled, (state, action) => {
-        const updatedTeammate = action.payload;
-        const index = state.items.findIndex(
-          (teammate) => teammate.id === updatedTeammate.id
-        );
-        if (index !== -1) {
-          state.items[index] = { ...state.items[index], ...updatedTeammate };
+        state.loading = false;
+        
+        // Update the teammate in both arrays
+        const idx = state.items.findIndex(t => t.id === action.payload.id);
+        if (idx !== -1) {
+          state.items[idx] = { ...state.items[idx], ...action.payload };
         }
-        if (
-          state.selectedTeammate &&
-          state.selectedTeammate.id === updatedTeammate.id
-        ) {
-          state.selectedTeammate = {
-            ...state.selectedTeammate,
-            ...updatedTeammate,
-          };
+        
+        const teammateIdx = state.teammates.findIndex(t => t.id === action.payload.id);
+        if (teammateIdx !== -1) {
+          state.teammates[teammateIdx] = { ...state.teammates[teammateIdx], ...action.payload };
         }
       })
-      // Handle resendInvitation action states
-      .addCase(resendInvitation.fulfilled, (state, action) => {
-        const { id, status } = action.payload;
-        const index = state.items.findIndex((teammate) => teammate.id === id);
-        if (index !== -1) {
-          state.items[index].status = status;
-        }
+      .addCase(updateTeammate.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
       })
-      // Handle updateTeammatesRole action states
+
+      // Update teammates role
       .addCase(updateTeammatesRole.fulfilled, (state, action) => {
-        action.payload.forEach((update) => {
-          const index = state.items.findIndex(
-            (teammate) => teammate.id === update.id
-          );
-          if (index !== -1) {
-            state.items[index].role = update.role;
+        const { ids, role } = action.payload;
+        
+        // Update roles for all affected teammates
+        state.items.forEach(teammate => {
+          if (ids.includes(teammate.id)) {
+            teammate.role = role;
           }
         });
+        
+        state.teammates.forEach(teammate => {
+          if (ids.includes(teammate.id)) {
+            teammate.role = role;
+          }
+        });
+      })
+
+      // Fetch activity logs
+      .addCase(fetchTeammateActivityLogs.fulfilled, (state, action) => {
+        state.activityLogs = action.payload;
+      })
+
+      // Fetch assignments
+      .addCase(fetchTeammateAssignments.fulfilled, (state, action) => {
+        state.assignments = action.payload;
+      })
+
+      // Sessions management
+      .addCase(fetchTeammateSessions.fulfilled, (state, action) => {
+        state.sessions = action.payload;
+      })
+      .addCase(terminateSession.fulfilled, (state, action) => {
+        state.sessions = state.sessions.filter(s => s.id !== action.payload.sessionId);
+      })
+
+      // 2FA management
+      .addCase(enable2FA.fulfilled, (state, action) => {
+        // Would update the state as needed in a real app
+      })
+      .addCase(verify2FA.fulfilled, (state, action) => {
+        // Would update the state as needed in a real app
+      })
+      .addCase(disable2FA.fulfilled, (state, action) => {
+        // Would update the state as needed in a real app
       });
-  },
+  }
 });
 
-export const {
-  selectTeammate,
-  toggleTeammateSelection,
-  clearSelectedTeammates,
-  setFilter,
-  resetFilters,
-  setSortField,
-  setCurrentPage,
-  setItemsPerPage,
+export const { 
+  setSelectedTeammate, 
+  clearSelectedTeammate,
   setTeammateAssignments,
-  setTeammateSessions,
+  setTeammateSessions
 } = teammatesSlice.actions;
-
-export const fetchTeammateAssignments = (teammateId: string) => async (dispatch: any) => {
-  // Mock implementation to fetch assignments
-  const assignments = mockAssignments.filter(a => a.teammateId === teammateId);
-  dispatch(setTeammateAssignments(assignments));
-};
-
-export const fetchTeammateSessions = (teammateId: string) => async (dispatch: any) => {
-  // Mock implementation to fetch sessions
-  const sessions: TeammateSession[] = [
-    {
-      id: '1',
-      device: 'Desktop',
-      browser: 'Chrome',
-      ip: '192.168.1.1',
-      location: 'New York, USA',
-      lastActive: new Date().toISOString(),
-      current: true
-    }
-  ];
-  dispatch(setTeammateSessions(sessions));
-};
-
-export const terminateSession = (sessionId: string) => async (dispatch: any, getState: any) => {
-  // Mock implementation to terminate session
-  const state = getState();
-  const sessions = state.teammates.sessions.filter((s: TeammateSession) => s.id !== sessionId);
-  dispatch(setTeammateSessions(sessions));
-  return { payload: sessionId };
-};
-
-export const resetPassword = (teammateId: string) => async () => {
-  // Mock implementation to reset password
-  console.log(`Password reset for teammate ${teammateId}`);
-  return { payload: teammateId };
-};
 
 export default teammatesSlice.reducer;

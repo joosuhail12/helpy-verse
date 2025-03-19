@@ -6,18 +6,19 @@ import { PlusCircle } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { Contact } from '@/types/contact';
 import type { User } from '@/types/content';
+import { v4 as uuidv4 } from 'uuid';
 
 interface ContactNotesProps {
   contact: Contact;
   onAddNote?: (note: string) => void;
-  currentUser: User;
+  currentUser: string;
 }
 
 export const ContactNotes = ({ contact, onAddNote, currentUser }: ContactNotesProps) => {
   const [isAddingNote, setIsAddingNote] = useState(false);
   const [noteText, setNoteText] = useState('');
 
-  // Handle case where notes might be a string instead of an array
+  // Handle case where notes might be undefined
   const notes = Array.isArray(contact.notes) ? contact.notes : [];
 
   const handleAddNote = () => {
@@ -67,7 +68,7 @@ export const ContactNotes = ({ contact, onAddNote, currentUser }: ContactNotesPr
               <div key={note.id} className="border rounded-md p-4">
                 <div className="flex justify-between items-start mb-2">
                   <div className="font-medium">
-                    {note.createdBy ? note.createdBy : currentUser.name}
+                    {note.createdBy ? note.createdBy : currentUser}
                   </div>
                   <div className="text-sm text-muted-foreground">
                     {new Date(note.createdAt).toLocaleDateString()}

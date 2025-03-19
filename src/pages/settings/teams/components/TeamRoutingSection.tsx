@@ -1,40 +1,55 @@
 
-import { Card } from "@/components/ui/card";
-import TeamRoutingSelector from '@/components/teams/TeamRoutingSelector';
+import React, { useState } from 'react';
+// Fix the import to use named import
+import { TeamRoutingSelector } from '@/components/teams/TeamRoutingSelector';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface TeamRoutingSectionProps {
-  routingType: 'manual' | 'round-robin' | 'load-balanced';
-  setRoutingType: (type: 'manual' | 'round-robin' | 'load-balanced') => void;
-  routingLimits: {
+  teamId?: string;
+  initialRoutingType?: 'manual' | 'round-robin' | 'load-balanced';
+  initialLimits?: {
     maxTickets?: number;
     maxOpenTickets?: number;
     maxActiveChats?: number;
   };
-  setRoutingLimits: (limits: {
-    maxTickets?: number;
-    maxOpenTickets?: number;
-    maxActiveChats?: number;
-  }) => void;
+  readonly?: boolean;
 }
 
-const TeamRoutingSection = ({
-  routingType,
-  setRoutingType,
-  routingLimits,
-  setRoutingLimits,
-}: TeamRoutingSectionProps) => {
+const TeamRoutingSection: React.FC<TeamRoutingSectionProps> = ({
+  teamId,
+  initialRoutingType = 'manual',
+  initialLimits = {},
+  readonly = false
+}) => {
+  const [routingType, setRoutingType] = useState<'manual' | 'round-robin' | 'load-balanced'>(initialRoutingType);
+  const [limits, setLimits] = useState({
+    maxTickets: initialLimits.maxTickets,
+    maxOpenTickets: initialLimits.maxOpenTickets,
+    maxActiveChats: initialLimits.maxActiveChats
+  });
+
+  if (readonly) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Ticket Routing</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p>Routing Type: {routingType}</p>
+          {/* Display limits if not manual */}
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
-    <Card className="p-6">
-      <h2 className="text-lg font-semibold mb-6">Ticket Routing</h2>
-      <TeamRoutingSelector
-        selectedType={routingType}
-        onTypeSelect={setRoutingType}
-        limits={routingLimits}
-        onLimitsChange={setRoutingLimits}
-      />
-    </Card>
+    <TeamRoutingSelector
+      selectedType={routingType}
+      onTypeSelect={setRoutingType}
+      limits={limits}
+      onLimitsChange={setLimits}
+    />
   );
 };
 
 export default TeamRoutingSection;
-

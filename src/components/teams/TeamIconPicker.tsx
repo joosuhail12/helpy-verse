@@ -1,8 +1,8 @@
 
 import React, { useState } from 'react';
 import { 
-  Headphones, DollarSign, Briefcase, Users, Tool, LifeBuoy, Zap, 
-  MessageCircle, Phone, Mail, Shield, Heart, Award, Star 
+  Headphones, DollarSign, Briefcase, Users, LifeBuoy, Zap, 
+  MessageCircle, Phone, Mail, Shield, Heart, Award, Star, Settings
 } from 'lucide-react';
 import { 
   Popover, 
@@ -10,14 +10,19 @@ import {
   PopoverTrigger 
 } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
-import { TeamIconPickerProps } from '@/types/team';
+
+export interface TeamIconPickerProps {
+  selectedIcon: string;
+  setSelectedIcon: (icon: string) => void;
+  onIconSelect?: (icon: string) => void;
+}
 
 const iconMap: Record<string, React.ReactNode> = {
   'headphones': <Headphones />,
   'dollar-sign': <DollarSign />,
   'briefcase': <Briefcase />,
   'users': <Users />,
-  'tool': <Tool />,
+  'settings': <Settings />,
   'lifeBuoy': <LifeBuoy />,
   'zap': <Zap />,
   'message-circle': <MessageCircle />,

@@ -35,6 +35,7 @@ const CreateContactDialog = ({ open, onOpenChange }: CreateContactDialogProps) =
         id: uuidv4(),
         firstname,
         lastname,
+        name: `${firstname} ${lastname}`, // Add the name field
         email,
         type: isCustomer ? 'customer' : 'visitor',
         status: 'active',

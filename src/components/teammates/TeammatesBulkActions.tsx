@@ -36,7 +36,10 @@ const TeammatesBulkActions = ({ selectedIds, onClearSelection }: TeammatesBulkAc
 
   const handleRoleChange = async () => {
     try {
-      const resultAction = await dispatch(updateTeammatesRole({ teammateIds: selectedIds, role: newRole }));
+      const resultAction = await dispatch(updateTeammatesRole({ 
+        ids: selectedIds, // Using ids instead of teammateIds
+        role: newRole 
+      }));
       
       if (updateTeammatesRole.fulfilled.match(resultAction)) {
         toast({
@@ -63,7 +66,11 @@ const TeammatesBulkActions = ({ selectedIds, onClearSelection }: TeammatesBulkAc
 
   const handleExport = async () => {
     try {
-      const resultAction = await dispatch(exportTeammates(selectedIds));
+      // Pass an explicit format parameter instead of the selectedIds
+      const resultAction = await dispatch(exportTeammates({ 
+        ids: selectedIds,
+        format: 'csv' // Specify format explicitly
+      }));
       
       if (exportTeammates.fulfilled.match(resultAction)) {
         toast({

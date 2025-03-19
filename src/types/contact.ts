@@ -18,7 +18,12 @@ export interface Contact {
   updatedAt?: string;
   lastContacted?: string;
   lastActivity?: string;
-  notes?: string[];
+  notes?: {
+    id: string;
+    content: string;
+    createdAt: string;
+    createdBy?: string;
+  }[];
   address?: {
     street?: string;
     city?: string;
@@ -75,5 +80,8 @@ export interface ContactCompanyInfoProps {
 
 export interface QuickNoteInputProps {
   contactId: string;
-  onAddNote: (note: string) => void;
+  onAddNote?: (note: string) => void;
 }
+
+// Import Activity type to fix the reference
+import { Activity } from './activity';

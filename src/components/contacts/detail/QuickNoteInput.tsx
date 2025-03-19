@@ -8,7 +8,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { toast } from '@/hooks/use-toast';
 import type { QuickNoteInputProps } from '@/types/contact';
 
-export const QuickNoteInput = ({ contact }: QuickNoteInputProps) => {
+export const QuickNoteInput = ({ contactId }: QuickNoteInputProps) => {
   const [note, setNote] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const dispatch = useAppDispatch();
@@ -28,13 +28,12 @@ export const QuickNoteInput = ({ contact }: QuickNoteInputProps) => {
         createdBy: 'current-user' // This would be dynamic in real app
       };
       
-      // Add it to existing notes
-      const updatedNotes = contact.notes ? [...contact.notes, newNote] : [newNote];
-      
-      // Update the contact
+      // Update the contact with the new note
       await dispatch(updateContact({
-        contactId: contact.id,
-        data: { notes: updatedNotes }
+        contactId,
+        data: { 
+          notes: [newNote] // The reducer will handle appending to existing notes
+        }
       }));
       
       toast({

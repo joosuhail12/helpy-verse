@@ -1,106 +1,90 @@
 
-export type DayOfWeek = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
+export interface Team {
+  id: string;
+  name: string;
+  icon: string;
+  description?: string;
+  createdAt?: string;
+  members: string[];
+  routingType: 'manual' | 'round-robin' | 'load-balanced';
+  limits?: {
+    maxTickets?: number;
+    maxOpenTickets?: number;
+    maxActiveChats?: number;
+  };
+  status: 'active' | 'inactive';
+  officeHours?: {
+    [key in DayOfWeek]?: TimeSlot[];
+  };
+  channels?: string[];
+  holidays?: {
+    date: string;
+    name: string;
+  }[];
+}
+
+export enum DayOfWeek {
+  Monday = 'monday',
+  Tuesday = 'tuesday',
+  Wednesday = 'wednesday',
+  Thursday = 'thursday',
+  Friday = 'friday',
+  Saturday = 'saturday',
+  Sunday = 'sunday'
+}
 
 export interface TimeSlot {
   start: string;
   end: string;
 }
 
-export interface TeamOfficeHours {
-  days: DayOfWeek[];
-  startTime: string;
-  endTime: string;
-  timezone: string;
+export interface TeamChannelSelectorProps {
+  selectedChannels: string[];
+  onChannelSelect: (channels: string[]) => void;
 }
 
-export interface TeamChannel {
-  id: string;
-  name: string;
-  type: 'email' | 'chat';
+export interface TeamMembersSelectorProps {
+  selectedMembers: string[];
+  onMemberSelect: (members: string[]) => void;
 }
 
-export interface TeamRouting {
-  type: 'manual' | 'round-robin' | 'load-balanced';
-  limits?: {
+export interface TeamOfficeHoursSelectorProps {
+  officeHours: {
+    [key in DayOfWeek]?: TimeSlot[];
+  };
+  onOfficeHoursChange: (officeHours: {
+    [key in DayOfWeek]?: TimeSlot[];
+  }) => void;
+}
+
+export interface TeamRoutingSelectorProps {
+  selectedType: 'manual' | 'round-robin' | 'load-balanced';
+  onTypeSelect: (type: 'manual' | 'round-robin' | 'load-balanced') => void;
+  limits: {
     maxTickets?: number;
     maxOpenTickets?: number;
     maxActiveChats?: number;
   };
-}
-
-export interface Team {
-  id: string;
-  name: string;
-  icon: string;
-  status: 'active' | 'inactive';
-  type: 'support' | 'sales' | 'product' | 'other';
-  description?: string; // Add description field
-  memberCount: number;
-  members: {
-    id: string;
-    name: string;
-    email: string;
-  }[];
-  officeHours: TeamOfficeHours;
-  channels: TeamChannel[];
-  routing: TeamRouting[];
-  holidays: string[];
-}
-
-// Props interfaces for team components
-export interface TeamChannelSelectorProps {
-  selectedChatChannel?: string;
-  selectedEmailChannels: string[];
-  onChatChannelSelect: (channelId?: string) => void;
-  onEmailChannelToggle: (channelId: string) => void;
+  onLimitsChange: (limits: {
+    maxTickets?: number;
+    maxOpenTickets?: number;
+    maxActiveChats?: number;
+  }) => void;
 }
 
 export interface TeamHolidaySelectorProps {
-  selectedHolidays: string[];
-  onHolidaysChange: (holidays: string[]) => void;
+  holidays: {
+    date: string;
+    name: string;
+  }[];
+  onHolidaysChange: (holidays: {
+    date: string;
+    name: string;
+  }[]) => void;
 }
 
 export interface TeamIconPickerProps {
   selectedIcon: string;
   setSelectedIcon: (icon: string) => void;
-  onIconSelect?: (icon: string) => void; // Add this prop to fix errors
-}
-
-export interface TeamMembersSelectorProps {
-  teammates: any[];
-  selectedTeammates: string[];
-  onTeammateToggle: (teammateId: string) => void;
-}
-
-export interface TeamOfficeHoursSelectorProps {
-  officeHours: { [key in DayOfWeek]: TimeSlot[] };
-  onOfficeHoursChange: (hours: { [key in DayOfWeek]: TimeSlot[] }) => void;
-}
-
-export interface TeamRoutingSelectorProps {
-  routingType: 'manual' | 'round-robin' | 'load-balanced';
-  setRoutingType: (type: 'manual' | 'round-robin' | 'load-balanced') => void;
-  routingLimits: {
-    maxTickets?: number;
-    maxOpenTickets?: number;
-    maxActiveChats?: number;
-  };
-  setRoutingLimits: (limits: {
-    maxTickets?: number;
-    maxOpenTickets?: number;
-    maxActiveChats?: number;
-  }) => void;
-  // Additional props needed by component
-  selectedType?: 'manual' | 'round-robin' | 'load-balanced';
-  onTypeSelect?: (type: 'manual' | 'round-robin' | 'load-balanced') => void;
-  limits?: {
-    maxTickets?: number;
-    maxOpenTickets?: number;
-    maxActiveChats?: number;
-  };
-  onLimitsChange?: (limits: {
-    maxTickets?: number;
-    maxOpenTickets?: number;
-    maxActiveChats?: number;
-  }) => void;
+  onIconSelect?: (icon: string) => void;
 }
