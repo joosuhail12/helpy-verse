@@ -62,7 +62,7 @@ const TicketList = ({ tickets: initialTickets, isLoading = false, onTicketCreate
       <div className={`flex-1 flex flex-col overflow-hidden ${
         selectedTicket ? 'hidden md:flex md:w-2/5' : 'w-full'
       }`}>
-        <div className="sticky top-0 bg-white z-10 border-b p-4">
+        <div className="flex-none bg-white z-10 border-b p-4">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
             <div className="flex items-center gap-2">
               <SelectionControls

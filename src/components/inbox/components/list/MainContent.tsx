@@ -75,13 +75,13 @@ const MainContent = ({
   };
 
   return (
-    <div className={`flex flex-col h-full overflow-hidden transition-all duration-300 ${
+    <div className={`flex flex-col h-full w-full overflow-hidden transition-all duration-300 ${
       selectedTicketForChat 
         ? 'w-full md:w-3/5 lg:w-2/5' 
         : 'w-full'
     }`}>
-      <div className="flex-1 overflow-auto px-4">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-100 mt-4">
+      <div className="flex-none px-4 pt-4 pb-2">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-100">
           <div className="p-4 space-y-4">
             <FilterBar
               searchQuery={searchQuery}
@@ -115,11 +115,13 @@ const MainContent = ({
             </div>
           </div>
         </div>
+      </div>
 
+      <div className="flex-1 overflow-auto px-4 pb-4">
         {isLoading ? (
           <LoadingState />
         ) : (
-          <div className="space-y-2 mb-4">
+          <div className="space-y-2">
             {paginatedTickets.map((ticket) => (
               <div
                 key={ticket.id}
@@ -144,7 +146,7 @@ const MainContent = ({
             ))}
 
             {totalPages > 1 && (
-              <div className="flex justify-center gap-2 my-4 pb-4">
+              <div className="flex justify-center gap-2 my-4">
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                   <button
                     key={page}

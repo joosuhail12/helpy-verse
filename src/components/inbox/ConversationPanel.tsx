@@ -36,15 +36,17 @@ const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
   };
 
   return (
-    <div className="h-full flex flex-col overflow-hidden">
-      <ConversationHeader 
-        ticket={ticket} 
-        onClose={onClose} 
-        activeUsers={activeUsers}
-      />
+    <div className="flex flex-col h-full overflow-hidden">
+      <div className="flex-none">
+        <ConversationHeader 
+          ticket={ticket} 
+          onClose={onClose} 
+          activeUsers={activeUsers}
+        />
+      </div>
       
       <div className="flex-1 flex overflow-hidden">
-        <div className="flex-1 flex flex-col bg-white overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-hidden">
           {error ? (
             <Alert variant="destructive" className="m-4">
               <AlertCircle className="h-4 w-4" />
@@ -64,15 +66,17 @@ const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
             </div>
           )}
 
-          <MessageInput
-            newMessage={newMessage}
-            onMessageChange={setNewMessage}
-            onKeyPress={handleKeyPress}
-            onSendMessage={handleSendMessage}
-            ticket={ticket}
-            isSending={isSending}
-            disabled={!!error}
-          />
+          <div className="flex-none">
+            <MessageInput
+              newMessage={newMessage}
+              onMessageChange={setNewMessage}
+              onKeyPress={handleKeyPress}
+              onSendMessage={handleSendMessage}
+              ticket={ticket}
+              isSending={isSending}
+              disabled={!!error}
+            />
+          </div>
         </div>
         
         <div className="w-80 border-l hidden lg:block overflow-y-auto">

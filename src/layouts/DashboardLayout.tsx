@@ -17,9 +17,9 @@ const LoadingSpinner = () => (
  */
 const DashboardLayout = () => {
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="h-screen flex overflow-hidden bg-background">
       <Sidebar />
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-hidden relative">
         <RouteErrorBoundary>
           <Suspense fallback={<LoadingSpinner />}>
             <Outlet />

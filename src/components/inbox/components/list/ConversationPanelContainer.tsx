@@ -17,7 +17,7 @@ const ConversationPanelContainer = ({
 
   return (
     <div className="flex flex-col h-full w-full overflow-hidden bg-white">
-      <div className="md:hidden sticky top-0 z-10 p-2 bg-white border-b">
+      <div className="md:hidden flex-none sticky top-0 z-10 p-2 bg-white border-b">
         <Button 
           variant="ghost" 
           size="sm" 

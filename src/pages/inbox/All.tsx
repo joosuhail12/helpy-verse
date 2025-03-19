@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import TicketList from '@/components/inbox/TicketList';
 import { Ticket } from '@/types/ticket';
@@ -122,7 +123,7 @@ const AllTickets = () => {
 
   return (
     <div className="h-full w-full flex flex-col overflow-hidden">
-      <div className="p-4 border-b bg-white">
+      <div className="flex-none p-4 border-b bg-white">
         <h1 className="text-xl font-semibold">All Tickets</h1>
         <p className="text-sm text-gray-500">View and manage all support tickets</p>
       </div>
