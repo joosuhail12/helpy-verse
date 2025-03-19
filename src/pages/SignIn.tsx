@@ -9,7 +9,7 @@ import { useForm } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import ErrorBoundary from "@/components/common/ErrorBoundary";
-import { getCookie } from "@/utils/helpers/helpers";
+import { isAuthenticated } from "@/utils/auth/tokenManager";
 
 export const SignIn = memo(() => {
   console.log('SignIn component rendering'); // Debug log
@@ -27,21 +27,16 @@ export const SignIn = memo(() => {
     },
   });
 
-  // Redirect if already authenticated
+  // Redirect if already authenticated - FIXED: use tokenManager's isAuthenticated
+  // instead of cookie directly to avoid conflicting checks
   useEffect(() => {
-    const token = getCookie("customerToken");
-    
-    // Only redirect if we have a token - this is the source of truth for authentication
-    if (token) {
-      console.log('User has token, redirecting to:', from); // Debug log
+    if (isAuthenticated()) {
+      console.log('User is authenticated, redirecting to:', from); // Debug log
       
-      // Try first with navigate
+      // Navigate to target location
       navigate(from, { replace: true });
-      
-      // Use a small delay and direct location change as fallback for more reliable redirect
-      setTimeout(() => {
-        window.location.href = from;
-      }, 500);
+    } else {
+      console.log('User is NOT authenticated, staying on login page');
     }
   }, [from, navigate]);
 

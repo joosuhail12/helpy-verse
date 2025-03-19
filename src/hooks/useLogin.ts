@@ -30,18 +30,8 @@ export const useLogin = (redirectPath: string = '/home') => {
     }
   }, [auth.error, loading, isSubmitting]);
 
-  // Auto-redirect if already authenticated
-  useEffect(() => {
-    const checkAuth = async () => {
-      if (isAuthenticated()) {
-        console.log('Already authenticated, redirecting to:', redirectPath);
-        // Navigate to redirect path
-        navigate(redirectPath, { replace: true });
-      }
-    };
-    
-    checkAuth();
-  }, [redirectPath, navigate]);
+  // Removed the auto-redirect from here to avoid login loop conflicts
+  // Now we only handle the redirect after successful login in handleLoginSubmit
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,13 +50,13 @@ export const useLogin = (redirectPath: string = '/home') => {
         // Create a mock token with email embedded for development
         const mockToken = `dev-token-${Date.now()}-${email.replace(/[^a-zA-Z0-9]/g, '')}`;
         
-        // Store in localStorage first
-        localStorage.setItem("token", mockToken);
+        // Always set token FIRST before updating redux state to avoid race conditions
+        const tokenSuccess = handleSetToken(mockToken);
+        console.log('Token set success:', tokenSuccess);
+        
+        // Also set these values directly
         localStorage.setItem("userId", `user-${Date.now()}`);
         localStorage.setItem("role", "ORGANIZATION_ADMIN");
-        
-        // Then try to set the cookie
-        const success = handleSetToken(mockToken);
         
         // Simulate a successful login in Redux
         dispatch({
@@ -87,15 +77,21 @@ export const useLogin = (redirectPath: string = '/home') => {
           description: 'Logged in successfully with dev credentials',
         });
         
-        // Navigate after a short delay
+        // Wait a moment for token to be properly set
         setTimeout(() => {
+          // Double-check auth status before redirecting
           if (isAuthenticated()) {
+            console.log('Development login successful, redirecting to:', redirectPath);
             navigate(redirectPath, { replace: true });
           } else {
-            // Fallback if cookies are blocked
-            window.location.href = redirectPath;
+            console.error('Login appeared successful but token was not set correctly');
+            toast({
+              title: 'Login Error',
+              description: 'Authentication succeeded but session setup failed. Please try again.',
+              variant: 'destructive',
+            });
           }
-        }, 500);
+        }, 300);
         
         setIsSubmitting(false);
         return;
@@ -113,10 +109,19 @@ export const useLogin = (redirectPath: string = '/home') => {
           description: 'Logged in successfully',
         });
         
-        // Navigate after successful login
+        // Double-check auth status before redirecting
         setTimeout(() => {
-          navigate(redirectPath, { replace: true });
-        }, 500);
+          if (isAuthenticated()) {
+            navigate(redirectPath, { replace: true });
+          } else {
+            console.error('Login appeared successful but token was not set correctly');
+            toast({
+              title: 'Login Error',
+              description: 'Authentication succeeded but session setup failed. Please try again.',
+              variant: 'destructive',
+            });
+          }
+        }, 300);
       }
     } catch (error: any) {
       console.error('Login error:', error);
