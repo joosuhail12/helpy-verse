@@ -121,19 +121,17 @@ const AllTickets = () => {
   };
 
   return (
-    <div className="h-full w-full">
-      <div className="h-full flex flex-col">
-        <div className="p-4 border-b bg-white">
-          <h1 className="text-xl font-semibold">All Tickets</h1>
-          <p className="text-sm text-gray-500">View and manage all support tickets</p>
-        </div>
-        
-        <div className="flex-1 overflow-auto">
-          <TicketList 
-            tickets={tickets} 
-            onTicketCreated={handleTicketCreated}
-          />
-        </div>
+    <div className="h-full w-full flex flex-col overflow-hidden">
+      <div className="p-4 border-b bg-white">
+        <h1 className="text-xl font-semibold">All Tickets</h1>
+        <p className="text-sm text-gray-500">View and manage all support tickets</p>
+      </div>
+      
+      <div className="flex-1 overflow-hidden">
+        <TicketList 
+          tickets={tickets} 
+          onTicketCreated={handleTicketCreated}
+        />
       </div>
     </div>
   );

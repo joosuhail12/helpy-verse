@@ -75,7 +75,7 @@ const MainContent = ({
   };
 
   return (
-    <div className={`flex flex-col transition-all duration-300 ${
+    <div className={`flex flex-col h-full overflow-hidden transition-all duration-300 ${
       selectedTicketForChat 
         ? 'w-full md:w-3/5 lg:w-2/5' 
         : 'w-full'
@@ -119,7 +119,7 @@ const MainContent = ({
         {isLoading ? (
           <LoadingState />
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-2 mb-4">
             {paginatedTickets.map((ticket) => (
               <div
                 key={ticket.id}
@@ -136,7 +136,7 @@ const MainContent = ({
                     handleTicketSelection(ticket.id);
                   }}
                   onCopyId={(id: string) => {
-                    event?.stopPropagation();
+                    e?.stopPropagation();
                     handleCopyTicketId(id);
                   }}
                 />
@@ -144,7 +144,7 @@ const MainContent = ({
             ))}
 
             {totalPages > 1 && (
-              <div className="flex justify-center gap-2 mt-4">
+              <div className="flex justify-center gap-2 my-4 pb-4">
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                   <button
                     key={page}

@@ -122,7 +122,7 @@ const TicketList = ({ tickets: initialTickets, isLoading = false, onTicketCreate
       </div>
 
       {selectedTicket && (
-        <div className="flex-1 md:w-3/5 border-l h-full">
+        <div className="flex-1 md:w-3/5 border-l h-full overflow-hidden">
           <ConversationPanelContainer 
             selectedTicket={selectedTicket} 
             onClose={handleCloseConversation} 
