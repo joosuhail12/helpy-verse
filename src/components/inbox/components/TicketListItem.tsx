@@ -14,7 +14,7 @@ interface TicketListItemProps {
   onSelect?: (e: React.MouseEvent) => void;
   viewMode?: ViewMode;
   isLoading?: boolean;
-  onCopyId?: (id: string) => void;
+  onCopyId?: (id: string, e: React.MouseEvent) => void;
 }
 
 const TicketListItem = ({
@@ -32,7 +32,7 @@ const TicketListItem = ({
 
   const handleCopyId = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onCopyId?.(ticket.id);
+    onCopyId?.(ticket.id, e);
   };
 
   // Use compact styling if viewMode is compact

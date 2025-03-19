@@ -135,8 +135,8 @@ const MainContent = ({
                     e.stopPropagation();
                     handleTicketSelection(ticket.id);
                   }}
-                  onCopyId={(id: string) => {
-                    e?.stopPropagation();
+                  onCopyId={(id: string, e: React.MouseEvent) => {
+                    e.stopPropagation();
                     handleCopyTicketId(id);
                   }}
                 />
