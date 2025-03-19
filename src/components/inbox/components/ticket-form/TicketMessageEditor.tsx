@@ -55,7 +55,7 @@ const TicketMessageEditor = ({ content, onChange }: TicketMessageEditorProps) =>
   };
 
   return (
-    <div className={cn("border rounded-lg")}>
+    <div className="rounded-md overflow-hidden">
       <MessageToolbar 
         editor={editor}
         onInsertPlaceholder={insertPlaceholder}
@@ -72,12 +72,12 @@ const TicketMessageEditor = ({ content, onChange }: TicketMessageEditorProps) =>
         setIsAttachmentSheetOpen={() => {}}
       />
       <div 
-        className="cursor-text max-h-40"
+        className="cursor-text min-h-[180px] max-h-[240px] overflow-y-auto"
         onClick={() => editor?.commands.focus()}
       >
         <EditorContent 
           editor={editor} 
-          className="p-3 min-h-[150px] overflow-y-auto prose prose-sm max-w-none focus:outline-none"
+          className="p-3 overflow-y-auto prose prose-sm max-w-none focus:outline-none"
         />
       </div>
     </div>
