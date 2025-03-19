@@ -1,6 +1,7 @@
 
 import type { Ticket } from '@/types/ticket';
 import type { Contact } from '@/types/contact';
+import type { EmailChannel } from '@/types/emailChannel';
 
 export type Recipient = Contact | { id: string; email: string; isNew?: boolean };
 
@@ -19,6 +20,7 @@ export type TicketFormValues = {
   status: 'open' | 'pending' | 'closed';
   message: string;
   assignee: AssigneeOption | null;
+  emailChannel: EmailChannel | null;
 };
 
 export interface TicketFormProps {

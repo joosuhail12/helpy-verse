@@ -7,8 +7,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { ToField } from '../to-field';
 import AssigneeSelect from './AssigneeSelect';
+import EmailChannelSelect from './EmailChannelSelect';
 import TicketMessageEditor from './TicketMessageEditor';
 import type { TicketFormProps, TicketFormValues, Recipient, AssigneeOption } from './types';
+import type { EmailChannel } from '@/types/emailChannel';
 
 const defaultValues: TicketFormValues = {
   subject: '',
@@ -17,6 +19,7 @@ const defaultValues: TicketFormValues = {
   status: 'open',
   message: '',
   assignee: null,
+  emailChannel: null,
 };
 
 const TicketForm = ({ onSubmit, initialValues = {}, isSubmitting = false }: TicketFormProps) => {
@@ -32,6 +35,10 @@ const TicketForm = ({ onSubmit, initialValues = {}, isSubmitting = false }: Tick
 
   const handleAssigneeChange = (assignee: AssigneeOption | null) => {
     setValues(prev => ({ ...prev, assignee }));
+  };
+  
+  const handleEmailChannelChange = (emailChannel: EmailChannel | null) => {
+    setValues(prev => ({ ...prev, emailChannel }));
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -54,6 +61,15 @@ const TicketForm = ({ onSubmit, initialValues = {}, isSubmitting = false }: Tick
       toast({
         title: "Validation Error",
         description: "Please fill out all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!values.emailChannel) {
+      toast({
+        title: "Validation Error",
+        description: "Please select an email channel for the outbound ticket",
         variant: "destructive",
       });
       return;
@@ -89,6 +105,11 @@ const TicketForm = ({ onSubmit, initialValues = {}, isSubmitting = false }: Tick
           onChange={handleRecipientChange}
         />
       </div>
+      
+      <EmailChannelSelect 
+        value={values.emailChannel}
+        onChange={handleEmailChannelChange}
+      />
       
       <AssigneeSelect 
         value={values.assignee}

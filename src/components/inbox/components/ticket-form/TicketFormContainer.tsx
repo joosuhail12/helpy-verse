@@ -8,6 +8,7 @@ import type { Ticket } from '@/types/ticket';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { fetchTeammates } from '@/store/slices/teammates/actions';
 import { setTeams } from '@/store/slices/teams/teamsSlice';
+import { fetchChannels } from '@/store/slices/emailChannels/emailChannelsSlice';
 import { mockTeams } from '@/store/slices/teams/mockData';
 
 interface TicketFormContainerProps {
@@ -20,10 +21,11 @@ const TicketFormContainer = ({ onTicketCreated, onCancel }: TicketFormContainerP
   const { toast } = useToast();
   const dispatch = useAppDispatch();
   
-  // Load teammates and teams data when the component mounts
+  // Load teammates, teams, and email channels data when the component mounts
   useEffect(() => {
     dispatch(fetchTeammates());
     dispatch(setTeams(mockTeams));
+    dispatch(fetchChannels());
   }, [dispatch]);
 
   const handleSubmit = async (values: TicketFormValues, callback: () => void) => {
@@ -47,7 +49,9 @@ const TicketFormContainer = ({ onTicketCreated, onCancel }: TicketFormContainerP
         priority: values.priority,
         createdAt: new Date().toISOString(),
         isUnread: true,
-        recipients: values.recipients.map(r => r.id)
+        recipients: values.recipients.map(r => r.id),
+        // Include the email channel information
+        channel: values.emailChannel?.channelName || 'Default Channel'
       };
       
       // In a real app, you would dispatch an action to add the ticket to your store
@@ -55,7 +59,7 @@ const TicketFormContainer = ({ onTicketCreated, onCancel }: TicketFormContainerP
       
       toast({
         title: "Ticket created",
-        description: `Ticket "${values.subject}" has been created successfully`,
+        description: `Ticket "${values.subject}" has been created successfully via ${values.emailChannel?.channelName}`,
       });
       
       if (onTicketCreated) {
