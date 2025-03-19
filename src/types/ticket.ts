@@ -19,4 +19,4 @@ export interface Ticket {
 // Add missing type exports
 export type SortField = 'createdAt' | 'lastMessage' | 'customer' | 'subject' | 'priority' | 'status';
 export type SortDirection = 'asc' | 'desc';
-export type ViewMode = 'list' | 'card';
+export type ViewMode = 'list' | 'card' | 'compact';

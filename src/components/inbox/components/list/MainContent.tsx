@@ -131,11 +131,11 @@ const MainContent = ({
                   viewMode={selectedTicketForChat ? 'compact' : viewMode}
                   isSelected={selectedTickets.includes(ticket.id)}
                   isLoading={!!loadingStates[ticket.id]}
-                  onSelect={(id) => {
+                  onSelect={(id: string) => {
                     event?.stopPropagation();
                     handleTicketSelection(id);
                   }}
-                  onCopyId={(id) => {
+                  onCopyId={(id: string) => {
                     event?.stopPropagation();
                     handleCopyTicketId(id);
                   }}

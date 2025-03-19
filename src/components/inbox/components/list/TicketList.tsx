@@ -48,7 +48,7 @@ const TicketList = ({ tickets: initialTickets }: TicketListProps) => {
       <div className="flex justify-between items-center mb-4 px-4 py-2">
         <div className="flex items-center gap-2">
           <SelectionControls
-            onSelectAll={handleSelectAll}
+            onSelectAll={(checked: boolean) => handleSelectAll(checked)}
             allSelected={allSelected}
             indeterminate={indeterminate}
             selectedCount={selectedTickets.length}
