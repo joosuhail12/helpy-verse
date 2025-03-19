@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import FilterBar from '../../FilterBar';
 import EmptyTicketState from '../../EmptyTicketState';
@@ -13,7 +12,7 @@ import MainContent from './MainContent';
 import ConversationPanelContainer from './ConversationPanelContainer';
 import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
-import CreateTicketDialog from '../CreateTicketDialog';
+import CreateTicketDialog from '../ticket-form';
 import type { Ticket } from '@/types/ticket';
 
 interface TicketListProps {

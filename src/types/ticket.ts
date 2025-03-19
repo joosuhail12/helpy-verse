@@ -13,5 +13,11 @@ export interface Ticket {
   isUnread?: boolean;
   hasNotification?: boolean;
   notificationType?: 'mention' | 'assignment';
-  recipients?: string[]; // Added recipients field
+  recipients?: string[]; 
 }
+
+// Add missing type exports
+export type SortField = 'createdAt' | 'lastMessage' | 'customer' | 'subject' | 'priority' | 'status';
+export type SortDirection = 'asc' | 'desc';
+export type ViewMode = 'list' | 'card';
+
