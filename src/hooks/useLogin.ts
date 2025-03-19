@@ -38,6 +38,7 @@ export const useLogin = (redirectPath: string = '/home') => {
   // Check for auth errors and show toast
   useEffect(() => {
     if (auth.error && !loading && !isSubmitting) {
+      // Fix TypeScript error with proper null checking and type assertion
       const errorMessage = typeof auth.error === 'object' && auth.error !== null && 'message' in auth.error 
         ? (auth.error as { message: string }).message 
         : String(auth.error);

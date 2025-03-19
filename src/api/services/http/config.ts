@@ -5,11 +5,8 @@
 
 // Configure API base URL from environment variables
 export const getApiBaseUrl = () => {
-  // In production, use the VITE_API_URL or REACT_APP_API_URL environment variable
-  // For development, fallback to the default from .env.development
-  const apiUrl = import.meta.env.VITE_API_URL || 
-                import.meta.env.REACT_APP_API_URL || 
-                'https://api.your-domain.com/api'; // Change from localhost to a production URL
+  // Use the provided dev-socket.pullseai.com URL 
+  const apiUrl = 'https://dev-socket.pullseai.com/api';
   
   console.log('API Base URL configured:', apiUrl);
   return apiUrl;
