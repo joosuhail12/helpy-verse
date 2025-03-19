@@ -29,6 +29,7 @@ const ContactList = ({ contacts, loading = false }: ContactListProps) => {
 
   useEffect(() => {
     if (contacts.length === 0 && !loading) {
+      console.log('No contacts found, fetching customers');
       dispatch(fetchCustomers());
     }
   }, [dispatch, contacts.length, loading]);
@@ -47,11 +48,26 @@ const ContactList = ({ contacts, loading = false }: ContactListProps) => {
   };
 
   if (loading) {
-    return <div>Loading contacts...</div>;
+    return (
+      <div className="p-6 text-center">
+        <p>Loading contacts...</p>
+      </div>
+    );
   }
 
   if (contacts.length === 0) {
-    return <div>No contacts found</div>;
+    return (
+      <div className="p-6 text-center border rounded-md">
+        <p className="text-muted-foreground">No contacts found</p>
+        <Button 
+          onClick={() => dispatch(fetchCustomers())} 
+          className="mt-4"
+          variant="outline"
+        >
+          Refresh Contacts
+        </Button>
+      </div>
+    );
   }
 
   return (

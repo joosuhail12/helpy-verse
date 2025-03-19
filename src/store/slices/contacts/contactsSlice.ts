@@ -12,14 +12,7 @@ import {
   updateContactCompany,
   deleteContact
 } from './contactsActions';
-import {
-  selectContacts,
-  selectContactsLoading,
-  selectContactsError,
-  selectContactDetails,
-  selectSelectedContact,
-  selectSelectedContacts
-} from './contactsSelectors';
+import { updateContactInState } from './contactsReducerUtils';
 
 const initialState: ContactsState = {
   items: [],
@@ -93,12 +86,14 @@ const contactsSlice = createSlice({
         if (action.payload) {
           state.contacts = action.payload;
           state.items = action.payload;
+          console.log('Customers fetched:', action.payload.length);
         }
         state.lastFetchTime = Date.now();
       })
       .addCase(fetchCustomers.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+        console.error('Failed to fetch customers:', action.payload);
       })
       
       // Handle fetchContactById action states
@@ -123,32 +118,10 @@ const contactsSlice = createSlice({
       
       // Handle updateContact action states
       .addCase(updateContact.fulfilled, (state, action) => {
-        const updatedContact = action.payload;
-        if (updatedContact && typeof updatedContact === 'object') {
-          const contactId = updatedContact.contactId as string;
-          
-          const contactIndex = state.contacts.findIndex(c => c.id === contactId);
-          if (contactIndex !== -1) {
-            // Create a new contact object with the updates
-            state.contacts[contactIndex] = {
-              ...state.contacts[contactIndex],
-              ...updatedContact
-            };
-          }
-          
-          const itemIndex = state.items.findIndex(c => c.id === contactId);
-          if (itemIndex !== -1) {
-            state.items[itemIndex] = {
-              ...state.items[itemIndex],
-              ...updatedContact
-            };
-          }
-          
-          if (state.contactDetails && state.contactDetails.id === contactId) {
-            state.contactDetails = {
-              ...state.contactDetails,
-              ...updatedContact
-            };
+        if (action.payload) {
+          const { contactId, ...updates } = action.payload as any;
+          if (contactId) {
+            updateContactInState(state, contactId, updates);
           }
         }
       })
@@ -197,6 +170,6 @@ export {
   selectContactDetails,
   selectSelectedContact,
   selectSelectedContacts
-};
+} from './contactsSelectors';
 
 export default contactsSlice.reducer;

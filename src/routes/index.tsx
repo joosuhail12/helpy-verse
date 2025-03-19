@@ -1,5 +1,5 @@
 
-import { lazy } from 'react';
+import { lazy, Suspense } from 'react';
 import { createBrowserRouter } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import RootRedirect from '../components/app/RootRedirect';
@@ -33,23 +33,23 @@ export const router = createBrowserRouter([
   },
   {
     path: '/sign-in',
-    element: <SignIn />,
+    element: <Suspense fallback={<LoadingSpinner />}><SignIn /></Suspense>,
   },
   {
     path: '/forgot-password',
-    element: <ForgotPassword />,
+    element: <Suspense fallback={<LoadingSpinner />}><ForgotPassword /></Suspense>,
   },
   {
     path: '/reset-password',
-    element: <ResetPassword />,
+    element: <Suspense fallback={<LoadingSpinner />}><ResetPassword /></Suspense>,
   },
   {
     path: '/sign-up',
-    element: <SignUp />,
+    element: <Suspense fallback={<LoadingSpinner />}><SignUp /></Suspense>,
   },
   {
     path: '/',
-    element: <DashboardLayoutComponent />,
+    element: <Suspense fallback={<LoadingSpinner />}><DashboardLayoutComponent /></Suspense>,
     children: [
       ...dashboardRoutes,
       ...inboxRoutes,
@@ -59,8 +59,11 @@ export const router = createBrowserRouter([
   },
   {
     path: '*',
-    element: <NotFound />,
+    element: <Suspense fallback={<LoadingSpinner />}><NotFound /></Suspense>,
   },
 ]);
+
+// Log the routes for debugging
+console.log('Routes initialized:', router);
 
 export default router;

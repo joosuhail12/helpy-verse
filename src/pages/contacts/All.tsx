@@ -2,7 +2,7 @@
 import { useEffect } from 'react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
-import { fetchCustomers } from '@/store/slices/contacts/contactsSlice';
+import { fetchCustomers, selectContacts, selectContactsLoading, selectContactsError } from '@/store/slices/contacts/contactsSlice';
 import ContactList from '@/components/contacts/ContactList';
 import { ContactsHeader } from '@/components/contacts/ContactsHeader';
 import { ContactListControls } from '@/components/contacts/ContactListControls';
@@ -12,10 +12,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 const AllContacts = () => {
   const dispatch = useAppDispatch();
-  const { contacts, loading, error } = useAppSelector((state) => state.contacts);
-  const workspace_id = useAppSelector((state) => state.auth.user?.data.defaultWorkspaceId);
+  const contacts = useAppSelector(selectContacts);
+  const loading = useAppSelector(selectContactsLoading);
+  const error = useAppSelector(selectContactsError);
   
   useEffect(() => {
+    console.log('Fetching customers');
     dispatch(fetchCustomers());
   }, [dispatch]);
 
@@ -23,9 +25,11 @@ const AllContacts = () => {
     return (
       <div className="p-6">
         <Card className="p-4">
-          <Skeleton className="h-4 w-80" />
-          <Skeleton className="h-4 w-60" />
-          <Skeleton className="h-8 w-full" />
+          <div className="space-y-3">
+            <Skeleton className="h-8 w-80" />
+            <Skeleton className="h-4 w-60" />
+            <Skeleton className="h-64 w-full" />
+          </div>
         </Card>
       </div>
     );
@@ -48,7 +52,7 @@ const AllContacts = () => {
     <div className="container mx-auto px-4 py-6 space-y-6">
       <ContactsHeader />
       <ContactListControls />
-      <ContactList contacts={contacts} loading={loading} />
+      <ContactList contacts={contacts || []} loading={loading} />
     </div>
   );
 };

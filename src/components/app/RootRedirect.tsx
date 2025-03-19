@@ -8,10 +8,12 @@ const RootRedirect: React.FC = () => {
   const location = useLocation();
   
   useEffect(() => {
+    console.log('Initializing app from RootRedirect');
     initializeApp();
   }, []);
 
   const token = getCookie("customerToken") || localStorage.getItem("token");
+  console.log('RootRedirect - token exists:', !!token);
   
   // If we're already on the home or sign-in page, don't redirect
   if (location.pathname === '/home' || location.pathname === '/sign-in') {

@@ -9,6 +9,7 @@ export const fetchCustomers = createAsyncThunk(
   'contacts/fetchCustomers',
   async (_, { getState, rejectWithValue }) => {
     try {
+      console.log('Fetching customers in thunk');
       const state = getState() as RootState;
       const { lastFetchTime } = state.contacts;
       
@@ -18,8 +19,10 @@ export const fetchCustomers = createAsyncThunk(
       }
       
       const response = await customerService.fetchCustomers();
+      console.log('Customer service response:', response);
       return response.data;
     } catch (error: any) {
+      console.error('Error in fetchCustomers thunk:', error);
       return rejectWithValue(error.message || 'Failed to fetch customers');
     }
   }
@@ -60,8 +63,8 @@ export const updateContact = createAsyncThunk(
   async ({ contactId, data }: { contactId: string; data: Partial<Contact> }, { rejectWithValue }) => {
     try {
       const response = await customerService.updateCustomer(contactId, data);
-      // Make sure to return both the contactId and response data
-      return { contactId, ...response };
+      // Return both the contactId and response data
+      return { contactId, ...response.data };
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to update contact');
     }
@@ -73,8 +76,8 @@ export const updateContactCompany = createAsyncThunk(
   async ({ contactId, companyId }: { contactId: string; companyId: string | null }, { rejectWithValue }) => {
     try {
       const response = await customerService.updateCustomer(contactId, { company: companyId });
-      // Make sure to return both the contactId and response data
-      return { contactId, ...response };
+      // Return both the contactId and response data
+      return { contactId, ...response.data };
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to update contact company');
     }

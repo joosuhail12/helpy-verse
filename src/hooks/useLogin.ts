@@ -30,9 +30,6 @@ export const useLogin = (redirectPath: string = '/home') => {
     }
   }, [auth.error, loading, isSubmitting]);
 
-  // Removed the auto-redirect from here to avoid login loop conflicts
-  // Now we only handle the redirect after successful login in handleLoginSubmit
-
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmitting || !email || !password) return;
@@ -57,10 +54,11 @@ export const useLogin = (redirectPath: string = '/home') => {
         // Also set these values directly
         localStorage.setItem("userId", `user-${Date.now()}`);
         localStorage.setItem("role", "ORGANIZATION_ADMIN");
+        localStorage.setItem("workspaceId", "w1");
         
         // Simulate a successful login in Redux
         dispatch({
-          type: 'auth/login/fulfilled',
+          type: 'auth/loginUser/fulfilled',
           payload: { 
             data: { 
               id: `user-${Date.now()}`,

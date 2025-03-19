@@ -22,6 +22,7 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
       // Get token directly from tokenManager
       const hasToken = isAuthenticated();
       const token = getAuthToken();
+      console.log('ProtectedRoute: Token exists:', hasToken);
       setHasValidToken(hasToken);
       
       // Ensure axios is configured with the token
