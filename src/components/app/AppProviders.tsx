@@ -14,23 +14,27 @@ interface AppProvidersProps {
   children: React.ReactNode;
 }
 
+/**
+ * Top-level providers component that wraps the entire application
+ * with necessary providers and error boundaries.
+ */
 const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
   return (
-    <Provider store={store}>
-      <AppQueryProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <AppErrorBoundary>
+    <AppErrorBoundary>
+      <Provider store={store}>
+        <AppQueryProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
             <CaslProvider>
               <AppInitializer>
                 {children}
               </AppInitializer>
             </CaslProvider>
-          </AppErrorBoundary>
-        </TooltipProvider>
-      </AppQueryProvider>
-    </Provider>
+          </TooltipProvider>
+        </AppQueryProvider>
+      </Provider>
+    </AppErrorBoundary>
   );
 };
 

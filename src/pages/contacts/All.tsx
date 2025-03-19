@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/components/ui/use-toast';
 import { AlertCircle } from 'lucide-react';
+import ContactsErrorBoundary from '@/components/contacts/ContactsErrorBoundary';
 
 const AllContacts = () => {
   const dispatch = useAppDispatch();
@@ -104,7 +105,9 @@ const AllContacts = () => {
     <div className="container mx-auto px-4 py-6 space-y-6">
       <ContactsHeader />
       <ContactListControls />
-      <ContactList contacts={contacts || []} loading={loading} />
+      <ContactsErrorBoundary>
+        <ContactList contacts={contacts || []} loading={loading} />
+      </ContactsErrorBoundary>
     </div>
   );
 };

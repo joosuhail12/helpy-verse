@@ -3,6 +3,7 @@ import { lazy, Suspense } from 'react';
 import { Navigate } from 'react-router-dom';
 import { ProtectedRoute } from '../components/auth/ProtectedRoute';
 import { Loader2 } from 'lucide-react';
+import RouteErrorBoundary from '@/components/app/RouteErrorBoundary';
 
 // Create the loading spinner component
 const LoadingSpinner = () => (
@@ -18,56 +19,37 @@ const Companies = lazy(() => import('../pages/contacts/Companies'));
 const CompanyDetail = lazy(() => import('../pages/contacts/CompanyDetail'));
 const ContactDetail = lazy(() => import('../pages/contacts/Detail'));
 
+// Helper function to wrap a component with Suspense, ProtectedRoute and RouteErrorBoundary
+const withSuspenseAndProtection = (Component) => (
+  <ProtectedRoute>
+    <RouteErrorBoundary>
+      <Suspense fallback={<LoadingSpinner />}>
+        <Component />
+      </Suspense>
+    </RouteErrorBoundary>
+  </ProtectedRoute>
+);
+
 export const dashboardRoutes = [
   {
     path: 'home',
-    element: (
-      <ProtectedRoute>
-        <Suspense fallback={<LoadingSpinner />}>
-          <Dashboard />
-        </Suspense>
-      </ProtectedRoute>
-    ),
+    element: withSuspenseAndProtection(Dashboard),
   },
   {
     path: 'home/contacts/all',
-    element: (
-      <ProtectedRoute>
-        <Suspense fallback={<LoadingSpinner />}>
-          <AllContacts />
-        </Suspense>
-      </ProtectedRoute>
-    ),
+    element: withSuspenseAndProtection(AllContacts),
   },
   {
     path: 'home/contacts/companies',
-    element: (
-      <ProtectedRoute>
-        <Suspense fallback={<LoadingSpinner />}>
-          <Companies />
-        </Suspense>
-      </ProtectedRoute>
-    ),
+    element: withSuspenseAndProtection(Companies),
   },
   {
     path: 'home/contacts/companies/:id',
-    element: (
-      <ProtectedRoute>
-        <Suspense fallback={<LoadingSpinner />}>
-          <CompanyDetail />
-        </Suspense>
-      </ProtectedRoute>
-    ),
+    element: withSuspenseAndProtection(CompanyDetail),
   },
   {
     path: 'home/contacts/:id',
-    element: (
-      <ProtectedRoute>
-        <Suspense fallback={<LoadingSpinner />}>
-          <ContactDetail />
-        </Suspense>
-      </ProtectedRoute>
-    ),
+    element: withSuspenseAndProtection(ContactDetail),
   },
   // Redirect default path to a meaningful location
   {

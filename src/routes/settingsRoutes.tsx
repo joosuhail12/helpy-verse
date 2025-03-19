@@ -1,7 +1,15 @@
 
 import { lazy, Suspense, ReactNode } from 'react';
 import { ProtectedRoute } from '../components/auth/ProtectedRoute';
-import { LoadingSpinner } from './index';
+import { Loader2 } from 'lucide-react';
+import RouteErrorBoundary from '@/components/app/RouteErrorBoundary';
+
+// Define LoadingSpinner explicitly in this file to avoid reference errors
+const LoadingSpinner = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+  </div>
+);
 
 // Lazy load settings pages
 const Settings = lazy(() => import('../pages/Settings'));
@@ -9,12 +17,14 @@ const EmailDomainsSettings = lazy(() => import('../pages/settings/email/domains/
 const EmailDomainDetail = lazy(() => import('../pages/settings/email/domain-detail/DomainDetail'));
 const EmailChannels = lazy(() => import('../pages/settings/email/channels/Channels'));
 
-// Helper to wrap components with Suspense and ProtectedRoute
+// Helper to wrap components with Suspense, ProtectedRoute and RouteErrorBoundary
 const withSuspenseAndProtection = (component: ReactNode) => (
   <ProtectedRoute>
-    <Suspense fallback={<LoadingSpinner />}>
-      {component}
-    </Suspense>
+    <RouteErrorBoundary>
+      <Suspense fallback={<LoadingSpinner />}>
+        {component}
+      </Suspense>
+    </RouteErrorBoundary>
   </ProtectedRoute>
 );
 

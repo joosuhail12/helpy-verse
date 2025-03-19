@@ -2,40 +2,50 @@
 import { lazy, Suspense, ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
 import { ProtectedRoute } from '../components/auth/ProtectedRoute';
-import { LoadingSpinner } from './index';
+import { Loader2 } from 'lucide-react';
+import RouteErrorBoundary from '@/components/app/RouteErrorBoundary';
 
-// Lazy load automation pages
-const Automation = lazy(() => import('../pages/automation').catch(() => {
-  console.error('Failed to load Automation page');
+// Define LoadingSpinner explicitly in this file to avoid reference errors
+const LoadingSpinner = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+  </div>
+);
+
+// Lazy load automation pages with error handling
+const Automation = lazy(() => import('../pages/automation').catch((err) => {
+  console.error('Failed to load Automation page:', err);
   throw new Error('Failed to load Automation page');
 }));
-const ActionCenter = lazy(() => import('../pages/automation/ActionCenter').catch(() => {
-  console.error('Failed to load ActionCenter');
+const ActionCenter = lazy(() => import('../pages/automation/ActionCenter').catch((err) => {
+  console.error('Failed to load ActionCenter:', err);
   throw new Error('Failed to load ActionCenter');
 }));
-const CreateAction = lazy(() => import('../pages/automation/CreateAction').catch(() => {
-  console.error('Failed to load CreateAction');
+const CreateAction = lazy(() => import('../pages/automation/CreateAction').catch((err) => {
+  console.error('Failed to load CreateAction:', err);
   throw new Error('Failed to load CreateAction');
 }));
-const ChatbotProfiles = lazy(() => import('../pages/automation/ChatbotProfiles').catch(() => {
-  console.error('Failed to load ChatbotProfiles');
+const ChatbotProfiles = lazy(() => import('../pages/automation/ChatbotProfiles').catch((err) => {
+  console.error('Failed to load ChatbotProfiles:', err);
   throw new Error('Failed to load ChatbotProfiles');
 }));
-const ChatbotDetail = lazy(() => import('../pages/automation/ChatbotDetail').catch(() => {
-  console.error('Failed to load ChatbotDetail');
+const ChatbotDetail = lazy(() => import('../pages/automation/ChatbotDetail').catch((err) => {
+  console.error('Failed to load ChatbotDetail:', err);
   throw new Error('Failed to load ChatbotDetail');
 }));
-const CreateChatbot = lazy(() => import('../pages/automation/CreateChatbot').catch(() => {
-  console.error('Failed to load CreateChatbot');
+const CreateChatbot = lazy(() => import('../pages/automation/CreateChatbot').catch((err) => {
+  console.error('Failed to load CreateChatbot:', err);
   throw new Error('Failed to load CreateChatbot');
 }));
 
-// Helper to wrap components with Suspense and ProtectedRoute
+// Helper to wrap components with Suspense, ProtectedRoute and RouteErrorBoundary
 const withSuspenseAndProtection = (component: ReactNode) => (
   <ProtectedRoute>
-    <Suspense fallback={<LoadingSpinner />}>
-      {component}
-    </Suspense>
+    <RouteErrorBoundary>
+      <Suspense fallback={<LoadingSpinner />}>
+        {component}
+      </Suspense>
+    </RouteErrorBoundary>
   </ProtectedRoute>
 );
 
@@ -46,23 +56,23 @@ export const automationRoutes = [
     children: [
       {
         path: 'ai/action-center',
-        element: <Suspense fallback={<LoadingSpinner />}><ActionCenter /></Suspense>,
+        element: <RouteErrorBoundary><Suspense fallback={<LoadingSpinner />}><ActionCenter /></Suspense></RouteErrorBoundary>,
       },
       {
         path: 'ai/action-center/create',
-        element: <Suspense fallback={<LoadingSpinner />}><CreateAction /></Suspense>,
+        element: <RouteErrorBoundary><Suspense fallback={<LoadingSpinner />}><CreateAction /></Suspense></RouteErrorBoundary>,
       },
       {
         path: 'ai/chatbot-profiles',
-        element: <Suspense fallback={<LoadingSpinner />}><ChatbotProfiles /></Suspense>,
+        element: <RouteErrorBoundary><Suspense fallback={<LoadingSpinner />}><ChatbotProfiles /></Suspense></RouteErrorBoundary>,
       },
       {
         path: 'ai/chatbot-profiles/create',
-        element: <Suspense fallback={<LoadingSpinner />}><CreateChatbot /></Suspense>,
+        element: <RouteErrorBoundary><Suspense fallback={<LoadingSpinner />}><CreateChatbot /></Suspense></RouteErrorBoundary>,
       },
       {
         path: 'ai/chatbot-profiles/:id',
-        element: <Suspense fallback={<LoadingSpinner />}><ChatbotDetail /></Suspense>,
+        element: <RouteErrorBoundary><Suspense fallback={<LoadingSpinner />}><ChatbotDetail /></Suspense></RouteErrorBoundary>,
       },
     ],
   },

@@ -3,6 +3,7 @@ import { lazy, Suspense } from 'react';
 import { createBrowserRouter } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import RootRedirect from '../components/app/RootRedirect';
+import RouteErrorBoundary from '@/components/app/RouteErrorBoundary';
 
 // Define LoadingSpinner first to avoid reference errors
 export const LoadingSpinner = () => (
@@ -27,6 +28,15 @@ const NotFound = lazy(() => import('../pages/NotFound'));
 // Lazy load dashboard layout
 const DashboardLayoutComponent = lazy(() => import('../layouts/DashboardLayout'));
 
+// Helper to wrap components with Suspense and RouteErrorBoundary
+const withSuspenseAndErrorHandling = (Component) => (
+  <RouteErrorBoundary>
+    <Suspense fallback={<LoadingSpinner />}>
+      <Component />
+    </Suspense>
+  </RouteErrorBoundary>
+);
+
 export const router = createBrowserRouter([
   {
     path: '/',
@@ -34,19 +44,19 @@ export const router = createBrowserRouter([
   },
   {
     path: '/sign-in',
-    element: <Suspense fallback={<LoadingSpinner />}><SignIn /></Suspense>,
+    element: withSuspenseAndErrorHandling(SignIn),
   },
   {
     path: '/forgot-password',
-    element: <Suspense fallback={<LoadingSpinner />}><ForgotPassword /></Suspense>,
+    element: withSuspenseAndErrorHandling(ForgotPassword),
   },
   {
     path: '/reset-password',
-    element: <Suspense fallback={<LoadingSpinner />}><ResetPassword /></Suspense>,
+    element: withSuspenseAndErrorHandling(ResetPassword),
   },
   {
     path: '/sign-up',
-    element: <Suspense fallback={<LoadingSpinner />}><SignUp /></Suspense>,
+    element: withSuspenseAndErrorHandling(SignUp),
   },
   {
     path: '/',
@@ -60,7 +70,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '*',
-    element: <Suspense fallback={<LoadingSpinner />}><NotFound /></Suspense>,
+    element: withSuspenseAndErrorHandling(NotFound),
   },
 ]);
 

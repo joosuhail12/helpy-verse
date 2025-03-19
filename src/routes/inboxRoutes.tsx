@@ -3,6 +3,7 @@ import { lazy, Suspense } from 'react';
 import { Navigate } from 'react-router-dom';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { Loader2 } from 'lucide-react';
+import RouteErrorBoundary from '@/components/app/RouteErrorBoundary';
 
 // Define LoadingSpinner component at the top of the file to avoid reference errors
 const LoadingSpinner = () => (
@@ -17,12 +18,14 @@ const AllInbox = lazy(() => import('../pages/inbox/All'));
 const UnassignedInbox = lazy(() => import('../pages/inbox/Unassigned'));
 const MentionsInbox = lazy(() => import('../pages/inbox/Mentions'));
 
-// Helper function to wrap a component with Suspense and ProtectedRoute
+// Helper function to wrap a component with Suspense, ProtectedRoute and RouteErrorBoundary
 const withSuspenseAndProtection = (Component) => (
   <ProtectedRoute>
-    <Suspense fallback={<LoadingSpinner />}>
-      <Component />
-    </Suspense>
+    <RouteErrorBoundary>
+      <Suspense fallback={<LoadingSpinner />}>
+        <Component />
+      </Suspense>
+    </RouteErrorBoundary>
   </ProtectedRoute>
 );
 
