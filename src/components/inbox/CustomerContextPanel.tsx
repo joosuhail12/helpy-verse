@@ -58,7 +58,7 @@ const CustomerContextPanel = ({ ticket }: CustomerContextPanelProps) => {
     <div className="h-full flex flex-col bg-white border-l transition-all duration-300 ease-in-out">
       <CustomerHeader customer={ticket.customer} company={ticket.company || ''} />
       
-      <ScrollArea className={`flex-1 ${isMobile ? 'px-2 py-3' : 'p-4'}`}>
+      <ScrollArea className={`flex-1 ${isMobile ? 'px-3 py-4' : 'p-4'}`}>
         <div className={`space-y-${isMobile ? '3' : '4'}`}>
           <CurrentTicketCard
             ticket={ticket}

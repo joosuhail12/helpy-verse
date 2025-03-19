@@ -6,7 +6,6 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { MessageSquare, ChevronUp, ChevronDown, AlertCircle, Clock } from "lucide-react";
 import { Ticket } from '@/types/ticket';
 import { InlineEditField } from "@/components/contacts/detail/InlineEditField";
-import { useState } from "react";
 import { useToast } from '@/hooks/use-toast';
 
 interface CurrentTicketCardProps {
@@ -27,21 +26,27 @@ const CurrentTicketCard = ({ ticket, isOpen, onToggle }: CurrentTicketCardProps)
   };
 
   return (
-    <Collapsible open={isOpen} onOpenChange={onToggle}>
-      <Card className="border shadow-sm">
+    <Collapsible open={isOpen} onOpenChange={onToggle} className="group">
+      <Card className="border shadow-sm hover:shadow-md transition-all duration-200">
         <CollapsibleTrigger asChild>
-          <Button variant="ghost" className="w-full flex items-center justify-between p-4 hover:bg-gray-50">
+          <Button 
+            variant="ghost" 
+            className="w-full flex items-center justify-between p-4 hover:bg-gray-50 rounded-t-lg group-data-[state=closed]:rounded-lg"
+          >
             <div className="flex items-center gap-2">
               <MessageSquare className="h-4 w-4 text-primary" />
               <span className="font-medium">Current Ticket</span>
             </div>
-            {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            {isOpen ? 
+              <ChevronUp className="h-4 w-4 opacity-70 group-hover:opacity-100 transition-opacity" /> : 
+              <ChevronDown className="h-4 w-4 opacity-70 group-hover:opacity-100 transition-opacity" />
+            }
           </Button>
         </CollapsibleTrigger>
-        <CollapsibleContent className="p-4 pt-0">
-          <div className="space-y-3 text-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-gray-500">Subject</span>
+        <CollapsibleContent className="px-4 pb-4 data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up">
+          <div className="space-y-3 text-sm divide-y divide-gray-100">
+            <div className="flex items-center justify-between py-2">
+              <span className="text-gray-500 font-medium">Subject</span>
               <InlineEditField
                 value={ticket.subject}
                 contactId={ticket.id} // Using ticket ID as a fallback
@@ -51,19 +56,19 @@ const CurrentTicketCard = ({ ticket, isOpen, onToggle }: CurrentTicketCardProps)
               />
             </div>
             
-            <div className="flex items-center justify-between">
-              <span className="text-gray-500">Status</span>
+            <div className="flex items-center justify-between py-2">
+              <span className="text-gray-500 font-medium">Status</span>
               <Badge 
                 variant={ticket.status === 'open' ? 'default' : 
                         ticket.status === 'pending' ? 'secondary' : 'outline'}
-                className={ticket.status === 'closed' ? 'bg-gray-100 text-gray-800' : ''}
+                className={`${ticket.status === 'closed' ? 'bg-gray-100 text-gray-800' : ''} transition-all`}
               >
                 {ticket.status.charAt(0).toUpperCase() + ticket.status.slice(1)}
               </Badge>
             </div>
             
-            <div className="flex items-center justify-between">
-              <span className="text-gray-500">Priority</span>
+            <div className="flex items-center justify-between py-2">
+              <span className="text-gray-500 font-medium">Priority</span>
               <InlineEditField
                 value={ticket.priority || 'normal'}
                 contactId={ticket.id}
@@ -75,15 +80,15 @@ const CurrentTicketCard = ({ ticket, isOpen, onToggle }: CurrentTicketCardProps)
               />
             </div>
             
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1">
-                <AlertCircle className="h-4 w-4 text-gray-400" />
-                <span className="text-gray-500">Source</span>
+            <div className="flex items-center justify-between py-2">
+              <div className="flex items-center gap-1.5">
+                <AlertCircle className="h-3.5 w-3.5 text-gray-400" />
+                <span className="text-gray-500 font-medium">Source</span>
               </div>
               <InlineEditField
-                value={ticket.source || 'email'}
+                value={ticket.sourceType || 'email'}
                 contactId={ticket.id}
-                field="source"
+                field="sourceType"
                 label="Source"
                 type="select"
                 options={['email', 'chat', 'phone', 'web']}
@@ -91,20 +96,22 @@ const CurrentTicketCard = ({ ticket, isOpen, onToggle }: CurrentTicketCardProps)
               />
             </div>
             
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1">
-                <Clock className="h-4 w-4 text-gray-400" />
-                <span className="text-gray-500">Created</span>
+            <div className="flex items-center justify-between py-2">
+              <div className="flex items-center gap-1.5">
+                <Clock className="h-3.5 w-3.5 text-gray-400" />
+                <span className="text-gray-500 font-medium">Created</span>
               </div>
-              <span>{new Date(ticket.createdAt).toLocaleString()}</span>
+              <span className="text-sm text-gray-700">
+                {new Date(ticket.createdAt).toLocaleString()}
+              </span>
             </div>
             
-            <div className="flex items-center justify-between">
-              <span className="text-gray-500">Assigned To</span>
+            <div className="flex items-center justify-between py-2">
+              <span className="text-gray-500 font-medium">Assigned To</span>
               <InlineEditField
-                value={ticket.assignedTo || ''}
+                value={ticket.assignee || ''}
                 contactId={ticket.id}
-                field="assignedTo"
+                field="assignee"
                 label="Assigned To"
                 onSave={(value) => handleFieldSave("Assigned To", value)}
               />
