@@ -9,7 +9,7 @@ interface CustomerHeaderProps {
 
 const CustomerHeader = ({ customer, company }: CustomerHeaderProps) => {
   return (
-    <div className="p-4 border-b">
+    <>
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold text-gray-900">Customer Details</h2>
         <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
@@ -25,7 +25,7 @@ const CustomerHeader = ({ customer, company }: CustomerHeaderProps) => {
           <p className="text-sm text-gray-500">{company}</p>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
