@@ -1,5 +1,4 @@
-
-import { HttpClient, cookieFunctions } from '@/api/services/HttpClient';
+import { HttpClient, cookieFunctions } from '@/api/services/http';
 
 // Re-export the main API client for direct usage
 const api = HttpClient.apiClient;

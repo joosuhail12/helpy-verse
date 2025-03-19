@@ -1,6 +1,6 @@
 
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { HttpClient } from "@/api/services/HttpClient";
+import { HttpClient } from "@/api/services/http";
 import { 
   encryptBase64,
   setCookie,

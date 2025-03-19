@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { fetchUserData } from '@/store/slices/authSlice';
-import { HttpClient } from '@/api/services/HttpClient';
+import { HttpClient } from '@/api/services/http';
 import { isAuthenticated, getAuthToken } from '@/utils/auth/tokenManager';
 
 export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {

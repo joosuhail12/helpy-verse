@@ -1,8 +1,9 @@
+
 // src/api/services/companiesService.ts
 
 import { FilterEntity } from '@/types/tag';
 import { SortField } from '@/types/tag';
-import { HttpClient } from './HttpClient';
+import { HttpClient } from '@/api/services/http';
 import type { Company } from '@/types/company';
 
 

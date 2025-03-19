@@ -1,6 +1,5 @@
-
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { HttpClient } from "@/api/services/HttpClient";
+import { HttpClient } from "@/api/services/http";
 
 // User data actions
 

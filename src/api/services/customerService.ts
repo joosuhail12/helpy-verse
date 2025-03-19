@@ -1,5 +1,5 @@
 import type { Contact } from '@/types/contact';
-import { HttpClient } from '@/api/services/HttpClient';
+import { HttpClient } from '@/api/services/http';
 
 const API_URL = '/customer';
 

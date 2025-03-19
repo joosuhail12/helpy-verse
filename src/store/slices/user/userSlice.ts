@@ -1,6 +1,5 @@
-
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { HttpClient } from '@/api/services/HttpClient';
+import { HttpClient } from '@/api/services/http';
 
 // Define the user state interface
 interface UserState {
