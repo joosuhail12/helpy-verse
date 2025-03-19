@@ -9,7 +9,7 @@ import ContactInfoCard from './components/ContactInfoCard';
 import CompanyInfoCard from './components/CompanyInfoCard';
 import TimelineCard from './components/TimelineCard';
 import { useCustomerRealtime, CustomerUpdate } from "./hooks/useCustomerRealtime";
-import { Broadcast } from "lucide-react";
+import { Radio, Wifi } from "lucide-react";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 
@@ -92,7 +92,7 @@ const CustomerContextPanel = ({ ticket }: CustomerContextPanelProps) => {
       
       {updates.length > 0 && (
         <div className="mx-4 mt-4 p-2 bg-green-50 rounded-md border border-green-100 flex items-center gap-2">
-          <Broadcast className="h-4 w-4 text-green-600" />
+          <Wifi className="h-4 w-4 text-green-600" />
           <span className="text-sm text-green-700">
             Receiving real-time updates 
           </span>

@@ -2,7 +2,7 @@
 /**
  * Utility functions for working with Ably real-time messaging
  */
-import { createClient, Types as AblyTypes } from 'ably';
+import * as Ably from 'ably';
 
 // Store connected channels to avoid recreating them
 let ablyClient: any = null;
@@ -31,7 +31,8 @@ export const initializeAbly = async (): Promise<any> => {
     
     const { token } = await tokenResponse.json();
     
-    ablyClient = createClient({ token: token });
+    // Use the Ably.Realtime constructor instead of createClient
+    ablyClient = new Ably.Realtime({ token: token });
     console.log('Ably client initialized');
     return ablyClient;
   } catch (error) {
