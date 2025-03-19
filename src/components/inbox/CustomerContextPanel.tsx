@@ -7,6 +7,7 @@ import CurrentTicketCard from './components/CurrentTicketCard';
 import ContactInfoCard from './components/ContactInfoCard';
 import CompanyInfoCard from './components/CompanyInfoCard';
 import TimelineCard from './components/TimelineCard';
+import CustomObjectCard from './components/CustomObjectCard';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 interface CustomerContextPanelProps {
@@ -20,7 +21,8 @@ const CustomerContextPanel = ({ ticket }: CustomerContextPanelProps) => {
     ticket: true,
     contact: true,
     company: true,
-    timeline: false
+    timeline: false,
+    customObject: false
   });
 
   const toggleSection = (section: keyof typeof openSections) => {
@@ -54,7 +56,7 @@ const CustomerContextPanel = ({ ticket }: CustomerContextPanelProps) => {
 
   return (
     <div className="h-full flex flex-col bg-white border-l transition-all duration-300 ease-in-out">
-      <CustomerHeader customer={ticket.customer} company={ticket.company} />
+      <CustomerHeader customer={ticket.customer} company={ticket.company || ''} />
       
       <ScrollArea className={`flex-1 ${isMobile ? 'px-2 py-3' : 'p-4'}`}>
         <div className={`space-y-${isMobile ? '3' : '4'}`}>
@@ -66,14 +68,22 @@ const CustomerContextPanel = ({ ticket }: CustomerContextPanelProps) => {
           
           <ContactInfoCard
             customer={ticket.customer}
-            company={ticket.company}
+            company={ticket.company || ''}
             isOpen={openSections.contact}
             onToggle={() => toggleSection('contact')}
           />
           
           <CompanyInfoCard
+            company={ticket.company || ''}
             isOpen={openSections.company}
             onToggle={() => toggleSection('company')}
+          />
+          
+          <CustomObjectCard
+            customerId={ticket.customer}
+            ticketId={ticket.id}
+            isOpen={openSections.customObject}
+            onToggle={() => toggleSection('customObject')}
           />
           
           <TimelineCard
