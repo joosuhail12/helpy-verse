@@ -2,8 +2,12 @@
 import { useEffect } from 'react';
 import { getCookie, handleSetToken } from "@/utils/helpers/helpers";
 import { HttpClient } from "@/api/services/http";
+import { logEnvironmentInfo } from "@/utils/environment";
 
 export const initializeApp = () => {
+  // Log environment information
+  logEnvironmentInfo();
+  
   const token = getCookie("customerToken") || localStorage.getItem("token");
   if (token) {
     console.log("App initialization: Found token, setting up auth");

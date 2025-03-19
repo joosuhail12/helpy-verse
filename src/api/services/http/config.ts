@@ -5,10 +5,15 @@
 
 // Configure API base URL from environment variables
 export const getApiBaseUrl = () => {
-  // Use the provided dev-socket.pullseai.com URL 
-  const apiUrl = 'https://dev-socket.pullseai.com/api';
+  // Check for development mode
+  const isDevelopment = process.env.NODE_ENV === 'development';
   
-  console.log('API Base URL configured:', apiUrl);
+  // Use local development server in development mode
+  const apiUrl = isDevelopment 
+    ? 'http://localhost:4000/api'
+    : 'https://dev-socket.pullseai.com/api';
+  
+  console.log(`API Base URL configured: ${apiUrl} (${isDevelopment ? 'development' : 'production'} mode)`);
   return apiUrl;
 };
 
