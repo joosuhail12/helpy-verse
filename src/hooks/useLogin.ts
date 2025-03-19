@@ -42,9 +42,16 @@ export const useLogin = (redirectPath: string = '/home') => {
       let errorMessage = 'Login failed. Please try again.';
       
       if (auth.error) {
-        if (typeof auth.error === 'object' && auth.error !== null && 'message' in auth.error) {
-          errorMessage = (auth.error as { message: string }).message;
-        } else if (auth.error !== null) {
+        // Use type guard to safely access properties
+        if (typeof auth.error === 'object' && auth.error !== null) {
+          // Check if error object has message property
+          if ('message' in auth.error && typeof auth.error.message === 'string') {
+            errorMessage = auth.error.message;
+          }
+        } else if (typeof auth.error === 'string') {
+          errorMessage = auth.error;
+        } else {
+          // Convert any other type to string safely
           errorMessage = String(auth.error);
         }
       }
