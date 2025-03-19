@@ -2,7 +2,7 @@
 /**
  * Token and authentication management utility functions
  */
-import { HttpClient, cookieFunctions } from "@/api/services/HttpClient";
+import { HttpClient, cookieFunctions } from "@/api/services/http";
 
 // Get cookie helpers from HttpClient to avoid circular dependencies
 const { getCookie, setCookie } = cookieFunctions;

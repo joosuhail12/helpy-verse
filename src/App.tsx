@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -10,7 +9,7 @@ import { Suspense, lazy, useEffect } from 'react';
 import CaslProvider from "./components/CaslProvider";
 import { getCookie, handleSetToken } from "./utils/helpers/helpers";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
-import { HttpClient } from "@/api/services/HttpClient";
+import { HttpClient } from "@/api/services/http";
 
 // Lazy load components with explicit chunk names
 const SignIn = lazy(() => import(/* webpackChunkName: "signin" */ "./pages/SignIn"));

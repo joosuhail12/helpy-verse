@@ -4,8 +4,11 @@
  * This maintains backward compatibility while organizing code better
  */
 
-// Re-export all utilities
-export * from '../cookies/cookieManager';
+// Re-export utilities from HTTP client cookie manager
+export { cookieFunctions as cookieFunctions } from '@/api/services/http';
+export const { getCookie, setCookie, handleLogout } = cookieFunctions;
+
+// Re-export all other utilities
 export * from '../auth/tokenManager';
 export * from '../encoding/encodingUtils';
 export * from '../performance/performanceUtils';
