@@ -1,98 +1,117 @@
 
-import React, { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { LoadingState } from '@/components/contacts/LoadingState';
-import { useAppSelector } from '@/hooks/useAppSelector';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { useAppSelector } from '@/hooks/useAppSelector';
 import { ContactDetailHeader } from '@/components/contacts/detail/ContactDetailHeader';
-import { ContactInformation } from '@/components/contacts/detail/ContactInformation';
-import { ContactTimeline } from '@/components/contacts/detail/ContactTimeline';
-import { ContactDetailSidebar } from '@/components/contacts/detail/ContactDetailSidebar';
-import { fetchContact } from '@/store/slices/contacts/contactsSlice';
+import { ContactTabs } from '@/components/contacts/detail/ContactTabs';
+import { ContactSidebar } from '@/components/contacts/detail/ContactSidebar';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
+import { Loading } from '@/components/Loading';
 import { Activity } from '@/types/activity';
-import { ContactTickets } from '@/components/contacts/detail/ContactTickets';
+import { fetchContactById } from '@/store/slices/contacts/contactsSlice';
 
-const ContactDetailPage = () => {
+const ContactDetail = () => {
   const { id } = useParams<{ id: string }>();
   const dispatch = useAppDispatch();
   
-  const {
-    selectedContact: contact,
-    loading,
-    error
-  } = useAppSelector(state => state.contacts);
-  
-  const [activities, setActivities] = useState<Activity[]>([]);
+  const contact = useAppSelector(state => state.contacts.contactDetails);
+  const loading = useAppSelector(state => state.contacts.loading);
+  const error = useAppSelector(state => state.contacts.error);
   
   useEffect(() => {
     if (id) {
-      dispatch(fetchContact(id));
+      dispatch(fetchContactById(id));
     }
-    
-    // Mock activities data
-    setActivities([
-      {
-        id: '1',
-        type: 'email',
-        description: 'Sent follow-up email',
-        content: 'Thanks for your interest in our product. Would you like to schedule a demo?',
-        date: new Date().toISOString(),
-        metadata: {
-          category: 'neutral',
-          status: 'sent'
-        }
-      },
-      {
-        id: '2',
-        type: 'note',
-        description: 'Added note',
-        content: 'Customer requested information about enterprise pricing',
-        date: new Date(Date.now() - 86400000).toISOString(),
-        metadata: {
-          category: 'positive'
-        }
-      }
-    ]);
   }, [id, dispatch]);
   
-  if (loading || !contact) {
-    return <LoadingState />;
+  // Mock activities data
+  const activities: Activity[] = [
+    {
+      id: '1',
+      type: 'email',
+      title: 'Email sent',
+      description: 'Follow-up regarding your inquiry',
+      timestamp: '2023-10-15T14:30:00Z',
+      user: 'John Agent',
+      metadata: {
+        subject: 'Follow-up regarding your inquiry',
+        content: 'Dear customer, I wanted to follow up on our conversation...'
+      }
+    },
+    {
+      id: '2',
+      type: 'note',
+      title: 'Note added',
+      description: 'Customer prefers communication via email',
+      timestamp: '2023-10-14T11:15:00Z',
+      user: 'Sarah Support',
+      metadata: {
+        content: 'Customer mentioned they prefer email communication over phone calls due to work schedule.'
+      }
+    },
+    {
+      id: '3',
+      type: 'task',
+      title: 'Task completed',
+      description: 'Send product information',
+      timestamp: '2023-10-13T09:45:00Z',
+      user: 'John Agent',
+      metadata: {
+        taskName: 'Send product information',
+        status: 'completed'
+      }
+    }
+  ];
+  
+  if (loading) {
+    return <Loading />;
   }
   
   if (error) {
-    return <div className="p-8 text-center text-red-500">{error}</div>;
+    return (
+      <div className="p-6">
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            {error}
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
   }
   
-  const contactName = `${contact.firstname} ${contact.lastname}`;
+  if (!contact) {
+    return (
+      <div className="p-6">
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Contact not found
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
   
   return (
-    <div className="container mx-auto p-6 max-w-7xl">
+    <div className="flex flex-col h-[calc(100vh-4rem)]">
       <ContactDetailHeader contact={contact} />
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
-        <div className="lg:col-span-2 space-y-8">
-          <ContactInformation 
+      <div className="flex-1 flex overflow-hidden">
+        <div className="flex-1 overflow-y-auto">
+          <ContactTabs 
             contact={contact} 
-            activities={activities} 
-          />
-          
-          <ContactTickets 
             contactId={contact.id} 
-            contactName={contactName}
-          />
-          
-          <ContactTimeline 
-            activities={activities} 
-            contactId={contact.id} 
+            contactName={`${contact.firstname} ${contact.lastname}`}
           />
         </div>
         
-        <div className="space-y-6">
-          <ContactDetailSidebar contact={contact} />
-        </div>
+        <ContactSidebar contact={contact} />
       </div>
     </div>
   );
 };
 
-export default ContactDetailPage;
+export default ContactDetail;

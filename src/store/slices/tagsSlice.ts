@@ -1,40 +1,39 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import type { Tag, SortField, FilterEntity } from "@/types/tag";
-import { tagService, type TagParams } from "@/api/services/tagService";
-import type { RootState } from "../store";
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { RootState } from '../store';
 
 interface TagsState {
-  items: Tag[];
+  tags: any[];
+  items: any[];
   total: number;
   loading: boolean;
   error: string | null;
   currentPage: number;
   itemsPerPage: number;
-  sortField: SortField;
-  sortDirection: "asc" | "desc";
-  filterEntity: FilterEntity;
+  sortField: string;
+  sortDirection: 'asc' | 'desc';
+  filterEntity: string | null;
   searchQuery: string;
   selectedTags: string[];
 }
 
 const initialState: TagsState = {
+  tags: [],
   items: [],
   total: 0,
   loading: false,
   error: null,
   currentPage: 1,
   itemsPerPage: 10,
-  sortField: "name",
-  sortDirection: "asc",
-  filterEntity: "all",
-  searchQuery: "",
+  sortField: 'name',
+  sortDirection: 'asc',
+  filterEntity: null,
+  searchQuery: '',
   selectedTags: [],
 };
 
-// ✅ Fetch tags with pagination and filtering
 export const fetchTags = createAsyncThunk(
   "tags/fetchTags",
-  async (params: TagParams) => {
+  async (params: any) => {
     const response = await tagService.fetchTags(params);
     return {
       tags: response.data.map(tag => ({
@@ -53,7 +52,6 @@ export const fetchTags = createAsyncThunk(
   }
 );
 
-// ✅ Create a new tag
 export const createTag = createAsyncThunk(
   "tags/createTag",
   async (tag: Partial<Tag>) => {
@@ -75,7 +73,6 @@ export const createTag = createAsyncThunk(
   }
 );
 
-// ✅ Update an existing tag
 export const updateTag = createAsyncThunk(
   "tags/updateTag",
   async ({ id, tag }: { id: string; tag: Partial<Tag> }) => {
@@ -97,7 +94,6 @@ export const updateTag = createAsyncThunk(
   }
 );
 
-// ✅ Delete multiple tags
 export const deleteTags = createAsyncThunk("tags/deleteTags", async (ids: string[]) => {
   await tagService.deleteTags(ids);
   return ids;
@@ -174,7 +170,6 @@ const tagsSlice = createSlice({
   },
 });
 
-// Export actions
 export const {
   setPage,
   setSort,
@@ -185,8 +180,7 @@ export const {
   clearSelectedTags,
 } = tagsSlice.actions;
 
-// Export selectors
-export const selectTags = (state: RootState) => state.tags.items;
+export const selectTagsItems = (state: RootState) => state.tags.items;
 export const selectTagsTotal = (state: RootState) => state.tags.total;
 export const selectTagsLoading = (state: RootState) => state.tags.loading;
 export const selectTagsError = (state: RootState) => state.tags.error;

@@ -74,6 +74,7 @@ export interface Content {
   content?: string;
   messageCount?: number;
   progress?: number;
+  errorMessage?: string; // Adding missing property
 }
 
 export interface ContentState {
@@ -138,4 +139,19 @@ export interface ContentPreviewProps {
   content: Content;
   onRestore: (version: ContentVersion) => void;
   currentUser: User;
+}
+
+export interface ChatbotConnectionProps {
+  content: Content;
+  onUpdate: (updates: Partial<Content>) => void;
+}
+
+export interface ContentTagsProps {
+  content: Content;
+  onUpdate: (updates: Partial<Content>) => void;
+}
+
+export interface ContentSharingProps {
+  content: Content;
+  onUpdate: (updates: Partial<Content>) => void;
 }

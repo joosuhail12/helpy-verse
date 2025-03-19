@@ -3,7 +3,7 @@ import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { fetchContent, updateContent } from '@/store/slices/content/contentSlice';
+import { fetchContents, updateContent } from '@/store/slices/content/contentSlice';
 import { ContentDetailHeader } from '@/components/automation/content/detail/ContentDetailHeader';
 import { ContentPreview } from '@/components/automation/content/detail/ContentPreview';
 import { ContentForm } from '@/components/automation/content/detail/ContentForm';
@@ -42,7 +42,8 @@ const ContentDetailPage = () => {
   
   useEffect(() => {
     if (id) {
-      dispatch(fetchContent(id));
+      // Fetch individual content by ID
+      dispatch(fetchContents({ id }));
     }
   }, [id, dispatch]);
   
@@ -60,7 +61,7 @@ const ContentDetailPage = () => {
   
   const handleUpdate = (updates: Partial<typeof content>) => {
     if (id) {
-      dispatch(updateContent({ id, updates }));
+      dispatch(updateContent({ id, data: updates }));
     }
   };
   

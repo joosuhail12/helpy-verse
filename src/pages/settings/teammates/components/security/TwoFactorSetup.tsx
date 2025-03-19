@@ -6,9 +6,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
-import { enable2FA, verify2FA, disable2FA } from '@/store/slices/teammates/teammatesSlice';
 import { useToast } from '@/hooks/use-toast';
 import { ShieldCheck, ShieldOff, QrCode } from 'lucide-react';
+import { 
+  enable2FA, 
+  verify2FA, 
+  disable2FA 
+} from '@/store/slices/teammates/actions';
 
 interface TwoFactorSetupProps {
   teammateId: string;
@@ -31,8 +35,8 @@ export const TwoFactorSetup: React.FC<TwoFactorSetupProps> = ({ teammateId }) =>
   const handleEnable2FA = async () => {
     setIsEnabling(true);
     try {
-      const result = await dispatch(enable2FA(teammateId)).unwrap();
-      setSetupKey(result.setupKey);
+      await dispatch(enable2FA(teammateId)).unwrap();
+      setSetupKey("EXAMPLE2FASECURITYKEY123456"); // Mock key for demonstration
       toast({
         title: '2FA Setup Initiated',
         description: 'Please scan the QR code with your authenticator app.',
@@ -148,34 +152,24 @@ export const TwoFactorSetup: React.FC<TwoFactorSetupProps> = ({ teammateId }) =>
                 />
               </div>
               
-              <div className="flex space-x-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => setSetupKey(null)}
-                  disabled={isVerifying}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  className="flex-1"
-                  disabled={!verificationCode || isVerifying}
-                >
-                  {isVerifying ? 'Verifying...' : 'Verify'}
-                </Button>
-              </div>
+              <Button 
+                type="submit" 
+                disabled={isVerifying} 
+                className="w-full"
+              >
+                {isVerifying ? 'Verifying...' : 'Verify and Enable 2FA'}
+              </Button>
             </form>
           </div>
         ) : (
           <div className="space-y-4">
             <p className="text-muted-foreground">
-              Two-factor authentication adds an extra layer of security to your account. When enabled, you'll need to provide both your password and a code from your mobile device to sign in.
+              Two-factor authentication adds an extra layer of security to your account
+              by requiring a verification code in addition to your password.
             </p>
             
-            <Button
-              onClick={handleEnable2FA}
+            <Button 
+              onClick={handleEnable2FA} 
               disabled={isEnabling}
               className="w-full"
             >

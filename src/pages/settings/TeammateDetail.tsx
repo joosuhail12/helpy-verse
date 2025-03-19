@@ -20,6 +20,8 @@ const TeammateDetail = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { toast } = useToast();
+  
+  // Get the teammate from the store
   const teammate = useAppSelector(state => 
     state.teammates.teammates.find(t => t.id === id)
   );
@@ -30,8 +32,14 @@ const TeammateDetail = () => {
   
   const isAdmin = currentUserRole === 'admin';
 
+  // If we have the teammate from Redux, add default permissions if missing
+  const teammateWithDefaults = teammate ? {
+    ...teammate,
+    permissions: teammate.permissions || []
+  } : null;
+
   const [isEditing, setIsEditing] = useState(false);
-  const [editedTeammate, setEditedTeammate] = useState<Teammate | null>(teammate || null);
+  const [editedTeammate, setEditedTeammate] = useState<Teammate | null>(teammateWithDefaults);
   const [isSaving, setIsSaving] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
@@ -69,7 +77,7 @@ const TeammateDetail = () => {
   const handleConfirmSave = async () => {
     setIsSaving(true);
     try {
-      await dispatch(updateTeammate(editedTeammate)).unwrap();
+      await dispatch(updateTeammate(editedTeammate as Teammate)).unwrap();
       
       toast({
         description: "Changes saved successfully.",
@@ -87,7 +95,7 @@ const TeammateDetail = () => {
   };
 
   const handleCancel = () => {
-    setEditedTeammate(teammate);
+    setEditedTeammate(teammateWithDefaults);
     setIsEditing(false);
     setValidationErrors({});
   };
@@ -127,7 +135,7 @@ const TeammateDetail = () => {
           {isAdmin && !isEditing && (
             <TeammatePermissions 
               teammateId={teammate.id}
-              currentPermissions={teammate.permissions}
+              currentPermissions={editedTeammate.permissions || []}
             />
           )}
 

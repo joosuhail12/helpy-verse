@@ -45,7 +45,14 @@ const TeamBasicInfo = ({
         />
 
         <TeamMembersSelector
-          teammates={teammates}
+          teammates={teammates.map(t => ({
+            id: t.id,
+            name: t.name,
+            email: t.email,
+            avatar: t.avatar || '',
+            role: t.role,
+            status: t.status
+          }))}
           selectedTeammates={selectedTeammates}
           onTeammateToggle={onTeammateToggle}
         />
@@ -55,4 +62,3 @@ const TeamBasicInfo = ({
 };
 
 export default TeamBasicInfo;
-
