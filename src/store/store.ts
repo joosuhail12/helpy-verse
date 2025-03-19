@@ -1,7 +1,8 @@
+
 import { configureStore } from '@reduxjs/toolkit';
 
 // Slices
-import { authReducer } from './slices/auth/authSlice';
+import authReducer from './slices/auth/authSlice';
 import tagsReducer from './slices/tagsSlice';
 import ticketsReducer from './slices/tickets/ticketsSlice';
 

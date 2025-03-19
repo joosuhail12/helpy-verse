@@ -167,4 +167,5 @@ export {
   getUserPermission
 };
 
+// Export reducer as default instead of named export
 export default authSlice.reducer;
