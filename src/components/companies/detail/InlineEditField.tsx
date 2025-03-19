@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -74,7 +75,11 @@ export const InlineEditField = ({
     setIsSaving(true);
     setError(null);
     try {
-      await dispatch(updateCompany({ id: companyId, company: { [field]: editValue } }));
+      // Fix the parameter structure to match the expected { id, updates } format
+      const updates: Record<string, any> = {};
+      updates[field] = editValue;
+      
+      await dispatch(updateCompany({ id: companyId, updates }));
       setIsEditing(false);
       toast({
         title: 'Success',
@@ -108,6 +113,7 @@ export const InlineEditField = ({
             options={options}
             isSaving={isSaving}
             inputRef={inputRef}
+            field={field}
           />
           <EditButtons
             onSave={handleSave}
@@ -133,4 +139,4 @@ export const InlineEditField = ({
       </Button>
     </div>
   );
-}; 
+};
