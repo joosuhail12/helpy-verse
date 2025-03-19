@@ -1,8 +1,9 @@
+
 import { useState } from 'react';
 import TicketList from '@/components/inbox/TicketList';
 import type { Ticket } from '@/types/ticket';
 
-const tickets: Ticket[] = [
+const initialTickets: Ticket[] = [
   {
     id: '1',
     subject: 'Cannot access my account',
@@ -114,10 +115,19 @@ const tickets: Ticket[] = [
 ] satisfies Ticket[];
 
 const AllTickets = () => {
+  const [tickets, setTickets] = useState<Ticket[]>(initialTickets);
+
+  const handleTicketCreated = (newTicket: Ticket) => {
+    setTickets(prevTickets => [newTicket, ...prevTickets]);
+  };
+
   return (
     <div className="w-full h-[calc(100vh-4rem)] flex flex-col">
       <div className="flex-1 overflow-hidden">
-        <TicketList tickets={tickets} />
+        <TicketList 
+          tickets={tickets} 
+          onTicketCreated={handleTicketCreated}
+        />
       </div>
     </div>
   );
