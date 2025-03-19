@@ -1,34 +1,35 @@
 
 import { configureStore } from '@reduxjs/toolkit';
-
-// Slices
-import authReducer from './slices/auth/authSlice';
-import tagsReducer from './slices/tagsSlice';
-import ticketsReducer from './slices/tickets/ticketsSlice';
-import contentReducer from './slices/content/contentSlice';
+import userReducer from './slices/user/userSlice';
 import contactsReducer from './slices/contacts/contactsSlice';
+import tagsReducer from './slices/tagsSlice';
 import companiesReducer from './slices/companies/companiesSlice';
-import actionsReducer from './slices/actions/actionsSlice';
-import chatbotsReducer from './slices/chatbots/chatbotsSlice';
 import contentCenterReducer from './slices/automation/contentCenterSlice';
-import cannedResponsesReducer from './slices/cannedResponses/cannedResponsesSlice';
-import emailChannelsReducer from './slices/emailChannels/emailChannelsSlice';
+import { actionsReducer } from './slices/actions/actionsSlice';
+import { chatbotsReducer } from './slices/chatbots/chatbotsSlice';
+import contentReducer from './slices/content/contentSlice';
+import { securityReducer } from './slices/securitySlice';
+import { emailChannelsReducer } from './slices/emailChannels/emailChannelsSlice';
+import { cannedResponsesReducer } from './slices/cannedResponses/cannedResponsesSlice';
 import teamsReducer from './slices/teams/teamsSlice';
-import teammatesReducer from './slices/teammates/teammatesSlice';
+import { teammatesReducer } from './slices/teammates/teammatesSlice';
+// Import directly from the authSlice file, not from the re-export
+import authReducer from './slices/auth/authSlice';
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
-    tags: tagsReducer,
-    tickets: ticketsReducer,
-    content: contentReducer,
+    user: userReducer,
     contacts: contactsReducer,
+    tags: tagsReducer,
     companies: companiesReducer,
+    contentCenter: contentCenterReducer,
     actions: actionsReducer,
     chatbots: chatbotsReducer,
-    contentCenter: contentCenterReducer,
-    cannedResponses: cannedResponsesReducer,
+    content: contentReducer,
+    security: securityReducer,
     emailChannels: emailChannelsReducer,
+    cannedResponses: cannedResponsesReducer,
     teams: teamsReducer,
     teammates: teammatesReducer,
   },

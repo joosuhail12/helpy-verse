@@ -1,22 +1,61 @@
 
-export type ContentStatus = 'completed' | 'processing' | 'queued' | 'failed' | 'active' | 'inactive' | 'draft';
-export type SortField = 'title' | 'lastUpdated' | 'messageCount';
+export type ContentStatus = 'queued' | 'processing' | 'completed' | 'failed' | 'active' | 'inactive' | 'draft';
 
-export interface Chatbot {
+export type SortField = 'title' | 'lastUpdated' | 'messageCount' | 'createdAt' | 'status' | 'category' | 'author';
+
+export type ContentType = 'snippet' | 'file' | 'website';
+
+export interface User {
   id: string;
   name: string;
+  avatar: string;
+  role?: 'admin' | 'editor' | 'viewer';
+}
+
+export interface ContentTag {
+  id: string;
+  name: string;
+  color: string;
+}
+
+export interface ContentComment {
+  id: string;
+  contentId: string;
+  text: string;
+  createdAt: string;
+  createdBy: User;
+}
+
+export interface ContentVersion {
+  id: string;
+  contentId: string;
+  content: string;
+  createdAt: string;
+  createdBy: User;
+  changes: string;
 }
 
 export interface Content {
   id: string;
   title: string;
   description: string;
-  category: string;
   status: ContentStatus;
-  messageCount: number;
-  lastUpdated: string;
+  contentType: string;
+  category: string;
   createdAt: string;
-  chatbots?: Chatbot[];
+  lastUpdated: string;
+  author: User;
+  messageCount: number;
+  chatbots?: Array<{ id: string; name: string }>;
+  tags?: ContentTag[];
+  sharedWith?: User[];
+  comments?: ContentComment[];
+  versions?: ContentVersion[];
+  lastEditedBy?: User;
+  content?: string;
+  type?: ContentType;
+  progress?: number;
+  errorMessage?: string;
 }
 
 export interface ContentState {
@@ -33,7 +72,7 @@ export interface ContentState {
     direction: 'asc' | 'desc';
   };
   filters: {
-    status: string | null;
+    status: ContentStatus | null;
     category: string | null;
     chatbot: string | null;
   };

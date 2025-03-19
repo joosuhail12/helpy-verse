@@ -60,36 +60,42 @@ const TicketList = ({ tickets = [], isLoading = false }: TicketListProps) => {
 
   return (
     <div className="flex flex-col h-full">
-      <MainContent
-        isLoading={isLoading}
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        statusFilter={statusFilter}
-        setStatusFilter={setStatusFilter}
-        priorityFilter={priorityFilter}
-        setPriorityFilter={setPriorityFilter}
-        sortField={sortField}
-        sortDirection={sortDirection}
-        viewMode={viewMode}
-        setViewMode={setViewMode}
-        selectedTickets={selectedTickets}
-        handleSort={handleSort}
-        handleTicketSelection={handleTicketSelection}
-        handleSelectAll={handleSelectAll}
-        sortedAndFilteredTickets={sortedAndFilteredTickets}
-        currentPage={currentPage}
-        setCurrentPage={setCurrentPage}
-        loadingStates={loadingStates}
-        markAsRead={markAsRead}
-        markAsUnread={markAsUnread}
-        onTicketClick={setSelectedTicketForChat}
-        selectedTicketForChat={selectedTicketForChat}
-      />
-      
-      <ConversationPanelContainer
-        selectedTicket={selectedTicketForChat}
-        onClose={() => setSelectedTicketForChat(null)}
-      />
+      <div className="flex items-center justify-between px-6 py-3 bg-white border-b">
+        <h2 className="text-xl font-semibold text-gray-900">All Tickets</h2>
+      </div>
+
+      <div className="flex flex-1 min-h-0">
+        <MainContent
+          isLoading={isLoading}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          statusFilter={statusFilter}
+          setStatusFilter={setStatusFilter}
+          priorityFilter={priorityFilter}
+          setPriorityFilter={setPriorityFilter}
+          sortField={sortField}
+          sortDirection={sortDirection}
+          viewMode={viewMode}
+          setViewMode={setViewMode}
+          selectedTickets={selectedTickets}
+          handleSort={handleSort}
+          handleTicketSelection={handleTicketSelection}
+          handleSelectAll={handleSelectAll}
+          sortedAndFilteredTickets={sortedAndFilteredTickets}
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+          loadingStates={loadingStates}
+          markAsRead={markAsRead}
+          markAsUnread={markAsUnread}
+          onTicketClick={setSelectedTicketForChat}
+          selectedTicketForChat={selectedTicketForChat}
+        />
+        
+        <ConversationPanelContainer
+          selectedTicket={selectedTicketForChat}
+          onClose={() => setSelectedTicketForChat(null)}
+        />
+      </div>
     </div>
   );
 };
