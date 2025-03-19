@@ -75,7 +75,7 @@ export const InlineEditField = ({
     setIsSaving(true);
     setError(null);
     try {
-      // Fix the parameter structure to match the expected { id, updates } format
+      // Correctly structure the updates parameter
       const updates: Record<string, any> = {};
       updates[field] = editValue;
       

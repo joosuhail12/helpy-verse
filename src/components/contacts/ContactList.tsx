@@ -14,7 +14,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import type { Contact } from '@/types/contact';
 import ContactListItem from './ContactListItem';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { selectContact, fetchCustomers } from '@/store/slices/contacts/contactsSlice';
+import { selectContact, fetchCustomers, setSelectedContacts } from '@/store/slices/contacts/contactsSlice';
 import { useAppSelector } from '@/hooks/useAppSelector';
 
 interface ContactListProps {
@@ -34,8 +34,11 @@ const ContactList = ({ contacts, loading = false }: ContactListProps) => {
   }, [dispatch, contacts.length, loading]);
 
   const handleSelectAll = (checked: boolean) => {
-    // Logic to select all contacts would go here
-    // This would dispatch an action to update Redux state
+    if (checked) {
+      dispatch(setSelectedContacts(contacts.map(contact => contact.id)));
+    } else {
+      dispatch(setSelectedContacts([]));
+    }
   };
 
   const handleContactClick = (contact: Contact) => {

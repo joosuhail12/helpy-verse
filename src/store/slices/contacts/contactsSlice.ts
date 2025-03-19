@@ -1,6 +1,7 @@
-
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { Contact } from '@/types/contact';
+import { RootState } from '../../store';
+import { CustomerService } from '@/api/services/customerService';
 import { ContactsState, CACHE_DURATION } from './types';
 
 const initialState: ContactsState = {
@@ -18,122 +19,75 @@ const initialState: ContactsState = {
     search: '',
   },
   sort: {
-    field: 'lastname',
-    direction: 'asc',
+    field: 'createdAt',
+    direction: 'desc',
   },
 };
 
-// This async thunk fetches all customers
 export const fetchCustomers = createAsyncThunk(
   'contacts/fetchCustomers',
-  async (_, { rejectWithValue }) => {
+  async (_, { getState, rejectWithValue }) => {
     try {
-      // Mock API call
-      // In a real app, you would fetch from an API
-      return mockContacts;
-    } catch (error) {
-      return rejectWithValue('Failed to fetch contacts');
-    }
-  }
-);
-
-// Mock contacts for demonstration purposes
-const mockContacts: Contact[] = [
-  {
-    id: '1',
-    firstname: 'John',
-    lastname: 'Doe',
-    email: 'john.doe@example.com',
-    phone: '+1 (555) 123-4567',
-    company: 'Acme Inc',
-    status: 'active',
-    type: 'customer',
-    tags: ['vip', 'tech'],
-    createdAt: '2023-01-15T08:30:00Z',
-    updatedAt: '2023-05-20T14:15:00Z',
-  },
-  {
-    id: '2',
-    firstname: 'Jane',
-    lastname: 'Smith',
-    email: 'jane.smith@example.com',
-    status: 'active',
-    type: 'customer',
-    tags: ['sales'],
-    createdAt: '2023-02-10T10:45:00Z',
-    updatedAt: '2023-04-18T09:20:00Z',
-  },
-  // Add more mock contacts as needed
-];
-
-export const fetchContactDetails = createAsyncThunk(
-  'contacts/fetchContactDetails',
-  async (id: string, { rejectWithValue }) => {
-    try {
-      // Mock API call for specific contact
-      const contact = mockContacts.find(c => c.id === id);
+      const state = getState() as RootState;
+      const { lastFetchTime } = state.contacts;
       
-      if (!contact) {
-        throw new Error('Contact not found');
+      if (lastFetchTime && Date.now() - lastFetchTime < CACHE_DURATION) {
+        console.log('Using cached contacts data');
+        return null;
       }
       
-      return contact;
-    } catch (error) {
-      return rejectWithValue('Failed to fetch contact details');
+      const response = await CustomerService.getAllContacts();
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to fetch customers');
     }
   }
 );
 
-// Add for backward compatibility
-export const fetchCustomerDetails = fetchContactDetails;
+export const fetchContactById = createAsyncThunk(
+  'contacts/fetchContactById',
+  async (contactId: string, { rejectWithValue }) => {
+    try {
+      const response = await CustomerService.getContactById(contactId);
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to fetch contact details');
+    }
+  }
+);
 
 export const createContact = createAsyncThunk(
   'contacts/createContact',
-  async (contact: Partial<Contact>, { rejectWithValue }) => {
+  async (contactData: Partial<Contact>, { rejectWithValue }) => {
     try {
-      // Mock API call
-      const newContact: Contact = {
-        id: Math.random().toString(36).substr(2, 9),
-        firstname: contact.firstname || '',
-        lastname: contact.lastname || '',
-        email: contact.email || '',
-        status: contact.status || 'active',
-        type: contact.type || 'customer',
-        tags: contact.tags || [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      
-      return newContact;
-    } catch (error) {
-      return rejectWithValue('Failed to create contact');
+      const response = await CustomerService.createContact(contactData);
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to create contact');
     }
   }
 );
-
-// Alias for addContact
-export const addContact = createContact;
 
 export const updateContact = createAsyncThunk(
   'contacts/updateContact',
   async ({ contactId, data }: { contactId: string; data: Partial<Contact> }, { rejectWithValue }) => {
     try {
-      // Mock API call - in a real app, you would update the contact on your backend
-      return { contactId, ...data };
-    } catch (error) {
-      return rejectWithValue('Failed to update contact');
+      const response = await CustomerService.updateContact(contactId, data);
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to update contact');
     }
   }
 );
 
-export const updateContactCompany = createAsyncThunk(
-  'contacts/updateContactCompany',
-  async ({ contactId, companyId }: { contactId: string; companyId: string | null }, { rejectWithValue }) => {
+export const deleteContact = createAsyncThunk(
+  'contacts/deleteContact',
+  async (contactId: string, { rejectWithValue }) => {
     try {
-      // Mock API call - in a real app, you would update the contact on your backend
-      return { contactId, companyId };
-    } catch (error) {
-      return rejectWithValue('Failed to update contact company');
+      await CustomerService.deleteContact(contactId);
+      return contactId;
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to delete contact');
     }
   }
 );
@@ -142,33 +96,38 @@ const contactsSlice = createSlice({
   name: 'contacts',
   initialState,
   reducers: {
-    // Add reducer for toggling contact selection
-    toggleSelectContact: (state, action: PayloadAction<string>) => {
-      const id = action.payload;
-      if (state.selectedContacts.includes(id)) {
-        state.selectedContacts = state.selectedContacts.filter(contactId => contactId !== id);
+    setFilter: (state, action: PayloadAction<{ key: keyof ContactsState['filters']; value: string | null }>) => {
+      const { key, value } = action.payload;
+      state.filters[key] = value;
+    },
+    setSortField: (state, action: PayloadAction<keyof Contact>) => {
+      if (state.sort.field === action.payload) {
+        state.sort.direction = state.sort.direction === 'asc' ? 'desc' : 'asc';
       } else {
-        state.selectedContacts.push(id);
+        state.sort.field = action.payload;
+        state.sort.direction = 'asc';
       }
+    },
+    resetFilters: (state) => {
+      state.filters = initialState.filters;
     },
     selectContact: (state, action: PayloadAction<string>) => {
-      const id = action.payload;
-      const contact = state.contacts.find(c => c.id === id);
-      state.selectedContact = contact || null;
+      state.selectedContact = state.items.find(contact => contact.id === action.payload) || null;
     },
-    // For backward compatibility
-    toggleSelection: (state, action: PayloadAction<string>) => {
-      const id = action.payload;
-      if (state.selectedContacts.includes(id)) {
-        state.selectedContacts = state.selectedContacts.filter(contactId => contactId !== id);
+    toggleSelectContact: (state, action: PayloadAction<string>) => {
+      const contactId = action.payload;
+      if (state.selectedContacts.includes(contactId)) {
+        state.selectedContacts = state.selectedContacts.filter(id => id !== contactId);
       } else {
-        state.selectedContacts.push(id);
+        state.selectedContacts.push(contactId);
       }
     },
-    // Add clearSelection action
-    clearSelection: (state) => {
+    clearSelectedContacts: (state) => {
       state.selectedContacts = [];
     },
+    setSelectedContacts: (state, action: PayloadAction<string[]>) => {
+      state.selectedContacts = action.payload;
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -186,15 +145,15 @@ const contactsSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-      .addCase(fetchContactDetails.pending, (state) => {
+      .addCase(fetchContactById.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchContactDetails.fulfilled, (state, action) => {
+      .addCase(fetchContactById.fulfilled, (state, action) => {
         state.loading = false;
         state.contactDetails = action.payload;
       })
-      .addCase(fetchContactDetails.rejected, (state, action) => {
+      .addCase(fetchContactById.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })
@@ -215,17 +174,25 @@ const contactsSlice = createSlice({
         if (state.contactDetails && state.contactDetails.id === contactId) {
           Object.assign(state.contactDetails, updates);
         }
-      })
-      .addCase(updateContactCompany.fulfilled, (state, action) => {
-        const { contactId, companyId } = action.payload;
-        const contact = state.contacts.find(c => c.id === contactId);
-        if (contact) {
-          contact.company = companyId;
-        }
       });
   },
 });
 
-export const { toggleSelectContact, selectContact, toggleSelection, clearSelection } = contactsSlice.actions;
+export const {
+  setFilter,
+  setSortField,
+  resetFilters,
+  selectContact,
+  toggleSelectContact,
+  clearSelectedContacts,
+  setSelectedContacts
+} = contactsSlice.actions;
 
 export default contactsSlice.reducer;
+
+export const selectContacts = (state: RootState) => state.contacts.items;
+export const selectContactsLoading = (state: RootState) => state.contacts.loading;
+export const selectContactsError = (state: RootState) => state.contacts.error;
+export const selectContactDetails = (state: RootState) => state.contacts.contactDetails;
+export const selectSelectedContact = (state: RootState) => state.contacts.selectedContact;
+export const selectSelectedContacts = (state: RootState) => state.contacts.selectedContacts;

@@ -131,7 +131,6 @@ const companiesSlice = createSlice({
     clearSelectedCompanies: (state) => {
       state.selectedCompanies = [];
     },
-    // Add the missing setSelectedCompanies action
     setSelectedCompanies: (state, action: PayloadAction<string[]>) => {
       state.selectedCompanies = action.payload;
     }
@@ -177,8 +176,13 @@ const companiesSlice = createSlice({
   },
 });
 
-// Make sure to export the new action
-export const { selectCompany, clearSelectedCompany, toggleCompanySelection, clearSelectedCompanies, setSelectedCompanies } = companiesSlice.actions;
+export const { 
+  selectCompany, 
+  clearSelectedCompany, 
+  toggleCompanySelection, 
+  clearSelectedCompanies, 
+  setSelectedCompanies 
+} = companiesSlice.actions;
 
 export const selectCompanies = (state: RootState) => state.companies.companies;
 export const selectCompanyLoading = (state: RootState) => state.companies.loading;
