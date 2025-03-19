@@ -131,9 +131,9 @@ const MainContent = ({
                   viewMode={selectedTicketForChat ? "compact" : viewMode}
                   isSelected={selectedTickets.includes(ticket.id)}
                   isLoading={!!loadingStates[ticket.id]}
-                  onSelect={(id: string) => {
-                    event?.stopPropagation();
-                    handleTicketSelection(id);
+                  onSelect={(e: React.MouseEvent) => {
+                    e.stopPropagation();
+                    handleTicketSelection(ticket.id);
                   }}
                   onCopyId={(id: string) => {
                     event?.stopPropagation();
