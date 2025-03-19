@@ -1,7 +1,8 @@
 
 import { useState } from 'react';
 import TicketList from '@/components/inbox/TicketList';
-import type { Ticket } from '@/types/ticket';
+import { Ticket } from '@/types/ticket';
+import { Card } from '@/components/ui/card';
 
 const initialTickets: Ticket[] = [
   {
@@ -122,13 +123,22 @@ const AllTickets = () => {
   };
 
   return (
-    <div className="w-full h-[calc(100vh-4rem)] flex flex-col">
-      <div className="flex-1 overflow-hidden">
-        <TicketList 
-          tickets={tickets} 
-          onTicketCreated={handleTicketCreated}
-        />
-      </div>
+    <div className="w-full h-[calc(100vh-4rem)] p-4">
+      <Card className="h-full overflow-hidden bg-white shadow-sm">
+        <div className="flex flex-col h-full">
+          <div className="p-4 border-b">
+            <h1 className="text-xl font-semibold">All Tickets</h1>
+            <p className="text-sm text-gray-500">View and manage all support tickets</p>
+          </div>
+          
+          <div className="flex-1 overflow-auto">
+            <TicketList 
+              tickets={tickets} 
+              onTicketCreated={handleTicketCreated}
+            />
+          </div>
+        </div>
+      </Card>
     </div>
   );
 };

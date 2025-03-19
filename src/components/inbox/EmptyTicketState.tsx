@@ -1,6 +1,6 @@
 
-import { Button } from "@/components/ui/button";
-import { Plus, InboxIcon } from "lucide-react";
+import { Inbox, Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface EmptyTicketStateProps {
   onCreateTicket: () => void;
@@ -8,13 +8,13 @@ interface EmptyTicketStateProps {
 
 const EmptyTicketState = ({ onCreateTicket }: EmptyTicketStateProps) => {
   return (
-    <div className="flex flex-col items-center justify-center h-full py-16">
-      <div className="bg-gray-50 p-6 rounded-full mb-6">
-        <InboxIcon className="h-12 w-12 text-gray-400" />
+    <div className="flex flex-col items-center justify-center p-8 text-center h-full">
+      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+        <Inbox className="h-8 w-8 text-gray-400" />
       </div>
-      <h3 className="text-xl font-medium mb-2">No tickets yet</h3>
-      <p className="text-gray-500 mb-6 text-center max-w-md">
-        Create your first ticket to start managing customer conversations.
+      <h3 className="text-lg font-medium mb-2">No tickets yet</h3>
+      <p className="text-gray-500 max-w-md mb-6">
+        When customers contact you, their tickets will appear here. You can also create tickets manually.
       </p>
       <Button onClick={onCreateTicket}>
         <Plus className="h-4 w-4 mr-2" />

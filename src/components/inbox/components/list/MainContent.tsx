@@ -23,7 +23,7 @@ interface MainContentProps {
   selectedTickets: string[];
   handleSort: (field: SortField) => void;
   handleTicketSelection: (id: string) => void;
-  handleSelectAll: () => void;
+  handleSelectAll: (checked: boolean) => void;
   sortedAndFilteredTickets: Ticket[];
   currentPage: number;
   setCurrentPage: (page: number) => void;
@@ -128,7 +128,7 @@ const MainContent = ({
               >
                 <TicketListItem
                   ticket={ticket}
-                  viewMode={selectedTicketForChat ? 'compact' : viewMode}
+                  viewMode={selectedTicketForChat ? "compact" : viewMode}
                   isSelected={selectedTickets.includes(ticket.id)}
                   isLoading={!!loadingStates[ticket.id]}
                   onSelect={(id: string) => {

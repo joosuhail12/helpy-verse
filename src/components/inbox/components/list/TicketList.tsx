@@ -5,7 +5,7 @@ import { Plus } from 'lucide-react';
 import { useTicketList } from '../../hooks/useTicketList';
 import SortingControls from '../../SortingControls';
 import ViewToggle from './ViewToggle';
-import { Ticket } from '@/types/ticket';
+import { Ticket, ViewMode } from '@/types/ticket';
 import TicketListItem from '../TicketListItem';
 import EmptyTicketState from '../../EmptyTicketState';
 import SelectionControls from '../../SelectionControls';
@@ -13,9 +13,11 @@ import { CreateTicketDialog } from '../../components/ticket-form';
 
 interface TicketListProps {
   tickets: Ticket[];
+  isLoading?: boolean;
+  onTicketCreated?: (ticket: Ticket) => void;
 }
 
-const TicketList = ({ tickets: initialTickets }: TicketListProps) => {
+const TicketList = ({ tickets: initialTickets, isLoading = false, onTicketCreated }: TicketListProps) => {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const {
     tickets,
@@ -35,6 +37,7 @@ const TicketList = ({ tickets: initialTickets }: TicketListProps) => {
   const handleTicketCreated = (newTicket: Ticket) => {
     setTickets([newTicket, ...tickets]);
     setCreateDialogOpen(false);
+    onTicketCreated?.(newTicket);
   };
 
   if (tickets.length === 0) {
@@ -48,7 +51,7 @@ const TicketList = ({ tickets: initialTickets }: TicketListProps) => {
       <div className="flex justify-between items-center mb-4 px-4 py-2">
         <div className="flex items-center gap-2">
           <SelectionControls
-            onSelectAll={(checked: boolean) => handleSelectAll(checked)}
+            onSelectAll={handleSelectAll}
             allSelected={allSelected}
             indeterminate={indeterminate}
             selectedCount={selectedTickets.length}
@@ -76,16 +79,22 @@ const TicketList = ({ tickets: initialTickets }: TicketListProps) => {
         </div>
       </div>
 
-      <div className="space-y-2">
-        {tickets.map((ticket) => (
-          <TicketListItem
-            key={ticket.id}
-            ticket={ticket}
-            isSelected={selectedTickets.includes(ticket.id)}
-            onSelect={() => handleSelectTicket(ticket.id)}
-            viewMode={viewMode}
-          />
-        ))}
+      <div className="space-y-2 px-4">
+        {isLoading ? (
+          <div className="flex justify-center items-center h-40">
+            <div className="animate-pulse">Loading tickets...</div>
+          </div>
+        ) : (
+          tickets.map((ticket) => (
+            <TicketListItem
+              key={ticket.id}
+              ticket={ticket}
+              isSelected={selectedTickets.includes(ticket.id)}
+              onSelect={() => handleSelectTicket(ticket.id)}
+              viewMode={viewMode}
+            />
+          ))
+        )}
       </div>
 
       <CreateTicketDialog
