@@ -2,8 +2,8 @@
 import React from 'react';
 import { ContactsHeader } from '@/components/contacts/ContactsHeader';
 import { ContactListControls } from '@/components/contacts/ContactListControls';
-import { ContactsErrorBoundary } from '@/components/contacts/ContactsErrorBoundary';
-import { BulkActions } from '@/components/contacts/BulkActions';
+import ContactsErrorBoundary from '@/components/contacts/ContactsErrorBoundary';
+import BulkActions from '@/components/contacts/BulkActions';
 import { ContactList } from '@/components/contacts/ContactList';
 
 const AllContactsPage = () => {

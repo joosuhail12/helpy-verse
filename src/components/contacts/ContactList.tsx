@@ -5,7 +5,7 @@ import { ContactListItem } from './ContactListItem';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { selectAllContacts, deselectAllContacts } from '@/store/slices/contacts/contactsSlice';
+import { selectAllContacts, deselectAllContacts, setCurrentPage, setItemsPerPage } from '@/store/slices/contacts/contactsSlice';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useNavigate } from 'react-router-dom';
 import type { Contact } from '@/types/contact';
@@ -36,6 +36,8 @@ export const ContactList: React.FC<ContactListProps> = ({
     selectedIds,
     currentPage,
     totalPages,
+    itemsPerPage,
+    totalItems
   } = useAppSelector((state) => state.contacts);
 
   // Filter contacts based on search query, status, and tags
@@ -106,6 +108,14 @@ export const ContactList: React.FC<ContactListProps> = ({
     navigate(`/home/contacts/${contactId}`);
   };
 
+  const handlePageChange = (page: number) => {
+    dispatch(setCurrentPage(page));
+  };
+
+  const handleItemsPerPageChange = (items: number) => {
+    dispatch(setItemsPerPage(items));
+  };
+
   if (loading) {
     return (
       <div className="space-y-4">
@@ -167,6 +177,10 @@ export const ContactList: React.FC<ContactListProps> = ({
       <ContactListPagination
         currentPage={currentPage}
         totalPages={totalPages}
+        itemsPerPage={itemsPerPage}
+        totalItems={totalItems}
+        onPageChange={handlePageChange}
+        onItemsPerPageChange={handleItemsPerPageChange}
       />
     </div>
   );
