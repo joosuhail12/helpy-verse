@@ -155,7 +155,7 @@ const TicketForm = ({ onSubmit, initialValues = {}, isSubmitting = false }: Tick
         </div>
       </div>
       
-      <div className="space-y-2 border p-4 rounded-md bg-white">
+      <div className="space-y-2">
         <Label htmlFor="message" className="text-right block mb-2 font-medium">
           Initial Message <span className="text-red-500">*</span>
         </Label>
@@ -166,7 +166,7 @@ const TicketForm = ({ onSubmit, initialValues = {}, isSubmitting = false }: Tick
           />
         </div>
         <p className="text-xs text-muted-foreground mt-2">
-          Type @ to mention customer, company, or ticket information. Use formatting tools for better readability.
+          Type @ to mention customer, company, or ticket information. Use formatting options in the toolbar for better readability.
         </p>
       </div>
       

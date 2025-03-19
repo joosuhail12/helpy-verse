@@ -1,11 +1,10 @@
 
+import React from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
-import Placeholder from '@tiptap/extension-placeholder';
-import Mention from '@tiptap/extension-mention';
-import { useEffect } from 'react';
-import { createEditorConfig } from '../../utils/editorConfig';
 import type { Ticket } from '@/types/ticket';
+import { createEditorConfig } from '../../utils/editorConfig';
+import MessageToolbar from '../MessageToolbar';
+import { cn } from "@/lib/utils";
 
 interface TicketMessageEditorProps {
   content: string;
@@ -13,6 +12,7 @@ interface TicketMessageEditorProps {
 }
 
 const TicketMessageEditor = ({ content, onChange }: TicketMessageEditorProps) => {
+  // Create a dummy ticket for the editor configuration
   const dummyTicket: Ticket = {
     id: 'new-ticket',
     subject: '',
@@ -34,42 +34,45 @@ const TicketMessageEditor = ({ content, onChange }: TicketMessageEditorProps) =>
     }, dummyTicket)
   );
 
-  useEffect(() => {
-    if (editor) {
-      editor.commands.setContent(content, false);
+  const handleEmojiSelect = (emojiData: any) => {
+    editor?.commands.insertContent(emojiData.emoji);
+  };
+
+  const insertPlaceholder = (type: 'customer' | 'company' | 'ticket') => {
+    let content = '';
+    switch (type) {
+      case 'customer':
+        content = `@Customer`;
+        break;
+      case 'company':
+        content = `@Company`;
+        break;
+      case 'ticket':
+        content = `#new-ticket`;
+        break;
     }
-  }, [editor, content]);
+    editor?.commands.insertContent(content);
+  };
 
   return (
-    <div className="border rounded-lg overflow-hidden">
-      <div className="border-b p-2 flex items-center gap-1">
-        <button 
-          onClick={() => editor?.chain().focus().toggleBold().run()}
-          className={`p-1 rounded hover:bg-gray-200 ${editor?.isActive('bold') ? 'bg-gray-200' : ''}`}
-          title="Bold"
-        >
-          <span className="font-bold">B</span>
-        </button>
-        <button 
-          onClick={() => editor?.chain().focus().toggleItalic().run()}
-          className={`p-1 rounded hover:bg-gray-200 ${editor?.isActive('italic') ? 'bg-gray-200' : ''}`}
-          title="Italic"
-        >
-          <span className="italic">I</span>
-        </button>
-        <button 
-          onClick={() => editor?.chain().focus().toggleBulletList().run()}
-          className={`p-1 rounded hover:bg-gray-200 ${editor?.isActive('bulletList') ? 'bg-gray-200' : ''}`}
-          title="Bullet List"
-        >
-          • List
-        </button>
-        <div className="p-1 text-gray-500 text-sm">
-          Use @ to mention customer, company, or ticket details
-        </div>
-      </div>
+    <div className={cn("border rounded-lg")}>
+      <MessageToolbar 
+        editor={editor}
+        onInsertPlaceholder={insertPlaceholder}
+        ticket={dummyTicket}
+        disabled={false}
+        isInternalNote={false}
+        setIsInternalNote={() => {}}
+        onEmojiSelect={handleEmojiSelect}
+        onFilesAdded={() => {}}
+        uploadProgress={{}}
+        onRemoveFile={() => {}}
+        files={[]}
+        isAttachmentSheetOpen={false}
+        setIsAttachmentSheetOpen={() => {}}
+      />
       <div 
-        className="cursor-text"
+        className="cursor-text max-h-40"
         onClick={() => editor?.commands.focus()}
       >
         <EditorContent 
