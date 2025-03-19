@@ -1,5 +1,5 @@
 
-export type ActivityType = 'email' | 'note' | 'call' | 'meeting' | 'message';
+export type ActivityType = 'email' | 'note' | 'call' | 'meeting' | 'message' | 'task';
 
 export interface ActivityMetadata {
   subject?: string;

@@ -1,8 +1,8 @@
 
 import { ChevronLeft, ChevronRight, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import MainNavigation from './MainNavigation';
 import SubNavigation from './SubNavigation';
 import { mainNavItems, subNavItems } from './navigationConfig';
@@ -12,10 +12,44 @@ import { toast } from '@/components/ui/use-toast';
 
 const Sidebar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useAppDispatch();
-  const [activeMainNav, setActiveMainNav] = useState(window.location.pathname.split('/')[1] || 'home');
+  
+  // Initialize activeMainNav based on the current location
+  const [activeMainNav, setActiveMainNav] = useState(() => {
+    const path = location.pathname;
+    
+    // Check if the path starts with /home/... and extract the main nav
+    if (path.startsWith('/home/')) {
+      const segment = path.split('/')[2];
+      if (mainNavItems.some(item => item.id === segment)) {
+        return segment;
+      }
+    } else if (path.startsWith('/inbox')) {
+      return 'inbox';
+    }
+    
+    return 'home';
+  });
+
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const [isSecondPanelCollapsed, setIsSecondPanelCollapsed] = useState(false);
+
+  // Update activeMainNav when location changes
+  useEffect(() => {
+    const path = location.pathname;
+    
+    if (path.startsWith('/home/')) {
+      const segment = path.split('/')[2];
+      if (mainNavItems.some(item => item.id === segment)) {
+        setActiveMainNav(segment);
+      }
+    } else if (path.startsWith('/inbox')) {
+      setActiveMainNav('inbox');
+    } else if (path === '/home') {
+      setActiveMainNav('home');
+    }
+  }, [location.pathname]);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -40,7 +74,7 @@ const Sidebar = () => {
 
   // Add debug logging
   console.log('Current auth state:', localStorage.getItem('auth'));
-  console.log('Current path:', window.location.pathname);
+  console.log('Current path:', location.pathname);
   console.log('Active main nav:', activeMainNav);
 
   return (
@@ -90,4 +124,3 @@ const Sidebar = () => {
 };
 
 export default Sidebar;
-

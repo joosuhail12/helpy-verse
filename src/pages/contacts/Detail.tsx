@@ -1,113 +1,101 @@
 
-import { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
+import { fetchContactById } from '@/store/slices/contacts/contactsSlice';
 import { ContactDetailHeader } from '@/components/contacts/detail/ContactDetailHeader';
 import { ContactTabs } from '@/components/contacts/detail/ContactTabs';
 import { ContactSidebar } from '@/components/contacts/detail/ContactSidebar';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
+import { Contact } from '@/types/contact';
+import { Activity } from '@/types/activity';
 import { Loading } from '@/components/Loading';
-import { fetchContactById } from '@/store/slices/contacts/contactsSlice';
-import type { Activity, ActivityType } from '@/types/activity';
 
 const ContactDetail = () => {
   const { id } = useParams<{ id: string }>();
   const dispatch = useAppDispatch();
-  
-  const contact = useAppSelector(state => state.contacts.contactDetails);
-  const loading = useAppSelector(state => state.contacts.loading);
-  const error = useAppSelector(state => state.contacts.error);
-  
+  const { contacts, loading, error } = useAppSelector((state) => state.contacts);
+  const [contact, setContact] = useState<Contact | null>(null);
+  const [activities, setActivities] = useState<Activity[]>([]);
+
   useEffect(() => {
     if (id) {
       dispatch(fetchContactById(id));
     }
-  }, [id, dispatch]);
-  
-  // Mock activities data
-  const activities: Activity[] = [
-    {
-      id: '1',
-      type: 'email' as ActivityType,
-      title: 'Email sent',
-      description: 'Follow-up regarding your inquiry',
-      timestamp: '2023-10-15T14:30:00Z',
-      user: 'John Agent',
-      metadata: {
-        subject: 'Follow-up regarding your inquiry',
-        content: 'Dear customer, I wanted to follow up on our conversation...'
-      }
-    },
-    {
-      id: '2',
-      type: 'note' as ActivityType,
-      title: 'Note added',
-      description: 'Customer prefers communication via email',
-      timestamp: '2023-10-14T11:15:00Z',
-      user: 'Sarah Support',
-      metadata: {
-        content: 'Customer mentioned they prefer email communication over phone calls due to work schedule.'
-      }
-    },
-    {
-      id: '3',
-      type: 'call' as ActivityType, // Changed from 'task' to valid ActivityType
-      title: 'Task completed',
-      description: 'Send product information',
-      timestamp: '2023-10-13T09:45:00Z',
-      user: 'John Agent',
-      metadata: {
-        taskName: 'Send product information',
-        status: 'completed'
+  }, [dispatch, id]);
+
+  useEffect(() => {
+    if (!loading && contacts) {
+      const foundContact = contacts.find(c => c.id === id);
+      if (foundContact) {
+        setContact(foundContact);
+
+        // Sample activities - would typically come from an API
+        const sampleActivities: Activity[] = [
+          {
+            id: '1',
+            type: 'email',
+            title: 'Support Follow-up',
+            description: 'Followed up on previous ticket regarding account access',
+            timestamp: new Date().toISOString(),
+            user: 'Support Agent',
+            metadata: {
+              subject: 'Re: Account Access Issue'
+            }
+          },
+          {
+            id: '2',
+            type: 'note',
+            title: 'Customer Call Notes',
+            description: 'Customer mentioned they are considering upgrading their plan',
+            timestamp: new Date(Date.now() - 86400000).toISOString(),
+            user: 'Sales Rep',
+            metadata: {
+              content: 'Interested in Enterprise features. Follow up next week.'
+            }
+          },
+          {
+            id: '3',
+            type: 'task',
+            title: 'Schedule Demo',
+            description: 'Schedule product demo for new features',
+            timestamp: new Date(Date.now() - 172800000).toISOString(),
+            user: 'Account Manager',
+            metadata: {
+              taskName: 'Product Demo',
+              status: 'Pending'
+            }
+          }
+        ];
+        
+        setActivities(sampleActivities);
       }
     }
-  ];
-  
+  }, [contacts, loading, id]);
+
   if (loading) {
     return <Loading />;
   }
-  
+
   if (error) {
-    return (
-      <div className="p-6">
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            {error}
-          </AlertDescription>
-        </Alert>
-      </div>
-    );
+    return <div className="p-6">Error loading contact: {error}</div>;
   }
-  
+
   if (!contact) {
-    return (
-      <div className="p-6">
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            Contact not found
-          </AlertDescription>
-        </Alert>
-      </div>
-    );
+    return <div className="p-6">Contact not found</div>;
   }
-  
+
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)]">
+    <div className="container mx-auto">
       <ContactDetailHeader contact={contact} />
-      
-      <div className="flex-1 flex overflow-hidden">
-        <div className="flex-1 overflow-y-auto">
+      <div className="flex flex-col lg:flex-row gap-6">
+        <div className="flex-1">
           <ContactTabs 
             contact={contact} 
             contactId={contact.id} 
-            contactName={`${contact.firstname} ${contact.lastname}`}
+            contactName={contact.name} 
           />
         </div>
-        
         <ContactSidebar contact={contact} />
       </div>
     </div>
