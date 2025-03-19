@@ -1,90 +1,81 @@
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Building,
-  Users,
-  Headphones,
-  ShoppingCart,
-  MessageSquare,
-  LifeBuoy,
-  Zap,
-  Briefcase,
-  Globe,
-  Star,
-  Bell,
-  Check,
-  ChevronDown,
-} from "lucide-react";
-import { TeamIconPickerProps } from '@/types/team';
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { 
+  Headphones, DollarSign, ShoppingCart, BarChart, Users, MessageSquare, 
+  Shield, Zap, FileText, Heart, Coffee, PenTool, User, 
+  CreditCard, Package, Globe, Inbox, Book, Camera
+} from 'lucide-react';
 
-export const TeamIconPicker = ({ selectedIcon, setSelectedIcon, onIconSelect }: TeamIconPickerProps) => {
+interface TeamIconPickerProps {
+  selectedIcon: string;
+  onIconSelect: (icon: string) => void;
+}
+
+export const TeamIconPicker = ({ selectedIcon, onIconSelect }: TeamIconPickerProps) => {
   const [open, setOpen] = useState(false);
 
   const icons = [
-    { name: 'users', icon: <Users className="h-5 w-5" /> },
-    { name: 'building', icon: <Building className="h-5 w-5" /> },
-    { name: 'headphones', icon: <Headphones className="h-5 w-5" /> },
-    { name: 'cart', icon: <ShoppingCart className="h-5 w-5" /> },
-    { name: 'message', icon: <MessageSquare className="h-5 w-5" /> },
-    { name: 'support', icon: <LifeBuoy className="h-5 w-5" /> },
-    { name: 'zap', icon: <Zap className="h-5 w-5" /> },
-    { name: 'briefcase', icon: <Briefcase className="h-5 w-5" /> },
-    { name: 'globe', icon: <Globe className="h-5 w-5" /> },
-    { name: 'star', icon: <Star className="h-5 w-5" /> },
-    { name: 'bell', icon: <Bell className="h-5 w-5" /> },
+    { name: 'headphones', component: <Headphones className="h-4 w-4" /> },
+    { name: 'dollar-sign', component: <DollarSign className="h-4 w-4" /> },
+    { name: 'shopping-cart', component: <ShoppingCart className="h-4 w-4" /> },
+    { name: 'bar-chart', component: <BarChart className="h-4 w-4" /> },
+    { name: 'users', component: <Users className="h-4 w-4" /> },
+    { name: 'message-square', component: <MessageSquare className="h-4 w-4" /> },
+    { name: 'shield', component: <Shield className="h-4 w-4" /> },
+    { name: 'zap', component: <Zap className="h-4 w-4" /> },
+    { name: 'file-text', component: <FileText className="h-4 w-4" /> },
+    { name: 'heart', component: <Heart className="h-4 w-4" /> },
+    { name: 'coffee', component: <Coffee className="h-4 w-4" /> },
+    { name: 'pen-tool', component: <PenTool className="h-4 w-4" /> },
+    { name: 'user', component: <User className="h-4 w-4" /> },
+    { name: 'credit-card', component: <CreditCard className="h-4 w-4" /> },
+    { name: 'package', component: <Package className="h-4 w-4" /> },
+    { name: 'globe', component: <Globe className="h-4 w-4" /> },
+    { name: 'inbox', component: <Inbox className="h-4 w-4" /> },
+    { name: 'book', component: <Book className="h-4 w-4" /> },
+    { name: 'camera', component: <Camera className="h-4 w-4" /> },
   ];
 
-  const selectedIconObj = icons.find(i => i.name === selectedIcon) || icons[0];
-
-  const handleSelectIcon = (iconName: string) => {
-    setSelectedIcon(iconName);
-    if (onIconSelect) {
-      onIconSelect(iconName);
-    }
-    setOpen(false);
+  const getIconComponent = (iconName: string) => {
+    const icon = icons.find((i) => i.name === iconName);
+    return icon ? icon.component : <Users className="h-4 w-4" />;
   };
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className="w-full justify-between"
+        <Button 
+          variant="outline" 
+          className="w-full justify-start text-left font-normal"
         >
           <div className="flex items-center">
-            {selectedIconObj.icon}
-            <span className="ml-2 capitalize">{selectedIcon || 'Select an icon'}</span>
+            <div className="mr-2">
+              {selectedIcon ? getIconComponent(selectedIcon) : <Users className="h-4 w-4" />}
+            </div>
+            <span>{selectedIcon ? selectedIcon : 'Select an icon'}</span>
           </div>
-          <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-0">
+      <PopoverContent className="p-0" align="start" side="bottom">
         <Command>
           <CommandInput placeholder="Search icons..." />
-          <CommandEmpty>No icon found.</CommandEmpty>
           <CommandList>
+            <CommandEmpty>No icons found.</CommandEmpty>
             <CommandGroup>
-              {icons.map((item) => (
+              {icons.map((icon) => (
                 <CommandItem
-                  key={item.name}
-                  value={item.name}
-                  onSelect={() => handleSelectIcon(item.name)}
-                  className="flex items-center"
+                  key={icon.name}
+                  value={icon.name}
+                  onSelect={(value) => {
+                    onIconSelect(value);
+                    setOpen(false);
+                  }}
                 >
-                  {item.icon}
-                  <span className="ml-2 capitalize">{item.name}</span>
-                  {selectedIcon === item.name && (
-                    <Check className="ml-auto h-4 w-4" />
-                  )}
+                  <div className="mr-2">{icon.component}</div>
+                  <span>{icon.name}</span>
                 </CommandItem>
               ))}
             </CommandGroup>

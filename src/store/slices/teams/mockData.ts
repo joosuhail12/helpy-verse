@@ -1,5 +1,5 @@
 
-import { Team } from '@/types/team';
+import { Team, TeamMember, TeamChannel, Holiday } from '@/types/team';
 
 export const mockTeams: Team[] = [
   {
@@ -28,9 +28,11 @@ export const mockTeams: Team[] = [
       }
     ],
     officeHours: {
-      days: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
-      startTime: '09:00',
-      endTime: '17:00',
+      monday: [{ start: '09:00', end: '17:00' }],
+      tuesday: [{ start: '09:00', end: '17:00' }],
+      wednesday: [{ start: '09:00', end: '17:00' }],
+      thursday: [{ start: '09:00', end: '17:00' }],
+      friday: [{ start: '09:00', end: '17:00' }],
       timezone: 'America/New_York'
     },
     channels: [
@@ -56,9 +58,9 @@ export const mockTeams: Team[] = [
       }
     ],
     holidays: [
-      '2024-01-01',
-      '2024-07-04',
-      '2024-12-25'
+      { date: '2024-01-01', name: 'New Year\'s Day' },
+      { date: '2024-07-04', name: 'Independence Day' },
+      { date: '2024-12-25', name: 'Christmas Day' }
     ]
   },
   {
@@ -82,9 +84,11 @@ export const mockTeams: Team[] = [
       }
     ],
     officeHours: {
-      days: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
-      startTime: '08:00',
-      endTime: '18:00',
+      monday: [{ start: '08:00', end: '18:00' }],
+      tuesday: [{ start: '08:00', end: '18:00' }],
+      wednesday: [{ start: '08:00', end: '18:00' }],
+      thursday: [{ start: '08:00', end: '18:00' }],
+      friday: [{ start: '08:00', end: '18:00' }],
       timezone: 'America/Chicago'
     },
     channels: [
@@ -100,9 +104,9 @@ export const mockTeams: Team[] = [
       }
     ],
     holidays: [
-      '2024-01-01',
-      '2024-07-04',
-      '2024-12-25'
+      { date: '2024-01-01', name: 'New Year\'s Day' },
+      { date: '2024-07-04', name: 'Independence Day' },
+      { date: '2024-12-25', name: 'Christmas Day' }
     ]
   }
 ];

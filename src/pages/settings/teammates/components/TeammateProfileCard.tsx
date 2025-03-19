@@ -178,7 +178,7 @@ const TeammateProfileCard = ({
             <span className="text-sm font-medium">Last Active</span>
             <div className="flex items-center gap-2 text-sm text-gray-500">
               <Clock className="h-4 w-4" />
-              {format(new Date(teammate.lastActive), 'PPpp')}
+              {format(new Date(teammate.lastActive || new Date()), 'PPpp')}
             </div>
           </div>
           <Separator />

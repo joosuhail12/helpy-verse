@@ -1,7 +1,7 @@
 
 import { configureStore, combineReducers } from '@reduxjs/toolkit';
 import authReducer from './slices/auth/authSlice';
-// Import tags from tagsSlice
+import tagsReducer from './slices/tags/tagsSlice';
 import ticketsReducer from './slices/tickets/ticketsSlice';
 import contentReducer from './slices/content/contentSlice';
 import contactsReducer from './slices/contacts/contactsSlice';
@@ -13,11 +13,7 @@ import { cannedResponsesReducer } from './slices/cannedResponses/cannedResponses
 import { emailChannelsReducer } from './slices/emailChannels/emailChannelsSlice';
 import teamsReducer from './slices/teams/teamsSlice';
 import teammatesReducer from './slices/teammates/teammatesSlice';
-
-// Create a temporary tags reducer until we have the actual implementation
-const tagsReducer = (state = { tags: [] }, action: any) => {
-  return state;
-};
+import activitiesReducer from './slices/activities/activitiesSlice';
 
 const rootReducer = combineReducers({
   auth: authReducer,
@@ -33,6 +29,7 @@ const rootReducer = combineReducers({
   emailChannels: emailChannelsReducer,
   teams: teamsReducer,
   teammates: teammatesReducer,
+  activities: activitiesReducer,
 });
 
 export const store = configureStore({

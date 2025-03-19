@@ -30,14 +30,14 @@ const CreateTeam = () => {
     maxOpenTickets?: number;
     maxActiveChats?: number;
   }>({});
-  const [officeHours, setOfficeHours] = useState<{ [key in DayOfWeek]: TimeSlot[] }>({
-    monday: [{ start: '09:00', end: '17:00' }],
-    tuesday: [{ start: '09:00', end: '17:00' }],
-    wednesday: [{ start: '09:00', end: '17:00' }],
-    thursday: [{ start: '09:00', end: '17:00' }],
-    friday: [{ start: '09:00', end: '17:00' }],
-    saturday: [],
-    sunday: []
+  const [officeHours, setOfficeHours] = useState<{ [key in DayOfWeek]?: TimeSlot[] }>({
+    [DayOfWeek.Monday]: [{ start: '09:00', end: '17:00' }],
+    [DayOfWeek.Tuesday]: [{ start: '09:00', end: '17:00' }],
+    [DayOfWeek.Wednesday]: [{ start: '09:00', end: '17:00' }],
+    [DayOfWeek.Thursday]: [{ start: '09:00', end: '17:00' }],
+    [DayOfWeek.Friday]: [{ start: '09:00', end: '17:00' }],
+    [DayOfWeek.Saturday]: [],
+    [DayOfWeek.Sunday]: []
   });
   const [selectedHolidays, setSelectedHolidays] = useState<string[]>([]);
 
@@ -148,7 +148,16 @@ const CreateTeam = () => {
 
         <TeamAvailabilitySection
           officeHours={officeHours}
-          onOfficeHoursChange={setOfficeHours}
+          onOfficeHoursChange={(hours) => {
+            // Transform hours to ensure all keys have arrays
+            const updatedHours: { [key in DayOfWeek]?: TimeSlot[] } = { ...hours };
+            Object.values(DayOfWeek).forEach(day => {
+              if (!updatedHours[day]) {
+                updatedHours[day] = [];
+              }
+            });
+            setOfficeHours(updatedHours);
+          }}
           selectedHolidays={selectedHolidays}
           onHolidaysChange={setSelectedHolidays}
         />
@@ -174,4 +183,3 @@ const CreateTeam = () => {
 };
 
 export default CreateTeam;
-

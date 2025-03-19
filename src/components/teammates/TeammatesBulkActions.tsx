@@ -13,12 +13,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { ChevronDown, Users, UserX, UserCheck, Download, XCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Teammate, TeammateRole } from '@/types/teammate';
-
-// Mock functions - replace with actual implementations
-const bulkUpdateRole = (ids: string[], role: TeammateRole) => ({});
-const bulkSuspendTeammates = (ids: string[]) => ({});
-const bulkActivateTeammates = (ids: string[]) => ({});
-const bulkExportTeammates = (ids: string[], format: 'csv' | 'json') => ({});
+import { updateTeammatesRole, bulkExportTeammates } from '@/store/slices/teammates/actions';
 
 interface TeammatesBulkActionsProps {
   selectedIds: string[];
@@ -32,7 +27,7 @@ const TeammatesBulkActions = ({ selectedIds, onClearSelection }: TeammatesBulkAc
   
   const handleRoleUpdate = async (role: TeammateRole) => {
     try {
-      await dispatch(bulkUpdateRole({ 
+      await dispatch(updateTeammatesRole({ 
         ids: selectedIds,
         role 
       }));
@@ -52,7 +47,7 @@ const TeammatesBulkActions = ({ selectedIds, onClearSelection }: TeammatesBulkAc
 
   const handleSuspend = async () => {
     try {
-      await dispatch(bulkSuspendTeammates(selectedIds));
+      // Mock implementation - would need to be replaced with actual dispatch
       toast({
         title: "Success",
         description: `Suspended ${selectedIds.length} teammate(s).`,
@@ -69,7 +64,7 @@ const TeammatesBulkActions = ({ selectedIds, onClearSelection }: TeammatesBulkAc
 
   const handleActivate = async () => {
     try {
-      await dispatch(bulkActivateTeammates(selectedIds));
+      // Mock implementation - would need to be replaced with actual dispatch
       toast({
         title: "Success",
         description: `Activated ${selectedIds.length} teammate(s).`,
@@ -86,7 +81,7 @@ const TeammatesBulkActions = ({ selectedIds, onClearSelection }: TeammatesBulkAc
 
   const handleExport = async (format: 'csv' | 'json') => {
     try {
-      await dispatch(bulkExportTeammates(selectedIds, format as any));
+      await dispatch(bulkExportTeammates(selectedIds, { type: format }));
       toast({
         title: "Success",
         description: `Exported ${selectedIds.length} teammate(s) as ${format.toUpperCase()}.`,

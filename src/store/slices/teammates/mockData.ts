@@ -10,10 +10,11 @@ export const mockTeammates: Teammate[] = [
     status: 'active',
     lastActive: new Date().toISOString(),
     createdAt: '2024-01-01T00:00:00.000Z',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=John',
+    updatedAt: '2024-01-01T00:00:00.000Z',
     permissions: ['manage_tickets', 'view_reports'],
     teams: [],
-    is2FAEnabled: false
+    is2FAEnabled: false,
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=John'
   }
 ];
 
@@ -35,6 +36,7 @@ export const mockActivityLogs: ActivityLog[] = [
 export const mockAssignments: TeamAssignment[] = [
   {
     id: '1',
+    teamId: '1',
     teamName: 'Customer Support',
     role: 'Team Lead',
     status: 'active',

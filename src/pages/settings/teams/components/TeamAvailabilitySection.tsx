@@ -18,6 +18,11 @@ const TeamAvailabilitySection = ({
   selectedHolidays,
   onHolidaysChange,
 }: TeamAvailabilitySectionProps) => {
+  // Create wrapper function to adapt between string[] and Holiday[]
+  const handleHolidaysChange = (holidays: string[]) => {
+    onHolidaysChange(holidays);
+  };
+
   return (
     <Card className="p-6">
       <h2 className="text-lg font-semibold mb-6">Team Availability</h2>
@@ -29,7 +34,7 @@ const TeamAvailabilitySection = ({
         <Separator className="my-8" />
         <TeamHolidaySelector
           selectedHolidays={selectedHolidays}
-          onHolidaysChange={onHolidaysChange}
+          onHolidaysChange={handleHolidaysChange}
         />
       </div>
     </Card>

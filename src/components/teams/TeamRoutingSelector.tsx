@@ -1,108 +1,133 @@
 
-import React from 'react';
+import { useState } from 'react';
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { TeamRoutingSelectorProps } from '@/types/team';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
-export const TeamRoutingSelector = ({
+interface TeamRoutingSelectorProps {
+  selectedType: 'manual' | 'round-robin' | 'load-balanced';
+  onTypeSelect: (type: 'manual' | 'round-robin' | 'load-balanced') => void;
+  limits: {
+    maxTickets?: number;
+    maxOpenTickets?: number;
+    maxActiveChats?: number;
+  };
+  onLimitsChange: (limits: {
+    maxTickets?: number;
+    maxOpenTickets?: number;
+    maxActiveChats?: number;
+  }) => void;
+}
+
+export function TeamRoutingSelector({
   selectedType,
   onTypeSelect,
   limits,
-  onLimitsChange,
-}: TeamRoutingSelectorProps) => {
-  const handleLimitChange = (key: keyof typeof limits, value: string) => {
-    const newLimits = { ...limits };
-    newLimits[key] = value ? Number(value) : undefined;
-    onLimitsChange(newLimits);
-  };
-
+  onLimitsChange
+}: TeamRoutingSelectorProps) {
   return (
-    <Card>
-      <CardContent className="pt-6">
-        <div className="space-y-6">
-          <div>
-            <Label className="text-base">Ticket Routing Type</Label>
-            <RadioGroup
-              value={selectedType}
-              onValueChange={(value) => onTypeSelect(value as 'manual' | 'round-robin' | 'load-balanced')}
-              className="mt-3 space-y-3"
-            >
-              <div className="flex items-start space-x-3">
-                <RadioGroupItem value="manual" id="manual" className="mt-1" />
-                <div>
-                  <Label htmlFor="manual" className="font-medium">Manual Assignment</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Team managers will manually assign tickets to team members
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start space-x-3">
-                <RadioGroupItem value="round-robin" id="round-robin" className="mt-1" />
-                <div>
-                  <Label htmlFor="round-robin" className="font-medium">Round Robin</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Tickets will be automatically assigned to team members in a rotating sequence
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start space-x-3">
-                <RadioGroupItem value="load-balanced" id="load-balanced" className="mt-1" />
-                <div>
-                  <Label htmlFor="load-balanced" className="font-medium">Load Balanced</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Tickets will be assigned to team members with the lowest current workload
-                  </p>
-                </div>
-              </div>
-            </RadioGroup>
+    <div className="space-y-6">
+      <RadioGroup 
+        defaultValue={selectedType}
+        value={selectedType}
+        onValueChange={(value) => onTypeSelect(value as 'manual' | 'round-robin' | 'load-balanced')}
+      >
+        <div className="flex items-start space-x-2">
+          <RadioGroupItem value="manual" id="manual" />
+          <div className="grid gap-1.5">
+            <Label htmlFor="manual" className="font-medium">Manual Assignment</Label>
+            <p className="text-sm text-muted-foreground">
+              Team leaders or supervisors will manually assign tickets to team members.
+            </p>
           </div>
-
-          {selectedType !== 'manual' && (
-            <div className="space-y-4 pt-4">
-              <Label className="text-base">Workload Limits</Label>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="max-tickets">Maximum Total Tickets</Label>
+        </div>
+        
+        <div className="flex items-start space-x-2 mt-4">
+          <RadioGroupItem value="round-robin" id="round-robin" />
+          <div className="grid gap-1.5">
+            <Label htmlFor="round-robin" className="font-medium">Round Robin</Label>
+            <p className="text-sm text-muted-foreground">
+              Tickets will be automatically assigned to team members in a rotating order.
+            </p>
+          </div>
+        </div>
+        
+        <div className="flex items-start space-x-2 mt-4">
+          <RadioGroupItem value="load-balanced" id="load-balanced" />
+          <div className="grid gap-1.5">
+            <Label htmlFor="load-balanced" className="font-medium">Load Balanced</Label>
+            <p className="text-sm text-muted-foreground">
+              Tickets will be assigned based on agent capacity and current workload.
+            </p>
+          </div>
+        </div>
+      </RadioGroup>
+      
+      {selectedType === 'load-balanced' && (
+        <Accordion type="single" collapsible defaultValue="capacity">
+          <AccordionItem value="capacity">
+            <AccordionTrigger>Capacity Configuration</AccordionTrigger>
+            <AccordionContent>
+              <div className="space-y-4 p-2">
+                <div className="grid gap-2">
+                  <Label htmlFor="max-tickets">Maximum Tickets Per Agent</Label>
                   <Input
                     id="max-tickets"
                     type="number"
-                    min="0"
-                    value={limits.maxTickets?.toString() || ''}
-                    onChange={(e) => handleLimitChange('maxTickets', e.target.value)}
-                    placeholder="No limit"
+                    min="1"
+                    value={limits.maxTickets || ''}
+                    onChange={(e) => onLimitsChange({
+                      ...limits,
+                      maxTickets: e.target.valueAsNumber || undefined
+                    })}
+                    placeholder="e.g., 50"
                   />
+                  <p className="text-xs text-muted-foreground">
+                    The total number of tickets an agent can have assigned at one time.
+                  </p>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="max-open">Maximum Open Tickets</Label>
+                
+                <div className="grid gap-2">
+                  <Label htmlFor="max-open-tickets">Maximum Open Tickets</Label>
                   <Input
-                    id="max-open"
+                    id="max-open-tickets"
                     type="number"
-                    min="0"
-                    value={limits.maxOpenTickets?.toString() || ''}
-                    onChange={(e) => handleLimitChange('maxOpenTickets', e.target.value)}
-                    placeholder="No limit"
+                    min="1"
+                    value={limits.maxOpenTickets || ''}
+                    onChange={(e) => onLimitsChange({
+                      ...limits,
+                      maxOpenTickets: e.target.valueAsNumber || undefined
+                    })}
+                    placeholder="e.g., 10"
                   />
+                  <p className="text-xs text-muted-foreground">
+                    The maximum number of tickets an agent can have open at one time.
+                  </p>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="max-chats">Maximum Active Chats</Label>
+                
+                <div className="grid gap-2">
+                  <Label htmlFor="max-active-chats">Maximum Active Chats</Label>
                   <Input
-                    id="max-chats"
+                    id="max-active-chats"
                     type="number"
-                    min="0"
-                    value={limits.maxActiveChats?.toString() || ''}
-                    onChange={(e) => handleLimitChange('maxActiveChats', e.target.value)}
-                    placeholder="No limit"
+                    min="1"
+                    value={limits.maxActiveChats || ''}
+                    onChange={(e) => onLimitsChange({
+                      ...limits,
+                      maxActiveChats: e.target.valueAsNumber || undefined
+                    })}
+                    placeholder="e.g., 5"
                   />
+                  <p className="text-xs text-muted-foreground">
+                    The maximum number of chat conversations an agent can have active at one time.
+                  </p>
                 </div>
               </div>
-            </div>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      )}
+    </div>
   );
-};
+}

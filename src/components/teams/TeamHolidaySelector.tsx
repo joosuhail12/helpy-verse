@@ -1,87 +1,147 @@
 
-import { CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
-import { Calendar } from "@/components/ui/calendar";
+import { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { TeamHolidaySelectorProps } from "@/types/team";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { CalendarIcon, Plus, X } from "lucide-react";
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 
-const TeamHolidaySelector = ({ selectedHolidays, onHolidaysChange }: TeamHolidaySelectorProps) => {
-  const handleDateSelect = (date: Date | undefined) => {
-    if (!date) return;
-    
-    const dateString = date.toISOString().split('T')[0];
-    const newHolidays = selectedHolidays.includes(dateString)
-      ? selectedHolidays.filter(d => d !== dateString)
-      : [...selectedHolidays, dateString];
-    
-    onHolidaysChange(newHolidays);
+interface TeamHolidaySelectorProps {
+  selectedHolidays: string[];
+  onHolidaysChange: (holidays: string[]) => void;
+}
+
+const TeamHolidaySelector = ({ 
+  selectedHolidays, 
+  onHolidaysChange 
+}: TeamHolidaySelectorProps) => {
+  const [date, setDate] = useState<Date | undefined>(undefined);
+  const [holidayName, setHolidayName] = useState('');
+  const [showAddForm, setShowAddForm] = useState(false);
+
+  const handleAddHoliday = () => {
+    if (date && holidayName.trim()) {
+      const dateString = format(date, 'yyyy-MM-dd');
+      if (!selectedHolidays.includes(dateString)) {
+        onHolidaysChange([...selectedHolidays, dateString]);
+      }
+      // Reset form
+      setDate(undefined);
+      setHolidayName('');
+      setShowAddForm(false);
+    }
   };
 
-  const removeHoliday = (dateString: string) => {
-    const newHolidays = selectedHolidays.filter(d => d !== dateString);
-    onHolidaysChange(newHolidays);
+  const handleRemoveHoliday = (holidayToRemove: string) => {
+    onHolidaysChange(selectedHolidays.filter(h => h !== holidayToRemove));
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center space-x-2">
-        <CalendarIcon className="h-5 w-5 text-primary" />
-        <h3 className="text-lg font-semibold">Team Holidays</h3>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-md font-medium">Holidays</h3>
+        {!showAddForm && (
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => setShowAddForm(true)}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add Holiday
+          </Button>
+        )}
       </div>
-
-      <div className="space-y-6">
-        <TooltipProvider>
-          <Calendar
-            mode="single"
-            onSelect={handleDateSelect}
-            className="rounded-md border mx-auto"
-            selected={selectedHolidays.length > 0 ? new Date(selectedHolidays[selectedHolidays.length - 1]) : undefined}
-            modifiers={{
-              booked: selectedHolidays.map(date => new Date(date))
-            }}
-            modifiersStyles={{
-              booked: { backgroundColor: 'rgb(var(--primary))' }
-            }}
-          />
-        </TooltipProvider>
-
-        <div className="space-y-4">
-          <h4 className="font-medium">Selected Holidays</h4>
+      
+      {showAddForm ? (
+        <div className="space-y-4 border rounded-md p-4">
+          <div className="grid gap-2">
+            <Label htmlFor="holiday-name">Holiday Name</Label>
+            <Input
+              id="holiday-name"
+              value={holidayName}
+              onChange={(e) => setHolidayName(e.target.value)}
+              placeholder="e.g., New Year's Day"
+            />
+          </div>
+          
+          <div className="grid gap-2">
+            <Label>Date</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant={"outline"}
+                  className={cn(
+                    "justify-start text-left font-normal",
+                    !date && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {date ? format(date, 'PPP') : <span>Pick a date</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0">
+                <Calendar
+                  mode="single"
+                  selected={date}
+                  onSelect={setDate}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+          
+          <div className="flex space-x-2 justify-end">
+            <Button 
+              variant="outline" 
+              onClick={() => setShowAddForm(false)}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleAddHoliday}
+              disabled={!date || !holidayName.trim()}
+            >
+              Add
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <div>
           {selectedHolidays.length === 0 ? (
-            <p className="text-sm text-gray-500">No holidays selected</p>
+            <div className="text-center py-6 border rounded-md">
+              <p className="text-sm text-muted-foreground">No holidays set</p>
+            </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {selectedHolidays.sort().map((dateString) => (
-                <div key={dateString} className="flex items-center justify-between p-2 bg-gray-50 rounded-md">
-                  <span>{format(new Date(dateString), 'PPP')}</span>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeHoliday(dateString)}
-                        >
-                          Remove
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Remove this holiday</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+              {selectedHolidays.map((holiday) => (
+                <div 
+                  key={holiday}
+                  className="flex items-center justify-between border rounded-md p-2"
+                >
+                  <span className="text-sm">{format(new Date(holiday), 'PP')}</span>
+                  <div className="flex items-center space-x-2">
+                    <Badge variant="secondary">
+                      Holiday
+                    </Badge>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleRemoveHoliday(holiday)}
+                      className="h-7 w-7"
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
           )}
         </div>
-      </div>
+      )}
     </div>
   );
 };

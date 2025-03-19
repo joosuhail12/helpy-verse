@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
-import { fetchTeammateAssignments } from '@/store/slices/teammates/teammatesSlice';
+import { fetchTeammateAssignments } from '@/store/slices/teammates/actions';
 import { format } from 'date-fns';
 import { Plus, Users, Briefcase, CalendarDays } from 'lucide-react';
 

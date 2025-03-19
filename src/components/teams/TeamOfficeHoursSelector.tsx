@@ -1,99 +1,135 @@
 
+import { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Clock } from "lucide-react";
-import { DayOfWeek, TeamOfficeHoursSelectorProps, TimeSlot } from '@/types/team';
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Plus, Minus, Clock } from "lucide-react";
+import { DayOfWeek, TimeSlot } from '@/types/team';
 
-const DAYS_OF_WEEK: DayOfWeek[] = [
-  DayOfWeek.Monday, 
-  DayOfWeek.Tuesday, 
-  DayOfWeek.Wednesday, 
-  DayOfWeek.Thursday, 
-  DayOfWeek.Friday, 
-  DayOfWeek.Saturday, 
-  DayOfWeek.Sunday
-];
+interface TeamOfficeHoursSelectorProps {
+  officeHours: { [key in DayOfWeek]?: TimeSlot[] };
+  onOfficeHoursChange: (hours: { [key in DayOfWeek]?: TimeSlot[] }) => void;
+}
 
 const TeamOfficeHoursSelector = ({ 
   officeHours,
-  onOfficeHoursChange
+  onOfficeHoursChange 
 }: TeamOfficeHoursSelectorProps) => {
-  const formatDayLabel = (day: DayOfWeek) => {
-    return day.charAt(0).toUpperCase() + day.slice(1);
-  };
+  // Create array of days for iteration
+  const daysOfWeek = [
+    DayOfWeek.Monday,
+    DayOfWeek.Tuesday,
+    DayOfWeek.Wednesday,
+    DayOfWeek.Thursday,
+    DayOfWeek.Friday,
+    DayOfWeek.Saturday,
+    DayOfWeek.Sunday
+  ];
 
   const addTimeSlot = (day: DayOfWeek) => {
-    const newOfficeHours = { ...officeHours };
-    newOfficeHours[day] = [...(newOfficeHours[day] || []), { start: '09:00', end: '17:00' }];
-    onOfficeHoursChange(newOfficeHours);
+    const updatedHours = { ...officeHours };
+    if (!updatedHours[day]) {
+      updatedHours[day] = [];
+    }
+    updatedHours[day]?.push({ start: '09:00', end: '17:00' });
+    onOfficeHoursChange(updatedHours);
   };
 
   const removeTimeSlot = (day: DayOfWeek, index: number) => {
-    const newOfficeHours = { ...officeHours };
-    newOfficeHours[day] = newOfficeHours[day]?.filter((_, i) => i !== index) || [];
-    onOfficeHoursChange(newOfficeHours);
+    const updatedHours = { ...officeHours };
+    if (updatedHours[day] && updatedHours[day]?.length > 0) {
+      updatedHours[day] = updatedHours[day]?.filter((_, i) => i !== index);
+    }
+    onOfficeHoursChange(updatedHours);
   };
 
-  const updateTimeSlot = (day: DayOfWeek, index: number, field: keyof TimeSlot, value: string) => {
-    const newOfficeHours = { ...officeHours };
-    if (newOfficeHours[day]) {
-      newOfficeHours[day] = newOfficeHours[day]?.map((slot, i) => 
-        i === index ? { ...slot, [field]: value } : slot
-      );
-      onOfficeHoursChange(newOfficeHours);
+  const updateTimeSlot = (day: DayOfWeek, index: number, field: 'start' | 'end', value: string) => {
+    const updatedHours = { ...officeHours };
+    if (updatedHours[day] && updatedHours[day]?.[index]) {
+      const slots = [...(updatedHours[day] || [])];
+      slots[index] = { ...slots[index], [field]: value };
+      updatedHours[day] = slots;
+      onOfficeHoursChange(updatedHours);
     }
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center space-x-2">
-        <Clock className="h-5 w-5 text-primary" />
-        <h3 className="text-lg font-semibold">Office Hours</h3>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-md font-medium">Office Hours</h3>
       </div>
       
-      <div className="space-y-6">
-        {DAYS_OF_WEEK.map((day) => (
-          <div key={day} className="space-y-3">
-            <Label className="font-medium">{formatDayLabel(day)}</Label>
-            
-            <div className="space-y-3">
-              {officeHours[day]?.map((slot, index) => (
-                <div key={index} className="flex items-center space-x-3">
-                  <Input
-                    type="time"
-                    value={slot.start}
-                    onChange={(e) => updateTimeSlot(day, index, 'start', e.target.value)}
-                    className="w-32"
-                  />
-                  <span>to</span>
-                  <Input
-                    type="time"
-                    value={slot.end}
-                    onChange={(e) => updateTimeSlot(day, index, 'end', e.target.value)}
-                    className="w-32"
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {daysOfWeek.map((day) => (
+          <Card key={day} className={officeHours[day]?.length === 0 ? 'bg-gray-50' : ''}>
+            <CardContent className="pt-4">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="font-medium capitalize">{day}</h4>
+                {officeHours[day]?.length === 0 ? (
+                  <Badge variant="outline" className="text-gray-500">Closed</Badge>
+                ) : (
+                  <Button 
+                    variant="ghost" 
                     size="sm"
-                    onClick={() => removeTimeSlot(day, index)}
+                    onClick={() => addTimeSlot(day)}
                   >
-                    Remove
+                    <Plus className="h-4 w-4 mr-1" />
+                    Add Time
                   </Button>
-                </div>
-              ))}
+                )}
+              </div>
               
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => addTimeSlot(day)}
-              >
-                Add Time Slot
-              </Button>
-            </div>
-          </div>
+              {officeHours[day]?.length === 0 ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => addTimeSlot(day)}
+                >
+                  <Clock className="h-4 w-4 mr-2" />
+                  Set Hours
+                </Button>
+              ) : (
+                <div className="space-y-3">
+                  {officeHours[day]?.map((timeSlot, index) => (
+                    <div key={index} className="flex items-center space-x-2">
+                      <div className="grid gap-2">
+                        <Label htmlFor={`${day}-start-${index}`} className="sr-only">Start Time</Label>
+                        <Input
+                          id={`${day}-start-${index}`}
+                          type="time"
+                          value={timeSlot.start}
+                          onChange={(e) => updateTimeSlot(day, index, 'start', e.target.value)}
+                          className="w-24"
+                        />
+                      </div>
+                      <span className="text-center">to</span>
+                      <div className="grid gap-2">
+                        <Label htmlFor={`${day}-end-${index}`} className="sr-only">End Time</Label>
+                        <Input
+                          id={`${day}-end-${index}`}
+                          type="time"
+                          value={timeSlot.end}
+                          onChange={(e) => updateTimeSlot(day, index, 'end', e.target.value)}
+                          className="w-24"
+                        />
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => removeTimeSlot(day, index)}
+                        className="h-8 w-8"
+                      >
+                        <Minus className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         ))}
       </div>
     </div>

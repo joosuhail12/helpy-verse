@@ -3,7 +3,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { TeammatesState } from './types';
 import { 
   fetchTeammates, 
-  updateTeammate, 
+  updateTeammate,
   updateTeammatesRole,
   fetchTeammateActivityLogs,
   fetchTeammateAssignments,
@@ -12,21 +12,24 @@ import {
   resetPassword,
   enable2FA,
   verify2FA,
-  disable2FA
+  disable2FA,
+  addTeammate,
+  resendInvitation
 } from './actions';
 import { Teammate, TeamAssignment, ActivityLog, TeammateStatus } from '@/types/teammate';
 import { mockTeammates, mockActivityLogs, mockAssignments } from './mockData';
 
 const initialState: TeammatesState = {
   items: mockTeammates, // Use mock data for initial state
+  teammates: mockTeammates, // Include both properties for consistency
   loading: false,
   error: null,
   lastFetchTime: null,
   retryCount: 0,
   activityLogs: mockActivityLogs,
-  assignments: mockAssignments,
-  teammates: mockTeammates, // Add missing property
-  sessions: []
+  assignments: {},
+  sessions: {},
+  activities: {}
 };
 
 const teammatesSlice = createSlice({
@@ -39,11 +42,11 @@ const teammatesSlice = createSlice({
     clearSelectedTeammate: (state) => {
       state.selectedTeammateId = undefined;
     },
-    setTeammateAssignments: (state, action: PayloadAction<TeamAssignment[]>) => {
-      state.assignments = action.payload;
+    setTeammateAssignments: (state, action: PayloadAction<{ teammateId: string, assignments: TeamAssignment[] }>) => {
+      state.assignments[action.payload.teammateId] = action.payload.assignments;
     },
-    setTeammateSessions: (state, action: PayloadAction<any[]>) => {
-      state.sessions = action.payload;
+    setTeammateSessions: (state, action: PayloadAction<{ teammateId: string, sessions: any[] }>) => {
+      state.sessions[action.payload.teammateId] = action.payload.sessions;
     }
   },
   extraReducers: (builder) => {
@@ -63,6 +66,21 @@ const teammatesSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
         state.retryCount += 1;
+      })
+
+      // Add teammate
+      .addCase(addTeammate.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(addTeammate.fulfilled, (state, action) => {
+        state.loading = false;
+        state.items.push(action.payload);
+        state.teammates.push(action.payload);
+      })
+      .addCase(addTeammate.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
       })
 
       // Update teammate
@@ -109,20 +127,31 @@ const teammatesSlice = createSlice({
 
       // Fetch activity logs
       .addCase(fetchTeammateActivityLogs.fulfilled, (state, action) => {
-        state.activityLogs = action.payload;
+        if (Array.isArray(action.payload)) {
+          state.activityLogs = action.payload;
+        } else if (action.payload && action.payload.teammateId) {
+          state.activities[action.payload.teammateId] = action.payload.logs || [];
+        }
       })
 
       // Fetch assignments
       .addCase(fetchTeammateAssignments.fulfilled, (state, action) => {
-        state.assignments = action.payload;
+        if (action.payload && action.payload.teammateId) {
+          state.assignments[action.payload.teammateId] = action.payload.assignments;
+        }
       })
 
       // Sessions management
       .addCase(fetchTeammateSessions.fulfilled, (state, action) => {
-        state.sessions = action.payload;
+        if (action.payload && action.payload.teammateId) {
+          state.sessions[action.payload.teammateId] = action.payload.sessions;
+        }
       })
       .addCase(terminateSession.fulfilled, (state, action) => {
-        state.sessions = state.sessions.filter(s => s.id !== action.payload.sessionId);
+        const { teammateId, sessionId } = action.payload;
+        if (state.sessions[teammateId]) {
+          state.sessions[teammateId] = state.sessions[teammateId].filter(s => s.id !== sessionId);
+        }
       })
 
       // 2FA management

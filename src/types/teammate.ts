@@ -11,6 +11,7 @@ export interface Teammate {
   updatedAt: string;
   permissions: TeammatePermission[];
   is2FAEnabled?: boolean;
+  avatar?: string; // Add avatar property
 }
 
 export type TeammateRole = 'admin' | 'supervisor' | 'agent' | 'viewer';
