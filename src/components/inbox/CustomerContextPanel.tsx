@@ -1,6 +1,5 @@
 
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Card } from "@/components/ui/card";
 import type { Ticket as TicketType } from "@/types/ticket";
 import { useState } from "react";
 import CustomerHeader from './components/CustomerHeader';
@@ -8,6 +7,7 @@ import CurrentTicketCard from './components/CurrentTicketCard';
 import ContactInfoCard from './components/ContactInfoCard';
 import CompanyInfoCard from './components/CompanyInfoCard';
 import TimelineCard from './components/TimelineCard';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface CustomerContextPanelProps {
   ticket: TicketType;
@@ -15,6 +15,7 @@ interface CustomerContextPanelProps {
 
 const CustomerContextPanel = ({ ticket }: CustomerContextPanelProps) => {
   const isLoading = false;
+  const isMobile = useIsMobile();
   const [openSections, setOpenSections] = useState({
     ticket: true,
     contact: true,
@@ -55,8 +56,8 @@ const CustomerContextPanel = ({ ticket }: CustomerContextPanelProps) => {
     <div className="h-full flex flex-col bg-white border-l transition-all duration-300 ease-in-out">
       <CustomerHeader customer={ticket.customer} company={ticket.company} />
       
-      <ScrollArea className="flex-1 p-4">
-        <div className="space-y-4">
+      <ScrollArea className={`flex-1 ${isMobile ? 'px-2 py-3' : 'p-4'}`}>
+        <div className={`space-y-${isMobile ? '3' : '4'}`}>
           <CurrentTicketCard
             ticket={ticket}
             isOpen={openSections.ticket}

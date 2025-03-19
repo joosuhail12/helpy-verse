@@ -7,6 +7,7 @@ import LoadingState from '../LoadingState';
 import TicketActions from '../TicketActions';
 import TicketListItem from '../TicketListItem';
 import type { Ticket, SortField, ViewMode } from '@/types/ticket';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { 
   ResizablePanelGroup, 
   ResizablePanel, 
@@ -68,6 +69,7 @@ const MainContent = ({
   selectedTicketForChat,
 }: MainContentProps) => {
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const totalPages = Math.ceil(sortedAndFilteredTickets.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const paginatedTickets = sortedAndFilteredTickets.slice(startIndex, startIndex + ITEMS_PER_PAGE);
@@ -80,7 +82,18 @@ const MainContent = ({
     });
   };
 
-  if (selectedTicketForChat) {
+  if (selectedTicketForChat && isMobile) {
+    return (
+      <div className="h-full w-full overflow-hidden transition-all duration-300 ease-in-out">
+        <ConversationPanelContainer 
+          selectedTicket={selectedTicketForChat} 
+          onClose={() => onTicketClick(selectedTicketForChat)} 
+        />
+      </div>
+    );
+  }
+
+  if (selectedTicketForChat && !isMobile) {
     return (
       <ResizablePanelGroup
         direction="horizontal"
@@ -115,9 +128,9 @@ const MainContent = ({
   function renderTicketList() {
     return (
       <>
-        <div className="flex-none px-4 pt-4 pb-2">
+        <div className={`flex-none ${isMobile ? 'px-2 pt-2 pb-1' : 'px-4 pt-4 pb-2'}`}>
           <div className="bg-white rounded-lg shadow-sm border border-gray-100">
-            <div className="p-4 space-y-4">
+            <div className={`${isMobile ? 'p-2' : 'p-4'} space-y-3`}>
               <FilterBar
                 searchQuery={searchQuery}
                 setSearchQuery={setSearchQuery}
@@ -127,14 +140,14 @@ const MainContent = ({
                 setPriorityFilter={setPriorityFilter}
               />
               
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-4 border-t">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 md:gap-4 pt-2 md:pt-4 border-t">
                 <SelectionControls
                   selectedCount={selectedTickets.length}
                   totalCount={sortedAndFilteredTickets.length}
                   onSelectAll={handleSelectAll}
                 />
                 
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2 flex-wrap">
                   <TicketActions
                     selectedTickets={selectedTickets}
                     markAsRead={markAsRead}
@@ -144,7 +157,7 @@ const MainContent = ({
                     sortField={sortField}
                     sortDirection={sortDirection}
                     onSort={handleSort}
-                    compact={!!selectedTicketForChat}
+                    compact={!!selectedTicketForChat || isMobile}
                   />
                 </div>
               </div>
@@ -152,7 +165,7 @@ const MainContent = ({
           </div>
         </div>
 
-        <div className="flex-1 overflow-auto px-4 pb-4">
+        <div className={`flex-1 overflow-auto ${isMobile ? 'px-2 pb-2' : 'px-4 pb-4'}`}>
           {isLoading ? (
             <LoadingState />
           ) : (
@@ -165,7 +178,7 @@ const MainContent = ({
                 >
                   <TicketListItem
                     ticket={ticket}
-                    viewMode={selectedTicketForChat ? "compact" : viewMode}
+                    viewMode={selectedTicketForChat || isMobile ? "compact" : viewMode}
                     isSelected={selectedTickets.includes(ticket.id)}
                     isLoading={!!loadingStates[ticket.id]}
                     onSelect={(e: React.MouseEvent) => {
@@ -186,7 +199,7 @@ const MainContent = ({
                     <button
                       key={page}
                       onClick={() => setCurrentPage(page)}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      className={`${isMobile ? 'px-3 py-1.5' : 'px-4 py-2'} rounded-lg text-sm font-medium transition-all duration-200 ${
                         currentPage === page
                           ? 'bg-primary text-white shadow-md shadow-primary/20'
                           : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
