@@ -4,13 +4,21 @@ import type { Contact } from '@/types/contact';
 
 export type Recipient = Contact | { id: string; email: string; isNew?: boolean };
 
+export type AssigneeType = 'self' | 'team' | 'teammate';
+
+export type AssigneeOption = {
+  id: string;
+  name: string;
+  type: AssigneeType;
+};
+
 export type TicketFormValues = {
   subject: string;
   recipients: Recipient[];
-  company: string;
   priority: 'low' | 'medium' | 'high';
   status: 'open' | 'pending' | 'closed';
   message: string;
+  assignee: AssigneeOption | null;
 };
 
 export interface TicketFormProps {

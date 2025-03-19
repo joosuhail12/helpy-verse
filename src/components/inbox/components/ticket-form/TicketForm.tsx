@@ -2,20 +2,21 @@
 import { useState } from 'react';
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { ToField } from '../to-field';
-import type { TicketFormProps, TicketFormValues, Recipient } from './types';
+import AssigneeSelect from './AssigneeSelect';
+import TicketMessageEditor from './TicketMessageEditor';
+import type { TicketFormProps, TicketFormValues, Recipient, AssigneeOption } from './types';
 
 const defaultValues: TicketFormValues = {
   subject: '',
   recipients: [],
-  company: '',
   priority: 'medium',
   status: 'open',
   message: '',
+  assignee: null,
 };
 
 const TicketForm = ({ onSubmit, initialValues = {}, isSubmitting = false }: TicketFormProps) => {
@@ -29,13 +30,21 @@ const TicketForm = ({ onSubmit, initialValues = {}, isSubmitting = false }: Tick
     setValues(prev => ({ ...prev, recipients }));
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleAssigneeChange = (assignee: AssigneeOption | null) => {
+    setValues(prev => ({ ...prev, assignee }));
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
     setValues(prev => ({ ...prev, [id]: value }));
   };
 
   const handleSelectChange = (id: string, value: string) => {
     setValues(prev => ({ ...prev, [id]: value }));
+  };
+
+  const handleMessageChange = (message: string) => {
+    setValues(prev => ({ ...prev, message }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -81,17 +90,10 @@ const TicketForm = ({ onSubmit, initialValues = {}, isSubmitting = false }: Tick
         />
       </div>
       
-      <div className="space-y-2">
-        <Label htmlFor="company" className="text-right">
-          Company
-        </Label>
-        <Input
-          id="company"
-          value={values.company}
-          onChange={handleInputChange}
-          placeholder="Enter company name (optional)"
-        />
-      </div>
+      <AssigneeSelect 
+        value={values.assignee}
+        onChange={handleAssigneeChange}
+      />
       
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
@@ -137,13 +139,9 @@ const TicketForm = ({ onSubmit, initialValues = {}, isSubmitting = false }: Tick
         <Label htmlFor="message" className="text-right">
           Initial Message <span className="text-red-500">*</span>
         </Label>
-        <Textarea
-          id="message"
-          value={values.message}
-          onChange={handleInputChange}
-          placeholder="Enter the initial message for this ticket"
-          rows={4}
-          required
+        <TicketMessageEditor 
+          content={values.message}
+          onChange={handleMessageChange}
         />
       </div>
       

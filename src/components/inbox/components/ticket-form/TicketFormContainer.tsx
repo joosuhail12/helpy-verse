@@ -31,8 +31,7 @@ const TicketFormContainer = ({ onTicketCreated, onCancel }: TicketFormContainerP
           'firstname' in r ? `${r.firstname} ${r.lastname}` : r.email
         ).join(', '),
         lastMessage: values.message,
-        company: values.company,
-        assignee: null,
+        assignee: values.assignee?.type === 'teammate' ? values.assignee.name : null,
         tags: [],
         status: values.status,
         priority: values.priority,
