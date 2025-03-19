@@ -1,9 +1,11 @@
-
-import React from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
-import { createEditorConfig } from '../../utils/editorConfig';
-import FormatButtons from '../toolbar/FormatButtons';
-import { Separator } from "@/components/ui/separator";
+import StarterKit from '@tiptap/starter-kit';
+import Placeholder from '@tiptap/extension-placeholder';
+import Mention from '@tiptap/extension-mention';
+import EmojiSuggestion from 'tiptap-emoji-suggestion';
+import suggestion from '../utils/suggestion';
+import { useEffect } from 'react';
+import type { Ticket } from '@/types/ticket';
 
 interface TicketMessageEditorProps {
   content: string;
@@ -11,24 +13,45 @@ interface TicketMessageEditorProps {
 }
 
 const TicketMessageEditor = ({ content, onChange }: TicketMessageEditorProps) => {
-  const editor = useEditor(
-    createEditorConfig(content, (editor) => {
+  const dummyTicket: Ticket = {
+    id: 'new-ticket',
+    subject: '',
+    customer: '',
+    lastMessage: '',
+    assignee: null,
+    tags: [],
+    status: 'open',
+    priority: 'medium',
+    createdAt: new Date().toISOString(),
+    isUnread: false,
+    recipients: []
+  };
+
+  const editor = useEditor({
+    extensions: [
+      StarterKit,
+      Placeholder({
+        placeholder: 'Write your initial message...',
+      }),
+      Mention.configure({
+        suggestion: suggestion(dummyTicket),
+      }),
+      EmojiSuggestion,
+    ],
+    content: content,
+    onUpdate({ editor }) {
       onChange(editor.getHTML());
-    }, { id: 'new', subject: '', customer: '', lastMessage: '', assignee: null, tags: [], status: 'open', priority: 'medium', createdAt: '' })
-  );
+    },
+  });
+
+  useEffect(() => {
+    if (editor) {
+      editor.commands.setContent(content, false);
+    }
+  }, [editor, content]);
 
   return (
-    <div className="border rounded-lg overflow-hidden">
-      <div className="border-b p-2 flex items-center gap-1 bg-white">
-        <FormatButtons editor={editor} />
-      </div>
-      <div className="bg-white">
-        <EditorContent 
-          editor={editor} 
-          className="p-3 min-h-[150px] prose prose-sm max-w-none focus:outline-none"
-        />
-      </div>
-    </div>
+    <EditorContent editor={editor} />
   );
 };
 

@@ -18,6 +18,7 @@ const initialTickets: Ticket[] = [
     isUnread: true,
     hasNotification: true,
     notificationType: 'mention',
+    recipients: ['john.doe@acmecorp.com']
   },
   {
     id: '2',
@@ -33,6 +34,7 @@ const initialTickets: Ticket[] = [
     isUnread: false,
     hasNotification: true,
     notificationType: 'assignment',
+    recipients: ['jane.smith@techstart.com']
   },
   {
     id: '3',
@@ -46,6 +48,7 @@ const initialTickets: Ticket[] = [
     priority: 'low',
     createdAt: '2024-03-13T09:15:00Z',
     isUnread: false,
+    recipients: ['robert.johnson@globalsolutions.com']
   },
   {
     id: '4',
@@ -59,6 +62,7 @@ const initialTickets: Ticket[] = [
     priority: 'low',
     createdAt: '2024-03-12T22:45:00Z',
     isUnread: true,
+    recipients: ['emily.chen@nightwatch.com']
   },
   {
     id: '5',
@@ -72,6 +76,7 @@ const initialTickets: Ticket[] = [
     priority: 'high',
     createdAt: '2024-03-15T08:15:00Z',
     isUnread: true,
+    recipients: ['david.lee@devtech.com']
   },
   {
     id: '6',
@@ -85,6 +90,7 @@ const initialTickets: Ticket[] = [
     priority: 'high',
     createdAt: '2024-03-15T09:30:00Z',
     isUnread: true,
+    recipients: ['maria.garcia@dataanalytics.com']
   },
   {
     id: '7',
@@ -98,6 +104,7 @@ const initialTickets: Ticket[] = [
     priority: 'low',
     createdAt: '2024-03-14T16:45:00Z',
     isUnread: false,
+    recipients: ['alex.kim@startuphub.com']
   },
   {
     id: '8',
@@ -111,8 +118,9 @@ const initialTickets: Ticket[] = [
     priority: 'high',
     createdAt: '2024-03-15T11:20:00Z',
     isUnread: true,
+    recipients: ['chris.taylor@mobilefirst.com']
   }
-] satisfies Ticket[];
+];
 
 const AllTickets = () => {
   const [tickets, setTickets] = useState<Ticket[]>(initialTickets);

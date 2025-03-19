@@ -30,7 +30,8 @@ const mockTicket = {
   createdAt: '2024-03-15T12:00:00Z',
   updatedAt: '2024-03-15T12:05:00Z',
   isUnread: true,
-  categories: ['technical', 'performance']
+  categories: ['technical', 'performance'],
+  recipients: ['michael.chang@example.com'] // Added recipients array
 };
 
 describe('ConversationPanel', () => {
