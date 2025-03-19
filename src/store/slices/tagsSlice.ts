@@ -1,20 +1,121 @@
+
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../store';
+import type { Tag, SortField, FilterEntity, TagsState } from '@/types/tag';
 
-interface TagsState {
-  tags: any[];
-  items: any[];
-  total: number;
-  loading: boolean;
-  error: string | null;
-  currentPage: number;
-  itemsPerPage: number;
-  sortField: string;
-  sortDirection: 'asc' | 'desc';
-  filterEntity: string | null;
-  searchQuery: string;
-  selectedTags: string[];
-}
+// Mock tag service for now
+const tagService = {
+  fetchTags: async (params: any) => {
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 500));
+    return {
+      data: mockTags,
+      total: mockTags.length
+    };
+  },
+  createTag: async (tag: Partial<Tag>) => {
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 500));
+    const newTag: Tag = {
+      id: `tag-${Math.random().toString(36).substring(2, 9)}`,
+      name: tag.name || 'New Tag',
+      color: tag.color || '#000000',
+      createdAt: new Date().toISOString(),
+      lastUsed: new Date().toISOString(),
+      trend: 'stable',
+      counts: { tickets: 0, contacts: 0, companies: 0 },
+      history: [],
+      preview: []
+    };
+    return {
+      data: [...mockTags, newTag],
+      total: mockTags.length + 1
+    };
+  },
+  updateTag: async (id: string, tag: Partial<Tag>) => {
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 500));
+    const updatedTags = mockTags.map(t => (t.id === id ? { ...t, ...tag } : t));
+    return {
+      data: updatedTags,
+      total: updatedTags.length
+    };
+  },
+  deleteTags: async (ids: string[]) => {
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 500));
+    return { success: true };
+  }
+};
+
+// Mock data
+export const mockTags: Tag[] = [
+  {
+    id: 'tag-1',
+    name: 'Bug',
+    color: '#ef4444',
+    createdAt: '2023-01-15T08:30:00Z',
+    lastUsed: '2023-07-20T14:22:00Z',
+    trend: 'increasing',
+    counts: { tickets: 45, contacts: 12, companies: 5 },
+    history: [
+      { date: '2023-01', count: 12 },
+      { date: '2023-02', count: 18 },
+      { date: '2023-03', count: 25 },
+      { date: '2023-04', count: 32 },
+      { date: '2023-05', count: 38 },
+      { date: '2023-06', count: 42 },
+      { date: '2023-07', count: 45 }
+    ],
+    preview: [
+      { id: 'ticket-1', name: 'Login issue', type: 'ticket' },
+      { id: 'ticket-2', name: 'Dashboard not loading', type: 'ticket' }
+    ]
+  },
+  {
+    id: 'tag-2',
+    name: 'Feature Request',
+    color: '#3b82f6',
+    createdAt: '2023-02-10T10:15:00Z',
+    lastUsed: '2023-07-18T09:45:00Z',
+    trend: 'stable',
+    counts: { tickets: 28, contacts: 8, companies: 3 },
+    history: [
+      { date: '2023-02', count: 6 },
+      { date: '2023-03', count: 12 },
+      { date: '2023-04', count: 18 },
+      { date: '2023-05', count: 22 },
+      { date: '2023-06', count: 25 },
+      { date: '2023-07', count: 28 }
+    ],
+    preview: [
+      { id: 'ticket-3', name: 'Add dark mode', type: 'ticket' },
+      { id: 'ticket-4', name: 'Export to PDF', type: 'ticket' }
+    ]
+  },
+  {
+    id: 'tag-3',
+    name: 'Critical',
+    color: '#9333ea',
+    createdAt: '2023-01-05T09:20:00Z',
+    lastUsed: '2023-07-22T11:30:00Z',
+    trend: 'decreasing',
+    counts: { tickets: 15, contacts: 5, companies: 2 },
+    history: [
+      { date: '2023-01', count: 24 },
+      { date: '2023-02', count: 22 },
+      { date: '2023-03', count: 20 },
+      { date: '2023-04', count: 18 },
+      { date: '2023-05', count: 16 },
+      { date: '2023-06', count: 15 },
+      { date: '2023-07', count: 15 }
+    ],
+    preview: [
+      { id: 'ticket-5', name: 'Server down', type: 'ticket' },
+      { id: 'ticket-6', name: 'Payment processing error', type: 'ticket' }
+    ]
+  }
+];
 
 const initialState: TagsState = {
   tags: [],
@@ -36,18 +137,8 @@ export const fetchTags = createAsyncThunk(
   async (params: any) => {
     const response = await tagService.fetchTags(params);
     return {
-      tags: response.data.map(tag => ({
-        id: tag.id,
-        name: tag.name,
-        color: tag.color || "#000000", // Default color
-        createdAt: tag.createdAt,
-        lastUsed: tag.lastUsed || new Date().toISOString(), // Default lastUsed
-        trend: tag.trend || "stable", // Default trend
-        counts: tag.counts || { tickets: 0, contacts: 0, companies: 0 }, // Default counts
-        history: tag.history || [], // Default empty history
-        preview: tag.preview || [], // Default empty preview
-      })),
-      total: response.data.length,
+      tags: response.data,
+      total: response.total,
     };
   }
 );
@@ -57,18 +148,8 @@ export const createTag = createAsyncThunk(
   async (tag: Partial<Tag>) => {
     const response = await tagService.createTag(tag);
     return {
-      tags: response.data.map(tag => ({
-        id: tag.id,
-        name: tag.name,
-        color: tag.color || "#000000", // Default color
-        createdAt: tag.createdAt,
-        lastUsed: tag.lastUsed || new Date().toISOString(), // Default lastUsed
-        trend: tag.trend || "stable", // Default trend
-        counts: tag.counts || { tickets: 0, contacts: 0, companies: 0 }, // Default counts
-        history: tag.history || [], // Default empty history
-        preview: tag.preview || [], // Default empty preview
-      })),
-      total: response.data.length,
+      tags: response.data,
+      total: response.total,
     };
   }
 );
@@ -78,18 +159,8 @@ export const updateTag = createAsyncThunk(
   async ({ id, tag }: { id: string; tag: Partial<Tag> }) => {
     const response = await tagService.updateTag(id, tag);
     return {
-      tags: response.data.map(tag => ({
-        id: tag.id,
-        name: tag.name,
-        color: tag.color || "#000000", // Default color
-        createdAt: tag.createdAt,
-        lastUsed: tag.lastUsed || new Date().toISOString(), // Default lastUsed
-        trend: tag.trend || "stable", // Default trend
-        counts: tag.counts || { tickets: 0, contacts: 0, companies: 0 }, // Default counts
-        history: tag.history || [], // Default empty history
-        preview: tag.preview || [], // Default empty preview
-      })),
-      total: response.data.length,
+      tags: response.data,
+      total: response.total,
     };
   }
 );
@@ -180,6 +251,7 @@ export const {
   clearSelectedTags,
 } = tagsSlice.actions;
 
+// Selectors
 export const selectTagsItems = (state: RootState) => state.tags.items;
 export const selectTagsTotal = (state: RootState) => state.tags.total;
 export const selectTagsLoading = (state: RootState) => state.tags.loading;

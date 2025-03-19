@@ -1,33 +1,20 @@
 
-export type ActivityType = 
-  | 'email' 
-  | 'ticket' 
-  | 'note' 
-  | 'call' 
-  | 'meeting'
-  | 'company_update';
-
-export type ActivityMetadataCategory = 'positive' | 'negative' | 'neutral' | 'update';
+export type ActivityType = 'email' | 'note' | 'call' | 'meeting' | 'message';
 
 export interface ActivityMetadata {
-  category: ActivityMetadataCategory;
-  responseTime?: number;
+  subject?: string;
+  content?: string;
+  taskName?: string;
   status?: string;
+  [key: string]: any;
 }
 
 export interface Activity {
   id: string;
   type: ActivityType;
+  title: string;
   description: string;
-  date: string;
-  metadata: ActivityMetadata;
-  subject?: string;
-  content?: string;
-}
-
-export interface InteractionMetrics {
-  totalInteractions: number;
-  averageResponseTime: number;
-  mostFrequentType: ActivityType;
-  lastInteraction: string;
+  timestamp: string;
+  user: string;
+  metadata?: ActivityMetadata;
 }

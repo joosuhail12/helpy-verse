@@ -7,7 +7,7 @@ import { TicketStatusBreakdown } from '@/components/dashboard/TicketStatusBreakd
 import { TeamPerformance } from '@/components/dashboard/TeamPerformance';
 
 const Dashboard = () => {
-  // Use auth state directly without trying to extract user
+  // Use auth state without trying to extract user
   const auth = useAppSelector((state) => state.auth);
   const tickets = useAppSelector((state) => state.tickets);
   const content = useAppSelector((state) => state.content);

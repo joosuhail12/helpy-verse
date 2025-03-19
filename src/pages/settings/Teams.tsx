@@ -8,10 +8,9 @@ import TeamsEmptyState from '@/components/teams/TeamsEmptyState';
 import TeamsList from '@/components/teams/TeamsList';
 import { Button } from "@/components/ui/button";
 import { Plus, Users } from "lucide-react";
-import { setTeams } from '@/store/slices/teams/actions';
-import { setLoading, setError } from '@/store/slices/teams/actions';
+import { fetchTeams, setTeams } from '@/store/slices/teams/teamsSlice';
 import { mockTeams } from '@/store/slices/teams/mockData';
-import type { Team as TeamType } from '@/types/team';
+import type { Team } from '@/types/team';
 
 const Teams = () => {
   const navigate = useNavigate();
@@ -19,26 +18,28 @@ const Teams = () => {
   const { teams, loading, error } = useAppSelector((state) => state.teams);
 
   useEffect(() => {
-    const fetchTeams = async () => {
+    const fetchTeamsData = async () => {
       try {
-        dispatch(setLoading(true));
-        const response = await fetch('/api/teams');
-        if (!response.ok) {
-          throw new Error('API request failed');
-        }
-        const data = await response.json();
-        dispatch(setTeams(data));
+        dispatch(fetchTeams());
       } catch (err) {
         console.log('Using mock data as fallback:', mockTeams);
-        // Convert the mockTeams to the expected Team type format before dispatching
+        // Ensure the mock data is properly formatted with all required fields
         const formattedTeams = mockTeams.map(team => ({
           ...team,
+          // Make sure all required properties are present
+          icon: team.icon || 'users',
+          status: team.status || 'active',
+          type: team.type || 'support',
+          memberCount: team.members?.length || 0,
+          members: team.members || [],
           officeHours: {
             days: team.officeHours?.days || [],
             startTime: team.officeHours?.startTime || '09:00',
             endTime: team.officeHours?.endTime || '17:00',
             timezone: team.officeHours?.timezone || 'UTC',
           },
+          channels: team.channels || [],
+          routing: team.routing || [],
           holidays: team.holidays || [],
         }));
         
@@ -46,7 +47,7 @@ const Teams = () => {
       }
     };
 
-    fetchTeams();
+    fetchTeamsData();
   }, [dispatch]);
 
   if (error) {

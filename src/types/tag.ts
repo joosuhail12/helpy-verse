@@ -1,28 +1,53 @@
 
+export interface TagCount {
+  tickets: number;
+  contacts: number;
+  companies: number;
+}
+
 export interface Tag {
-  data: any;
   id: string;
   name: string;
   color: string;
   createdAt: string;
   lastUsed: string;
   trend: 'increasing' | 'decreasing' | 'stable';
-  counts: {
-    tickets: number;
-    contacts: number;
-    companies: number;
-  };
-  history: {
+  counts: TagCount;
+  history: Array<{
     date: string;
-    total: number;
-  }[];
-  preview?: {
-    type: 'ticket' | 'contact' | 'company';
+    count: number;
+  }>;
+  preview: Array<{
     id: string;
-    title: string;
-  }[];
+    name: string;
+    type: 'ticket' | 'contact' | 'company';
+  }>;
+  data?: any;
 }
 
-export type SortField = 'name' | 'tickets' | 'contacts' | 'companies' | 'lastUsed' | 'createdAt';
-export type FilterEntity = 'all' | 'tickets' | 'contacts' | 'companies';
+export type SortField = 
+  | 'name'
+  | 'createdAt'
+  | 'lastUsed'
+  | 'usage';
 
+export type FilterEntity = 
+  | 'all'
+  | 'tickets'
+  | 'contacts'
+  | 'companies';
+
+export interface TagsState {
+  tags: Tag[];
+  items: Tag[];
+  total: number;
+  loading: boolean;
+  error: string | null;
+  currentPage: number;
+  itemsPerPage: number;
+  sortField: SortField;
+  sortDirection: 'asc' | 'desc';
+  filterEntity: FilterEntity | null;
+  searchQuery: string;
+  selectedTags: string[];
+}

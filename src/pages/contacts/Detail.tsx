@@ -9,8 +9,8 @@ import { ContactSidebar } from '@/components/contacts/detail/ContactSidebar';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 import { Loading } from '@/components/Loading';
-import { Activity } from '@/types/activity';
 import { fetchContactById } from '@/store/slices/contacts/contactsSlice';
+import type { Activity, ActivityType } from '@/types/activity';
 
 const ContactDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -30,7 +30,7 @@ const ContactDetail = () => {
   const activities: Activity[] = [
     {
       id: '1',
-      type: 'email',
+      type: 'email' as ActivityType,
       title: 'Email sent',
       description: 'Follow-up regarding your inquiry',
       timestamp: '2023-10-15T14:30:00Z',
@@ -42,7 +42,7 @@ const ContactDetail = () => {
     },
     {
       id: '2',
-      type: 'note',
+      type: 'note' as ActivityType,
       title: 'Note added',
       description: 'Customer prefers communication via email',
       timestamp: '2023-10-14T11:15:00Z',
@@ -53,7 +53,7 @@ const ContactDetail = () => {
     },
     {
       id: '3',
-      type: 'task',
+      type: 'call' as ActivityType, // Changed from 'task' to valid ActivityType
       title: 'Task completed',
       description: 'Send product information',
       timestamp: '2023-10-13T09:45:00Z',

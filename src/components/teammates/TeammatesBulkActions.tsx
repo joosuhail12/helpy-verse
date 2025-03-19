@@ -20,7 +20,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { updateTeammatesRole, exportTeammates } from '@/store/slices/teammates/actions';
 import { CheckSquare, UserMinus, FileText } from 'lucide-react';
-import type { Teammate } from '@/types/teammate';
+import type { TeammateRole } from '@/types/teammate';
 
 interface TeammatesBulkActionsProps {
   selectedIds: string[];
@@ -30,19 +30,28 @@ interface TeammatesBulkActionsProps {
 const TeammatesBulkActions = ({ selectedIds, onClearSelection }: TeammatesBulkActionsProps) => {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [showRoleDialog, setShowRoleDialog] = useState(false);
-  const [newRole, setNewRole] = useState<Teammate['role']>('agent');
+  const [newRole, setNewRole] = useState<TeammateRole>('agent');
   const dispatch = useAppDispatch();
   const { toast } = useToast();
 
   const handleRoleChange = async () => {
     try {
-      await dispatch(updateTeammatesRole({ teammateIds: selectedIds, role: newRole })).unwrap();
-      toast({
-        title: "Success",
-        description: "Role updated for selected teammates",
-      });
-      setShowRoleDialog(false);
-      onClearSelection();
+      const resultAction = await dispatch(updateTeammatesRole({ teammateIds: selectedIds, role: newRole }));
+      
+      if (updateTeammatesRole.fulfilled.match(resultAction)) {
+        toast({
+          title: "Success",
+          description: "Role updated for selected teammates",
+        });
+        setShowRoleDialog(false);
+        onClearSelection();
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to update roles. Please try again.",
+          variant: "destructive",
+        });
+      }
     } catch (error) {
       toast({
         title: "Error",
@@ -54,11 +63,20 @@ const TeammatesBulkActions = ({ selectedIds, onClearSelection }: TeammatesBulkAc
 
   const handleExport = async () => {
     try {
-      await dispatch(exportTeammates(selectedIds)).unwrap();
-      toast({
-        title: "Success",
-        description: "Export completed successfully",
-      });
+      const resultAction = await dispatch(exportTeammates(selectedIds));
+      
+      if (exportTeammates.fulfilled.match(resultAction)) {
+        toast({
+          title: "Success",
+          description: "Export completed successfully",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to export teammates. Please try again.",
+          variant: "destructive",
+        });
+      }
     } catch (error) {
       toast({
         title: "Error",
@@ -110,7 +128,7 @@ const TeammatesBulkActions = ({ selectedIds, onClearSelection }: TeammatesBulkAc
               Select a new role for the {selectedIds.length} selected teammate(s).
             </DialogDescription>
           </DialogHeader>
-          <Select onValueChange={(value: Teammate['role']) => setNewRole(value)}>
+          <Select onValueChange={(value: TeammateRole) => setNewRole(value)}>
             <SelectTrigger>
               <SelectValue placeholder="Select new role" />
             </SelectTrigger>
@@ -159,4 +177,3 @@ const TeammatesBulkActions = ({ selectedIds, onClearSelection }: TeammatesBulkAc
 };
 
 export default TeammatesBulkActions;
-
