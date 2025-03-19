@@ -5,6 +5,19 @@ export interface TagCount {
   companies: number;
 }
 
+export interface TagHistoryItem {
+  date: string;
+  count: number;
+  total?: number; // Adding total field that was being used
+}
+
+export interface TagPreviewItem {
+  id: string;
+  name: string;
+  type: 'ticket' | 'contact' | 'company';
+  title?: string; // Adding title field that was being used
+}
+
 export interface Tag {
   id: string;
   name: string;
@@ -13,15 +26,8 @@ export interface Tag {
   lastUsed: string;
   trend: 'increasing' | 'decreasing' | 'stable';
   counts: TagCount;
-  history: Array<{
-    date: string;
-    count: number;
-  }>;
-  preview: Array<{
-    id: string;
-    name: string;
-    type: 'ticket' | 'contact' | 'company';
-  }>;
+  history: TagHistoryItem[];
+  preview: TagPreviewItem[];
   data?: any;
 }
 

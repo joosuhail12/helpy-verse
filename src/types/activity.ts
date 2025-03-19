@@ -1,20 +1,30 @@
 
-export type ActivityType = 'email' | 'note' | 'call' | 'meeting' | 'message' | 'task';
+export type ActivityType = 'email' | 'note' | 'call' | 'meeting' | 'message' | 'task' | 'ticket' | 'company_update';
 
 export interface ActivityMetadata {
   subject?: string;
   content?: string;
   taskName?: string;
   status?: string;
+  responseTime?: number;
+  category?: string;
   [key: string]: any;
 }
 
 export interface Activity {
   id: string;
   type: ActivityType;
-  title: string;
+  title?: string;
   description: string;
   timestamp: string;
-  user: string;
-  metadata?: ActivityMetadata;
+  date: string; // Adding date field that was being used
+  user?: string;
+  metadata: ActivityMetadata;
+}
+
+export interface InteractionMetrics {
+  totalInteractions: number;
+  averageResponseTime: number;
+  mostFrequentType: ActivityType;
+  lastInteraction: string;
 }

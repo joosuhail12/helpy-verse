@@ -1,64 +1,46 @@
 
 export interface Contact {
   id: string;
-  firstname: string;
-  lastname: string;
+  name: string;
   email: string;
   phone?: string;
-  type: string;
-  status: string;
-  company?: {
-    id: string;
-    name: string;
-  } | string;
+  avatar?: string;
+  jobTitle?: string;
+  company?: string;
+  status: 'active' | 'inactive';
   tags?: string[];
-  lastActivity?: string;
   createdAt: string;
-  updatedAt: string;
-  
-  // Additional properties
-  title?: string;
-  department?: string;
   lastContacted?: string;
-  timezone?: string;
-  source?: string;
-  language?: string;
-  preferredLanguage?: string;
-  street?: string;
-  city?: string;
-  state?: string;
-  postalCode?: string;
-  country?: string;
-  linkedinUrl?: string;
-  twitterUrl?: string;
-  notes?: {
-    id: string;
-    content: string;
-    createdAt: string;
-    createdBy: string;
-  }[];
-  accountValue?: number;
-  assignedTo?: string;
+  notes?: string;
+  address?: {
+    street?: string;
+    city?: string;
+    state?: string;
+    zip?: string;
+    country?: string;
+  };
+  customFields?: Record<string, any>;
 }
 
-export interface ContactCompanyInfoProps {
-  contact: Contact;
-}
-
-export interface ContactTicketsProps {
-  contactId: string;
-  contactName?: string;
-}
-
-export interface QuickNoteInputProps {
+export interface ContactTimelineProps {
   contact: Contact;
 }
 
 export interface ContactTagsProps {
+  contact: Contact;
   contactId: string;
 }
 
-export interface ContactListItemProps {
+export interface ContactInformationProps {
   contact: Contact;
-  onClick?: () => void;
+  activities: Activity[];
+}
+
+export interface ContactNotesProps {
+  contact: Contact;
+  currentUser: string;
+}
+
+export interface CustomerSentimentProps {
+  contactId: string;
 }

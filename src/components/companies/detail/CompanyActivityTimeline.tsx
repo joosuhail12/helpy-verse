@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Activity, ActivityType, InteractionMetrics } from '@/types/activity';
+import { Activity, ActivityType } from '@/types/activity';
 import {
   Card,
   CardHeader,
@@ -37,7 +37,7 @@ interface CompanyActivityTimelineProps {
 export const CompanyActivityTimeline = ({ activities }: CompanyActivityTimelineProps) => {
   const [selectedType, setSelectedType] = useState<ActivityType | 'all'>('all');
 
-  const metrics: InteractionMetrics = {
+  const metrics = {
     totalInteractions: activities.length,
     averageResponseTime: activities.reduce((acc, curr) => 
       acc + (curr.metadata.responseTime || 0), 0) / activities.length || 0,
@@ -175,4 +175,3 @@ export const CompanyActivityTimeline = ({ activities }: CompanyActivityTimelineP
     </Card>
   );
 };
-

@@ -11,7 +11,9 @@ export const mockTeammates: Teammate[] = [
     lastActive: new Date().toISOString(),
     createdAt: '2024-01-01T00:00:00.000Z',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=John',
-    permissions: ['manage_tickets', 'view_reports']
+    permissions: ['manage_tickets', 'view_reports'],
+    teams: [],
+    is2FAEnabled: false
   }
 ];
 
@@ -26,7 +28,7 @@ export const mockActivityLogs: ActivityLog[] = [
   {
     id: '2',
     teammateId: '1',
-    type: 'update',
+    type: 'settings_changed',
     description: 'Updated profile information',
     timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
   }
