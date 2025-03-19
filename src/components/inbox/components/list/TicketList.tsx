@@ -11,6 +11,7 @@ import EmptyTicketState from '../../EmptyTicketState';
 import SelectionControls from '../../SelectionControls';
 import { CreateTicketDialog } from '../../components/ticket-form';
 import ConversationPanelContainer from './ConversationPanelContainer';
+import LoadingState from '../LoadingState';
 
 interface TicketListProps {
   tickets: Ticket[];
@@ -37,6 +38,8 @@ const TicketList = ({ tickets: initialTickets, isLoading = false, onTicketCreate
     indeterminate,
   } = useTicketList(initialTickets);
 
+  console.log('TicketList rendering with tickets:', tickets.length, 'isLoading:', isLoading);
+
   const handleTicketCreated = (newTicket: Ticket) => {
     setTickets([newTicket, ...tickets]);
     setCreateDialogOpen(false);
@@ -51,7 +54,11 @@ const TicketList = ({ tickets: initialTickets, isLoading = false, onTicketCreate
     setSelectedTicket(null);
   };
 
-  if (tickets.length === 0) {
+  if (isLoading) {
+    return <LoadingState />;
+  }
+
+  if (tickets.length === 0 && !isLoading) {
     return (
       <EmptyTicketState onCreateTicket={() => setCreateDialogOpen(true)} />
     );
@@ -94,29 +101,23 @@ const TicketList = ({ tickets: initialTickets, isLoading = false, onTicketCreate
 
         <div className="flex-1 overflow-auto p-4">
           <div className="space-y-2">
-            {isLoading ? (
-              <div className="flex justify-center items-center h-40">
-                <div className="animate-pulse">Loading tickets...</div>
+            {tickets.map((ticket) => (
+              <div 
+                key={ticket.id} 
+                onClick={() => handleTicketClick(ticket)}
+                className="cursor-pointer transition-all hover:translate-y-[-2px] hover:shadow-md"
+              >
+                <TicketListItem
+                  ticket={ticket}
+                  isSelected={selectedTickets.includes(ticket.id)}
+                  onSelect={(e: React.MouseEvent) => {
+                    e.stopPropagation();
+                    handleSelectTicket(ticket.id);
+                  }}
+                  viewMode={viewMode}
+                />
               </div>
-            ) : (
-              tickets.map((ticket) => (
-                <div 
-                  key={ticket.id} 
-                  onClick={() => handleTicketClick(ticket)}
-                  className="cursor-pointer transition-all hover:translate-y-[-2px] hover:shadow-md"
-                >
-                  <TicketListItem
-                    ticket={ticket}
-                    isSelected={selectedTickets.includes(ticket.id)}
-                    onSelect={(e: React.MouseEvent) => {
-                      e.stopPropagation();
-                      handleSelectTicket(ticket.id);
-                    }}
-                    viewMode={viewMode}
-                  />
-                </div>
-              ))
-            )}
+            ))}
           </div>
         </div>
       </div>

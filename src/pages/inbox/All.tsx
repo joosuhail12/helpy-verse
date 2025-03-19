@@ -124,6 +124,7 @@ const initialTickets: Ticket[] = [
 
 const AllTickets = () => {
   const [tickets, setTickets] = useState<Ticket[]>(initialTickets);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleTicketCreated = (newTicket: Ticket) => {
     setTickets(prevTickets => [newTicket, ...prevTickets]);
@@ -139,6 +140,7 @@ const AllTickets = () => {
       <div className="flex-1 overflow-hidden">
         <TicketList 
           tickets={tickets} 
+          isLoading={isLoading}
           onTicketCreated={handleTicketCreated}
         />
       </div>
