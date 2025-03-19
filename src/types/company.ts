@@ -4,35 +4,20 @@ export interface Company {
   name: string;
   website?: string;
   industry?: string;
-  numberOfEmployees?: number;
-  annualRevenue?: number;
-  description?: string;
-  location?: {
+  size?: string;
+  type?: string;
+  status?: string;
+  address?: {
     street?: string;
     city?: string;
     state?: string;
+    zipCode?: string;
     country?: string;
-    zipcode?: string;
   };
-  phone?: string;
-  email?: string;
-  socialMedia?: {
-    linkedin?: string;
-    twitter?: string;
-    facebook?: string;
+  contactInfo?: {
+    email?: string;
+    phone?: string;
   };
-  type?: 'customer' | 'partner' | 'prospect' | 'vendor';
-  status?: 'active' | 'inactive';
-  accountOwner?: string;
-  foundedYear?: number;
-  mainContact?: string;
-  tierLevel?: 'bronze' | 'silver' | 'gold' | 'platinum';
-  lastContactDate?: string;
-  marketSegment?: string;
-  businessModel?: 'b2b' | 'b2c' | 'b2b2c';
-  preferredLanguage?: string;
-  timezone?: string;
   createdAt: string;
   updatedAt: string;
 }
-
