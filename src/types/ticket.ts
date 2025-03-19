@@ -20,4 +20,3 @@ export interface Ticket {
 export type SortField = 'createdAt' | 'lastMessage' | 'customer' | 'subject' | 'priority' | 'status';
 export type SortDirection = 'asc' | 'desc';
 export type ViewMode = 'list' | 'card';
-

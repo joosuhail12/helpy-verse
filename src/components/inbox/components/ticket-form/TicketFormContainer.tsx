@@ -1,63 +1,37 @@
 
 import { useState } from 'react';
-import { useToast } from "@/hooks/use-toast";
-import { v4 as uuidv4 } from 'uuid';
-import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { addContact } from '@/store/slices/contacts/contactsSlice';
+import { useDispatch } from 'react-redux';
+import { useToast } from '@/hooks/use-toast';
 import TicketForm from './TicketForm';
-import type { Ticket } from '@/types/ticket';
 import type { TicketFormValues } from './types';
+import type { Ticket } from '@/types/ticket';
 
 interface TicketFormContainerProps {
   onTicketCreated?: (ticket: Ticket) => void;
-  onCancel: () => void;
+  onCancel?: () => void;
 }
 
 const TicketFormContainer = ({ onTicketCreated, onCancel }: TicketFormContainerProps) => {
-  const { toast } = useToast();
-  const dispatch = useAppDispatch();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
+  const dispatch = useDispatch();
 
   const handleSubmit = async (values: TicketFormValues, callback: () => void) => {
     setIsSubmitting(true);
     
     try {
-      // Create any new contacts from email entries
-      const newContacts = values.recipients.filter(r => 'isNew' in r && r.isNew);
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      for (const newContact of newContacts) {
-        // Add the new contact to the store
-        await dispatch(addContact({
-          id: newContact.id,
-          firstname: '',
-          lastname: '',
-          email: newContact.email,
-          type: 'visitor',
-          status: 'active',
-          tags: [],
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        })).unwrap();
-      }
-      
-      // Create primary customer name from first recipient for display
-      let primaryCustomer = '';
-      if (values.recipients.length > 0) {
-        const first = values.recipients[0];
-        if ('firstname' in first) {
-          primaryCustomer = `${first.firstname} ${first.lastname}`;
-        } else {
-          primaryCustomer = first.email.split('@')[0];
-        }
-      }
-      
-      // Create a ticket object
+      // Create a new ticket from form values
       const newTicket: Ticket = {
-        id: uuidv4(),
+        id: Date.now().toString(),
         subject: values.subject,
-        customer: primaryCustomer,
+        customer: values.recipients.map(r => 
+          'firstname' in r ? `${r.firstname} ${r.lastname}` : r.email
+        ).join(', '),
         lastMessage: values.message,
-        company: values.company || 'N/A',
+        company: values.company,
         assignee: null,
         tags: [],
         status: values.status,
@@ -67,23 +41,20 @@ const TicketFormContainer = ({ onTicketCreated, onCancel }: TicketFormContainerP
         recipients: values.recipients.map(r => r.id)
       };
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // In a real app, you would dispatch an action to add the ticket to your store
+      // dispatch(addTicket(newTicket));
+      
+      toast({
+        title: "Ticket created",
+        description: `Ticket "${values.subject}" has been created successfully`,
+      });
       
       if (onTicketCreated) {
         onTicketCreated(newTicket);
       }
       
-      toast({
-        title: "Success",
-        description: "Ticket created successfully",
-      });
-      
-      // Call the callback to reset the form
       callback();
-      onCancel();
     } catch (error) {
-      console.error("Error creating ticket:", error);
       toast({
         title: "Error",
         description: "Failed to create ticket. Please try again.",
@@ -95,7 +66,7 @@ const TicketFormContainer = ({ onTicketCreated, onCancel }: TicketFormContainerP
   };
 
   return (
-    <TicketForm 
+    <TicketForm
       onSubmit={handleSubmit}
       isSubmitting={isSubmitting}
     />

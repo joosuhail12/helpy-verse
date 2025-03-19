@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import ToField from '../ToField';
+import { ToField } from '../to-field';
 import type { TicketFormProps, TicketFormValues, Recipient } from './types';
 
 const defaultValues: TicketFormValues = {

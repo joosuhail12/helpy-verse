@@ -1,148 +1,93 @@
-
-import { Loader2, Bell, AtSign, UserPlus, MessageCircle } from 'lucide-react';
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
+import { useState } from 'react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Copy, Info } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 import TicketCard from '../TicketCard';
-import type { Ticket, ViewMode } from '@/types/ticket';
+import { ViewMode, Ticket } from '@/types/ticket';
 
 interface TicketListItemProps {
   ticket: Ticket;
-  viewMode: ViewMode;
   isSelected: boolean;
-  isLoading: boolean;
-  onSelect: (ticketId: string) => void;
-  onCopyId: (id: string) => void;
+  onSelect: () => void;
+  viewMode: ViewMode;
 }
 
-const getNotificationIcon = (type: string) => {
-  switch (type) {
-    case 'mention':
-      return <AtSign className="h-3 w-3" />;
-    case 'assignment':
-      return <UserPlus className="h-3 w-3" />;
-    case 'new_response':
-      return <MessageCircle className="h-3 w-3" />;
-    default:
-      return <Bell className="h-3 w-3" />;
-  }
-};
+const TicketListItem = ({ ticket, isSelected, onSelect, viewMode }: TicketListItemProps) => {
+  const { toast } = useToast();
+  const [showInfo, setShowInfo] = useState(false);
 
-const getNotificationText = (type: string) => {
-  switch (type) {
-    case 'mention':
-      return 'You were mentioned in this ticket';
-    case 'assignment':
-      return 'You were assigned to this ticket';
-    case 'new_response':
-      return 'New response on this ticket';
-    default:
-      return 'This ticket has been updated';
-  }
-};
+  const handleCopyId = () => {
+    navigator.clipboard.writeText(ticket.id);
+    toast({
+      title: 'Copied!',
+      description: `Ticket ID ${ticket.id} copied to clipboard`,
+    });
+  };
 
-const getNotificationColor = (type: string) => {
-  switch (type) {
-    case 'mention':
-      return 'text-blue-500 bg-blue-50 ring-1 ring-blue-100';
-    case 'assignment':
-      return 'text-purple-500 bg-purple-50 ring-1 ring-purple-100';
-    case 'new_response':
-      return 'text-green-500 bg-green-50 ring-1 ring-green-100';
-    case 'new_ticket':
-      return 'text-amber-500 bg-amber-50 ring-1 ring-amber-100';
-    default:
-      return 'text-gray-500 bg-gray-50 ring-1 ring-gray-100';
-  }
-};
+  const handleOpenTicket = () => {
+    // Handle opening the ticket - in a real app this would navigate to ticket detail
+    console.log('Opening ticket:', ticket.id);
+  };
 
-const getCardBackground = (type: string | undefined) => {
-  if (!type) return '';
-  
-  switch (type) {
-    case 'mention':
-      return 'bg-gradient-to-br from-blue-50/50 to-white border-blue-100/50';
-    case 'assignment':
-      return 'bg-gradient-to-br from-purple-50/50 to-white border-purple-100/50';
-    case 'new_response':
-      return 'bg-gradient-to-br from-green-50/50 to-white border-green-100/50';
-    case 'new_ticket':
-      return 'bg-gradient-to-br from-amber-50/50 to-white border-amber-100/50';
-    default:
-      return '';
-  }
-};
-
-const TicketListItem = ({
-  ticket,
-  viewMode,
-  isSelected,
-  isLoading,
-  onSelect,
-  onCopyId,
-}: TicketListItemProps) => {
   return (
-    <div className="group relative px-1 py-0.5">
-      <div className="absolute left-4 top-1/2 -translate-y-1/2 z-10">
-        <Checkbox
-          checked={isSelected}
-          onCheckedChange={() => onSelect(ticket.id)}
+    <div
+      className="relative flex border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-all group"
+      onMouseEnter={() => setShowInfo(true)}
+      onMouseLeave={() => setShowInfo(false)}
+    >
+      <div className="p-3 flex items-center">
+        <Checkbox 
+          checked={isSelected} 
+          onCheckedChange={onSelect} 
+          onClick={(e) => e.stopPropagation()} 
           aria-label={`Select ticket ${ticket.id}`}
-          className="h-3.5 w-3.5 rounded-[4px] border-gray-300"
         />
       </div>
-      
-      <div 
-        className={`pl-8 group relative rounded-xl border shadow-sm hover:shadow-md transition-all duration-200 
-          ${ticket.isUnread ? 'bg-gradient-to-br from-blue-50/30 to-white border-blue-100/50' : 'border-gray-100'}
-          ${ticket.hasNotification ? getCardBackground(ticket.notificationType) : 'bg-white border-gray-100'}
-          focus-within:ring-1 focus-within:ring-primary/50`}
-        tabIndex={0}
-        role="article"
-        aria-label={`Ticket from ${ticket.customer}: ${ticket.subject}`}
-      >
-        {isLoading && (
-          <div className="absolute inset-0 bg-white/50 backdrop-blur-sm flex items-center justify-center rounded-xl z-20">
-            <Loader2 className="h-3 w-3 animate-spin text-primary" />
-          </div>
-        )}
-        
-        <div className="relative">
-          <TicketCard 
-            ticket={ticket} 
-            viewMode={viewMode}
-            onCopyId={() => onCopyId(ticket.id)}
-          />
-          
-          {ticket.hasNotification && ticket.notificationType && (
-            <div className="absolute right-3 top-3">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className={`p-1.5 rounded-full transition-transform hover:scale-110 ${getNotificationColor(ticket.notificationType)}`}>
-                      {getNotificationIcon(ticket.notificationType)}
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p className="text-xs">{getNotificationText(ticket.notificationType)}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
-          )}
-        </div>
+
+      <div className="flex-1" onClick={handleOpenTicket}>
+        <TicketCard 
+          ticket={{
+            id: ticket.id,
+            subject: ticket.subject,
+            customer: ticket.customer,
+            lastMessage: ticket.lastMessage,
+            assignee: ticket.assignee,
+            company: ticket.company || "",
+            tags: ticket.tags,
+            status: ticket.status,
+            priority: ticket.priority,
+            createdAt: ticket.createdAt,
+            isUnread: ticket.isUnread,
+          }} 
+          viewMode={viewMode}
+          onCopyId={handleCopyId}
+        />
       </div>
+
+      {showInfo && (
+        <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex gap-1">
+          <button 
+            className="p-1 rounded-full hover:bg-gray-200 transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleCopyId();
+            }}
+            aria-label="Copy ticket ID"
+          >
+            <Copy className="h-4 w-4 text-gray-500" />
+          </button>
+          <button 
+            className="p-1 rounded-full hover:bg-gray-200 transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              // Show more details
+            }}
+            aria-label="Show more ticket information"
+          >
+            <Info className="h-4 w-4 text-gray-500" />
+          </button>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,4 +1,3 @@
-
 import { MessageSquare, Building, Tag, Clock, User, UserX, Copy, CheckCircle, Circle } from 'lucide-react';
 import { formatDistanceToNow, format } from 'date-fns';
 import {
@@ -43,7 +42,7 @@ interface TicketCardProps {
 }
 
 const TicketCard = ({ ticket, viewMode, onCopyId }: TicketCardProps) => {
-  const isCompact = viewMode === 'compact';
+  const isCompact = viewMode === 'list';
 
   return (
     <div 

@@ -1,181 +1,129 @@
-
 import { useState, useCallback, useMemo } from 'react';
-import { useToast } from "@/hooks/use-toast";
 import type { Ticket, SortField, SortDirection, ViewMode } from '@/types/ticket';
 
-export const useTicketList = (initialTickets: Ticket[]) => {
-  // Toast hooks
-  const { toast } = useToast();
-
-  // State hooks
+// This is a custom hook to manage ticket list state
+export const useTicketList = (initialTickets: Ticket[] = []) => {
   const [tickets, setTickets] = useState<Ticket[]>(initialTickets);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [priorityFilter, setPriorityFilter] = useState<string>('all');
-  const [sortField, setSortField] = useState<SortField>('date');
-  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
-  const [viewMode, setViewMode] = useState<ViewMode>('expanded');
   const [selectedTickets, setSelectedTickets] = useState<string[]>([]);
-  const [loadingStates, setLoadingStates] = useState<Record<string, boolean>>({});
-
-  const updateTicket = useCallback((updatedTicket: Ticket) => {
-    setTickets(prevTickets => 
-      prevTickets.map(ticket => 
-        ticket.id === updatedTicket.id ? updatedTicket : ticket
-      )
-    );
-  }, []);
-
+  const [sortField, setSortField] = useState<SortField>('createdAt');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterStatus, setFilterStatus] = useState<string[]>([]);
+  const [filterPriority, setFilterPriority] = useState<string[]>([]);
+  const [filterAssignee, setFilterAssignee] = useState<string[]>([]);
+  
   const handleSort = useCallback((field: SortField) => {
-    if (sortField === field) {
-      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+    if (field === sortField) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
     } else {
       setSortField(field);
-      setSortDirection('desc');
+      setSortDirection('asc');
     }
-  }, [sortField]);
+  }, [sortField, sortDirection]);
 
-  const handleTicketSelection = useCallback((ticketId: string) => {
-    setSelectedTickets(prev => 
-      prev.includes(ticketId) 
-        ? prev.filter(id => id !== ticketId)
+  const handleSelectTicket = useCallback((ticketId: string) => {
+    setSelectedTickets((prev) =>
+      prev.includes(ticketId)
+        ? prev.filter((id) => id !== ticketId)
         : [...prev, ticketId]
     );
   }, []);
 
-  const handleSelectAll = useCallback(() => {
-    setSelectedTickets(prev => 
-      prev.length === tickets.length ? [] : tickets.map(t => t.id)
-    );
+  const handleSelectAll = useCallback((checked: boolean) => {
+    if (checked) {
+      setSelectedTickets(tickets.map((ticket) => ticket.id));
+    } else {
+      setSelectedTickets([]);
+    }
   }, [tickets]);
 
-  const markAsRead = useCallback(async (ticketIds: string[]) => {
-    setLoadingStates(prev => {
-      const newStates = { ...prev };
-      ticketIds.forEach(id => {
-        newStates[id] = true;
-      });
-      return newStates;
+  const allSelected = useMemo(() => {
+    return tickets.length > 0 && selectedTickets.length === tickets.length;
+  }, [selectedTickets.length, tickets.length]);
+
+  const indeterminate = useMemo(() => {
+    return selectedTickets.length > 0 && selectedTickets.length < tickets.length;
+  }, [selectedTickets.length, tickets.length]);
+
+  // Sort tickets based on current sort field and direction
+  const sortedTickets = useMemo(() => {
+    if (!tickets.length) return [];
+    
+    return [...tickets].sort((a, b) => {
+      if (sortField === 'createdAt') {
+        const dateA = new Date(a.createdAt).getTime();
+        const dateB = new Date(b.createdAt).getTime();
+        return sortDirection === 'asc' ? dateA - dateB : dateB - dateA;
+      }
+      
+      if (sortField === 'priority') {
+        const priorityValues = { high: 3, medium: 2, low: 1 };
+        const priorityA = priorityValues[a.priority as keyof typeof priorityValues];
+        const priorityB = priorityValues[b.priority as keyof typeof priorityValues];
+        return sortDirection === 'asc' ? priorityA - priorityB : priorityB - priorityA;
+      }
+      
+      // For string comparisons
+      const valueA = String(a[sortField]).toLowerCase();
+      const valueB = String(b[sortField]).toLowerCase();
+      
+      if (sortDirection === 'asc') {
+        return valueA.localeCompare(valueB);
+      } else {
+        return valueB.localeCompare(valueA);
+      }
     });
+  }, [tickets, sortField, sortDirection]);
+  
+  const filteredTickets = useMemo(() => {
+    let filtered = sortedTickets;
 
-    try {
-      // Update local state instead of making API call
-      setTickets(prevTickets => 
-        prevTickets.map(ticket => 
-          ticketIds.includes(ticket.id) 
-            ? { ...ticket, isUnread: false }
-            : ticket
-        )
+    if (searchQuery) {
+      const lowerCaseQuery = searchQuery.toLowerCase();
+      filtered = filtered.filter(ticket =>
+        ticket.subject.toLowerCase().includes(lowerCaseQuery) ||
+        ticket.customer.toLowerCase().includes(lowerCaseQuery)
       );
-
-      toast({
-        description: `${ticketIds.length} ticket(s) marked as read`,
-      });
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        description: "Failed to update ticket status",
-      });
-    } finally {
-      setLoadingStates(prev => {
-        const newStates = { ...prev };
-        ticketIds.forEach(id => {
-          delete newStates[id];
-        });
-        return newStates;
-      });
     }
-  }, [toast]);
 
-  const markAsUnread = useCallback(async (ticketIds: string[]) => {
-    setLoadingStates(prev => {
-      const newStates = { ...prev };
-      ticketIds.forEach(id => {
-        newStates[id] = true;
-      });
-      return newStates;
-    });
-
-    try {
-      // Update local state instead of making API call
-      setTickets(prevTickets => 
-        prevTickets.map(ticket => 
-          ticketIds.includes(ticket.id) 
-            ? { ...ticket, isUnread: true }
-            : ticket
-        )
-      );
-
-      toast({
-        description: `${ticketIds.length} ticket(s) marked as unread`,
-      });
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        description: "Failed to update ticket status",
-      });
-    } finally {
-      setLoadingStates(prev => {
-        const newStates = { ...prev };
-        ticketIds.forEach(id => {
-          delete newStates[id];
-        });
-        return newStates;
-      });
+    if (filterStatus.length > 0) {
+      filtered = filtered.filter(ticket => filterStatus.includes(ticket.status));
     }
-  }, [toast]);
 
-  const sortedAndFilteredTickets = useMemo(() => {
-    return tickets
-      .filter(ticket => {
-        const matchesSearch = 
-          ticket.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          ticket.customer.toLowerCase().includes(searchQuery.toLowerCase());
-        
-        const matchesStatus = statusFilter === 'all' || ticket.status === statusFilter;
-        const matchesPriority = priorityFilter === 'all' || ticket.priority === priorityFilter;
+    if (filterPriority.length > 0) {
+      filtered = filtered.filter(ticket => filterPriority.includes(ticket.priority));
+    }
 
-        return matchesSearch && matchesStatus && matchesPriority;
-      })
-      .sort((a, b) => {
-        const direction = sortDirection === 'asc' ? 1 : -1;
-        
-        switch (sortField) {
-          case 'date':
-            return (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) * direction;
-          case 'priority': {
-            const priorityOrder = { high: 3, medium: 2, low: 1 };
-            return (priorityOrder[a.priority] - priorityOrder[b.priority]) * direction;
-          }
-          case 'status': {
-            const statusOrder = { open: 3, pending: 2, closed: 1 };
-            return (statusOrder[a.status] - statusOrder[b.status]) * direction;
-          }
-          default:
-            return 0;
-        }
-      });
-  }, [tickets, searchQuery, statusFilter, priorityFilter, sortField, sortDirection]);
+    if (filterAssignee.length > 0) {
+      filtered = filtered.filter(ticket => filterAssignee.includes(ticket.assignee || 'unassigned'));
+    }
+
+    return filtered;
+  }, [sortedTickets, searchQuery, filterStatus, filterPriority, filterAssignee]);
 
   return {
-    searchQuery,
-    setSearchQuery,
-    statusFilter,
-    setStatusFilter,
-    priorityFilter,
-    setPriorityFilter,
+    tickets,
+    setTickets,
+    selectedTickets,
+    setSelectedTickets,
     sortField,
     sortDirection,
-    viewMode,
-    setViewMode,
-    selectedTickets,
     handleSort,
-    handleTicketSelection,
+    viewMode, 
+    setViewMode,
+    handleSelectTicket,
     handleSelectAll,
-    sortedAndFilteredTickets,
-    updateTicket,
-    markAsRead,
-    markAsUnread,
-    loadingStates,
+    allSelected,
+    indeterminate,
+    searchQuery,
+    setSearchQuery,
+    filterStatus,
+    setFilterStatus,
+    filterPriority,
+    setFilterPriority,
+    filterAssignee,
+    setFilterAssignee,
+    filteredTickets,
   };
 };

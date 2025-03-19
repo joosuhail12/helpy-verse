@@ -1,129 +1,97 @@
+
 import { useState } from 'react';
-import FilterBar from '../../FilterBar';
-import EmptyTicketState from '../../EmptyTicketState';
-import SortingControls from '../../SortingControls';
-import SelectionControls from '../../SelectionControls';
-import { useTicketList } from '../../hooks/useTicketList';
-import { useTicketShortcuts } from '../../hooks/useTicketShortcuts';
-import { useRealtimeTickets } from '../../hooks/useRealtimeTickets';
-import LoadingState from '../LoadingState';
-import TicketActions from '../TicketActions';
-import MainContent from './MainContent';
-import ConversationPanelContainer from './ConversationPanelContainer';
 import { Button } from '@/components/ui/button';
-import { PlusCircle } from 'lucide-react';
-import CreateTicketDialog from '../ticket-form';
-import type { Ticket } from '@/types/ticket';
+import { Plus } from 'lucide-react';
+import { useTicketList } from '../../hooks/useTicketList';
+import SortingControls from '../../SortingControls';
+import ViewToggle from './ViewToggle';
+import { Ticket } from '@/types/ticket';
+import TicketListItem from '../TicketListItem';
+import EmptyTicketState from '../../EmptyTicketState';
+import SelectionControls from '../../SelectionControls';
+import { CreateTicketDialog } from '../../components/ticket-form';
 
 interface TicketListProps {
   tickets: Ticket[];
-  isLoading?: boolean;
-  onTicketCreated?: (ticket: Ticket) => void;
 }
 
-const TicketList = ({ tickets = [], isLoading = false, onTicketCreated }: TicketListProps) => {
-  const [selectedTicketForChat, setSelectedTicketForChat] = useState<Ticket | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  
+const TicketList = ({ tickets: initialTickets }: TicketListProps) => {
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const {
-    searchQuery,
-    setSearchQuery,
-    statusFilter,
-    setStatusFilter,
-    priorityFilter,
-    setPriorityFilter,
+    tickets,
+    setTickets,
+    selectedTickets,
     sortField,
     sortDirection,
+    handleSort,
     viewMode,
     setViewMode,
-    selectedTickets,
-    handleSort,
-    handleTicketSelection,
+    handleSelectTicket,
     handleSelectAll,
-    sortedAndFilteredTickets,
-    updateTicket,
-    markAsRead,
-    markAsUnread,
-    loadingStates,
-  } = useTicketList(tickets);
+    allSelected,
+    indeterminate,
+  } = useTicketList(initialTickets);
 
-  useTicketShortcuts({
-    handleTicketSelection,
-    handleSort,
-    setViewMode,
-    markAsRead,
-    selectedTickets,
-  });
+  const handleTicketCreated = (newTicket: Ticket) => {
+    setTickets([newTicket, ...tickets]);
+    setCreateDialogOpen(false);
+  };
 
-  useRealtimeTickets(updateTicket);
-
-  if (tickets.length === 0 && !isLoading) {
+  if (tickets.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-full">
-        <EmptyTicketState />
-        <div className="mt-6">
-          <Button onClick={() => setIsCreateDialogOpen(true)}>
-            <PlusCircle className="h-4 w-4 mr-2" />
-            Create Ticket
-          </Button>
-        </div>
-        <CreateTicketDialog 
-          open={isCreateDialogOpen} 
-          onOpenChange={setIsCreateDialogOpen} 
-          onTicketCreated={onTicketCreated}
-        />
-      </div>
+      <EmptyTicketState onCreateTicket={() => setCreateDialogOpen(true)} />
     );
   }
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between px-6 py-3 bg-white border-b">
-        <h2 className="text-xl font-semibold text-gray-900">All Tickets</h2>
-        <Button onClick={() => setIsCreateDialogOpen(true)}>
-          <PlusCircle className="h-4 w-4 mr-2" />
-          Create Ticket
-        </Button>
+    <div className="w-full">
+      <div className="flex justify-between items-center mb-4 px-4 py-2">
+        <div className="flex items-center gap-2">
+          <SelectionControls
+            onSelectAll={handleSelectAll}
+            allSelected={allSelected}
+            indeterminate={indeterminate}
+            selectedCount={selectedTickets.length}
+          />
+          {selectedTickets.length > 0 && (
+            <span className="text-sm text-gray-500">{selectedTickets.length} selected</span>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          <SortingControls
+            sortField={sortField}
+            sortDirection={sortDirection}
+            onSort={handleSort}
+            compact
+          />
+          <ViewToggle viewMode={viewMode} onChangeViewMode={setViewMode} />
+          <Button
+            onClick={() => setCreateDialogOpen(true)}
+            size="sm"
+            className="ml-2"
+          >
+            <Plus className="h-4 w-4 mr-1" />
+            Create Ticket
+          </Button>
+        </div>
       </div>
 
-      <div className="flex flex-1 min-h-0">
-        <MainContent
-          isLoading={isLoading}
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          statusFilter={statusFilter}
-          setStatusFilter={setStatusFilter}
-          priorityFilter={priorityFilter}
-          setPriorityFilter={setPriorityFilter}
-          sortField={sortField}
-          sortDirection={sortDirection}
-          viewMode={viewMode}
-          setViewMode={setViewMode}
-          selectedTickets={selectedTickets}
-          handleSort={handleSort}
-          handleTicketSelection={handleTicketSelection}
-          handleSelectAll={handleSelectAll}
-          sortedAndFilteredTickets={sortedAndFilteredTickets}
-          currentPage={currentPage}
-          setCurrentPage={setCurrentPage}
-          loadingStates={loadingStates}
-          markAsRead={markAsRead}
-          markAsUnread={markAsUnread}
-          onTicketClick={setSelectedTicketForChat}
-          selectedTicketForChat={selectedTicketForChat}
-        />
-        
-        <ConversationPanelContainer
-          selectedTicket={selectedTicketForChat}
-          onClose={() => setSelectedTicketForChat(null)}
-        />
+      <div className="space-y-2">
+        {tickets.map((ticket) => (
+          <TicketListItem
+            key={ticket.id}
+            ticket={ticket}
+            isSelected={selectedTickets.includes(ticket.id)}
+            onSelect={() => handleSelectTicket(ticket.id)}
+            viewMode={viewMode}
+          />
+        ))}
       </div>
-      
-      <CreateTicketDialog 
-        open={isCreateDialogOpen} 
-        onOpenChange={setIsCreateDialogOpen} 
-        onTicketCreated={onTicketCreated}
+
+      <CreateTicketDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+        onTicketCreated={handleTicketCreated}
       />
     </div>
   );
