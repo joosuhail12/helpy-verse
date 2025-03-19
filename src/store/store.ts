@@ -4,7 +4,7 @@ import authReducer from './slices/authSlice';
 import userReducer from './slices/user/userSlice';
 import contactsReducer from './slices/contacts/contactsSlice';
 import tagsReducer from './slices/tagsSlice';
-import companiesReducer from './slices/contacts/companiesSlice';
+import companiesReducer from './slices/companies/companiesSlice';
 import contentCenterReducer from './slices/automation/contentCenterSlice';
 import { actionsReducer } from './slices/actions/actionsSlice';
 import { chatbotsReducer } from './slices/chatbots/chatbotsSlice';

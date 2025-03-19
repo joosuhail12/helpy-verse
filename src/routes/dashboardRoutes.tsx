@@ -21,44 +21,50 @@ export const dashboardRoutes = [
         </Suspense>
       </ProtectedRoute>
     ),
-    children: [
-      {
-        path: 'contacts/all',
-        element: (
-          <Suspense fallback={<LoadingSpinner />}>
-            <AllContacts />
-          </Suspense>
-        ),
-      },
-      {
-        path: 'contacts/companies',
-        element: (
-          <Suspense fallback={<LoadingSpinner />}>
-            <Companies />
-          </Suspense>
-        ),
-      },
-      {
-        path: 'contacts/companies/:id',
-        element: (
-          <Suspense fallback={<LoadingSpinner />}>
-            <CompanyDetail />
-          </Suspense>
-        ),
-      },
-      {
-        path: 'contacts/:id',
-        element: (
-          <Suspense fallback={<LoadingSpinner />}>
-            <ContactDetail />
-          </Suspense>
-        ),
-      },
-      // Redirect default path to a meaningful location
-      {
-        path: '',
-        element: <Navigate to="/home/contacts/all" replace />,
-      },
-    ],
+  },
+  {
+    path: 'home/contacts/all',
+    element: (
+      <ProtectedRoute>
+        <Suspense fallback={<LoadingSpinner />}>
+          <AllContacts />
+        </Suspense>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: 'home/contacts/companies',
+    element: (
+      <ProtectedRoute>
+        <Suspense fallback={<LoadingSpinner />}>
+          <Companies />
+        </Suspense>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: 'home/contacts/companies/:id',
+    element: (
+      <ProtectedRoute>
+        <Suspense fallback={<LoadingSpinner />}>
+          <CompanyDetail />
+        </Suspense>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: 'home/contacts/:id',
+    element: (
+      <ProtectedRoute>
+        <Suspense fallback={<LoadingSpinner />}>
+          <ContactDetail />
+        </Suspense>
+      </ProtectedRoute>
+    ),
+  },
+  // Redirect default path to a meaningful location
+  {
+    path: '',
+    element: <Navigate to="/home/contacts/all" replace />,
   },
 ];
