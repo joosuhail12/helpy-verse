@@ -6,7 +6,8 @@ import { Loader2 } from 'lucide-react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { fetchUserData } from '@/store/slices/authSlice';
 import { HttpClient } from '@/api/services/http';
-import { isAuthenticated, getAuthToken } from '@/utils/auth/tokenManager';
+import { isAuthenticated, getAuthToken, isTokenExpired } from '@/utils/auth/tokenManager';
+import { refreshToken } from '@/store/slices/auth/authActions';
 
 export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
@@ -19,14 +20,30 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     const checkAuth = async () => {
       console.log('ProtectedRoute: Checking authentication status');
       
-      // Get token directly from tokenManager or fallback to cookie/localStorage
-      const token = getAuthToken() || localStorage.getItem("token") || sessionStorage.getItem("token");
-      const hasToken = !!token || isAuthenticated();
-      console.log('ProtectedRoute: Token exists:', hasToken, 'Token value:', token?.slice(0, 10));
-      setHasValidToken(hasToken);
+      // Get token directly from tokenManager
+      const token = getAuthToken();
+      const isTokenPresent = !!token;
+      console.log('ProtectedRoute: Token exists:', isTokenPresent, 'Token value:', token?.slice(0, 10));
       
-      // Ensure axios is configured with the token
-      if (hasToken && token) {
+      // Check token validity
+      if (isTokenPresent) {
+        // Check if token is expired
+        if (isTokenExpired()) {
+          console.log('Token is expired, attempting to refresh');
+          try {
+            // Try to refresh the token
+            await dispatch(refreshToken()).unwrap();
+            console.log('Token refreshed successfully');
+          } catch (error) {
+            console.error('Token refresh failed:', error);
+            setHasValidToken(false);
+            setIsChecking(false);
+            return;
+          }
+        }
+        
+        // Token is valid or was refreshed
+        setHasValidToken(true);
         console.log('ProtectedRoute: Found valid token, configuring axios');
         HttpClient.apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
         HttpClient.setAxiosDefaultConfig(token);
@@ -41,6 +58,7 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
         }
       } else {
         console.log('ProtectedRoute: No valid token found');
+        setHasValidToken(false);
       }
       
       // Short delay to ensure state is settled
@@ -72,8 +90,8 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  // CRITICAL: We prioritize token existence over Redux state
-  if (hasValidToken) {
+  // We prioritize token existence over Redux state
+  if (hasValidToken && isAuthenticated()) {
     console.log('ProtectedRoute: Token exists, rendering protected content', location.pathname);
     return <>{children}</>;
   }

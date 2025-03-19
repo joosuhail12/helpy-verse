@@ -9,6 +9,7 @@ import {
 } from '@/utils/helpers/helpers';
 import { get } from "lodash";
 import { Credentials, PasswordResetConfirmation, PasswordResetRequest, RegistrationCredentials } from './types';
+import { AUTH_ENDPOINTS } from '@/api/services/http/config';
 
 // Authentication actions
 
@@ -18,14 +19,14 @@ export const loginUser = createAsyncThunk(
     try {
       console.log("Attempting login for:", credentials.email);
       
-      // Make sure to use the correct endpoint and payload structure
-      const response = await HttpClient.apiClient.post("/auth/login", {
+      // Ensure we're using the consistent endpoint from config
+      const response = await HttpClient.apiClient.post(AUTH_ENDPOINTS.LOGIN, {
         username: credentials.email,
         password: credentials.password,
         recaptchaId: "",
       });
 
-      console.log("Login response:", response.data);
+      console.log("Login response received:", response.status);
       
       const loginData = response.data?.data;
       if (loginData) {
@@ -38,6 +39,16 @@ export const loginUser = createAsyncThunk(
         if (token) {
           console.log("Setting token from login response");
           handleSetToken(token);
+          
+          // Store user ID for convenience if available
+          if (loginData.id) {
+            localStorage.setItem("userId", loginData.id);
+          }
+          
+          // Store user role if available
+          if (loginData.role) {
+            localStorage.setItem("role", loginData.role);
+          }
         } else {
           console.error("No token received in login response");
         }
@@ -80,7 +91,14 @@ export const registerUser = createAsyncThunk(
   'auth/register',
   async (credentials: RegistrationCredentials, { rejectWithValue }) => {
     try {
-      const response = await HttpClient.apiClient.post('/auth/register', credentials);
+      const response = await HttpClient.apiClient.post(AUTH_ENDPOINTS.REGISTER, credentials);
+      
+      // If registration returns a token, set it
+      const token = get(response, 'data.data.accessToken.token', '');
+      if (token) {
+        handleSetToken(token);
+      }
+      
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || "Registration failed");
@@ -92,7 +110,7 @@ export const requestPasswordReset = createAsyncThunk(
   'auth/requestPasswordReset',
   async (credentials: PasswordResetRequest, { rejectWithValue }) => {
     try {
-      const response = await HttpClient.apiClient.post('/auth/forgot-password', credentials);
+      const response = await HttpClient.apiClient.post(AUTH_ENDPOINTS.FORGOT_PASSWORD, credentials);
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Password reset request failed');
@@ -104,10 +122,32 @@ export const confirmPasswordReset = createAsyncThunk(
   'auth/confirmPasswordReset',
   async (credentials: PasswordResetConfirmation, { rejectWithValue }) => {
     try {
-      const response = await HttpClient.apiClient.post('/auth/reset-password', credentials);
+      const response = await HttpClient.apiClient.post(AUTH_ENDPOINTS.RESET_PASSWORD, credentials);
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Password reset failed');
+    }
+  }
+);
+
+// Add a refresh token thunk
+export const refreshToken = createAsyncThunk(
+  'auth/refreshToken',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await HttpClient.apiClient.post(AUTH_ENDPOINTS.REFRESH_TOKEN);
+      
+      // Set the new token
+      const token = get(response, 'data.data.accessToken.token', '');
+      if (token) {
+        handleSetToken(token);
+      } else {
+        return rejectWithValue('No token received from refresh endpoint');
+      }
+      
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Token refresh failed');
     }
   }
 );

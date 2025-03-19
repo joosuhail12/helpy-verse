@@ -3,14 +3,30 @@
  * Token and authentication management utility functions
  */
 import { HttpClient, cookieFunctions } from "@/api/services/http";
+import { jwtDecode } from "jwt-decode";
 
 // Get cookie helpers from HttpClient to avoid circular dependencies
 const { getCookie, setCookie } = cookieFunctions;
 
 // 🟢 Logout User
-export const handleLogout = (): void => {
-    // Use the logout function from HttpClient to avoid circular dependencies
-    cookieFunctions.handleLogout();
+export const handleLogout = async (): Promise<void> => {
+    try {
+        // Attempt to call logout endpoint if we have a token
+        const token = getAuthToken();
+        if (token) {
+            try {
+                await HttpClient.apiClient.post('/auth/logout');
+                console.log('Logout API call successful');
+            } catch (error) {
+                console.warn('Logout API call failed, proceeding with local logout', error);
+            }
+        }
+    } catch (error) {
+        console.error('Error during logout process:', error);
+    } finally {
+        // Always clear local tokens regardless of API call success
+        cookieFunctions.handleLogout();
+    }
 };
 
 // 🟢 Set Auth Token
@@ -24,8 +40,30 @@ export const handleSetToken = (token: string): boolean => {
     try {
         console.log("Setting auth token:", token.substring(0, 10) + "...");
         
-        // Set the cookie with a long expiration (30 days)
-        setCookie("customerToken", token, 30);
+        // Try to decode the token to validate and extract expiry
+        try {
+            const decoded = jwtDecode(token);
+            const expiry = decoded.exp;
+            
+            if (expiry && typeof expiry === 'number') {
+                // Calculate days until expiry for cookie
+                const now = Math.floor(Date.now() / 1000);
+                const secondsUntilExpiry = expiry - now;
+                const daysUntilExpiry = Math.max(1, Math.floor(secondsUntilExpiry / (60 * 60 * 24)));
+                
+                console.log(`Token valid for approximately ${daysUntilExpiry} days`);
+                
+                // Set the cookie with proper expiration from JWT
+                setCookie("customerToken", token, daysUntilExpiry);
+            } else {
+                // Fallback to 30 day expiry if we couldn't extract from token
+                setCookie("customerToken", token, 30);
+            }
+        } catch (decodeError) {
+            console.warn("Could not decode token, using default expiry", decodeError);
+            // Set the cookie with a long expiration (30 days)
+            setCookie("customerToken", token, 30);
+        }
         
         // Also store in localStorage as backup
         localStorage.setItem("token", token);
@@ -89,6 +127,24 @@ export const getAuthToken = (): string => {
     }
     
     return "";
+};
+
+// Check if token is expired
+export const isTokenExpired = (): boolean => {
+    const token = getAuthToken();
+    if (!token) return true;
+    
+    try {
+        const decoded = jwtDecode<{exp: number}>(token);
+        if (!decoded.exp) return true;
+        
+        // Check if current time is past expiration
+        const currentTime = Math.floor(Date.now() / 1000);
+        return decoded.exp < currentTime;
+    } catch (error) {
+        console.error("Error checking token expiration:", error);
+        return true; // If we can't decode, consider it expired
+    }
 };
 
 // 🟢 Workspace ID Management
