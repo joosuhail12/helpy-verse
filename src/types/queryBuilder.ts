@@ -14,11 +14,30 @@ export interface QueryGroup {
 
 export type FieldType = 'string' | 'number' | 'boolean' | 'date' | 'select' | 'multi-select' | 'email' | 'phone' | 'text';
 export type ComparisonOperator = 
-  'equals' | 'notEquals' | 'contains' | 'startsWith' | 'endsWith' | 
-  'greaterThan' | 'lessThan' | 'in' | 'notIn' | 'exists' | 'notExists' |
-  'custom_range' | 'last_n_days' | 'next_n_days' | 'rolling_days' |
-  // Add string literals used in components
-  'not_equals' | 'starts_with' | 'greater_than' | 'less_than' | 'between' | 'not_in';
+  | 'equals' 
+  | 'notEquals' 
+  | 'contains' 
+  | 'startsWith' 
+  | 'endsWith' 
+  | 'greaterThan' 
+  | 'lessThan' 
+  | 'in' 
+  | 'notIn' 
+  | 'exists' 
+  | 'notExists'
+  | 'custom_range' 
+  | 'last_n_days' 
+  | 'next_n_days' 
+  | 'rolling_days'
+  // String literals used in audience rule components
+  | 'not_equals' 
+  | 'starts_with' 
+  | 'ends_with'
+  | 'greater_than' 
+  | 'less_than' 
+  | 'between' 
+  | 'not_in'
+  | 'not_contains';
 
 export type DataSource = 'contacts' | 'companies' | 'tickets' | 'custom_objects' | 'conversations';
 
@@ -29,4 +48,10 @@ export interface QueryField {
   source: DataSource;
   customObject?: string;
   options?: string[];
+}
+
+export interface ParameterDependency {
+  paramId: string;
+  operator: ComparisonOperator;
+  value: string;
 }

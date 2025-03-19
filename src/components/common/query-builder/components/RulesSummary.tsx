@@ -1,97 +1,82 @@
 
 import React from 'react';
-import { QueryGroup, QueryField, QueryRule } from '@/types/queryBuilder';
+import { QueryGroup, QueryRule } from '@/types/queryBuilder';
+import { getOperatorLabel } from './utils';
 
-// Helper function to get operator display label
-const getOperatorLabel = (operator: string): string => {
+interface RulesSummaryProps {
+  queryGroup: QueryGroup;
+  depth?: number;
+}
+
+export const getOperatorLabel = (operator: string): string => {
   const operatorMap: Record<string, string> = {
-    'equals': 'equals',
-    'notEquals': 'not equals',
-    'contains': 'contains',
-    'startsWith': 'starts with',
-    'endsWith': 'ends with',
-    'greaterThan': 'greater than',
-    'lessThan': 'less than',
-    'in': 'in',
-    'notIn': 'not in',
-    'exists': 'is set',
-    'notExists': 'is not set',
-    'custom_range': 'between',
-    'last_n_days': 'last n days',
-    'next_n_days': 'next n days',
-    'rolling_days': 'rolling days',
-    'not_equals': 'not equals',
-    'starts_with': 'starts with',
-    'greater_than': 'greater than',
-    'less_than': 'less than',
-    'between': 'between',
-    'not_in': 'not in'
+    equals: 'equals',
+    notEquals: 'does not equal',
+    contains: 'contains',
+    not_contains: 'does not contain',
+    startsWith: 'starts with',
+    starts_with: 'starts with',
+    endsWith: 'ends with',
+    ends_with: 'ends with',
+    greaterThan: 'is greater than',
+    greater_than: 'is greater than',
+    lessThan: 'is less than',
+    less_than: 'is less than',
+    between: 'is between',
+    in: 'is in list',
+    notIn: 'is not in list',
+    not_in: 'is not in list',
+    exists: 'exists',
+    notExists: 'does not exist',
+    custom_range: 'is in range',
+    last_n_days: 'is in last',
+    next_n_days: 'is in next',
+    rolling_days: 'is in rolling period',
   };
-  
+
   return operatorMap[operator] || operator;
 };
 
-interface RulesSummaryProps {
-  group: QueryGroup;
-  fields: QueryField[];
-}
-
-export const RulesSummary: React.FC<RulesSummaryProps> = ({ group, fields }) => {
-  const renderValue = (rule: QueryRule): string => {
-    if (rule.operator === 'exists' || rule.operator === 'notExists') {
-      return '';
-    }
-    
-    if (Array.isArray(rule.value)) {
-      return rule.value.join(', ');
-    }
-    
-    return String(rule.value || '');
-  };
-
-  const renderRule = (rule: QueryRule): string => {
-    const field = fields.find(f => f.id === rule.field);
-    if (!field) return 'Invalid field';
-    
-    return `${field.label} ${getOperatorLabel(rule.operator)} ${renderValue(rule)}`;
-  };
-
-  const renderGroup = (group: QueryGroup, depth = 0): JSX.Element => {
-    if (group.rules.length === 0) {
-      return <div className="text-muted-foreground">No rules defined</div>;
-    }
-    
-    return (
-      <div className={depth > 0 ? "ml-4" : ""}>
-        {group.rules.map((rule, index) => {
-          const isNotFirst = index > 0;
-          
-          return (
-            <div key={rule.id}>
-              {isNotFirst && (
-                <div className="text-sm font-medium my-1 text-muted-foreground">
-                  {group.combinator.toUpperCase()}
-                </div>
-              )}
-              
-              {'field' in rule ? (
-                <div className="text-sm">{renderRule(rule as QueryRule)}</div>
-              ) : (
-                <div className="border-l-2 border-gray-200 pl-2 my-2">
-                  {renderGroup(rule as QueryGroup, depth + 1)}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
+export const RulesSummary: React.FC<RulesSummaryProps> = ({ queryGroup, depth = 0 }) => {
+  const indent = depth * 20;
 
   return (
-    <div className="bg-slate-50 p-4 rounded-lg border">
-      <h3 className="text-sm font-medium mb-3">Rule Summary</h3>
-      {renderGroup(group)}
+    <div className="space-y-2 text-sm">
+      {queryGroup.rules.length === 0 ? (
+        <p className="text-muted-foreground italic">No rules defined</p>
+      ) : (
+        <>
+          {queryGroup.rules.map((rule, index) => {
+            if ('field' in rule) {
+              // This is a QueryRule
+              return (
+                <div key={rule.id} style={{ marginLeft: `${indent}px` }}>
+                  <span>
+                    {index > 0 && <span className="font-semibold mx-1">{queryGroup.combinator.toUpperCase()}</span>}
+                    <span className="font-medium">{rule.field}</span>{' '}
+                    <span>{getOperatorLabel(rule.operator)}</span>{' '}
+                    <span className="font-medium">{JSON.stringify(rule.value)}</span>
+                  </span>
+                </div>
+              );
+            } else {
+              // This is a nested QueryGroup
+              return (
+                <div key={rule.id}>
+                  {index > 0 && (
+                    <div style={{ marginLeft: `${indent}px` }} className="my-1 font-semibold">
+                      {queryGroup.combinator.toUpperCase()}
+                    </div>
+                  )}
+                  <div className="border-l-2 border-gray-300 dark:border-gray-700 pl-2">
+                    <RulesSummary queryGroup={rule} depth={depth + 1} />
+                  </div>
+                </div>
+              );
+            }
+          })}
+        </>
+      )}
     </div>
   );
 };

@@ -21,6 +21,7 @@ export interface Activity {
   description: string;
   date: string;
   metadata: ActivityMetadata;
+  subject?: string; // Added to support subject in activity components
 }
 
 export interface InteractionMetrics {
@@ -29,4 +30,3 @@ export interface InteractionMetrics {
   mostFrequentType: ActivityType;
   lastInteraction: string;
 }
-

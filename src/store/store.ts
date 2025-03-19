@@ -1,33 +1,38 @@
 
 import { configureStore, combineReducers } from '@reduxjs/toolkit';
-import auth from './slices/auth/authSlice';
-import tags from './slices/tags/tagsSlice';
-import tickets from './slices/tickets/ticketsSlice';
-import content from './slices/content/contentSlice';
-import contacts from './slices/contacts/contactsSlice';
-import companies from './slices/companies/companiesSlice';
-import actions from './slices/actions/actionsSlice';
-import chatbots from './slices/chatbots/chatbotsSlice';
-import contentCenter from './slices/automation/contentCenterSlice';
-import cannedResponses from './slices/cannedResponses/cannedResponsesSlice';
-import emailChannels from './slices/emailChannels/emailChannelsSlice';
-import teams from './slices/teams/teamsSlice';
-import teammates from './slices/teammates/teammatesSlice';
+import authReducer from './slices/auth/authSlice';
+// Import tags from tagsSlice
+import ticketsReducer from './slices/tickets/ticketsSlice';
+import contentReducer from './slices/content/contentSlice';
+import contactsReducer from './slices/contacts/contactsSlice';
+import companiesReducer from './slices/companies/companiesSlice';
+import { actionsReducer } from './slices/actions/actionsSlice';
+import { chatbotsReducer } from './slices/chatbots/chatbotsSlice';
+import contentCenterReducer from './slices/automation/contentCenterSlice';
+import { cannedResponsesReducer } from './slices/cannedResponses/cannedResponsesSlice';
+import { emailChannelsReducer } from './slices/emailChannels/emailChannelsSlice';
+import teamsReducer from './slices/teams/teamsSlice';
+import teammatesReducer from './slices/teammates/teammatesSlice';
+
+// Create a temporary tags reducer until we have the actual implementation
+const tagsReducer = (state = { tags: [] }, action: any) => {
+  return state;
+};
 
 const rootReducer = combineReducers({
-  auth,
-  tags,
-  tickets,
-  content,
-  contacts,
-  companies,
-  actions,
-  chatbots,
-  contentCenter,
-  cannedResponses,
-  emailChannels,
-  teams,
-  teammates,
+  auth: authReducer,
+  tags: tagsReducer,
+  tickets: ticketsReducer,
+  content: contentReducer,
+  contacts: contactsReducer,
+  companies: companiesReducer,
+  actions: actionsReducer,
+  chatbots: chatbotsReducer,
+  contentCenter: contentCenterReducer,
+  cannedResponses: cannedResponsesReducer,
+  emailChannels: emailChannelsReducer,
+  teams: teamsReducer,
+  teammates: teammatesReducer,
 });
 
 export const store = configureStore({

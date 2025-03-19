@@ -85,7 +85,7 @@ export const DataConstraintValidator = ({ queryGroup }: DataConstraintValidatorP
       }
       
       // Check for numeric operators on text fields
-      if (field.type === 'string' || field.type === 'text' || field.type === 'email') {
+      if (field.type === 'string' || field.type === 'email' || field.type === 'phone') {
         if (rule.operator === 'greaterThan' || rule.operator === 'lessThan') {
           constraints.push({
             message: `The operator "${rule.operator}" may not be appropriate for text field "${field.label}".`,
@@ -125,7 +125,7 @@ export const DataConstraintValidator = ({ queryGroup }: DataConstraintValidatorP
   return (
     <div className="space-y-3">
       {constraints.map((constraint, index) => (
-        <Alert key={index} variant={constraint.severity === 'error' ? 'destructive' : constraint.severity === 'warning' ? 'default' : 'secondary'}>
+        <Alert key={index} variant={constraint.severity === 'error' ? 'destructive' : 'default'}>
           <ShieldAlert className="h-4 w-4" />
           <AlertTitle>Data Constraint</AlertTitle>
           <AlertDescription>

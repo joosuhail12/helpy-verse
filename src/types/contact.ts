@@ -44,8 +44,18 @@ export interface ContactCompanyInfoProps {
 
 export interface ContactTicketsProps {
   contactId: string;
+  contactName?: string;
 }
 
 export interface QuickNoteInputProps {
   contact: Contact;
+}
+
+export interface ContactTagsProps {
+  contactId: string;
+}
+
+export interface ContactListItemProps {
+  contact: Contact;
+  onClick?: () => void;
 }

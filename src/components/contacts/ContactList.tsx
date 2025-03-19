@@ -1,120 +1,137 @@
 
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Checkbox } from '@/components/ui/checkbox';
-import type { Contact } from '@/types/contact';
-import { ContactListItem } from './ContactListItem';
-import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { selectContact, fetchCustomers, setSelectedContacts } from '@/store/slices/contacts/contactsSlice';
+import React, { useState } from 'react';
 import { useAppSelector } from '@/hooks/useAppSelector';
-import { LoadingState } from './LoadingState';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { ChevronDown, ChevronUp, MoreHorizontal, Check } from 'lucide-react';
+import { ContactListItem } from './ContactListItem';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuCheckboxItem,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
+import type { Contact } from '@/types/contact';
 
-interface ContactListProps {
-  contacts: Contact[];
-  loading?: boolean;
-}
+export function ContactList() {
+  const contacts = useAppSelector((state) => state.contacts.items);
+  const [sort, setSort] = useState<'name' | 'updated'>('updated');
+  const [order, setOrder] = useState<'asc' | 'desc'>('desc');
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [showSelect, setShowSelect] = useState(false);
 
-const ContactList = ({ contacts, loading = false }: ContactListProps) => {
-  const navigate = useNavigate();
-  const dispatch = useAppDispatch();
-  const { selectedContacts } = useAppSelector(state => state.contacts);
-  const [initialLoadAttempted, setInitialLoadAttempted] = useState(false);
-
-  useEffect(() => {
-    console.log('ContactList mount - contacts:', contacts?.length, 'loading:', loading);
-    
-    if (!initialLoadAttempted && contacts.length === 0 && !loading) {
-      console.log('No contacts found, fetching customers...');
-      setInitialLoadAttempted(true);
-      dispatch(fetchCustomers())
-        .unwrap()
-        .then((result) => {
-          console.log('Fetch customers successful:', result);
-        })
-        .catch((error) => {
-          console.error('Fetch customers failed:', error);
-        });
-    }
-  }, [dispatch, contacts.length, loading, initialLoadAttempted]);
-
-  const handleSelectAll = (checked: boolean) => {
-    console.log('Select all toggled:', checked);
-    if (checked) {
-      dispatch(setSelectedContacts(contacts.map(contact => contact.id)));
+  const sortedContacts = [...contacts].sort((a, b) => {
+    if (sort === 'name') {
+      const nameA = `${a.firstname} ${a.lastname}`.toLowerCase();
+      const nameB = `${b.firstname} ${b.lastname}`.toLowerCase();
+      return order === 'asc' 
+        ? nameA.localeCompare(nameB) 
+        : nameB.localeCompare(nameA);
     } else {
-      dispatch(setSelectedContacts([]));
+      const dateA = new Date(a.updatedAt).getTime();
+      const dateB = new Date(b.updatedAt).getTime();
+      return order === 'asc' ? dateA - dateB : dateB - dateA;
+    }
+  });
+
+  const handleSort = (field: 'name' | 'updated') => {
+    if (field === sort) {
+      setOrder(order === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSort(field);
+      setOrder('desc');
     }
   };
 
-  const handleContactClick = (contact: Contact) => {
-    console.log('Contact clicked:', contact.id);
-    dispatch(selectContact(contact.id));
-    navigate(`/home/contacts/${contact.id}`);
+  const toggleSelect = (id: string) => {
+    if (selectedIds.includes(id)) {
+      setSelectedIds(selectedIds.filter(i => i !== id));
+    } else {
+      setSelectedIds([...selectedIds, id]);
+    }
   };
 
-  if (loading) {
-    console.log('Rendering loading state');
-    return <LoadingState />;
-  }
+  const selectAll = () => {
+    if (selectedIds.length === contacts.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(contacts.map(c => c.id));
+    }
+  };
 
-  if (contacts.length === 0) {
-    console.log('Rendering empty state');
-    return (
-      <div className="p-6 text-center border rounded-md bg-white">
-        <p className="text-muted-foreground">No contacts found</p>
-        <Button 
-          onClick={() => {
-            console.log('Refresh contacts clicked');
-            dispatch(fetchCustomers());
-          }} 
-          className="mt-4"
-          variant="outline"
-        >
-          Refresh Contacts
-        </Button>
-      </div>
-    );
-  }
+  const handleItemClick = (contact: Contact) => {
+    // Navigate to contact details or handle selection
+  };
 
-  console.log('Rendering contact list with', contacts.length, 'contacts');
   return (
-    <div className="overflow-x-auto border rounded-md bg-white">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-12">
-              <Checkbox 
-                onCheckedChange={handleSelectAll}
-                checked={selectedContacts.length > 0 && selectedContacts.length === contacts.length}
-              />
-            </TableHead>
-            <TableHead>Contact</TableHead>
-            <TableHead>Company</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {contacts.map((contact) => (
-            <ContactListItem
-              key={contact.id}
-              contact={contact}
-              onClick={() => handleContactClick(contact)}
+    <div className="space-y-2">
+      <div className="flex justify-between items-center">
+        <div className="flex space-x-4 items-center">
+          {showSelect && (
+            <Checkbox 
+              checked={selectedIds.length > 0 && selectedIds.length === contacts.length}
+              onCheckedChange={selectAll}
+              className="ml-2"
             />
-          ))}
-        </TableBody>
-      </Table>
+          )}
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-muted-foreground"
+            onClick={() => handleSort('name')}
+          >
+            Name
+            {sort === 'name' && (
+              order === 'asc' ? <ChevronUp className="ml-1 h-4 w-4" /> : <ChevronDown className="ml-1 h-4 w-4" />
+            )}
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-muted-foreground"
+            onClick={() => handleSort('updated')}
+          >
+            Last Updated
+            {sort === 'updated' && (
+              order === 'asc' ? <ChevronUp className="ml-1 h-4 w-4" /> : <ChevronDown className="ml-1 h-4 w-4" />
+            )}
+          </Button>
+        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon">
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuCheckboxItem
+              checked={showSelect}
+              onCheckedChange={() => setShowSelect(!showSelect)}
+            >
+              Show Checkboxes
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>
+              Export Contacts
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              Import Contacts
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      <div className="space-y-1">
+        {sortedContacts.map(contact => (
+          <ContactListItem
+            key={contact.id}
+            contact={contact}
+            onClick={() => handleItemClick(contact)}
+          />
+        ))}
+      </div>
     </div>
   );
-};
-
-export default ContactList;
+}

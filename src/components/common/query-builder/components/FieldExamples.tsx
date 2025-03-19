@@ -3,7 +3,7 @@ import React from 'react';
 import { FieldType } from '@/types/queryBuilder';
 
 export interface FieldExamplesProps {
-  fieldType: FieldType;
+  fieldType: FieldType | string;
 }
 
 export const FieldExamples: React.FC<FieldExamplesProps> = ({ fieldType }) => {
