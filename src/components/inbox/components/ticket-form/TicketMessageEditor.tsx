@@ -70,14 +70,18 @@ const TicketMessageEditor = ({ content, onChange }: TicketMessageEditorProps) =>
         files={[]}
         isAttachmentSheetOpen={false}
         setIsAttachmentSheetOpen={() => {}}
+        className="border-b border-gray-100 bg-gray-50/80"
       />
       <div 
-        className="cursor-text min-h-[180px] max-h-[240px] overflow-y-auto"
+        className={cn(
+          "cursor-text min-h-[180px] max-h-[240px] overflow-y-auto",
+          "transition-colors focus-within:bg-white/80"
+        )}
         onClick={() => editor?.commands.focus()}
       >
         <EditorContent 
           editor={editor} 
-          className="p-3 overflow-y-auto prose prose-sm max-w-none focus:outline-none"
+          className="p-3 overflow-y-auto prose prose-sm max-w-none focus:outline-none h-full"
         />
       </div>
     </div>
