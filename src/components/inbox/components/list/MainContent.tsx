@@ -7,6 +7,11 @@ import LoadingState from '../LoadingState';
 import TicketActions from '../TicketActions';
 import TicketListItem from '../TicketListItem';
 import type { Ticket, SortField, ViewMode } from '@/types/ticket';
+import { 
+  ResizablePanelGroup, 
+  ResizablePanel, 
+  ResizableHandle 
+} from '@/components/ui/resizable';
 
 interface MainContentProps {
   isLoading: boolean;
@@ -74,99 +79,126 @@ const MainContent = ({
     });
   };
 
+  if (selectedTicketForChat) {
+    return (
+      <ResizablePanelGroup
+        direction="horizontal"
+        className="h-full w-full overflow-hidden transition-all duration-300 ease-in-out"
+      >
+        <ResizablePanel 
+          defaultSize={40} 
+          minSize={25} 
+          className="flex flex-col h-full overflow-hidden transition-all duration-300"
+        >
+          {renderTicketList()}
+        </ResizablePanel>
+        
+        <ResizableHandle withHandle className="transition-opacity duration-300 hover:opacity-100 opacity-40" />
+        
+        <ResizablePanel defaultSize={60} minSize={30}>
+          {/* Conversation panel goes here */}
+        </ResizablePanel>
+      </ResizablePanelGroup>
+    );
+  }
+
   return (
-    <div className={`flex flex-col h-full w-full overflow-hidden transition-all duration-300 ${
-      selectedTicketForChat 
-        ? 'w-full md:w-3/5 lg:w-2/5' 
-        : 'w-full'
-    }`}>
-      <div className="flex-none px-4 pt-4 pb-2">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-100">
-          <div className="p-4 space-y-4">
-            <FilterBar
-              searchQuery={searchQuery}
-              setSearchQuery={setSearchQuery}
-              statusFilter={statusFilter}
-              setStatusFilter={setStatusFilter}
-              priorityFilter={priorityFilter}
-              setPriorityFilter={setPriorityFilter}
-            />
-            
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-4 border-t">
-              <SelectionControls
-                selectedCount={selectedTickets.length}
-                totalCount={sortedAndFilteredTickets.length}
-                onSelectAll={handleSelectAll}
+    <div className="flex flex-col h-full w-full overflow-hidden animate-fade-in">
+      {renderTicketList()}
+    </div>
+  );
+
+  function renderTicketList() {
+    return (
+      <>
+        <div className="flex-none px-4 pt-4 pb-2">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-100">
+            <div className="p-4 space-y-4">
+              <FilterBar
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                statusFilter={statusFilter}
+                setStatusFilter={setStatusFilter}
+                priorityFilter={priorityFilter}
+                setPriorityFilter={setPriorityFilter}
               />
               
-              <div className="flex items-center gap-4">
-                <TicketActions
-                  selectedTickets={selectedTickets}
-                  markAsRead={markAsRead}
-                  markAsUnread={markAsUnread}
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-4 border-t">
+                <SelectionControls
+                  selectedCount={selectedTickets.length}
+                  totalCount={sortedAndFilteredTickets.length}
+                  onSelectAll={handleSelectAll}
                 />
-                <SortingControls
-                  sortField={sortField}
-                  sortDirection={sortDirection}
-                  onSort={handleSort}
-                  compact={!!selectedTicketForChat}
-                />
+                
+                <div className="flex items-center gap-4">
+                  <TicketActions
+                    selectedTickets={selectedTickets}
+                    markAsRead={markAsRead}
+                    markAsUnread={markAsUnread}
+                  />
+                  <SortingControls
+                    sortField={sortField}
+                    sortDirection={sortDirection}
+                    onSort={handleSort}
+                    compact={!!selectedTicketForChat}
+                  />
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="flex-1 overflow-auto px-4 pb-4">
-        {isLoading ? (
-          <LoadingState />
-        ) : (
-          <div className="space-y-2">
-            {paginatedTickets.map((ticket) => (
-              <div
-                key={ticket.id}
-                onClick={() => onTicketClick(ticket)}
-                className="transform transition-all duration-200 hover:-translate-y-0.5"
-              >
-                <TicketListItem
-                  ticket={ticket}
-                  viewMode={selectedTicketForChat ? "compact" : viewMode}
-                  isSelected={selectedTickets.includes(ticket.id)}
-                  isLoading={!!loadingStates[ticket.id]}
-                  onSelect={(e: React.MouseEvent) => {
-                    e.stopPropagation();
-                    handleTicketSelection(ticket.id);
-                  }}
-                  onCopyId={(id: string, e: React.MouseEvent) => {
-                    e.stopPropagation();
-                    handleCopyTicketId(id);
-                  }}
-                />
-              </div>
-            ))}
+        <div className="flex-1 overflow-auto px-4 pb-4">
+          {isLoading ? (
+            <LoadingState />
+          ) : (
+            <div className="space-y-2">
+              {paginatedTickets.map((ticket) => (
+                <div
+                  key={ticket.id}
+                  onClick={() => onTicketClick(ticket)}
+                  className="transform transition-all duration-200 hover:-translate-y-0.5"
+                >
+                  <TicketListItem
+                    ticket={ticket}
+                    viewMode={selectedTicketForChat ? "compact" : viewMode}
+                    isSelected={selectedTickets.includes(ticket.id)}
+                    isLoading={!!loadingStates[ticket.id]}
+                    onSelect={(e: React.MouseEvent) => {
+                      e.stopPropagation();
+                      handleTicketSelection(ticket.id);
+                    }}
+                    onCopyId={(id: string, e: React.MouseEvent) => {
+                      e.stopPropagation();
+                      handleCopyTicketId(id);
+                    }}
+                  />
+                </div>
+              ))}
 
-            {totalPages > 1 && (
-              <div className="flex justify-center gap-2 my-4">
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                  <button
-                    key={page}
-                    onClick={() => setCurrentPage(page)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                      currentPage === page
-                        ? 'bg-primary text-white shadow-md shadow-primary/20'
-                        : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
-                    }`}
-                  >
-                    {page}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
-  );
+              {totalPages > 1 && (
+                <div className="flex justify-center gap-2 my-4">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                        currentPage === page
+                          ? 'bg-primary text-white shadow-md shadow-primary/20'
+                          : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </>
+    );
+  }
 };
 
 export default MainContent;

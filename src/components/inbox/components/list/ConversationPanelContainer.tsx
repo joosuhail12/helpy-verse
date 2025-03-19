@@ -16,7 +16,7 @@ const ConversationPanelContainer = ({
   if (!selectedTicket) return null;
 
   return (
-    <div className="flex flex-col h-full w-full overflow-hidden bg-white">
+    <div className="flex flex-col h-full w-full overflow-hidden bg-white animate-fade-in">
       <div className="md:hidden flex-none sticky top-0 z-10 p-2 bg-white border-b">
         <Button 
           variant="ghost" 
