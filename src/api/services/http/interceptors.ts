@@ -19,6 +19,11 @@ const processRefreshQueue = () => {
 
 // Request Interceptor - Adds Token & Workspace ID to all requests
 export const requestInterceptor = async (config: InternalAxiosRequestConfig): Promise<InternalAxiosRequestConfig> => {
+    // Check for network connectivity first
+    if (!navigator.onLine) {
+        console.error("Network is offline - request will likely fail");
+    }
+    
     // Get token for each request
     const token = getAuthToken();
     
@@ -84,10 +89,14 @@ export const responseErrorInterceptor = (error: any) => {
     console.error(`API Error: ${status || 'network'} ${errorMessage} (${errorCode}) on ${requestUrl}`);
 
     // Network errors - provide a clearer message
-    if (error.code === 'ERR_NETWORK') {
+    if (!navigator.onLine || error.code === 'ERR_NETWORK' || error.message.includes('Network Error')) {
         console.log('Network error detected - server might be unavailable');
+        error.isOfflineError = true;
         // Don't log out on network errors, just report the issue
-        return Promise.reject(new Error("Cannot connect to the server. Please check your network connection or try again later."));
+        return Promise.reject({
+            message: "Cannot connect to the server. Please check your network connection and try again later.",
+            isOfflineError: true
+        });
     }
 
     // Handle authentication errors
@@ -133,13 +142,19 @@ export const responseErrorInterceptor = (error: any) => {
             });
         } else {
             // Just a regular auth error during login
-            return Promise.reject(new Error("Authentication failed. Please log in again."));
+            return Promise.reject({
+                message: "Authentication failed. Please check your credentials and try again.",
+                isAuthError: true
+            });
         }
     }
 
     // For server errors, provide a clearer message
     if (status >= 500) {
-        return Promise.reject(new Error("Server error. Please try again later."));
+        return Promise.reject({
+            message: "Server error. Please try again later.",
+            isServerError: true
+        });
     }
 
     return Promise.reject(error);

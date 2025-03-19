@@ -9,7 +9,7 @@ export const getApiBaseUrl = () => {
   // For development, fallback to the default from .env.development
   const apiUrl = import.meta.env.VITE_API_URL || 
                 import.meta.env.REACT_APP_API_URL || 
-                'http://localhost:4000/api';
+                'https://api.your-domain.com/api'; // Change from localhost to a production URL
   
   console.log('API Base URL configured:', apiUrl);
   return apiUrl;
@@ -31,3 +31,9 @@ export const AUTH_ENDPOINTS = {
   RESET_PASSWORD: '/auth/reset-password',
   USER_PROFILE: '/user/profile'
 };
+
+// Default timeout for API requests (in ms)
+export const DEFAULT_TIMEOUT = 15000; // 15 seconds
+
+// Maximum retries for critical API calls
+export const MAX_RETRIES = 2;

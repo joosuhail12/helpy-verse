@@ -17,6 +17,15 @@ export const loginUser = createAsyncThunk(
   "auth/login",
   async (credentials: Credentials, { rejectWithValue }) => {
     try {
+      // Check for offline status first
+      if (HttpClient.isOffline()) {
+        console.error("Device is offline - cannot connect to authentication server");
+        return rejectWithValue({
+          message: "You are currently offline. Please check your internet connection and try again.",
+          isOfflineError: true
+        });
+      }
+      
       console.log("Attempting login for:", credentials.email);
       
       // Ensure we're using the consistent endpoint from config
@@ -51,6 +60,7 @@ export const loginUser = createAsyncThunk(
           }
         } else {
           console.error("No token received in login response");
+          return rejectWithValue("Authentication server did not provide a valid token. Please try again.");
         }
 
         // Set workspace ID if available
@@ -70,9 +80,36 @@ export const loginUser = createAsyncThunk(
     } catch (error: any) {
       console.error("Login error:", error);
       
+      // Check if this is an offline error
+      if (error.isOfflineError || !navigator.onLine) {
+        return rejectWithValue({
+          message: "You are currently offline. Please check your internet connection and try again.",
+          isOfflineError: true
+        });
+      }
+      
+      // Check if this is an auth error
+      if (error.isAuthError) {
+        return rejectWithValue({
+          message: "Invalid email or password. Please check your credentials and try again.",
+          isAuthError: true
+        });
+      }
+      
+      // Check if this is a server error
+      if (error.isServerError) {
+        return rejectWithValue({
+          message: "The authentication server is currently unavailable. Please try again later.",
+          isServerError: true
+        });
+      }
+      
       // Provide more specific error messages based on the error type
       if (error.code === 'ERR_NETWORK') {
-        return rejectWithValue("Cannot connect to the server. Please check your network connection or try again later.");
+        return rejectWithValue({
+          message: "Cannot connect to the authentication server. Please check your network connection or try again later.",
+          isOfflineError: true
+        });
       }
       
       // Log detailed error information for debugging

@@ -1,6 +1,6 @@
 
 import axios from 'axios';
-import { API_BASE_URL, LLM_SERVICE_URL } from './config';
+import { API_BASE_URL, LLM_SERVICE_URL, DEFAULT_TIMEOUT } from './config';
 import { 
   requestInterceptor, 
   requestErrorInterceptor, 
@@ -15,7 +15,7 @@ const apiClient = axios.create({
     headers: {
       "Content-Type": "application/json",
     },
-    timeout: 30000, // 30 seconds timeout
+    timeout: DEFAULT_TIMEOUT,
     withCredentials: true, // Important for handling cookies across domains if needed
 });
 
@@ -47,9 +47,15 @@ const llmService = axios.create({
 llmService.interceptors.request.use(requestInterceptor, requestErrorInterceptor);
 llmService.interceptors.response.use(responseInterceptor, responseErrorInterceptor);
 
+// Offline check utility
+export const isOffline = (): boolean => {
+  return !navigator.onLine;
+};
+
 // ✅ API Call Wrapper
 export const HttpClient = {
     apiClient, // Standard API client
     llmService, // LLM-specific instance
     setAxiosDefaultConfig,
+    isOffline,
 };

@@ -6,6 +6,7 @@ import { useAppSelector } from './useAppSelector';
 import { loginUser } from '../store/slices/authSlice';
 import { toast } from '../components/ui/use-toast';
 import { handleSetToken, isAuthenticated } from '@/utils/auth/tokenManager';
+import { HttpClient } from '@/api/services/http';
 
 /**
  * Custom hook to handle login functionality
@@ -14,17 +15,36 @@ export const useLogin = (redirectPath: string = '/home') => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const auth = useAppSelector((state) => state.auth);
   const loading = auth?.loading ?? false;
   
+  // Listen for online/offline status changes
+  useEffect(() => {
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+    
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+  
   // Check for auth errors and show toast
   useEffect(() => {
     if (auth.error && !loading && !isSubmitting) {
+      const errorMessage = typeof auth.error === 'object' && 'message' in auth.error 
+        ? auth.error.message 
+        : auth.error;
+        
       toast({
         title: 'Error',
-        description: auth.error || 'Login failed. Please try again.',
+        description: errorMessage || 'Login failed. Please try again.',
         variant: 'destructive',
       });
     }
@@ -33,6 +53,16 @@ export const useLogin = (redirectPath: string = '/home') => {
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmitting || !email || !password) return;
+    
+    // Check if offline first
+    if (isOffline || HttpClient.isOffline()) {
+      toast({
+        title: 'You\'re offline',
+        description: 'Please check your internet connection and try again.',
+        variant: 'destructive',
+      });
+      return;
+    }
     
     try {
       setIsSubmitting(true);
@@ -66,9 +96,15 @@ export const useLogin = (redirectPath: string = '/home') => {
       }
     } catch (error: any) {
       console.error('Login error:', error);
+      
+      // Check for specific error types
+      const errorMessage = error?.message || 
+        (typeof error === 'object' && 'message' in error ? error.message : null) ||
+        'Login failed. Please try again.';
+      
       toast({
-        title: 'Error',
-        description: error.message || 'Login failed. Please try again.',
+        title: error?.isOfflineError ? 'Connection Error' : 'Login Error',
+        description: errorMessage,
         variant: 'destructive',
       });
     } finally {
@@ -82,6 +118,7 @@ export const useLogin = (redirectPath: string = '/home') => {
     password,
     setPassword,
     loading: loading || isSubmitting,
+    isOffline,
     handleLoginSubmit
   };
 };

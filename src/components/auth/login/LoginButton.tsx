@@ -8,8 +8,7 @@ interface LoginButtonProps {
 }
 
 export const LoginButton: React.FC<LoginButtonProps> = ({ 
-  isLoading,
-  isDevelopmentMode = false
+  isLoading
 }) => {
   return (
     <button 
