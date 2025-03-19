@@ -38,9 +38,9 @@ export const useLogin = (redirectPath: string = '/home') => {
   // Check for auth errors and show toast
   useEffect(() => {
     if (auth.error && !loading && !isSubmitting) {
-      const errorMessage = typeof auth.error === 'object' && 'message' in auth.error 
-        ? auth.error.message 
-        : auth.error;
+      const errorMessage = typeof auth.error === 'object' && auth.error !== null && 'message' in auth.error 
+        ? (auth.error as { message: string }).message 
+        : String(auth.error);
         
       toast({
         title: 'Error',
