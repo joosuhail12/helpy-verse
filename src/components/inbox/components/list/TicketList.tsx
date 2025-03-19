@@ -58,67 +58,77 @@ const TicketList = ({ tickets: initialTickets, isLoading = false, onTicketCreate
   }
 
   return (
-    <div className="w-full h-full flex">
-      <div className={`flex-1 overflow-auto ${selectedTicket ? 'hidden md:block md:w-1/2 lg:w-2/5' : 'w-full'}`}>
-        <div className="flex justify-between items-center mb-4 px-4 py-2">
-          <div className="flex items-center gap-2">
-            <SelectionControls
-              onSelectAll={handleSelectAll}
-              allSelected={allSelected}
-              indeterminate={indeterminate}
-              selectedCount={selectedTickets.length}
-            />
-            {selectedTickets.length > 0 && (
-              <span className="text-sm text-gray-500">{selectedTickets.length} selected</span>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            <SortingControls
-              sortField={sortField}
-              sortDirection={sortDirection}
-              onSort={handleSort}
-              compact
-            />
-            <ViewToggle viewMode={viewMode} onChangeViewMode={setViewMode} />
-            <Button
-              onClick={() => setCreateDialogOpen(true)}
-              size="sm"
-              className="ml-2"
-            >
-              <Plus className="h-4 w-4 mr-1" />
-              Create Ticket
-            </Button>
+    <div className="flex h-full w-full overflow-hidden">
+      <div className={`flex-1 flex flex-col overflow-hidden ${
+        selectedTicket ? 'hidden md:flex md:w-2/5' : 'w-full'
+      }`}>
+        <div className="sticky top-0 bg-white z-10 border-b p-4">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+            <div className="flex items-center gap-2">
+              <SelectionControls
+                onSelectAll={handleSelectAll}
+                allSelected={allSelected}
+                indeterminate={indeterminate}
+                selectedCount={selectedTickets.length}
+              />
+            </div>
+            <div className="flex items-center gap-2 flex-wrap justify-end">
+              <SortingControls
+                sortField={sortField}
+                sortDirection={sortDirection}
+                onSort={handleSort}
+                compact
+              />
+              <ViewToggle viewMode={viewMode} onChangeViewMode={setViewMode} />
+              <Button
+                onClick={() => setCreateDialogOpen(true)}
+                size="sm"
+                className="ml-auto sm:ml-2"
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                Create Ticket
+              </Button>
+            </div>
           </div>
         </div>
 
-        <div className="space-y-2 px-4">
-          {isLoading ? (
-            <div className="flex justify-center items-center h-40">
-              <div className="animate-pulse">Loading tickets...</div>
-            </div>
-          ) : (
-            tickets.map((ticket) => (
-              <div 
-                key={ticket.id} 
-                onClick={() => handleTicketClick(ticket)}
-                className="cursor-pointer"
-              >
-                <TicketListItem
-                  ticket={ticket}
-                  isSelected={selectedTickets.includes(ticket.id)}
-                  onSelect={() => handleSelectTicket(ticket.id)}
-                  viewMode={viewMode}
-                />
+        <div className="flex-1 overflow-auto p-4">
+          <div className="space-y-2">
+            {isLoading ? (
+              <div className="flex justify-center items-center h-40">
+                <div className="animate-pulse">Loading tickets...</div>
               </div>
-            ))
-          )}
+            ) : (
+              tickets.map((ticket) => (
+                <div 
+                  key={ticket.id} 
+                  onClick={() => handleTicketClick(ticket)}
+                  className="cursor-pointer transition-all hover:translate-y-[-2px] hover:shadow-md"
+                >
+                  <TicketListItem
+                    ticket={ticket}
+                    isSelected={selectedTickets.includes(ticket.id)}
+                    onSelect={(e) => {
+                      e.stopPropagation();
+                      handleSelectTicket(ticket.id);
+                    }}
+                    viewMode={viewMode}
+                  />
+                </div>
+              ))
+            )}
+          </div>
         </div>
       </div>
 
-      <ConversationPanelContainer 
-        selectedTicket={selectedTicket} 
-        onClose={handleCloseConversation} 
-      />
+      {selectedTicket && (
+        <div className="flex-1 md:w-3/5 border-l h-full">
+          <ConversationPanelContainer 
+            selectedTicket={selectedTicket} 
+            onClose={handleCloseConversation} 
+          />
+        </div>
+      )}
 
       <CreateTicketDialog
         open={createDialogOpen}

@@ -75,7 +75,7 @@ const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
           />
         </div>
         
-        <div className="w-80 border-l hidden lg:block">
+        <div className="w-80 border-l hidden lg:block overflow-y-auto">
           <CustomerContextPanel ticket={ticket} />
         </div>
       </div>
