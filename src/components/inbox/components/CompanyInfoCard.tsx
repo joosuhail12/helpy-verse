@@ -3,9 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Building2, ChevronUp, ChevronDown, Globe, Users, DollarSign, Calendar, Pencil, Check, X, Loader2 } from "lucide-react";
-import { useState } from "react";
-import { Input } from "@/components/ui/input";
+import { Building2, ChevronUp, ChevronDown, Globe, Users, DollarSign, Calendar } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
 import { InlineEditField } from "@/components/companies/detail/InlineEditField";
 
@@ -17,110 +15,17 @@ interface CompanyInfoCardProps {
 
 const CompanyInfoCard = ({ company, isOpen, onToggle }: CompanyInfoCardProps) => {
   const { toast } = useToast();
-  const [editingField, setEditingField] = useState<string | null>(null);
-  const [fieldValues, setFieldValues] = useState({
+  const mockCompanyId = "mock-company-id";
+
+  // This would typically be fetched from the API or redux store
+  const companyData = {
+    id: mockCompanyId,
     name: company,
     website: `${company.toLowerCase()}.com`,
-    employees: '250-500 employees',
-    revenue: '$50M - $100M revenue',
-    founded: 'Founded in 2015'
-  });
-  const [isSaving, setIsSaving] = useState(false);
-
-  const handleEditField = (field: string) => {
-    setEditingField(field);
-  };
-
-  const handleSaveField = async (field: string) => {
-    setIsSaving(true);
-    
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      toast({
-        title: "Field updated",
-        description: `${field} has been successfully updated.`,
-      });
-      
-    } catch (error) {
-      toast({
-        title: "Update failed",
-        description: `There was an error updating ${field.toLowerCase()}.`,
-        variant: "destructive",
-      });
-    } finally {
-      setIsSaving(false);
-      setEditingField(null);
-    }
-  };
-
-  const handleCancelEdit = () => {
-    setEditingField(null);
-  };
-
-  const handleFieldChange = (field: string, value: string) => {
-    setFieldValues({
-      ...fieldValues,
-      [field]: value
-    });
-  };
-
-  const renderEditableField = (field: string, icon: React.ReactNode, value: string) => {
-    const isEditing = editingField === field;
-    
-    return (
-      <div className="flex items-center gap-2 text-sm">
-        {icon}
-        {isEditing ? (
-          <div className="flex flex-1 items-center gap-2">
-            <Input
-              value={fieldValues[field as keyof typeof fieldValues]}
-              onChange={(e) => handleFieldChange(field, e.target.value)}
-              className="h-7 text-sm flex-1"
-              disabled={isSaving}
-              autoFocus
-            />
-            <div className="flex items-center">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => handleSaveField(field)}
-                disabled={isSaving}
-                className="h-7 w-7 p-0"
-              >
-                {isSaving ? (
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                ) : (
-                  <Check className="h-3 w-3 text-green-500" />
-                )}
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleCancelEdit}
-                disabled={isSaving}
-                className="h-7 w-7 p-0"
-              >
-                <X className="h-3 w-3 text-red-500" />
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <div className="flex flex-1 items-center justify-between group">
-            <span className="text-gray-600">{value}</span>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleEditField(field)}
-              className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-            >
-              <Pencil className="h-3 w-3 text-gray-400" />
-            </Button>
-          </div>
-        )}
-      </div>
-    );
+    employees: '250-500',
+    revenue: '$50M - $100M',
+    founded: '2015',
+    customerSince: 'March 2024'
   };
 
   return (
@@ -140,10 +45,11 @@ const CompanyInfoCard = ({ company, isOpen, onToggle }: CompanyInfoCardProps) =>
             <div className="flex items-center justify-between">
               <span className="text-gray-500">Company Name</span>
               <InlineEditField
-                value={company}
-                companyId="mock-company-id"
+                value={companyData.name}
+                companyId={mockCompanyId}
                 field="name"
                 label="Company Name"
+                validation={[{ type: 'required', value: '', message: 'Company name is required' }]}
               />
             </div>
             <div className="flex items-center justify-between">
@@ -157,36 +63,65 @@ const CompanyInfoCard = ({ company, isOpen, onToggle }: CompanyInfoCardProps) =>
             <div className="flex items-center justify-between">
               <span className="text-gray-500">Customer Since</span>
               <InlineEditField
-                value="March 2024"
-                companyId="mock-company-id"
+                value={companyData.customerSince}
+                companyId={mockCompanyId}
                 field="customerSince"
                 label="Customer Since"
               />
             </div>
             
-            {renderEditableField(
-              'website',
-              <Globe className="h-4 w-4 text-gray-400" />,
-              fieldValues.website
-            )}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Globe className="h-4 w-4 text-gray-400" />
+                <span className="text-gray-500">Website</span>
+              </div>
+              <InlineEditField
+                value={companyData.website}
+                companyId={mockCompanyId}
+                field="website"
+                label="Website"
+                type="url"
+              />
+            </div>
             
-            {renderEditableField(
-              'employees',
-              <Users className="h-4 w-4 text-gray-400" />,
-              fieldValues.employees
-            )}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Users className="h-4 w-4 text-gray-400" />
+                <span className="text-gray-500">Employees</span>
+              </div>
+              <InlineEditField
+                value={companyData.employees}
+                companyId={mockCompanyId}
+                field="employees"
+                label="Employees"
+              />
+            </div>
             
-            {renderEditableField(
-              'revenue',
-              <DollarSign className="h-4 w-4 text-gray-400" />,
-              fieldValues.revenue
-            )}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <DollarSign className="h-4 w-4 text-gray-400" />
+                <span className="text-gray-500">Revenue</span>
+              </div>
+              <InlineEditField
+                value={companyData.revenue}
+                companyId={mockCompanyId}
+                field="revenue"
+                label="Revenue"
+              />
+            </div>
             
-            {renderEditableField(
-              'founded',
-              <Calendar className="h-4 w-4 text-gray-400" />,
-              fieldValues.founded
-            )}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-gray-400" />
+                <span className="text-gray-500">Founded</span>
+              </div>
+              <InlineEditField
+                value={companyData.founded}
+                companyId={mockCompanyId}
+                field="founded"
+                label="Founded"
+              />
+            </div>
           </div>
         </CollapsibleContent>
       </Card>

@@ -4,11 +4,10 @@ import { Card } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { 
   UserCircle, Mail, Phone, Globe, ChevronUp, ChevronDown, 
-  MapPin, Clock, Languages, Tag, Pencil, Check, X, Loader2
+  MapPin, Clock, Languages, Tag
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
 import { useToast } from '@/hooks/use-toast';
 import { InlineEditField } from "@/components/contacts/detail/InlineEditField";
 
@@ -21,112 +20,26 @@ interface ContactInfoCardProps {
 
 const ContactInfoCard = ({ customer, company, isOpen, onToggle }: ContactInfoCardProps) => {
   const { toast } = useToast();
-  const [editingField, setEditingField] = useState<string | null>(null);
-  const [fieldValues, setFieldValues] = useState({
+  const mockContactId = "mock-contact-id";
+
+  // This would typically be fetched from the API or redux store
+  const contactData = {
+    id: mockContactId,
     name: customer,
     email: `${customer.toLowerCase().replace(' ', '.')}@${company.toLowerCase()}.com`,
     phone: '+1 (555) 123-4567',
     website: `${company.toLowerCase()}.com`,
     location: 'San Francisco, CA',
     timezone: 'PST (UTC-8)',
-    language: 'English'
-  });
-  const [isSaving, setIsSaving] = useState(false);
-
-  const handleEditField = (field: string) => {
-    setEditingField(field);
+    language: 'English',
+    type: 'customer'
   };
 
-  const handleSaveField = async (field: string) => {
-    setIsSaving(true);
-    
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      toast({
-        title: "Field updated",
-        description: `${field} has been successfully updated.`,
-      });
-      
-    } catch (error) {
-      toast({
-        title: "Update failed",
-        description: `There was an error updating ${field.toLowerCase()}.`,
-        variant: "destructive",
-      });
-    } finally {
-      setIsSaving(false);
-      setEditingField(null);
-    }
-  };
-
-  const handleCancelEdit = () => {
-    setEditingField(null);
-  };
-
-  const handleFieldChange = (field: string, value: string) => {
-    setFieldValues({
-      ...fieldValues,
-      [field]: value
+  const handleSaveSuccess = (fieldName: string) => {
+    toast({
+      title: "Field updated",
+      description: `${fieldName} has been successfully updated.`,
     });
-  };
-
-  const renderEditableField = (field: string, icon: React.ReactNode, label: string, value: string) => {
-    const isEditing = editingField === field;
-    
-    return (
-      <div className="flex items-center gap-2 text-sm">
-        {icon}
-        {isEditing ? (
-          <div className="flex flex-1 items-center gap-2">
-            <Input
-              value={fieldValues[field as keyof typeof fieldValues]}
-              onChange={(e) => handleFieldChange(field, e.target.value)}
-              className="h-7 text-sm flex-1"
-              disabled={isSaving}
-              autoFocus
-            />
-            <div className="flex items-center">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => handleSaveField(field)}
-                disabled={isSaving}
-                className="h-7 w-7 p-0"
-              >
-                {isSaving ? (
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                ) : (
-                  <Check className="h-3 w-3 text-green-500" />
-                )}
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleCancelEdit}
-                disabled={isSaving}
-                className="h-7 w-7 p-0"
-              >
-                <X className="h-3 w-3 text-red-500" />
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <div className="flex flex-1 items-center justify-between group">
-            <span className="text-gray-600">{value}</span>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleEditField(field)}
-              className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-            >
-              <Pencil className="h-3 w-3 text-gray-400" />
-            </Button>
-          </div>
-        )}
-      </div>
-    );
   };
 
   return (
@@ -146,10 +59,11 @@ const ContactInfoCard = ({ customer, company, isOpen, onToggle }: ContactInfoCar
             <div className="flex items-center justify-between">
               <span className="text-gray-500 text-sm">Name</span>
               <InlineEditField 
-                value={customer}
-                contactId="mock-contact-id" 
+                value={contactData.name}
+                contactId={mockContactId} 
                 label="Name"
                 field="name"
+                onSave={() => handleSaveSuccess("Name")}
               />
             </div>
             
@@ -158,47 +72,92 @@ const ContactInfoCard = ({ customer, company, isOpen, onToggle }: ContactInfoCar
               <Badge variant="outline" className="bg-blue-50 text-blue-700">Customer</Badge>
             </div>
             
-            {renderEditableField(
-              'email', 
-              <Mail className="h-4 w-4 text-gray-400" />, 
-              'Email',
-              fieldValues.email
-            )}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Mail className="h-4 w-4 text-gray-400" />
+                <span className="text-gray-500 text-sm">Email</span>
+              </div>
+              <InlineEditField
+                value={contactData.email}
+                contactId={mockContactId}
+                field="email"
+                label="Email"
+                type="email"
+                onSave={() => handleSaveSuccess("Email")}
+              />
+            </div>
             
-            {renderEditableField(
-              'phone', 
-              <Phone className="h-4 w-4 text-gray-400" />, 
-              'Phone',
-              fieldValues.phone
-            )}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Phone className="h-4 w-4 text-gray-400" />
+                <span className="text-gray-500 text-sm">Phone</span>
+              </div>
+              <InlineEditField
+                value={contactData.phone}
+                contactId={mockContactId}
+                field="phone"
+                label="Phone"
+                type="phone"
+                onSave={() => handleSaveSuccess("Phone")}
+              />
+            </div>
             
-            {renderEditableField(
-              'website', 
-              <Globe className="h-4 w-4 text-gray-400" />, 
-              'Website',
-              fieldValues.website
-            )}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Globe className="h-4 w-4 text-gray-400" />
+                <span className="text-gray-500 text-sm">Website</span>
+              </div>
+              <InlineEditField
+                value={contactData.website}
+                contactId={mockContactId}
+                field="website"
+                label="Website"
+                type="url"
+                onSave={() => handleSaveSuccess("Website")}
+              />
+            </div>
             
-            {renderEditableField(
-              'location', 
-              <MapPin className="h-4 w-4 text-gray-400" />, 
-              'Location',
-              fieldValues.location
-            )}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <MapPin className="h-4 w-4 text-gray-400" />
+                <span className="text-gray-500 text-sm">Location</span>
+              </div>
+              <InlineEditField
+                value={contactData.location}
+                contactId={mockContactId}
+                field="location"
+                label="Location"
+                onSave={() => handleSaveSuccess("Location")}
+              />
+            </div>
             
-            {renderEditableField(
-              'timezone', 
-              <Clock className="h-4 w-4 text-gray-400" />, 
-              'Timezone',
-              fieldValues.timezone
-            )}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Clock className="h-4 w-4 text-gray-400" />
+                <span className="text-gray-500 text-sm">Timezone</span>
+              </div>
+              <InlineEditField
+                value={contactData.timezone}
+                contactId={mockContactId}
+                field="timezone"
+                label="Timezone"
+                onSave={() => handleSaveSuccess("Timezone")}
+              />
+            </div>
             
-            {renderEditableField(
-              'language', 
-              <Languages className="h-4 w-4 text-gray-400" />, 
-              'Language',
-              fieldValues.language
-            )}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Languages className="h-4 w-4 text-gray-400" />
+                <span className="text-gray-500 text-sm">Language</span>
+              </div>
+              <InlineEditField
+                value={contactData.language}
+                contactId={mockContactId}
+                field="language"
+                label="Language"
+                onSave={() => handleSaveSuccess("Language")}
+              />
+            </div>
             
             <div className="flex items-center gap-2 text-sm">
               <Tag className="h-4 w-4 text-gray-400" />

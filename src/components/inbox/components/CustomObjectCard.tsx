@@ -2,12 +2,12 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Database, ChevronUp, ChevronDown, Pencil, Check, X, Loader2 } from "lucide-react";
+import { Database, ChevronUp, ChevronDown } from "lucide-react";
 import { mockCustomObjects } from '@/mock/customObjects';
 import { Skeleton } from "@/components/ui/skeleton";
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
 import { useToast } from '@/hooks/use-toast';
+import { InlineEditField } from "@/components/contacts/detail/InlineEditField";
 
 interface CustomObjectCardProps {
   customerId: string;
@@ -18,72 +18,54 @@ interface CustomObjectCardProps {
 
 const CustomObjectCard = ({ customerId, ticketId, isOpen, onToggle }: CustomObjectCardProps) => {
   const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+  
   // Filter custom objects that are connected with tickets or customers
   const relevantObjects = mockCustomObjects.filter(
     obj => (obj.connectionType === 'ticket' || obj.connectionType === 'customer') && 
            obj.showInCustomerContext
   );
 
-  const isLoading = false;
+  // Prepare mock data for fields
+  const [fieldValues, setFieldValues] = useState<Record<string, string>>(() => {
+    const initialValues: Record<string, string> = {};
+    relevantObjects.forEach(obj => {
+      obj.fields.forEach(field => {
+        const key = `${obj.id}_${field.id}`;
+        // Generate some sample values
+        if (field.type === 'text') {
+          initialValues[key] = field.id === 'name' ? 'Sample Name' : 
+                              field.id === 'description' ? 'Sample description' : 
+                              field.id === 'reference' ? 'REF-12345' : 'Value';
+        } else if (field.type === 'number') {
+          initialValues[key] = Math.floor(Math.random() * 1000).toString();
+        } else if (field.type === 'select') {
+          initialValues[key] = field.options?.[0] || '';
+        } else {
+          initialValues[key] = '';
+        }
+      });
+    });
+    return initialValues;
+  });
 
-  // State to track which field is being edited
-  const [editingField, setEditingField] = useState<string | null>(null);
-  // State to store temporary field values during editing
-  const [fieldValues, setFieldValues] = useState<Record<string, string>>({});
-  // Loading state for save operation
-  const [isSaving, setIsSaving] = useState(false);
+  const handleFieldSave = (objectId: string, fieldId: string, value: string) => {
+    // In a real app, this would dispatch to Redux or call an API
+    const key = `${objectId}_${fieldId}`;
+    setFieldValues(prev => ({
+      ...prev,
+      [key]: value
+    }));
+    
+    toast({
+      title: "Field updated",
+      description: "The field has been successfully updated.",
+    });
+  };
 
   if (relevantObjects.length === 0) {
     return null;
   }
-
-  const handleEditField = (objectId: string, fieldId: string, currentValue: string) => {
-    const key = `${objectId}_${fieldId}`;
-    setFieldValues({ 
-      ...fieldValues, 
-      [key]: currentValue 
-    });
-    setEditingField(key);
-  };
-
-  const handleSaveField = async (objectId: string, fieldId: string) => {
-    const key = `${objectId}_${fieldId}`;
-    setIsSaving(true);
-    
-    try {
-      // Simulate API call to update the field
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      // Show success toast
-      toast({
-        title: "Field updated",
-        description: "The field has been successfully updated.",
-      });
-      
-      // In a real application, you would update the Redux store or API here
-      
-    } catch (error) {
-      toast({
-        title: "Update failed",
-        description: "There was an error updating the field.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSaving(false);
-      setEditingField(null);
-    }
-  };
-
-  const handleCancelEdit = () => {
-    setEditingField(null);
-  };
-
-  const handleFieldChange = (key: string, value: string) => {
-    setFieldValues({
-      ...fieldValues,
-      [key]: value
-    });
-  };
 
   return (
     <Collapsible open={isOpen} onOpenChange={onToggle}>
@@ -112,61 +94,21 @@ const CustomObjectCard = ({ customerId, ticketId, isOpen, onToggle }: CustomObje
                   <div className="grid gap-2">
                     {object.fields.map((field) => {
                       const fieldKey = `${object.id}_${field.id}`;
-                      const isEditing = editingField === fieldKey;
                       
                       return (
                         <div key={field.id} className="flex items-center justify-between text-sm">
                           <span className="text-gray-500">{field.name}</span>
-                          
-                          {isEditing ? (
-                            <div className="flex items-center gap-1">
-                              <Input
-                                value={fieldValues[fieldKey] || ""}
-                                onChange={(e) => handleFieldChange(fieldKey, e.target.value)}
-                                className="h-7 w-36 text-sm"
-                                disabled={isSaving}
-                                autoFocus
-                              />
-                              <div className="flex items-center">
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleSaveField(object.id, field.id)}
-                                  disabled={isSaving}
-                                  className="h-7 w-7 p-0"
-                                >
-                                  {isSaving ? (
-                                    <Loader2 className="h-3 w-3 animate-spin" />
-                                  ) : (
-                                    <Check className="h-3 w-3 text-green-500" />
-                                  )}
-                                </Button>
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={handleCancelEdit}
-                                  disabled={isSaving}
-                                  className="h-7 w-7 p-0"
-                                >
-                                  <X className="h-3 w-3 text-red-500" />
-                                </Button>
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-1 group">
-                              <span className="text-gray-600">{fieldValues[fieldKey] || "-"}</span>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleEditField(object.id, field.id, fieldValues[fieldKey] || "")}
-                                className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                              >
-                                <Pencil className="h-3 w-3 text-gray-400" />
-                              </Button>
-                            </div>
-                          )}
+                          <div className="w-1/2">
+                            <InlineEditField
+                              value={fieldValues[fieldKey] || ""}
+                              contactId={customerId}  // Using customerId as a fallback
+                              field={fieldKey}
+                              label={field.name}
+                              type={field.type as any}
+                              options={field.options}
+                              onSave={(newValue) => handleFieldSave(object.id, field.id, newValue)}
+                            />
+                          </div>
                         </div>
                       );
                     })}
