@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { Provider } from 'react-redux';
-import { BrowserRouter } from "react-router-dom";
 import { store } from '@/store/store';
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
@@ -22,15 +21,13 @@ const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
         <TooltipProvider>
           <Toaster />
           <Sonner />
-          <BrowserRouter>
-            <AppErrorBoundary>
-              <CaslProvider>
-                <AppInitializer>
-                  {children}
-                </AppInitializer>
-              </CaslProvider>
-            </AppErrorBoundary>
-          </BrowserRouter>
+          <AppErrorBoundary>
+            <CaslProvider>
+              <AppInitializer>
+                {children}
+              </AppInitializer>
+            </CaslProvider>
+          </AppErrorBoundary>
         </TooltipProvider>
       </AppQueryProvider>
     </Provider>
