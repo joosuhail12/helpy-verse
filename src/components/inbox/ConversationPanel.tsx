@@ -36,44 +36,48 @@ const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
   };
 
   return (
-    <div className="h-full flex">
-      <div className="flex-1 flex flex-col bg-white">
-        <ConversationHeader 
-          ticket={ticket} 
-          onClose={onClose} 
-          activeUsers={activeUsers}
-        />
-        
-        {error ? (
-          <Alert variant="destructive" className="m-4">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              {error}
-            </AlertDescription>
-          </Alert>
-        ) : (
-          <MessageList
-            messages={messages}
-            typingUsers={typingUsers}
-            ticket={ticket}
-            onReply={setNewMessage}
-            isLoading={isLoading}
-          />
-        )}
-
-        <MessageInput
-          newMessage={newMessage}
-          onMessageChange={setNewMessage}
-          onKeyPress={handleKeyPress}
-          onSendMessage={handleSendMessage}
-          ticket={ticket}
-          isSending={isSending}
-          disabled={!!error}
-        />
-      </div>
+    <div className="h-full flex flex-col overflow-hidden">
+      <ConversationHeader 
+        ticket={ticket} 
+        onClose={onClose} 
+        activeUsers={activeUsers}
+      />
       
-      <div className="w-80 border-l">
-        <CustomerContextPanel ticket={ticket} />
+      <div className="flex-1 flex overflow-hidden">
+        <div className="flex-1 flex flex-col bg-white overflow-hidden">
+          {error ? (
+            <Alert variant="destructive" className="m-4">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                {error}
+              </AlertDescription>
+            </Alert>
+          ) : (
+            <div className="flex-1 overflow-auto">
+              <MessageList
+                messages={messages}
+                typingUsers={typingUsers}
+                ticket={ticket}
+                onReply={setNewMessage}
+                isLoading={isLoading}
+              />
+            </div>
+          )}
+
+          <MessageInput
+            newMessage={newMessage}
+            onMessageChange={setNewMessage}
+            onKeyPress={handleKeyPress}
+            onSendMessage={handleSendMessage}
+            ticket={ticket}
+            isSending={isSending}
+            disabled={!!error}
+          />
+        </div>
+        
+        <div className="w-80 border-l hidden lg:block">
+          <CustomerContextPanel ticket={ticket} />
+        </div>
       </div>
     </div>
   );
