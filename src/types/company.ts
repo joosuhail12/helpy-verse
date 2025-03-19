@@ -20,4 +20,23 @@ export interface Company {
   };
   createdAt: string;
   updatedAt: string;
+  
+  // Additional properties
+  location?: {
+    street?: string;
+    city?: string;
+    state?: string;
+    zipCode?: string;
+    country?: string;
+  };
+  numberOfEmployees?: number;
+  annualRevenue?: string;
+  description?: string;
+  email?: string;
+  phone?: string;
+  socialMedia?: {
+    linkedin?: string;
+    twitter?: string;
+    facebook?: string;
+  };
 }

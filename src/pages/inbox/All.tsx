@@ -1,4 +1,3 @@
-
 import { useEffect } from 'react';
 import TicketList from '@/components/inbox/TicketList';
 import CreateTicketDialog from '@/components/inbox/CreateTicketDialog';

@@ -1,4 +1,20 @@
 
+export type ChatbotTone = 
+  | 'professional' 
+  | 'friendly' 
+  | 'casual' 
+  | 'formal'
+  | 'technical'
+  | 'empathetic';
+
+export interface DataCollectionField {
+  id: string;
+  label: string;
+  type: 'text' | 'email' | 'phone' | 'select';
+  required: boolean;
+  options?: string[];
+}
+
 export interface Chatbot {
   id: string;
   name: string;
@@ -21,4 +37,8 @@ export interface Chatbot {
     frequencyPenalty: number;
     presencePenalty: number;
   };
+  
+  // Additional properties
+  avatarUrl?: string;
+  tone?: ChatbotTone;
 }

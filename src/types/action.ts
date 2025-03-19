@@ -1,4 +1,12 @@
 
+export type ActionMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+
+export interface ParameterDependency {
+  sourceParameterId: string;
+  condition: 'equals' | 'notEquals' | 'contains' | 'exists';
+  value: any;
+}
+
 export interface ActionParameter {
   id: string;
   name: string;
@@ -6,6 +14,8 @@ export interface ActionParameter {
   required: boolean;
   description?: string;
   defaultValue?: any;
+  visible?: boolean;
+  dependencies?: ParameterDependency[];
 }
 
 export interface CustomAction {
@@ -13,9 +23,14 @@ export interface CustomAction {
   name: string;
   description: string;
   endpoint: string;
-  method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+  method: ActionMethod;
   parameters: ActionParameter[];
   createdAt: string;
   updatedAt: string;
   enabled: boolean;
+  
+  // Additional properties used in components
+  toolName?: string;
+  headers?: Record<string, string>;
+  connectedChatbots?: string[];
 }

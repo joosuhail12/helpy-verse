@@ -2,9 +2,37 @@
 export type ContentStatus = 'completed' | 'processing' | 'queued' | 'failed' | 'active' | 'inactive' | 'draft';
 export type SortField = 'title' | 'lastUpdated' | 'messageCount';
 
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  avatar?: string;
+}
+
 export interface Chatbot {
   id: string;
   name: string;
+}
+
+export interface ContentComment {
+  id: string;
+  content: string;
+  createdAt: string;
+  user: User;
+}
+
+export interface ContentVersion {
+  id: string;
+  content: string;
+  createdAt: string;
+  user: User;
+  changeDescription?: string;
+}
+
+export interface ContentTag {
+  id: string;
+  name: string;
+  color: string;
 }
 
 export interface Content {
@@ -17,6 +45,15 @@ export interface Content {
   lastUpdated: string;
   createdAt: string;
   chatbots?: Chatbot[];
+  
+  // Additional properties
+  contentType?: 'article' | 'faq' | 'guide';
+  tags?: ContentTag[];
+  content?: string;
+  versions?: ContentVersion[];
+  comments?: ContentComment[];
+  lastEditedBy?: User;
+  sharedWith?: User[];
 }
 
 export interface ContentState {

@@ -1,10 +1,14 @@
 
+export type TeammateRole = 'admin' | 'supervisor' | 'agent' | 'viewer';
+export type TeammateStatus = 'active' | 'inactive' | 'pending' | 'suspended';
+export type ActivityType = 'login' | 'logout' | 'create' | 'update' | 'delete' | 'view';
+
 export interface Teammate {
   id: string;
   name: string;
   email: string;
-  role: 'admin' | 'supervisor' | 'agent' | 'viewer';
-  status: 'active' | 'inactive';
+  role: TeammateRole;
+  status: TeammateStatus;
   lastActive: string;
   createdAt: string;
   avatar?: string;
@@ -15,16 +19,15 @@ export interface Teammate {
 export interface NewTeammate {
   name: string;
   email: string;
-  role: 'admin' | 'supervisor' | 'agent' | 'viewer';
+  role: TeammateRole;
 }
 
 export interface ActivityLog {
   id: string;
   teammateId: string;
-  type: string;
+  type: ActivityType;
   description: string;
   timestamp: string;
-  metadata?: Record<string, any>;
 }
 
 export interface TeamAssignment {
@@ -32,17 +35,15 @@ export interface TeamAssignment {
   teammateId: string;
   teamName: string;
   role: string;
-  status: 'active' | 'pending' | 'inactive';
-  startDate?: string;
-  endDate?: string;
+  status: string;
+  startDate: string;
 }
 
 export interface Session {
   id: string;
-  teammateId: string;
-  deviceType: string;
-  deviceName: string;
+  device: string;
   location: string;
+  ip: string;
   lastActive: string;
-  ipAddress?: string;
+  current: boolean;
 }
