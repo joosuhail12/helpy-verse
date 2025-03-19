@@ -23,6 +23,7 @@ export interface Contact {
   timezone?: string;
   source?: string;
   language?: string;
+  preferredLanguage?: string;
   street?: string;
   city?: string;
   state?: string;
@@ -36,6 +37,8 @@ export interface Contact {
     createdAt: string;
     createdBy: string;
   }[];
+  accountValue?: number;
+  assignedTo?: string;
 }
 
 export interface ContactCompanyInfoProps {

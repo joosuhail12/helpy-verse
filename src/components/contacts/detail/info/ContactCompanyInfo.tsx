@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { Contact } from '@/types/contact';
+import { Company } from '@/types/company';
 
 interface ContactCompanyInfoProps {
   contact: Contact;
@@ -23,7 +24,7 @@ export const ContactCompanyInfo = ({ contact }: ContactCompanyInfoProps) => {
     const companyName = typeof contact.company === 'object' ? contact.company.name : '';
     
     // Try to find detailed company info
-    const company = companies.find(c => c.id === companyId);
+    const company = companies.find(c => c.id === companyId) as Company | undefined;
     
     if (company) {
       companyDetails = (

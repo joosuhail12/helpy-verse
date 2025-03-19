@@ -7,6 +7,12 @@ export interface CompanyLocation {
   country?: string;
 }
 
+export interface CompanySocialMedia {
+  linkedin?: string;
+  twitter?: string;
+  facebook?: string;
+}
+
 export interface Company {
   id: string;
   name: string;
@@ -32,6 +38,8 @@ export interface Company {
   twitterUrl?: string;
   facebookUrl?: string;
   lastActivity?: string;
+  numberOfEmployees?: number;
+  socialMedia?: CompanySocialMedia;
 }
 
 export interface CompanyContact {
