@@ -1,4 +1,3 @@
-
 import { lazy, Suspense } from 'react';
 import { createBrowserRouter } from 'react-router-dom';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
@@ -69,6 +68,12 @@ const Unassigned = lazy(() => import('./pages/inbox/Unassigned').catch(() => {
   throw new Error('Failed to load Unassigned page');
 }));
 
+// Settings pages
+const Settings = lazy(() => import('./pages/Settings'));
+const EmailDomainsSettings = lazy(() => import('./pages/settings/email/domains/Domains'));
+const EmailDomainDetail = lazy(() => import('./pages/settings/email/domain-detail/DomainDetail'));
+const EmailChannels = lazy(() => import('./pages/settings/email/channels/Channels'));
+
 const LoadingSpinner = () => (
   <div className="min-h-screen flex items-center justify-center">
     <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -113,14 +118,13 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: 'companies',
+        path: 'home/contacts/companies',
         element: (
           <Suspense fallback={<LoadingSpinner />}>
             <Companies />
           </Suspense>
         ),
       },
-      // Add proper inbox routing
       {
         path: 'inbox',
         element: (
@@ -164,7 +168,41 @@ export const router = createBrowserRouter([
         ],
       },
       {
-        path: 'automation',
+        path: 'home/settings',
+        element: (
+          <Suspense fallback={<LoadingSpinner />}>
+            <Settings />
+          </Suspense>
+        ),
+        children: [
+          {
+            path: 'email/domains',
+            element: (
+              <Suspense fallback={<LoadingSpinner />}>
+                <EmailDomainsSettings />
+              </Suspense>
+            ),
+          },
+          {
+            path: 'email/domains/:id',
+            element: (
+              <Suspense fallback={<LoadingSpinner />}>
+                <EmailDomainDetail />
+              </Suspense>
+            ),
+          },
+          {
+            path: 'email/channels',
+            element: (
+              <Suspense fallback={<LoadingSpinner />}>
+                <EmailChannels />
+              </Suspense>
+            ),
+          },
+        ],
+      },
+      {
+        path: 'home/automation',
         element: (
           <Suspense fallback={<LoadingSpinner />}>
             <Automation />

@@ -3,6 +3,7 @@ import React, { Suspense } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { ErrorBoundary } from 'react-error-boundary';
+import Sidebar from '@/components/dashboard/Sidebar';
 
 const ErrorFallback = () => (
   <div className="min-h-screen flex items-center justify-center p-4">
@@ -27,9 +28,10 @@ const LoadingSpinner = () => (
 
 const DashboardLayout = () => {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex">
+      <Sidebar />
       <ErrorBoundary FallbackComponent={ErrorFallback}>
-        <main className="flex-1">
+        <main className="flex-1 overflow-y-auto">
           <Suspense fallback={<LoadingSpinner />}>
             <Outlet />
           </Suspense>
@@ -40,4 +42,3 @@ const DashboardLayout = () => {
 };
 
 export default DashboardLayout;
-
