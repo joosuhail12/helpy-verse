@@ -56,22 +56,23 @@ const TicketMessageEditor = ({ content, onChange }: TicketMessageEditorProps) =>
 
   return (
     <div className="rounded-md overflow-hidden">
-      <MessageToolbar 
-        editor={editor}
-        onInsertPlaceholder={insertPlaceholder}
-        ticket={dummyTicket}
-        disabled={false}
-        isInternalNote={false}
-        setIsInternalNote={() => {}}
-        onEmojiSelect={handleEmojiSelect}
-        onFilesAdded={() => {}}
-        uploadProgress={{}}
-        onRemoveFile={() => {}}
-        files={[]}
-        isAttachmentSheetOpen={false}
-        setIsAttachmentSheetOpen={() => {}}
-        className="border-b border-gray-100 bg-gray-50/80"
-      />
+      <div className="border-b border-gray-100 bg-gray-50/80">
+        <MessageToolbar 
+          editor={editor}
+          onInsertPlaceholder={insertPlaceholder}
+          ticket={dummyTicket}
+          disabled={false}
+          isInternalNote={false}
+          setIsInternalNote={() => {}}
+          onEmojiSelect={handleEmojiSelect}
+          onFilesAdded={() => {}}
+          uploadProgress={{}}
+          onRemoveFile={() => {}}
+          files={[]}
+          isAttachmentSheetOpen={false}
+          setIsAttachmentSheetOpen={() => {}}
+        />
+      </div>
       <div 
         className={cn(
           "cursor-text min-h-[180px] max-h-[240px] overflow-y-auto",

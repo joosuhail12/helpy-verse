@@ -8,8 +8,8 @@ import { Button } from "@/components/ui/button";
 const CreateTicketDialog = ({ open, onOpenChange, onTicketCreated }: CreateTicketDialogProps) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl p-0 overflow-hidden rounded-xl border-none shadow-lg">
-        <DialogHeader className="px-6 pt-6 pb-0">
+      <DialogContent className="max-w-4xl p-0 overflow-hidden rounded-xl border-none shadow-lg max-h-[85vh] flex flex-col">
+        <DialogHeader className="px-6 pt-6 pb-0 flex-shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <span className="w-1.5 h-6 bg-primary rounded-full"></span>
@@ -26,7 +26,7 @@ const CreateTicketDialog = ({ open, onOpenChange, onTicketCreated }: CreateTicke
           </div>
         </DialogHeader>
         
-        <div className="p-6 pt-4">
+        <div className="p-6 pt-4 overflow-y-auto">
           <TicketFormContainer 
             onTicketCreated={onTicketCreated}
             onCancel={() => onOpenChange(false)}
