@@ -4,8 +4,11 @@
  * This maintains backward compatibility while organizing code better
  */
 
+// Import cookieFunctions first
+import { cookieFunctions } from '@/api/services/http';
+
 // Re-export utilities from HTTP client cookie manager
-export { cookieFunctions } from '@/api/services/http';
+export { cookieFunctions };
 export const { getCookie, setCookie, handleLogout } = cookieFunctions;
 
 // Re-export all other utilities
