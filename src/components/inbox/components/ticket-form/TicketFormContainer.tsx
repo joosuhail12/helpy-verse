@@ -1,10 +1,14 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useToast } from '@/hooks/use-toast';
 import TicketForm from './TicketForm';
 import type { TicketFormValues } from './types';
 import type { Ticket } from '@/types/ticket';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { fetchTeammates } from '@/store/slices/teammates/actions';
+import { setTeams } from '@/store/slices/teams/teamsSlice';
+import { mockTeams } from '@/store/slices/teams/mockData';
 
 interface TicketFormContainerProps {
   onTicketCreated?: (ticket: Ticket) => void;
@@ -14,7 +18,13 @@ interface TicketFormContainerProps {
 const TicketFormContainer = ({ onTicketCreated, onCancel }: TicketFormContainerProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
+  
+  // Load teammates and teams data when the component mounts
+  useEffect(() => {
+    dispatch(fetchTeammates());
+    dispatch(setTeams(mockTeams));
+  }, [dispatch]);
 
   const handleSubmit = async (values: TicketFormValues, callback: () => void) => {
     setIsSubmitting(true);

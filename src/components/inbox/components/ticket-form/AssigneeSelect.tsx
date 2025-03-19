@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { Check, User, Users } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Check, User, Users, Loader2 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -17,18 +17,11 @@ import {
 } from "@/components/ui/command";
 import { Label } from "@/components/ui/label";
 import type { AssigneeOption, AssigneeType } from "./types";
-
-// Mock data for teammates and teams
-const MOCK_TEAMMATES = [
-  { id: 'tm1', name: 'Sarah Wilson', type: 'teammate' as AssigneeType },
-  { id: 'tm2', name: 'Mike Thompson', type: 'teammate' as AssigneeType },
-  { id: 'tm3', name: 'Tom Wilson', type: 'teammate' as AssigneeType },
-];
-
-const MOCK_TEAMS = [
-  { id: 'team1', name: 'Support Team', type: 'team' as AssigneeType },
-  { id: 'team2', name: 'Technical Team', type: 'team' as AssigneeType },
-];
+import { useAppSelector } from '@/hooks/useAppSelector';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { selectAllTeammates, selectTeammatesLoading } from '@/store/slices/teammates/selectors';
+import { selectAllTeams, selectTeamsLoading } from '@/store/slices/teams/selectors';
+import { fetchTeammates } from '@/store/slices/teammates/actions';
 
 // Current user for self-assign option
 const CURRENT_USER: AssigneeOption = { id: 'self', name: 'Myself', type: 'self' as AssigneeType };
@@ -40,12 +33,36 @@ interface AssigneeSelectProps {
 
 const AssigneeSelect = ({ value, onChange }: AssigneeSelectProps) => {
   const [open, setOpen] = useState(false);
+  const dispatch = useAppDispatch();
+  
+  // Fetch teammates and teams from Redux store
+  const teammates = useAppSelector(selectAllTeammates);
+  const teams = useAppSelector(selectAllTeams);
+  const teamsLoading = useAppSelector(selectTeamsLoading);
+  const teammatesLoading = useAppSelector(selectTeammatesLoading);
+  
+  const isLoading = teamsLoading || teammatesLoading;
 
-  const allOptions = [
-    CURRENT_USER,
-    ...MOCK_TEAMS,
-    ...MOCK_TEAMMATES
-  ];
+  // Fetch teammates on component mount
+  useEffect(() => {
+    dispatch(fetchTeammates());
+    // Note: We're not dispatching a team fetch action because it should be handled
+    // elsewhere in the application, for example in a parent component or app initialization
+  }, [dispatch]);
+
+  // Map teammates to AssigneeOption format
+  const teammateOptions: AssigneeOption[] = teammates.map(teammate => ({
+    id: teammate.id,
+    name: teammate.name,
+    type: 'teammate' as AssigneeType
+  }));
+
+  // Map teams to AssigneeOption format
+  const teamOptions: AssigneeOption[] = teams.map(team => ({
+    id: team.id,
+    name: team.name,
+    type: 'team' as AssigneeType
+  }));
 
   const handleSelect = (option: AssigneeOption) => {
     onChange(option);
@@ -72,45 +89,59 @@ const AssigneeSelect = ({ value, onChange }: AssigneeSelectProps) => {
             <CommandInput placeholder="Search assignee..." />
             <CommandList>
               <CommandEmpty>No assignee found.</CommandEmpty>
-              <CommandGroup heading="Assign to">
-                <CommandItem onSelect={() => handleSelect(CURRENT_USER)}>
-                  <User className="mr-2 h-4 w-4" />
-                  {CURRENT_USER.name}
-                  {value?.id === CURRENT_USER.id && (
-                    <Check className="ml-auto h-4 w-4" />
+              
+              {isLoading ? (
+                <div className="flex items-center justify-center p-4">
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  <span>Loading...</span>
+                </div>
+              ) : (
+                <>
+                  <CommandGroup heading="Assign to">
+                    <CommandItem onSelect={() => handleSelect(CURRENT_USER)}>
+                      <User className="mr-2 h-4 w-4" />
+                      {CURRENT_USER.name}
+                      {value?.id === CURRENT_USER.id && (
+                        <Check className="ml-auto h-4 w-4" />
+                      )}
+                    </CommandItem>
+                  </CommandGroup>
+                  
+                  {teamOptions.length > 0 && (
+                    <CommandGroup heading="Teams">
+                      {teamOptions.map((team) => (
+                        <CommandItem
+                          key={team.id}
+                          onSelect={() => handleSelect(team)}
+                        >
+                          <Users className="mr-2 h-4 w-4" />
+                          {team.name}
+                          {value?.id === team.id && (
+                            <Check className="ml-auto h-4 w-4" />
+                          )}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
                   )}
-                </CommandItem>
-              </CommandGroup>
-              
-              <CommandGroup heading="Teams">
-                {MOCK_TEAMS.map((team) => (
-                  <CommandItem
-                    key={team.id}
-                    onSelect={() => handleSelect(team)}
-                  >
-                    <Users className="mr-2 h-4 w-4" />
-                    {team.name}
-                    {value?.id === team.id && (
-                      <Check className="ml-auto h-4 w-4" />
-                    )}
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-              
-              <CommandGroup heading="Teammates">
-                {MOCK_TEAMMATES.map((teammate) => (
-                  <CommandItem
-                    key={teammate.id}
-                    onSelect={() => handleSelect(teammate)}
-                  >
-                    <User className="mr-2 h-4 w-4" />
-                    {teammate.name}
-                    {value?.id === teammate.id && (
-                      <Check className="ml-auto h-4 w-4" />
-                    )}
-                  </CommandItem>
-                ))}
-              </CommandGroup>
+                  
+                  {teammateOptions.length > 0 && (
+                    <CommandGroup heading="Teammates">
+                      {teammateOptions.map((teammate) => (
+                        <CommandItem
+                          key={teammate.id}
+                          onSelect={() => handleSelect(teammate)}
+                        >
+                          <User className="mr-2 h-4 w-4" />
+                          {teammate.name}
+                          {value?.id === teammate.id && (
+                            <Check className="ml-auto h-4 w-4" />
+                          )}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  )}
+                </>
+              )}
             </CommandList>
           </Command>
         </PopoverContent>
