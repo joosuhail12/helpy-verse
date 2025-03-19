@@ -6,7 +6,6 @@ import { useAppSelector } from './useAppSelector';
 import { loginUser } from '../store/slices/authSlice';
 import { toast } from '../components/ui/use-toast';
 import { handleSetToken, isAuthenticated } from '@/utils/auth/tokenManager';
-import { HttpClient } from '@/api/services/HttpClient';
 
 /**
  * Custom hook to handle login functionality
@@ -52,58 +51,51 @@ export const useLogin = (redirectPath: string = '/home') => {
       setIsSubmitting(true);
       console.log('Login attempt for:', email);
       
-      // Add development mode login for easier testing
-      if (process.env.NODE_ENV === 'development' || import.meta.env.DEV) {
-        // Mock successful login for development mode
-        console.log('Using development mode login');
+      // Check for development mode
+      const isDevelopmentMode = process.env.NODE_ENV === 'development' || import.meta.env.DEV;
+      
+      if (isDevelopmentMode) {
+        console.log('Using development mode login (mock authentication)');
         
-        // Set a mock token in development mode
-        const mockToken = 'mock-token-for-development-' + Date.now();
+        // Create a mock token with email embedded for development
+        const mockToken = `dev-token-${Date.now()}-${email.replace(/[^a-zA-Z0-9]/g, '')}`;
         
-        // Store in localStorage first (more reliable than cookies in some environments)
+        // Store in localStorage first
         localStorage.setItem("token", mockToken);
+        localStorage.setItem("userId", `user-${Date.now()}`);
+        localStorage.setItem("role", "ORGANIZATION_ADMIN");
         
         // Then try to set the cookie
         const success = handleSetToken(mockToken);
         
-        // Configure HttpClient with the token
-        HttpClient.setAxiosDefaultConfig(mockToken);
-        
-        if (success || localStorage.getItem("token")) {
-          // Show success toast
-          toast({
-            title: 'Development Mode',
-            description: 'Logged in with development credentials',
-          });
-          
-          // Trigger auth state update in Redux
-          dispatch({
-            type: 'auth/login/fulfilled',
-            payload: { 
-              data: { 
-                accessToken: { token: mockToken },
-                username: email
-              }
+        // Simulate a successful login in Redux
+        dispatch({
+          type: 'auth/login/fulfilled',
+          payload: { 
+            data: { 
+              id: `user-${Date.now()}`,
+              accessToken: { token: mockToken },
+              username: email,
+              defaultWorkspaceId: 'workspace-1'
             }
-          });
-          
-          // Small delay before redirect
-          setTimeout(() => {
+          }
+        });
+        
+        // Show success toast
+        toast({
+          title: 'Development Mode Login',
+          description: 'Logged in successfully with dev credentials',
+        });
+        
+        // Navigate after a short delay
+        setTimeout(() => {
+          if (isAuthenticated()) {
             navigate(redirectPath, { replace: true });
-          }, 500);
-        } else {
-          // Show error toast if token setting failed
-          toast({
-            title: 'Warning',
-            description: 'Using fallback login mechanism - cookies may be blocked',
-            variant: 'default',
-          });
-          
-          // Try direct navigation as fallback
-          setTimeout(() => {
+          } else {
+            // Fallback if cookies are blocked
             window.location.href = redirectPath;
-          }, 1000);
-        }
+          }
+        }, 500);
         
         setIsSubmitting(false);
         return;

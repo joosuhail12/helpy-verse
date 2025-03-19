@@ -7,6 +7,7 @@ import { EmailInput } from './login/EmailInput';
 import { PasswordInput } from './login/PasswordInput';
 import { LoginButton } from './login/LoginButton';
 import { LoginLinks } from './login/LoginLinks';
+import { AlertCircle } from 'lucide-react';
 
 /**
  * The main login form component
@@ -35,6 +36,16 @@ export const LoginForm = memo(() => {
     <div className="space-y-6 rounded-2xl bg-white/50 backdrop-blur-sm p-6 shadow-xl border border-white/20">
       <LoginFormHeader />
 
+      {/* Development Mode Banner */}
+      {isDevelopmentMode && (
+        <div className="px-3 py-2 bg-green-100 border border-green-300 rounded-md flex items-center gap-2 text-sm text-green-800">
+          <AlertCircle className="h-4 w-4 text-green-600" />
+          <span>
+            <strong>Development Mode Active</strong> - Enter any email and password to login
+          </span>
+        </div>
+      )}
+
       <form onSubmit={handleLoginSubmit} className="space-y-5">
         <EmailInput 
           value={email} 
@@ -58,8 +69,8 @@ export const LoginForm = memo(() => {
       {/* Development mode message for testing */}
       {isDevelopmentMode && (
         <div className="mt-4 text-xs text-gray-500 border-t pt-4">
-          <p className="font-medium text-primary">Development Mode Active</p>
-          <p>Enter any email and password to log in. No validation required.</p>
+          <p className="font-medium text-green-600">Development Mode Details:</p>
+          <p>In development mode, authentication is mocked. Any email and password combination will work.</p>
           <p className="mt-1 text-gray-400">If cookies are blocked, we'll fall back to localStorage for authentication.</p>
         </div>
       )}

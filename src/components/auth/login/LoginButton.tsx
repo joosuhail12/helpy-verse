@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ArrowRight, Loader2 } from 'lucide-react';
+import { ArrowRight, Loader2, LockIcon } from 'lucide-react';
 
 interface LoginButtonProps {
   isLoading: boolean;
@@ -30,8 +30,17 @@ export const LoginButton: React.FC<LoginButtonProps> = ({
         </>
       ) : (
         <>
-          <span>{isDevelopmentMode ? 'Dev Mode Sign In' : 'Sign In'}</span>
-          <ArrowRight className="w-4 h-4" />
+          {isDevelopmentMode ? (
+            <>
+              <LockIcon className="w-4 h-4" />
+              <span>Development Mode Sign In</span>
+            </>
+          ) : (
+            <>
+              <span>Sign In</span>
+              <ArrowRight className="w-4 h-4" />
+            </>
+          )}
         </>
       )}
     </button>
