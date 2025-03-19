@@ -38,64 +38,7 @@ export const useLogin = (redirectPath: string = '/home') => {
       setIsSubmitting(true);
       console.log('Login attempt for:', email);
       
-      // Check for development mode
-      const isDevelopmentMode = process.env.NODE_ENV === 'development' || import.meta.env.DEV;
-      
-      if (isDevelopmentMode) {
-        console.log('Using development mode login (mock authentication)');
-        
-        // Create a mock token with email embedded for development
-        const mockToken = `dev-token-${Date.now()}-${email.replace(/[^a-zA-Z0-9]/g, '')}`;
-        
-        // Always set token FIRST before updating redux state to avoid race conditions
-        const tokenSuccess = handleSetToken(mockToken);
-        console.log('Token set success:', tokenSuccess);
-        
-        // Also set these values directly
-        localStorage.setItem("userId", `user-${Date.now()}`);
-        localStorage.setItem("role", "ORGANIZATION_ADMIN");
-        localStorage.setItem("workspaceId", "w1");
-        
-        // Simulate a successful login in Redux
-        dispatch({
-          type: 'auth/loginUser/fulfilled',
-          payload: { 
-            data: { 
-              id: `user-${Date.now()}`,
-              accessToken: { token: mockToken },
-              username: email,
-              defaultWorkspaceId: 'workspace-1'
-            }
-          }
-        });
-        
-        // Show success toast
-        toast({
-          title: 'Development Mode Login',
-          description: 'Logged in successfully with dev credentials',
-        });
-        
-        // Wait a moment for token to be properly set
-        setTimeout(() => {
-          // Double-check auth status before redirecting
-          if (isAuthenticated()) {
-            console.log('Development login successful, redirecting to:', redirectPath);
-            navigate(redirectPath, { replace: true });
-          } else {
-            console.error('Login appeared successful but token was not set correctly');
-            toast({
-              title: 'Login Error',
-              description: 'Authentication succeeded but session setup failed. Please try again.',
-              variant: 'destructive',
-            });
-          }
-        }, 300);
-        
-        setIsSubmitting(false);
-        return;
-      }
-      
-      // Real login process for production
+      // Real login process
       const result = await dispatch(loginUser({ email, password })).unwrap();
       
       // Handle successful login

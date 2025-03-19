@@ -72,14 +72,6 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  // For development ease, if in development mode and no valid token,
-  // set a fake token
-  if (process.env.NODE_ENV === 'development' && !hasValidToken) {
-    console.log('Development mode: Setting dummy token for testing');
-    localStorage.setItem('token', 'dev-token');
-    return <>{children}</>;
-  }
-
   // CRITICAL: We prioritize token existence over Redux state
   if (hasValidToken) {
     console.log('ProtectedRoute: Token exists, rendering protected content', location.pathname);
