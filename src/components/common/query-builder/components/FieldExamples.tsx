@@ -1,38 +1,56 @@
 
-import React from 'react';
 import { FieldType } from '@/types/queryBuilder';
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from '@/components/ui/hover-card';
+import { HelpCircle } from 'lucide-react';
 
-export interface FieldExamplesProps {
-  fieldType: FieldType | string;
+const getExampleValues = (type: FieldType): string[] => {
+  switch (type) {
+    case 'text':
+      return ['John Doe', 'support@example.com', 'Customer feedback'];
+    case 'number':
+      return ['42', '1000', '3.14'];
+    case 'boolean':
+      return ['true', 'false'];
+    case 'date':
+      return ['2024-03-15', '2023-12-31', 'Today'];
+    case 'select':
+      return ['Active', 'Inactive', 'Pending'];
+    case 'multi-select':
+      return ['Sales, Marketing', 'Support, Development', 'HR, Admin'];
+    default:
+      return ['Example value'];
+  }
+};
+
+interface FieldExamplesProps {
+  type: FieldType;
 }
 
-export const FieldExamples: React.FC<FieldExamplesProps> = ({ fieldType }) => {
-  let examples: string[] = [];
-  
-  switch (fieldType) {
-    case 'string':
-    case 'text':
-    case 'email':
-      examples = ['Example: "John Doe"', 'Example: "john@example.com"'];
-      break;
-    case 'number':
-      examples = ['Example: 42', 'Example: 100.50'];
-      break;
-    case 'date':
-      examples = ['Example: 2023-04-15', 'Format: YYYY-MM-DD'];
-      break;
-    case 'boolean':
-      examples = ['Values: true/false'];
-      break;
-    default:
-      examples = ['Enter value...'];
-  }
-  
+export const FieldExamples = ({ type }: FieldExamplesProps) => {
+  const examples = getExampleValues(type);
+
   return (
-    <div className="text-xs text-muted-foreground mt-1">
-      {examples.map((example, i) => (
-        <div key={i}>{example}</div>
-      ))}
-    </div>
+    <HoverCard>
+      <HoverCardTrigger asChild>
+        <button type="button" className="inline-flex items-center text-muted-foreground hover:text-foreground">
+          <HelpCircle className="h-4 w-4" />
+        </button>
+      </HoverCardTrigger>
+      <HoverCardContent className="w-80">
+        <div className="space-y-2">
+          <h4 className="font-medium">Example Values</h4>
+          <ul className="text-sm space-y-1">
+            {examples.map((example, index) => (
+              <li key={index} className="text-muted-foreground">{example}</li>
+            ))}
+          </ul>
+        </div>
+      </HoverCardContent>
+    </HoverCard>
   );
 };
+

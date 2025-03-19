@@ -3,7 +3,7 @@ import type { Tag, SortField, FilterEntity } from '@/types/tag';
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Mock data
+// Mock data (keeping the same data as before)
 export const mockTags: Tag[] = [
   { 
     id: '1', 
@@ -14,15 +14,15 @@ export const mockTags: Tag[] = [
     trend: 'increasing',
     counts: { tickets: 23, contacts: 5, companies: 2 },
     history: [
-      { date: '2024-03-01', count: 20, total: 20 }, // Changed to match TagHistoryItem
-      { date: '2024-03-08', count: 25, total: 25 },
-      { date: '2024-03-15', count: 30, total: 30 }
+      { date: '2024-03-01', total: 20 },
+      { date: '2024-03-08', total: 25 },
+      { date: '2024-03-15', total: 30 }
     ],
     preview: [
-      { id: '1', name: 'Login page error', type: 'ticket', title: 'Login page error' }, // Changed to match TagPreviewItem
-      { id: '2', name: 'John Smith', type: 'contact', title: 'John Smith' }
+      { type: 'ticket', id: '1', title: 'Login page error' },
+      { type: 'contact', id: '2', title: 'John Smith' }
     ],
-    data: {}
+    data: {} // Adding the required data property
   },
   { 
     id: '2', 
@@ -33,14 +33,14 @@ export const mockTags: Tag[] = [
     trend: 'stable',
     counts: { tickets: 15, contacts: 3, companies: 1 },
     history: [
-      { date: '2024-02-15', count: 15, total: 15 },
-      { date: '2024-03-01', count: 16, total: 16 },
-      { date: '2024-03-15', count: 15, total: 15 }
+      { date: '2024-02-15', total: 15 },
+      { date: '2024-03-01', total: 16 },
+      { date: '2024-03-15', total: 15 }
     ],
     preview: [
-      { id: '3', name: 'Add dark mode', type: 'ticket', title: 'Add dark mode' }
+      { type: 'ticket', id: '3', title: 'Add dark mode' }
     ],
-    data: {}
+    data: {} // Adding the required data property
   },
   { 
     id: '3', 
@@ -51,14 +51,14 @@ export const mockTags: Tag[] = [
     trend: 'decreasing',
     counts: { tickets: 45, contacts: 12, companies: 8 },
     history: [
-      { date: '2024-01-10', count: 50, total: 50 },
-      { date: '2024-02-10', count: 40, total: 40 },
-      { date: '2024-03-10', count: 30, total: 30 }
+      { date: '2024-01-10', total: 50 },
+      { date: '2024-02-10', total: 40 },
+      { date: '2024-03-10', total: 30 }
     ],
     preview: [
-      { id: '4', name: 'Password reset issue', type: 'ticket', title: 'Password reset issue' }
+      { type: 'ticket', id: '4', title: 'Password reset issue' }
     ],
-    data: {}
+    data: {} // Adding the required data property
   },
   { 
     id: '4', 
@@ -69,12 +69,12 @@ export const mockTags: Tag[] = [
     trend: 'stable',
     counts: { tickets: 8, contacts: 0, companies: 1 },
     history: [
-      { date: '2024-01-20', count: 10, total: 10 },
-      { date: '2024-02-20', count: 8, total: 8 },
-      { date: '2024-03-20', count: 8, total: 8 }
+      { date: '2024-01-20', total: 10 },
+      { date: '2024-02-20', total: 8 },
+      { date: '2024-03-20', total: 8 }
     ],
     preview: [],
-    data: {}
+    data: {} // Adding the required data property
   },
   { 
     id: '5', 
@@ -85,62 +85,16 @@ export const mockTags: Tag[] = [
     trend: 'increasing',
     counts: { tickets: 12, contacts: 4, companies: 2 },
     history: [
-      { date: '2024-02-01', count: 5, total: 5 },
-      { date: '2024-02-15', count: 10, total: 10 },
-      { date: '2024-03-01', count: 15, total: 15 }
+      { date: '2024-02-01', total: 5 },
+      { date: '2024-02-15', total: 10 },
+      { date: '2024-03-01', total: 15 }
     ],
     preview: [
-      { id: '5', name: 'UI improvement suggestions', type: 'ticket', title: 'UI improvement suggestions' }
+      { type: 'ticket', id: '5', title: 'UI improvement suggestions' }
     ],
-    data: {}
+    data: {} // Adding the required data property
   }
 ];
-
-// Create a tag service to use in tagsSlice.ts
-export const tagService = {
-  fetchTags: async (params: any) => {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return {
-      data: mockTags,
-      total: mockTags.length
-    };
-  },
-  createTag: async (tag: Partial<Tag>) => {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 500));
-    const newTag: Tag = {
-      id: `tag-${Math.random().toString(36).substring(2, 9)}`,
-      name: tag.name || 'New Tag',
-      color: tag.color || '#000000',
-      createdAt: new Date().toISOString(),
-      lastUsed: new Date().toISOString(),
-      trend: 'stable',
-      counts: { tickets: 0, contacts: 0, companies: 0 },
-      history: [],
-      preview: [],
-      data: {}
-    };
-    return {
-      data: [...mockTags, newTag],
-      total: mockTags.length + 1
-    };
-  },
-  updateTag: async (id: string, tag: Partial<Tag>) => {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 500));
-    const updatedTags = mockTags.map(t => (t.id === id ? { ...t, ...tag } : t));
-    return {
-      data: updatedTags,
-      total: updatedTags.length
-    };
-  },
-  deleteTags: async (ids: string[]) => {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return { success: true };
-  }
-};
 
 export const fetchTags = async (
   searchQuery: string,

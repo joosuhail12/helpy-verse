@@ -7,9 +7,7 @@ export const mockChatbots: Chatbot[] = [
     name: 'Support Assistant',
     description: 'General customer support chatbot',
     status: 'active',
-    model: 'gpt-3.5-turbo',
     createdAt: '2024-01-01T00:00:00Z',
-    updatedAt: '2024-01-01T00:00:00Z',
     tone: 'friendly',
     welcomeMessage: 'Hi! How can I help you today?',
     humanHandoffMessage: "I'll connect you with a human agent who can better assist you.",
@@ -38,3 +36,4 @@ export const mockChatbots: Chatbot[] = [
     }
   }
 ];
+

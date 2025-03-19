@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Plus } from "lucide-react";
-import type { NewTeammate, TeammateRole } from '@/types/teammate';
+import type { NewTeammate } from '@/types/teammate';
 
 // Define the schema to match NewTeammate type exactly
 const formSchema = z.object({
@@ -44,25 +44,15 @@ const AddTeammateDialog = () => {
       const newTeammate: NewTeammate = {
         name: data.name,
         email: data.email,
-        role: data.role as TeammateRole
+        role: data.role
       };
-      
-      const resultAction = await dispatch(addTeammate(newTeammate));
-      
-      if (addTeammate.fulfilled.match(resultAction)) {
-        toast({
-          title: "Success",
-          description: "Teammate has been added successfully.",
-        });
-        setOpen(false);
-        form.reset();
-      } else {
-        toast({
-          title: "Error",
-          description: "Failed to add teammate. Please try again.",
-          variant: "destructive",
-        });
-      }
+      await dispatch(addTeammate(newTeammate)).unwrap();
+      toast({
+        title: "Success",
+        description: "Teammate has been added successfully.",
+      });
+      setOpen(false);
+      form.reset();
     } catch (error) {
       toast({
         title: "Error",
@@ -149,3 +139,4 @@ const AddTeammateDialog = () => {
 };
 
 export default AddTeammateDialog;
+

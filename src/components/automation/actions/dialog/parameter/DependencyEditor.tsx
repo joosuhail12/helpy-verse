@@ -20,11 +20,11 @@ export const DependencyEditor = ({ parameter, allParameters, onUpdate }: Depende
   const handleAddDependency = () => {
     const dependencies = parameter.dependencies || [];
     const newDependency: ParameterDependency = {
-      sourceParameterId: '',
+      paramId: '',
       condition: {
-        operator: 'equals',
         value: '',
-      }
+        operator: 'equals',
+      },
     };
     onUpdate({
       ...parameter,
@@ -56,10 +56,10 @@ export const DependencyEditor = ({ parameter, allParameters, onUpdate }: Depende
       {(parameter.dependencies || []).map((dependency, index) => (
         <div key={index} className="space-y-2 p-2 border rounded">
           <Select
-            value={dependency.sourceParameterId}
+            value={dependency.paramId}
             onValueChange={(value) => handleUpdateDependency(index, {
               ...dependency,
-              sourceParameterId: value,
+              paramId: value,
             })}
           >
             <SelectTrigger>
@@ -134,3 +134,4 @@ export const DependencyEditor = ({ parameter, allParameters, onUpdate }: Depende
     </div>
   );
 };
+

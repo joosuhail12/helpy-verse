@@ -3,55 +3,46 @@ export interface Teammate {
   id: string;
   name: string;
   email: string;
-  role: TeammateRole;
-  status: TeammateStatus;
-  teams: string[];
-  lastActive?: string;
+  role: 'admin' | 'supervisor' | 'agent' | 'viewer';
+  status: 'active' | 'inactive';
+  lastActive: string;
   createdAt: string;
-  updatedAt: string;
-  permissions: TeammatePermission[];
+  avatar?: string;
+  permissions: string[];
   is2FAEnabled?: boolean;
-  avatar?: string; // Add avatar property
 }
-
-export type TeammateRole = 'admin' | 'supervisor' | 'agent' | 'viewer';
-export type TeammateStatus = 'active' | 'inactive' | 'pending';
-export type TeammatePermission = string;
 
 export interface NewTeammate {
   name: string;
   email: string;
-  role: TeammateRole;
+  role: 'admin' | 'supervisor' | 'agent' | 'viewer';
 }
 
 export interface ActivityLog {
   id: string;
-  type: 'login' | 'logout' | 'settings_changed' | 'password_changed' | 'permission_changed' | 'team_assigned' | 'update';
+  teammateId: string;
+  type: string;
   description: string;
   timestamp: string;
-  ip?: string;
-  userAgent?: string;
-  location?: string;
-  teammateId?: string;
+  metadata?: Record<string, any>;
 }
 
 export interface TeamAssignment {
   id: string;
-  teamId: string;
+  teammateId: string;
   teamName: string;
   role: string;
-  status: 'active' | 'inactive' | 'pending';
+  status: 'active' | 'pending' | 'inactive';
   startDate?: string;
   endDate?: string;
-  teammateId?: string;
 }
 
 export interface Session {
   id: string;
+  teammateId: string;
   deviceType: string;
   deviceName: string;
   location: string;
-  ip: string;
   lastActive: string;
-  current: boolean;
+  ipAddress?: string;
 }

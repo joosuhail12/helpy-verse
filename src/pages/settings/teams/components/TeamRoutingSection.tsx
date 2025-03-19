@@ -1,6 +1,6 @@
 
 import { Card } from "@/components/ui/card";
-import { TeamRoutingSelector } from "@/components/teams/TeamRoutingSelector";
+import TeamRoutingSelector from '@/components/teams/TeamRoutingSelector';
 
 interface TeamRoutingSectionProps {
   routingType: 'manual' | 'round-robin' | 'load-balanced';
@@ -37,3 +37,4 @@ const TeamRoutingSection = ({
 };
 
 export default TeamRoutingSection;
+

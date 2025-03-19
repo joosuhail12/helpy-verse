@@ -19,8 +19,6 @@ const TeamCommunicationSection = ({
     <Card className="p-6">
       <h2 className="text-lg font-semibold mb-6">Team Communication</h2>
       <TeamChannelSelector
-        selectedChannels={[]}
-        onChannelSelect={() => {}}
         selectedChatChannel={selectedChatChannel}
         selectedEmailChannels={selectedEmailChannels}
         onChatChannelSelect={onChatChannelSelect}
@@ -31,3 +29,4 @@ const TeamCommunicationSection = ({
 };
 
 export default TeamCommunicationSection;
+

@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { Contact } from '@/types/contact';
-import { Activity, ActivityType } from '@/types/activity';
+import { Activity, ActivityType, InteractionMetrics } from '@/types/activity';
 import {
   Card,
   CardHeader,
@@ -43,7 +43,6 @@ export const ContactTimeline = ({ contact }: ContactTimelineProps) => {
       id: '1',
       type: 'email',
       description: 'Sent follow-up email',
-      timestamp: new Date(contact?.lastContacted || new Date()).toISOString(),
       date: new Date(contact?.lastContacted || new Date()).toISOString(),
       metadata: {
         category: 'positive',
@@ -54,7 +53,6 @@ export const ContactTimeline = ({ contact }: ContactTimelineProps) => {
       id: '2',
       type: 'note',
       description: 'Added new contact information',
-      timestamp: new Date(contact?.createdAt || new Date()).toISOString(),
       date: new Date(contact?.createdAt || new Date()).toISOString(),
       metadata: {
         category: 'update',
@@ -64,7 +62,6 @@ export const ContactTimeline = ({ contact }: ContactTimelineProps) => {
       id: '3',
       type: 'ticket',
       description: 'Created support ticket #1234',
-      timestamp: new Date(Date.now() - 86400000).toISOString(),
       date: new Date(Date.now() - 86400000).toISOString(),
       metadata: {
         category: 'neutral',
@@ -73,10 +70,10 @@ export const ContactTimeline = ({ contact }: ContactTimelineProps) => {
     },
   ];
 
-  const metrics = {
+  const metrics: InteractionMetrics = {
     totalInteractions: activities.length,
     averageResponseTime: 32, // minutes
-    mostFrequentType: 'email' as ActivityType,
+    mostFrequentType: 'email',
     lastInteraction: activities[0]?.date || new Date().toISOString(),
   };
 
@@ -185,3 +182,4 @@ export const ContactTimeline = ({ contact }: ContactTimelineProps) => {
     </Card>
   );
 };
+

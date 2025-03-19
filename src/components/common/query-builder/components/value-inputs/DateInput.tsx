@@ -11,16 +11,13 @@ interface DateInputProps {
 }
 
 export const DateInput = ({ value, onChange, operator }: DateInputProps) => {
-  // Handle operator as string to avoid type comparison issues
-  const operatorStr = operator as string;
-  
-  if (operatorStr === 'custom_range') {
+  if (operator === 'custom_range') {
     return <CustomRangeInput value={value} onChange={onChange} />;
   }
 
-  if (operatorStr.includes('rolling') || 
-      operatorStr === 'last_n_days' || 
-      operatorStr === 'next_n_days') {
+  if (operator.includes('rolling') || 
+      operator === 'last_n_days' || 
+      operator === 'next_n_days') {
     return <RollingPeriodInput value={value} onChange={onChange} operator={operator} />;
   }
 

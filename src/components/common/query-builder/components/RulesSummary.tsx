@@ -1,82 +1,49 @@
 
-import React from 'react';
-import { QueryGroup, QueryRule } from '@/types/queryBuilder';
+import { QueryGroup, QueryRule, QueryField } from '@/types/queryBuilder';
+import { getOperatorLabel } from '../components/OperatorSelect';
 
-// Define the operator label mapping function
-export const getOperatorLabel = (operator: string): string => {
-  const operatorMap: Record<string, string> = {
-    equals: 'equals',
-    notEquals: 'does not equal',
-    contains: 'contains',
-    not_contains: 'does not contain',
-    startsWith: 'starts with',
-    starts_with: 'starts with',
-    endsWith: 'ends with',
-    ends_with: 'ends with',
-    greaterThan: 'is greater than',
-    greater_than: 'is greater than',
-    lessThan: 'is less than',
-    less_than: 'is less than',
-    between: 'is between',
-    in: 'is in list',
-    notIn: 'is not in list',
-    not_in: 'is not in list',
-    exists: 'exists',
-    notExists: 'does not exist',
-    custom_range: 'is in range',
-    last_n_days: 'is in last',
-    next_n_days: 'is in next',
-    rolling_days: 'is in rolling period',
-  };
+const getFieldLabel = (fieldId: string, fields: QueryField[]): string => {
+  const field = fields.find(f => f.id === fieldId);
+  return field?.label || fieldId;
+};
 
-  return operatorMap[operator] || operator;
+const getRuleDescription = (rule: QueryRule, fields: QueryField[]): string => {
+  const fieldLabel = getFieldLabel(rule.field, fields);
+  const operatorLabel = getOperatorLabel(rule.operator);
+  
+  if (['is_empty', 'is_not_empty'].includes(rule.operator)) {
+    return `${fieldLabel} ${operatorLabel}`;
+  }
+
+  return `${fieldLabel} ${operatorLabel} ${Array.isArray(rule.value) ? rule.value.join(', ') : rule.value}`;
+};
+
+const getGroupDescription = (group: QueryGroup, fields: QueryField[]): string => {
+  const descriptions = group.rules.map(rule => {
+    if ('field' in rule) {
+      return getRuleDescription(rule, fields);
+    }
+    return `(${getGroupDescription(rule, fields)})`;
+  });
+
+  return descriptions.join(` ${group.combinator.toUpperCase()} `);
 };
 
 interface RulesSummaryProps {
-  queryGroup: QueryGroup;
-  depth?: number;
+  group: QueryGroup;
+  fields: QueryField[];
 }
 
-export const RulesSummary: React.FC<RulesSummaryProps> = ({ queryGroup, depth = 0 }) => {
-  const indent = depth * 20;
+export const RulesSummary = ({ group, fields }: RulesSummaryProps) => {
+  if (group.rules.length === 0) {
+    return <p className="text-sm text-muted-foreground italic">No rules defined yet</p>;
+  }
 
   return (
-    <div className="space-y-2 text-sm">
-      {queryGroup.rules.length === 0 ? (
-        <p className="text-muted-foreground italic">No rules defined</p>
-      ) : (
-        <>
-          {queryGroup.rules.map((rule, index) => {
-            if ('field' in rule) {
-              // This is a QueryRule
-              return (
-                <div key={rule.id} style={{ marginLeft: `${indent}px` }}>
-                  <span>
-                    {index > 0 && <span className="font-semibold mx-1">{queryGroup.combinator.toUpperCase()}</span>}
-                    <span className="font-medium">{rule.field}</span>{' '}
-                    <span>{getOperatorLabel(rule.operator)}</span>{' '}
-                    <span className="font-medium">{JSON.stringify(rule.value)}</span>
-                  </span>
-                </div>
-              );
-            } else {
-              // This is a nested QueryGroup
-              return (
-                <div key={rule.id}>
-                  {index > 0 && (
-                    <div style={{ marginLeft: `${indent}px` }} className="my-1 font-semibold">
-                      {queryGroup.combinator.toUpperCase()}
-                    </div>
-                  )}
-                  <div className="border-l-2 border-gray-300 dark:border-gray-700 pl-2">
-                    <RulesSummary queryGroup={rule} depth={depth + 1} />
-                  </div>
-                </div>
-              );
-            }
-          })}
-        </>
-      )}
+    <div className="bg-slate-50 p-4 rounded-lg border text-sm">
+      <p className="font-medium mb-1">Rules Summary:</p>
+      <p className="text-muted-foreground">{getGroupDescription(group, fields)}</p>
     </div>
   );
 };
+

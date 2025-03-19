@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
@@ -6,7 +5,7 @@ import type { Tag, SortField, FilterEntity } from '@/types/tag';
 import { useTagShortcuts } from '@/hooks/useTagShortcuts';
 import {
   fetchTags,
-  selectTagsItems,
+  selectTags,
   selectTagsTotal,
   selectTagsLoading,
   selectTagsError,
@@ -23,7 +22,7 @@ import BulkActions from './BulkActions';
 import TagTable from './TagTable';
 import TagListControls from './TagListControls';
 import TagPagination from './TagPagination';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 
 interface TagListProps {
   searchQuery: string;
@@ -40,7 +39,7 @@ const TagList = ({ searchQuery, currentPage, itemsPerPage, onPageChange }: TagLi
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [filterEntity, setFilterEntity] = useState<FilterEntity>('all');
   
-  const tags = useAppSelector(selectTagsItems);
+  const tags = useAppSelector(selectTags);
   const total = useAppSelector(selectTagsTotal);
   const isLoading = useAppSelector(selectTagsLoading);
   const error = useAppSelector(selectTagsError);
@@ -75,7 +74,7 @@ const TagList = ({ searchQuery, currentPage, itemsPerPage, onPageChange }: TagLi
   };
 
   const handleSelectAll = () => {
-    dispatch(selectAllTags(tags && tags.length > 0 ? tags.map(tag => tag.id) : []));
+    dispatch(selectAllTags(tags.map(tag => tag.id)));
   };
 
   const handleSelectTag = (tagId: string) => {
@@ -83,8 +82,6 @@ const TagList = ({ searchQuery, currentPage, itemsPerPage, onPageChange }: TagLi
   };
 
   const handleBulkDelete = () => {
-    if (!selectedTags || selectedTags.length === 0) return;
-    
     const bulkDeleteTag: Tag = {
       id: selectedTags.join(','),
       name: `${selectedTags.length} tags`,
@@ -101,8 +98,6 @@ const TagList = ({ searchQuery, currentPage, itemsPerPage, onPageChange }: TagLi
   };
 
   const handleBulkEdit = () => {
-    if (!selectedTags || selectedTags.length === 0) return;
-    
     const bulkEditTag: Tag = {
       id: selectedTags.join(','),
       name: '',
@@ -142,23 +137,21 @@ const TagList = ({ searchQuery, currentPage, itemsPerPage, onPageChange }: TagLi
         onSort={handleSort}
       />
 
-      {selectedTags && selectedTags.length > 0 && (
-        <BulkActions
-          selectedCount={selectedTags.length}
-          onEditSelected={handleBulkEdit}
-          onDeleteSelected={handleBulkDelete}
-        />
-      )}
+      <BulkActions
+        selectedCount={selectedTags.length}
+        onEditSelected={handleBulkEdit}
+        onDeleteSelected={handleBulkDelete}
+      />
 
-      {(!tags || tags.length === 0) ? (
+      {tags.length === 0 ? (
         <div className="p-8 text-center text-gray-500">
           No tags found matching your search.
         </div>
       ) : (
         <>
           <TagTable
-            tags={tags || []}
-            selectedTags={selectedTags || []}
+            tags={tags}
+            selectedTags={selectedTags}
             onSelectAll={handleSelectAll}
             onSelectTag={handleSelectTag}
             onEditTag={setTagToEdit}

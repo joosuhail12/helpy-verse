@@ -1,47 +1,56 @@
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import React, { useState, useEffect } from 'react';
 import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { Send, Loader2 } from 'lucide-react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { updateContact } from '@/store/slices/contacts/contactsSlice';
-import { v4 as uuidv4 } from 'uuid';
-import { toast } from '@/hooks/use-toast';
-import type { QuickNoteInputProps } from '@/types/contact';
+import { useToast } from '@/hooks/use-toast';
 
-export const QuickNoteInput = ({ contactId }: QuickNoteInputProps) => {
-  const [note, setNote] = useState('');
+interface QuickNoteInputProps {
+  contactId: string;
+  initialNote?: string;
+  onAddNote?: (note: string) => void;
+}
+
+export const QuickNoteInput: React.FC<QuickNoteInputProps> = ({ 
+  contactId, 
+  initialNote = '', 
+  onAddNote 
+}) => {
+  const [note, setNote] = useState(initialNote);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const dispatch = useAppDispatch();
-
+  const { toast } = useToast();
+  
+  useEffect(() => {
+    if (initialNote) {
+      setNote(initialNote);
+    }
+  }, [initialNote]);
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     if (!note.trim()) return;
     
     setIsSubmitting(true);
-    
     try {
-      // Create a new note
-      const newNote = {
-        id: uuidv4(),
-        content: note,
-        createdAt: new Date().toISOString(),
-        createdBy: 'current-user' // This would be dynamic in real app
-      };
-      
-      // Update the contact with the new note
       await dispatch(updateContact({
         contactId,
         data: { 
-          notes: [newNote] // The reducer will handle appending to existing notes
+          notes: note // In a real app, you would append to existing notes
         }
-      }));
+      })).unwrap();
       
       toast({
-        title: "Success",
-        description: "Note added successfully",
+        title: "Note added",
+        description: "Your note has been added successfully",
       });
       
-      setNote('');
+      if (onAddNote) {
+        onAddNote(note);
+      }
     } catch (error) {
       toast({
         title: "Error",
@@ -52,18 +61,34 @@ export const QuickNoteInput = ({ contactId }: QuickNoteInputProps) => {
       setIsSubmitting(false);
     }
   };
-
+  
   return (
-    <form onSubmit={handleSubmit} className="space-y-3">
+    <form onSubmit={handleSubmit} className="space-y-2">
       <Textarea
-        placeholder="Add a quick note about this contact..."
+        placeholder="Add a quick note..."
         value={note}
         onChange={(e) => setNote(e.target.value)}
         className="min-h-[100px]"
+        disabled={isSubmitting}
       />
-      <Button type="submit" disabled={isSubmitting || !note.trim()}>
-        {isSubmitting ? 'Adding...' : 'Add Note'}
-      </Button>
+      <div className="flex justify-end">
+        <Button 
+          type="submit" 
+          disabled={!note.trim() || isSubmitting}
+        >
+          {isSubmitting ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Saving...
+            </>
+          ) : (
+            <>
+              <Send className="mr-2 h-4 w-4" />
+              Add Note
+            </>
+          )}
+        </Button>
+      </div>
     </form>
   );
 };

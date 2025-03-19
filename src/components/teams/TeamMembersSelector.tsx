@@ -1,123 +1,65 @@
 
-import { useState } from 'react';
-import { Check, ChevronsUpDown, PlusCircle, Search, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import React, { useState } from 'react';
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
-import { Teammate } from '@/types/teammate';
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
+import type { TeamMembersSelectorProps } from '@/types/team';
 
-interface TeamMembersSelectorProps {
-  teammates: Teammate[];
-  selectedTeammates: string[];
-  onTeammateToggle: (teammateId: string) => void;
-}
-
-const TeamMembersSelector = ({ 
-  teammates, 
-  selectedTeammates, 
-  onTeammateToggle 
+const TeamMembersSelector = ({
+  teammates,
+  selectedTeammates,
+  onTeammateToggle,
 }: TeamMembersSelectorProps) => {
-  const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const selectedTeammateItems = teammates.filter(teammate => 
-    selectedTeammates.includes(teammate.id)
-  );
-  
-  const notSelectedTeammateItems = teammates.filter(teammate => 
-    !selectedTeammates.includes(teammate.id)
+  const filteredTeammates = teammates.filter(teammate => 
+    teammate.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    teammate.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
-    <div className="space-y-4">
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            role="combobox"
-            aria-expanded={open}
-            className="w-full justify-between"
-          >
-            <span className="truncate">
-              {selectedTeammates.length > 0
-                ? `${selectedTeammates.length} teammates selected`
-                : "Select teammates"}
-            </span>
-            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-[300px] p-0">
-          <Command className="max-h-[300px]">
-            <CommandInput 
-              placeholder="Search teammates..." 
-              onValueChange={setSearchQuery} 
-              className="h-9"
-            />
-            <CommandList>
-              <CommandEmpty>No teammates found.</CommandEmpty>
-              <CommandGroup heading="Teammates">
-                {notSelectedTeammateItems
-                  .filter(teammate => 
-                    teammate.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                    teammate.email.toLowerCase().includes(searchQuery.toLowerCase())
-                  )
-                  .map(teammate => (
-                    <CommandItem
-                      key={teammate.id}
-                      value={teammate.id}
-                      onSelect={() => {
-                        onTeammateToggle(teammate.id);
-                      }}
-                      className="flex items-center gap-2"
-                    >
-                      <Avatar className="h-6 w-6">
-                        <AvatarImage src={teammate.avatar} />
-                        <AvatarFallback>{teammate.name.slice(0, 2)}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 overflow-hidden">
-                        <p className="truncate">{teammate.name}</p>
-                        <p className="text-xs text-muted-foreground truncate">{teammate.email}</p>
-                      </div>
-                      <Check
-                        className={cn(
-                          "h-4 w-4 opacity-0",
-                          selectedTeammates.includes(teammate.id) && "opacity-100"
-                        )}
-                      />
-                    </CommandItem>
-                  ))}
-              </CommandGroup>
-            </CommandList>
-          </Command>
-        </PopoverContent>
-      </Popover>
-
-      {selectedTeammateItems.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {selectedTeammateItems.map(teammate => (
-            <Badge
+    <div className="space-y-2">
+      <Label>Team Members</Label>
+      <div className="relative mb-2">
+        <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+        <Input
+          placeholder="Search team members..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pl-10"
+        />
+      </div>
+      <ScrollArea className="h-[200px] w-full border rounded-md p-4">
+        <div className="space-y-2">
+          {filteredTeammates.map((teammate) => (
+            <div
               key={teammate.id}
-              variant="secondary"
-              className="flex items-center gap-1"
+              className="flex items-center justify-between p-2 hover:bg-gray-50 rounded-md cursor-pointer"
+              onClick={() => onTeammateToggle(teammate.id)}
             >
-              <Avatar className="h-4 w-4 mr-1">
-                <AvatarImage src={teammate.avatar} />
-                <AvatarFallback>{teammate.name.slice(0, 2)}</AvatarFallback>
-              </Avatar>
-              {teammate.name}
-              <button
-                onClick={() => onTeammateToggle(teammate.id)}
-                className="ml-1 rounded-full outline-none focus:ring-2 focus:ring-offset-2"
-              >
-                <X className="h-3 w-3" />
-              </button>
-            </Badge>
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                  {teammate.name.charAt(0)}
+                </div>
+                <div>
+                  <p className="font-medium">{teammate.name}</p>
+                  <p className="text-sm text-gray-500">{teammate.email}</p>
+                </div>
+              </div>
+              {selectedTeammates.includes(teammate.id) && (
+                <Badge>Selected</Badge>
+              )}
+            </div>
           ))}
+          {filteredTeammates.length === 0 && (
+            <div className="text-center text-gray-500 py-4">
+              No team members found
+            </div>
+          )}
         </div>
-      )}
+      </ScrollArea>
     </div>
   );
 };

@@ -1,177 +1,148 @@
-import { useState } from 'react';
-import { Label } from '@/components/ui/label';
+
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
-import { toast } from '@/hooks/use-toast';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { ContentComment, ContentVersion, Content, User } from '@/types/content';
+import { useToast } from '@/hooks/use-toast';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { updateContent } from '@/store/slices/content/contentSlice';
+import type { Content, ContentVersion, User } from '@/types/content';
+
+const formSchema = z.object({
+  title: z.string().min(2, 'Title must be at least 2 characters'),
+  description: z.string().min(10, 'Description must be at least 10 characters'),
+  content: z.string().optional(),
+});
 
 interface ContentFormProps {
   content: Content;
-  onUpdate: (content: Partial<Content>) => void;
-  categories: string[];
-  currentUser: User;
-  isSubmitting?: boolean;
 }
 
-export const ContentForm = ({
-  content,
-  onUpdate,
-  categories,
-  currentUser,
-  isSubmitting = false,
-}: ContentFormProps) => {
-  const [title, setTitle] = useState(content.title);
-  const [description, setDescription] = useState(content.description);
-  const [category, setCategory] = useState(content.category);
-  const [contentText, setContentText] = useState(content.content || '');
-  const [isEditing, setIsEditing] = useState(false);
+export const ContentForm = ({ content }: ContentFormProps) => {
+  const { toast } = useToast();
+  const dispatch = useAppDispatch();
 
-  const handleSave = () => {
-    if (!title.trim()) {
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      title: content.title,
+      description: content.description,
+      content: content.content || '',
+    },
+  });
+
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    try {
+      const currentUser: User = {
+        id: 'current-user',
+        name: 'Current User',
+        avatar: 'https://api.dicebear.com/7.x/avatars/svg?seed=current-user',
+      };
+
+      const newVersion: ContentVersion = {
+        id: `v${Date.now()}`,
+        contentId: content.id,
+        content: content.content || '',
+        createdAt: new Date().toISOString(),
+        createdBy: currentUser,
+        changes: 'Updated content details',
+      };
+
+      const currentVersions = Array.isArray(content.versions) ? [...content.versions] : [];
+
+      dispatch(updateContent({ 
+        id: content.id, 
+        data: {
+          ...values,
+          versions: [...currentVersions, newVersion],
+          lastEditedBy: currentUser,
+          lastUpdated: new Date().toISOString(),
+        }
+      }));
+
+      toast({
+        title: 'Changes saved',
+        description: 'The content has been updated successfully.',
+      });
+    } catch (error) {
       toast({
         title: 'Error',
-        description: 'Title is required',
+        description: 'Failed to save changes. Please try again.',
         variant: 'destructive',
       });
-      return;
     }
-
-    // Create a new version
-    const newVersion: Partial<ContentVersion> = {
-      content: content.content || '',
-      createdAt: new Date().toISOString(),
-      user: {
-        id: currentUser.id,
-        name: currentUser.name,
-        email: currentUser.email,
-        avatar: currentUser.avatar || '',
-      },
-      changeDescription: 'Manual save',
-    };
-    
-    // Update the content
-    onUpdate({
-      title,
-      description,
-      category,
-      content: contentText,
-      lastUpdated: new Date().toISOString(),
-      lastEditedBy: {
-        id: currentUser.id,
-        name: currentUser.name,
-        email: currentUser.email,
-        avatar: currentUser.avatar || '',
-      },
-      versions: [...(content.versions || []), newVersion as ContentVersion],
-    });
-    
-    setIsEditing(false);
-    
-    toast({
-      title: 'Success',
-      description: 'Content updated successfully',
-    });
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Edit Content</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="space-y-2">
-          <Label htmlFor="title">Title</Label>
-          <Input
-            id="title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            disabled={!isEditing}
+    <Card className="p-6">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <FormField
+            control={form.control}
+            name="title"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Title</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter title" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="description">Description</Label>
-          <Textarea
-            id="description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            rows={3}
-            disabled={!isEditing}
+
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Description</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Enter description"
+                    className="min-h-[100px]"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="category">Category</Label>
-          <Select
-            value={category}
-            onValueChange={setCategory}
-            disabled={!isEditing}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select category" />
-            </SelectTrigger>
-            <SelectContent>
-              {categories.map((cat) => (
-                <SelectItem key={cat} value={cat}>
-                  {cat}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="content">Content</Label>
-          <Textarea
-            id="content"
-            value={contentText}
-            onChange={(e) => setContentText(e.target.value)}
-            rows={10}
-            className="font-mono"
-            disabled={!isEditing}
+
+          <FormField
+            control={form.control}
+            name="content"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Content</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Enter content"
+                    className="min-h-[200px] font-mono"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-        </div>
-      </CardContent>
-      <CardFooter className="flex justify-end gap-2">
-        {isEditing ? (
-          <>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setTitle(content.title);
-                setDescription(content.description);
-                setCategory(content.category);
-                setContentText(content.content || '');
-                setIsEditing(false);
-              }}
-              disabled={isSubmitting}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleSave}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? 'Saving...' : 'Save Changes'}
-            </Button>
-          </>
-        ) : (
-          <Button
-            onClick={() => setIsEditing(true)}
-          >
-            Edit
-          </Button>
-        )}
-      </CardFooter>
+
+          <div className="flex justify-end">
+            <Button type="submit">Save Changes</Button>
+          </div>
+        </form>
+      </Form>
     </Card>
   );
 };

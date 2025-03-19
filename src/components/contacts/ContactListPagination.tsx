@@ -15,51 +15,30 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useAppDispatch } from "@/hooks/useAppDispatch";
-import { setCurrentPage, setItemsPerPage } from "@/store/slices/contacts/contactsSlice";
 
-export interface ContactListPaginationProps {
+interface ContactListPaginationProps {
   currentPage: number;
   totalPages: number;
-  itemsPerPage?: number;
-  totalItems?: number;
-  onPageChange?: (page: number) => void;
-  onItemsPerPageChange?: (items: number) => void;
+  itemsPerPage: number;
+  totalItems: number;
+  onPageChange: (page: number) => void;
+  onItemsPerPageChange: (items: number) => void;
 }
 
-export const ContactListPagination: React.FC<ContactListPaginationProps> = ({
+export const ContactListPagination = ({
   currentPage,
   totalPages,
-  itemsPerPage = 10,
-  totalItems = 0,
+  itemsPerPage,
+  totalItems,
   onPageChange,
   onItemsPerPageChange,
-}) => {
-  const dispatch = useAppDispatch();
-
-  const handlePageChange = (page: number) => {
-    if (onPageChange) {
-      onPageChange(page);
-    } else {
-      dispatch(setCurrentPage(page));
-    }
-  };
-
-  const handleItemsPerPageChange = (value: string) => {
-    const items = Number(value);
-    if (onItemsPerPageChange) {
-      onItemsPerPageChange(items);
-    } else {
-      dispatch(setItemsPerPage(items));
-    }
-  };
-
+}: ContactListPaginationProps) => {
   return (
     <div className="flex items-center justify-between py-4 px-2">
       <div className="flex items-center gap-2 text-sm text-gray-600">
         <Select
           value={itemsPerPage.toString()}
-          onValueChange={handleItemsPerPageChange}
+          onValueChange={(value) => onItemsPerPageChange(Number(value))}
         >
           <SelectTrigger className="w-[100px]">
             <SelectValue placeholder="Items per page" />
@@ -84,7 +63,7 @@ export const ContactListPagination: React.FC<ContactListPaginationProps> = ({
               href="#"
               onClick={(e) => {
                 e.preventDefault();
-                if (currentPage > 1) handlePageChange(currentPage - 1);
+                if (currentPage > 1) onPageChange(currentPage - 1);
               }}
             />
           </PaginationItem>
@@ -104,7 +83,7 @@ export const ContactListPagination: React.FC<ContactListPaginationProps> = ({
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();
-                      handlePageChange(page);
+                      onPageChange(page);
                     }}
                     isActive={page === currentPage}
                   >
@@ -134,7 +113,7 @@ export const ContactListPagination: React.FC<ContactListPaginationProps> = ({
               href="#"
               onClick={(e) => {
                 e.preventDefault();
-                if (currentPage < totalPages) handlePageChange(currentPage + 1);
+                if (currentPage < totalPages) onPageChange(currentPage + 1);
               }}
             />
           </PaginationItem>

@@ -1,118 +1,58 @@
 
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Contact } from '@/types/contact';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import TicketList from '@/components/inbox/TicketList';
 import { Ticket } from '@/types/ticket';
-import { useNavigate } from 'react-router-dom';
-import { Plus } from 'lucide-react';
 
-export interface ContactTicketsProps {
-  contactId: string;
-  contactName: string;
+interface ContactTicketsProps {
+  contact: Contact;
 }
 
-export const ContactTickets: React.FC<ContactTicketsProps> = ({ 
-  contactId,
-  contactName
-}) => {
-  const navigate = useNavigate();
-  const [tickets, setTickets] = useState<Ticket[]>([]);
-  const [loading, setLoading] = useState(true);
-  
-  useEffect(() => {
-    // Simulate fetching tickets data
-    const fetchTickets = async () => {
-      setLoading(true);
-      
-      // This would be replaced with an actual API call
-      const mockTickets: Ticket[] = [
-        {
-          id: '1',
-          subject: 'Account access issue',
-          customer: contactName,
-          lastMessage: 'I cannot login to my account since yesterday.',
-          assignee: 'Jane Smith',
-          company: 'Acme Corp',
-          tags: ['login', 'urgent'],
-          status: 'open',
-          priority: 'high',
-          createdAt: new Date().toISOString(),
-          isUnread: true,
-          hasNotification: true,
-          notificationType: 'mention'
-        }
-      ];
-      
-      setTimeout(() => {
-        setTickets(mockTickets);
-        setLoading(false);
-      }, 500);
-    };
-    
-    fetchTickets();
-  }, [contactId, contactName]);
-  
-  const handleCreateTicket = () => {
-    navigate('/home/tickets/new', { 
-      state: { contactId, contactName } 
-    });
-  };
-  
-  const handleViewTicket = (ticketId: string) => {
-    navigate(`/home/tickets/${ticketId}`);
-  };
-  
+export const ContactTickets = ({ contact }: ContactTicketsProps) => {
+  // Filter tickets for this contact from our mock data
+  // In a real app, this would come from your backend
+  const tickets: Ticket[] = [
+    {
+      id: '1',
+      subject: 'Account Access Issue',
+      customer: `${contact.firstname} ${contact.lastname}`,
+      lastMessage: 'Having trouble logging in to my account',
+      assignee: 'Sarah Wilson',
+      company: contact.company || '',
+      tags: ['account', 'urgent'],
+      status: 'open' as const,
+      priority: 'high' as const,
+      createdAt: '2024-03-15T10:00:00Z',
+      isUnread: true,
+      hasNotification: true,
+      notificationType: 'mention' as const,
+    },
+    {
+      id: '2',
+      subject: 'Feature Request',
+      customer: `${contact.firstname} ${contact.lastname}`,
+      lastMessage: 'Would like to discuss new feature possibilities',
+      assignee: null,
+      company: contact.company || '',
+      tags: ['feature-request'],
+      status: 'pending' as const,
+      priority: 'medium' as const,
+      createdAt: '2024-03-14T15:30:00Z',
+      isUnread: false,
+    },
+  ].filter(ticket => ticket.customer === `${contact.firstname} ${contact.lastname}`);
+
   return (
-    <Card>
-      <CardHeader className="pb-3 flex flex-row items-center justify-between">
-        <CardTitle className="text-md">Tickets</CardTitle>
-        <Button size="sm" onClick={handleCreateTicket}>
-          <Plus className="h-4 w-4 mr-2" />
-          New Ticket
-        </Button>
+    <Card className="bg-white/60 backdrop-blur-sm border-purple-100/50 shadow-lg shadow-purple-500/5">
+      <CardHeader className="border-b border-purple-100/20 pb-4">
+        <CardTitle className="text-lg font-semibold text-purple-900">Tickets</CardTitle>
       </CardHeader>
-      <CardContent>
-        {loading ? (
-          <div className="animate-pulse space-y-3">
-            <div className="h-14 bg-muted rounded"></div>
-            <div className="h-14 bg-muted rounded"></div>
-          </div>
-        ) : tickets.length === 0 ? (
-          <div className="text-center py-6 text-muted-foreground">
-            <p>No tickets yet</p>
-            <Button variant="link" onClick={handleCreateTicket}>
-              Create a new ticket
-            </Button>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {tickets.map(ticket => (
-              <div
-                key={ticket.id}
-                className="flex justify-between items-start p-3 border rounded hover:bg-muted cursor-pointer"
-                onClick={() => handleViewTicket(ticket.id)}
-              >
-                <div>
-                  <div className="font-medium">{ticket.subject}</div>
-                  <div className="text-sm text-muted-foreground">
-                    #{ticket.id} • {ticket.status} • {ticket.priority} priority
-                  </div>
-                </div>
-              </div>
-            ))}
-            
-            {tickets.length > 0 && (
-              <Button
-                variant="outline"
-                className="w-full mt-2"
-                onClick={() => navigate('/home/tickets', { state: { contactFilter: contactId } })}
-              >
-                View all tickets
-              </Button>
-            )}
-          </div>
-        )}
+      <CardContent className="p-0">
+        <div className="w-full">
+          <TicketList tickets={tickets} />
+        </div>
       </CardContent>
     </Card>
   );
 };
+

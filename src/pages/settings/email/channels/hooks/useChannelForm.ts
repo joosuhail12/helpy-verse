@@ -21,7 +21,6 @@ export const useChannelForm = (props?: UseChannelFormProps) => {
   } = useForm<EmailChannelFormData>({
     defaultValues: {
       channelName: '',
-      name: '',
       senderName: '',
       email: '',
       autoBccEmail: '',
@@ -30,8 +29,6 @@ export const useChannelForm = (props?: UseChannelFormProps) => {
       type: 'both',
       isDefault: false,
       teamId: '',
-      domain: '',
-      isActive: true,
       allowAgentConversations: false,
       useAgentNames: false,
       useOriginalSender: false,

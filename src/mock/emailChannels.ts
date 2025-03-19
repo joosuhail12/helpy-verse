@@ -1,43 +1,39 @@
 
-import { EmailChannel } from '@/types/emailChannel';
+import type { EmailChannel } from '@/types/emailChannel';
 
 export const mockEmailChannels: EmailChannel[] = [
   {
     id: '1',
-    name: 'Support Channel',
-    channelName: 'Support Channel',
+    channelName: 'Primary Support',
     senderName: 'Support Team',
-    email: 'support@example.com',
-    domain: 'example.com',
-    noReplyEmail: 'noreply@example.com',
-    icon: '💬',
+    email: 'support@company.com',
+    noReplyEmail: 'no-reply@company.com',
+    icon: 'Mail',
     type: 'both',
-    createdAt: '2023-01-01T00:00:00Z',
-    updatedAt: '2023-01-01T00:00:00Z',
+    createdAt: '2024-03-10T10:00:00Z',
     allowAgentConversations: true,
     useAgentNames: true,
     useOriginalSender: true,
     isActive: true,
-    isDefault: true,
-    domainStatus: 'verified'
   },
   {
     id: '2',
-    name: 'Marketing Channel',
-    channelName: 'Marketing Channel',
-    senderName: 'Marketing Team',
-    email: 'marketing@example.com',
-    domain: 'example.com',
-    autoBccEmail: 'marketing-archive@example.com',
-    icon: '📢',
+    channelName: 'Marketing Updates',
+    senderName: 'Marketing',
+    email: 'marketing@company.com',
+    autoBccEmail: 'archive@company.com',
+    icon: 'MessageCircle',
     type: 'sending',
-    createdAt: '2023-02-01T00:00:00Z',
-    updatedAt: '2023-02-01T00:00:00Z',
+    createdAt: '2024-03-09T15:30:00Z',
     allowAgentConversations: false,
     useAgentNames: false,
     useOriginalSender: false,
     isActive: true,
-    isDefault: false,
-    domainStatus: 'verified'
   }
 ];
+
+export const mockWorkspace = {
+  name: 'acme',
+  defaultEmail: 'acme@mail.pullse.ai',
+  hasDomainVerified: false,
+};

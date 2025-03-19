@@ -1,112 +1,151 @@
 
-import { Team, TeamMember, TeamChannel, Holiday } from '@/types/team';
+import { Team } from './teamsSlice';
 
 export const mockTeams: Team[] = [
   {
-    id: '1',
+    id: 'team-1',
     name: 'Customer Support',
-    icon: 'headphones',
-    status: 'active',
-    type: 'support',
-    description: 'Main customer support team',
-    memberCount: 3,
+    description: 'Front-line team handling customer inquiries and issues',
+    icon: '🎯',
+    color: '#4F46E5',
     members: [
       {
-        id: '1',
-        name: 'John Doe',
-        email: 'john@example.com'
+        id: 'member-1',
+        name: 'Sarah Johnson',
+        email: 'sarah.j@example.com',
+        avatar: 'https://api.dicebear.com/7.x/avatars/svg?seed=Sarah',
+        role: 'manager',
+        status: 'active'
       },
       {
-        id: '2',
-        name: 'Jane Smith',
-        email: 'jane@example.com'
+        id: 'member-2',
+        name: 'Michael Chen',
+        email: 'michael.c@example.com',
+        avatar: 'https://api.dicebear.com/7.x/avatars/svg?seed=Michael',
+        role: 'agent',
+        status: 'active'
       },
       {
-        id: '3',
-        name: 'Michael Johnson',
-        email: 'michael@example.com'
+        id: 'member-3',
+        name: 'Emily Davis',
+        email: 'emily.d@example.com',
+        avatar: 'https://api.dicebear.com/7.x/avatars/svg?seed=Emily',
+        role: 'agent',
+        status: 'active'
+      }
+    ],
+    channels: [
+      {
+        id: 'channel-1',
+        name: 'Support Email',
+        type: 'email',
+        isActive: true
+      },
+      {
+        id: 'channel-2',
+        name: 'Live Chat',
+        type: 'chat',
+        isActive: true
+      }
+    ],
+    routing: [
+      {
+        id: 'rule-1',
+        name: 'Priority Customers',
+        priority: 1,
+        isActive: true
+      },
+      {
+        id: 'rule-2',
+        name: 'Standard Routing',
+        priority: 2,
+        isActive: true
       }
     ],
     officeHours: {
-      monday: [{ start: '09:00', end: '17:00' }],
-      tuesday: [{ start: '09:00', end: '17:00' }],
-      wednesday: [{ start: '09:00', end: '17:00' }],
-      thursday: [{ start: '09:00', end: '17:00' }],
-      friday: [{ start: '09:00', end: '17:00' }],
+      days: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
+      startTime: '09:00',
+      endTime: '17:00',
       timezone: 'America/New_York'
     },
-    channels: [
+    holidays: [
       {
-        id: '1',
-        name: 'Support Chat',
-        type: 'chat'
+        id: 'holiday-1',
+        name: 'New Year\'s Day',
+        date: '2023-01-01',
+        isRecurring: true
       },
       {
-        id: '2',
-        name: 'Support Email',
-        type: 'email'
+        id: 'holiday-2',
+        name: 'Independence Day',
+        date: '2023-07-04',
+        isRecurring: true
+      }
+    ],
+    createdAt: '2023-01-10T08:30:00Z',
+    updatedAt: '2023-06-15T14:45:00Z'
+  },
+  {
+    id: 'team-2',
+    name: 'Technical Support',
+    description: 'Specialized team handling complex technical issues',
+    icon: '🔧',
+    color: '#10B981',
+    members: [
+      {
+        id: 'member-4',
+        name: 'Alex Rivera',
+        email: 'alex.r@example.com',
+        avatar: 'https://api.dicebear.com/7.x/avatars/svg?seed=Alex',
+        role: 'supervisor',
+        status: 'active'
+      },
+      {
+        id: 'member-5',
+        name: 'Jamie Smith',
+        email: 'jamie.s@example.com',
+        avatar: 'https://api.dicebear.com/7.x/avatars/svg?seed=Jamie',
+        role: 'agent',
+        status: 'active'
+      }
+    ],
+    channels: [
+      {
+        id: 'channel-3',
+        name: 'Tech Support Email',
+        type: 'email',
+        isActive: true
+      },
+      {
+        id: 'channel-4',
+        name: 'Support Phone Line',
+        type: 'voice',
+        isActive: true
       }
     ],
     routing: [
       {
-        type: 'round-robin',
-        limits: {
-          maxTickets: 50,
-          maxOpenTickets: 10,
-          maxActiveChats: 5
-        }
-      }
-    ],
-    holidays: [
-      { date: '2024-01-01', name: 'New Year\'s Day' },
-      { date: '2024-07-04', name: 'Independence Day' },
-      { date: '2024-12-25', name: 'Christmas Day' }
-    ]
-  },
-  {
-    id: '2',
-    name: 'Sales Team',
-    icon: 'dollar-sign',
-    status: 'active',
-    type: 'sales',
-    description: 'Sales and business development team',
-    memberCount: 2,
-    members: [
-      {
-        id: '4',
-        name: 'Emily Davis',
-        email: 'emily@example.com'
-      },
-      {
-        id: '5',
-        name: 'Robert Wilson',
-        email: 'robert@example.com'
+        id: 'rule-3',
+        name: 'Technical Issues',
+        priority: 1,
+        isActive: true
       }
     ],
     officeHours: {
-      monday: [{ start: '08:00', end: '18:00' }],
-      tuesday: [{ start: '08:00', end: '18:00' }],
-      wednesday: [{ start: '08:00', end: '18:00' }],
-      thursday: [{ start: '08:00', end: '18:00' }],
-      friday: [{ start: '08:00', end: '18:00' }],
-      timezone: 'America/Chicago'
+      days: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'],
+      startTime: '08:00',
+      endTime: '20:00',
+      timezone: 'America/Los_Angeles'
     },
-    channels: [
-      {
-        id: '3',
-        name: 'Sales Email',
-        type: 'email'
-      }
-    ],
-    routing: [
-      {
-        type: 'manual'
-      }
-    ],
     holidays: [
-      { date: '2024-01-01', name: 'New Year\'s Day' },
-      { date: '2024-07-04', name: 'Independence Day' },
-      { date: '2024-12-25', name: 'Christmas Day' }
-    ]
+      {
+        id: 'holiday-3',
+        name: 'Christmas Day',
+        date: '2023-12-25',
+        isRecurring: true
+      }
+    ],
+    createdAt: '2023-02-18T10:15:00Z',
+    updatedAt: '2023-05-22T16:30:00Z'
   }
 ];

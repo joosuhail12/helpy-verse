@@ -4,24 +4,16 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Clock, Activity } from "lucide-react";
 import { useAppSelector } from "@/hooks/useAppSelector";
-import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { formatDistanceToNow } from "date-fns";
-import { useEffect } from "react";
-import { fetchTeammateActivityLogs } from "@/store/slices/teammates/actions";
 
 interface TeammateActivityLogsProps {
   teammateId: string;
 }
 
 const TeammateActivityLogs = ({ teammateId }: TeammateActivityLogsProps) => {
-  const dispatch = useAppDispatch();
   const activities = useAppSelector(state => 
     state.teammates.activities?.[teammateId] || []
   );
-
-  useEffect(() => {
-    dispatch(fetchTeammateActivityLogs(teammateId));
-  }, [dispatch, teammateId]);
 
   const getActivityIcon = (type: string) => {
     switch (type) {
@@ -38,7 +30,7 @@ const TeammateActivityLogs = ({ teammateId }: TeammateActivityLogsProps) => {
         return "bg-blue-100 text-blue-800";
       case "update":
         return "bg-yellow-100 text-yellow-800";
-      case "permission_changed":
+      case "permission_change":
         return "bg-purple-100 text-purple-800";
       default:
         return "bg-gray-100 text-gray-800";

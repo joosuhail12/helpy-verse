@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
-import { resetPassword } from '@/store/slices/teammates/actions';
+import { resetPassword } from '@/store/slices/teammates/teammatesSlice';
 import { useToast } from '@/hooks/use-toast';
 import { Lock, Eye, EyeOff } from 'lucide-react';
 
@@ -36,7 +36,7 @@ export const PasswordReset: React.FC<PasswordResetProps> = ({ teammateId }) => {
 
     setIsProcessing(true);
     try {
-      const result = await dispatch(resetPassword({ 
+      await dispatch(resetPassword({ 
         teammateId, 
         newPassword 
       })).unwrap();

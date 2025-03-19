@@ -1,23 +1,23 @@
 
-import { QueryField } from '@/types/queryBuilder';
+import { QueryField, DataSource, FieldType } from '@/types/queryBuilder';
 
 export const mockAudienceFields: QueryField[] = [
   {
     id: 'name',
     label: 'Name',
-    type: 'string',
+    type: 'text',
     source: 'contacts',
   },
   {
     id: 'email',
     label: 'Email',
-    type: 'string',
+    type: 'text',
     source: 'contacts',
   },
   {
     id: 'company',
     label: 'Company Name',
-    type: 'string',
+    type: 'text',
     source: 'companies',
   },
   {
@@ -91,3 +91,4 @@ export const mockAudienceFields: QueryField[] = [
     options: ['VIP', 'New', 'At Risk', 'Champion', 'Qualified'],
   },
 ];
+

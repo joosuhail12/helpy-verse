@@ -16,7 +16,7 @@ export const RulePreview = ({ group, fields }: RulePreviewProps) => {
     <div className="space-y-6">
       <h3 className="text-lg font-medium">Rule Preview and Validation</h3>
       
-      <RulesSummary queryGroup={group} />
+      <RulesSummary group={group} fields={fields} />
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <AudienceSizeEstimator queryGroup={group} />

@@ -6,11 +6,6 @@ import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import type { CustomAction } from '@/types/action';
 
-interface ChatbotConnections {
-  id: string;
-  name: string;
-}
-
 interface ChatbotConnectionsProps {
   action: CustomAction;
   onUpdate: (updatedAction: CustomAction) => void;

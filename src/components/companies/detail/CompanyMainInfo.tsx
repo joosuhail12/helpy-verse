@@ -41,7 +41,7 @@ export const CompanyMainInfo = ({ company }: CompanyMainInfoProps) => {
               label="Website"
             />
           </div>
-          
+
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-sm font-medium text-purple-900/70">
               <Info className="h-4 w-4" />
@@ -128,9 +128,9 @@ export const CompanyMainInfo = ({ company }: CompanyMainInfoProps) => {
                 label="Country"
               />
               <InlineEditField
-                value={company.location?.zipCode || ''}
+                value={company.location?.zipcode || ''}
                 companyId={company.id}
-                field="location.zipCode"
+                field="location.zipcode"
                 label="Postal Code"
               />
             </div>

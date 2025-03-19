@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
@@ -74,7 +75,6 @@ export const CreateChatbotForm = ({ onNextStep }: CreateChatbotFormProps) => {
         name: data.name,
         description: `A ${data.tone} chatbot with ${data.persona} persona`,
         status: 'inactive',
-        model: 'gpt-3.5-turbo',
         avatarUrl: data.avatarUrl,
         tone: data.tone,
         customInstructions: data.customInstructions,

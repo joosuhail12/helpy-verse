@@ -3,11 +3,11 @@ import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import TeamOfficeHoursSelector from '@/components/teams/TeamOfficeHoursSelector';
 import TeamHolidaySelector from '@/components/teams/TeamHolidaySelector';
-import { DayOfWeek, TimeSlot, Holiday } from '@/types/team';
+import type { DayOfWeek, TimeSlot } from '@/types/team';
 
 interface TeamAvailabilitySectionProps {
-  officeHours: { [key in DayOfWeek]?: TimeSlot[] };
-  onOfficeHoursChange: (hours: { [key in DayOfWeek]?: TimeSlot[] }) => void;
+  officeHours: { [key in DayOfWeek]: TimeSlot[] };
+  onOfficeHoursChange: (hours: { [key in DayOfWeek]: TimeSlot[] }) => void;
   selectedHolidays: string[];
   onHolidaysChange: (holidays: string[]) => void;
 }
@@ -18,11 +18,6 @@ const TeamAvailabilitySection = ({
   selectedHolidays,
   onHolidaysChange,
 }: TeamAvailabilitySectionProps) => {
-  // Create wrapper function to adapt between string[] and Holiday[]
-  const handleHolidaysChange = (holidays: string[]) => {
-    onHolidaysChange(holidays);
-  };
-
   return (
     <Card className="p-6">
       <h2 className="text-lg font-semibold mb-6">Team Availability</h2>
@@ -34,7 +29,7 @@ const TeamAvailabilitySection = ({
         <Separator className="my-8" />
         <TeamHolidaySelector
           selectedHolidays={selectedHolidays}
-          onHolidaysChange={handleHolidaysChange}
+          onHolidaysChange={onHolidaysChange}
         />
       </div>
     </Card>
@@ -42,3 +37,4 @@ const TeamAvailabilitySection = ({
 };
 
 export default TeamAvailabilitySection;
+

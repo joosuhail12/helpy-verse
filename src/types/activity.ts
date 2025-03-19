@@ -1,24 +1,25 @@
 
-export type ActivityType = 'email' | 'note' | 'call' | 'meeting' | 'message' | 'task' | 'ticket' | 'company_update';
+export type ActivityType = 
+  | 'email' 
+  | 'ticket' 
+  | 'note' 
+  | 'call' 
+  | 'meeting'
+  | 'company_update';
+
+export type ActivityMetadataCategory = 'positive' | 'negative' | 'neutral' | 'update';
 
 export interface ActivityMetadata {
-  subject?: string;
-  content?: string;
-  taskName?: string;
-  status?: string;
+  category: ActivityMetadataCategory;
   responseTime?: number;
-  category?: string;
-  [key: string]: any;
+  status?: string;
 }
 
 export interface Activity {
   id: string;
   type: ActivityType;
-  title?: string;
   description: string;
-  timestamp: string;
-  date: string; // Required field for timeline display
-  user?: string;
+  date: string;
   metadata: ActivityMetadata;
 }
 
@@ -28,3 +29,4 @@ export interface InteractionMetrics {
   mostFrequentType: ActivityType;
   lastInteraction: string;
 }
+

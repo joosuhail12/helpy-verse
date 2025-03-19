@@ -25,10 +25,7 @@ const MainNavigation = ({ activeMainNav, setActiveMainNav, navigate }: MainNavig
         mainNavItems.forEach((item, index) => {
           if (event.key === `${index + 1}`) {
             setActiveMainNav(item.id);
-            // Only navigate if it's the home item, otherwise just open the secondary panel
-            if (item.id === 'home') {
-              navigate(item.path);
-            }
+            navigate(item.path);
           }
         });
       }
@@ -38,19 +35,10 @@ const MainNavigation = ({ activeMainNav, setActiveMainNav, navigate }: MainNavig
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [navigate, setActiveMainNav]);
 
-  const handleNavClick = (itemId: string, path: string) => {
-    setActiveMainNav(itemId);
-    // Only navigate if it's the home item, otherwise just open the secondary panel
-    if (itemId === 'home') {
-      navigate(path);
-    }
-  };
-
   return (
     <div className="flex flex-col items-center justify-center gap-3">
       {mainNavItems.map((item, index) => {
-        const isActive = location.pathname.startsWith(`/home/${item.id}`) || 
-                         (item.id === 'home' && location.pathname === '/home');
+        const isActive = location.pathname.startsWith(`/home/${item.id}`);
         
         return (
           <TooltipProvider key={item.id}>
@@ -64,7 +52,10 @@ const MainNavigation = ({ activeMainNav, setActiveMainNav, navigate }: MainNavig
                       ? 'text-primary bg-primary/5 shadow-sm hover:shadow-md hover:bg-primary/10' 
                       : 'text-gray-500 hover:text-primary hover:bg-primary/5'
                   }`}
-                  onClick={() => handleNavClick(item.id, item.path)}
+                  onClick={() => {
+                    setActiveMainNav(item.id);
+                    navigate(item.path);
+                  }}
                 >
                   {isActive && (
                     <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 to-primary/5 animate-pulse" />

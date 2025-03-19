@@ -20,10 +20,9 @@ const TeammateDetail = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { toast } = useToast();
-  
-  // Get the teammate from the store
-  const teammatesState = useAppSelector(state => state.teammates);
-  const teammate = teammatesState?.items?.find(t => t.id === id);
+  const teammate = useAppSelector(state => 
+    state.teammates.teammates.find(t => t.id === id)
+  );
   
   // Get current user role safely, default to 'viewer' if not available
   const authUser = useAppSelector(state => state.auth.user);
@@ -31,14 +30,8 @@ const TeammateDetail = () => {
   
   const isAdmin = currentUserRole === 'admin';
 
-  // If we have the teammate from Redux, add default permissions if missing
-  const teammateWithDefaults = teammate ? {
-    ...teammate,
-    permissions: teammate.permissions || []
-  } : null;
-
   const [isEditing, setIsEditing] = useState(false);
-  const [editedTeammate, setEditedTeammate] = useState<Teammate | null>(teammateWithDefaults);
+  const [editedTeammate, setEditedTeammate] = useState<Teammate | null>(teammate || null);
   const [isSaving, setIsSaving] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
@@ -76,18 +69,7 @@ const TeammateDetail = () => {
   const handleConfirmSave = async () => {
     setIsSaving(true);
     try {
-      // Update the teammate with the correct parameter structure
-      await dispatch(updateTeammate({
-        id: editedTeammate.id,
-        data: {
-          name: editedTeammate.name,
-          email: editedTeammate.email,
-          role: editedTeammate.role,
-          status: editedTeammate.status,
-          permissions: editedTeammate.permissions,
-          teams: editedTeammate.teams
-        }
-      })).unwrap();
+      await dispatch(updateTeammate(editedTeammate)).unwrap();
       
       toast({
         description: "Changes saved successfully.",
@@ -105,7 +87,7 @@ const TeammateDetail = () => {
   };
 
   const handleCancel = () => {
-    setEditedTeammate(teammateWithDefaults);
+    setEditedTeammate(teammate);
     setIsEditing(false);
     setValidationErrors({});
   };
@@ -145,7 +127,7 @@ const TeammateDetail = () => {
           {isAdmin && !isEditing && (
             <TeammatePermissions 
               teammateId={teammate.id}
-              currentPermissions={editedTeammate.permissions || []}
+              currentPermissions={teammate.permissions}
             />
           )}
 

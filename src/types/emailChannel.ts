@@ -8,17 +8,4 @@ export interface EmailChannel {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
-  
-  // Additional properties used in the application
-  channelName: string;
-  senderName: string;
-  icon?: string;
-  type: 'both' | 'sending' | 'receiving';
-  noReplyEmail?: string;
-  autoBccEmail?: string;
-  allowAgentConversations: boolean;
-  useAgentNames: boolean;
-  useOriginalSender: boolean;
-  domainStatus?: string;
-  teamId?: string;
 }
