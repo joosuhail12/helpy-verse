@@ -79,6 +79,7 @@ const AssigneeSelect = ({ value, onChange }: AssigneeSelectProps) => {
             role="combobox"
             aria-expanded={open}
             className="w-full justify-between"
+            onClick={() => setOpen(true)}
           >
             {value ? value.name : "Select assignee..."}
             <User className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -98,7 +99,10 @@ const AssigneeSelect = ({ value, onChange }: AssigneeSelectProps) => {
               ) : (
                 <>
                   <CommandGroup heading="Assign to">
-                    <CommandItem onSelect={() => handleSelect(CURRENT_USER)}>
+                    <CommandItem 
+                      onSelect={() => handleSelect(CURRENT_USER)}
+                      value="Myself"
+                    >
                       <User className="mr-2 h-4 w-4" />
                       {CURRENT_USER.name}
                       {value?.id === CURRENT_USER.id && (
@@ -112,6 +116,7 @@ const AssigneeSelect = ({ value, onChange }: AssigneeSelectProps) => {
                       {teamOptions.map((team) => (
                         <CommandItem
                           key={team.id}
+                          value={team.name}
                           onSelect={() => handleSelect(team)}
                         >
                           <Users className="mr-2 h-4 w-4" />
@@ -129,6 +134,7 @@ const AssigneeSelect = ({ value, onChange }: AssigneeSelectProps) => {
                       {teammateOptions.map((teammate) => (
                         <CommandItem
                           key={teammate.id}
+                          value={teammate.name}
                           onSelect={() => handleSelect(teammate)}
                         >
                           <User className="mr-2 h-4 w-4" />

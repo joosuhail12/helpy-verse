@@ -41,6 +41,7 @@ export function ToField({ selectedRecipients, onChange }: ToFieldProps) {
     if (contact && !selectedRecipients.some(r => r.id === contactId)) {
       onChange([...selectedRecipients, contact]);
       setInputValue('');
+      setOpen(false);
     }
   };
 
@@ -104,6 +105,7 @@ export function ToField({ selectedRecipients, onChange }: ToFieldProps) {
               role="combobox"
               aria-expanded={open}
               className="flex-1 h-8 justify-start px-2 text-left font-normal"
+              onClick={() => setOpen(true)}
             >
               {selectedRecipients.length === 0 
                 ? "Select recipients or type email..." 
