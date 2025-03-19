@@ -34,3 +34,14 @@ export const DEFAULT_TIMEOUT = 15000; // 15 seconds
 
 // Maximum retries for critical API calls
 export const MAX_RETRIES = 2;
+
+// CORS configuration
+export const CORS_CONFIG = {
+  // Setting withCredentials to true to include cookies in cross-origin requests
+  withCredentials: true,
+  // Add headers that may be needed for CORS preflight requests
+  headers: {
+    'Access-Control-Allow-Origin': '*',
+    'Content-Type': 'application/json'
+  }
+};

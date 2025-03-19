@@ -1,6 +1,6 @@
 
 import axios from 'axios';
-import { API_BASE_URL, LLM_SERVICE_URL, DEFAULT_TIMEOUT } from './config';
+import { API_BASE_URL, LLM_SERVICE_URL, DEFAULT_TIMEOUT, CORS_CONFIG } from './config';
 import { 
   requestInterceptor, 
   requestErrorInterceptor, 
@@ -14,9 +14,10 @@ const apiClient = axios.create({
     baseURL: API_BASE_URL,
     headers: {
       "Content-Type": "application/json",
+      ...CORS_CONFIG.headers
     },
     timeout: DEFAULT_TIMEOUT,
-    withCredentials: true, // Important for handling cookies across domains if needed
+    withCredentials: CORS_CONFIG.withCredentials, // Important for handling cookies across domains if needed
 });
 
 // ✅ Set up default axios configuration
@@ -38,9 +39,12 @@ apiClient.interceptors.response.use(responseInterceptor, responseErrorIntercepto
 // ✅ LLM Service Instance
 const llmService = axios.create({
     baseURL: LLM_SERVICE_URL,
-    headers: { "Content-Type": "application/json" },
+    headers: { 
+      "Content-Type": "application/json",
+      ...CORS_CONFIG.headers
+    },
     timeout: 60000, // 60 second timeout for LLM operations which may take longer
-    withCredentials: true,
+    withCredentials: CORS_CONFIG.withCredentials,
 });
 
 // Add the same interceptors to the LLM service
