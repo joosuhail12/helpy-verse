@@ -5,11 +5,15 @@ import { mockTeammates, mockActivityLogs, mockAssignments } from './mockData';
 import { CACHE_DURATION } from './types';
 import type { TeammatesState } from './types';
 import { fetchTeammates as fetchTeammatesThunk } from './thunks';
+import { updateTeammate as updateTeammateThunk } from './thunks';
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 // Re-export the fetchTeammates action for backward compatibility
 export const fetchTeammates = fetchTeammatesThunk;
+
+// Re-export the updateTeammate action for backward compatibility
+export const updateTeammate = updateTeammateThunk;
 
 export const addTeammate = createAsyncThunk(
   'teammates/addTeammate',
