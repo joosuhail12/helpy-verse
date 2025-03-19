@@ -1,166 +1,104 @@
 
-import { useState } from 'react';
-import { TableRow, TableCell } from '@/components/ui/table';
-import { Checkbox } from '@/components/ui/checkbox';
+import React from 'react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { MoreHorizontal, Mail, Phone } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { useNavigate } from 'react-router-dom';
-import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { format } from 'date-fns';
+import { formatPhoneNumber } from '@/utils/formatters';
+import { Checkbox } from '@/components/ui/checkbox';
+import type { Contact } from '@/types/contact';
+import { CheckCircle2, Clock, Mail, Phone } from 'lucide-react';
 import { useAppSelector } from '@/hooks/useAppSelector';
-import { deleteContact, updateContact } from '@/store/slices/contacts/contactsSlice';
-import { formatDistanceToNow } from 'date-fns';
-import { Contact } from '@/types/contact';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { selectContact, toggleContactSelection } from '@/store/slices/contacts/contactsSlice';
 
-interface ContactListItemProps {
+export interface ContactListItemProps {
   contact: Contact;
-  isSelected: boolean;
-  onSelect: (id: string, selected: boolean) => void;
+  onClick?: () => void;
 }
 
-export const ContactListItem = ({ contact, isSelected, onSelect }: ContactListItemProps) => {
-  const [isDeleting, setIsDeleting] = useState(false);
-  const navigate = useNavigate();
+export const ContactListItem: React.FC<ContactListItemProps> = ({ contact, onClick }) => {
   const dispatch = useAppDispatch();
-  const contactTags = useAppSelector(state => state.contacts?.tags);
-
-  const handleSelect = (checked: boolean) => {
-    onSelect(contact.id, checked);
+  const selectedIds = useAppSelector((state) => state.contacts.selectedIds);
+  const allTags = useAppSelector((state) => state.tags?.tags || []);
+  
+  const isSelected = selectedIds.includes(contact.id);
+  
+  const handleSelect = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    dispatch(toggleContactSelection(contact.id));
+  };
+  
+  const handleSelectContact = () => {
+    dispatch(selectContact(contact.id));
+    if (onClick) onClick();
   };
 
-  const handleDelete = async () => {
-    if (confirm('Are you sure you want to delete this contact?')) {
-      setIsDeleting(true);
-      try {
-        await dispatch(deleteContact(contact.id));
-      } catch (error) {
-        console.error('Failed to delete contact:', error);
-      } finally {
-        setIsDeleting(false);
-      }
-    }
-  };
-
-  const handleStatusChange = async (status: string) => {
-    try {
-      await dispatch(updateContact({
-        contactId: contact.id,
-        data: { status }
-      }));
-    } catch (error) {
-      console.error('Failed to update status:', error);
-    }
-  };
-
-  // Extract company name safely
-  const companyName = typeof contact.company === 'object' 
-    ? contact.company?.name 
-    : '';
+  const displayName = `${contact.firstname} ${contact.lastname}`;
+  const companyName = typeof contact.company === 'string' 
+    ? contact.company 
+    : contact.company?.name || '';
+  
+  // Filter to only get tags that match this contact's tag ids
+  const contactTags = (contact.tags || []).map(tagId => {
+    return allTags.find(tag => tag.id === tagId) || { id: tagId, name: tagId, color: 'gray' };
+  });
 
   return (
-    <TableRow className={isDeleting ? 'opacity-50' : ''}>
-      <TableCell className="w-10">
-        <Checkbox
-          checked={isSelected}
-          onCheckedChange={handleSelect}
-          aria-label="Select contact"
-        />
-      </TableCell>
-      <TableCell 
-        className="font-medium cursor-pointer"
-        onClick={() => navigate(`/home/contacts/detail/${contact.id}`)}
-      >
-        {contact.firstname} {contact.lastname}
-      </TableCell>
-      <TableCell>
-        <div className="flex items-center gap-1">
-          <Mail className="h-3 w-3 text-muted-foreground" />
-          <span>{contact.email}</span>
-        </div>
-        {contact.phone && (
-          <div className="flex items-center gap-1 mt-1">
-            <Phone className="h-3 w-3 text-muted-foreground" />
-            <span>{contact.phone}</span>
+    <div
+      className="flex items-center p-4 hover:bg-muted cursor-pointer border-b"
+      onClick={handleSelectContact}
+    >
+      <div className="mr-4" onClick={handleSelect}>
+        <Checkbox checked={isSelected} />
+      </div>
+      
+      <div className="flex items-center gap-3 flex-1">
+        <Avatar className="h-10 w-10">
+          <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${displayName}`} />
+          <AvatarFallback>{`${contact.firstname[0]}${contact.lastname[0]}`}</AvatarFallback>
+        </Avatar>
+        
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center">
+            <p className="font-medium truncate">{displayName}</p>
+            {contact.status === 'active' && (
+              <CheckCircle2 className="h-4 w-4 ml-2 text-green-500" />
+            )}
           </div>
-        )}
-      </TableCell>
-      <TableCell>{companyName}</TableCell>
-      <TableCell>
-        <Badge
-          variant={
-            contact.status === 'active' ? 'default' :
-            contact.status === 'inactive' ? 'secondary' :
-            contact.status === 'lead' ? 'outline' : 'secondary'
-          }
-        >
-          {contact.status}
-        </Badge>
-      </TableCell>
-      <TableCell>
-        <div className="flex flex-wrap gap-1">
-          {contact.tags?.slice(0, 2).map((tag) => (
-            <Badge key={tag} variant="outline" className="text-xs">
-              {tag}
-            </Badge>
-          ))}
-          {(contact.tags?.length || 0) > 2 && (
-            <Badge variant="outline" className="text-xs">
-              +{(contact.tags?.length || 0) - 2}
-            </Badge>
+          
+          <div className="flex flex-wrap gap-1 mt-1">
+            {contactTags.slice(0, 3).map(tag => (
+              <Badge key={tag.id} variant="outline" className="text-xs px-1" style={{ backgroundColor: `${tag.color}20`, borderColor: tag.color }}>
+                {tag.name}
+              </Badge>
+            ))}
+            {contactTags.length > 3 && (
+              <Badge variant="outline" className="text-xs px-1">+{contactTags.length - 3}</Badge>
+            )}
+          </div>
+        </div>
+        
+        <div className="hidden md:flex flex-col items-end text-sm">
+          <div className="flex items-center text-muted-foreground">
+            <Mail className="h-4 w-4 mr-1" />
+            <span className="hidden lg:inline">{contact.email}</span>
+          </div>
+          {contact.phone && (
+            <div className="flex items-center text-muted-foreground mt-1">
+              <Phone className="h-4 w-4 mr-1" />
+              <span className="hidden lg:inline">{formatPhoneNumber(contact.phone)}</span>
+            </div>
           )}
         </div>
-      </TableCell>
-      <TableCell>
-        {contact.lastActivity ? (
-          formatDistanceToNow(new Date(contact.lastActivity), { addSuffix: true })
-        ) : (
-          <span className="text-muted-foreground">Never</span>
-        )}
-      </TableCell>
-      <TableCell>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem
-              onClick={() => navigate(`/home/contacts/detail/${contact.id}`)}
-            >
-              View Details
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => navigate(`/home/contacts/edit/${contact.id}`)}
-            >
-              Edit Contact
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => handleStatusChange('active')}>
-              Mark as Active
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleStatusChange('inactive')}>
-              Mark as Inactive
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              className="text-red-600"
-              onClick={handleDelete}
-              disabled={isDeleting}
-            >
-              Delete Contact
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </TableCell>
-    </TableRow>
+        
+        <div className="ml-4 text-right hidden sm:block">
+          <div className="text-sm text-muted-foreground">{companyName}</div>
+          <div className="flex items-center text-xs text-muted-foreground mt-1">
+            <Clock className="h-3 w-3 mr-1" />
+            {contact.lastActivity ? format(new Date(contact.lastActivity), 'MMM d, yyyy') : 'No activity'}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };

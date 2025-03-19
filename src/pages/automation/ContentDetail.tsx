@@ -1,69 +1,104 @@
 
+import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Card } from '@/components/ui/card';
+import { useAppSelector } from '@/hooks/useAppSelector';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { fetchContent, updateContent } from '@/store/slices/content/contentSlice';
 import { ContentDetailHeader } from '@/components/automation/content/detail/ContentDetailHeader';
-import { ContentForm } from '@/components/automation/content/detail/ContentForm';
-import { ContentReindexCard } from '@/components/automation/content/detail/ContentReindexCard';
 import { ContentPreview } from '@/components/automation/content/detail/ContentPreview';
+import { ContentForm } from '@/components/automation/content/detail/ContentForm';
+import { ContentSharing } from '@/components/automation/content/detail/ContentSharing';
 import { ContentTags } from '@/components/automation/content/detail/ContentTags';
+import { ContentReindexCard } from '@/components/automation/content/detail/ContentReindexCard';
 import { ContentComments } from '@/components/automation/content/detail/ContentComments';
 import { ChatbotConnection } from '@/components/automation/content/detail/ChatbotConnection';
-import { useAppSelector } from '@/hooks/useAppSelector';
-import { Separator } from '@/components/ui/separator';
+import { ContentVersion } from '@/types/content';
 
-// Mock available chatbots for selection
-const availableChatbots = [
-  { id: 'chatbot-1', name: 'Sales Assistant' },
-  { id: 'chatbot-2', name: 'Customer Support' },
-  { id: 'chatbot-3', name: 'Product Specialist' },
-  { id: 'chatbot-4', name: 'Technical Help' },
-  { id: 'chatbot-5', name: 'Onboarding Guide' },
-];
-
-const ContentDetail = () => {
+const ContentDetailPage = () => {
   const { id } = useParams<{ id: string }>();
-  const content = useAppSelector((state) => 
-    state.content.items.find(item => item.id === id)
-  );
-
-  if (!content) {
+  const dispatch = useAppDispatch();
+  
+  const content = useAppSelector(state => state.content.selectedContent);
+  const loading = useAppSelector(state => state.content.loading);
+  const error = useAppSelector(state => state.content.error);
+  
+  // Mock categories for the form
+  const categories = [
+    { id: 'product', name: 'Product' },
+    { id: 'support', name: 'Support' },
+    { id: 'marketing', name: 'Marketing' },
+    { id: 'sales', name: 'Sales' },
+    { id: 'hr', name: 'HR' },
+    { id: 'development', name: 'Development' },
+  ];
+  
+  // Mock current user
+  const currentUser = {
+    id: 'user1',
+    name: 'Admin User',
+    avatar: 'https://api.dicebear.com/7.x/avatars/svg?seed=Admin',
+    email: 'admin@example.com'
+  };
+  
+  useEffect(() => {
+    if (id) {
+      dispatch(fetchContent(id));
+    }
+  }, [id, dispatch]);
+  
+  if (loading || !content) {
     return (
-      <div className="min-h-screen bg-background p-8">
-        <Card className="p-6">
-          <p className="text-center text-muted-foreground">Content not found</p>
-        </Card>
+      <div className="flex items-center justify-center h-[80vh]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     );
   }
-
+  
+  if (error) {
+    return <div className="p-8 text-red-500">{error}</div>;
+  }
+  
+  const handleUpdate = (updates: Partial<typeof content>) => {
+    if (id) {
+      dispatch(updateContent({ id, updates }));
+    }
+  };
+  
+  const handleRestore = (version: ContentVersion) => {
+    handleUpdate({ content: version.content });
+  };
+  
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8 max-w-7xl space-y-8">
-        <ContentDetailHeader content={content} />
-        
-        <div className="grid gap-8 grid-cols-1 xl:grid-cols-2">
-          <div className="space-y-8">
-            <ContentForm content={content} />
-            <ChatbotConnection 
-              content={content} 
-              availableChatbots={availableChatbots} 
-            />
-            
-            <Card className="p-6 space-y-6">
-              <ContentTags content={content} />
-              <Separator />
-              <ContentComments content={content} />
-            </Card>
-          </div>
+    <div className="container mx-auto py-6 max-w-7xl">
+      <ContentDetailHeader content={content} />
+      
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
+        <div className="lg:col-span-2 space-y-8">
+          <ContentForm 
+            content={content} 
+            onUpdate={handleUpdate} 
+            categories={categories}
+            currentUser={currentUser}
+          />
           
-          <div className="space-y-8">
-            <ContentPreview content={content} />
-            <ContentReindexCard content={content} />
-          </div>
+          <ContentComments contentId={content.id} />
+          
+          <ContentPreview 
+            content={content} 
+            onRestore={handleRestore}
+            currentUser={currentUser}
+          />
+        </div>
+        
+        <div className="space-y-6">
+          <ChatbotConnection content={content} onUpdate={handleUpdate} />
+          <ContentTags content={content} onUpdate={handleUpdate} />
+          <ContentSharing content={content} onUpdate={handleUpdate} />
+          <ContentReindexCard content={content} />
         </div>
       </div>
     </div>
   );
 };
 
-export default ContentDetail;
+export default ContentDetailPage;

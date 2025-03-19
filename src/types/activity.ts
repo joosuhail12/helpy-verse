@@ -21,7 +21,8 @@ export interface Activity {
   description: string;
   date: string;
   metadata: ActivityMetadata;
-  subject?: string; // Added to support subject in activity components
+  subject?: string;
+  content?: string;
 }
 
 export interface InteractionMetrics {

@@ -1,38 +1,25 @@
 
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useNavigate } from 'react-router-dom';
-import { v4 as uuidv4 } from 'uuid';
-import { useEffect, Suspense, lazy } from 'react';
-import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { useAppSelector } from '@/hooks/useAppSelector';
-import { addAction } from '@/store/slices/actions/actionsSlice';
-import { fetchChatbots, selectChatbotsLoading } from '@/store/slices/chatbots/chatbotsSlice';
 import { Button } from '@/components/ui/button';
-import { Form } from '@/components/ui/form';
-import { useToast } from '@/components/ui/use-toast';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { createActionSchema, FormValues } from './create-action/schema';
+import { toast } from '@/hooks/use-toast';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { addAction } from '@/store/slices/actions/actionsSlice';
 import { LoadingState } from '@/components/automation/create-action/LoadingState';
-import { createActionSchema, type FormValues } from './create-action/schema';
-import type { ActionMethod } from '@/types/action';
 
-const BasicInformation = lazy(() => import('./create-action/BasicInformation').then(module => ({ 
-  default: module.BasicInformation 
-})));
-
-const ApiConfiguration = lazy(() => import('./create-action/ApiConfiguration').then(module => ({ 
-  default: module.ApiConfiguration 
-})));
-
-const ChatbotConnection = lazy(() => import('./create-action/ChatbotConnection').then(module => ({ 
-  default: module.ChatbotConnection 
-})));
-
-export default function CreateAction() {
-  const dispatch = useAppDispatch();
+const CreateActionPage = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const loading = useAppSelector(selectChatbotsLoading);
-
+  const dispatch = useAppDispatch();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
   const form = useForm<FormValues>({
     resolver: zodResolver(createActionSchema),
     defaultValues: {
@@ -41,107 +28,282 @@ export default function CreateAction() {
       endpoint: '',
       method: 'GET',
       description: '',
-      headers: '',
-      parameters: '',
-      parameterDescriptions: '',
+      headers: '{}',
+      parameters: '[]',
+      parameterDescriptions: '{}',
       connectedChatbots: [],
       category: 'Custom',
     },
   });
-
-  useEffect(() => {
-    dispatch(fetchChatbots());
-  }, [dispatch]);
-
-  const onSubmit = (values: FormValues) => {
+  
+  const onSubmit = async (values: FormValues) => {
     try {
-      const headers = values.headers ? JSON.parse(values.headers) : {};
-      const parametersList = values.parameters ? JSON.parse(values.parameters) : [];
-      const parameterDescriptions = values.parameterDescriptions 
-        ? JSON.parse(values.parameterDescriptions) 
-        : {};
-
-      const parameters = parametersList.map((param: string) => ({
-        id: uuidv4(),
-        name: param,
-        type: 'string' as const,
-        description: parameterDescriptions[param] || '',
-        required: true,
-      }));
-
-      dispatch(addAction({
+      setIsSubmitting(true);
+      
+      // Parse JSON fields
+      const parsedHeaders = JSON.parse(values.headers);
+      const parsedParameters = JSON.parse(values.parameters);
+      const parsedParameterDescriptions = JSON.parse(values.parameterDescriptions);
+      
+      // Create action object
+      const newAction = {
+        id: `action-${Date.now()}`,
         name: values.name,
         toolName: values.toolName,
         description: values.description,
         endpoint: values.endpoint,
-        method: values.method as ActionMethod,
-        parameters,
-        headers,
-        category: values.category || 'Custom',
+        method: values.method,
+        parameters: parsedParameters,
+        headers: parsedHeaders,
+        parameterDescriptions: parsedParameterDescriptions,
+        connectedChatbots: values.connectedChatbots.map(id => ({ 
+          id, 
+          name: `Chatbot ${id}` 
+        })),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
         isActive: true,
-        enabled: true, // Add missing required field
+        category: values.category,
         createdBy: {
-          id: '1', // Mock user ID
-          name: 'Current User', // Mock user name
+          id: 'user1',
+          name: 'Admin User',
+          avatar: 'https://api.dicebear.com/7.x/avatars/svg?seed=Admin',
         },
-        connectedChatbots: values.connectedChatbots.map(id => ({
-          id,
-          name: 'Chatbot ' + id // You might want to fetch actual names from your chatbot store
-        }))
-      }));
+        enabled: true,
+      };
+      
+      dispatch(addAction(newAction));
       
       toast({
-        title: "Success",
-        description: "Action created successfully",
+        title: "Action created",
+        description: `${values.name} has been successfully created.`,
       });
       
-      navigate('/home/automation/ai/action-center');
+      navigate('/home/automation/actions');
     } catch (error) {
+      console.error('Error creating action:', error);
       toast({
         title: "Error",
-        description: "Failed to create action. Please check your JSON formatting.",
+        description: "Failed to create action. Please check your inputs and try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
-
-  if (loading) {
-    return <div className="flex items-center justify-center p-8">Loading chatbots...</div>;
+  
+  if (isSubmitting) {
+    return <LoadingState />;
   }
-
+  
   return (
-    <div className="container mx-auto px-4 py-8 max-w-3xl">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold tracking-tight">Create New Action</h1>
-        <p className="text-muted-foreground mt-1">
-          Define a new API action for your automation workflows
-        </p>
-      </div>
-
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <Suspense fallback={<LoadingState />}>
-            <BasicInformation form={form} />
-          </Suspense>
-          <Suspense fallback={<LoadingState />}>
-            <ApiConfiguration form={form} />
-          </Suspense>
-          <Suspense fallback={<LoadingState />}>
-            <ChatbotConnection form={form} />
-          </Suspense>
-
-          <div className="flex justify-end space-x-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => navigate('/home/automation/ai/action-center')}
-            >
-              Cancel
-            </Button>
-            <Button type="submit">Create Action</Button>
-          </div>
-        </form>
-      </Form>
+    <div className="container max-w-3xl mx-auto py-8">
+      <Card>
+        <CardHeader>
+          <CardTitle>Create New Action</CardTitle>
+          <CardDescription>
+            Configure a new API action that can be used by your chatbots.
+          </CardDescription>
+        </CardHeader>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)}>
+            <CardContent className="space-y-6">
+              <div className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Action Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Get Weather Data" {...field} />
+                      </FormControl>
+                      <FormDescription>
+                        A descriptive name for this action.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="toolName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tool Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="getWeather" {...field} />
+                      </FormControl>
+                      <FormDescription>
+                        The function name that will be used in the chatbot.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Description</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Gets current weather data for a location" 
+                          className="resize-none" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Detailed description of what this action does.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="category"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Category</FormLabel>
+                        <Select 
+                          onValueChange={field.onChange} 
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a category" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="Custom">Custom</SelectItem>
+                            <SelectItem value="Data">Data</SelectItem>
+                            <SelectItem value="Integration">Integration</SelectItem>
+                            <SelectItem value="Utility">Utility</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormDescription>
+                          Group similar actions together.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                <FormField
+                  control={form.control}
+                  name="endpoint"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>API Endpoint</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="https://api.example.com/weather?location={location}" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        The URL to call. Use {'{parameter}'} for dynamic values.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="method"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>HTTP Method</FormLabel>
+                      <Select 
+                        onValueChange={field.onChange} 
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select HTTP method" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="GET">GET</SelectItem>
+                          <SelectItem value="POST">POST</SelectItem>
+                          <SelectItem value="PUT">PUT</SelectItem>
+                          <SelectItem value="DELETE">DELETE</SelectItem>
+                          <SelectItem value="PATCH">PATCH</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="headers"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Headers (JSON)</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder={'{\n  "Content-Type": "application/json"\n}'} 
+                          className="font-mono h-32" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        HTTP headers in JSON format.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="parameters"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Parameters (JSON)</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder={'[\n  {\n    "id": "location",\n    "name": "Location",\n    "type": "string",\n    "required": true\n  }\n]'} 
+                          className="font-mono h-48" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Parameters this action accepts in JSON format.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </CardContent>
+            <CardFooter className="flex justify-between">
+              <Button 
+                type="button" 
+                variant="outline"
+                onClick={() => navigate('/home/automation/actions')}
+              >
+                Cancel
+              </Button>
+              <Button type="submit">
+                Create Action
+              </Button>
+            </CardFooter>
+          </form>
+        </Form>
+      </Card>
     </div>
   );
-}
+};
+
+export default CreateActionPage;

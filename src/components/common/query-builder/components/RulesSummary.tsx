@@ -1,13 +1,8 @@
 
 import React from 'react';
 import { QueryGroup, QueryRule } from '@/types/queryBuilder';
-import { getOperatorLabel } from './utils';
 
-interface RulesSummaryProps {
-  queryGroup: QueryGroup;
-  depth?: number;
-}
-
+// Define the operator label mapping function
 export const getOperatorLabel = (operator: string): string => {
   const operatorMap: Record<string, string> = {
     equals: 'equals',
@@ -36,6 +31,11 @@ export const getOperatorLabel = (operator: string): string => {
 
   return operatorMap[operator] || operator;
 };
+
+interface RulesSummaryProps {
+  queryGroup: QueryGroup;
+  depth?: number;
+}
 
 export const RulesSummary: React.FC<RulesSummaryProps> = ({ queryGroup, depth = 0 }) => {
   const indent = depth * 20;

@@ -29,18 +29,20 @@ export const ContentPreview = ({ content, onRestore, currentUser }: ContentPrevi
     if (!activeVersion) return;
     
     // Create a new version based on the restored version
-    const newVersion: Partial<ContentVersion> = {
+    const newVersion: ContentVersion = {
+      id: Date.now().toString(),
       content: activeVersion.content,
       createdAt: new Date().toISOString(),
       user: {
         id: currentUser.id,
         name: currentUser.name,
         avatar: currentUser.avatar || '',
+        email: currentUser.email
       },
       changeDescription: `Restored from version created at ${format(new Date(activeVersion.createdAt), 'PPpp')}`,
     };
     
-    onRestore(newVersion as ContentVersion);
+    onRestore(newVersion);
     setRestoreDialogOpen(false);
     setActiveVersion(null);
     
@@ -59,9 +61,9 @@ export const ContentPreview = ({ content, onRestore, currentUser }: ContentPrevi
       case 'snippet':
         return <SnippetPreview content={contentToPreview || ''} />;
       case 'file':
-        return <FilePreview url={contentToPreview || ''} />;
+        return <FilePreview file={contentToPreview || ''} />;
       case 'website':
-        return <WebsitePreview url={contentToPreview || ''} />;
+        return <WebsitePreview website={contentToPreview || ''} />;
       default:
         return <SnippetPreview content={contentToPreview || ''} />;
     }

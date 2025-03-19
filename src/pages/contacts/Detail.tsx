@@ -1,120 +1,98 @@
-import { useEffect, useState } from 'react';
+
+import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Mail, Phone, User, Building } from 'lucide-react';
-import { format } from 'date-fns';
-import { useAppDispatch, useAppSelector } from '@/hooks/useAppSelector';
-import { fetchContactById } from '@/store/slices/contacts/contactsSlice';
-import { ContactDetailSidebar } from '@/components/contacts/detail/ContactDetailSidebar';
+import { LoadingState } from '@/components/contacts/LoadingState';
+import { useAppSelector } from '@/hooks/useAppSelector';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { ContactDetailHeader } from '@/components/contacts/detail/ContactDetailHeader';
 import { ContactInformation } from '@/components/contacts/detail/ContactInformation';
+import { ContactTimeline } from '@/components/contacts/detail/ContactTimeline';
+import { ContactDetailSidebar } from '@/components/contacts/detail/ContactDetailSidebar';
+import { fetchContact } from '@/store/slices/contacts/contactsSlice';
 import { Activity } from '@/types/activity';
 import { ContactTickets } from '@/components/contacts/detail/ContactTickets';
 
-const mockActivities: Activity[] = [
-  {
-    id: '1',
-    type: 'email',
-    subject: 'Welcome Email',
-    content: 'Welcome to our platform!',
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: '2',
-    type: 'note',
-    subject: 'Note from John',
-    content: 'Talked to the contact, seems interested.',
-    createdAt: new Date().toISOString(),
-  },
-];
-
-const Detail = () => {
+const ContactDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const dispatch = useAppDispatch();
-  const { contacts } = useAppSelector(state => state.contacts);
-  const [contact, setContact] = useState<any>(null);
-
+  
+  const {
+    selectedContact: contact,
+    loading,
+    error
+  } = useAppSelector(state => state.contacts);
+  
+  const [activities, setActivities] = useState<Activity[]>([]);
+  
   useEffect(() => {
     if (id) {
-      // Check if contact is already in the store
-      const existingContact = contacts.find(c => c.id === id);
-      if (existingContact) {
-        setContact(existingContact);
-      } else {
-        // Fetch contact if not in the store
-        dispatch(fetchContactById(id))
-          .then((result: any) => {
-            setContact(result.payload);
-          })
-          .catch(error => {
-            console.error("Failed to fetch contact:", error);
-          });
-      }
+      dispatch(fetchContact(id));
     }
-  }, [id, dispatch, contacts]);
-
-  if (!contact) {
-    return <div>Loading...</div>;
+    
+    // Mock activities data
+    setActivities([
+      {
+        id: '1',
+        type: 'email',
+        description: 'Sent follow-up email',
+        content: 'Thanks for your interest in our product. Would you like to schedule a demo?',
+        date: new Date().toISOString(),
+        metadata: {
+          category: 'neutral',
+          status: 'sent'
+        }
+      },
+      {
+        id: '2',
+        type: 'note',
+        description: 'Added note',
+        content: 'Customer requested information about enterprise pricing',
+        date: new Date(Date.now() - 86400000).toISOString(),
+        metadata: {
+          category: 'positive'
+        }
+      }
+    ]);
+  }, [id, dispatch]);
+  
+  if (loading || !contact) {
+    return <LoadingState />;
   }
-
+  
+  if (error) {
+    return <div className="p-8 text-center text-red-500">{error}</div>;
+  }
+  
+  const contactName = `${contact.firstname} ${contact.lastname}`;
+  
   return (
     <div className="container mx-auto p-6 max-w-7xl">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold">{contact.firstname} {contact.lastname}</h1>
-          <p className="text-muted-foreground">
-            Created on {format(new Date(contact.createdAt), 'PPP')}
-          </p>
+      <ContactDetailHeader contact={contact} />
+      
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
+        <div className="lg:col-span-2 space-y-8">
+          <ContactInformation 
+            contact={contact} 
+            activities={activities} 
+          />
+          
+          <ContactTickets 
+            contactId={contact.id} 
+            contactName={contactName}
+          />
+          
+          <ContactTimeline 
+            activities={activities} 
+            contactId={contact.id} 
+          />
         </div>
-        <Button>Edit Contact</Button>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-        <div className="lg:col-span-2 space-y-6">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-2xl font-bold">Profile</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center space-x-4">
-                <Avatar className="h-16 w-16">
-                  <AvatarImage src={`https://avatar.vercel.sh/${contact.email}.png`} />
-                  <AvatarFallback>{contact.firstname?.[0]}{contact.lastname?.[0]}</AvatarFallback>
-                </Avatar>
-                <div>
-                  <div className="text-lg font-semibold">{contact.firstname} {contact.lastname}</div>
-                  <div className="text-sm text-muted-foreground">{contact.title}</div>
-                  <div className="flex items-center space-x-2 text-muted-foreground mt-2">
-                    <Mail className="h-4 w-4" />
-                    <span>{contact.email}</span>
-                  </div>
-                  {contact.phone && (
-                    <div className="flex items-center space-x-2 text-muted-foreground mt-1">
-                      <Phone className="h-4 w-4" />
-                      <span>{contact.phone}</span>
-                    </div>
-                  )}
-                  {contact.company && (
-                    <div className="flex items-center space-x-2 text-muted-foreground mt-1">
-                      <Building className="h-4 w-4" />
-                      <span>{typeof contact.company === 'string' ? contact.company : contact.company.name}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <ContactInformation contact={contact} activities={mockActivities} />
-
-          <ContactTickets contactId={contact.id} />
+        
+        <div className="space-y-6">
+          <ContactDetailSidebar contact={contact} />
         </div>
-
-        <ContactDetailSidebar contact={contact} />
       </div>
     </div>
   );
 };
 
-export default Detail;
+export default ContactDetailPage;
