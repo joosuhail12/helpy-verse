@@ -1,5 +1,5 @@
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import {
@@ -27,15 +27,27 @@ const ContactList = ({ contacts, loading = false }: ContactListProps) => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { selectedContacts } = useAppSelector(state => state.contacts);
+  const [initialLoadAttempted, setInitialLoadAttempted] = useState(false);
 
   useEffect(() => {
-    if (contacts.length === 0 && !loading) {
-      console.log('No contacts found, fetching customers');
-      dispatch(fetchCustomers());
+    console.log('ContactList mount - contacts:', contacts?.length, 'loading:', loading);
+    
+    if (!initialLoadAttempted && contacts.length === 0 && !loading) {
+      console.log('No contacts found, fetching customers...');
+      setInitialLoadAttempted(true);
+      dispatch(fetchCustomers())
+        .unwrap()
+        .then((result) => {
+          console.log('Fetch customers successful:', result);
+        })
+        .catch((error) => {
+          console.error('Fetch customers failed:', error);
+        });
     }
-  }, [dispatch, contacts.length, loading]);
+  }, [dispatch, contacts.length, loading, initialLoadAttempted]);
 
   const handleSelectAll = (checked: boolean) => {
+    console.log('Select all toggled:', checked);
     if (checked) {
       dispatch(setSelectedContacts(contacts.map(contact => contact.id)));
     } else {
@@ -44,20 +56,26 @@ const ContactList = ({ contacts, loading = false }: ContactListProps) => {
   };
 
   const handleContactClick = (contact: Contact) => {
+    console.log('Contact clicked:', contact.id);
     dispatch(selectContact(contact.id));
     navigate(`/home/contacts/${contact.id}`);
   };
 
   if (loading) {
+    console.log('Rendering loading state');
     return <LoadingState />;
   }
 
   if (contacts.length === 0) {
+    console.log('Rendering empty state');
     return (
       <div className="p-6 text-center border rounded-md bg-white">
         <p className="text-muted-foreground">No contacts found</p>
         <Button 
-          onClick={() => dispatch(fetchCustomers())} 
+          onClick={() => {
+            console.log('Refresh contacts clicked');
+            dispatch(fetchCustomers());
+          }} 
           className="mt-4"
           variant="outline"
         >
@@ -67,6 +85,7 @@ const ContactList = ({ contacts, loading = false }: ContactListProps) => {
     );
   }
 
+  console.log('Rendering contact list with', contacts.length, 'contacts');
   return (
     <div className="overflow-x-auto border rounded-md bg-white">
       <Table>

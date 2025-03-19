@@ -22,7 +22,7 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
       // Get token directly from tokenManager or fallback to cookie/localStorage
       const token = getAuthToken() || localStorage.getItem("token") || sessionStorage.getItem("token");
       const hasToken = !!token || isAuthenticated();
-      console.log('ProtectedRoute: Token exists:', hasToken);
+      console.log('ProtectedRoute: Token exists:', hasToken, 'Token value:', token?.slice(0, 10));
       setHasValidToken(hasToken);
       
       // Ensure axios is configured with the token
@@ -34,6 +34,7 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
         try {
           // Try to refresh user data if needed
           await dispatch(fetchUserData());
+          console.log('ProtectedRoute: Successfully fetched user data');
         } catch (error) {
           console.error("Error fetching user data:", error);
           // Continue anyway since we have a token
@@ -45,17 +46,28 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
       // Short delay to ensure state is settled
       setTimeout(() => {
         setIsChecking(false);
-      }, 300);
+      }, 500);
     };
     
     checkAuth();
   }, [dispatch, location.pathname]);
+
+  // Add debug logging for render state
+  useEffect(() => {
+    console.log('ProtectedRoute state:', { 
+      isChecking, 
+      loading, 
+      hasValidToken, 
+      path: location.pathname
+    });
+  }, [isChecking, loading, hasValidToken, location.pathname]);
 
   // Show loading state while checking
   if (isChecking || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <span className="ml-2 text-primary">Checking authentication...</span>
       </div>
     );
   }
@@ -70,7 +82,7 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
   // CRITICAL: We prioritize token existence over Redux state
   if (hasValidToken) {
-    console.log('ProtectedRoute: Token exists, rendering protected content');
+    console.log('ProtectedRoute: Token exists, rendering protected content', location.pathname);
     return <>{children}</>;
   }
 

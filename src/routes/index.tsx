@@ -4,6 +4,13 @@ import { createBrowserRouter } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import RootRedirect from '../components/app/RootRedirect';
 
+// Define LoadingSpinner first to avoid reference errors
+export const LoadingSpinner = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+  </div>
+);
+
 // Import route modules
 import { dashboardRoutes } from './dashboardRoutes';
 import { inboxRoutes } from './inboxRoutes';
@@ -19,12 +26,6 @@ const NotFound = lazy(() => import('../pages/NotFound'));
 
 // Lazy load dashboard layout
 const DashboardLayoutComponent = lazy(() => import('../layouts/DashboardLayout'));
-
-export const LoadingSpinner = () => (
-  <div className="min-h-screen flex items-center justify-center">
-    <Loader2 className="h-8 w-8 animate-spin text-primary" />
-  </div>
-);
 
 export const router = createBrowserRouter([
   {

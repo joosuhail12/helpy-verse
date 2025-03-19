@@ -1,5 +1,5 @@
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { fetchCustomers, selectContacts, selectContactsLoading, selectContactsError } from '@/store/slices/contacts/contactsSlice';
@@ -10,12 +10,14 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/components/ui/use-toast';
+import { AlertCircle } from 'lucide-react';
 
 const AllContacts = () => {
   const dispatch = useAppDispatch();
   const contacts = useAppSelector(selectContacts);
   const loading = useAppSelector(selectContactsLoading);
   const error = useAppSelector(selectContactsError);
+  const [retryCount, setRetryCount] = useState(0);
   
   useEffect(() => {
     console.log('AllContacts component mounted, fetching customers');
@@ -30,10 +32,16 @@ const AllContacts = () => {
           variant: 'destructive'
         });
       });
-  }, [dispatch]);
+  }, [dispatch, retryCount]);
 
+  // Debug logging
   useEffect(() => {
-    console.log('Contacts state:', { loading, contactsCount: contacts?.length, error });
+    console.log('Contacts state:', { 
+      loading, 
+      contactsCount: contacts?.length, 
+      error,
+      contactsData: contacts 
+    });
   }, [loading, contacts, error]);
 
   if (loading) {
@@ -54,9 +62,38 @@ const AllContacts = () => {
     return (
       <div className="p-6">
         <Card className="p-4 text-red-500">
-          <p>Error loading contacts: {error}</p>
-          <Button onClick={() => dispatch(fetchCustomers())} className="mt-2">
+          <div className="flex items-center gap-2 mb-4">
+            <AlertCircle className="h-5 w-5" />
+            <p className="font-medium">Error loading contacts</p>
+          </div>
+          <p className="mb-4">{error}</p>
+          <Button 
+            onClick={() => {
+              console.log('Retrying fetch customers');
+              setRetryCount(prev => prev + 1);
+            }} 
+            className="mt-2"
+          >
             Retry
+          </Button>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!contacts) {
+    return (
+      <div className="p-6">
+        <Card className="p-4">
+          <p className="text-muted-foreground">No contacts data available</p>
+          <Button 
+            onClick={() => {
+              console.log('Loading contacts');
+              setRetryCount(prev => prev + 1);
+            }} 
+            className="mt-2"
+          >
+            Load Contacts
           </Button>
         </Card>
       </div>
