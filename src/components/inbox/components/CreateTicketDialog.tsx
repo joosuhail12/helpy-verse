@@ -8,7 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { v4 as uuidv4 } from 'uuid';
+import ToField from './ToField';
 import type { Ticket } from '@/types/ticket';
+import type { Contact } from '@/types/contact';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { addContact } from '@/store/slices/contacts/contactsSlice';
 
 interface CreateTicketDialogProps {
   open: boolean;
@@ -16,10 +20,13 @@ interface CreateTicketDialogProps {
   onTicketCreated?: (ticket: Ticket) => void;
 }
 
+type Recipient = Contact | { id: string; email: string; isNew?: boolean };
+
 const CreateTicketDialog = ({ open, onOpenChange, onTicketCreated }: CreateTicketDialogProps) => {
   const { toast } = useToast();
+  const dispatch = useAppDispatch();
   const [subject, setSubject] = useState('');
-  const [customer, setCustomer] = useState('');
+  const [recipients, setRecipients] = useState<Recipient[]>([]);
   const [message, setMessage] = useState('');
   const [company, setCompany] = useState('');
   const [priority, setPriority] = useState<'low' | 'medium' | 'high'>('medium');
@@ -29,7 +36,7 @@ const CreateTicketDialog = ({ open, onOpenChange, onTicketCreated }: CreateTicke
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!subject || !customer || !message) {
+    if (!subject || recipients.length === 0 || !message) {
       toast({
         title: "Validation Error",
         description: "Please fill out all required fields",
@@ -41,12 +48,41 @@ const CreateTicketDialog = ({ open, onOpenChange, onTicketCreated }: CreateTicke
     setIsSubmitting(true);
     
     try {
+      // Create any new contacts from email entries
+      const newContacts = recipients.filter(r => 'isNew' in r && r.isNew);
+      
+      for (const newContact of newContacts) {
+        // Add the new contact to the store
+        await dispatch(addContact({
+          id: newContact.id,
+          firstname: '',
+          lastname: '',
+          email: newContact.email,
+          type: 'visitor',
+          status: 'active',
+          tags: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        })).unwrap();
+      }
+      
+      // Create primary customer name from first recipient for display
+      let primaryCustomer = '';
+      if (recipients.length > 0) {
+        const first = recipients[0];
+        if ('firstname' in first) {
+          primaryCustomer = `${first.firstname} ${first.lastname}`;
+        } else {
+          primaryCustomer = first.email.split('@')[0];
+        }
+      }
+      
       // Here you would normally submit to your backend
       // For now, we'll create a ticket object locally
       const newTicket: Ticket = {
         id: uuidv4(),
         subject,
-        customer,
+        customer: primaryCustomer,
         lastMessage: message,
         company: company || 'N/A',
         assignee: null,
@@ -55,6 +91,8 @@ const CreateTicketDialog = ({ open, onOpenChange, onTicketCreated }: CreateTicke
         priority,
         createdAt: new Date().toISOString(),
         isUnread: true,
+        // Would normally include recipient IDs on the ticket
+        recipients: recipients.map(r => r.id)
       };
       
       // Simulate API call
@@ -73,6 +111,7 @@ const CreateTicketDialog = ({ open, onOpenChange, onTicketCreated }: CreateTicke
       resetForm();
       onOpenChange(false);
     } catch (error) {
+      console.error("Error creating ticket:", error);
       toast({
         title: "Error",
         description: "Failed to create ticket. Please try again.",
@@ -85,7 +124,7 @@ const CreateTicketDialog = ({ open, onOpenChange, onTicketCreated }: CreateTicke
 
   const resetForm = () => {
     setSubject('');
-    setCustomer('');
+    setRecipients([]);
     setMessage('');
     setCompany('');
     setPriority('medium');
@@ -117,15 +156,12 @@ const CreateTicketDialog = ({ open, onOpenChange, onTicketCreated }: CreateTicke
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="customer" className="text-right">
-              Customer Name <span className="text-red-500">*</span>
+            <Label htmlFor="to" className="text-right">
+              To <span className="text-red-500">*</span>
             </Label>
-            <Input
-              id="customer"
-              value={customer}
-              onChange={(e) => setCustomer(e.target.value)}
-              placeholder="Enter customer name"
-              required
+            <ToField 
+              selectedRecipients={recipients}
+              onChange={setRecipients}
             />
           </div>
           
