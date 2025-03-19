@@ -1,19 +1,17 @@
 
 import { useState } from 'react';
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { ToField } from '../to-field';
-import AssigneeSelect from './AssigneeSelect';
-import EmailChannelSelect from './EmailChannelSelect';
-import TicketMessageEditor from './TicketMessageEditor';
 import type { TicketFormProps, TicketFormValues, Recipient, AssigneeOption } from './types';
 import type { EmailChannel } from '@/types/emailChannel';
-import { Card, CardContent } from "@/components/ui/card";
-import { Mail, AlertTriangle, Clock, Tag, MailCheck } from "lucide-react";
-import { cn } from "@/lib/utils";
+import {
+  FormHeader,
+  ChannelAssigneeSection,
+  PriorityStatusSection,
+  MessageSection,
+  ValidationWarning,
+  FormActions
+} from './components';
 
 const defaultValues: TicketFormValues = {
   subject: '',
@@ -91,157 +89,50 @@ const TicketForm = ({ onSubmit, initialValues = {}, isSubmitting = false }: Tick
            !values.emailChannel;
   };
 
+  const resetForm = () => setValues(defaultValues);
+
   return (
     <Card className="border-none shadow-none bg-transparent">
       <CardContent className="p-0">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-5">
-            <div className="space-y-2.5">
-              <Label htmlFor="subject" className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
-                <Mail className="h-3.5 w-3.5 text-primary/80" />
-                Subject <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="subject"
-                value={values.subject}
-                onChange={handleInputChange}
-                placeholder="Enter ticket subject"
-                className="transition-colors border-gray-200 focus-visible:border-primary/50 focus-visible:ring-1 focus-visible:ring-primary/40 rounded-lg"
-                required
-              />
-            </div>
+            <FormHeader 
+              subject={values.subject}
+              recipients={values.recipients}
+              onSubjectChange={handleInputChange}
+              onRecipientsChange={handleRecipientChange}
+            />
             
-            <div className="space-y-2.5">
-              <Label htmlFor="to" className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
-                <MailCheck className="h-3.5 w-3.5 text-primary/80" />
-                To <span className="text-red-500">*</span>
-              </Label>
-              <ToField 
-                selectedRecipients={values.recipients}
-                onChange={handleRecipientChange}
-              />
-            </div>
+            <ChannelAssigneeSection 
+              emailChannel={values.emailChannel}
+              assignee={values.assignee}
+              onEmailChannelChange={handleEmailChannelChange}
+              onAssigneeChange={handleAssigneeChange}
+            />
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <div className="space-y-2.5">
-                <Label htmlFor="emailChannel" className="text-sm font-medium text-gray-700">
-                  Email Channel <span className="text-red-500">*</span>
-                </Label>
-                <EmailChannelSelect 
-                  value={values.emailChannel}
-                  onChange={handleEmailChannelChange}
-                />
-              </div>
-              
-              <div className="space-y-2.5">
-                <Label htmlFor="assignee" className="text-sm font-medium text-gray-700">
-                  Assignee
-                </Label>
-                <AssigneeSelect 
-                  value={values.assignee}
-                  onChange={handleAssigneeChange}
-                />
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <div className="space-y-2.5">
-                <Label htmlFor="priority" className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
-                  <Tag className="h-3.5 w-3.5 text-primary/80" />
-                  Priority
-                </Label>
-                <Select 
-                  value={values.priority} 
-                  onValueChange={(value: 'low' | 'medium' | 'high') => handleSelectChange('priority', value)}
-                >
-                  <SelectTrigger 
-                    id="priority" 
-                    className={cn(
-                      "transition-colors border-gray-200 focus:border-primary/50 focus:ring-1 focus:ring-primary/40 rounded-lg",
-                      values.priority === 'high' ? "text-red-600" : 
-                      values.priority === 'medium' ? "text-amber-600" : 
-                      "text-green-600"
-                    )}
-                  >
-                    <SelectValue placeholder="Select priority" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="low" className="text-green-600">Low</SelectItem>
-                    <SelectItem value="medium" className="text-amber-600">Medium</SelectItem>
-                    <SelectItem value="high" className="text-red-600">High</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="space-y-2.5">
-                <Label htmlFor="status" className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
-                  <Clock className="h-3.5 w-3.5 text-primary/80" />
-                  Status
-                </Label>
-                <Select 
-                  value={values.status} 
-                  onValueChange={(value: 'open' | 'pending' | 'closed') => handleSelectChange('status', value)}
-                >
-                  <SelectTrigger 
-                    id="status" 
-                    className="transition-colors border-gray-200 focus:border-primary/50 focus:ring-1 focus:ring-primary/40 rounded-lg"
-                  >
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="open">Open</SelectItem>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="closed">Closed</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+            <PriorityStatusSection 
+              priority={values.priority}
+              status={values.status}
+              onPriorityChange={(value) => handleSelectChange('priority', value)}
+              onStatusChange={(value) => handleSelectChange('status', value)}
+            />
           </div>
           
-          <div className="border-t border-gray-100 pt-5 mt-5">
-            <div className="space-y-3">
-              <Label htmlFor="message" className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
-                Initial Message <span className="text-red-500">*</span>
-              </Label>
-              <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
-                <TicketMessageEditor 
-                  content={values.message}
-                  onChange={handleMessageChange}
-                />
-              </div>
-              <p className="text-xs text-gray-500 mt-2 flex items-center gap-1.5">
-                <span className="text-muted-foreground/80">
-                  Type @ to mention customer, company, or ticket information.
-                </span>
-              </p>
-            </div>
-          </div>
+          <MessageSection 
+            message={values.message}
+            onMessageChange={handleMessageChange}
+          />
           
-          {hasValidationErrors() && (
-            <div className="bg-red-50 text-red-700 text-sm rounded-lg p-3 flex items-center gap-2 border border-red-100">
-              <AlertTriangle className="h-4 w-4 text-red-500 flex-shrink-0" />
-              <span>Please complete all required fields before submitting</span>
-            </div>
-          )}
+          {hasValidationErrors() && <ValidationWarning />}
           
-          <div className="flex justify-end space-x-3 pt-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onSubmit(defaultValues, () => setValues(defaultValues))}
-              disabled={isSubmitting}
-              className="transition-all border-gray-200 hover:bg-gray-50"
-            >
-              Cancel
-            </Button>
-            <Button 
-              type="submit" 
-              disabled={isSubmitting || hasValidationErrors()} 
-              className="transition-all shadow-sm hover:shadow"
-            >
-              {isSubmitting ? 'Creating...' : 'Create Ticket'}
-            </Button>
-          </div>
+          <FormActions 
+            onCancel={() => onSubmit(defaultValues, () => setValues(defaultValues))}
+            isSubmitting={isSubmitting}
+            hasValidationErrors={hasValidationErrors()}
+            defaultValues={defaultValues}
+            onSubmit={onSubmit}
+            resetForm={resetForm}
+          />
         </form>
       </CardContent>
     </Card>
