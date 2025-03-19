@@ -1,6 +1,5 @@
 
 import { configureStore } from '@reduxjs/toolkit';
-import authReducer from './slices/authSlice';
 import userReducer from './slices/user/userSlice';
 import contactsReducer from './slices/contacts/contactsSlice';
 import tagsReducer from './slices/tagsSlice';
@@ -14,6 +13,8 @@ import { emailChannelsReducer } from './slices/emailChannels/emailChannelsSlice'
 import { cannedResponsesReducer } from './slices/cannedResponses/cannedResponsesSlice';
 import teamsReducer from './slices/teams/teamsSlice';
 import { teammatesReducer } from './slices/teammates/teammatesSlice';
+// Import directly from the authSlice file, not from the re-export
+import authReducer from './slices/auth/authSlice';
 
 export const store = configureStore({
   reducer: {
