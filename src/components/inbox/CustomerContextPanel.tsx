@@ -22,7 +22,7 @@ const CustomerContextPanel = ({ ticket }: CustomerContextPanelProps) => {
     contact: true,
     company: true,
     timeline: false,
-    customObject: false
+    customObject: true // Set to true by default to show the custom object data
   });
 
   const toggleSection = (section: keyof typeof openSections) => {
