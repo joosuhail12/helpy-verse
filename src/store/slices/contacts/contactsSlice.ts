@@ -1,9 +1,25 @@
 
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Contact } from '@/types/contact';
-import { RootState } from '../../store';
-import { customerService } from '@/api/services/customerService';
-import { ContactsState, CACHE_DURATION } from './types';
+import { ContactsState } from './types';
+import {
+  fetchCustomers,
+  fetchContactById,
+  fetchContactDetails,
+  createContact,
+  addContact,
+  updateContact,
+  updateContactCompany,
+  deleteContact
+} from './contactsActions';
+import {
+  selectContacts,
+  selectContactsLoading,
+  selectContactsError,
+  selectContactDetails,
+  selectSelectedContact,
+  selectSelectedContacts
+} from './contactsSelectors';
 
 const initialState: ContactsState = {
   items: [],
@@ -24,92 +40,6 @@ const initialState: ContactsState = {
     direction: 'desc',
   },
 };
-
-export const fetchCustomers = createAsyncThunk(
-  'contacts/fetchCustomers',
-  async (_, { getState, rejectWithValue }) => {
-    try {
-      const state = getState() as RootState;
-      const { lastFetchTime } = state.contacts;
-      
-      if (lastFetchTime && Date.now() - lastFetchTime < CACHE_DURATION) {
-        console.log('Using cached contacts data');
-        return null;
-      }
-      
-      const response = await customerService.fetchCustomers();
-      return response.data;
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to fetch customers');
-    }
-  }
-);
-
-export const fetchContactById = createAsyncThunk(
-  'contacts/fetchContactById',
-  async (contactId: string, { rejectWithValue }) => {
-    try {
-      const response = await customerService.getCustomerDetails(contactId);
-      return response.data;
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to fetch contact details');
-    }
-  }
-);
-
-// Alias for fetchContactById for better semantics in UI components
-export const fetchContactDetails = fetchContactById;
-
-export const createContact = createAsyncThunk(
-  'contacts/createContact',
-  async (contactData: Partial<Contact>, { rejectWithValue }) => {
-    try {
-      const response = await customerService.createCustomer(contactData as any);
-      return response.data;
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to create contact');
-    }
-  }
-);
-
-// Alias for createContact for better semantics in UI components
-export const addContact = createContact;
-
-export const updateContact = createAsyncThunk(
-  'contacts/updateContact',
-  async ({ contactId, data }: { contactId: string; data: Partial<Contact> }, { rejectWithValue }) => {
-    try {
-      const response = await customerService.updateCustomer(contactId, data);
-      return { contactId, ...response.data };
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to update contact');
-    }
-  }
-);
-
-export const updateContactCompany = createAsyncThunk(
-  'contacts/updateContactCompany',
-  async ({ contactId, companyId }: { contactId: string; companyId: string | null }, { rejectWithValue }) => {
-    try {
-      const response = await customerService.updateCustomer(contactId, { company: companyId });
-      return { contactId, ...response.data };
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to update contact company');
-    }
-  }
-);
-
-export const deleteContact = createAsyncThunk(
-  'contacts/deleteContact',
-  async (contactId: string, { rejectWithValue }) => {
-    try {
-      await customerService.deleteContact(contactId);
-      return contactId;
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to delete contact');
-    }
-  }
-);
 
 const contactsSlice = createSlice({
   name: 'contacts',
@@ -153,6 +83,7 @@ const contactsSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      // Handle fetchCustomers action states
       .addCase(fetchCustomers.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -169,6 +100,8 @@ const contactsSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
+      
+      // Handle fetchContactById action states
       .addCase(fetchContactById.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -181,10 +114,14 @@ const contactsSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
+      
+      // Handle createContact action states
       .addCase(createContact.fulfilled, (state, action) => {
         state.contacts.push(action.payload);
         state.items.push(action.payload);
       })
+      
+      // Handle updateContact action states
       .addCase(updateContact.fulfilled, (state, action) => {
         const updatedContact = action.payload;
         if (updatedContact && typeof updatedContact === 'object') {
@@ -214,6 +151,17 @@ const contactsSlice = createSlice({
             };
           }
         }
+      })
+      
+      // Handle deleteContact action states
+      .addCase(deleteContact.fulfilled, (state, action) => {
+        const contactId = action.payload;
+        state.contacts = state.contacts.filter(c => c.id !== contactId);
+        state.items = state.items.filter(c => c.id !== contactId);
+        if (state.contactDetails && state.contactDetails.id === contactId) {
+          state.contactDetails = null;
+        }
+        state.selectedContacts = state.selectedContacts.filter(id => id !== contactId);
       });
   },
 });
@@ -229,11 +177,26 @@ export const {
   setSelectedContacts
 } = contactsSlice.actions;
 
-export default contactsSlice.reducer;
+// Re-export actions from contactsActions.ts
+export {
+  fetchCustomers,
+  fetchContactById,
+  fetchContactDetails,
+  createContact,
+  addContact,
+  updateContact,
+  updateContactCompany,
+  deleteContact
+};
 
-export const selectContacts = (state: RootState) => state.contacts.items;
-export const selectContactsLoading = (state: RootState) => state.contacts.loading;
-export const selectContactsError = (state: RootState) => state.contacts.error;
-export const selectContactDetails = (state: RootState) => state.contacts.contactDetails;
-export const selectSelectedContact = (state: RootState) => state.contacts.selectedContact;
-export const selectSelectedContacts = (state: RootState) => state.contacts.selectedContacts;
+// Re-export selectors from contactsSelectors.ts
+export {
+  selectContacts,
+  selectContactsLoading,
+  selectContactsError,
+  selectContactDetails,
+  selectSelectedContact,
+  selectSelectedContacts
+};
+
+export default contactsSlice.reducer;

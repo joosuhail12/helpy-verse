@@ -3,13 +3,13 @@ import { Contact } from '@/types/contact';
 
 export interface ContactsState {
   items: Contact[];
-  contacts: Contact[];  // Add this property
-  contactDetails: Contact | null;  // Add this property
+  contacts: Contact[];
+  contactDetails: Contact | null;
   selectedContact: Contact | null;
   selectedContacts: string[];
   loading: boolean;
   error: string | null;
-  lastFetchTime: number | null;  // Add this property
+  lastFetchTime: number | null;
   filters: {
     type: string | null;
     status: string | null;
