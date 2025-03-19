@@ -119,22 +119,16 @@ const contactsSlice = createSlice({
       // Handle updateContact action states
       .addCase(updateContact.fulfilled, (state, action) => {
         if (action.payload) {
-          // Fixed: Now properly accessing contactId and data from the payload object
           const { contactId, data } = action.payload;
-          if (contactId && data) {
-            updateContactInState(state, contactId, data);
-          }
+          updateContactInState(state, contactId, data);
         }
       })
       
       // Handle updateContactCompany action states
       .addCase(updateContactCompany.fulfilled, (state, action) => {
         if (action.payload) {
-          // Fixed: Now properly accessing contactId and data from the payload object
           const { contactId, data } = action.payload;
-          if (contactId && data) {
-            updateContactInState(state, contactId, data);
-          }
+          updateContactInState(state, contactId, data);
         }
       })
       

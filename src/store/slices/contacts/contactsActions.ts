@@ -58,26 +58,32 @@ export const createContact = createAsyncThunk(
 // Alias for createContact for better semantics in UI components
 export const addContact = createContact;
 
-export const updateContact = createAsyncThunk(
+// Define the return type for update operations
+interface UpdateContactPayload {
+  contactId: string;
+  data: Contact;  // This ensures data is properly typed as Contact
+}
+
+export const updateContact = createAsyncThunk<UpdateContactPayload, { contactId: string; data: Partial<Contact> }>(
   'contacts/updateContact',
-  async ({ contactId, data }: { contactId: string; data: Partial<Contact> }, { rejectWithValue }) => {
+  async ({ contactId, data }, { rejectWithValue }) => {
     try {
       const response = await customerService.updateCustomer(contactId, data);
-      // Fix: Return an object containing both contactId and response data
-      return { contactId, data: response.data };
+      // Return a properly typed object containing both contactId and response data
+      return { contactId, data: response.data as Contact };
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to update contact');
     }
   }
 );
 
-export const updateContactCompany = createAsyncThunk(
+export const updateContactCompany = createAsyncThunk<UpdateContactPayload, { contactId: string; companyId: string | null }>(
   'contacts/updateContactCompany',
-  async ({ contactId, companyId }: { contactId: string; companyId: string | null }, { rejectWithValue }) => {
+  async ({ contactId, companyId }, { rejectWithValue }) => {
     try {
       const response = await customerService.updateCustomer(contactId, { company: companyId });
-      // Fix: Return an object containing both contactId and response data
-      return { contactId, data: response.data };
+      // Return a properly typed object containing both contactId and response data
+      return { contactId, data: response.data as Contact };
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to update contact company');
     }
