@@ -1,7 +1,8 @@
+
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { Contact } from '@/types/contact';
 import { RootState } from '../../store';
-import { CustomerService } from '@/api/services/customerService';
+import { customerService } from '@/api/services/customerService';
 import { ContactsState, CACHE_DURATION } from './types';
 
 const initialState: ContactsState = {
@@ -36,7 +37,7 @@ export const fetchCustomers = createAsyncThunk(
         return null;
       }
       
-      const response = await CustomerService.getAllContacts();
+      const response = await customerService.fetchCustomers();
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to fetch customers');
@@ -48,7 +49,7 @@ export const fetchContactById = createAsyncThunk(
   'contacts/fetchContactById',
   async (contactId: string, { rejectWithValue }) => {
     try {
-      const response = await CustomerService.getContactById(contactId);
+      const response = await customerService.getCustomerDetails(contactId);
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to fetch contact details');
@@ -56,11 +57,14 @@ export const fetchContactById = createAsyncThunk(
   }
 );
 
+// Alias for fetchContactById for better semantics in UI components
+export const fetchContactDetails = fetchContactById;
+
 export const createContact = createAsyncThunk(
   'contacts/createContact',
   async (contactData: Partial<Contact>, { rejectWithValue }) => {
     try {
-      const response = await CustomerService.createContact(contactData);
+      const response = await customerService.createCustomer(contactData as any);
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to create contact');
@@ -68,14 +72,29 @@ export const createContact = createAsyncThunk(
   }
 );
 
+// Alias for createContact for better semantics in UI components
+export const addContact = createContact;
+
 export const updateContact = createAsyncThunk(
   'contacts/updateContact',
   async ({ contactId, data }: { contactId: string; data: Partial<Contact> }, { rejectWithValue }) => {
     try {
-      const response = await CustomerService.updateContact(contactId, data);
+      const response = await customerService.updateCustomer(contactId, data);
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to update contact');
+    }
+  }
+);
+
+export const updateContactCompany = createAsyncThunk(
+  'contacts/updateContactCompany',
+  async ({ contactId, companyId }: { contactId: string; companyId: string | null }, { rejectWithValue }) => {
+    try {
+      const response = await customerService.updateCustomer(contactId, { company: companyId });
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to update contact company');
     }
   }
 );
@@ -84,7 +103,7 @@ export const deleteContact = createAsyncThunk(
   'contacts/deleteContact',
   async (contactId: string, { rejectWithValue }) => {
     try {
-      await CustomerService.deleteContact(contactId);
+      await customerService.deleteContact(contactId);
       return contactId;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to delete contact');
@@ -125,6 +144,9 @@ const contactsSlice = createSlice({
     clearSelectedContacts: (state) => {
       state.selectedContacts = [];
     },
+    clearSelection: (state) => {
+      state.selectedContacts = [];
+    },
     setSelectedContacts: (state, action: PayloadAction<string[]>) => {
       state.selectedContacts = action.payload;
     }
@@ -137,8 +159,10 @@ const contactsSlice = createSlice({
       })
       .addCase(fetchCustomers.fulfilled, (state, action) => {
         state.loading = false;
-        state.contacts = action.payload;
-        state.items = action.payload;
+        if (action.payload) {
+          state.contacts = action.payload;
+          state.items = action.payload;
+        }
         state.lastFetchTime = Date.now();
       })
       .addCase(fetchCustomers.rejected, (state, action) => {
@@ -185,6 +209,7 @@ export const {
   selectContact,
   toggleSelectContact,
   clearSelectedContacts,
+  clearSelection,
   setSelectedContacts
 } = contactsSlice.actions;
 

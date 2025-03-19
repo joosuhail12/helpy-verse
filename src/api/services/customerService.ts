@@ -1,3 +1,4 @@
+
 import type { Contact } from '@/types/contact';
 import { HttpClient } from '@/api/services/http';
 
@@ -93,6 +94,16 @@ export const customerService = {
         } catch (error) {
             console.error('Error updating customer:', error);
             throw new Error('Failed to update customer');
+        }
+    },
+
+    // ✅ Delete a customer
+    async deleteContact(customer_id: string): Promise<void> {
+        try {
+            await HttpClient.apiClient.delete(`${API_URL}/${customer_id}`);
+        } catch (error) {
+            console.error('Error deleting customer:', error);
+            throw new Error('Failed to delete customer');
         }
     }
 };
