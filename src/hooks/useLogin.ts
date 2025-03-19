@@ -41,15 +41,15 @@ export const useLogin = (redirectPath: string = '/home') => {
       // Fix TypeScript error by ensuring auth.error is not null and has the right format
       let errorMessage = 'Login failed. Please try again.';
       
-      // Safe access to auth.error with proper null checks throughout
-      if (auth.error) {
+      // Using optional chaining and null checks to safely access the error message
+      if (auth.error !== null) {
         if (typeof auth.error === 'object' && auth.error !== null) {
           if ('message' in auth.error && typeof auth.error.message === 'string') {
             errorMessage = auth.error.message;
           }
         } else if (typeof auth.error === 'string') {
           errorMessage = auth.error;
-        } else if (auth.error !== null) {
+        } else {
           // Convert any other type to string safely
           errorMessage = String(auth.error);
         }
