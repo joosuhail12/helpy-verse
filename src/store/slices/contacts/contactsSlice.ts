@@ -80,7 +80,7 @@ export const updateContact = createAsyncThunk(
   async ({ contactId, data }: { contactId: string; data: Partial<Contact> }, { rejectWithValue }) => {
     try {
       const response = await customerService.updateCustomer(contactId, data);
-      return response.data;
+      return { contactId, ...response.data };
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to update contact');
     }
@@ -92,7 +92,7 @@ export const updateContactCompany = createAsyncThunk(
   async ({ contactId, companyId }: { contactId: string; companyId: string | null }, { rejectWithValue }) => {
     try {
       const response = await customerService.updateCustomer(contactId, { company: companyId });
-      return response.data;
+      return { contactId, ...response.data };
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to update contact company');
     }
@@ -186,17 +186,33 @@ const contactsSlice = createSlice({
         state.items.push(action.payload);
       })
       .addCase(updateContact.fulfilled, (state, action) => {
-        const { contactId, ...updates } = action.payload;
-        const contact = state.contacts.find(c => c.id === contactId);
-        if (contact) {
-          Object.assign(contact, updates);
-        }
-        const item = state.items.find(c => c.id === contactId);
-        if (item) {
-          Object.assign(item, updates);
-        }
-        if (state.contactDetails && state.contactDetails.id === contactId) {
-          Object.assign(state.contactDetails, updates);
+        const updatedContact = action.payload;
+        if (updatedContact && typeof updatedContact === 'object') {
+          const contactId = updatedContact.contactId as string;
+          
+          const contactIndex = state.contacts.findIndex(c => c.id === contactId);
+          if (contactIndex !== -1) {
+            // Create a new contact object with the updates
+            state.contacts[contactIndex] = {
+              ...state.contacts[contactIndex],
+              ...updatedContact
+            };
+          }
+          
+          const itemIndex = state.items.findIndex(c => c.id === contactId);
+          if (itemIndex !== -1) {
+            state.items[itemIndex] = {
+              ...state.items[itemIndex],
+              ...updatedContact
+            };
+          }
+          
+          if (state.contactDetails && state.contactDetails.id === contactId) {
+            state.contactDetails = {
+              ...state.contactDetails,
+              ...updatedContact
+            };
+          }
         }
       });
   },
