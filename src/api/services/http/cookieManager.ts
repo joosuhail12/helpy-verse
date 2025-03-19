@@ -5,8 +5,8 @@
 
 // Helper function to get cookies
 export const getCookie = (cname: string): string => {
-    const name = `${cname}=`;
     try {
+        const name = `${cname}=`;
         const decodedCookie = decodeURIComponent(document.cookie);
         const ca = decodedCookie.split(';');
         for (let i = 0; i < ca.length; i++) {
@@ -18,8 +18,21 @@ export const getCookie = (cname: string): string => {
                 return c.substring(name.length, c.length);
             }
         }
+        
+        // Also check localStorage as fallback
+        const localValue = localStorage.getItem(cname);
+        if (localValue) {
+            console.log(`Retrieved ${cname} from localStorage instead of cookie`);
+            return localValue;
+        }
     } catch (error) {
         console.error("Error accessing cookie:", error);
+        // Try localStorage as fallback
+        const localValue = localStorage.getItem(cname);
+        if (localValue) {
+            console.log(`Retrieved ${cname} from localStorage due to cookie error`);
+            return localValue;
+        }
     }
     
     return "";
@@ -32,37 +45,51 @@ export const setCookie = (cname: string, cvalue: string, exdays: number = 30): v
         d.setTime(d.getTime() + exdays * 24 * 60 * 60 * 1000);
         const expires = `expires=${d.toUTCString()}`;
         
-        // Use a more compatible cookie string with explicit path and SameSite
-        const cookieString = `${cname}=${cvalue};${expires};path=/;SameSite=Lax`;
-        document.cookie = cookieString;
-        console.log(`Setting cookie ${cname}: ${cvalue ? (cvalue.length > 10 ? cvalue.substring(0, 10) + '...' : cvalue) : "empty"}`);
-
-        // Verify the cookie was set properly
-        const verifyCookie = getCookie(cname);
-        if (verifyCookie) {
-            console.log(`Cookie ${cname} verified successfully`);
-        } else {
-            console.error(`Failed to set cookie ${cname}`);
+        // Always store in localStorage as a backup
+        localStorage.setItem(cname, cvalue);
+        
+        try {
+            // Try to set the cookie
+            const cookieString = `${cname}=${cvalue};${expires};path=/;SameSite=Lax`;
+            document.cookie = cookieString;
+            console.log(`Setting cookie ${cname}: ${cvalue ? (cvalue.length > 10 ? cvalue.substring(0, 10) + '...' : cvalue) : "empty"}`);
+        } catch (cookieError) {
+            console.warn(`Couldn't set cookie for ${cname}, using localStorage only:`, cookieError);
+            // We already saved to localStorage above, so no need to do anything else
         }
     } catch (error) {
-        console.error("Error setting cookie:", error);
+        console.error("Critical error setting cookie:", error);
+        // Last attempt to save in localStorage
+        try {
+            localStorage.setItem(cname, cvalue);
+        } catch (localError) {
+            console.error("Failed to save to localStorage as well:", localError);
+        }
     }
 };
 
 // Logout function to clear cookies and local storage
 export const handleLogout = (): void => {
     // Clear all authentication-related cookies
-    document.cookie = `customerToken=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Lax`;
-    document.cookie = `agent_email=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Lax`;
-    document.cookie = `workspaceId=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Lax`;
+    try {
+        document.cookie = `customerToken=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Lax`;
+        document.cookie = `agent_email=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Lax`;
+        document.cookie = `workspaceId=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Lax`;
+    } catch (error) {
+        console.warn("Error clearing cookies:", error);
+    }
     
-    // Force clear browser storage too
+    // Clear localStorage
     localStorage.removeItem("token");
+    localStorage.removeItem("workspaceId");
+    localStorage.removeItem("agent_email");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("role");
     sessionStorage.removeItem("token");
     
-    console.log("User logged out by API client");
+    console.log("User logged out");
     
-    // Don't use router here, use direct navigation for reliability
+    // Use direct navigation for reliability
     setTimeout(() => {
         window.location.href = "/sign-in";
     }, 100);

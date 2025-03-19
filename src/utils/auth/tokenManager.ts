@@ -40,54 +40,26 @@ export const handleSetToken = (token: string): boolean => {
     try {
         console.log("Setting auth token:", token.substring(0, 10) + "...");
         
-        // Try to decode the token to validate and extract expiry
-        try {
-            const decoded = jwtDecode(token);
-            const expiry = decoded.exp;
-            
-            if (expiry && typeof expiry === 'number') {
-                // Calculate days until expiry for cookie
-                const now = Math.floor(Date.now() / 1000);
-                const secondsUntilExpiry = expiry - now;
-                const daysUntilExpiry = Math.max(1, Math.floor(secondsUntilExpiry / (60 * 60 * 24)));
-                
-                console.log(`Token valid for approximately ${daysUntilExpiry} days`);
-                
-                // Set the cookie with proper expiration from JWT
-                setCookie("customerToken", token, daysUntilExpiry);
-            } else {
-                // Fallback to 30 day expiry if we couldn't extract from token
-                setCookie("customerToken", token, 30);
-            }
-        } catch (decodeError) {
-            console.warn("Could not decode token, using default expiry", decodeError);
-            // Set the cookie with a long expiration (30 days)
-            setCookie("customerToken", token, 30);
-        }
-        
-        // Also store in localStorage as backup
+        // Always store in localStorage first as a reliable backup
         localStorage.setItem("token", token);
+        
+        // Try to set in cookies (this may fail in some environments)
+        try {
+            setCookie("customerToken", token, 30);
+        } catch (cookieError) {
+            console.warn("Could not set cookie, using localStorage only", cookieError);
+            // Already saved to localStorage above
+        }
         
         // Configure axios with the new token
         if (HttpClient && HttpClient.setAxiosDefaultConfig) {
             HttpClient.setAxiosDefaultConfig(token);
         }
         
-        // Verify that the token was set correctly
-        const tokenInCookie = getCookie("customerToken");
-        const tokenInStorage = localStorage.getItem("token");
-        
-        console.log("Token verification:", {
-            cookie: !!tokenInCookie,
-            localStorage: !!tokenInStorage
-        });
-        
-        return !!tokenInCookie || !!tokenInStorage; // Consider successful if either is set
+        return true;
     } catch (error) {
         console.error("Error setting token:", error);
-        
-        // Even if cookie setting fails, we still have localStorage as backup
-        return !!localStorage.getItem("token");
+        return false;
     }
 };
 
@@ -100,66 +72,84 @@ export const isAuthenticated = (): boolean => {
         // Consider authenticated if token exists in either place
         return tokenInCookie || tokenInStorage;
     } catch (error) {
-        // If cookie access fails (e.g., in some cross-origin contexts), fall back to localStorage
+        // If cookie access fails, fall back to localStorage
         return !!localStorage.getItem("token");
     }
 };
 
-// 🟢 Get auth token - prioritize cookie, fall back to localStorage
+// 🟢 Get auth token - prioritize localStorage for reliability
 export const getAuthToken = (): string => {
-    try {
-        const cookieToken = getCookie("customerToken");
-        if (cookieToken) return cookieToken;
-    } catch (error) {
-        console.warn("Error accessing cookie:", error);
-    }
-    
-    // Fall back to localStorage
+    // Prioritize localStorage for more reliable token access
     const storageToken = localStorage.getItem("token");
     if (storageToken) {
-        // If token only exists in localStorage, try to sync it to cookie
-        try {
-            setCookie("customerToken", storageToken);
-        } catch (error) {
-            console.warn("Failed to sync token to cookie:", error);
-        }
         return storageToken;
+    }
+    
+    // Fall back to cookie if needed
+    try {
+        const cookieToken = getCookie("customerToken");
+        if (cookieToken) {
+            // Sync to localStorage for future reliability
+            localStorage.setItem("token", cookieToken);
+            return cookieToken;
+        }
+    } catch (error) {
+        console.warn("Error accessing cookie:", error);
     }
     
     return "";
 };
 
-// Check if token is expired
+// Check if token is expired - safer version that handles invalid tokens
 export const isTokenExpired = (): boolean => {
     const token = getAuthToken();
     if (!token) return true;
     
     try {
-        const decoded = jwtDecode<{exp: number}>(token);
-        if (!decoded.exp) return true;
+        // First check if the token has the right format for JWT
+        if (!token.includes('.')) {
+            console.warn("Token does not appear to be in JWT format");
+            return true; // Consider non-JWT tokens as expired
+        }
+        
+        // Now try to decode it
+        const decoded = jwtDecode<{exp?: number}>(token);
+        if (!decoded || !decoded.exp) {
+            console.warn("Token has no expiration claim");
+            return true;
+        }
         
         // Check if current time is past expiration
         const currentTime = Math.floor(Date.now() / 1000);
         return decoded.exp < currentTime;
     } catch (error) {
         console.error("Error checking token expiration:", error);
-        return true; // If we can't decode, consider it expired
+        // To be safe, we'll consider any token we can't validate as expired
+        return true;
     }
 };
 
-// 🟢 Workspace ID Management
+// 🟢 Workspace ID Management - Enhanced for reliability
 export const setWorkspaceId = (id: string): void => {
     if (id) {
+        // Always set in localStorage for reliability
+        localStorage.setItem("workspaceId", id);
+        
+        // Try cookie as well
         try {
             setCookie("workspaceId", id);
         } catch (error) {
-            console.warn("Error setting workspace cookie, using localStorage:", error);
-            localStorage.setItem("workspaceId", id);
+            console.warn("Error setting workspace cookie, using localStorage only:", error);
         }
     }
 };
 
 export const getWorkspaceId = (): string => {
+    // Check localStorage first
+    const storageId = localStorage.getItem("workspaceId");
+    if (storageId) return storageId;
+    
+    // Fall back to cookie
     try {
         const cookieId = getCookie("workspaceId");
         if (cookieId) return cookieId;
@@ -167,7 +157,7 @@ export const getWorkspaceId = (): string => {
         console.warn("Error accessing workspace cookie:", error);
     }
     
-    return localStorage.getItem("workspaceId") || "";
+    return "";
 };
 
 // 🟢 Role Checks

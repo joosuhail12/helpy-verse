@@ -6,8 +6,7 @@ import { Loader2, WifiOff, AlertTriangle } from 'lucide-react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { fetchUserData } from '@/store/slices/authSlice';
 import { HttpClient } from '@/api/services/http';
-import { isAuthenticated, getAuthToken, isTokenExpired } from '@/utils/auth/tokenManager';
-import { refreshToken } from '@/store/slices/auth/authActions';
+import { isAuthenticated, getAuthToken } from '@/utils/auth/tokenManager';
 import { Button } from '@/components/ui/button';
 
 export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -48,46 +47,34 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
       // Get token directly from tokenManager
       const token = getAuthToken();
       const isTokenPresent = !!token;
-      console.log('ProtectedRoute: Token exists:', isTokenPresent, 'Token value:', token?.slice(0, 10));
+      console.log('ProtectedRoute: Token exists:', isTokenPresent, isTokenPresent ? 'Token value found' : 'No token value');
       
       // Check token validity
       if (isTokenPresent) {
-        // Check if token is expired
-        if (isTokenExpired()) {
-          console.log('Token is expired, attempting to refresh');
-          try {
-            // Try to refresh the token
-            await dispatch(refreshToken()).unwrap();
-            console.log('Token refreshed successfully');
-          } catch (error) {
-            console.error('Token refresh failed:', error);
-            setHasValidToken(false);
-            setAuthError('Your session has expired. Please sign in again.');
-            setIsChecking(false);
-            return;
-          }
-        }
-        
-        // Token is valid or was refreshed
+        // Token exists, consider it valid for this session
         setHasValidToken(true);
-        console.log('ProtectedRoute: Found valid token, configuring axios');
-        HttpClient.apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+        console.log('ProtectedRoute: Found token, configuring axios');
         HttpClient.setAxiosDefaultConfig(token);
         
         try {
-          // Try to refresh user data if needed
+          // Try to fetch user data
           await dispatch(fetchUserData());
           console.log('ProtectedRoute: Successfully fetched user data');
         } catch (error: any) {
           console.error("Error fetching user data:", error);
-          // Only set error if it's a critical failure
-          if (error?.isOfflineError) {
+          
+          // If it's a 401, the token is probably invalid
+          if (error?.response?.status === 401) {
+            console.log('Token appears to be invalid');
+            setHasValidToken(false);
+            setAuthError('Your session has expired. Please sign in again.');
+          } else if (error?.isOfflineError) {
             setAuthError('Cannot connect to the server. Please check your internet connection.');
           }
-          // Continue anyway since we have a token
+          // For other errors, we still continue since we have a token
         }
       } else {
-        console.log('ProtectedRoute: No valid token found');
+        console.log('ProtectedRoute: No token found');
         setHasValidToken(false);
       }
       
@@ -99,17 +86,6 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     
     checkAuth();
   }, [dispatch, location.pathname, isOffline]);
-
-  // Add debug logging for render state
-  useEffect(() => {
-    console.log('ProtectedRoute state:', { 
-      isChecking, 
-      loading, 
-      hasValidToken,
-      isOffline, 
-      path: location.pathname
-    });
-  }, [isChecking, loading, hasValidToken, isOffline, location.pathname]);
 
   // Handle offline state
   if (isOffline) {
@@ -166,7 +142,7 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  // We prioritize token existence over Redux state
+  // Simple but reliable check based on token existence
   if (hasValidToken && isAuthenticated()) {
     console.log('ProtectedRoute: Token exists, rendering protected content', location.pathname);
     return <>{children}</>;
