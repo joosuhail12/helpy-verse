@@ -159,12 +159,14 @@ const TicketForm = ({ onSubmit, initialValues = {}, isSubmitting = false }: Tick
         <Label htmlFor="message" className="text-right block mb-2 font-medium">
           Initial Message <span className="text-red-500">*</span>
         </Label>
-        <TicketMessageEditor 
-          content={values.message}
-          onChange={handleMessageChange}
-        />
+        <div className="bg-white rounded-lg">
+          <TicketMessageEditor 
+            content={values.message}
+            onChange={handleMessageChange}
+          />
+        </div>
         <p className="text-xs text-muted-foreground mt-2">
-          Use formatting tools to create a well-structured message. You can use the @ symbol to mention entities.
+          Type @ to mention customer, company, or ticket information. Use formatting tools for better readability.
         </p>
       </div>
       

@@ -41,31 +41,42 @@ const TicketMessageEditor = ({ content, onChange }: TicketMessageEditorProps) =>
   }, [editor, content]);
 
   return (
-    <div className="border rounded-md overflow-hidden">
-      <div className="bg-gray-50 border-b px-3 py-2 flex items-center space-x-1">
+    <div className="border rounded-lg overflow-hidden">
+      <div className="border-b p-2 flex items-center gap-1">
         <button 
           onClick={() => editor?.chain().focus().toggleBold().run()}
           className={`p-1 rounded hover:bg-gray-200 ${editor?.isActive('bold') ? 'bg-gray-200' : ''}`}
+          title="Bold"
         >
           <span className="font-bold">B</span>
         </button>
         <button 
           onClick={() => editor?.chain().focus().toggleItalic().run()}
           className={`p-1 rounded hover:bg-gray-200 ${editor?.isActive('italic') ? 'bg-gray-200' : ''}`}
+          title="Italic"
         >
           <span className="italic">I</span>
         </button>
         <button 
           onClick={() => editor?.chain().focus().toggleBulletList().run()}
           className={`p-1 rounded hover:bg-gray-200 ${editor?.isActive('bulletList') ? 'bg-gray-200' : ''}`}
+          title="Bullet List"
         >
           • List
         </button>
+        <div className="p-1 text-gray-500 text-sm">
+          Use @ to mention customer, company, or ticket details
+        </div>
       </div>
-      <EditorContent 
-        editor={editor} 
-        className="min-h-[200px] p-3"
-      />
+      <div 
+        className="cursor-text"
+        onClick={() => editor?.commands.focus()}
+      >
+        <EditorContent 
+          editor={editor} 
+          className="p-3 min-h-[150px] overflow-y-auto prose prose-sm max-w-none focus:outline-none"
+        />
+      </div>
     </div>
   );
 };
