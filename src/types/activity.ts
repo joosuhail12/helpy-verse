@@ -17,7 +17,7 @@ export interface Activity {
   title?: string;
   description: string;
   timestamp: string;
-  date: string; // Adding date field that was being used
+  date: string; // Required field for timeline display
   user?: string;
   metadata: ActivityMetadata;
 }

@@ -7,7 +7,7 @@ export type TeammatePermission =
   | 'manage_settings'
   | 'admin';
 
-export type TeammateRole = 'admin' | 'agent' | 'manager' | 'viewer';
+export type TeammateRole = 'admin' | 'agent' | 'manager' | 'viewer' | 'supervisor';
 
 export type TeammateStatus = 'active' | 'inactive' | 'pending';
 
@@ -18,7 +18,7 @@ export type ActivityLogType =
   | 'password_changed'
   | 'permission_changed'
   | 'team_assigned'
-  | 'update'; // Adding the 'update' type
+  | 'update'; // Added 'update' type
 
 export interface Teammate {
   id: string;
@@ -35,9 +35,15 @@ export interface Teammate {
   is2FAEnabled?: boolean;
 }
 
+export interface NewTeammate {
+  name: string;
+  email: string;
+  role: TeammateRole;
+}
+
 export interface ActivityLog {
   id: string;
-  teammateId: string; // Adding teammateId that was being used
+  teammateId?: string; // Making this optional to fix errors
   type: ActivityLogType;
   description: string;
   timestamp: string;
@@ -45,7 +51,7 @@ export interface ActivityLog {
 
 export interface TeamAssignment {
   id: string;
-  teammateId: string; // Adding teammateId that was being used
+  teammateId?: string; // Making this optional to fix errors
   teamName: string;
   role: string;
   status: 'active' | 'inactive';

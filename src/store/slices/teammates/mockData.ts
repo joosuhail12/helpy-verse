@@ -20,14 +20,12 @@ export const mockTeammates: Teammate[] = [
 export const mockActivityLogs: ActivityLog[] = [
   {
     id: '1',
-    teammateId: '1',
     type: 'login',
     description: 'Logged in to the system',
     timestamp: new Date().toISOString()
   },
   {
     id: '2',
-    teammateId: '1',
     type: 'settings_changed',
     description: 'Updated profile information',
     timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
@@ -37,7 +35,6 @@ export const mockActivityLogs: ActivityLog[] = [
 export const mockAssignments: TeamAssignment[] = [
   {
     id: '1',
-    teammateId: '1',
     teamName: 'Customer Support',
     role: 'Team Lead',
     status: 'active',

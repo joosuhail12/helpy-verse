@@ -1,111 +1,103 @@
 
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Users, Repeat2, Scale } from "lucide-react";
-import type { TeamRoutingSelectorProps } from '@/types/team';
+import React from 'react';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { TeamRoutingSelectorProps } from '@/types/team';
 
-const TeamRoutingSelector = ({ 
-  selectedType, 
+export const TeamRoutingSelector: React.FC<TeamRoutingSelectorProps> = ({
+  selectedType = 'manual',
   onTypeSelect,
   limits = {},
-  onLimitsChange = () => {}
-}: TeamRoutingSelectorProps) => {
-  const handleLimitChange = (key: keyof typeof limits) => (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(e.target.value) || 0;
-    onLimitsChange({
-      ...limits,
-      [key]: value
-    });
+  onLimitsChange,
+  routingType,
+  setRoutingType,
+  routingLimits,
+  setRoutingLimits
+}) => {
+  // Use props based on the version of components using this
+  const effectiveType = selectedType || routingType;
+  const effectiveLimits = limits || routingLimits || {};
+  
+  const handleTypeChange = (value: 'manual' | 'round-robin' | 'load-balanced') => {
+    if (onTypeSelect) {
+      onTypeSelect(value);
+    } else if (setRoutingType) {
+      setRoutingType(value);
+    }
+  };
+
+  const handleLimitChange = (key: string, value: number) => {
+    const newLimits = { ...effectiveLimits, [key]: value };
+    if (onLimitsChange) {
+      onLimitsChange(newLimits);
+    } else if (setRoutingLimits) {
+      setRoutingLimits(newLimits);
+    }
   };
 
   return (
-    <RadioGroup
-      value={selectedType}
-      onValueChange={(value: 'manual' | 'round-robin' | 'load-balanced') => onTypeSelect(value)}
-      className="space-y-4"
-    >
-      <div className="flex items-start space-x-4 p-4 rounded-lg border border-gray-200 hover:bg-accent/50 transition-colors">
-        <RadioGroupItem value="manual" id="manual" className="mt-1" />
-        <div className="flex-1 space-y-2">
-          <div className="flex items-center space-x-2">
-            <Users className="h-5 w-5 text-primary" />
-            <Label htmlFor="manual" className="font-medium">Manual Routing</Label>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Team members manually pick tickets from the queue. Best for teams that want full control over ticket assignment.
-          </p>
+    <div className="space-y-6">
+      <RadioGroup 
+        value={effectiveType} 
+        onValueChange={(value) => handleTypeChange(value as 'manual' | 'round-robin' | 'load-balanced')}
+        className="space-y-3"
+      >
+        <div className="flex items-center space-x-2">
+          <RadioGroupItem value="manual" id="manual" />
+          <Label htmlFor="manual">Manual Assignment</Label>
         </div>
-      </div>
-
-      <div className="flex items-start space-x-4 p-4 rounded-lg border border-gray-200 hover:bg-accent/50 transition-colors">
-        <RadioGroupItem value="round-robin" id="round-robin" className="mt-1" />
-        <div className="flex-1 space-y-2">
-          <div className="flex items-center space-x-2">
-            <Repeat2 className="h-5 w-5 text-primary" />
-            <Label htmlFor="round-robin" className="font-medium">Round Robin Routing</Label>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Tickets are automatically assigned to team members in a sequential order. Ensures even distribution of workload.
-          </p>
+        <div className="flex items-center space-x-2">
+          <RadioGroupItem value="round-robin" id="round-robin" />
+          <Label htmlFor="round-robin">Round Robin</Label>
         </div>
-      </div>
+        <div className="flex items-center space-x-2">
+          <RadioGroupItem value="load-balanced" id="load-balanced" />
+          <Label htmlFor="load-balanced">Load Balanced</Label>
+        </div>
+      </RadioGroup>
 
-      <div className="flex items-start space-x-4 p-4 rounded-lg border border-gray-200 hover:bg-accent/50 transition-colors">
-        <RadioGroupItem value="load-balanced" id="load-balanced" className="mt-1" />
-        <div className="flex-1 space-y-2">
-          <div className="flex items-center space-x-2">
-            <Scale className="h-5 w-5 text-primary" />
-            <Label htmlFor="load-balanced" className="font-medium">Load Balanced Routing</Label>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Tickets are assigned based on team members' current workload. Optimizes for team capacity and availability.
-          </p>
-          
-          {selectedType === 'load-balanced' && (
-            <div className="mt-4 space-y-6 pt-4 border-t">
-              <div className="space-y-4">
-                <Label className="text-sm font-medium">Maximum Total Tickets</Label>
-                <Input
-                  type="number"
-                  min={0}
-                  max={50}
-                  value={limits.maxTickets || 0}
-                  onChange={handleLimitChange('maxTickets')}
-                  className="w-full"
-                />
-              </div>
-
-              <div className="space-y-4">
-                <Label className="text-sm font-medium">Maximum Open Tickets</Label>
-                <Input
-                  type="number"
-                  min={0}
-                  max={30}
-                  value={limits.maxOpenTickets || 0}
-                  onChange={handleLimitChange('maxOpenTickets')}
-                  className="w-full"
-                />
-              </div>
-
-              <div className="space-y-4">
-                <Label className="text-sm font-medium">Maximum Active Chats</Label>
-                <Input
-                  type="number"
-                  min={0}
-                  max={10}
-                  value={limits.maxActiveChats || 0}
-                  onChange={handleLimitChange('maxActiveChats')}
-                  className="w-full"
-                />
-              </div>
+      {(effectiveType === 'round-robin' || effectiveType === 'load-balanced') && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium">Routing Limits</CardTitle>
+            <CardDescription>Set the maximum limits for assignments</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="maxTickets">Max tickets per agent</Label>
+              <Input
+                id="maxTickets"
+                type="number"
+                value={effectiveLimits.maxTickets || ''}
+                onChange={(e) => handleLimitChange('maxTickets', parseInt(e.target.value))}
+                min={1}
+              />
             </div>
-          )}
-        </div>
-      </div>
-    </RadioGroup>
+            <div className="space-y-2">
+              <Label htmlFor="maxOpenTickets">Max open tickets per agent</Label>
+              <Input
+                id="maxOpenTickets"
+                type="number"
+                value={effectiveLimits.maxOpenTickets || ''}
+                onChange={(e) => handleLimitChange('maxOpenTickets', parseInt(e.target.value))}
+                min={1}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="maxActiveChats">Max active chats per agent</Label>
+              <Input
+                id="maxActiveChats"
+                type="number"
+                value={effectiveLimits.maxActiveChats || ''}
+                onChange={(e) => handleLimitChange('maxActiveChats', parseInt(e.target.value))}
+                min={1}
+              />
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 };
-
-export default TeamRoutingSelector;
-

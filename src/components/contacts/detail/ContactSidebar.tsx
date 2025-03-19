@@ -1,83 +1,82 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Phone, Mail, MessageSquare, Calendar, User2 } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import type { Contact } from '@/types/contact';
+import { User, Mail, Phone, Building, Calendar } from 'lucide-react';
+import { format } from 'date-fns';
 import { ContactTags } from './ContactTags';
 import { CustomerSentiment } from './CustomerSentiment';
-import { MostUsedInfo } from './MostUsedInfo';
+import { Contact } from '@/types/contact';
 
 interface ContactSidebarProps {
   contact: Contact;
 }
 
-export const ContactSidebar = ({ contact }: ContactSidebarProps) => {
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map(part => part[0])
-      .join('')
-      .toUpperCase();
+export const ContactSidebar: React.FC<ContactSidebarProps> = ({ contact }) => {
+  const fullName = `${contact.firstname} ${contact.lastname}`;
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return 'N/A';
+    return format(new Date(dateString), 'MMM d, yyyy');
   };
 
   return (
-    <div className="w-full lg:w-80 space-y-4 p-4">
+    <div className="w-full lg:w-80 space-y-6">
       <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg font-medium">Contact Actions</CardTitle>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-md">Customer Details</CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-2 gap-2">
-          <Button variant="outline" size="sm" className="flex items-center gap-2">
-            <Phone className="h-4 w-4" />
-            <span>Call</span>
-          </Button>
-          <Button variant="outline" size="sm" className="flex items-center gap-2">
-            <Mail className="h-4 w-4" />
-            <span>Email</span>
-          </Button>
-          <Button variant="outline" size="sm" className="flex items-center gap-2">
-            <MessageSquare className="h-4 w-4" />
-            <span>Message</span>
-          </Button>
-          <Button variant="outline" size="sm" className="flex items-center gap-2">
-            <Calendar className="h-4 w-4" />
-            <span>Meeting</span>
-          </Button>
-        </CardContent>
-      </Card>
-      
-      <Card>
-        <CardHeader className="p-4 pb-0">
-          <div className="flex items-center gap-3">
-            <Avatar className="h-16 w-16">
-              <AvatarImage src={contact.avatar} alt={contact.name} />
-              <AvatarFallback className="text-lg">{getInitials(contact.name)}</AvatarFallback>
+        <CardContent className="space-y-6">
+          <div className="flex items-center space-x-4">
+            <Avatar className="h-12 w-12">
+              <AvatarImage 
+                src={contact.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${fullName}`} 
+                alt={fullName}
+              />
+              <AvatarFallback>
+                {contact.firstname?.[0]}{contact.lastname?.[0]}
+              </AvatarFallback>
             </Avatar>
             <div>
-              <CardTitle className="text-lg font-bold">{contact.name}</CardTitle>
-              <p className="text-sm text-muted-foreground">{contact.email}</p>
+              <h3 className="font-medium">{fullName}</h3>
+              <p className="text-sm text-muted-foreground">{contact.jobTitle || 'No title'}</p>
             </div>
           </div>
-        </CardHeader>
-        <CardContent className="p-4 space-y-3">
-          <div className="flex items-center gap-2">
-            <User2 className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm">{contact.jobTitle}</span>
-          </div>
-          {contact.phone && (
-            <div className="flex items-center gap-2">
-              <Phone className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm">{contact.phone}</span>
+          
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-sm">
+              <Mail className="h-4 w-4 text-muted-foreground" />
+              <span>{contact.email}</span>
             </div>
-          )}
+            {contact.phone && (
+              <div className="flex items-center gap-2 text-sm">
+                <Phone className="h-4 w-4 text-muted-foreground" />
+                <span>{contact.phone}</span>
+              </div>
+            )}
+            {contact.company && (
+              <div className="flex items-center gap-2 text-sm">
+                <Building className="h-4 w-4 text-muted-foreground" />
+                <span>
+                  {typeof contact.company === 'object' ? contact.company.name : contact.company}
+                </span>
+              </div>
+            )}
+            <div className="flex items-center gap-2 text-sm">
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <span>Created: {formatDate(contact.createdAt)}</span>
+            </div>
+          </div>
         </CardContent>
       </Card>
       
-      <ContactTags contact={contact} />
-      <CustomerSentiment contact={contact} />
-      <MostUsedInfo contact={contact} />
+      <ContactTags 
+        contact={contact}
+        contactId={contact.id}
+      />
+      
+      <CustomerSentiment
+        contactId={contact.id}
+      />
     </div>
   );
 };

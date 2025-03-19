@@ -38,6 +38,7 @@ const ContactDetail = () => {
             title: 'Support Follow-up',
             description: 'Followed up on previous ticket regarding account access',
             timestamp: new Date().toISOString(),
+            date: new Date().toISOString(),
             user: 'Support Agent',
             metadata: {
               subject: 'Re: Account Access Issue'
@@ -49,6 +50,7 @@ const ContactDetail = () => {
             title: 'Customer Call Notes',
             description: 'Customer mentioned they are considering upgrading their plan',
             timestamp: new Date(Date.now() - 86400000).toISOString(),
+            date: new Date(Date.now() - 86400000).toISOString(),
             user: 'Sales Rep',
             metadata: {
               content: 'Interested in Enterprise features. Follow up next week.'
@@ -60,6 +62,7 @@ const ContactDetail = () => {
             title: 'Schedule Demo',
             description: 'Schedule product demo for new features',
             timestamp: new Date(Date.now() - 172800000).toISOString(),
+            date: new Date(Date.now() - 172800000).toISOString(),
             user: 'Account Manager',
             metadata: {
               taskName: 'Product Demo',
@@ -93,7 +96,6 @@ const ContactDetail = () => {
           <ContactTabs 
             contact={contact} 
             contactId={contact.id} 
-            contactName={contact.name} 
           />
         </div>
         <ContactSidebar contact={contact} />

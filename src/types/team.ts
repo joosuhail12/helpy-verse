@@ -34,6 +34,7 @@ export interface Team {
   icon: string;
   status: 'active' | 'inactive';
   type: 'support' | 'sales' | 'product' | 'other';
+  description?: string; // Add description field
   memberCount: number;
   members: {
     id: string;
@@ -62,6 +63,7 @@ export interface TeamHolidaySelectorProps {
 export interface TeamIconPickerProps {
   selectedIcon: string;
   setSelectedIcon: (icon: string) => void;
+  onIconSelect?: (icon: string) => void; // Add this prop to fix errors
 }
 
 export interface TeamMembersSelectorProps {
@@ -84,6 +86,19 @@ export interface TeamRoutingSelectorProps {
     maxActiveChats?: number;
   };
   setRoutingLimits: (limits: {
+    maxTickets?: number;
+    maxOpenTickets?: number;
+    maxActiveChats?: number;
+  }) => void;
+  // Additional props needed by component
+  selectedType?: 'manual' | 'round-robin' | 'load-balanced';
+  onTypeSelect?: (type: 'manual' | 'round-robin' | 'load-balanced') => void;
+  limits?: {
+    maxTickets?: number;
+    maxOpenTickets?: number;
+    maxActiveChats?: number;
+  };
+  onLimitsChange?: (limits: {
     maxTickets?: number;
     maxOpenTickets?: number;
     maxActiveChats?: number;

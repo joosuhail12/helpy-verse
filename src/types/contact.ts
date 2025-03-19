@@ -2,16 +2,23 @@
 export interface Contact {
   id: string;
   name: string;
+  firstname: string;
+  lastname: string;
   email: string;
   phone?: string;
   avatar?: string;
   jobTitle?: string;
-  company?: string;
+  title?: string;
+  department?: string;
+  company?: string | { id: string; name: string } | null;
   status: 'active' | 'inactive';
+  type: 'customer' | 'visitor';
   tags?: string[];
   createdAt: string;
+  updatedAt?: string;
   lastContacted?: string;
-  notes?: string;
+  lastActivity?: string;
+  notes?: string[];
   address?: {
     street?: string;
     city?: string;
@@ -19,6 +26,23 @@ export interface Contact {
     zip?: string;
     country?: string;
   };
+  // Address fields directly on contact
+  street?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  country?: string;
+  // Social media
+  linkedinUrl?: string;
+  twitterUrl?: string;
+  // User preferences
+  timezone?: string;
+  source?: string;
+  language?: string;
+  preferredLanguage?: string;
+  // Additional fields
+  assignedTo?: string;
+  accountValue?: number;
   customFields?: Record<string, any>;
 }
 
@@ -43,4 +67,13 @@ export interface ContactNotesProps {
 
 export interface CustomerSentimentProps {
   contactId: string;
+}
+
+export interface ContactCompanyInfoProps {
+  contact: Contact;
+}
+
+export interface QuickNoteInputProps {
+  contactId: string;
+  onAddNote: (note: string) => void;
 }

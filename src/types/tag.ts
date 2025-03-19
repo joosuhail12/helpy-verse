@@ -8,14 +8,14 @@ export interface TagCount {
 export interface TagHistoryItem {
   date: string;
   count: number;
-  total?: number; // Adding total field that was being used
+  total?: number; // Added total field to resolve errors
 }
 
 export interface TagPreviewItem {
   id: string;
   name: string;
   type: 'ticket' | 'contact' | 'company';
-  title?: string; // Adding title field that was being used
+  title?: string; // Added title field to resolve errors
 }
 
 export interface Tag {

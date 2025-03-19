@@ -4,6 +4,7 @@ import { Contact } from '@/types/contact';
 export const mockContacts: Contact[] = [
   {
     id: '1',
+    name: 'Sarah Johnson',
     firstname: 'Sarah',
     lastname: 'Johnson',
     email: 'sarah.johnson@techinnovators.com',
@@ -23,6 +24,7 @@ export const mockContacts: Contact[] = [
     tags: ['vip', 'enterprise', 'tech'],
     notes: [],
     lastContacted: new Date(2024, 2, 10).toISOString(),
+    lastActivity: new Date(2024, 2, 15).toISOString(),
     createdAt: new Date(2024, 0, 15).toISOString(),
     updatedAt: new Date(2024, 2, 15).toISOString(),
     street: '789 Innovation Drive',
@@ -33,6 +35,7 @@ export const mockContacts: Contact[] = [
   },
   {
     id: '2',
+    name: 'Michael Chen',
     firstname: 'Michael',
     lastname: 'Chen',
     email: 'michael.chen@globalsolutions.com',
@@ -51,6 +54,7 @@ export const mockContacts: Contact[] = [
     tags: ['partner', 'operations'],
     notes: [],
     lastContacted: new Date(2024, 2, 8).toISOString(),
+    lastActivity: new Date(2024, 2, 10).toISOString(),
     createdAt: new Date(2024, 1, 1).toISOString(),
     updatedAt: new Date(2024, 2, 10).toISOString(),
     street: '456 Business Avenue',
@@ -61,13 +65,14 @@ export const mockContacts: Contact[] = [
   },
   {
     id: '3',
+    name: 'Emma Rodriguez',
     firstname: 'Emma',
     lastname: 'Rodriguez',
     email: 'emma.rodriguez@ecotechventures.com',
     phone: '+1 (555) 777-8888',
     company: 'EcoTech Ventures',
     status: 'active',
-    type: 'customer', // Changed from 'prospect' to 'customer'
+    type: 'customer', 
     title: 'Sustainability Director',
     department: 'Environmental',
     timezone: 'America/Chicago',
@@ -79,6 +84,7 @@ export const mockContacts: Contact[] = [
     tags: ['green-tech', 'prospect'],
     notes: [],
     lastContacted: new Date(2024, 2, 5).toISOString(),
+    lastActivity: new Date(2024, 2, 5).toISOString(),
     createdAt: new Date(2024, 1, 15).toISOString(),
     updatedAt: new Date(2024, 2, 5).toISOString(),
     street: '123 Green Street',
@@ -89,6 +95,7 @@ export const mockContacts: Contact[] = [
   },
   {
     id: '4',
+    name: 'David Kim',
     firstname: 'David',
     lastname: 'Kim',
     email: 'david.kim@digitaldynamics.tech',
@@ -108,6 +115,7 @@ export const mockContacts: Contact[] = [
     tags: ['digital-marketing', 'smb'],
     notes: [],
     lastContacted: new Date(2024, 2, 12).toISOString(),
+    lastActivity: new Date(2024, 2, 15).toISOString(),
     createdAt: new Date(2024, 2, 1).toISOString(),
     updatedAt: new Date(2024, 2, 15).toISOString(),
     street: '321 Digital Lane',
@@ -118,6 +126,7 @@ export const mockContacts: Contact[] = [
   },
   {
     id: '5',
+    name: 'Jennifer Lee',
     firstname: 'Jennifer',
     lastname: 'Lee',
     email: 'jennifer.lee@healthtechsolutions.com',
@@ -136,6 +145,7 @@ export const mockContacts: Contact[] = [
     tags: ['healthcare', 'enterprise'],
     notes: [],
     lastContacted: new Date(2024, 2, 14).toISOString(),
+    lastActivity: new Date(2024, 2, 15).toISOString(),
     createdAt: new Date(2024, 2, 15).toISOString(),
     updatedAt: new Date(2024, 2, 15).toISOString(),
     street: '567 Medical Drive',

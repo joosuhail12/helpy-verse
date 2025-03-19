@@ -1,88 +1,75 @@
 
-import React from 'react';
-import * as icons from 'lucide-react';
-import { Smile } from 'lucide-react';
-import { Button } from "@/components/ui/button";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-} from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils";
-import type { TeamIconPickerProps } from '@/types/team';
-import type { LucideIcon } from 'lucide-react';
+import React, { useState } from 'react';
+import { 
+  Headphones, DollarSign, Briefcase, Users, Tool, LifeBuoy, Zap, 
+  MessageCircle, Phone, Mail, Shield, Heart, Award, Star 
+} from 'lucide-react';
+import { 
+  Popover, 
+  PopoverContent, 
+  PopoverTrigger 
+} from '@/components/ui/popover';
+import { Button } from '@/components/ui/button';
+import { TeamIconPickerProps } from '@/types/team';
 
-// Filter out non-icon entries and create properly typed icon array
-const availableIcons = Object.entries(icons)
-  .filter(([name]) => name !== 'createLucideIcon' && name !== 'icons')
-  .map(([name, icon]) => ({
-    name,
-    icon: icon as LucideIcon,
-  }));
-
-const TeamIconPicker = ({ selectedIcon, onIconSelect }: TeamIconPickerProps) => {
-  const [openIconPicker, setOpenIconPicker] = React.useState(false);
-
-  // Find the selected icon component
-  const SelectedIcon = selectedIcon ? (icons[selectedIcon as keyof typeof icons] as LucideIcon) : Smile;
-
-  return (
-    <div className="space-y-2">
-      <Label>Team Icon</Label>
-      <Popover open={openIconPicker} onOpenChange={setOpenIconPicker}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            role="combobox"
-            aria-expanded={openIconPicker}
-            className="w-full justify-between"
-          >
-            <SelectedIcon className="mr-2 h-4 w-4" />
-            {selectedIcon || 'Select an icon'}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-full p-0">
-          <Command>
-            <CommandInput placeholder="Search icons..." />
-            <CommandEmpty>No icon found.</CommandEmpty>
-            <CommandGroup>
-              <ScrollArea className="h-72">
-                <div className="grid grid-cols-2 gap-2 p-2">
-                  {availableIcons.map(({ name, icon: Icon }) => (
-                    <CommandItem
-                      key={name}
-                      value={name}
-                      onSelect={() => {
-                        onIconSelect(name);
-                        setOpenIconPicker(false);
-                      }}
-                      className="flex items-center gap-2 cursor-pointer"
-                    >
-                      <Icon className={cn(
-                        "h-4 w-4",
-                        selectedIcon === name ? "text-primary" : "text-gray-500"
-                      )} />
-                      <span className="text-sm">{name}</span>
-                    </CommandItem>
-                  ))}
-                </div>
-              </ScrollArea>
-            </CommandGroup>
-          </Command>
-        </PopoverContent>
-      </Popover>
-    </div>
-  );
+const iconMap: Record<string, React.ReactNode> = {
+  'headphones': <Headphones />,
+  'dollar-sign': <DollarSign />,
+  'briefcase': <Briefcase />,
+  'users': <Users />,
+  'tool': <Tool />,
+  'lifeBuoy': <LifeBuoy />,
+  'zap': <Zap />,
+  'message-circle': <MessageCircle />,
+  'phone': <Phone />,
+  'mail': <Mail />,
+  'shield': <Shield />,
+  'heart': <Heart />,
+  'award': <Award />,
+  'star': <Star />
 };
 
-export default TeamIconPicker;
+export const TeamIconPicker: React.FC<TeamIconPickerProps> = ({ 
+  selectedIcon, 
+  setSelectedIcon,
+  onIconSelect 
+}) => {
+  const [open, setOpen] = useState(false);
 
+  const handleSelectIcon = (icon: string) => {
+    setSelectedIcon(icon);
+    if (onIconSelect) {
+      onIconSelect(icon);
+    }
+    setOpen(false);
+  };
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button 
+          variant="outline" 
+          className="h-10 w-10 rounded-md p-0"
+          aria-label="Select icon"
+        >
+          {iconMap[selectedIcon] || <Users />}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-64 p-2">
+        <div className="grid grid-cols-4 gap-2">
+          {Object.entries(iconMap).map(([name, icon]) => (
+            <Button
+              key={name}
+              variant="ghost"
+              className={`h-10 w-10 p-0 ${selectedIcon === name ? 'bg-primary/10' : ''}`}
+              onClick={() => handleSelectIcon(name)}
+            >
+              <span className="sr-only">Select {name} icon</span>
+              {icon}
+            </Button>
+          ))}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+};

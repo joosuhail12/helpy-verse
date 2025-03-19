@@ -8,6 +8,7 @@ export const mockTeams: Team[] = [
     icon: 'headphones',
     status: 'active',
     type: 'support',
+    description: 'Main customer support team',
     memberCount: 3,
     members: [
       {
@@ -66,6 +67,7 @@ export const mockTeams: Team[] = [
     icon: 'dollar-sign',
     status: 'active',
     type: 'sales',
+    description: 'Sales and business development team',
     memberCount: 2,
     members: [
       {
