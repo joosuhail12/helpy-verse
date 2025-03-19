@@ -5,7 +5,9 @@ export type ChatbotTone =
   | 'casual' 
   | 'formal'
   | 'technical'
-  | 'empathetic';
+  | 'empathetic'
+  | 'helpful'
+  | 'custom';
 
 export interface DataCollectionField {
   id: string;
@@ -41,4 +43,23 @@ export interface Chatbot {
   // Additional properties
   avatarUrl?: string;
   tone?: ChatbotTone;
+  welcomeMessage?: string;
+  humanHandoffMessage?: string;
+  customInstructions?: string;
+  dataCollection?: {
+    enabled: boolean;
+    fields: DataCollectionField[];
+  };
+  behavior?: {
+    queryHandling: 'single' | 'continuous';
+    postAnswerAction: 'continue' | 'close' | 'handoff';
+    inactivityTimeout: number;
+    inactivityAction: 'close' | 'handoff' | 'prompt';
+    enableHumanHandoff: boolean;
+  };
+  audienceRules?: {
+    id: string;
+    combinator: 'and' | 'or';
+    rules: any[];
+  };
 }

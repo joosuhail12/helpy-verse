@@ -10,7 +10,7 @@ export interface Contact {
   company?: {
     id: string;
     name: string;
-  };
+  } | string;
   tags?: string[];
   lastActivity?: string;
   createdAt: string;

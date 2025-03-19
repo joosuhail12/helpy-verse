@@ -1,163 +1,136 @@
 
 import { useEffect, useState } from 'react';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import { ShieldCheck, AlertTriangle } from 'lucide-react';
-import { QueryGroup, QueryRule, QueryField } from '@/types/queryBuilder';
-import { useAudienceFields } from '../hooks/useAudienceFields';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AlertTriangle, CheckCircle } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { useAppSelector } from '@/hooks/useAppSelector';
+import { QueryGroup } from '@/types/queryBuilder';
 
 interface DataConstraintValidatorProps {
-  queryGroup: QueryGroup;
+  audience: QueryGroup;
+  onChange?: (audience: QueryGroup) => void;
 }
 
-interface ConstraintIssue {
-  ruleId: string;
+interface Constraint {
+  id: string;
   field: string;
-  message: string;
-  severity: 'warning' | 'error';
+  description: string;
+  status: 'passed' | 'warning' | 'failed';
+  recommendation?: string;
 }
 
-export const DataConstraintValidator = ({ queryGroup }: DataConstraintValidatorProps) => {
-  const [issues, setIssues] = useState<ConstraintIssue[]>([]);
-  const fields = useAudienceFields();
+export const DataConstraintValidator = ({ audience, onChange }: DataConstraintValidatorProps) => {
+  const [constraints, setConstraints] = useState<Constraint[]>([]);
+  const contacts = useAppSelector((state) => state.contacts?.contacts) || [];
+  const companies = useAppSelector((state) => state.companies?.companies) || [];
 
+  // Analyze the audience rules for potential data constraints
   useEffect(() => {
-    // Validate rules against data constraints
-    const validateConstraints = async () => {
-      const newIssues: ConstraintIssue[] = [];
-      
-      // Skip if there are no rules
-      if (!queryGroup.rules || queryGroup.rules.length === 0) {
-        setIssues([]);
-        return;
-      }
-      
-      // Extract all the rules (flatten nested groups)
-      const allRules = extractAllRules(queryGroup);
-      
-      // Check each rule against known data constraints
-      for (const rule of allRules) {
-        const field = fields.find(f => f.id === rule.field);
-        
-        if (!field) continue;
-        
-        // Check for type mismatches
-        if (fieldTypeConstraintViolated(rule, field)) {
-          newIssues.push({
-            ruleId: rule.id,
-            field: rule.field,
-            message: `The value for "${field.label}" doesn't match the expected type (${field.type}).`,
-            severity: 'error'
-          });
+    if (!audience || !audience.rules || audience.rules.length === 0) {
+      setConstraints([
+        {
+          id: 'empty-rules',
+          field: 'general',
+          description: 'No audience rules defined',
+          status: 'warning',
+          recommendation: 'Add at least one rule to target your audience',
+        },
+      ]);
+      return;
+    }
+
+    const newConstraints: Constraint[] = [];
+
+    // Check for data availability
+    if (contacts.length === 0 && companies.length === 0) {
+      newConstraints.push({
+        id: 'no-data',
+        field: 'general',
+        description: 'No contact or company data available',
+        status: 'warning',
+        recommendation: 'Import contacts or companies to accurately target your audience',
+      });
+    }
+
+    // Process rules recursively
+    const processRules = (group: QueryGroup) => {
+      group.rules.forEach((rule) => {
+        if ('combinator' in rule) {
+          // This is a nested group
+          processRules(rule);
+        } else {
+          // This is a single rule
+          // Check for potential data constraints
+          const fieldType = rule.field.split('.')[0];
+          
+          // Check for string operators on numeric fields
+          const stringOperators = ['contains', 'startsWith', 'endsWith'];
+          if (fieldType === 'number' && stringOperators.includes(rule.operator)) {
+            newConstraints.push({
+              id: `invalid-operator-${rule.id}`,
+              field: rule.field,
+              description: `String operator "${rule.operator}" used on numeric field`,
+              status: 'failed',
+              recommendation: 'Use numeric operators like equals, greaterThan, or lessThan',
+            });
+          }
         }
-        
-        // Check for empty values in non-empty fields
-        if (rule.operator !== 'is_empty' && rule.operator !== 'is_not_empty' && 
-            (rule.value === '' || rule.value === undefined || rule.value === null)) {
-          newIssues.push({
-            ruleId: rule.id,
-            field: rule.field,
-            message: `"${field.label}" requires a value for the selected operator.`,
-            severity: 'error'
-          });
-        }
-        
-        // Check for selection from available options
-        if (field.type === 'select' && field.options && 
-            !field.options.includes(rule.value as string) && 
-            rule.operator !== 'is_empty' && rule.operator !== 'is_not_empty') {
-          newIssues.push({
-            ruleId: rule.id,
-            field: rule.field,
-            message: `"${rule.value}" is not a valid option for "${field.label}".`,
-            severity: 'error'
-          });
-        }
-        
-        // Warning for potential data quality issues
-        if (rule.operator === 'equals' && typeof rule.value === 'string' && 
-            rule.value.includes('*') && field.type === 'text') {
-          newIssues.push({
-            ruleId: rule.id,
-            field: rule.field,
-            message: `Wildcards (*) don't work with the "equals" operator. Use "contains" instead.`,
-            severity: 'warning'
-          });
-        }
-      }
-      
-      setIssues(newIssues);
+      });
     };
-    
-    validateConstraints();
-  }, [queryGroup, fields]);
 
-  // Function to extract all rules from nested groups
-  const extractAllRules = (group: QueryGroup): QueryRule[] => {
-    let rules: QueryRule[] = [];
-    
-    for (const rule of group.rules) {
-      if ('field' in rule) {
-        rules.push(rule);
-      } else if ('combinator' in rule) {
-        rules = [...rules, ...extractAllRules(rule)];
-      }
-    }
-    
-    return rules;
-  };
+    processRules(audience);
+    setConstraints(newConstraints);
+  }, [audience, contacts, companies]);
 
-  // Function to check if rule value violates field type constraints
-  const fieldTypeConstraintViolated = (rule: QueryRule, field: QueryField): boolean => {
-    // Skip empty/not-empty operators as they don't need a value
-    if (rule.operator === 'is_empty' || rule.operator === 'is_not_empty') {
-      return false;
-    }
-    
-    switch (field.type) {
-      case 'number':
-        return isNaN(Number(rule.value));
-      case 'boolean':
-        return typeof rule.value !== 'boolean' && rule.value !== 'true' && rule.value !== 'false';
-      case 'date':
-        // Basic date validation - could be improved
-        if (typeof rule.value === 'string' && rule.value.length === 0) return false;
-        return typeof rule.value === 'string' && isNaN(Date.parse(rule.value)) && 
-          !['this_week', 'this_month', 'this_year', 'last_week', 'last_month', 'last_year', 
-            'next_week', 'next_month', 'next_year'].includes(rule.value);
-      default:
-        return false;
-    }
-  };
-
-  if (issues.length === 0) {
+  if (constraints.length === 0) {
     return (
-      <Alert className="bg-green-50 border-green-200">
-        <ShieldCheck className="h-4 w-4 text-green-600" />
-        <AlertTitle>All rules are valid</AlertTitle>
-        <AlertDescription>
-          Your audience rules pass all data constraint validations.
-        </AlertDescription>
-      </Alert>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <CheckCircle className="h-5 w-5 text-green-500" />
+            Data Constraints
+          </CardTitle>
+          <CardDescription>No data constraints detected</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground">
+            Your audience rules appear to be well-formed and should work with the available data.
+          </p>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="space-y-3">
-      {issues.map((issue, index) => (
-        <Alert 
-          key={index} 
-          variant={issue.severity === 'error' ? 'destructive' : 'default'}
-          className={issue.severity === 'warning' ? "bg-amber-50 border-amber-200" : undefined}
-        >
-          <AlertTriangle className="h-4 w-4" />
-          <AlertTitle>
-            {issue.severity === 'error' ? 'Validation Error' : 'Warning'}
-          </AlertTitle>
-          <AlertDescription>
-            {issue.message}
-          </AlertDescription>
-        </Alert>
-      ))}
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <AlertTriangle className="h-5 w-5 text-amber-500" />
+          Data Constraints
+        </CardTitle>
+        <CardDescription>
+          {constraints.length} potential {constraints.length === 1 ? 'issue' : 'issues'} detected
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {constraints.map((constraint) => (
+          <Alert
+            key={constraint.id}
+            variant={constraint.status === 'failed' ? 'destructive' : 'default'}
+          >
+            <AlertTitle className="flex items-center gap-2">
+              {constraint.description}
+              <Badge variant={constraint.status === 'failed' ? 'destructive' : 'secondary'}>
+                {constraint.field}
+              </Badge>
+            </AlertTitle>
+            {constraint.recommendation && (
+              <AlertDescription>{constraint.recommendation}</AlertDescription>
+            )}
+          </Alert>
+        ))}
+      </CardContent>
+    </Card>
   );
 };

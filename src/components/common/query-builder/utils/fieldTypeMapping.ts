@@ -11,7 +11,7 @@ export const mapFieldType = (type: string): FieldType => {
     case 'tel':
     case 'phone':
     case 'email':
-      return 'text';
+      return 'string';
     case 'number':
     case 'currency':
       return 'number';
@@ -31,6 +31,6 @@ export const mapFieldType = (type: string): FieldType => {
     case 'array':
       return 'multi-select';
     default:
-      return 'text';
+      return 'string';
   }
 };

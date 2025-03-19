@@ -1,62 +1,99 @@
 
-import { Contact } from '@/types/contact';
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-} from '@/components/ui/card';
-import { Users2 } from 'lucide-react';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { User } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAppSelector } from '@/hooks/useAppSelector';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
+import { Contact } from '@/types/contact';
 
 interface ContactRelatedProps {
   contact: Contact;
 }
 
 export const ContactRelated = ({ contact }: ContactRelatedProps) => {
-  const allContacts = useAppSelector((state) => state.contacts.contacts);
-  
-  if (!contact.company) return null;
+  const navigate = useNavigate();
+  const contacts = useAppSelector((state) => state.contacts?.contacts || []);
 
-  // Find colleagues (same company, excluding self)
-  const colleagues = allContacts.filter(c => 
-    c.company === contact.company && 
-    c.id !== contact.id
-  );
+  // Get company ID if available
+  const companyId = typeof contact.company === 'object' 
+    ? contact.company?.id 
+    : (contact.company || null);
 
-  if (colleagues.length === 0) return null;
+  // Find related contacts (those from the same company)
+  const relatedContacts = companyId 
+    ? contacts.filter(c => 
+        c.id !== contact.id && (
+          (typeof c.company === 'object' && c.company?.id === companyId) ||
+          (typeof c.company === 'string' && c.company === companyId)
+        )
+      )
+    : [];
+
+  if (relatedContacts.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Related Contacts</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-6 text-muted-foreground">
+            No related contacts found
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
-    <Card className="mt-4 bg-white/60 backdrop-blur-sm border-purple-100/50 shadow-lg shadow-purple-500/5 transition-all duration-300 hover:shadow-purple-500/10">
-      <CardHeader className="border-b border-purple-100/20 pb-4">
-        <CardTitle className="text-lg font-semibold text-purple-900">Related Contacts</CardTitle>
+    <Card>
+      <CardHeader>
+        <CardTitle>Related Contacts</CardTitle>
       </CardHeader>
-      <CardContent className="pt-6">
-        <div className="pt-4">
-          <div className="flex items-center gap-2 text-sm font-medium text-purple-900/70 mb-3">
-            <Users2 className="h-4 w-4" />
-            <span>Colleagues at {contact.company}</span>
-          </div>
-          <div className="space-y-3">
-            {colleagues.map((colleague) => (
-              <div key={colleague.id} className="flex items-center gap-3">
-                <Avatar className="h-8 w-8">
+      <CardContent>
+        <div className="space-y-4">
+          {relatedContacts.slice(0, 5).map((relatedContact) => (
+            <div key={relatedContact.id} className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Avatar>
                   <AvatarFallback>
-                    <User className="h-4 w-4" />
+                    {relatedContact.firstname.charAt(0)}{relatedContact.lastname.charAt(0)}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="text-sm font-medium">{colleague.firstname} {colleague.lastname}</p>
-                  <p className="text-xs text-muted-foreground">{colleague.title}</p>
+                  <div className="font-medium">
+                    {relatedContact.firstname} {relatedContact.lastname}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    {relatedContact.title || relatedContact.email}
+                  </div>
                 </div>
               </div>
-            ))}
-          </div>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => navigate(`/home/contacts/detail/${relatedContact.id}`)}
+              >
+                View
+              </Button>
+            </div>
+          ))}
+          
+          {relatedContacts.length > 5 && (
+            <div className="text-center pt-2">
+              <Button 
+                variant="link"
+                onClick={() => {
+                  if (typeof contact.company === 'object') {
+                    navigate(`/home/contacts/companies/${contact.company.id}`);
+                  }
+                }}
+              >
+                View all ({relatedContacts.length}) related contacts
+              </Button>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
   );
 };
-

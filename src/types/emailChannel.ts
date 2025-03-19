@@ -20,4 +20,5 @@ export interface EmailChannel {
   useAgentNames: boolean;
   useOriginalSender: boolean;
   domainStatus?: string;
+  teamId?: string;
 }

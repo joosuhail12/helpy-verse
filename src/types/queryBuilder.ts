@@ -2,7 +2,7 @@
 export interface QueryRule {
   id: string;
   field: string;
-  operator: string;
+  operator: ComparisonOperator;
   value: any;
 }
 
@@ -12,8 +12,11 @@ export interface QueryGroup {
   rules: (QueryRule | QueryGroup)[];
 }
 
-export type FieldType = 'string' | 'number' | 'boolean' | 'date' | 'select' | 'multi-select' | 'email' | 'phone';
-export type ComparisonOperator = 'equals' | 'notEquals' | 'contains' | 'startsWith' | 'endsWith' | 'greaterThan' | 'lessThan' | 'in' | 'notIn' | 'exists' | 'notExists';
+export type FieldType = 'string' | 'number' | 'boolean' | 'date' | 'select' | 'multi-select' | 'email' | 'phone' | 'text';
+export type ComparisonOperator = 
+  'equals' | 'notEquals' | 'contains' | 'startsWith' | 'endsWith' | 
+  'greaterThan' | 'lessThan' | 'in' | 'notIn' | 'exists' | 'notExists' |
+  'custom_range' | 'last_n_days' | 'next_n_days' | 'rolling_days';
 export type DataSource = 'contacts' | 'companies' | 'tickets' | 'custom_objects' | 'conversations';
 
 export interface QueryField {

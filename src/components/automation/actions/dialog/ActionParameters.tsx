@@ -39,7 +39,7 @@ export const ActionParameters = ({ parameters, onChange }: ActionParametersProps
       }
 
       const isVisible = param.dependencies.every(dependency => {
-        const dependentParam = parameters.find(p => p.id === dependency.paramId);
+        const dependentParam = parameters.find(p => p.id === dependency.sourceParameterId);
         if (!dependentParam) return true;
 
         const dependentValue = dependentParam.defaultValue || '';

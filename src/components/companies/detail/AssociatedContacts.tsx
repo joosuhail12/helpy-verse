@@ -42,7 +42,11 @@ const AssociatedContacts: React.FC<AssociatedContactsProps> = ({ companyId }) =>
   }, [dispatch]);
 
   const fetchAssociatedContacts = () => {
-    const associated = contacts.filter(contact => contact.company === companyId);
+    const associated = contacts.filter(contact => 
+      typeof contact.company === 'object' 
+        ? contact.company?.id === companyId
+        : contact.company === companyId
+    );
     setAssociatedContacts(associated);
 
     const available = contacts.filter(contact => !contact.company);
@@ -72,7 +76,12 @@ const AssociatedContacts: React.FC<AssociatedContactsProps> = ({ companyId }) =>
     dispatch(
       updateContactCompany({
         contactId,
-        companyId
+        data: {
+          company: {
+            id: companyId,
+            name: ''  // The backend will fill this
+          }
+        }
       })
     );
     
@@ -87,7 +96,9 @@ const AssociatedContacts: React.FC<AssociatedContactsProps> = ({ companyId }) =>
     dispatch(
       updateContactCompany({
         contactId,
-        companyId: null
+        data: {
+          company: null
+        }
       })
     );
     fetchAssociatedContacts();

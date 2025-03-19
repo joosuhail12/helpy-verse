@@ -1,93 +1,106 @@
 
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { Send } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { updateContent } from '@/store/slices/content/contentSlice';
-import type { Content, ContentComment, User } from '@/types/content';
+import type { ContentComment, User } from '@/types/content';
 
 interface ContentCommentsProps {
-  content: Content;
+  comments: ContentComment[];
+  onAddComment: (comment: Partial<ContentComment>) => void;
+  currentUser: User;
 }
 
-export const ContentComments = ({ content }: ContentCommentsProps) => {
+export const ContentComments = ({ comments, onAddComment, currentUser }: ContentCommentsProps) => {
   const [comment, setComment] = useState('');
-  const dispatch = useAppDispatch();
 
   const handleAddComment = () => {
     if (!comment.trim()) return;
-
-    const newComment: ContentComment = {
-      id: `comment-${Date.now()}`,
-      contentId: content.id,
-      text: comment.trim(),
-      createdAt: new Date().toISOString(),
-      createdBy: {
-        id: 'current-user',
-        name: 'Current User',
-        avatar: 'https://api.dicebear.com/7.x/avatars/svg?seed=current-user',
-      },
-    };
-
-    const currentComments = Array.isArray(content.comments) ? [...content.comments] : [];
-    const updatedComments = [...currentComments, newComment];
     
-    dispatch(updateContent({ 
-      id: content.id, 
-      data: { comments: updatedComments }
-    }));
-
+    onAddComment({
+      content: comment,
+      createdAt: new Date().toISOString(),
+      user: currentUser,
+    });
+    
     setComment('');
   };
 
-  return (
-    <div className="space-y-4">
-      <h3 className="font-semibold">Comments</h3>
-      
-      <div className="space-y-2">
-        <Textarea
-          placeholder="Write a comment..."
-          value={comment}
-          onChange={(e) => setComment(e.target.value)}
-          rows={3}
-        />
-        <div className="flex justify-end">
-          <Button onClick={handleAddComment} disabled={!comment.trim()}>
-            Add Comment
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleAddComment();
+    }
+  };
+
+  if (!comments || comments.length === 0) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold">Comments</h3>
+        </div>
+        <div className="text-center py-8 text-muted-foreground">
+          No comments yet. Add the first comment.
+        </div>
+        <div className="flex gap-2 mt-4">
+          <Textarea
+            placeholder="Add a comment..."
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            onKeyPress={handleKeyPress}
+            className="min-h-[80px]"
+          />
+          <Button size="icon" onClick={handleAddComment} disabled={!comment.trim()}>
+            <Send className="h-4 w-4" />
           </Button>
         </div>
       </div>
+    );
+  }
 
-      <ScrollArea className="h-[300px]">
-        <div className="space-y-4">
-          {content.comments?.map((comment) => (
-            <div
-              key={comment.id}
-              className="p-3 rounded-lg bg-secondary/50 space-y-2"
-            >
-              <div className="flex items-center gap-2">
-                <img
-                  src={comment.createdBy.avatar}
-                  alt={comment.createdBy.name}
-                  className="w-6 h-6 rounded-full"
-                />
-                <span className="font-medium">{comment.createdBy.name}</span>
-                <span className="text-sm text-muted-foreground">
-                  {formatDistanceToNow(new Date(comment.createdAt))} ago
-                </span>
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold">Comments ({comments.length})</h3>
+      </div>
+      <div className="space-y-4">
+        {comments.map((comment) => {
+          const user = comment.user || comment.createdBy;
+          return (
+            <div key={comment.id} className="flex gap-3">
+              <Avatar className="h-8 w-8">
+                <AvatarImage src={user?.avatar} alt={user?.name} />
+                <AvatarFallback>{user?.name?.charAt(0)}</AvatarFallback>
+              </Avatar>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">{user?.name}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
+                  </span>
+                </div>
+                <div className="mt-1 text-sm">
+                  {comment.content || comment.text}
+                </div>
               </div>
-              <p className="text-sm">{comment.text}</p>
             </div>
-          ))}
-          {!content.comments?.length && (
-            <p className="text-center text-muted-foreground py-4">
-              No comments yet
-            </p>
-          )}
-        </div>
-      </ScrollArea>
+          );
+        })}
+      </div>
+      <div className="flex gap-2 mt-4">
+        <Textarea
+          placeholder="Add a comment..."
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          onKeyPress={handleKeyPress}
+          className="min-h-[80px]"
+        />
+        <Button size="icon" onClick={handleAddComment} disabled={!comment.trim()}>
+          <Send className="h-4 w-4" />
+        </Button>
+      </div>
     </div>
   );
 };

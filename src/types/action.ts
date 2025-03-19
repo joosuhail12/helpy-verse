@@ -3,8 +3,10 @@ export type ActionMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
 export interface ParameterDependency {
   sourceParameterId: string;
-  condition: 'equals' | 'notEquals' | 'contains' | 'exists';
-  value: any;
+  condition: {
+    operator: 'equals' | 'notEquals' | 'contains' | 'exists' | 'greaterThan' | 'lessThan';
+    value: any;
+  };
 }
 
 export interface ActionParameter {
@@ -29,8 +31,15 @@ export interface CustomAction {
   updatedAt: string;
   enabled: boolean;
   
-  // Additional properties used in components
+  // Additional properties used in the application
   toolName?: string;
   headers?: Record<string, string>;
-  connectedChatbots?: string[];
+  connectedChatbots?: Array<{id: string, name: string}>;
+  category?: string;
+  isActive?: boolean;
+  createdBy?: {
+    id: string;
+    name: string;
+    avatar: string;
+  };
 }
