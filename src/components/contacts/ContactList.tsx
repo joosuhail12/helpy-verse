@@ -16,6 +16,7 @@ import ContactListItem from './ContactListItem';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { selectContact, fetchCustomers, setSelectedContacts } from '@/store/slices/contacts/contactsSlice';
 import { useAppSelector } from '@/hooks/useAppSelector';
+import { LoadingState } from './LoadingState';
 
 interface ContactListProps {
   contacts: Contact[];
@@ -48,16 +49,12 @@ const ContactList = ({ contacts, loading = false }: ContactListProps) => {
   };
 
   if (loading) {
-    return (
-      <div className="p-6 text-center">
-        <p>Loading contacts...</p>
-      </div>
-    );
+    return <LoadingState />;
   }
 
   if (contacts.length === 0) {
     return (
-      <div className="p-6 text-center border rounded-md">
+      <div className="p-6 text-center border rounded-md bg-white">
         <p className="text-muted-foreground">No contacts found</p>
         <Button 
           onClick={() => dispatch(fetchCustomers())} 
@@ -71,7 +68,7 @@ const ContactList = ({ contacts, loading = false }: ContactListProps) => {
   }
 
   return (
-    <div className="overflow-x-auto border rounded-md">
+    <div className="overflow-x-auto border rounded-md bg-white">
       <Table>
         <TableHeader>
           <TableRow>

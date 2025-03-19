@@ -64,6 +64,6 @@ export const router = createBrowserRouter([
 ]);
 
 // Log the routes for debugging
-console.log('Routes initialized:', router);
+console.log('Routes initialized:', router.routes);
 
 export default router;

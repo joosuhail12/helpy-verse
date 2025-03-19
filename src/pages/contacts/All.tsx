@@ -9,6 +9,7 @@ import { ContactListControls } from '@/components/contacts/ContactListControls';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from '@/components/ui/use-toast';
 
 const AllContacts = () => {
   const dispatch = useAppDispatch();
@@ -17,9 +18,23 @@ const AllContacts = () => {
   const error = useAppSelector(selectContactsError);
   
   useEffect(() => {
-    console.log('Fetching customers');
-    dispatch(fetchCustomers());
+    console.log('AllContacts component mounted, fetching customers');
+    dispatch(fetchCustomers())
+      .unwrap()
+      .then(() => console.log('Successfully fetched contacts'))
+      .catch((err) => {
+        console.error('Error fetching contacts:', err);
+        toast({
+          title: 'Error loading contacts',
+          description: err.message || 'Please try again later',
+          variant: 'destructive'
+        });
+      });
   }, [dispatch]);
+
+  useEffect(() => {
+    console.log('Contacts state:', { loading, contactsCount: contacts?.length, error });
+  }, [loading, contacts, error]);
 
   if (loading) {
     return (

@@ -13,14 +13,16 @@ const RootRedirect: React.FC = () => {
   }, []);
 
   const token = getCookie("customerToken") || localStorage.getItem("token");
-  console.log('RootRedirect - token exists:', !!token);
+  console.log('RootRedirect - token exists:', !!token, 'Current path:', location.pathname);
   
-  // If we're already on the home or sign-in page, don't redirect
-  if (location.pathname === '/home' || location.pathname === '/sign-in') {
+  // If we're already on a specific path, don't redirect
+  if (location.pathname !== '/' && location.pathname !== '') {
+    console.log('Already on a specific path, not redirecting');
     return null;
   }
   
-  return token ? <Navigate to="/home" replace /> : <Navigate to="/sign-in" replace />;
+  // Direct to home/contacts/all instead of just /home
+  return token ? <Navigate to="/home/contacts/all" replace /> : <Navigate to="/sign-in" replace />;
 };
 
 export default RootRedirect;

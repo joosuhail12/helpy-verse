@@ -19,17 +19,17 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     const checkAuth = async () => {
       console.log('ProtectedRoute: Checking authentication status');
       
-      // Get token directly from tokenManager
-      const hasToken = isAuthenticated();
-      const token = getAuthToken();
+      // Get token directly from tokenManager or fallback to cookie/localStorage
+      const token = getAuthToken() || localStorage.getItem("token") || sessionStorage.getItem("token");
+      const hasToken = !!token || isAuthenticated();
       console.log('ProtectedRoute: Token exists:', hasToken);
       setHasValidToken(hasToken);
       
       // Ensure axios is configured with the token
       if (hasToken && token) {
+        console.log('ProtectedRoute: Found valid token, configuring axios');
         HttpClient.apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
         HttpClient.setAxiosDefaultConfig(token);
-        console.log('ProtectedRoute: Found valid token, configuring axios');
         
         try {
           // Try to refresh user data if needed
@@ -58,6 +58,14 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
+  }
+
+  // For development ease, if in development mode and no valid token,
+  // set a fake token
+  if (process.env.NODE_ENV === 'development' && !hasValidToken) {
+    console.log('Development mode: Setting dummy token for testing');
+    localStorage.setItem('token', 'dev-token');
+    return <>{children}</>;
   }
 
   // CRITICAL: We prioritize token existence over Redux state
