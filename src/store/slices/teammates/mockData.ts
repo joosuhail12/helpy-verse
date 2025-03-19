@@ -4,15 +4,26 @@ import type { Teammate, ActivityLog, TeamAssignment } from '@/types/teammate';
 export const mockTeammates: Teammate[] = [
   {
     id: '1',
-    name: 'John Doe',
-    email: 'john@example.com',
+    name: 'Jane Smith',
+    email: 'jane@example.com',
     role: 'admin',
     status: 'active',
-    lastActive: new Date().toISOString(),
-    createdAt: '2024-01-01T00:00:00.000Z',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=John',
-    permissions: ['manage_tickets', 'view_reports']
-  }
+    lastActive: '2023-05-15T10:30:00Z',
+    createdAt: '2023-01-01T08:00:00Z',
+    permissions: ['manage_users', 'manage_settings', 'manage_content'],
+    is2FAEnabled: true,
+  },
+  {
+    id: '2',
+    name: 'John Doe',
+    email: 'john@example.com',
+    role: 'agent',
+    status: 'active',
+    lastActive: '2023-05-14T14:45:00Z',
+    createdAt: '2023-01-15T09:30:00Z',
+    permissions: ['view_tickets', 'respond_tickets'],
+    is2FAEnabled: false,
+  },
 ];
 
 export const mockActivityLogs: ActivityLog[] = [
@@ -32,13 +43,25 @@ export const mockActivityLogs: ActivityLog[] = [
   }
 ];
 
+export const mockSessions = [
+  {
+    id: '1',
+    teammateId: '1',
+    deviceType: 'desktop',
+    deviceName: 'Chrome on Windows',
+    location: 'New York, USA',
+    lastActive: new Date().toISOString(),
+    ipAddress: '192.168.1.1'
+  }
+];
+
 export const mockAssignments: TeamAssignment[] = [
   {
     id: '1',
     teammateId: '1',
-    teamName: 'Customer Support',
-    role: 'Team Lead',
+    teamName: 'Support Team',
+    role: 'Lead',
     status: 'active',
-    startDate: '2024-01-01T00:00:00.000Z'
+    startDate: '2023-01-01T08:00:00Z'
   }
 ];

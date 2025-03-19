@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
-import { fetchTeammateSessions, terminateSession } from '@/store/slices/teammates/teammatesSlice';
+import { fetchTeammateSessions, terminateSession } from '@/store/slices/teammates/thunks';
+import { selectTeammateSessions } from '@/store/slices/teammates/selectors';
 import { Monitor, Smartphone, Laptop, Globe, Loader, X } from 'lucide-react';
 import { formatDistance } from 'date-fns';
 
@@ -14,7 +15,7 @@ interface ActiveSessionsProps {
 
 export const ActiveSessions: React.FC<ActiveSessionsProps> = ({ teammateId }) => {
   const dispatch = useAppDispatch();
-  const sessions = useAppSelector((state) => state.teammates.sessions[teammateId] || []);
+  const sessions = useAppSelector((state) => selectTeammateSessions(state, teammateId));
   const loading = useAppSelector((state) => state.teammates.loading);
 
   useEffect(() => {

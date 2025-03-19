@@ -1,16 +1,19 @@
 
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { Teammate, ActivityLog, TeamAssignment, Session } from '@/types/teammate';
-
-export interface TeammatesState {
-  teammates: Teammate[];
-  selectedTeammate: Teammate | null;
-  activities: Record<string, ActivityLog[]>;
-  assignments: Record<string, TeamAssignment[]>;
-  sessions: Record<string, Session[]>;
-  loading: boolean;
-  error: string | null;
-}
+import { createSlice } from '@reduxjs/toolkit';
+import { TeammatesState } from './types';
+import {
+  fetchTeammates,
+  fetchTeammateDetails,
+  fetchTeammateActivities,
+  fetchTeammateAssignments,
+  fetchTeammateSessions,
+  updateTeammate,
+  enable2FA,
+  verify2FA,
+  disable2FA,
+  terminateSession,
+  resetPassword
+} from './thunks';
 
 const initialState: TeammatesState = {
   teammates: [],
@@ -20,158 +23,9 @@ const initialState: TeammatesState = {
   sessions: {},
   loading: false,
   error: null,
+  lastFetchTime: null,
+  retryCount: 0
 };
-
-// Async thunks
-export const fetchTeammates = createAsyncThunk(
-  'teammates/fetchTeammates',
-  async (_, { rejectWithValue }) => {
-    try {
-      // Mock API call
-      return mockTeammates;
-    } catch (error: any) {
-      return rejectWithValue(error.message);
-    }
-  }
-);
-
-export const fetchTeammateDetails = createAsyncThunk(
-  'teammates/fetchTeammateDetails',
-  async (id: string, { rejectWithValue }) => {
-    try {
-      // Mock API call
-      const teammate = mockTeammates.find(t => t.id === id);
-      if (!teammate) {
-        throw new Error('Teammate not found');
-      }
-      return teammate;
-    } catch (error: any) {
-      return rejectWithValue(error.message);
-    }
-  }
-);
-
-export const fetchTeammateActivities = createAsyncThunk(
-  'teammates/fetchTeammateActivities',
-  async (teammateId: string, { rejectWithValue }) => {
-    try {
-      // Mock API call
-      return { teammateId, activities: [] };
-    } catch (error: any) {
-      return rejectWithValue(error.message);
-    }
-  }
-);
-
-export const fetchTeammateAssignments = createAsyncThunk(
-  'teammates/fetchTeammateAssignments',
-  async (teammateId: string, { rejectWithValue }) => {
-    try {
-      // Mock API call
-      return { teammateId, assignments: [] };
-    } catch (error: any) {
-      return rejectWithValue(error.message);
-    }
-  }
-);
-
-export const fetchTeammateSessions = createAsyncThunk(
-  'teammates/fetchTeammateSessions',
-  async (teammateId: string, { rejectWithValue }) => {
-    try {
-      // Mock API call
-      return { teammateId, sessions: [] };
-    } catch (error: any) {
-      return rejectWithValue(error.message);
-    }
-  }
-);
-
-export const enable2FA = createAsyncThunk(
-  'teammates/enable2FA',
-  async (teammateId: string, { rejectWithValue }) => {
-    try {
-      // Mock API call
-      return { teammateId, setupKey: 'MOCK-2FA-SETUP-KEY' };
-    } catch (error: any) {
-      return rejectWithValue(error.message);
-    }
-  }
-);
-
-export const verify2FA = createAsyncThunk(
-  'teammates/verify2FA',
-  async ({ teammateId, code }: { teammateId: string; code: string }, { rejectWithValue }) => {
-    try {
-      // Mock API call
-      return { teammateId, success: true };
-    } catch (error: any) {
-      return rejectWithValue(error.message);
-    }
-  }
-);
-
-export const disable2FA = createAsyncThunk(
-  'teammates/disable2FA',
-  async (teammateId: string, { rejectWithValue }) => {
-    try {
-      // Mock API call
-      return { teammateId, success: true };
-    } catch (error: any) {
-      return rejectWithValue(error.message);
-    }
-  }
-);
-
-export const resetPassword = createAsyncThunk(
-  'teammates/resetPassword',
-  async ({ teammateId, newPassword }: { teammateId: string; newPassword: string }, { rejectWithValue }) => {
-    try {
-      // Mock API call
-      return { teammateId, success: true };
-    } catch (error: any) {
-      return rejectWithValue(error.message);
-    }
-  }
-);
-
-export const terminateSession = createAsyncThunk(
-  'teammates/terminateSession',
-  async ({ teammateId, sessionId }: { teammateId: string; sessionId: string }, { rejectWithValue }) => {
-    try {
-      // Mock API call
-      return { teammateId, sessionId };
-    } catch (error: any) {
-      return rejectWithValue(error.message);
-    }
-  }
-);
-
-// Mock data
-const mockTeammates: Teammate[] = [
-  {
-    id: '1',
-    name: 'Jane Smith',
-    email: 'jane@example.com',
-    role: 'admin',
-    status: 'active',
-    lastActive: '2023-05-15T10:30:00Z',
-    createdAt: '2023-01-01T08:00:00Z',
-    permissions: ['manage_users', 'manage_settings', 'manage_content'],
-    is2FAEnabled: true,
-  },
-  {
-    id: '2',
-    name: 'John Doe',
-    email: 'john@example.com',
-    role: 'agent',
-    status: 'active',
-    lastActive: '2023-05-14T14:45:00Z',
-    createdAt: '2023-01-15T09:30:00Z',
-    permissions: ['view_tickets', 'respond_tickets'],
-    is2FAEnabled: false,
-  },
-];
 
 const teammatesSlice = createSlice({
   name: 'teammates',
@@ -179,6 +33,7 @@ const teammatesSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
+      // fetchTeammates
       .addCase(fetchTeammates.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -186,11 +41,16 @@ const teammatesSlice = createSlice({
       .addCase(fetchTeammates.fulfilled, (state, action) => {
         state.loading = false;
         state.teammates = action.payload;
+        state.lastFetchTime = Date.now();
+        state.retryCount = 0;
       })
       .addCase(fetchTeammates.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+        state.retryCount += 1;
       })
+      
+      // fetchTeammateDetails
       .addCase(fetchTeammateDetails.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -203,21 +63,37 @@ const teammatesSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
+      
+      // fetchTeammateActivities
       .addCase(fetchTeammateActivities.fulfilled, (state, action) => {
         const { teammateId, activities } = action.payload;
         state.activities[teammateId] = activities;
       })
+      
+      // fetchTeammateAssignments
       .addCase(fetchTeammateAssignments.fulfilled, (state, action) => {
         const { teammateId, assignments } = action.payload;
         state.assignments[teammateId] = assignments;
       })
+      
+      // fetchTeammateSessions
       .addCase(fetchTeammateSessions.fulfilled, (state, action) => {
         const { teammateId, sessions } = action.payload;
         state.sessions[teammateId] = sessions;
       })
-      .addCase(enable2FA.fulfilled, (state, action) => {
-        // Handle 2FA setup key response if needed
+      
+      // updateTeammate
+      .addCase(updateTeammate.fulfilled, (state, action) => {
+        const updatedTeammate = action.payload;
+        state.teammates = state.teammates.map(teammate => 
+          teammate.id === updatedTeammate.id ? updatedTeammate : teammate
+        );
+        if (state.selectedTeammate?.id === updatedTeammate.id) {
+          state.selectedTeammate = updatedTeammate;
+        }
       })
+      
+      // 2FA operations
       .addCase(verify2FA.fulfilled, (state, action) => {
         if (state.selectedTeammate && state.selectedTeammate.id === action.payload.teammateId) {
           state.selectedTeammate.is2FAEnabled = true;
@@ -236,6 +112,8 @@ const teammatesSlice = createSlice({
           state.teammates[teammateIndex].is2FAEnabled = false;
         }
       })
+      
+      // Session operations
       .addCase(terminateSession.fulfilled, (state, action) => {
         const { teammateId, sessionId } = action.payload;
         if (state.sessions[teammateId]) {
@@ -248,3 +126,5 @@ const teammatesSlice = createSlice({
 });
 
 export const teammatesReducer = teammatesSlice.reducer;
+export * from './thunks';
+export * from './selectors';

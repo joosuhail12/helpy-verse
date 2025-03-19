@@ -1,10 +1,12 @@
 
-import type { Teammate, ActivityLog, TeamAssignment } from '@/types/teammate';
+import type { Teammate, ActivityLog, TeamAssignment, Session } from '@/types/teammate';
 
 export interface TeammatesState {
   teammates: Teammate[];
-  activityLogs: ActivityLog[];
-  assignments: TeamAssignment[];
+  selectedTeammate: Teammate | null;
+  activities: Record<string, ActivityLog[]>;
+  assignments: Record<string, TeamAssignment[]>;
+  sessions: Record<string, Session[]>;
   loading: boolean;
   error: string | null;
   lastFetchTime: number | null;
