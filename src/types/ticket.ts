@@ -1,4 +1,8 @@
 
+export type SortField = 'date' | 'priority' | 'status';
+export type SortDirection = 'asc' | 'desc';
+export type ViewMode = 'expanded' | 'compact';
+
 export interface Ticket {
   id: string;
   subject: string;
@@ -11,13 +15,6 @@ export interface Ticket {
   priority: 'low' | 'medium' | 'high';
   createdAt: string;
   isUnread?: boolean;
-  updatedAt?: string;
-  assigneeAvatar?: string;
-  categories?: string[];
   hasNotification?: boolean;
-  notificationType?: 'mention' | 'update' | 'assignment' | 'new_response' | 'new_ticket';
+  notificationType?: 'mention' | 'update' | 'assignment';
 }
-
-export type SortField = 'date' | 'priority' | 'status';
-export type SortDirection = 'asc' | 'desc';
-export type ViewMode = 'compact' | 'expanded';

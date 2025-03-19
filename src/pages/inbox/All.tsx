@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import TicketList from '@/components/inbox/TicketList';
+import type { Ticket } from '@/types/ticket';
 
-const ITEMS_PER_PAGE = 5;
-
-const tickets = [
+const tickets: Ticket[] = [
   {
     id: '1',
     subject: 'Cannot access my account',
@@ -113,22 +112,6 @@ const tickets = [
     isUnread: true,
   }
 ] satisfies Ticket[];
-
-type Ticket = {
-  id: string;
-  subject: string;
-  customer: string;
-  lastMessage: string;
-  assignee: string | null;
-  company: string;
-  tags: string[];
-  status: 'open' | 'closed' | 'pending';
-  priority: 'low' | 'medium' | 'high';
-  createdAt: string;
-  isUnread?: boolean;
-  hasNotification?: boolean;
-  notificationType?: 'mention' | 'update' | 'assignment';
-};
 
 const AllTickets = () => {
   return (

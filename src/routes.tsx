@@ -1,3 +1,4 @@
+
 import { lazy, Suspense } from 'react';
 import { createBrowserRouter } from 'react-router-dom';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
@@ -44,6 +45,28 @@ const ChatbotDetail = lazy(() => import('./pages/automation/ChatbotDetail').catc
 const CreateChatbot = lazy(() => import('./pages/automation/CreateChatbot').catch(() => {
   console.error('Failed to load CreateChatbot');
   throw new Error('Failed to load CreateChatbot');
+}));
+
+// Inbox pages
+const Inbox = lazy(() => import('./pages/Inbox').catch(() => {
+  console.error('Failed to load Inbox page');
+  throw new Error('Failed to load Inbox page');
+}));
+const AllTickets = lazy(() => import('./pages/inbox/All').catch(() => {
+  console.error('Failed to load All Tickets page');
+  throw new Error('Failed to load All Tickets page');
+}));
+const YourInbox = lazy(() => import('./pages/inbox/YourInbox').catch(() => {
+  console.error('Failed to load Your Inbox page');
+  throw new Error('Failed to load Your Inbox page');
+}));
+const Mentions = lazy(() => import('./pages/inbox/Mentions').catch(() => {
+  console.error('Failed to load Mentions page');
+  throw new Error('Failed to load Mentions page');
+}));
+const Unassigned = lazy(() => import('./pages/inbox/Unassigned').catch(() => {
+  console.error('Failed to load Unassigned page');
+  throw new Error('Failed to load Unassigned page');
 }));
 
 const LoadingSpinner = () => (
@@ -96,6 +119,49 @@ export const router = createBrowserRouter([
             <Companies />
           </Suspense>
         ),
+      },
+      // Add proper inbox routing
+      {
+        path: 'inbox',
+        element: (
+          <Suspense fallback={<LoadingSpinner />}>
+            <Inbox />
+          </Suspense>
+        ),
+        children: [
+          {
+            path: 'all',
+            element: (
+              <Suspense fallback={<LoadingSpinner />}>
+                <AllTickets />
+              </Suspense>
+            ),
+          },
+          {
+            path: 'your-inbox',
+            element: (
+              <Suspense fallback={<LoadingSpinner />}>
+                <YourInbox />
+              </Suspense>
+            ),
+          },
+          {
+            path: 'mentions',
+            element: (
+              <Suspense fallback={<LoadingSpinner />}>
+                <Mentions />
+              </Suspense>
+            ),
+          },
+          {
+            path: 'unassigned',
+            element: (
+              <Suspense fallback={<LoadingSpinner />}>
+                <Unassigned />
+              </Suspense>
+            ),
+          },
+        ],
       },
       {
         path: 'automation',

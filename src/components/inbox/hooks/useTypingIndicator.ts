@@ -1,39 +1,40 @@
 
 import { useCallback } from 'react';
 import { getAblyChannel } from '@/utils/ably';
-import debounce from 'lodash/debounce';
 import type { Ticket } from '@/types/ticket';
 
 export const useTypingIndicator = (ticket: Ticket) => {
-  const debouncedStopTyping = useCallback(
-    debounce(async (channel) => {
-      try {
-        await channel.presence.update({ isTyping: false });
-      } catch (error) {
-        console.error('Error updating typing status:', error);
-      }
-    }, 1000),
-    []
-  );
-
-  const handleTyping = async () => {
+  const handleTyping = useCallback(async () => {
     try {
       const channel = await getAblyChannel(`ticket:${ticket.id}`);
-      await channel.presence.update({ 
-        isTyping: true,
-        name: 'Agent',
+      
+      // When the user is typing, publish an update to the presence
+      await channel.presence.enter({
         userId: 'Agent',
-        lastActive: new Date().toISOString(),
+        name: 'Agent',
+        isTyping: true,
         location: {
           ticketId: ticket.id,
           area: 'conversation'
         }
       });
-      debouncedStopTyping(channel);
+      
+      // After a delay, update to show they've stopped typing
+      setTimeout(async () => {
+        await channel.presence.enter({
+          userId: 'Agent',
+          name: 'Agent',
+          isTyping: false,
+          location: {
+            ticketId: ticket.id,
+            area: 'conversation'
+          }
+        });
+      }, 2000);
     } catch (error) {
-      console.error('Error updating typing status:', error);
+      console.error('Error updating typing indicator:', error);
     }
-  };
+  }, [ticket.id]);
 
   return { handleTyping };
 };
