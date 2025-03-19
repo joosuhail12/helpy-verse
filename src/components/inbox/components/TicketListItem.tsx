@@ -11,7 +11,7 @@ import type { Ticket, ViewMode } from "@/types/ticket";
 interface TicketListItemProps {
   ticket: Ticket;
   isSelected?: boolean;
-  onSelect?: (id: string) => void;
+  onSelect?: (e: React.MouseEvent) => void;
   viewMode?: ViewMode;
   isLoading?: boolean;
   onCopyId?: (id: string) => void;
@@ -27,7 +27,7 @@ const TicketListItem = ({
 }: TicketListItemProps) => {
   const handleSelect = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onSelect?.(ticket.id);
+    onSelect?.(e);
   };
 
   const handleCopyId = (e: React.MouseEvent) => {

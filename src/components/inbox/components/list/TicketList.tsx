@@ -108,7 +108,7 @@ const TicketList = ({ tickets: initialTickets, isLoading = false, onTicketCreate
                   <TicketListItem
                     ticket={ticket}
                     isSelected={selectedTickets.includes(ticket.id)}
-                    onSelect={(e) => {
+                    onSelect={(e: React.MouseEvent) => {
                       e.stopPropagation();
                       handleSelectTicket(ticket.id);
                     }}
