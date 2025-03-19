@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
-import type { TeamChannelSelectorProps } from '@/types/team';
+import { TeamChannelSelectorProps } from '@/types/team';
 
 // Mock data - in production this would come from your Node.js backend
 const CHAT_CHANNEL = { id: 'chat-1', name: 'General Chat' };
@@ -17,6 +17,8 @@ const AVAILABLE_EMAIL_CHANNELS = [
 ];
 
 const TeamChannelSelector = ({
+  selectedChannels,
+  onChannelSelect,
   selectedChatChannel,
   selectedEmailChannels,
   onChatChannelSelect,

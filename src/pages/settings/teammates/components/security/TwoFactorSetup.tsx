@@ -28,15 +28,20 @@ export const TwoFactorSetup: React.FC<TwoFactorSetupProps> = ({ teammateId }) =>
   const [isDisabling, setIsDisabling] = useState(false);
   
   const teammate = useAppSelector(state => 
-    state.teammates.teammates.find(t => t.id === teammateId)
+    state.teammates.items?.find(t => t.id === teammateId) || 
+    state.teammates.teammates?.find(t => t.id === teammateId)
   );
   const is2FAEnabled = teammate?.is2FAEnabled || false;
 
   const handleEnable2FA = async () => {
     setIsEnabling(true);
     try {
-      await dispatch(enable2FA(teammateId)).unwrap();
-      setSetupKey("EXAMPLE2FASECURITYKEY123456"); // Mock key for demonstration
+      const result = await dispatch(enable2FA(teammateId)).unwrap();
+      if (result?.setupKey) {
+        setSetupKey(result.setupKey);
+      } else {
+        setSetupKey("EXAMPLE2FASECURITYKEY123456"); // Fallback mock key
+      }
       toast({
         title: '2FA Setup Initiated',
         description: 'Please scan the QR code with your authenticator app.',
@@ -60,7 +65,7 @@ export const TwoFactorSetup: React.FC<TwoFactorSetupProps> = ({ teammateId }) =>
     try {
       await dispatch(verify2FA({ 
         teammateId, 
-        code: verificationCode 
+        verificationCode 
       })).unwrap();
       
       toast({

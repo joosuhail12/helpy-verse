@@ -2,18 +2,24 @@
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Clock } from "lucide-react";
-import type { DayOfWeek, TeamOfficeHoursSelectorProps, TimeSlot } from '@/types/team';
+import { DayOfWeek, TeamOfficeHoursSelectorProps, TimeSlot } from '@/types/team';
 import { Input } from "@/components/ui/input";
 
 const DAYS_OF_WEEK: DayOfWeek[] = [
-  'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'
+  DayOfWeek.Monday, 
+  DayOfWeek.Tuesday, 
+  DayOfWeek.Wednesday, 
+  DayOfWeek.Thursday, 
+  DayOfWeek.Friday, 
+  DayOfWeek.Saturday, 
+  DayOfWeek.Sunday
 ];
 
 const TeamOfficeHoursSelector = ({ 
   officeHours,
   onOfficeHoursChange
 }: TeamOfficeHoursSelectorProps) => {
-  const formatDayLabel = (day: string) => {
+  const formatDayLabel = (day: DayOfWeek) => {
     return day.charAt(0).toUpperCase() + day.slice(1);
   };
 
@@ -25,16 +31,18 @@ const TeamOfficeHoursSelector = ({
 
   const removeTimeSlot = (day: DayOfWeek, index: number) => {
     const newOfficeHours = { ...officeHours };
-    newOfficeHours[day] = newOfficeHours[day].filter((_, i) => i !== index);
+    newOfficeHours[day] = newOfficeHours[day]?.filter((_, i) => i !== index) || [];
     onOfficeHoursChange(newOfficeHours);
   };
 
   const updateTimeSlot = (day: DayOfWeek, index: number, field: keyof TimeSlot, value: string) => {
     const newOfficeHours = { ...officeHours };
-    newOfficeHours[day] = newOfficeHours[day].map((slot, i) => 
-      i === index ? { ...slot, [field]: value } : slot
-    );
-    onOfficeHoursChange(newOfficeHours);
+    if (newOfficeHours[day]) {
+      newOfficeHours[day] = newOfficeHours[day]?.map((slot, i) => 
+        i === index ? { ...slot, [field]: value } : slot
+      );
+      onOfficeHoursChange(newOfficeHours);
+    }
   };
 
   return (

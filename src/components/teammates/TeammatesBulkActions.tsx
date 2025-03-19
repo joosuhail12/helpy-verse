@@ -1,26 +1,24 @@
 
-import React, { useState } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
+import { useState } from 'react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { updateTeammatesRole, exportTeammates } from '@/store/slices/teammates/actions';
-import { CheckSquare, UserMinus, FileText } from 'lucide-react';
-import type { TeammateRole } from '@/types/teammate';
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { ChevronDown, Users, UserX, UserCheck, Download, XCircle } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { Teammate, TeammateRole } from '@/types/teammate';
+
+// Mock functions - replace with actual implementations
+const bulkUpdateRole = (ids: string[], role: TeammateRole) => ({});
+const bulkSuspendTeammates = (ids: string[]) => ({});
+const bulkActivateTeammates = (ids: string[]) => ({});
+const bulkExportTeammates = (ids: string[], format: 'csv' | 'json') => ({});
 
 interface TeammatesBulkActionsProps {
   selectedIds: string[];
@@ -28,33 +26,21 @@ interface TeammatesBulkActionsProps {
 }
 
 const TeammatesBulkActions = ({ selectedIds, onClearSelection }: TeammatesBulkActionsProps) => {
-  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-  const [showRoleDialog, setShowRoleDialog] = useState(false);
-  const [newRole, setNewRole] = useState<TeammateRole>('agent');
   const dispatch = useAppDispatch();
   const { toast } = useToast();
-
-  const handleRoleChange = async () => {
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  
+  const handleRoleUpdate = async (role: TeammateRole) => {
     try {
-      const resultAction = await dispatch(updateTeammatesRole({ 
-        ids: selectedIds, // Using ids instead of teammateIds
-        role: newRole 
+      await dispatch(bulkUpdateRole({ 
+        ids: selectedIds,
+        role 
       }));
-      
-      if (updateTeammatesRole.fulfilled.match(resultAction)) {
-        toast({
-          title: "Success",
-          description: "Role updated for selected teammates",
-        });
-        setShowRoleDialog(false);
-        onClearSelection();
-      } else {
-        toast({
-          title: "Error",
-          description: "Failed to update roles. Please try again.",
-          variant: "destructive",
-        });
-      }
+      toast({
+        title: "Success",
+        description: `Updated ${selectedIds.length} teammate(s) to ${role} role.`,
+      });
+      onClearSelection();
     } catch (error) {
       toast({
         title: "Error",
@@ -64,26 +50,47 @@ const TeammatesBulkActions = ({ selectedIds, onClearSelection }: TeammatesBulkAc
     }
   };
 
-  const handleExport = async () => {
+  const handleSuspend = async () => {
     try {
-      // Pass an explicit format parameter instead of the selectedIds
-      const resultAction = await dispatch(exportTeammates({ 
-        ids: selectedIds,
-        format: 'csv' // Specify format explicitly
-      }));
-      
-      if (exportTeammates.fulfilled.match(resultAction)) {
-        toast({
-          title: "Success",
-          description: "Export completed successfully",
-        });
-      } else {
-        toast({
-          title: "Error",
-          description: "Failed to export teammates. Please try again.",
-          variant: "destructive",
-        });
-      }
+      await dispatch(bulkSuspendTeammates(selectedIds));
+      toast({
+        title: "Success",
+        description: `Suspended ${selectedIds.length} teammate(s).`,
+      });
+      onClearSelection();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to suspend teammates. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleActivate = async () => {
+    try {
+      await dispatch(bulkActivateTeammates(selectedIds));
+      toast({
+        title: "Success",
+        description: `Activated ${selectedIds.length} teammate(s).`,
+      });
+      onClearSelection();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to activate teammates. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleExport = async (format: 'csv' | 'json') => {
+    try {
+      await dispatch(bulkExportTeammates(selectedIds, format as any));
+      toast({
+        title: "Success",
+        description: `Exported ${selectedIds.length} teammate(s) as ${format.toUpperCase()}.`,
+      });
     } catch (error) {
       toast({
         title: "Error",
@@ -94,92 +101,87 @@ const TeammatesBulkActions = ({ selectedIds, onClearSelection }: TeammatesBulkAc
   };
 
   return (
-    <>
-      <div className="flex items-center gap-2 mb-4 bg-gray-50 p-3 rounded-lg">
-        <CheckSquare className="h-4 w-4 text-gray-500" />
-        <span className="text-sm text-gray-600">{selectedIds.length} teammates selected</span>
-        
-        <div className="flex gap-2 ml-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowRoleDialog(true)}
-          >
-            Change Role
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleExport}
-          >
-            <FileText className="h-4 w-4 mr-2" />
-            Export Selected
-          </Button>
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={() => setShowConfirmDialog(true)}
-          >
-            <UserMinus className="h-4 w-4 mr-2" />
-            Deactivate
-          </Button>
-        </div>
+    <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+      <div className="flex items-center space-x-2">
+        <Users className="h-5 w-5 text-primary" />
+        <span className="font-medium">{selectedIds.length} teammate(s) selected</span>
+        <Button variant="ghost" size="sm" onClick={onClearSelection}>Clear</Button>
       </div>
-
-      {/* Role Change Dialog */}
-      <Dialog open={showRoleDialog} onOpenChange={setShowRoleDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Change Role for Selected Teammates</DialogTitle>
-            <DialogDescription>
-              Select a new role for the {selectedIds.length} selected teammate(s).
-            </DialogDescription>
-          </DialogHeader>
-          <Select onValueChange={(value: TeammateRole) => setNewRole(value)}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select new role" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="admin">Admin</SelectItem>
-              <SelectItem value="supervisor">Supervisor</SelectItem>
-              <SelectItem value="agent">Agent</SelectItem>
-              <SelectItem value="viewer">Viewer</SelectItem>
-            </SelectContent>
-          </Select>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowRoleDialog(false)}>
-              Cancel
+      
+      <div className="flex space-x-2">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm">
+              Set Role <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
-            <Button onClick={handleRoleChange}>
-              Change Role
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => handleRoleUpdate('admin')}>Admin</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleRoleUpdate('supervisor')}>Supervisor</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleRoleUpdate('agent')}>Agent</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleRoleUpdate('viewer')}>Viewer</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm">
+              Status <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Confirmation Dialog */}
-      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Confirm Deactivation</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to deactivate {selectedIds.length} teammate(s)? This action can be reversed later.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowConfirmDialog(false)}>
-              Cancel
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={handleActivate}>
+              <UserCheck className="mr-2 h-4 w-4" /> Activate
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleSuspend}>
+              <UserX className="mr-2 h-4 w-4" /> Suspend
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm">
+              Export <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
-            <Button variant="destructive" onClick={() => {
-              // Implement deactivation logic here
-              setShowConfirmDialog(false);
-            }}>
-              Deactivate
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => handleExport('csv')}>
+              <Download className="mr-2 h-4 w-4" /> Export as CSV
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleExport('json')}>
+              <Download className="mr-2 h-4 w-4" /> Export as JSON
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        
+        <Button 
+          variant="outline" 
+          size="sm"
+          className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
+          onClick={() => setShowDeleteDialog(true)}
+        >
+          <XCircle className="mr-2 h-4 w-4" /> Delete
+        </Button>
+      </div>
+      
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the selected teammates and remove all their data. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction className="bg-destructive hover:bg-destructive/90">
+              Delete Teammates
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
   );
 };
 

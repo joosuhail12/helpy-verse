@@ -1,95 +1,158 @@
 
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { Teammate, TeammateRole, TeammateStatus } from '@/types/teammate';
-import { mockTeammates, mockActivityLogs, mockAssignments } from './mockData';
+import { Teammate, NewTeammate } from '@/types/teammate';
 
-// Fetch teammates
+// Define async thunks for teammate-related actions
 export const fetchTeammates = createAsyncThunk(
   'teammates/fetchTeammates',
   async (_, { rejectWithValue }) => {
     try {
-      // In a real app, this would be an API call
-      return mockTeammates;
+      // API call would go here - using mock data for now
+      // const response = await api.get('/teammates');
+      // return response.data;
+      return []; // Mock empty response
     } catch (error) {
       return rejectWithValue('Failed to fetch teammates');
     }
   }
 );
 
-// Update teammate
+export const addTeammate = createAsyncThunk(
+  'teammates/addTeammate',
+  async (newTeammate: NewTeammate, { rejectWithValue }) => {
+    try {
+      // API call would go here
+      // const response = await api.post('/teammates', newTeammate);
+      // return response.data;
+      
+      // Mock response
+      return {
+        id: `teammate-${Date.now()}`,
+        ...newTeammate,
+        status: 'pending',
+        teams: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        permissions: []
+      };
+    } catch (error) {
+      return rejectWithValue('Failed to add teammate');
+    }
+  }
+);
+
 export const updateTeammate = createAsyncThunk(
   'teammates/updateTeammate',
   async ({ id, data }: { id: string, data: Partial<Teammate> }, { rejectWithValue }) => {
     try {
-      // In a real app, this would be an API call
-      return { id, ...data };
+      // API call would go here
+      // const response = await api.put(`/teammates/${id}`, data);
+      // return response.data;
+      
+      // Mock response
+      return {
+        id,
+        ...data,
+        updatedAt: new Date().toISOString()
+      };
     } catch (error) {
       return rejectWithValue('Failed to update teammate');
     }
   }
 );
 
-// Update multiple teammates' roles
-export const updateTeammatesRole = createAsyncThunk(
-  'teammates/updateTeammatesRole',
-  async ({ ids, role }: { ids: string[], role: TeammateRole }, { rejectWithValue }) => {
-    try {
-      // In a real app, this would be an API call
-      return { ids, role };
-    } catch (error) {
-      return rejectWithValue('Failed to update teammates role');
-    }
-  }
-);
-
-// Export teammates
-export const exportTeammates = createAsyncThunk(
-  'teammates/exportTeammates',
-  async ({ ids, format }: { ids: string[], format: 'csv' | 'json' }, { rejectWithValue }) => {
-    try {
-      // In a real app, this would be an API call that returns a file
-      return { message: 'Exported successfully', format };
-    } catch (error) {
-      return rejectWithValue('Failed to export teammates');
-    }
-  }
-);
-
-// Fetch teammate activity logs
-export const fetchTeammateActivityLogs = createAsyncThunk(
-  'teammates/fetchTeammateActivityLogs',
+export const resendInvitation = createAsyncThunk(
+  'teammates/resendInvitation',
   async (teammateId: string, { rejectWithValue }) => {
     try {
-      // In a real app, this would be an API call
-      return mockActivityLogs;
+      // API call would go here
+      // await api.post(`/teammates/${teammateId}/resend-invitation`);
+      return teammateId;
     } catch (error) {
-      return rejectWithValue('Failed to fetch activity logs');
+      return rejectWithValue('Failed to resend invitation');
     }
   }
 );
 
-// Fetch teammate assignments
 export const fetchTeammateAssignments = createAsyncThunk(
   'teammates/fetchTeammateAssignments',
   async (teammateId: string, { rejectWithValue }) => {
     try {
-      // In a real app, this would be an API call
-      return mockAssignments;
+      // API call would go here
+      // const response = await api.get(`/teammates/${teammateId}/assignments`);
+      // return { teammateId, assignments: response.data };
+      
+      // Mock response
+      return { 
+        teammateId, 
+        assignments: [] 
+      };
     } catch (error) {
-      return rejectWithValue('Failed to fetch assignments');
+      return rejectWithValue('Failed to fetch teammate assignments');
     }
   }
 );
 
-// Add 2FA related actions
+export const fetchTeammateSessions = createAsyncThunk(
+  'teammates/fetchTeammateSessions',
+  async (teammateId: string, { rejectWithValue }) => {
+    try {
+      // API call would go here
+      // const response = await api.get(`/teammates/${teammateId}/sessions`);
+      // return { teammateId, sessions: response.data };
+      
+      // Mock response
+      return { 
+        teammateId, 
+        sessions: [] 
+      };
+    } catch (error) {
+      return rejectWithValue('Failed to fetch teammate sessions');
+    }
+  }
+);
+
+export const terminateSession = createAsyncThunk(
+  'teammates/terminateSession',
+  async ({ teammateId, sessionId }: { teammateId: string, sessionId: string }, { rejectWithValue }) => {
+    try {
+      // API call would go here
+      // await api.delete(`/teammates/${teammateId}/sessions/${sessionId}`);
+      return { teammateId, sessionId };
+    } catch (error) {
+      return rejectWithValue('Failed to terminate session');
+    }
+  }
+);
+
+export const resetPassword = createAsyncThunk(
+  'teammates/resetPassword',
+  async ({ teammateId, newPassword }: { teammateId: string, newPassword: string }, { rejectWithValue }) => {
+    try {
+      // API call would go here
+      // await api.post(`/teammates/${teammateId}/reset-password`, { newPassword });
+      return teammateId;
+    } catch (error) {
+      return rejectWithValue('Failed to reset password');
+    }
+  }
+);
+
 export const enable2FA = createAsyncThunk(
   'teammates/enable2FA',
   async (teammateId: string, { rejectWithValue }) => {
     try {
-      // In a real app, this would be an API call
-      return { success: true, message: '2FA setup initialized' };
+      // API call would go here
+      // const response = await api.post(`/teammates/${teammateId}/2fa/enable`);
+      // return { teammateId, setupKey: response.data.setupKey };
+      
+      // Mock response
+      return { 
+        teammateId, 
+        setupKey: 'MOCK2FASETUPKEY' 
+      };
     } catch (error) {
-      return rejectWithValue('Failed to initialize 2FA');
+      return rejectWithValue('Failed to enable 2FA');
     }
   }
 );
@@ -98,8 +161,9 @@ export const verify2FA = createAsyncThunk(
   'teammates/verify2FA',
   async ({ teammateId, verificationCode }: { teammateId: string, verificationCode: string }, { rejectWithValue }) => {
     try {
-      // In a real app, this would be an API call
-      return { success: true, message: '2FA verified successfully' };
+      // API call would go here
+      // await api.post(`/teammates/${teammateId}/2fa/verify`, { code: verificationCode });
+      return teammateId;
     } catch (error) {
       return rejectWithValue('Failed to verify 2FA code');
     }
@@ -110,58 +174,11 @@ export const disable2FA = createAsyncThunk(
   'teammates/disable2FA',
   async (teammateId: string, { rejectWithValue }) => {
     try {
-      // In a real app, this would be an API call
-      return { success: true, message: '2FA disabled successfully' };
+      // API call would go here
+      // await api.post(`/teammates/${teammateId}/2fa/disable`);
+      return teammateId;
     } catch (error) {
       return rejectWithValue('Failed to disable 2FA');
-    }
-  }
-);
-
-// Session management
-export const fetchTeammateSessions = createAsyncThunk(
-  'teammates/fetchTeammateSessions',
-  async (teammateId: string, { rejectWithValue }) => {
-    try {
-      // In a real app, this would be an API call
-      return [
-        {
-          id: '1',
-          device: 'Chrome on Windows',
-          browser: 'Chrome 94.0.4606.81',
-          ip: '192.168.1.1',
-          location: 'New York, USA',
-          lastActive: new Date().toISOString(),
-          current: true
-        }
-      ];
-    } catch (error) {
-      return rejectWithValue('Failed to fetch sessions');
-    }
-  }
-);
-
-export const terminateSession = createAsyncThunk(
-  'teammates/terminateSession',
-  async ({ teammateId, sessionId }: { teammateId: string, sessionId: string }, { rejectWithValue }) => {
-    try {
-      // In a real app, this would be an API call
-      return { success: true, sessionId };
-    } catch (error) {
-      return rejectWithValue('Failed to terminate session');
-    }
-  }
-);
-
-// Password reset
-export const resetPassword = createAsyncThunk(
-  'teammates/resetPassword',
-  async ({ teammateId, newPassword }: { teammateId: string, newPassword: string }, { rejectWithValue }) => {
-    try {
-      // In a real app, this would be an API call
-      return { success: true, message: 'Password reset successfully' };
-    } catch (error) {
-      return rejectWithValue('Failed to reset password');
     }
   }
 );

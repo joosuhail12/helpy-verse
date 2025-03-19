@@ -2,15 +2,12 @@
 import { Smile, Meh, Frown } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Activity } from '@/types/activity';
-
-interface CustomerSentimentProps {
-  activities: Activity[];
-}
+import { CustomerSentimentProps } from '@/types/contact';
 
 export const CustomerSentiment = ({ activities }: CustomerSentimentProps) => {
   // Calculate sentiment based on recent activities
   const calculateSentiment = () => {
-    const recentActivities = activities.slice(0, 5);
+    const recentActivities = activities?.slice(0, 5) || [];
     let positiveCount = 0;
     let negativeCount = 0;
 

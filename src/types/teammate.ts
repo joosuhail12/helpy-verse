@@ -1,39 +1,21 @@
 
-export type TeammatePermission = 
-  | 'manage_tickets'
-  | 'view_reports'
-  | 'manage_users'
-  | 'manage_teams'
-  | 'manage_settings'
-  | 'admin';
-
-export type TeammateRole = 'admin' | 'agent' | 'manager' | 'viewer' | 'supervisor';
-
-export type TeammateStatus = 'active' | 'inactive' | 'pending';
-
-export type ActivityLogType = 
-  | 'login'
-  | 'logout'
-  | 'settings_changed'
-  | 'password_changed'
-  | 'permission_changed'
-  | 'team_assigned'
-  | 'update'; // Added 'update' type
-
 export interface Teammate {
   id: string;
   name: string;
   email: string;
   role: TeammateRole;
   status: TeammateStatus;
-  permissions: TeammatePermission[];
   teams: string[];
   lastActive?: string;
   createdAt: string;
-  updatedAt?: string;
-  avatar?: string;
+  updatedAt: string;
+  permissions: TeammatePermission[];
   is2FAEnabled?: boolean;
 }
+
+export type TeammateRole = 'admin' | 'supervisor' | 'agent' | 'viewer';
+export type TeammateStatus = 'active' | 'inactive' | 'pending';
+export type TeammatePermission = string;
 
 export interface NewTeammate {
   name: string;
@@ -43,28 +25,32 @@ export interface NewTeammate {
 
 export interface ActivityLog {
   id: string;
-  teammateId?: string; // Making this optional to fix errors
-  type: ActivityLogType;
+  type: 'login' | 'logout' | 'settings_changed' | 'password_changed' | 'permission_changed' | 'team_assigned' | 'update';
   description: string;
   timestamp: string;
+  ip?: string;
+  userAgent?: string;
+  location?: string;
+  teammateId?: string;
 }
 
 export interface TeamAssignment {
   id: string;
-  teammateId?: string; // Making this optional to fix errors
+  teamId: string;
   teamName: string;
   role: string;
-  status: 'active' | 'inactive';
-  startDate: string;
+  status: 'active' | 'inactive' | 'pending';
+  startDate?: string;
   endDate?: string;
+  teammateId?: string;
 }
 
-export interface TeammateSession {
+export interface Session {
   id: string;
-  device: string;
-  browser: string;
-  ip: string;
+  deviceType: string;
+  deviceName: string;
   location: string;
+  ip: string;
   lastActive: string;
   current: boolean;
 }

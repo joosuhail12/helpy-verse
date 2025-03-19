@@ -3,11 +3,11 @@ import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import TeamOfficeHoursSelector from '@/components/teams/TeamOfficeHoursSelector';
 import TeamHolidaySelector from '@/components/teams/TeamHolidaySelector';
-import type { DayOfWeek, TimeSlot } from '@/types/team';
+import { DayOfWeek, TimeSlot, Holiday } from '@/types/team';
 
 interface TeamAvailabilitySectionProps {
-  officeHours: { [key in DayOfWeek]: TimeSlot[] };
-  onOfficeHoursChange: (hours: { [key in DayOfWeek]: TimeSlot[] }) => void;
+  officeHours: { [key in DayOfWeek]?: TimeSlot[] };
+  onOfficeHoursChange: (hours: { [key in DayOfWeek]?: TimeSlot[] }) => void;
   selectedHolidays: string[];
   onHolidaysChange: (holidays: string[]) => void;
 }
@@ -37,4 +37,3 @@ const TeamAvailabilitySection = ({
 };
 
 export default TeamAvailabilitySection;
-

@@ -9,7 +9,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import type { TeamHolidaySelectorProps } from "@/types/team";
+import { TeamHolidaySelectorProps } from "@/types/team";
 
 const TeamHolidaySelector = ({ selectedHolidays, onHolidaysChange }: TeamHolidaySelectorProps) => {
   const handleDateSelect = (date: Date | undefined) => {
@@ -87,4 +87,3 @@ const TeamHolidaySelector = ({ selectedHolidays, onHolidaysChange }: TeamHoliday
 };
 
 export default TeamHolidaySelector;
-

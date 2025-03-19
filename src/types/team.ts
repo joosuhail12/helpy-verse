@@ -17,10 +17,8 @@ export interface Team {
     [key in DayOfWeek]?: TimeSlot[];
   };
   channels?: string[];
-  holidays?: {
-    date: string;
-    name: string;
-  }[];
+  holidays?: Holiday[];
+  type?: string;
 }
 
 export enum DayOfWeek {
@@ -38,14 +36,26 @@ export interface TimeSlot {
   end: string;
 }
 
+export interface Holiday {
+  date: string;
+  name: string;
+}
+
 export interface TeamChannelSelectorProps {
   selectedChannels: string[];
   onChannelSelect: (channels: string[]) => void;
+  selectedChatChannel?: string;
+  selectedEmailChannels: string[];
+  onChatChannelSelect: (channelId: string | undefined) => void;
+  onEmailChannelToggle: (channelId: string) => void;
 }
 
 export interface TeamMembersSelectorProps {
   selectedMembers: string[];
   onMemberSelect: (members: string[]) => void;
+  teammates: any[];
+  selectedTeammates: string[];
+  onTeammateToggle: (teammateId: string) => void;
 }
 
 export interface TeamOfficeHoursSelectorProps {
@@ -73,18 +83,22 @@ export interface TeamRoutingSelectorProps {
 }
 
 export interface TeamHolidaySelectorProps {
-  holidays: {
-    date: string;
-    name: string;
-  }[];
-  onHolidaysChange: (holidays: {
-    date: string;
-    name: string;
-  }[]) => void;
+  selectedHolidays: string[];
+  onHolidaysChange: (holidays: string[]) => void;
 }
 
 export interface TeamIconPickerProps {
   selectedIcon: string;
   setSelectedIcon: (icon: string) => void;
   onIconSelect?: (icon: string) => void;
+}
+
+export interface TeamBasicInfoProps {
+  teamName: string;
+  setTeamName: React.Dispatch<React.SetStateAction<string>>;
+  selectedIcon: string;
+  setSelectedIcon: React.Dispatch<React.SetStateAction<string>>;
+  teammates: any[];
+  selectedTeammates: string[];
+  onTeammateToggle: (teammateId: string) => void;
 }

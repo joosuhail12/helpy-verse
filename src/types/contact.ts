@@ -71,7 +71,7 @@ export interface ContactNotesProps {
 }
 
 export interface CustomerSentimentProps {
-  contactId: string;
+  activities: Activity[];
 }
 
 export interface ContactCompanyInfoProps {
@@ -83,5 +83,5 @@ export interface QuickNoteInputProps {
   onAddNote?: (note: string) => void;
 }
 
-// Import Activity type to fix the reference
+// Import Activity type
 import { Activity } from './activity';
