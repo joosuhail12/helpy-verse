@@ -2,7 +2,14 @@
 import { lazy, Suspense } from 'react';
 import { Navigate } from 'react-router-dom';
 import { ProtectedRoute } from '../components/auth/ProtectedRoute';
-import { LoadingSpinner } from './index';
+import { Loader2 } from 'lucide-react';
+
+// Create the loading spinner component before it's referenced
+export const LoadingSpinner = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+  </div>
+);
 
 // Lazy load dashboard pages
 const Dashboard = lazy(() => import('../pages/Dashboard'));
