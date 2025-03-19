@@ -5,7 +5,7 @@
  */
 
 // Re-export utilities from HTTP client cookie manager
-export { cookieFunctions as cookieFunctions } from '@/api/services/http';
+export { cookieFunctions } from '@/api/services/http';
 export const { getCookie, setCookie, handleLogout } = cookieFunctions;
 
 // Re-export all other utilities
