@@ -1,37 +1,18 @@
-
 import { configureStore } from '@reduxjs/toolkit';
-import userReducer from './slices/user/userSlice';
-import contactsReducer from './slices/contacts/contactsSlice';
+
+// Slices
+import { authReducer } from './slices/auth/authSlice';
 import tagsReducer from './slices/tagsSlice';
-import companiesReducer from './slices/companies/companiesSlice';
-import contentCenterReducer from './slices/automation/contentCenterSlice';
-import { actionsReducer } from './slices/actions/actionsSlice';
-import { chatbotsReducer } from './slices/chatbots/chatbotsSlice';
-import contentReducer from './slices/content/contentSlice';
-import { securityReducer } from './slices/securitySlice';
-import { emailChannelsReducer } from './slices/emailChannels/emailChannelsSlice';
-import { cannedResponsesReducer } from './slices/cannedResponses/cannedResponsesSlice';
-import teamsReducer from './slices/teams/teamsSlice';
-import { teammatesReducer } from './slices/teammates/teammatesSlice';
-// Import directly from the authSlice file, not from the re-export
-import authReducer from './slices/auth/authSlice';
+import ticketsReducer from './slices/tickets/ticketsSlice';
+
+// Import other reducers as needed
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
-    user: userReducer,
-    contacts: contactsReducer,
     tags: tagsReducer,
-    companies: companiesReducer,
-    contentCenter: contentCenterReducer,
-    actions: actionsReducer,
-    chatbots: chatbotsReducer,
-    content: contentReducer,
-    security: securityReducer,
-    emailChannels: emailChannelsReducer,
-    cannedResponses: cannedResponsesReducer,
-    teams: teamsReducer,
-    teammates: teammatesReducer,
+    tickets: ticketsReducer,
+    // Add other reducers here
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
