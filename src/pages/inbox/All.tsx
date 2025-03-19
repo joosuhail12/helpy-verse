@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import TicketList from '@/components/inbox/TicketList';
 import CreateTicketDialog from '@/components/inbox/CreateTicketDialog';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Plus, TicketPlus } from 'lucide-react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { useState } from 'react';
@@ -139,13 +139,29 @@ const All = () => {
     <div className="w-full h-[calc(100vh-4rem)] flex flex-col">
       <div className="flex items-center justify-between px-6 py-4 bg-white border-b">
         <h1 className="text-2xl font-semibold">All Tickets</h1>
-        <Button onClick={() => setCreateDialogOpen(true)} className="flex items-center gap-2">
-          <Plus className="h-4 w-4" />
+        <Button 
+          onClick={() => setCreateDialogOpen(true)} 
+          className="flex items-center gap-2"
+          size="lg"
+        >
+          <TicketPlus className="h-4 w-4" />
           Create Ticket
         </Button>
       </div>
-
+      
       <div className="flex-1 overflow-hidden">
+        <div className="p-4 border-b bg-gray-50">
+          <Button 
+            onClick={() => setCreateDialogOpen(true)}
+            className="w-full flex items-center justify-center gap-2" 
+            variant="default"
+            size="lg"
+          >
+            <Plus className="h-5 w-5" />
+            Create New Ticket
+          </Button>
+        </div>
+        
         <TicketList tickets={tickets} />
       </div>
 
