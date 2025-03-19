@@ -55,7 +55,7 @@
     "@tiptap/pm": "^2.11.5",
     "@tiptap/react": "^2.11.5",
     "@tiptap/starter-kit": "^2.11.5",
-    "@tiptap/suggestion": "^2.11.5",
+    "@tiptap/suggestion": "^2.1.12",
     "@types/prismjs": "^1.26.5",
     "@types/uuid": "^10.0.0",
     "ably": "^1.2.48",

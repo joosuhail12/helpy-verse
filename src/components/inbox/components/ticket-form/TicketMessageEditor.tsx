@@ -1,10 +1,10 @@
+
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import Mention from '@tiptap/extension-mention';
-import EmojiSuggestion from 'tiptap-emoji-suggestion';
-import suggestion from '../utils/suggestion';
 import { useEffect } from 'react';
+import suggestion from '../../utils/suggestion';
 import type { Ticket } from '@/types/ticket';
 
 interface TicketMessageEditorProps {
@@ -24,19 +24,19 @@ const TicketMessageEditor = ({ content, onChange }: TicketMessageEditorProps) =>
     priority: 'medium',
     createdAt: new Date().toISOString(),
     isUnread: false,
-    recipients: []
+    recipients: [],
+    company: '',
   };
 
   const editor = useEditor({
     extensions: [
       StarterKit,
-      Placeholder({
+      Placeholder.configure({
         placeholder: 'Write your initial message...',
       }),
       Mention.configure({
         suggestion: suggestion(dummyTicket),
       }),
-      EmojiSuggestion,
     ],
     content: content,
     onUpdate({ editor }) {
