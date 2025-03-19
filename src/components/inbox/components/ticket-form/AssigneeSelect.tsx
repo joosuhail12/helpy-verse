@@ -89,7 +89,7 @@ const AssigneeSelect = ({ value, onChange }: AssigneeSelectProps) => {
             role="combobox"
             aria-expanded={open}
             className="w-full justify-between"
-            onClick={() => setOpen(true)}
+            onClick={() => setOpen(!open)}
           >
             {value ? value.name : "Select assignee..."}
             <User className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -101,6 +101,7 @@ const AssigneeSelect = ({ value, onChange }: AssigneeSelectProps) => {
               placeholder="Search assignee..." 
               value={searchQuery}
               onValueChange={setSearchQuery}
+              autoFocus
             />
             <CommandList>
               <CommandEmpty>No assignee found.</CommandEmpty>
@@ -114,7 +115,9 @@ const AssigneeSelect = ({ value, onChange }: AssigneeSelectProps) => {
                 <>
                   <CommandGroup heading="Assign to">
                     <CommandItem 
+                      value="self"
                       onSelect={() => handleSelect(CURRENT_USER)}
+                      className="cursor-pointer"
                     >
                       <User className="mr-2 h-4 w-4" />
                       {CURRENT_USER.name}
@@ -129,7 +132,9 @@ const AssigneeSelect = ({ value, onChange }: AssigneeSelectProps) => {
                       {filteredTeamOptions.map((team) => (
                         <CommandItem
                           key={team.id}
+                          value={team.id}
                           onSelect={() => handleSelect(team)}
+                          className="cursor-pointer"
                         >
                           <Users className="mr-2 h-4 w-4" />
                           {team.name}
@@ -146,7 +151,9 @@ const AssigneeSelect = ({ value, onChange }: AssigneeSelectProps) => {
                       {filteredTeammateOptions.map((teammate) => (
                         <CommandItem
                           key={teammate.id}
+                          value={teammate.id}
                           onSelect={() => handleSelect(teammate)}
+                          className="cursor-pointer"
                         >
                           <User className="mr-2 h-4 w-4" />
                           {teammate.name}

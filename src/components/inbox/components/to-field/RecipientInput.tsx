@@ -37,7 +37,7 @@ const RecipientInput = ({
           role="combobox"
           aria-expanded={isOpen}
           className="flex-1 h-8 justify-start px-2 text-left font-normal"
-          onClick={() => setIsOpen(true)}
+          onClick={() => setIsOpen(!isOpen)}
         >
           {selectedRecipients.length === 0 
             ? "Select recipients or type email..." 
@@ -52,6 +52,7 @@ const RecipientInput = ({
             value={inputValue}
             onValueChange={onInputChange}
             onKeyDown={onKeyDown}
+            autoFocus
           />
           <CommandList>
             <CommandEmpty>
@@ -71,10 +72,9 @@ const RecipientInput = ({
               {filteredContacts.map((contact) => (
                 <CommandItem
                   key={contact.id}
-                  onSelect={() => {
-                    onSelect(contact.id);
-                    setIsOpen(false);
-                  }}
+                  value={contact.id}
+                  onSelect={() => onSelect(contact.id)}
+                  className="flex justify-between cursor-pointer"
                 >
                   <div className="flex justify-between w-full">
                     <span>{contact.firstname || ''} {contact.lastname || ''}</span>
