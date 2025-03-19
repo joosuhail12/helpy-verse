@@ -1,119 +1,120 @@
-
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { ContactDetailHeader } from '@/components/contacts/detail/ContactDetailHeader';
-import { ContactInformation } from '@/components/contacts/detail/ContactInformation';
-import { ContactTimeline } from '@/components/contacts/detail/ContactTimeline';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Mail, Phone, User, Building } from 'lucide-react';
+import { format } from 'date-fns';
+import { useAppDispatch, useAppSelector } from '@/hooks/useAppSelector';
+import { fetchContactById } from '@/store/slices/contacts/contactsSlice';
 import { ContactDetailSidebar } from '@/components/contacts/detail/ContactDetailSidebar';
-import { ContactCustomObjectData } from '@/components/contacts/detail/ContactCustomObjectData';
-import { ContactRelated } from '@/components/contacts/detail/ContactRelated';
-import { Card } from '@/components/ui/card';
-import { Bell, Loader } from 'lucide-react';
+import { ContactInformation } from '@/components/contacts/detail/ContactInformation';
 import { Activity } from '@/types/activity';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ContactTickets } from '@/components/contacts/detail/ContactTickets';
-import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { useAppSelector } from '@/hooks/useAppSelector';
-import { fetchContactDetails } from '@/store/slices/contacts/contactsSlice';
 
-const ContactDetail = () => {
-  const { id } = useParams();
+const mockActivities: Activity[] = [
+  {
+    id: '1',
+    type: 'email',
+    subject: 'Welcome Email',
+    content: 'Welcome to our platform!',
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: '2',
+    type: 'note',
+    subject: 'Note from John',
+    content: 'Talked to the contact, seems interested.',
+    createdAt: new Date().toISOString(),
+  },
+];
+
+const Detail = () => {
+  const { id } = useParams<{ id: string }>();
   const dispatch = useAppDispatch();
+  const { contacts } = useAppSelector(state => state.contacts);
+  const [contact, setContact] = useState<any>(null);
 
-  const { contactDetails, loading, error } = useAppSelector((state) => state.contacts);
   useEffect(() => {
     if (id) {
-      dispatch(fetchContactDetails(id));
+      // Check if contact is already in the store
+      const existingContact = contacts.find(c => c.id === id);
+      if (existingContact) {
+        setContact(existingContact);
+      } else {
+        // Fetch contact if not in the store
+        dispatch(fetchContactById(id))
+          .then((result: any) => {
+            setContact(result.payload);
+          })
+          .catch(error => {
+            console.error("Failed to fetch contact:", error);
+          });
+      }
     }
-  }, [id, dispatch]);
+  }, [id, dispatch, contacts]);
 
-  const activities: Activity[] = [
-    {
-      id: '1',
-      type: 'email',
-      description: 'Sent follow-up email',
-      date: new Date().toISOString(),
-      metadata: {
-        category: 'positive',
-      },
-    },
-  ];
-
-  if (loading) {
-    return (
-      <div className="p-6">
-        <Card className="p-4 text-center">
-          <Loader className="animate-spin" /> {/* Show loading animation */}
-          <p className="mt-2 text-gray-500">Loading contact details...</p>
-        </Card>
-      </div>
-    );
+  if (!contact) {
+    return <div>Loading...</div>;
   }
-
-  if (error) {
-    return (
-      <div className="p-6">
-        <Card className="p-4 text-red-500">
-          Error: {error}
-        </Card>
-      </div>
-    );
-  }
-
-  if (!contactDetails) {
-    return (
-      <div className="p-6">
-        <Card className="p-4 text-red-500">
-          Contact not found
-        </Card>
-      </div>
-    );
-  }
-
-  const needsAttention = contactDetails.status === 'active' && !contactDetails.lastContacted;
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-[1400px]">
-      <ContactDetailHeader contact={contactDetails} />
+    <div className="container mx-auto p-6 max-w-7xl">
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-3xl font-bold">{contact.firstname} {contact.lastname}</h1>
+          <p className="text-muted-foreground">
+            Created on {format(new Date(contact.createdAt), 'PPP')}
+          </p>
+        </div>
+        <Button>Edit Contact</Button>
+      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-8">
-        {/* Left Column (4/12 width) - Contact Information */}
-        <div className="lg:col-span-4">
-          {needsAttention && (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-center gap-2 mb-4">
-              <Bell className="h-4 w-4 text-yellow-500" />
-              <p className="text-sm text-yellow-700">This contact needs attention</p>
-            </div>
-          )}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+        <div className="lg:col-span-2 space-y-6">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-2xl font-bold">Profile</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center space-x-4">
+                <Avatar className="h-16 w-16">
+                  <AvatarImage src={`https://avatar.vercel.sh/${contact.email}.png`} />
+                  <AvatarFallback>{contact.firstname?.[0]}{contact.lastname?.[0]}</AvatarFallback>
+                </Avatar>
+                <div>
+                  <div className="text-lg font-semibold">{contact.firstname} {contact.lastname}</div>
+                  <div className="text-sm text-muted-foreground">{contact.title}</div>
+                  <div className="flex items-center space-x-2 text-muted-foreground mt-2">
+                    <Mail className="h-4 w-4" />
+                    <span>{contact.email}</span>
+                  </div>
+                  {contact.phone && (
+                    <div className="flex items-center space-x-2 text-muted-foreground mt-1">
+                      <Phone className="h-4 w-4" />
+                      <span>{contact.phone}</span>
+                    </div>
+                  )}
+                  {contact.company && (
+                    <div className="flex items-center space-x-2 text-muted-foreground mt-1">
+                      <Building className="h-4 w-4" />
+                      <span>{typeof contact.company === 'string' ? contact.company : contact.company.name}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-          <ContactDetailSidebar contact={contactDetails} />
-          <div className="mt-4 space-y-4">
-            <ContactInformation contact={contactDetails} activities={activities} />
-            <ContactRelated contact={contactDetails} />
-            <ContactCustomObjectData contact={contactDetails} />
-          </div>
+          <ContactInformation contact={contact} activities={mockActivities} />
+
+          <ContactTickets contactId={contact.id} />
         </div>
 
-        {/* Right Column (8/12 width) - Activity Timeline & Tickets */}
-        <div className="lg:col-span-8">
-          <Tabs defaultValue="activities" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="activities">Activity Timeline</TabsTrigger>
-              <TabsTrigger value="tickets">Tickets</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="activities">
-              <ContactTimeline contact={contactDetails} />
-            </TabsContent>
-
-            <TabsContent value="tickets">
-              <ContactTickets contact={contactDetails} />
-            </TabsContent>
-          </Tabs>
-        </div>
+        <ContactDetailSidebar contact={contact} />
       </div>
     </div>
   );
 };
 
-export default ContactDetail;
+export default Detail;

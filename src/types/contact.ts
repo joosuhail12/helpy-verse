@@ -37,3 +37,15 @@ export interface Contact {
     createdBy: string;
   }[];
 }
+
+export interface ContactCompanyInfoProps {
+  contact: Contact;
+}
+
+export interface ContactTicketsProps {
+  contactId: string;
+}
+
+export interface QuickNoteInputProps {
+  contact: Contact;
+}

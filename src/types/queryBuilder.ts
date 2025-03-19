@@ -16,7 +16,10 @@ export type FieldType = 'string' | 'number' | 'boolean' | 'date' | 'select' | 'm
 export type ComparisonOperator = 
   'equals' | 'notEquals' | 'contains' | 'startsWith' | 'endsWith' | 
   'greaterThan' | 'lessThan' | 'in' | 'notIn' | 'exists' | 'notExists' |
-  'custom_range' | 'last_n_days' | 'next_n_days' | 'rolling_days';
+  'custom_range' | 'last_n_days' | 'next_n_days' | 'rolling_days' |
+  // Add string literals used in components
+  'not_equals' | 'starts_with' | 'greater_than' | 'less_than' | 'between' | 'not_in';
+
 export type DataSource = 'contacts' | 'companies' | 'tickets' | 'custom_objects' | 'conversations';
 
 export interface QueryField {

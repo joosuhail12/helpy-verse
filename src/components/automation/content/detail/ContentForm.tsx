@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -53,6 +52,7 @@ export const ContentForm = ({
       user: {
         id: currentUser.id,
         name: currentUser.name,
+        email: currentUser.email,
         avatar: currentUser.avatar || '',
       },
       changeDescription: 'Manual save',
@@ -68,6 +68,7 @@ export const ContentForm = ({
       lastEditedBy: {
         id: currentUser.id,
         name: currentUser.name,
+        email: currentUser.email,
         avatar: currentUser.avatar || '',
       },
       versions: [...(content.versions || []), newVersion as ContentVersion],

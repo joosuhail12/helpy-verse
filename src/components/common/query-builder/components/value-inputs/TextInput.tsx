@@ -1,26 +1,25 @@
 
+import React from 'react';
 import { Input } from '@/components/ui/input';
 import { FieldExamples } from '../FieldExamples';
-import { cn } from '@/lib/utils';
 
 interface TextInputProps {
   value: string;
   onChange: (value: string) => void;
   errorMessage?: string | null;
-  showExamples?: boolean;
 }
 
-export const TextInput = ({ value, onChange, errorMessage, showExamples = true }: TextInputProps) => {
+export const TextInput: React.FC<TextInputProps> = ({ value, onChange, errorMessage }) => {
   return (
-    <div className="flex items-center gap-2">
+    <div className="space-y-1">
       <Input
         type="text"
-        value={value}
+        value={value || ''}
         onChange={(e) => onChange(e.target.value)}
-        className={cn("w-[200px]", errorMessage && "border-red-500")}
+        className={errorMessage ? "border-red-500" : ""}
         placeholder="Enter value"
       />
-      {showExamples && <FieldExamples type="text" />}
+      <FieldExamples fieldType="string" />
     </div>
   );
 };

@@ -6,24 +6,24 @@ export interface TimeSlot {
   end: string;
 }
 
-export interface TeamMember {
-  id: string;
-  name: string;
-  email: string;
-}
-
-export interface TeamHoliday {
-  id: string;
-  name: string;
-  date: string;
-  isRecurring: boolean;
+export interface TeamOfficeHours {
+  days: string[];
+  startTime: string;
+  endTime: string;
+  timezone: string;
+  monday?: TimeSlot[];
+  tuesday?: TimeSlot[];
+  wednesday?: TimeSlot[];
+  thursday?: TimeSlot[];
+  friday?: TimeSlot[];
+  saturday?: TimeSlot[];
+  sunday?: TimeSlot[];
 }
 
 export interface TeamChannel {
   id: string;
   name: string;
-  type: string;
-  isActive: boolean;
+  type?: string;
 }
 
 export interface TeamRouting {
@@ -31,22 +31,71 @@ export interface TeamRouting {
   name: string;
   priority: number;
   isActive: boolean;
+  type?: 'manual' | 'round-robin' | 'load-balanced';
 }
 
 export interface Team {
   id: string;
   name: string;
-  description: string;
-  icon: string;
-  color: string;
-  members: TeamMember[];
+  description?: string;
+  icon?: string;
+  color?: string;
+  isDefault?: boolean;
+  isActive: boolean;
   createdAt: string;
   updatedAt: string;
-  
-  // Additional properties
+  members: string[];
   channels?: TeamChannel[];
   routing?: TeamRouting[];
-  officeHours?: {
+  officeHours?: TeamOfficeHours;
+  holidays?: { date: string; description: string }[];
+}
+
+export interface TeamChannelSelectorProps {
+  selectedChatChannel?: string;
+  selectedEmailChannels: string[];
+  onChatChannelSelect: (channelId?: string) => void;
+  onEmailChannelToggle: (channelId: string) => void;
+}
+
+export interface TeamIconPickerProps {
+  selectedIcon: string;
+  onIconSelect: (icon: string) => void;
+}
+
+export interface TeamMembersSelectorProps {
+  teammates: {
+    id: string;
+    name: string;
+    email: string;
+  }[];
+  selectedTeammates: string[];
+  onTeammateToggle: (teammateId: string) => void;
+}
+
+export interface TeamRoutingSelectorProps {
+  selectedType: 'manual' | 'round-robin' | 'load-balanced';
+  onTypeSelect: (type: 'manual' | 'round-robin' | 'load-balanced') => void;
+  limits?: {
+    maxTickets?: number;
+    maxOpenTickets?: number;
+    maxActiveChats?: number;
+  };
+  onLimitsChange?: (limits: {
+    maxTickets?: number;
+    maxOpenTickets?: number;
+    maxActiveChats?: number;
+  }) => void;
+}
+
+export interface TeamHolidaySelectorProps {
+  holidays: { date: string; description: string }[];
+  onHolidayAdd: (holiday: { date: string; description: string }) => void;
+  onHolidayRemove: (index: number) => void;
+}
+
+export interface TeamOfficeHoursSelectorProps {
+  officeHours: {
     days: string[];
     startTime: string;
     endTime: string;
@@ -59,38 +108,5 @@ export interface Team {
     saturday?: TimeSlot[];
     sunday?: TimeSlot[];
   };
-  holidays?: TeamHoliday[];
-}
-
-// Props interfaces
-export interface TeamChannelSelectorProps {
-  channels: TeamChannel[];
-  onChannelsChange: (channels: TeamChannel[]) => void;
-}
-
-export interface TeamRoutingSelectorProps {
-  routing: TeamRouting[];
-  onRoutingChange: (routing: TeamRouting[]) => void;
-}
-
-export interface TeamOfficeHoursSelectorProps {
-  officeHours: { [key in DayOfWeek]: TimeSlot[] };
-  onOfficeHoursChange: (hours: { [key in DayOfWeek]: TimeSlot[] }) => void;
-}
-
-export interface TeamHolidaySelectorProps {
-  selectedHolidays: string[];
-  onHolidaysChange: (holidays: string[]) => void;
-}
-
-export interface TeamMembersSelectorProps {
-  selectedMembers: string[];
-  onMembersChange: (members: string[]) => void;
-}
-
-export interface TeamIconPickerProps {
-  selectedIcon: string;
-  onIconChange: (icon: string) => void;
-  selectedColor: string;
-  onColorChange: (color: string) => void;
+  onOfficeHoursChange: (officeHours: TeamOfficeHours) => void;
 }

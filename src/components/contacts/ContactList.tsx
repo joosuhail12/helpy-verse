@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import type { Contact } from '@/types/contact';
-import ContactListItem from './ContactListItem';
+import { ContactListItem } from './ContactListItem';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { selectContact, fetchCustomers, setSelectedContacts } from '@/store/slices/contacts/contactsSlice';
 import { useAppSelector } from '@/hooks/useAppSelector';

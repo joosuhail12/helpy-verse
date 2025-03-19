@@ -30,19 +30,20 @@ const CreateContactDialog = ({ open, onOpenChange }: CreateContactDialogProps) =
     setIsSubmitting(true);
 
     try {
-      const newContact = {
+      // Create complete contact object
+      const newContact: Contact = {
         id: uuidv4(),
         firstname,
         lastname,
         email,
-        type: isCustomer ? 'customer' : 'visitor' as const,
-        status: 'active' as const,
+        type: isCustomer ? 'customer' : 'visitor',
+        status: 'active',
         tags: [],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
 
-      await dispatch(addContact(newContact as Partial<Contact>)).unwrap();
+      await dispatch(addContact(newContact)).unwrap();
       
       toast({
         title: "Success",

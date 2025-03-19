@@ -15,7 +15,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
-import { deleteContact, updateContactStatus } from '@/store/slices/contacts/contactsSlice';
+import { deleteContact, updateContact } from '@/store/slices/contacts/contactsSlice';
 import { formatDistanceToNow } from 'date-fns';
 import { Contact } from '@/types/contact';
 
@@ -50,9 +50,9 @@ export const ContactListItem = ({ contact, isSelected, onSelect }: ContactListIt
 
   const handleStatusChange = async (status: string) => {
     try {
-      await dispatch(updateContactStatus({
+      await dispatch(updateContact({
         contactId: contact.id,
-        status
+        data: { status }
       }));
     } catch (error) {
       console.error('Failed to update status:', error);

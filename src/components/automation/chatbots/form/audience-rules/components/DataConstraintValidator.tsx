@@ -1,136 +1,138 @@
 
-import { useEffect, useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertTriangle, CheckCircle } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { useAppSelector } from '@/hooks/useAppSelector';
-import { QueryGroup } from '@/types/queryBuilder';
+import { useState, useEffect } from 'react';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { ShieldAlert } from 'lucide-react';
+import { QueryGroup, QueryRule } from '@/types/queryBuilder';
+import { useAudienceFields } from '../hooks/useAudienceFields';
 
-interface DataConstraintValidatorProps {
-  audience: QueryGroup;
-  onChange?: (audience: QueryGroup) => void;
+export interface DataConstraintValidatorProps {
+  queryGroup: QueryGroup;
 }
 
-interface Constraint {
-  id: string;
-  field: string;
-  description: string;
-  status: 'passed' | 'warning' | 'failed';
-  recommendation?: string;
-}
+export const DataConstraintValidator = ({ queryGroup }: DataConstraintValidatorProps) => {
+  const [constraints, setConstraints] = useState<{message: string, severity: 'info' | 'warning' | 'error'}[]>([]);
+  const fields = useAudienceFields();
 
-export const DataConstraintValidator = ({ audience, onChange }: DataConstraintValidatorProps) => {
-  const [constraints, setConstraints] = useState<Constraint[]>([]);
-  const contacts = useAppSelector((state) => state.contacts?.contacts) || [];
-  const companies = useAppSelector((state) => state.companies?.companies) || [];
-
-  // Analyze the audience rules for potential data constraints
   useEffect(() => {
-    if (!audience || !audience.rules || audience.rules.length === 0) {
-      setConstraints([
-        {
-          id: 'empty-rules',
-          field: 'general',
-          description: 'No audience rules defined',
-          status: 'warning',
-          recommendation: 'Add at least one rule to target your audience',
-        },
-      ]);
-      return;
-    }
-
-    const newConstraints: Constraint[] = [];
-
-    // Check for data availability
-    if (contacts.length === 0 && companies.length === 0) {
-      newConstraints.push({
-        id: 'no-data',
-        field: 'general',
-        description: 'No contact or company data available',
-        status: 'warning',
-        recommendation: 'Import contacts or companies to accurately target your audience',
-      });
-    }
-
-    // Process rules recursively
-    const processRules = (group: QueryGroup) => {
-      group.rules.forEach((rule) => {
-        if ('combinator' in rule) {
-          // This is a nested group
-          processRules(rule);
-        } else {
-          // This is a single rule
-          // Check for potential data constraints
-          const fieldType = rule.field.split('.')[0];
-          
-          // Check for string operators on numeric fields
-          const stringOperators = ['contains', 'startsWith', 'endsWith'];
-          if (fieldType === 'number' && stringOperators.includes(rule.operator)) {
-            newConstraints.push({
-              id: `invalid-operator-${rule.id}`,
-              field: rule.field,
-              description: `String operator "${rule.operator}" used on numeric field`,
-              status: 'failed',
-              recommendation: 'Use numeric operators like equals, greaterThan, or lessThan',
-            });
-          }
-        }
-      });
+    // Detect data constraints in the rules
+    const detectConstraints = () => {
+      const newConstraints: {message: string, severity: 'info' | 'warning' | 'error'}[] = [];
+      
+      // Skip if there are no rules
+      if (!queryGroup.rules || queryGroup.rules.length === 0) {
+        setConstraints([]);
+        return;
+      }
+      
+      // Extract all the rules (flatten nested groups)
+      const allRules = extractAllRules(queryGroup);
+      
+      // Check data type constraints
+      checkDataTypeConstraints(allRules, newConstraints);
+      
+      // Check field usage constraints
+      checkFieldUsageConstraints(allRules, newConstraints);
+      
+      setConstraints(newConstraints);
     };
+    
+    detectConstraints();
+  }, [queryGroup, fields]);
 
-    processRules(audience);
-    setConstraints(newConstraints);
-  }, [audience, contacts, companies]);
+  // Function to extract all rules from nested groups
+  const extractAllRules = (group: QueryGroup): QueryRule[] => {
+    let rules: QueryRule[] = [];
+    
+    for (const rule of group.rules) {
+      if ('field' in rule) {
+        rules.push(rule);
+      } else if ('combinator' in rule) {
+        rules = [...rules, ...extractAllRules(rule)];
+      }
+    }
+    
+    return rules;
+  };
+
+  // Check for data type constraints
+  const checkDataTypeConstraints = (
+    rules: QueryRule[], 
+    constraints: {message: string, severity: 'info' | 'warning' | 'error'}[]
+  ) => {
+    for (const rule of rules) {
+      const field = fields.find(f => f.id === rule.field);
+      
+      if (!field) continue;
+      
+      // Check for date field constraints
+      if (field.type === 'date') {
+        if (rule.operator === 'contains' || rule.operator === 'startsWith' || rule.operator === 'endsWith') {
+          constraints.push({
+            message: `The operator "${rule.operator}" may not work as expected with date fields like "${field.label}".`,
+            severity: 'warning'
+          });
+        }
+      }
+      
+      // Check for string constraints on number fields
+      if (field.type === 'number' && typeof rule.value === 'string' && rule.value !== '') {
+        if (isNaN(Number(rule.value))) {
+          constraints.push({
+            message: `Non-numeric value used with number field "${field.label}".`,
+            severity: 'error'
+          });
+        }
+      }
+      
+      // Check for numeric operators on text fields
+      if (field.type === 'string' || field.type === 'text' || field.type === 'email') {
+        if (rule.operator === 'greaterThan' || rule.operator === 'lessThan') {
+          constraints.push({
+            message: `The operator "${rule.operator}" may not be appropriate for text field "${field.label}".`,
+            severity: 'warning'
+          });
+        }
+      }
+    }
+  };
+
+  // Check for field usage constraints
+  const checkFieldUsageConstraints = (
+    rules: QueryRule[], 
+    constraints: {message: string, severity: 'info' | 'warning' | 'error'}[]
+  ) => {
+    // Check for mixing contact and company fields in the same query
+    const contactFields = rules.filter(rule => 
+      fields.find(f => f.id === rule.field)?.source === 'contacts'
+    );
+    
+    const companyFields = rules.filter(rule => 
+      fields.find(f => f.id === rule.field)?.source === 'companies'
+    );
+    
+    if (contactFields.length > 0 && companyFields.length > 0 && queryGroup.combinator === 'and') {
+      constraints.push({
+        message: 'Mixing contact and company fields with AND condition may return no results.',
+        severity: 'warning'
+      });
+    }
+  };
 
   if (constraints.length === 0) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CheckCircle className="h-5 w-5 text-green-500" />
-            Data Constraints
-          </CardTitle>
-          <CardDescription>No data constraints detected</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
-            Your audience rules appear to be well-formed and should work with the available data.
-          </p>
-        </CardContent>
-      </Card>
-    );
+    return null;
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <AlertTriangle className="h-5 w-5 text-amber-500" />
-          Data Constraints
-        </CardTitle>
-        <CardDescription>
-          {constraints.length} potential {constraints.length === 1 ? 'issue' : 'issues'} detected
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {constraints.map((constraint) => (
-          <Alert
-            key={constraint.id}
-            variant={constraint.status === 'failed' ? 'destructive' : 'default'}
-          >
-            <AlertTitle className="flex items-center gap-2">
-              {constraint.description}
-              <Badge variant={constraint.status === 'failed' ? 'destructive' : 'secondary'}>
-                {constraint.field}
-              </Badge>
-            </AlertTitle>
-            {constraint.recommendation && (
-              <AlertDescription>{constraint.recommendation}</AlertDescription>
-            )}
-          </Alert>
-        ))}
-      </CardContent>
-    </Card>
+    <div className="space-y-3">
+      {constraints.map((constraint, index) => (
+        <Alert key={index} variant={constraint.severity === 'error' ? 'destructive' : constraint.severity === 'warning' ? 'default' : 'secondary'}>
+          <ShieldAlert className="h-4 w-4" />
+          <AlertTitle>Data Constraint</AlertTitle>
+          <AlertDescription>
+            {constraint.message}
+          </AlertDescription>
+        </Alert>
+      ))}
+    </div>
   );
 };

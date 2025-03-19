@@ -2,50 +2,52 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { addContactNote } from '@/store/slices/contacts/contactsSlice';
-import { toast } from '@/hooks/use-toast';
-import { Contact } from '@/types/contact';
+import { updateContact } from '@/store/slices/contacts/contactsSlice';
 import { v4 as uuidv4 } from 'uuid';
-
-interface QuickNoteInputProps {
-  contact: Contact;
-}
+import { toast } from '@/hooks/use-toast';
+import type { QuickNoteInputProps } from '@/types/contact';
 
 export const QuickNoteInput = ({ contact }: QuickNoteInputProps) => {
   const [note, setNote] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const dispatch = useAppDispatch();
 
-  const handleAddNote = async () => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!note.trim()) return;
     
     setIsSubmitting(true);
     
     try {
-      const noteItem = {
+      // Create a new note
+      const newNote = {
         id: uuidv4(),
         content: note,
         createdAt: new Date().toISOString(),
-        createdBy: 'Current User', // In a real app, this would come from auth state
+        createdBy: 'current-user' // This would be dynamic in real app
       };
       
-      await dispatch(addContactNote({
+      // Add it to existing notes
+      const updatedNotes = contact.notes ? [...contact.notes, newNote] : [newNote];
+      
+      // Update the contact
+      await dispatch(updateContact({
         contactId: contact.id,
-        note: noteItem,
+        data: { notes: updatedNotes }
       }));
       
-      setNote('');
       toast({
-        title: 'Note added',
-        description: 'Your note has been added successfully',
+        title: "Success",
+        description: "Note added successfully",
       });
+      
+      setNote('');
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'Failed to add note',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to add note",
+        variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);
@@ -53,27 +55,16 @@ export const QuickNoteInput = ({ contact }: QuickNoteInputProps) => {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Add Quick Note</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          <Textarea
-            placeholder="Type your note here..."
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            rows={3}
-          />
-          <Button 
-            className="w-full" 
-            onClick={handleAddNote}
-            disabled={!note.trim() || isSubmitting}
-          >
-            {isSubmitting ? 'Adding...' : 'Add Note'}
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+    <form onSubmit={handleSubmit} className="space-y-3">
+      <Textarea
+        placeholder="Add a quick note about this contact..."
+        value={note}
+        onChange={(e) => setNote(e.target.value)}
+        className="min-h-[100px]"
+      />
+      <Button type="submit" disabled={isSubmitting || !note.trim()}>
+        {isSubmitting ? 'Adding...' : 'Add Note'}
+      </Button>
+    </form>
   );
 };

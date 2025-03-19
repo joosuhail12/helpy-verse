@@ -1,97 +1,73 @@
 
-export type ContentStatus = 'completed' | 'processing' | 'queued' | 'failed' | 'active' | 'inactive' | 'draft';
-export type SortField = 'title' | 'lastUpdated' | 'messageCount' | 'createdAt' | 'status' | 'category' | 'author';
-
 export interface User {
   id: string;
   name: string;
   email: string;
   avatar?: string;
-  role?: 'admin' | 'editor' | 'viewer';
+  role?: string;
 }
 
-export interface Chatbot {
-  id: string;
-  name: string;
+export interface ContentVersion {
+  id?: string;
+  content: string;
+  createdAt: string;
+  user: User;
+  changeDescription?: string;
+  changes?: { field: string; from: string; to: string }[];
 }
 
 export interface ContentComment {
   id: string;
   content: string;
-  contentId?: string;
+  user: User;
   createdAt: string;
-  user?: User;
-  createdBy?: User;
-  text?: string;
+  updatedAt?: string;
+  reactions?: { emoji: string; count: number }[];
 }
 
-export interface ContentVersion {
-  id: string;
-  content: string;
-  contentId?: string;
-  createdAt: string;
-  user?: User;
-  createdBy?: User;
-  changeDescription?: string;
-  changes?: string;
-}
-
-export interface ContentTag {
-  id: string;
-  name: string;
-  color: string;
-}
+export type ContentType = 'article' | 'faq' | 'guide' | 'email' | 'knowledgebase' | 'checklist' | 'calculator' | 'product' | 'code' | 'docs' | 'security' | 'analytics';
 
 export interface Content {
   id: string;
   title: string;
   description: string;
-  category: string;
-  status: ContentStatus;
-  messageCount: number;
-  lastUpdated: string;
-  createdAt: string;
-  chatbots?: Chatbot[];
-  
-  // Additional properties
-  contentType?: 'article' | 'faq' | 'guide' | 'snippet' | 'file' | 'website' | 
-    'email' | 'knowledgebase' | 'calculator' | 'code' | 'checklist' | 
-    'analytics' | 'security' | 'docs' | 'product';
-  type?: 'snippet' | 'file' | 'website';
-  tags?: ContentTag[];
   content?: string;
+  category: string;
+  type: ContentType;
+  status: 'draft' | 'published' | 'archived' | 'review';
+  createdAt: string;
+  updatedAt: string;
+  lastUpdated?: string;
+  author: User;
+  lastEditedBy?: User;
   versions?: ContentVersion[];
   comments?: ContentComment[];
-  lastEditedBy?: User;
-  sharedWith?: User[];
-  author?: User;
-  progress?: number;
+  tags?: string[];
+  url?: string;
 }
 
-export interface ContentState {
-  items: Content[];
-  loading: boolean;
-  error: string | null;
-  selectedContentId: string | null;
-  selectedContent: Content | null;
-  statusFilter: string | null;
-  categoryFilter: string | null;
-  chatbotFilter: string | null;
-  sort: {
-    field: SortField;
-    direction: 'asc' | 'desc';
-  };
-  filters: {
-    status: ContentStatus | null;
-    category: string | null;
-    chatbot: string | null;
-  };
-  selectedIds: string[];
-  searchQuery: string;
-  lastFetchTime: number | null;
-  search: {
-    query: string;
-    suggestions: string[];
-    history: string[];
-  };
+export interface FilePreviewProps {
+  file: string;
+}
+
+export interface WebsitePreviewProps {
+  website: string;
+}
+
+export interface ContentFormProps {
+  content: Content;
+  onUpdate: (content: Partial<Content>) => void;
+  categories: string[];
+  currentUser: User;
+  isSubmitting?: boolean;
+}
+
+export interface ContentPreviewProps {
+  content: Content;
+  onRestore: (versionId: string) => void;
+  currentUser: User;
+}
+
+export interface ContentCommentsProps {
+  contentId: string;
 }
