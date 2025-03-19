@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -156,14 +155,17 @@ const TicketForm = ({ onSubmit, initialValues = {}, isSubmitting = false }: Tick
         </div>
       </div>
       
-      <div className="space-y-2">
-        <Label htmlFor="message" className="text-right">
+      <div className="space-y-2 border p-4 rounded-md bg-white">
+        <Label htmlFor="message" className="text-right block mb-2 font-medium">
           Initial Message <span className="text-red-500">*</span>
         </Label>
         <TicketMessageEditor 
           content={values.message}
           onChange={handleMessageChange}
         />
+        <p className="text-xs text-muted-foreground mt-2">
+          Use formatting tools to create a well-structured message. You can use the @ symbol to mention entities.
+        </p>
       </div>
       
       <div className="pt-4 flex justify-end space-x-2">

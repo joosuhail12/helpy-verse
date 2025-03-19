@@ -4,7 +4,7 @@ import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import Mention from '@tiptap/extension-mention';
 import { useEffect } from 'react';
-import suggestion from '../../utils/suggestion';
+import { createEditorConfig } from '../../utils/editorConfig';
 import type { Ticket } from '@/types/ticket';
 
 interface TicketMessageEditorProps {
@@ -28,21 +28,11 @@ const TicketMessageEditor = ({ content, onChange }: TicketMessageEditorProps) =>
     company: '',
   };
 
-  const editor = useEditor({
-    extensions: [
-      StarterKit,
-      Placeholder.configure({
-        placeholder: 'Write your initial message...',
-      }),
-      Mention.configure({
-        suggestion: suggestion(dummyTicket),
-      }),
-    ],
-    content: content,
-    onUpdate({ editor }) {
+  const editor = useEditor(
+    createEditorConfig(content, (editor) => {
       onChange(editor.getHTML());
-    },
-  });
+    }, dummyTicket)
+  );
 
   useEffect(() => {
     if (editor) {
@@ -51,7 +41,32 @@ const TicketMessageEditor = ({ content, onChange }: TicketMessageEditorProps) =>
   }, [editor, content]);
 
   return (
-    <EditorContent editor={editor} />
+    <div className="border rounded-md overflow-hidden">
+      <div className="bg-gray-50 border-b px-3 py-2 flex items-center space-x-1">
+        <button 
+          onClick={() => editor?.chain().focus().toggleBold().run()}
+          className={`p-1 rounded hover:bg-gray-200 ${editor?.isActive('bold') ? 'bg-gray-200' : ''}`}
+        >
+          <span className="font-bold">B</span>
+        </button>
+        <button 
+          onClick={() => editor?.chain().focus().toggleItalic().run()}
+          className={`p-1 rounded hover:bg-gray-200 ${editor?.isActive('italic') ? 'bg-gray-200' : ''}`}
+        >
+          <span className="italic">I</span>
+        </button>
+        <button 
+          onClick={() => editor?.chain().focus().toggleBulletList().run()}
+          className={`p-1 rounded hover:bg-gray-200 ${editor?.isActive('bulletList') ? 'bg-gray-200' : ''}`}
+        >
+          • List
+        </button>
+      </div>
+      <EditorContent 
+        editor={editor} 
+        className="min-h-[200px] p-3"
+      />
+    </div>
   );
 };
 
