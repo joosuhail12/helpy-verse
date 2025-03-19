@@ -142,7 +142,7 @@ const CustomerContextPanel = ({ ticket }: CustomerContextPanelProps) => {
   return (
     <Card className="h-full flex flex-col bg-white border-l">
       <CustomerHeader
-        customer={formattedCustomerData.name}
+        customer={formattedCustomerData?.name || 'Loading...'}
         company={companyInfo}
       />
 
