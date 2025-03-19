@@ -63,8 +63,8 @@ export const updateContact = createAsyncThunk(
   async ({ contactId, data }: { contactId: string; data: Partial<Contact> }, { rejectWithValue }) => {
     try {
       const response = await customerService.updateCustomer(contactId, data);
-      // Return both the contactId and response data
-      return { contactId, ...response.data };
+      // Fix: Return an object containing both contactId and response data
+      return { contactId, data: response.data };
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to update contact');
     }
@@ -76,8 +76,8 @@ export const updateContactCompany = createAsyncThunk(
   async ({ contactId, companyId }: { contactId: string; companyId: string | null }, { rejectWithValue }) => {
     try {
       const response = await customerService.updateCustomer(contactId, { company: companyId });
-      // Return both the contactId and response data
-      return { contactId, ...response.data };
+      // Fix: Return an object containing both contactId and response data
+      return { contactId, data: response.data };
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to update contact company');
     }
