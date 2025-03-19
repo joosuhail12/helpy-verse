@@ -32,6 +32,7 @@ const ToField = ({ selectedRecipients, onChange }: ToFieldProps) => {
     if (contact && !selectedRecipients.some(r => r.id === contactId)) {
       onChange([...selectedRecipients, contact]);
       setInputValue('');
+      setOpen(false);
     }
   };
 

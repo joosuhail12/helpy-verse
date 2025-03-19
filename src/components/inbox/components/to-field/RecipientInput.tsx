@@ -21,6 +21,14 @@ const RecipientInput = ({
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
 
+  // Filter contacts based on the input value
+  const filteredContacts = contacts.filter(contact => {
+    const searchTerm = inputValue.toLowerCase();
+    const fullName = `${contact.firstname || ''} ${contact.lastname || ''}`.toLowerCase();
+    const email = contact.email.toLowerCase();
+    return fullName.includes(searchTerm) || email.includes(searchTerm);
+  });
+
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
@@ -37,8 +45,8 @@ const RecipientInput = ({
           <ChevronsUpDown className="ml-auto h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[300px] p-0">
-        <Command>
+      <PopoverContent className="w-[300px] p-0" align="start">
+        <Command shouldFilter={false}>
           <CommandInput 
             placeholder="Search contacts or enter email..."
             value={inputValue}
@@ -60,10 +68,9 @@ const RecipientInput = ({
               )}
             </CommandEmpty>
             <CommandGroup heading="Contacts">
-              {contacts.map((contact) => (
+              {filteredContacts.map((contact) => (
                 <CommandItem
                   key={contact.id}
-                  value={`${contact.firstname || ''} ${contact.lastname || ''} ${contact.email}`}
                   onSelect={() => {
                     onSelect(contact.id);
                     setIsOpen(false);

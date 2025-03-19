@@ -1,10 +1,7 @@
 
 import { useState, useEffect } from 'react';
-import { Check, ChevronsUpDown, X, Mail } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { X, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
@@ -12,6 +9,7 @@ import { fetchCustomers } from '@/store/slices/contacts/contactsSlice';
 import { selectContacts } from '@/store/slices/contacts/contactsSelectors';
 import { Contact } from '@/types/contact';
 import { v4 as uuidv4 } from 'uuid';
+import RecipientInput from './to-field/RecipientInput';
 
 interface ToFieldProps {
   selectedRecipients: Array<Contact | { id: string; email: string; isNew?: boolean }>;
@@ -98,69 +96,17 @@ export function ToField({ selectedRecipients, onChange }: ToFieldProps) {
           </Badge>
         ))}
 
-        <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              variant="ghost"
-              role="combobox"
-              aria-expanded={open}
-              className="flex-1 h-8 justify-start px-2 text-left font-normal"
-              onClick={() => setOpen(true)}
-            >
-              {selectedRecipients.length === 0 
-                ? "Select recipients or type email..." 
-                : <span className="text-gray-400">Add more...</span>}
-              <ChevronsUpDown className="ml-auto h-4 w-4 shrink-0 opacity-50" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-[300px] p-0">
-            <Command>
-              <CommandInput 
-                placeholder="Search contacts or enter email..."
-                value={inputValue}
-                onValueChange={handleInputChange}
-                onKeyDown={handleKeyDown}
-              />
-              <CommandList>
-                <CommandEmpty>
-                  {isValidEmail(inputValue) ? (
-                    <Button
-                      variant="outline"
-                      className="w-full mt-1"
-                      onClick={handleCreateNewContact}
-                    >
-                      Add "{inputValue}" as new contact
-                    </Button>
-                  ) : (
-                    "No contacts found or enter a valid email"
-                  )}
-                </CommandEmpty>
-                <CommandGroup heading="Contacts">
-                  {contacts.map((contact) => (
-                    <CommandItem
-                      key={contact.id}
-                      value={`${contact.firstname} ${contact.lastname} ${contact.email}`}
-                      onSelect={() => handleSelect(contact.id)}
-                    >
-                      <div className="flex justify-between w-full">
-                        <span>{contact.firstname} {contact.lastname}</span>
-                        <span className="text-xs text-gray-500">{contact.email}</span>
-                      </div>
-                      <Check
-                        className={cn(
-                          "ml-auto h-4 w-4",
-                          selectedRecipients.some(r => r.id === contact.id)
-                            ? "opacity-100"
-                            : "opacity-0"
-                        )}
-                      />
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              </CommandList>
-            </Command>
-          </PopoverContent>
-        </Popover>
+        <RecipientInput 
+          inputValue={inputValue}
+          onInputChange={handleInputChange}
+          onKeyDown={handleKeyDown}
+          isOpen={open}
+          setIsOpen={setOpen}
+          onSelect={handleSelect}
+          contacts={contacts}
+          onCreateNewContact={handleCreateNewContact}
+          selectedRecipients={selectedRecipients}
+        />
       </div>
     </div>
   );

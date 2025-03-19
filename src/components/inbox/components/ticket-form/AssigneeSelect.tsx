@@ -33,6 +33,7 @@ interface AssigneeSelectProps {
 
 const AssigneeSelect = ({ value, onChange }: AssigneeSelectProps) => {
   const [open, setOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const dispatch = useAppDispatch();
   
   // Fetch teammates and teams from Redux store
@@ -69,6 +70,15 @@ const AssigneeSelect = ({ value, onChange }: AssigneeSelectProps) => {
     setOpen(false);
   };
 
+  // Filter options based on search query
+  const filteredTeamOptions = teamOptions.filter(team => 
+    team.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  
+  const filteredTeammateOptions = teammateOptions.filter(teammate => 
+    teammate.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="space-y-2">
       <Label htmlFor="assignee">Assign to</Label>
@@ -85,9 +95,13 @@ const AssigneeSelect = ({ value, onChange }: AssigneeSelectProps) => {
             <User className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-[200px] p-0">
-          <Command>
-            <CommandInput placeholder="Search assignee..." />
+        <PopoverContent className="w-[240px] p-0" align="start">
+          <Command shouldFilter={false}>
+            <CommandInput 
+              placeholder="Search assignee..." 
+              value={searchQuery}
+              onValueChange={setSearchQuery}
+            />
             <CommandList>
               <CommandEmpty>No assignee found.</CommandEmpty>
               
@@ -101,7 +115,6 @@ const AssigneeSelect = ({ value, onChange }: AssigneeSelectProps) => {
                   <CommandGroup heading="Assign to">
                     <CommandItem 
                       onSelect={() => handleSelect(CURRENT_USER)}
-                      value="Myself"
                     >
                       <User className="mr-2 h-4 w-4" />
                       {CURRENT_USER.name}
@@ -111,12 +124,11 @@ const AssigneeSelect = ({ value, onChange }: AssigneeSelectProps) => {
                     </CommandItem>
                   </CommandGroup>
                   
-                  {teamOptions.length > 0 && (
+                  {filteredTeamOptions.length > 0 && (
                     <CommandGroup heading="Teams">
-                      {teamOptions.map((team) => (
+                      {filteredTeamOptions.map((team) => (
                         <CommandItem
                           key={team.id}
-                          value={team.name}
                           onSelect={() => handleSelect(team)}
                         >
                           <Users className="mr-2 h-4 w-4" />
@@ -129,12 +141,11 @@ const AssigneeSelect = ({ value, onChange }: AssigneeSelectProps) => {
                     </CommandGroup>
                   )}
                   
-                  {teammateOptions.length > 0 && (
+                  {filteredTeammateOptions.length > 0 && (
                     <CommandGroup heading="Teammates">
-                      {teammateOptions.map((teammate) => (
+                      {filteredTeammateOptions.map((teammate) => (
                         <CommandItem
                           key={teammate.id}
-                          value={teammate.name}
                           onSelect={() => handleSelect(teammate)}
                         >
                           <User className="mr-2 h-4 w-4" />
