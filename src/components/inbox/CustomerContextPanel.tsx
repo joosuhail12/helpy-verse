@@ -52,7 +52,7 @@ const CustomerContextPanel = ({ ticket }: CustomerContextPanelProps) => {
   ];
 
   return (
-    <Card className="h-full flex flex-col bg-white border-l">
+    <div className="h-full flex flex-col bg-white border-l transition-all duration-300 ease-in-out">
       <CustomerHeader customer={ticket.customer} company={ticket.company} />
       
       <ScrollArea className="flex-1 p-4">
@@ -83,7 +83,7 @@ const CustomerContextPanel = ({ ticket }: CustomerContextPanelProps) => {
           />
         </div>
       </ScrollArea>
-    </Card>
+    </div>
   );
 };
 

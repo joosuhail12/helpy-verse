@@ -9,6 +9,11 @@ import MessageList from './components/MessageList';
 import CustomerContextPanel from './CustomerContextPanel';
 import { useConversation } from './hooks/useConversation';
 import { cn } from "@/lib/utils";
+import { 
+  ResizablePanelGroup, 
+  ResizablePanel, 
+  ResizableHandle 
+} from '@/components/ui/resizable';
 
 const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
   const {
@@ -45,8 +50,11 @@ const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
         />
       </div>
       
-      <div className="flex-1 flex overflow-hidden">
-        <div className="flex-1 flex flex-col overflow-hidden">
+      <ResizablePanelGroup 
+        direction="horizontal" 
+        className="flex-1 transition-all duration-300 ease-in-out"
+      >
+        <ResizablePanel defaultSize={70} minSize={40} className="flex flex-col overflow-hidden">
           {error ? (
             <Alert variant="destructive" className="m-4">
               <AlertCircle className="h-4 w-4" />
@@ -77,12 +85,14 @@ const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
               disabled={!!error}
             />
           </div>
-        </div>
+        </ResizablePanel>
+
+        <ResizableHandle withHandle className="transition-opacity duration-300 hover:opacity-100 opacity-40" />
         
-        <div className="w-80 border-l hidden lg:block overflow-y-auto">
+        <ResizablePanel defaultSize={30} minSize={20} className="hidden lg:block">
           <CustomerContextPanel ticket={ticket} />
-        </div>
-      </div>
+        </ResizablePanel>
+      </ResizablePanelGroup>
     </div>
   );
 };

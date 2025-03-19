@@ -12,6 +12,7 @@ import {
   ResizablePanel, 
   ResizableHandle 
 } from '@/components/ui/resizable';
+import ConversationPanelContainer from './ConversationPanelContainer';
 
 interface MainContentProps {
   isLoading: boolean;
@@ -96,7 +97,10 @@ const MainContent = ({
         <ResizableHandle withHandle className="transition-opacity duration-300 hover:opacity-100 opacity-40" />
         
         <ResizablePanel defaultSize={60} minSize={30}>
-          {/* Conversation panel goes here */}
+          <ConversationPanelContainer 
+            selectedTicket={selectedTicketForChat} 
+            onClose={() => onTicketClick(selectedTicketForChat)} 
+          />
         </ResizablePanel>
       </ResizablePanelGroup>
     );
