@@ -56,7 +56,7 @@ const EditTeam = () => {
         if (typeof team.channels === 'object' && team.channels !== null && 'chat' in team.channels) {
           // New format (object with chat/email properties)
           const chatChannel = team.channels.chat as string | undefined;
-          const emailChannels = (team.channels.email || []) as string[];
+          const emailChannels = Array.isArray(team.channels.email) ? team.channels.email as string[] : [];
           setSelectedChatChannel(chatChannel);
           setSelectedEmailChannels(emailChannels);
         } else {
@@ -77,7 +77,7 @@ const EditTeam = () => {
         if (typeof team.routing === 'object' && team.routing !== null && 'type' in team.routing) {
           // New format (object with type property)
           const routingType = team.routing.type as 'manual' | 'round-robin' | 'load-balanced';
-          const routingLimits = team.routing.limits || {};
+          const routingLimits = typeof team.routing.limits === 'object' ? team.routing.limits || {} : {};
           setRoutingType(routingType);
           setRoutingLimits(routingLimits);
         } else {
