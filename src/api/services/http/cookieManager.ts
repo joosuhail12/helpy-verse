@@ -68,49 +68,26 @@ export const setCookie = (cname: string, cvalue: string, exdays: number = 30): v
     }
 };
 
-// Improved logout function to clear cookies and local storage
+// Logout function to clear cookies and local storage
 export const handleLogout = (): void => {
     // Clear all authentication-related cookies
     try {
-        // First, explicitly set each cookie to an empty value with an expired date
         document.cookie = `customerToken=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Lax`;
         document.cookie = `agent_email=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Lax`;
         document.cookie = `workspaceId=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Lax`;
-        
-        // Clear any other potential auth-related cookies
-        document.cookie = `token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Lax`;
-        document.cookie = `refreshToken=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Lax`;
     } catch (error) {
         console.warn("Error clearing cookies:", error);
     }
     
     // Clear localStorage
-    const keysToRemove = [
-        "token", 
-        "customerToken", 
-        "workspaceId", 
-        "agent_email", 
-        "userId", 
-        "role", 
-        "refreshToken"
-    ];
+    localStorage.removeItem("token");
+    localStorage.removeItem("workspaceId");
+    localStorage.removeItem("agent_email");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("role");
+    sessionStorage.removeItem("token");
     
-    keysToRemove.forEach(key => {
-        try {
-            localStorage.removeItem(key);
-        } catch (error) {
-            console.warn(`Error removing ${key} from localStorage:`, error);
-        }
-    });
-    
-    // Also clear sessionStorage
-    try {
-        sessionStorage.clear();
-    } catch (error) {
-        console.warn("Error clearing sessionStorage:", error);
-    }
-    
-    console.log("User logged out - all credentials cleared");
+    console.log("User logged out");
     
     // Use direct navigation for reliability
     setTimeout(() => {

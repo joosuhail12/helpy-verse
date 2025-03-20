@@ -36,24 +36,13 @@ const Sidebar = () => {
     }
   }, [location]);
 
-  // Improved handleLogout with proper dispatch and navigation
   const handleLogout = () => {
-    // First display toast notification
+    dispatch(logout());
     toast({
-      title: "Logging out...",
-      description: "You are being logged out of your account"
+      title: "Logged out successfully",
+      description: "You have been logged out of your account"
     });
-    
-    // Use a small timeout to ensure the toast is shown before redirect
-    setTimeout(() => {
-      // Dispatch the logout action which will clear state and tokens
-      dispatch(logout());
-      
-      // For extra safety, navigate to sign-in with replace
-      // The dispatch should already call handleLogout which redirects,
-      // but this is a fallback just in case
-      navigate('/sign-in', { replace: true });
-    }, 100);
+    navigate('/sign-in', { replace: true });
   };
 
   const toggleExpanded = (itemTitle: string) => {
