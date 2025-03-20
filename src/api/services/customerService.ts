@@ -44,8 +44,11 @@ export const customerService = {
         try {
             console.log(`Attempting to fetch customers (try ${retryCount + 1}/${MAX_RETRIES + 1})`);
             
+            // Get workspace ID from env or localStorage
+            const workspaceId = import.meta.env.VITE_REACT_APP_WORKSPACE_ID || localStorage.getItem('workspaceId') || 'w1';
+            
             // Check if we should use a test response for development
-            if (process.env.NODE_ENV === 'development' && process.env.REACT_APP_USE_MOCK_DATA === 'true') {
+            if (import.meta.env.DEV && import.meta.env.VITE_REACT_APP_USE_MOCK_DATA === 'true') {
                 console.log('Using mock data for customers');
                 return {
                     status: 'success',
@@ -54,7 +57,9 @@ export const customerService = {
                 };
             }
             
-            const response = await HttpClient.contactsClient.get<CustomersResponse>(API_URL);
+            const response = await HttpClient.contactsClient.get<CustomersResponse>(API_URL, {
+                params: { workspace_id: workspaceId }
+            });
             console.log(`Successfully fetched customers:`, response.data);
             return response.data;
         } catch (error: any) {
@@ -71,7 +76,7 @@ export const customerService = {
                 }
                 
                 // If all retries failed, return mock data in development
-                if (process.env.NODE_ENV === 'development') {
+                if (import.meta.env.DEV) {
                     console.log('Falling back to mock data after timeout');
                     return {
                         status: 'success',
@@ -92,7 +97,7 @@ export const customerService = {
             }
             
             // If all retries failed, return mock data in development
-            if (process.env.NODE_ENV === 'development') {
+            if (import.meta.env.DEV) {
                 console.log('Falling back to mock data after error');
                 return {
                     status: 'success',
@@ -111,7 +116,13 @@ export const customerService = {
     async getCustomerDetails(customer_id: string, retryCount = 0): Promise<CustomerResponse> {
         try {
             console.log(`Fetching customer details for ID: ${customer_id} (try ${retryCount + 1}/${MAX_RETRIES + 1})`);
-            const response = await HttpClient.contactsClient.get<CustomerResponse>(`${API_URL}/${customer_id}`);
+            
+            // Get workspace ID from env or localStorage
+            const workspaceId = import.meta.env.VITE_REACT_APP_WORKSPACE_ID || localStorage.getItem('workspaceId') || 'w1';
+            
+            const response = await HttpClient.contactsClient.get<CustomerResponse>(`${API_URL}/${customer_id}`, {
+                params: { workspace_id: workspaceId }
+            });
             console.log(`Successfully fetched customer details for ID: ${customer_id}`);
             return response.data;
         } catch (error: any) {
@@ -143,9 +154,17 @@ export const customerService = {
     },
 
     // ✅ Create a new customer
-    async createCustomer(customerData: CreateCustomerData): Promise<CustomerResponse> {
+    async createCustomer(customerData: Omit<CreateCustomerData, 'workspace_id'>): Promise<CustomerResponse> {
         try {
-            const response = await HttpClient.apiClient.post<CustomerResponse>(API_URL, customerData);
+            // Get workspace ID from env or localStorage
+            const workspaceId = import.meta.env.VITE_REACT_APP_WORKSPACE_ID || localStorage.getItem('workspaceId') || 'w1';
+            
+            const payload = {
+                ...customerData,
+                workspace_id: workspaceId
+            };
+            
+            const response = await HttpClient.apiClient.post<CustomerResponse>(API_URL, payload);
             return response.data;
         } catch (error: any) {
             console.error('Error creating customer:', error);
@@ -160,6 +179,10 @@ export const customerService = {
         try {
             const formData = new FormData();
             formData.append('file', csvFile);
+            
+            // Get workspace ID from env or localStorage
+            const workspaceId = import.meta.env.VITE_REACT_APP_WORKSPACE_ID || localStorage.getItem('workspaceId') || 'w1';
+            formData.append('workspace_id', workspaceId);
 
             await HttpClient.apiClient.post(`${API_URL}/import`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
@@ -175,7 +198,15 @@ export const customerService = {
     // ✅ Update a customer
     async updateCustomer(customer_id: string, customerData: Partial<Contact>): Promise<Contact> {
         try {
-            const response = await HttpClient.apiClient.put<Contact>(`${API_URL}/${customer_id}`, customerData);
+            // Get workspace ID from env or localStorage
+            const workspaceId = import.meta.env.VITE_REACT_APP_WORKSPACE_ID || localStorage.getItem('workspaceId') || 'w1';
+            
+            const payload = {
+                ...customerData,
+                workspace_id: workspaceId
+            };
+            
+            const response = await HttpClient.apiClient.put<Contact>(`${API_URL}/${customer_id}`, payload);
             return response.data;
         } catch (error: any) {
             console.error('Error updating customer:', error);
@@ -188,7 +219,12 @@ export const customerService = {
     // ✅ Delete a customer
     async deleteContact(customer_id: string): Promise<void> {
         try {
-            await HttpClient.apiClient.delete(`${API_URL}/${customer_id}`);
+            // Get workspace ID from env or localStorage
+            const workspaceId = import.meta.env.VITE_REACT_APP_WORKSPACE_ID || localStorage.getItem('workspaceId') || 'w1';
+            
+            await HttpClient.apiClient.delete(`${API_URL}/${customer_id}`, {
+                params: { workspace_id: workspaceId }
+            });
         } catch (error: any) {
             console.error('Error deleting customer:', error);
             throw error.isServerError 

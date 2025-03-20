@@ -17,9 +17,17 @@ const setupApi = () => {
     }
     
     // Ensure workspace ID is set for all requests
-    const workspaceId = cookieFunctions.getCookie('workspaceId') || localStorage.getItem('workspaceId');
+    const workspaceId = cookieFunctions.getCookie('workspaceId') || 
+                        localStorage.getItem('workspaceId') || 
+                        import.meta.env.VITE_REACT_APP_WORKSPACE_ID ||
+                        'w1';
+    
     if (workspaceId) {
       console.log('API service initialized with workspace ID:', workspaceId);
+      // Store workspaceId in localStorage if not already there
+      if (!localStorage.getItem('workspaceId')) {
+        localStorage.setItem('workspaceId', workspaceId);
+      }
     } else {
       console.warn('API service initialized without workspace ID');
     }

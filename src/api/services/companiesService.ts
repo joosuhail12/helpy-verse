@@ -38,7 +38,7 @@ export const companiesService = {
     async fetchCompanies(params: CompanyParams = {}): Promise<CompaniesResponse> {
         try {
             // Get workspace ID from env or localStorage
-            const workspaceId = process.env.REACT_APP_WORKSPACE_ID || localStorage.getItem('workspaceId');
+            const workspaceId = import.meta.env.VITE_REACT_APP_WORKSPACE_ID || localStorage.getItem('workspaceId') || 'w1';
             
             // Ensure workspace_id is included in params
             const queryParams = {
@@ -46,7 +46,9 @@ export const companiesService = {
                 workspace_id: params.workspace_id || workspaceId
             };
             
+            console.log('Fetching companies with params:', queryParams);
             const response = await HttpClient.apiClient.get<CompaniesResponse>(API_URL, { params: queryParams });
+            console.log('Companies response:', response.data);
             return response.data;
         } catch (error) {
             console.error('Error fetching companies:', error);
@@ -57,7 +59,7 @@ export const companiesService = {
     async createCompany(company: Partial<Company>): Promise<CreateCompaniesResponse> {
         try {
             // Get workspace ID from env or localStorage
-            const workspaceId = process.env.REACT_APP_WORKSPACE_ID || localStorage.getItem('workspaceId');
+            const workspaceId = import.meta.env.VITE_REACT_APP_WORKSPACE_ID || localStorage.getItem('workspaceId') || 'w1';
             
             const payload = {
                 ...company,
@@ -75,7 +77,7 @@ export const companiesService = {
     async updateCompany(id: string, company: Partial<Company>): Promise<CompanyResponse> {
         try {
             // Get workspace ID from env or localStorage
-            const workspaceId = process.env.REACT_APP_WORKSPACE_ID || localStorage.getItem('workspaceId');
+            const workspaceId = import.meta.env.VITE_REACT_APP_WORKSPACE_ID || localStorage.getItem('workspaceId') || 'w1';
             
             const payload = {
                 ...company,
@@ -93,7 +95,7 @@ export const companiesService = {
     async deleteCompany(id: string): Promise<void> {
         try {
             // Get workspace ID from env or localStorage
-            const workspaceId = process.env.REACT_APP_WORKSPACE_ID || localStorage.getItem('workspaceId');
+            const workspaceId = import.meta.env.VITE_REACT_APP_WORKSPACE_ID || localStorage.getItem('workspaceId') || 'w1';
             
             await HttpClient.apiClient.delete(`${API_URL}/${id}`, {
                 params: { workspace_id: workspaceId }
@@ -107,7 +109,7 @@ export const companiesService = {
     async getCompany(id: string): Promise<CompanyResponse> {
         try {
             // Get workspace ID from env or localStorage
-            const workspaceId = process.env.REACT_APP_WORKSPACE_ID || localStorage.getItem('workspaceId');
+            const workspaceId = import.meta.env.VITE_REACT_APP_WORKSPACE_ID || localStorage.getItem('workspaceId') || 'w1';
             
             const response = await HttpClient.apiClient.get<CompanyResponse>(`${API_URL}/${id}`, {
                 params: { workspace_id: workspaceId }

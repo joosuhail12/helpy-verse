@@ -1,8 +1,9 @@
 
 // Update this file with the correct backend URL
 
-export const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://dev-socket.pullseai.com/api';
-export const LLM_SERVICE_URL = process.env.REACT_APP_LLM_SERVICE_URL || 'https://dev-socket.pullseai.com/api/llm';
+// Use import.meta.env instead of process.env for Vite projects
+export const API_BASE_URL = import.meta.env.VITE_REACT_APP_API_URL || 'https://dev-socket.pullseai.com/api';
+export const LLM_SERVICE_URL = import.meta.env.VITE_REACT_APP_LLM_SERVICE_URL || 'https://dev-socket.pullseai.com/api/llm';
 
 // Increased timeout for better reliability
 export const DEFAULT_TIMEOUT = 60000; // 60 seconds (increased from 30s)
