@@ -1,8 +1,9 @@
+
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { formatDistanceToNow } from "date-fns";
-import { Copy, Mail, User } from "lucide-react";
+import { Copy, Mail, User, ZapIcon } from "lucide-react";
 import TicketPriorityBadge from "../TicketPriorityBadge";
 import TicketStatusBadge from "../TicketStatusBadge";
 import type { Ticket, ViewMode } from "@/types/ticket";
@@ -38,14 +39,17 @@ const TicketListItem = ({
 
   const getActiveStateClasses = () => {
     if (isActive) {
-      return "border-primary-500 border-l-4 bg-primary-50/30 shadow-md transform transition-all duration-300";
+      return "border-l-4 border-primary bg-primary-50/50 shadow-lg transform transition-all duration-300";
     }
     return "";
   };
 
   if (viewMode === "compact") {
     return (
-      <Card className={`mb-2 overflow-hidden ${isSelected ? "border-primary" : ""} ${isLoading ? "opacity-60" : ""} ${getActiveStateClasses()}`}>
+      <Card className={`mb-2 overflow-hidden relative ${isSelected ? "border-primary" : ""} ${isLoading ? "opacity-60" : ""} ${getActiveStateClasses()}`}>
+        {isActive && (
+          <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary animate-pulse"></div>
+        )}
         <div className="flex items-center p-3">
           {onSelect && (
             <div className="mr-3" onClick={handleSelect}>
@@ -54,7 +58,8 @@ const TicketListItem = ({
           )}
           <div className="flex-1 min-w-0">
             <div className="flex items-center space-x-2">
-              <h3 className="text-sm font-medium truncate">{ticket.subject}</h3>
+              {isActive && <ZapIcon className="h-4 w-4 text-primary animate-pulse" />}
+              <h3 className={`text-sm font-medium truncate ${isActive ? "text-primary" : ""}`}>{ticket.subject}</h3>
               {ticket.isUnread && <Badge className="bg-blue-500">New</Badge>}
             </div>
             <p className="text-xs text-gray-500 truncate">
@@ -72,7 +77,10 @@ const TicketListItem = ({
 
   if (viewMode === "card") {
     return (
-      <Card className={`overflow-hidden ${isSelected ? "border-primary" : ""} ${isLoading ? "opacity-60" : ""} ${getActiveStateClasses()}`}>
+      <Card className={`overflow-hidden relative ${isSelected ? "border-primary" : ""} ${isLoading ? "opacity-60" : ""} ${getActiveStateClasses()}`}>
+        {isActive && (
+          <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary animate-pulse"></div>
+        )}
         <div className="p-4">
           <div className="flex items-start justify-between mb-2">
             <div className="flex items-center">
@@ -81,7 +89,10 @@ const TicketListItem = ({
                   <Checkbox checked={isSelected} />
                 </div>
               )}
-              <h3 className="text-base font-medium">{ticket.subject}</h3>
+              <div className="flex items-center">
+                {isActive && <ZapIcon className="h-4 w-4 text-primary mr-1 animate-pulse" />}
+                <h3 className={`text-base font-medium ${isActive ? "text-primary" : ""}`}>{ticket.subject}</h3>
+              </div>
               {ticket.isUnread && <Badge className="ml-2 bg-blue-500">New</Badge>}
             </div>
             <div className="flex space-x-1">
@@ -119,21 +130,25 @@ const TicketListItem = ({
   }
 
   return (
-    <Card className={`mb-2 overflow-hidden ${isSelected ? "border-primary" : ""} ${isLoading ? "opacity-60" : ""} ${getActiveStateClasses()} transition-all duration-300`}>
-      <div className="flex items-center p-4">
+    <Card className={`mb-2 overflow-hidden relative ${isSelected ? "border-primary" : ""} ${isLoading ? "opacity-60" : ""} ${getActiveStateClasses()} transition-all duration-300`}>
+      {isActive && (
+        <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary animate-pulse"></div>
+      )}
+      <div className={`flex items-center p-4 ${isActive ? "bg-primary-50/50" : ""}`}>
         {onSelect && (
           <div className="mr-4" onClick={handleSelect}>
             <Checkbox checked={isSelected} />
           </div>
         )}
         <div className="mr-4 flex-shrink-0">
-          <div className="bg-gray-100 rounded-full p-2">
-            <Mail className="h-5 w-5 text-gray-500" />
+          <div className={`${isActive ? "bg-primary/10" : "bg-gray-100"} rounded-full p-2 ${isActive ? "ring-2 ring-primary/30" : ""}`}>
+            <Mail className={`h-5 w-5 ${isActive ? "text-primary" : "text-gray-500"}`} />
           </div>
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center">
-            <h3 className="text-sm font-medium">{ticket.subject}</h3>
+            {isActive && <ZapIcon className="h-4 w-4 text-primary mr-1 animate-pulse" />}
+            <h3 className={`text-sm font-medium ${isActive ? "text-primary font-semibold" : ""}`}>{ticket.subject}</h3>
             {ticket.isUnread && <Badge className="ml-2 bg-blue-500">New</Badge>}
             {ticket.hasNotification && (
               <Badge className="ml-2 bg-amber-500">
