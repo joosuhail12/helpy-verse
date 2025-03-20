@@ -1,4 +1,5 @@
-import { useEffect } from 'react';
+
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
@@ -8,44 +9,22 @@ import {
   selectCompanyLoading, 
   selectCompanyError 
 } from '@/store/slices/companies/companiesSlice';
-import {
-  Edit, Users, Globe, Briefcase, Mail, Phone, Calendar, MapPin, DollarSign, Package
-} from 'lucide-react';
+import { CompanyDetailHeader } from '@/components/companies/detail/CompanyDetailHeader';
+import { CompanyMainInfo } from '@/components/companies/detail/CompanyMainInfo';
+import { CompanyDeals } from '@/components/companies/detail/CompanyDeals';
+import { CompanyActivity } from '@/components/companies/detail/CompanyActivity';
+import { CompanyNotes } from '@/components/companies/detail/CompanyNotes';
+import { CompanyTickets } from '@/components/companies/detail/CompanyTickets';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-
-// Placeholder for contacts, deals, activity, notes sections (you can keep them or enhance later)
-const ContactsTable = ({ contacts }: { contacts: any[] }) => (
-  <div className="p-4">
-    <h3 className="text-lg font-semibold mb-4">Associated Contacts</h3>
-    <table className="w-full">
-      <thead>
-        <tr>
-          <th className="text-left pb-2">Name</th>
-          <th className="text-left pb-2">Email</th>
-          <th className="text-left pb-2">Status</th>
-        </tr>
-      </thead>
-      <tbody>
-        {contacts.map(contact => (
-          <tr key={contact.id}>
-            <td className="py-2">{contact.firstname} {contact.lastname}</td>
-            <td className="py-2">{contact.email}</td>
-            <td className="py-2">{contact.status}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
-);
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Loader2 } from 'lucide-react';
+import { toast } from '@/components/ui/use-toast';
 
 const CompanyDetail = () => {
   const { id } = useParams<{ id: string }>();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('info');
 
   const company = useAppSelector(selectCompanyDetails);
   const loading = useAppSelector(selectCompanyLoading);
@@ -57,84 +36,114 @@ const CompanyDetail = () => {
     }
   }, [dispatch, id]);
 
-  if (loading) return <p>Loading company details...</p>;
-  if (error) return <p className="text-red-500">Error: {error}</p>;
-  if (!company) return <p>No company details found.</p>;
+  const handleDeleteCompany = () => {
+    // Add delete functionality
+    toast({
+      title: "Not implemented",
+      description: "Delete company functionality is not yet implemented",
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6">
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+          <p>Error: {error}</p>
+          <button 
+            onClick={() => navigate('/home/contacts/companies')}
+            className="text-red-700 underline mt-2"
+          >
+            Back to Companies
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!company) {
+    return (
+      <div className="p-6">
+        <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded">
+          <p>Company not found</p>
+          <button 
+            onClick={() => navigate('/home/contacts/companies')}
+            className="text-yellow-700 underline mt-2"
+          >
+            Back to Companies
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="container mx-auto py-6 max-w-7xl space-y-8">
-      <div className="flex justify-between items-start">
-        <div>
-          <h1 className="text-3xl font-bold">{company.name}</h1>
-          <p className="text-muted-foreground">{company.industry}</p>
+    <div className="h-full flex flex-col overflow-hidden">
+      <div className="px-6 pt-6 pb-3 flex-none">
+        <CompanyDetailHeader 
+          company={company} 
+          onDeleteClick={handleDeleteCompany} 
+        />
+      </div>
+
+      <Tabs 
+        value={activeTab} 
+        onValueChange={setActiveTab}
+        className="flex-1 flex flex-col overflow-hidden"
+      >
+        <div className="px-6 border-b">
+          <TabsList className="h-10">
+            <TabsTrigger value="info">Info</TabsTrigger>
+            <TabsTrigger value="contacts">Contacts</TabsTrigger>
+            <TabsTrigger value="deals">Deals</TabsTrigger>
+            <TabsTrigger value="activities">Activities</TabsTrigger>
+            <TabsTrigger value="tickets">Tickets</TabsTrigger>
+            <TabsTrigger value="notes">Notes</TabsTrigger>
+          </TabsList>
         </div>
-        <Button className="ml-auto">
-          <Edit className="mr-2 h-4 w-4" />
-          Edit Company
-        </Button>
-      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="md:col-span-2">
-          <CardHeader>
-            <CardTitle>Company Information</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <InfoRow label="Website" icon={<Globe />} value={company.website} />
-              <InfoRow label="Industry" icon={<Briefcase />} value={company.industry} />
-              <InfoRow label="Email" icon={<Mail />} value={company.contactInfo?.email} />
-              <InfoRow label="Phone" icon={<Phone />} value={company.contactInfo?.phone} />
-              <InfoRow label="Employees" icon={<Users />} value={company.size} />
+        <div className="flex-1 overflow-hidden">
+          <ScrollArea className="h-full">
+            <div className="p-6">
+              <TabsContent value="info" className="mt-0">
+                <CompanyMainInfo company={company} />
+              </TabsContent>
+              
+              <TabsContent value="contacts" className="mt-0">
+                <div className="bg-white p-6 rounded-lg shadow-sm">
+                  <h2 className="text-xl font-semibold mb-4">Associated Contacts</h2>
+                  <p className="text-muted-foreground">No contacts associated with this company.</p>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="deals" className="mt-0">
+                <CompanyDeals company={company} />
+              </TabsContent>
+              
+              <TabsContent value="activities" className="mt-0">
+                <CompanyActivity company={company} />
+              </TabsContent>
+              
+              <TabsContent value="tickets" className="mt-0">
+                <CompanyTickets companyId={company.id} />
+              </TabsContent>
+              
+              <TabsContent value="notes" className="mt-0">
+                <CompanyNotes company={company} />
+              </TabsContent>
             </div>
-            <Separator />
-            <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Address</p>
-              <p className="flex items-start">
-                <MapPin className="h-4 w-4 mr-2 text-muted-foreground" />
-                <span>
-                  {company.address?.street}<br />
-                  {company.address?.city}, {company.address?.state} {company.address?.zipCode}<br />
-                  {company.address?.country}
-                </span>
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick Stats</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-4">
-              <StatCard label="Annual Revenue" value="165,000" icon={<DollarSign className="text-green-600" />} />
-              <StatCard label="Total Contacts" value="0" icon={<Users className="text-blue-600" />} />
-              <StatCard label="Open Deals" value="0" icon={<Package className="text-purple-600" />} />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+          </ScrollArea>
+        </div>
+      </Tabs>
     </div>
   );
 };
-
-// Helper component for display rows
-const InfoRow = ({ label, icon, value }: { label: string; icon: React.ReactNode; value?: string }) => (
-  <div className="space-y-1">
-    <p className="text-sm text-muted-foreground">{label}</p>
-    <p className="flex items-center">
-      <span className="h-4 w-4 mr-2 text-muted-foreground">{icon}</span>
-      {value || '-'}
-    </p>
-  </div>
-);
-
-const StatCard = ({ label, value, icon }: { label: string; value: string | number; icon: React.ReactNode }) => (
-  <div className="bg-muted p-4 rounded-lg">
-    <p className="text-sm text-muted-foreground">{label}</p>
-    <p className="flex items-center text-2xl font-bold">{icon} {value}</p>
-  </div>
-);
 
 export default CompanyDetail;
