@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ValidationRule } from "@/types/customData";
+import { ValidationRule } from "@/types/customField";
 import { Plus, X } from "lucide-react";
 
 interface ValidationRulesSectionProps {

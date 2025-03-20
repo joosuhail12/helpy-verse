@@ -1,12 +1,11 @@
-import { useEffect } from 'react';
+
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Info, Users } from 'lucide-react';
 import { IconEmojiPicker } from '../IconEmojiPicker';
 import { FieldLabel } from './FieldLabel';
-import { useAppSelector } from '@/hooks/useAppSelector';
-import { fetchTeams } from '@/store/slices/teams/teamsSlice';
-import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { mockTeams } from '@/store/slices/teams/mockData';
+
 interface BasicInformationSectionProps {
   channelName: string;
   setChannelName: (value: string) => void;
@@ -30,16 +29,6 @@ export const BasicInformationSection = ({
   touched,
   setFieldTouched,
 }: BasicInformationSectionProps) => {
-
-  const { teams, loading, error, areTeamsLoaded } = useAppSelector((state) => state.teams);
-  const dispatch = useAppDispatch();
-
-  useEffect(() => {
-    if (!areTeamsLoaded) {
-      dispatch(fetchTeams()).unwrap();
-    }
-  }, [areTeamsLoaded, dispatch]);
-
   return (
     <div className="space-y-6">
       <h3 className="text-lg font-semibold">Basic Information</h3>
@@ -100,7 +89,7 @@ export const BasicInformationSection = ({
               <SelectValue placeholder="Select a team (optional)" />
             </SelectTrigger>
             <SelectContent>
-              {teams.map((team) => (
+              {mockTeams.map((team) => (
                 <SelectItem key={team.id} value={team.id}>
                   {team.name}
                 </SelectItem>

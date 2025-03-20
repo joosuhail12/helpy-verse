@@ -8,6 +8,7 @@ import TeamsList from '@/components/teams/TeamsList';
 import { Button } from "@/components/ui/button";
 import { Plus, Users } from "lucide-react";
 import { fetchTeams } from '@/store/slices/teams/teamsSlice';
+import { mockTeams } from '@/store/slices/teams/mockData';
 
 const Teams = () => {
   const navigate = useNavigate();
@@ -21,7 +22,7 @@ const Teams = () => {
         await dispatch(fetchTeams()).unwrap();
       } catch (err) {
         console.log('Using mock data as fallback:', err);
-
+       
       }
     };
     loadTeams();

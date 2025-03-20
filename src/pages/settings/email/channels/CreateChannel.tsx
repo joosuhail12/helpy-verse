@@ -18,19 +18,19 @@ const CreateChannel = () => {
   const dispatch = useAppDispatch();
 
   const {
-    name,
-    setName,
+    channelName,
+    setChannelName,
     senderName,
     setSenderName,
-    emailAddress,
-    setEmailAddress,
-    autoBccMail,
-    setAutoBccMail,
-    noReplyMail,
-    setNoReplyMail,
+    email,
+    setEmail,
+    autoBccEmail,
+    setAutoBccEmail,
+    noReplyEmail,
+    setNoReplyEmail,
     selectedEmoji,
     setSelectedEmoji,
-    teamId,
+    selectedTeamId,
     setSelectedTeamId,
     handleSubmit,
     errors,
@@ -40,10 +40,10 @@ const CreateChannel = () => {
   } = useChannelForm({
     onAddChannel: async (channel) => {
       try {
-        const result = await dispatch(createChannel(channel as EmailChannel)).unwrap();
+        const result = await dispatch(createChannel(channel)).unwrap();
         toast({
           title: "Channel created successfully",
-          description: `${result[0].name} has been created with ${result[0].emailAddress} as the sender.`,
+          description: `${result.channelName} has been created with ${result.email} as the sender.`,
           duration: 5000,
         });
         navigate('/home/settings/email/channels');
@@ -82,19 +82,19 @@ const CreateChannel = () => {
       <Card className="p-6">
         <form onSubmit={handleSubmit} className="space-y-6">
           <ChannelFormFields
-            channelName={name}
-            setChannelName={setName}
+            channelName={channelName}
+            setChannelName={setChannelName}
             senderName={senderName}
             setSenderName={setSenderName}
-            email={emailAddress}
-            setEmail={setEmailAddress}
-            autoBccEmail={autoBccMail}
-            setAutoBccEmail={setAutoBccMail}
-            noReplyEmail={noReplyMail}
-            setNoReplyEmail={setNoReplyMail}
+            email={email}
+            setEmail={setEmail}
+            autoBccEmail={autoBccEmail}
+            setAutoBccEmail={setAutoBccEmail}
+            noReplyEmail={noReplyEmail}
+            setNoReplyEmail={setNoReplyEmail}
             selectedEmoji={selectedEmoji}
             setSelectedEmoji={setSelectedEmoji}
-            selectedTeamId={teamId}
+            selectedTeamId={selectedTeamId}
             setSelectedTeamId={setSelectedTeamId}
             errors={errors as unknown as Record<string, string>}
             touched={touched}

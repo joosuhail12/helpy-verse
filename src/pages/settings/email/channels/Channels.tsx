@@ -50,16 +50,8 @@ const Channels = () => {
           </Card>
         ) : filteredAndSortedChannels.length === 0 ? (
           <Card className="p-6">
-            <ChannelSearch
-              searchQuery={searchQuery}
-              setSearchQuery={setSearchQuery}
-              sortBy={sortBy}
-              setSortBy={setSortBy}
-              sortOrder={sortOrder}
-              setSortOrder={setSortOrder}
-            />
-            <EmptyState
-              onCreateClick={() => { }}
+            <EmptyState 
+              onCreateClick={() => {}}
               hasDomainVerified={hasDomainVerified}
             />
           </Card>

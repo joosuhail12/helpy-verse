@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import type { EmailChannel, CreateEmailChannelDto } from '@/types/emailChannel';
-import { emailChannelsService } from '@/api/services/emailChannels.service';
+import { mockEmailChannels, mockWorkspace } from '@/mock/emailChannels';
 
 interface EmailChannelsState {
   channels: EmailChannel[];
@@ -18,49 +18,59 @@ const initialState: EmailChannelsState = {
   loading: false,
   error: null,
   defaultChannel: {
-    email: "",
-    isActive: false,
+    email: mockWorkspace.defaultEmail,
+    isActive: true,
   },
-  hasDomainVerified: false,
+  hasDomainVerified: mockWorkspace.hasDomainVerified,
 };
 
 export const fetchChannels = createAsyncThunk(
   'emailChannels/fetchChannels',
   async () => {
-    const response = await emailChannelsService.getAllEmailChannels();
-    return response.data;
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    return mockEmailChannels;
   }
 );
 
 export const createChannel = createAsyncThunk(
   'emailChannels/createChannel',
-  async (channel: EmailChannel) => {
-    const response = await emailChannelsService.createEmailChannel(channel);
-    return response.data;
+  async (channel: CreateEmailChannelDto) => {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    const newChannel: EmailChannel = {
+      ...channel,
+      id: Math.random().toString(),
+      createdAt: new Date().toISOString(),
+    };
+    
+    return newChannel;
   }
 );
 
 export const updateChannel = createAsyncThunk(
   'emailChannels/updateChannel',
   async (channel: Partial<EmailChannel> & { id: string }) => {
-    const response = await emailChannelsService.updateEmailChannel(channel.id, channel);
-    return response.data;
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    return channel;
   }
 );
 
 export const deleteChannel = createAsyncThunk(
   'emailChannels/deleteChannel',
   async (id: string) => {
-    const response = await emailChannelsService.deleteEmailChannel(id);
-    return response.data;
+    await new Promise(resolve => setTimeout(resolve, 500));
+    return id;
   }
 );
 
 export const toggleChannelStatus = createAsyncThunk(
   'emailChannels/toggleChannelStatus',
   async ({ id, isActive }: { id: string; isActive: boolean }) => {
-    const response = await emailChannelsService.updateEmailChannel(id, { isActive });
-    return response.data;
+    await new Promise(resolve => setTimeout(resolve, 500));
+    return { id, isActive };
   }
 );
 
@@ -102,23 +112,9 @@ const emailChannelsSlice = createSlice({
       })
       .addCase(fetchChannels.fulfilled, (state, action) => {
         state.loading = false;
-
-        // Find default channel and set it if exists
-        const defaultChannel = action.payload.emailChannels.find((channel: EmailChannel) => channel.isDefault);
-        if (defaultChannel) {
-          state.defaultChannel = {
-            email: defaultChannel.emailAddress,
-            isActive: defaultChannel.isActive
-          };
-        }
-
-        // Filter out default channel from channels array
-        state.channels = action.payload.emailChannels
-          .filter((channel: EmailChannel) => !channel.isDefault);
-
-        state.hasDomainVerified = action.payload.doesUserHaveVerifiedDomain;
+        state.channels = action.payload;
         // Automatically disable default channel if custom channels exist
-        if (action.payload.emailChannels.length > 0 || action.payload.doesUserHaveVerifiedDomain) {
+        if (action.payload.length > 0) {
           state.defaultChannel.isActive = false;
         }
       })
@@ -127,16 +123,18 @@ const emailChannelsSlice = createSlice({
         state.error = action.error.message || 'Failed to fetch channels';
       })
       .addCase(createChannel.fulfilled, (state, action) => {
-        state.channels.push(action.payload[0]);
+        state.channels.push(action.payload);
         // Disable default channel when a custom channel is added
         state.defaultChannel.isActive = false;
       })
       .addCase(updateChannel.fulfilled, (state, action) => {
-        const index = state.channels.findIndex(c => c.id === action.payload[0].id);
+        const index = state.channels.findIndex(c => c.id === action.payload.id);
         if (index !== -1) {
-          state.channels = state.channels.map(channel =>
-            channel.id === action.payload[0].id ? action.payload[0] : channel
-          );
+          state.channels[index] = {
+            ...state.channels[index],
+            ...action.payload,
+            updatedAt: new Date().toISOString(),
+          };
         }
       })
       .addCase(deleteChannel.fulfilled, (state, action) => {
@@ -147,11 +145,9 @@ const emailChannelsSlice = createSlice({
         }
       })
       .addCase(toggleChannelStatus.fulfilled, (state, action) => {
-        const index = state.channels.findIndex(c => c.id === action.payload[0].id);
+        const index = state.channels.findIndex(c => c.id === action.payload.id);
         if (index !== -1) {
-          state.channels = state.channels.map(channel =>
-            channel.id === action.payload[0].id ? action.payload[0] : channel
-          );
+          state.channels[index].isActive = action.payload.isActive;
         }
       })
       .addCase(toggleDefaultChannelStatus.fulfilled, (state, action) => {
@@ -165,7 +161,7 @@ const emailChannelsSlice = createSlice({
         }
       })
       .addCase(bulkToggleStatus.fulfilled, (state, action) => {
-        state.channels = state.channels.map(channel =>
+        state.channels = state.channels.map(channel => 
           action.payload.ids.includes(channel.id)
             ? { ...channel, isActive: action.payload.isActive }
             : channel
