@@ -1,47 +1,36 @@
 
-/**
- * Configuration for API endpoints
- */
+// Update this file to include the correct refresh token endpoint path
 
-// Configure API base URL from environment variables
-export const getApiBaseUrl = () => {
-  // Use the provided dev-socket.pullseai.com URL 
-  const apiUrl = 'https://dev-socket.pullseai.com/api';
-  
-  console.log('API Base URL configured:', apiUrl);
-  return apiUrl;
+export const API_BASE_URL = process.env.VITE_API_URL || '/api';
+export const LLM_SERVICE_URL = process.env.VITE_LLM_SERVICE_URL || '/api/llm';
+
+// Standardized timeout settings
+export const DEFAULT_TIMEOUT = 30000; // 30 seconds
+
+// CORS configuration for cross-domain requests
+export const CORS_CONFIG = {
+  headers: {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  },
+  withCredentials: true, // Enable credentials for cross-origin requests if needed
 };
 
-// Set API base URL
-export const API_BASE_URL = getApiBaseUrl();
-
-// LLM service URL (same as API for now)
-export const LLM_SERVICE_URL = API_BASE_URL;
-
-// Export auth endpoints for consistency across the app
+// Define all authentication endpoints in one place for consistency
 export const AUTH_ENDPOINTS = {
   LOGIN: '/auth/login',
   REGISTER: '/auth/register',
   LOGOUT: '/auth/logout',
-  REFRESH_TOKEN: '/auth/refresh-token',
+  REFRESH_TOKEN: '/auth/refresh-token', // This is the current path
   FORGOT_PASSWORD: '/auth/forgot-password',
   RESET_PASSWORD: '/auth/reset-password',
-  USER_PROFILE: '/user/profile'
+  VERIFY_EMAIL: '/auth/verify-email',
+  USER_PROFILE: '/user/profile',
 };
 
-// Default timeout for API requests (in ms)
-export const DEFAULT_TIMEOUT = 15000; // 15 seconds
-
-// Maximum retries for critical API calls
-export const MAX_RETRIES = 2;
-
-// CORS configuration
-export const CORS_CONFIG = {
-  // Setting withCredentials to true to include cookies in cross-origin requests
-  withCredentials: true,
-  // Add headers that may be needed for CORS preflight requests
-  headers: {
-    'Access-Control-Allow-Origin': '*',
-    'Content-Type': 'application/json'
-  }
+// For consistency, ensure the complete path includes the API_BASE_URL
+// This is a helper to construct full endpoint paths
+export const getFullEndpoint = (endpoint: string): string => {
+  return `${API_BASE_URL}${endpoint}`;
 };

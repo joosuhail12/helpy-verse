@@ -7,6 +7,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useToast } from '@/hooks/use-toast';
 import { customerService } from '@/api/services/customerService';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { getAuthToken } from '@/utils/auth/tokenManager';
 
 interface CustomerHeaderProps {
   customer: string;
@@ -31,6 +32,7 @@ const CustomerHeader = ({ customer, company }: CustomerHeaderProps) => {
     avatar: "/placeholder.svg",
     loading: true
   });
+  const [retryCount, setRetryCount] = useState(0);
   const isMobile = useIsMobile();
   const { toast } = useToast();
   
@@ -38,8 +40,23 @@ const CustomerHeader = ({ customer, company }: CustomerHeaderProps) => {
     const fetchCustomerData = async () => {
       if (!customer) return;
       
+      // Check if we have a token before trying to fetch
+      const token = getAuthToken();
+      if (!token) {
+        console.warn("No auth token available, using fallback customer data");
+        setCustomerData({
+          id: customer,
+          name: "Anonymous User",
+          email: "authentication required",
+          avatar: "/placeholder.svg",
+          loading: false,
+          error: true
+        });
+        return;
+      }
+      
       try {
-        // In a real app, this would fetch from the API
+        console.log(`Fetching customer data for ID: ${customer}, retry: ${retryCount}`);
         const response = await customerService.getCustomerDetails(customer);
         const data = response.data;
         
@@ -50,27 +67,45 @@ const CustomerHeader = ({ customer, company }: CustomerHeaderProps) => {
           avatar: "/placeholder.svg",
           loading: false
         });
-      } catch (error) {
+        
+        console.log("Successfully fetched customer data");
+      } catch (error: any) {
         console.error("Error fetching customer data:", error);
+        
+        // Create a more user-friendly display name from the ID
+        const shortId = customer.substring(0, 8);
+        
         setCustomerData({
           id: customer,
-          name: "John Doe", // Fallback to default
-          email: "john.doe@example.com",
+          name: `Customer ${shortId}`, // Fallback to a formatted ID
+          email: error.isServerError ? "Server error" : "Unable to load details",
           avatar: "/placeholder.svg",
           loading: false,
           error: true
         });
         
-        toast({
-          title: "Error loading customer data",
-          description: "Using fallback information",
-          variant: "destructive"
-        });
+        // Only show toast on first error
+        if (retryCount === 0) {
+          toast({
+            title: "Error loading customer data",
+            description: error.isServerError 
+              ? "Server is currently unavailable" 
+              : "Using fallback information",
+            variant: "destructive"
+          });
+        }
+        
+        // Auto-retry once
+        if (retryCount === 0) {
+          setTimeout(() => {
+            setRetryCount(1);
+          }, 3000);
+        }
       }
     };
     
     fetchCustomerData();
-  }, [customer, toast]);
+  }, [customer, toast, retryCount]);
 
   return (
     <div className="flex-none p-4 border-b">

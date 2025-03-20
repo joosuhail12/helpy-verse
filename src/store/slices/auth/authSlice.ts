@@ -6,7 +6,8 @@ import {
   loginUser, 
   registerUser, 
   requestPasswordReset, 
-  confirmPasswordReset 
+  confirmPasswordReset,
+  refreshToken
 } from './authActions';
 import { 
   fetchUserData, 
@@ -149,6 +150,25 @@ const authSlice = createSlice({
       .addCase(confirmPasswordReset.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string || 'Password reset failed';
+      })
+      
+      // Add token refresh cases
+      .addCase(refreshToken.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(refreshToken.fulfilled, (state, action) => {
+        state.loading = false;
+        state.isAuthenticated = true;
+        // Update user data if it's in the response
+        if (action.payload?.data?.user) {
+          state.user = action.payload.data.user;
+        }
+      })
+      .addCase(refreshToken.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Token refresh failed';
+        // Don't mark as unauthenticated yet - let the logout function handle this
       });
   },
 });
@@ -164,7 +184,8 @@ export {
   fetchUserData,
   fetchUserProfile,
   fetchWorkspaceData,
-  getUserPermission
+  getUserPermission,
+  refreshToken
 };
 
 export default authSlice.reducer;

@@ -15,6 +15,14 @@ const setupApi = () => {
     } else {
       console.log('API service initialized without auth token');
     }
+    
+    // Ensure workspace ID is set for all requests
+    const workspaceId = cookieFunctions.getCookie('workspaceId') || localStorage.getItem('workspaceId');
+    if (workspaceId) {
+      console.log('API service initialized with workspace ID:', workspaceId);
+    } else {
+      console.warn('API service initialized without workspace ID');
+    }
   } catch (error) {
     console.error('Error setting up API client:', error);
   }
