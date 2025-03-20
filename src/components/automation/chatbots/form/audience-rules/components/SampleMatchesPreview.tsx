@@ -175,7 +175,7 @@ export const SampleMatchesPreview = ({ queryGroup }: SampleMatchesPreviewProps) 
             </TableCell>
           </TableRow>
         ) : (
-          companies.map((company) => (
+          companies?.map((company) => (
             <TableRow key={company.id}>
               <TableCell>{company.name}</TableCell>
               <TableCell>{company.industry || 'N/A'}</TableCell>

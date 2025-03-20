@@ -30,7 +30,7 @@ export const fetchUserProfile = createAsyncThunk(
   'user/fetchUserProfile',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await HttpClient.apiClient.get('/user/profile');
+      const response = await HttpClient.apiClient.get('/profile');
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch user profile');

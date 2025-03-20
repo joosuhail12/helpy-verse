@@ -1,4 +1,4 @@
-
+import { HttpClient } from "@/api/services/http";
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../store';
 
@@ -23,6 +23,11 @@ export interface Company {
   updatedAt: string;
 }
 
+const API_ENDPOINTS = {
+  COMPANIES: '/company',
+  COMPANY_BY_ID: (id: string) => `/company/${id}`
+};
+
 export interface CompaniesState {
   companies: Company[];
   selectedCompany: string | null;
@@ -46,11 +51,12 @@ export const fetchCompanies = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       // Replace with actual API call
-      const response = await fetch('/api/companies');
-      if (!response.ok) {
+      const response = await HttpClient.apiClient.get(API_ENDPOINTS.COMPANIES);
+      if (!response) {
         throw new Error('Failed to fetch companies');
-      }
-      return await response.json();
+      } 
+      console.log(response.data);
+      return await response.data.data;
     } catch (error: any) {
       return rejectWithValue(error.message);
     }
@@ -61,11 +67,11 @@ export const fetchCompanyById = createAsyncThunk(
   'companies/fetchCompanyById',
   async (id: string, { rejectWithValue }) => {
     try {
-      const response = await fetch(`/api/companies/${id}`);
-      if (!response.ok) {
+      const response = await HttpClient.apiClient.get(API_ENDPOINTS.COMPANY_BY_ID(id));
+      if (!response) {
         throw new Error('Failed to fetch company details');
       }
-      return await response.json();
+      return await response.data;
     } catch (error: any) {
       return rejectWithValue(error.message);
     }
@@ -76,15 +82,11 @@ export const createCompany = createAsyncThunk(
   'companies/createCompany',
   async (company: Omit<Company, 'id' | 'createdAt' | 'updatedAt'>, { rejectWithValue }) => {
     try {
-      const response = await fetch('/api/companies', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(company),
-      });
-      if (!response.ok) {
+      const response = await HttpClient.apiClient.post(API_ENDPOINTS.COMPANIES, company);
+      if (!response) {
         throw new Error('Failed to create company');
       }
-      return await response.json();
+      return await response.data;
     } catch (error: any) {
       return rejectWithValue(error.message);
     }
@@ -95,15 +97,11 @@ export const updateCompany = createAsyncThunk(
   'companies/updateCompany',
   async ({ id, updates }: { id: string; updates: Partial<Company> }, { rejectWithValue }) => {
     try {
-      const response = await fetch(`/api/companies/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updates),
-      });
-      if (!response.ok) {
+      const response = await HttpClient.apiClient.patch(API_ENDPOINTS.COMPANY_BY_ID(id), updates);
+        if (!response) {
         throw new Error('Failed to update company');
       }
-      return await response.json();
+      return await response.data;
     } catch (error: any) {
       return rejectWithValue(error.message);
     }

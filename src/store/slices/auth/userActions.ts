@@ -8,7 +8,7 @@ export const fetchUserData = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       console.log("Fetching user profile data");
-      const response = await HttpClient.apiClient.get("/user/profile");
+      const response = await HttpClient.apiClient.get("/profile");
       console.log("User profile data fetched successfully");
       return response.data;
     } catch (error: any) {

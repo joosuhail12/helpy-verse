@@ -1,13 +1,12 @@
-
 /**
- * Configuration for API endpoints
+ * Configuration for API endpoints with automatic workspace_id header
  */
+
+import { getCookie } from './cookieManager'; // adjust the import path if needed
 
 // Configure API base URL from environment variables
 export const getApiBaseUrl = () => {
-  // Use the provided dev-socket.pullseai.com URL 
-  const apiUrl = 'https://dev-socket.pullseai.com/api';
-  
+  const apiUrl = 'http://localhost:4000/api';
   console.log('API Base URL configured:', apiUrl);
   return apiUrl;
 };
@@ -26,7 +25,7 @@ export const AUTH_ENDPOINTS = {
   REFRESH_TOKEN: '/auth/refresh-token',
   FORGOT_PASSWORD: '/auth/forgot-password',
   RESET_PASSWORD: '/auth/reset-password',
-  USER_PROFILE: '/user/profile'
+  USER_PROFILE: '/profile'
 };
 
 // Default timeout for API requests (in ms)
@@ -35,7 +34,19 @@ export const DEFAULT_TIMEOUT = 15000; // 15 seconds
 // Maximum retries for critical API calls
 export const MAX_RETRIES = 2;
 
-// CORS configuration
+// CORS configuration with dynamic workspace_id header
+export const getCorsConfig = () => {
+  const workspaceId = getCookie('workspaceId');
+  return {
+    withCredentials: true,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Content-Type': 'application/json',
+      ...(workspaceId ? { 'workspace_id': workspaceId } : {}),
+    }
+  };
+};
+
 export const CORS_CONFIG = {
   // Setting withCredentials to true to include cookies in cross-origin requests
   withCredentials: true,
