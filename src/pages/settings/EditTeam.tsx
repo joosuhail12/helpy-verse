@@ -12,7 +12,7 @@ import TeamRoutingSection from './teams/components/TeamRoutingSection';
 import TeamAvailabilitySection from './teams/components/TeamAvailabilitySection';
 import { updateTeam } from './teams/utils/updateTeamUtils';
 import TeamsLoadingState from '@/components/teams/TeamsLoadingState';
-import type { DayOfWeek, TimeSlot } from '@/types/team';
+import type { DayOfWeek, TimeSlot, Team, Channel, RoutingRule } from '@/types/team';
 
 const EditTeam = () => {
   const { id } = useParams<{ id: string }>();
@@ -59,7 +59,7 @@ const EditTeam = () => {
           setSelectedEmailChannels(team.channels.email || []);
         } else {
           // Old format (array of Channel objects)
-          const channels = team.channels as any[];
+          const channels = team.channels as unknown as Channel[];
           const chatChannel = channels.find(c => c.type === 'chat')?.id;
           const emailChannels = channels
             .filter(c => c.type === 'email')
@@ -74,14 +74,14 @@ const EditTeam = () => {
       if (team.routing) {
         if (typeof team.routing === 'object' && 'type' in team.routing) {
           // New format (object with type property)
-          setRoutingType(team.routing.type);
+          setRoutingType(team.routing.type as 'manual' | 'round-robin' | 'load-balanced');
           setRoutingLimits(team.routing.limits || {});
         } else {
           // Old format (array of RoutingRule objects)
-          const routing = team.routing as any[];
+          const routing = team.routing as unknown as RoutingRule[];
           const mainRule = routing[0];
           if (mainRule) {
-            setRoutingType(mainRule.type || 'manual');
+            setRoutingType(mainRule.type as 'manual' | 'round-robin' | 'load-balanced');
           }
         }
       }
@@ -90,10 +90,24 @@ const EditTeam = () => {
       if (team.officeHours) {
         if ('monday' in team.officeHours) {
           // Already in the correct format with day keys
-          setOfficeHours(team.officeHours as { [key in DayOfWeek]: TimeSlot[] });
+          const typedOfficeHours = team.officeHours as unknown as { [key in DayOfWeek]: TimeSlot[] };
+          setOfficeHours({
+            monday: typedOfficeHours.monday || [],
+            tuesday: typedOfficeHours.tuesday || [],
+            wednesday: typedOfficeHours.wednesday || [],
+            thursday: typedOfficeHours.thursday || [],
+            friday: typedOfficeHours.friday || [],
+            saturday: typedOfficeHours.saturday || [],
+            sunday: typedOfficeHours.sunday || []
+          });
         } else {
           // Convert from old format if needed
-          const oldFormat = team.officeHours as any;
+          const oldFormat = team.officeHours as unknown as {
+            days: string[];
+            startTime: string;
+            endTime: string;
+          };
+          
           const days = oldFormat.days || [];
           const newFormat = {
             monday: days.includes('monday') ? [{ start: oldFormat.startTime, end: oldFormat.endTime }] : [],
@@ -111,7 +125,7 @@ const EditTeam = () => {
       // Handle holidays properly
       if (team.holidays) {
         // Convert Holiday objects to strings if needed
-        const holidayStrings = team.holidays.map((h: any) => 
+        const holidayStrings = (team.holidays as unknown[]).map((h: any) => 
           typeof h === 'string' ? h : h.date
         );
         setSelectedHolidays(holidayStrings);
@@ -230,26 +244,14 @@ const EditTeam = () => {
           setSelectedIcon={setSelectedIcon}
           teammates={teammates}
           selectedTeammates={selectedTeammates}
-          onTeammateToggle={(teammateId: string) => {
-            setSelectedTeammates(prev =>
-              prev.includes(teammateId)
-                ? prev.filter(id => id !== teammateId)
-                : [...prev, teammateId]
-            );
-          }}
+          onTeammateToggle={toggleTeammate}
         />
 
         <TeamCommunicationSection
           selectedChatChannel={selectedChatChannel}
           selectedEmailChannels={selectedEmailChannels}
           onChatChannelSelect={setSelectedChatChannel}
-          onEmailChannelToggle={(channelId: string) => {
-            setSelectedEmailChannels(prev =>
-              prev.includes(channelId)
-                ? prev.filter(id => id !== channelId)
-                : [...prev, channelId]
-            );
-          }}
+          onEmailChannelToggle={handleEmailChannelToggle}
         />
 
         <TeamRoutingSection
