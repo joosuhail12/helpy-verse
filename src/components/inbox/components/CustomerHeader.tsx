@@ -1,26 +1,75 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Bot, Info } from "lucide-react";
+import { Bot, Info, AlertTriangle } from "lucide-react";
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useToast } from '@/hooks/use-toast';
+import { customerService } from '@/api/services/customerService';
 
 interface CustomerHeaderProps {
   customer: string;
   company: string;
 }
 
+interface CustomerData {
+  id: string;
+  name: string;
+  email: string;
+  avatar: string;
+  loading?: boolean;
+  error?: boolean;
+}
+
 const CustomerHeader = ({ customer, company }: CustomerHeaderProps) => {
   const [activeTab, setActiveTab] = useState("details");
-  const isMobile = useIsMobile();
-  
-  // Mock data - In a real app, you'd fetch this from Redux/API
-  const customerData = {
+  const [customerData, setCustomerData] = useState<CustomerData>({
     id: customer,
-    name: "John Doe",
-    email: "john.doe@example.com",
-    avatar: "/placeholder.svg"
-  };
+    name: "Loading...",
+    email: "...",
+    avatar: "/placeholder.svg",
+    loading: true
+  });
+  const isMobile = useIsMobile();
+  const { toast } = useToast();
+  
+  useEffect(() => {
+    const fetchCustomerData = async () => {
+      if (!customer) return;
+      
+      try {
+        // In a real app, this would fetch from the API
+        const response = await customerService.getCustomerDetails(customer);
+        const data = response.data;
+        
+        setCustomerData({
+          id: customer,
+          name: `${data.firstname} ${data.lastname}`,
+          email: data.email,
+          avatar: "/placeholder.svg",
+          loading: false
+        });
+      } catch (error) {
+        console.error("Error fetching customer data:", error);
+        setCustomerData({
+          id: customer,
+          name: "John Doe", // Fallback to default
+          email: "john.doe@example.com",
+          avatar: "/placeholder.svg",
+          loading: false,
+          error: true
+        });
+        
+        toast({
+          title: "Error loading customer data",
+          description: "Using fallback information",
+          variant: "destructive"
+        });
+      }
+    };
+    
+    fetchCustomerData();
+  }, [customer, toast]);
 
   return (
     <div className="flex-none p-4 border-b">
@@ -33,7 +82,12 @@ const CustomerHeader = ({ customer, company }: CustomerHeaderProps) => {
             </AvatarFallback>
           </Avatar>
           <div className="flex flex-col">
-            <h3 className="font-semibold text-gray-900 text-sm leading-tight">{customerData.name}</h3>
+            <div className="flex items-center gap-1.5">
+              <h3 className="font-semibold text-gray-900 text-sm leading-tight">{customerData.name}</h3>
+              {customerData.error && (
+                <AlertTriangle className="h-3.5 w-3.5 text-yellow-500" title="Using fallback data" />
+              )}
+            </div>
             <p className="text-xs text-gray-500">{customerData.email}</p>
             {company && <p className="text-xs text-primary font-medium mt-0.5">{company}</p>}
           </div>
