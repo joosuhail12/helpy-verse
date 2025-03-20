@@ -6,7 +6,7 @@ import { useAppSelector } from '@/hooks/useAppSelector';
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { Users, ArrowLeft, Building2 } from "lucide-react";
+import { Users, ArrowLeft, Building2, Pencil } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import TeamMembers from '@/components/teams/detail/TeamMembers';
 import TeamChannels from '@/components/teams/detail/TeamChannels';
@@ -129,6 +129,13 @@ const TeamDetail = () => {
             <h1 className="text-2xl font-semibold text-gray-900">{team.name}</h1>
           </div>
         </div>
+        <Button 
+          onClick={() => navigate(`/home/settings/teams/${id}/edit`)}
+          variant="outline"
+        >
+          <Pencil className="mr-2 h-4 w-4" />
+          Edit Team
+        </Button>
       </div>
 
       <div className="grid gap-8">

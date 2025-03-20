@@ -24,6 +24,7 @@ const Teammates = lazy(() => import('../pages/settings/Teammates'));
 const TeammateDetail = lazy(() => import('../pages/settings/TeammateDetail'));
 const Teams = lazy(() => import('../pages/settings/Teams'));
 const TeamDetail = lazy(() => import('../pages/settings/TeamDetail'));
+const EditTeam = lazy(() => import('../pages/settings/EditTeam'));
 const CannedResponses = lazy(() => import('../pages/settings/CannedResponses'));
 const CreateCannedResponse = lazy(() => import('../pages/settings/CreateCannedResponse'));
 const CannedResponseDetail = lazy(() => import('../pages/settings/CannedResponseDetail'));
@@ -87,6 +88,10 @@ export const settingsRoutes = [
       {
         path: 'teams/:id',
         element: <Suspense fallback={<LoadingSpinner />}><TeamDetail /></Suspense>,
+      },
+      {
+        path: 'teams/:id/edit',
+        element: <Suspense fallback={<LoadingSpinner />}><EditTeam /></Suspense>,
       },
       {
         path: 'canned-responses',
