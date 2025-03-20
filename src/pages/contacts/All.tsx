@@ -12,6 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/components/ui/use-toast';
 import { AlertCircle } from 'lucide-react';
 import ContactsErrorBoundary from '@/components/contacts/ContactsErrorBoundary';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const AllContacts = () => {
   const dispatch = useAppDispatch();
@@ -47,7 +48,7 @@ const AllContacts = () => {
 
   if (loading) {
     return (
-      <div className="p-6">
+      <div className="p-6 h-full overflow-auto">
         <Card className="p-4">
           <div className="space-y-3">
             <Skeleton className="h-8 w-80" />
@@ -61,7 +62,7 @@ const AllContacts = () => {
 
   if (error) {
     return (
-      <div className="p-6">
+      <div className="p-6 h-full overflow-auto">
         <Card className="p-4 text-red-500">
           <div className="flex items-center gap-2 mb-4">
             <AlertCircle className="h-5 w-5" />
@@ -84,7 +85,7 @@ const AllContacts = () => {
 
   if (!contacts) {
     return (
-      <div className="p-6">
+      <div className="p-6 h-full overflow-auto">
         <Card className="p-4">
           <p className="text-muted-foreground">No contacts data available</p>
           <Button 
@@ -102,12 +103,18 @@ const AllContacts = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 space-y-6">
-      <ContactsHeader />
-      <ContactListControls />
-      <ContactsErrorBoundary>
-        <ContactList contacts={contacts || []} loading={loading} />
-      </ContactsErrorBoundary>
+    <div className="h-full flex flex-col overflow-hidden">
+      <div className="flex-none p-6 space-y-6">
+        <ContactsHeader />
+        <ContactListControls />
+      </div>
+      <div className="flex-1 px-6 pb-6 overflow-hidden">
+        <ScrollArea className="h-full w-full">
+          <ContactsErrorBoundary>
+            <ContactList contacts={contacts || []} loading={loading} />
+          </ContactsErrorBoundary>
+        </ScrollArea>
+      </div>
     </div>
   );
 };

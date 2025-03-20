@@ -87,32 +87,34 @@ const ContactList = ({ contacts, loading = false }: ContactListProps) => {
 
   console.log('Rendering contact list with', contacts.length, 'contacts');
   return (
-    <div className="overflow-x-auto border rounded-md bg-white">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-12">
-              <Checkbox 
-                onCheckedChange={handleSelectAll}
-                checked={selectedContacts.length > 0 && selectedContacts.length === contacts.length}
+    <div className="border rounded-md bg-white">
+      <div className="w-full overflow-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-12">
+                <Checkbox 
+                  onCheckedChange={handleSelectAll}
+                  checked={selectedContacts.length > 0 && selectedContacts.length === contacts.length}
+                />
+              </TableHead>
+              <TableHead>Contact</TableHead>
+              <TableHead>Company</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {contacts.map((contact) => (
+              <ContactListItem
+                key={contact.id}
+                contact={contact}
+                onClick={() => handleContactClick(contact)}
               />
-            </TableHead>
-            <TableHead>Contact</TableHead>
-            <TableHead>Company</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {contacts.map((contact) => (
-            <ContactListItem
-              key={contact.id}
-              contact={contact}
-              onClick={() => handleContactClick(contact)}
-            />
-          ))}
-        </TableBody>
-      </Table>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 };

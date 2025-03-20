@@ -19,7 +19,7 @@ const DashboardLayout = () => {
   return (
     <div className="h-screen flex overflow-hidden bg-background">
       <Sidebar />
-      <main className="flex-1 overflow-hidden relative">
+      <main className="flex-1 overflow-auto relative">
         <RouteErrorBoundary>
           <Suspense fallback={<LoadingSpinner />}>
             <Outlet />
