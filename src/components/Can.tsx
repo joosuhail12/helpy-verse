@@ -7,7 +7,8 @@ import { AppAbility, defineAppAbility } from "@/utils/ability";
 export const AbilityContext = createContext<AppAbility | undefined>(undefined);
 
 export const Can = (props: any) => {
-  const { permissions } = useAppSelector((state) => state.auth);
+  const auth = useAppSelector((state) => state.auth);
+  const permissions = auth.permissions || [];
   const [ability, setAbility] = useState<AppAbility>(defineAppAbility());
 
   useEffect(() => {

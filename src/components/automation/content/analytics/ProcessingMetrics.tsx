@@ -4,7 +4,8 @@ import { Card } from '@/components/ui/card';
 import { Timer, CheckCircle, XCircle } from 'lucide-react';
 
 export const ProcessingMetrics = () => {
-  const items = useAppSelector((state) => state.content.items);
+  const contentState = useAppSelector((state) => state.content);
+  const items = contentState?.items || [];
   
   // Calculate average processing time (mock data - would come from API)
   const avgProcessingTime = "2.5 minutes";

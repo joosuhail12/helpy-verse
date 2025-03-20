@@ -16,14 +16,15 @@ import {
 const COLORS = ['#9333EA', '#22C55E', '#3B82F6', '#EAB308', '#EC4899', '#14B8A6', '#F97316', '#6366F1'];
 
 export const CategoryDistribution = () => {
-  const items = useAppSelector((state) => state.content.items);
+  const contentState = useAppSelector((state) => state.content);
+  const items = contentState?.items || [];
   
   const categoryData = items.reduce((acc: { name: string; value: number }[], item) => {
     const existingCategory = acc.find(c => c.name === item.category);
     if (existingCategory) {
       existingCategory.value += 1;
     } else {
-      acc.push({ name: item.category, value: 1 });
+      acc.push({ name: item.category || 'Uncategorized', value: 1 });
     }
     return acc;
   }, []);

@@ -19,8 +19,9 @@ import { fetchContentStats } from '@/store/slices/automation/contentCenterSlice'
 
 const ContentCenter = () => {
   const dispatch = useAppDispatch();
-  const selectedIds = useAppSelector((state) => state.content.selectedIds);
-  const searchQuery = useAppSelector((state) => state.content.search.query);
+  const contentState = useAppSelector((state) => state.content);
+  const selectedIds = contentState?.selectedIds || [];
+  const searchQuery = contentState?.search?.query || '';
   
   useEffect(() => {
     // Fetch content stats when component mounts

@@ -23,10 +23,11 @@ interface ContentListProps {
 export const ContentList = ({ searchQuery }: ContentListProps) => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const items = useAppSelector((state) => state.content.items);
-  const selectedIds = useAppSelector((state) => state.content.selectedIds);
-  const filters = useAppSelector((state) => state.content.filters);
-  const sort = useAppSelector((state) => state.content.sort);
+  const contentState = useAppSelector((state) => state.content);
+  const items = contentState?.items || [];
+  const selectedIds = contentState?.selectedIds || [];
+  const filters = contentState?.filters || {};
+  const sort = contentState?.sort || { field: 'lastUpdated', direction: 'desc' };
 
   const handleSelect = (id: string) => {
     dispatch(toggleContentSelection(id));

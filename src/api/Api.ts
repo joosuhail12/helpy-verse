@@ -15,7 +15,7 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     const state = store.getState();
-    // Fix: Access the accessToken.token property correctly from auth state
+    // Get token from auth state with proper type checking
     const token = state.auth?.user?.data?.accessToken?.token;
     
     if (token) {
@@ -33,7 +33,7 @@ api.interceptors.response.use(
   (error) => {
     // Handle common errors like 401 Unauthorized
     if (error.response && error.response.status === 401) {
-      // Redirect to login or dispatch logout action
+      // Dispatch logout action
       store.dispatch({ type: 'auth/logout' });
     }
     

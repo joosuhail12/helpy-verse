@@ -1,4 +1,3 @@
-
 import { Check, ChevronDown, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -22,7 +21,8 @@ import { mockChatbots } from '@/mock/chatbots';
 
 export const ContentFilters = () => {
   const dispatch = useAppDispatch();
-  const filters = useAppSelector((state) => state.content.filters);
+  const contentState = useAppSelector((state) => state.content);
+  const filters = contentState?.filters || {};
 
   const statuses: ContentStatus[] = ['completed', 'processing', 'queued', 'failed', 'active', 'inactive', 'draft'];
 

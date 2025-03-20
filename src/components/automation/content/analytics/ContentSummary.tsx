@@ -4,7 +4,8 @@ import { Card } from '@/components/ui/card';
 import { FileText, CheckCircle, AlertCircle } from 'lucide-react';
 
 export const ContentSummary = () => {
-  const items = useAppSelector((state) => state.content.items);
+  const contentState = useAppSelector((state) => state.content);
+  const items = contentState?.items || [];
 
   const metrics = {
     total: items.length,
