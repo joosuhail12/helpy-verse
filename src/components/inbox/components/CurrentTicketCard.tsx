@@ -86,9 +86,9 @@ const CurrentTicketCard = ({ ticket, isOpen, onToggle }: CurrentTicketCardProps)
                 <span className="text-gray-500 font-medium">Source</span>
               </div>
               <InlineEditField
-                value={ticket.sourceType || 'email'}
+                value={ticket.channel || 'email'}
                 contactId={ticket.id}
-                field="sourceType"
+                field="channel"
                 label="Source"
                 type="select"
                 options={['email', 'chat', 'phone', 'web']}
