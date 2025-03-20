@@ -1,5 +1,7 @@
+// src/store/slices/user/userSlice.ts
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { HttpClient } from '@/api/services/http';
+import { AUTH_ENDPOINTS } from '@/api/services/http/config';
 
 // Define the user state interface
 interface UserState {
@@ -30,7 +32,7 @@ export const fetchUserProfile = createAsyncThunk(
   'user/fetchUserProfile',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await HttpClient.apiClient.get('/profile');
+      const response = await HttpClient.apiClient.get(AUTH_ENDPOINTS.USER_PROFILE);
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch user profile');

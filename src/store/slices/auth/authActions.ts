@@ -166,25 +166,3 @@ export const confirmPasswordReset = createAsyncThunk(
     }
   }
 );
-
-// Add a refresh token thunk
-export const refreshToken = createAsyncThunk(
-  'auth/refreshToken',
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await HttpClient.apiClient.post(AUTH_ENDPOINTS.REFRESH_TOKEN);
-      
-      // Set the new token
-      const token = get(response, 'data.data.accessToken.token', '');
-      if (token) {
-        handleSetToken(token);
-      } else {
-        return rejectWithValue('No token received from refresh endpoint');
-      }
-      
-      return response.data;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Token refresh failed');
-    }
-  }
-);

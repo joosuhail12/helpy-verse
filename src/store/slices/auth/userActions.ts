@@ -1,5 +1,7 @@
+
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { HttpClient } from "@/api/services/http";
+import { AUTH_ENDPOINTS } from "@/api/services/http/config";
 
 // User data actions
 
@@ -8,7 +10,7 @@ export const fetchUserData = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       console.log("Fetching user profile data");
-      const response = await HttpClient.apiClient.get("/profile");
+      const response = await HttpClient.apiClient.get(AUTH_ENDPOINTS.USER_PROFILE);
       console.log("User profile data fetched successfully");
       return response.data;
     } catch (error: any) {
@@ -22,7 +24,7 @@ export const fetchUserProfile = createAsyncThunk(
   "auth/fetchUserProfile",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await HttpClient.apiClient.get("/profile");
+      const response = await HttpClient.apiClient.get(AUTH_ENDPOINTS.USER_PROFILE);
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || "Failed to fetch user profile");

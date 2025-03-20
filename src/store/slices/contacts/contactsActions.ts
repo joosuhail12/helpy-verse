@@ -32,10 +32,13 @@ export const fetchContactById = createAsyncThunk(
   'contacts/fetchContactById',
   async (contactId: string, { rejectWithValue }) => {
     try {
+      console.log(`Fetching contact details for ID: ${contactId}`);
       const response = await customerService.getCustomerDetails(contactId);
       return response.data;
     } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to fetch contact details');
+      console.error(`Error fetching contact ${contactId}:`, error);
+      const errorMessage = error.message || 'Failed to fetch contact details';
+      return rejectWithValue(errorMessage);
     }
   }
 );

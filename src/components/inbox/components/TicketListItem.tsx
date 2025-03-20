@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { formatDistanceToNow } from "date-fns";
-import { Copy, Mail, User } from "lucide-react";
+import { Copy, Mail, User, ZapIcon } from "lucide-react";
 import TicketPriorityBadge from "../TicketPriorityBadge";
 import TicketStatusBadge from "../TicketStatusBadge";
 import type { Ticket, ViewMode } from "@/types/ticket";
@@ -15,6 +15,7 @@ interface TicketListItemProps {
   viewMode?: ViewMode;
   isLoading?: boolean;
   onCopyId?: (id: string, e: React.MouseEvent) => void;
+  isActive?: boolean;
 }
 
 const TicketListItem = ({
@@ -24,6 +25,7 @@ const TicketListItem = ({
   viewMode = "list",
   isLoading = false,
   onCopyId,
+  isActive = false,
 }: TicketListItemProps) => {
   const handleSelect = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -35,10 +37,19 @@ const TicketListItem = ({
     onCopyId?.(ticket.id, e);
   };
 
-  // Use compact styling if viewMode is compact
+  const getActiveStateClasses = () => {
+    if (isActive) {
+      return "border-l-4 border-[#8B5CF6] bg-primary-50/80 shadow-[0_0_20px_rgba(139,92,246,0.4)] transform transition-all duration-300";
+    }
+    return "";
+  };
+
   if (viewMode === "compact") {
     return (
-      <Card className={`mb-2 overflow-hidden ${isSelected ? "border-primary" : ""} ${isLoading ? "opacity-60" : ""}`}>
+      <Card className={`mb-2 overflow-hidden relative ${isSelected ? "border-primary" : ""} ${isLoading ? "opacity-60" : ""} ${getActiveStateClasses()}`}>
+        {isActive && (
+          <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#8B5CF6] animate-pulse"></div>
+        )}
         <div className="flex items-center p-3">
           {onSelect && (
             <div className="mr-3" onClick={handleSelect}>
@@ -47,7 +58,8 @@ const TicketListItem = ({
           )}
           <div className="flex-1 min-w-0">
             <div className="flex items-center space-x-2">
-              <h3 className="text-sm font-medium truncate">{ticket.subject}</h3>
+              {isActive && <ZapIcon className="h-4 w-4 text-[#8B5CF6] animate-pulse" />}
+              <h3 className={`text-sm font-medium truncate ${isActive ? "text-[#8B5CF6] font-semibold" : ""}`}>{ticket.subject}</h3>
               {ticket.isUnread && <Badge className="bg-blue-500">New</Badge>}
             </div>
             <p className="text-xs text-gray-500 truncate">
@@ -63,10 +75,12 @@ const TicketListItem = ({
     );
   }
 
-  // Use card styling if viewMode is card
   if (viewMode === "card") {
     return (
-      <Card className={`overflow-hidden ${isSelected ? "border-primary" : ""} ${isLoading ? "opacity-60" : ""}`}>
+      <Card className={`overflow-hidden relative ${isSelected ? "border-primary" : ""} ${isLoading ? "opacity-60" : ""} ${getActiveStateClasses()}`}>
+        {isActive && (
+          <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#8B5CF6] animate-pulse"></div>
+        )}
         <div className="p-4">
           <div className="flex items-start justify-between mb-2">
             <div className="flex items-center">
@@ -75,7 +89,10 @@ const TicketListItem = ({
                   <Checkbox checked={isSelected} />
                 </div>
               )}
-              <h3 className="text-base font-medium">{ticket.subject}</h3>
+              <div className="flex items-center">
+                {isActive && <ZapIcon className="h-4 w-4 text-[#8B5CF6] mr-1 animate-pulse" />}
+                <h3 className={`text-base font-medium ${isActive ? "text-[#8B5CF6] font-semibold" : ""}`}>{ticket.subject}</h3>
+              </div>
               {ticket.isUnread && <Badge className="ml-2 bg-blue-500">New</Badge>}
             </div>
             <div className="flex space-x-1">
@@ -112,23 +129,26 @@ const TicketListItem = ({
     );
   }
 
-  // Default list view
   return (
-    <Card className={`mb-2 overflow-hidden ${isSelected ? "border-primary" : ""} ${isLoading ? "opacity-60" : ""}`}>
-      <div className="flex items-center p-4">
+    <Card className={`mb-2 overflow-hidden relative ${isSelected ? "border-primary" : ""} ${isLoading ? "opacity-60" : ""} ${getActiveStateClasses()} transition-all duration-300`}>
+      {isActive && (
+        <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#8B5CF6] animate-pulse"></div>
+      )}
+      <div className={`flex items-center p-4 ${isActive ? "bg-primary-50/80" : ""}`}>
         {onSelect && (
           <div className="mr-4" onClick={handleSelect}>
             <Checkbox checked={isSelected} />
           </div>
         )}
         <div className="mr-4 flex-shrink-0">
-          <div className="bg-gray-100 rounded-full p-2">
-            <Mail className="h-5 w-5 text-gray-500" />
+          <div className={`${isActive ? "bg-[#8B5CF6]/20" : "bg-gray-100"} rounded-full p-2 ${isActive ? "ring-2 ring-[#8B5CF6]/40 animate-pulse" : ""}`}>
+            <Mail className={`h-5 w-5 ${isActive ? "text-[#8B5CF6]" : "text-gray-500"}`} />
           </div>
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center">
-            <h3 className="text-sm font-medium">{ticket.subject}</h3>
+            {isActive && <ZapIcon className="h-4 w-4 text-[#8B5CF6] mr-1 animate-pulse" />}
+            <h3 className={`text-sm font-medium ${isActive ? "text-[#8B5CF6] font-semibold" : ""}`}>{ticket.subject}</h3>
             {ticket.isUnread && <Badge className="ml-2 bg-blue-500">New</Badge>}
             {ticket.hasNotification && (
               <Badge className="ml-2 bg-amber-500">
@@ -139,7 +159,7 @@ const TicketListItem = ({
           <p className="text-xs text-gray-500 mb-1">
             From: {ticket.customer} {ticket.company && `(${ticket.company})`}
           </p>
-          <p className="text-sm text-gray-700 truncate">{ticket.lastMessage}</p>
+          <p className={`text-sm ${isActive ? "text-gray-800" : "text-gray-700"} truncate`}>{ticket.lastMessage}</p>
         </div>
         <div className="ml-4 flex-shrink-0 flex flex-col items-end space-y-2">
           <div className="flex space-x-2">

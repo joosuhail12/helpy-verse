@@ -6,7 +6,7 @@ import {
   loginUser, 
   registerUser, 
   requestPasswordReset, 
-  confirmPasswordReset 
+  confirmPasswordReset
 } from './authActions';
 import { 
   fetchUserData, 

@@ -1,4 +1,3 @@
-
 import { useToast } from "@/hooks/use-toast";
 import FilterBar from '../../FilterBar';
 import SortingControls from '../../SortingControls';
@@ -181,6 +180,7 @@ const MainContent = ({
                     viewMode={selectedTicketForChat || isMobile ? "compact" : viewMode}
                     isSelected={selectedTickets.includes(ticket.id)}
                     isLoading={!!loadingStates[ticket.id]}
+                    isActive={selectedTicketForChat?.id === ticket.id}
                     onSelect={(e: React.MouseEvent) => {
                       e.stopPropagation();
                       handleTicketSelection(ticket.id);

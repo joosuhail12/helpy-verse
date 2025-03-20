@@ -1,4 +1,4 @@
-
+// src/pages/contacts/Companies.tsx
 import { useEffect } from 'react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
@@ -25,7 +25,6 @@ const Companies = () => {
       </div>
     );
   }
-  
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
       <CompaniesHeader />

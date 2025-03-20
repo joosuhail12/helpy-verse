@@ -17,6 +17,8 @@ export const API_BASE_URL = getApiBaseUrl();
 // LLM service URL (same as API for now)
 export const LLM_SERVICE_URL = API_BASE_URL;
 
+export const CONTACTS_TIMEOUT = 90000; // 90 seconds for contacts which might be larger datasets
+
 // Export auth endpoints for consistency across the app
 export const AUTH_ENDPOINTS = {
   LOGIN: '/auth/login',
@@ -37,6 +39,7 @@ export const MAX_RETRIES = 2;
 // CORS configuration with dynamic workspace_id header
 export const getCorsConfig = () => {
   const workspaceId = getCookie('workspaceId');
+  console.log('Workspace ID:', workspaceId);
   return {
     withCredentials: true,
     headers: {
