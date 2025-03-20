@@ -15,7 +15,8 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     const state = store.getState();
-    const token = state.auth?.token;
+    // Fix: Access the accessToken.token property correctly from auth state
+    const token = state.auth?.user?.data?.accessToken?.token;
     
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;

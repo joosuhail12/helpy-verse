@@ -33,7 +33,9 @@ export const CompanyTags = ({ companyId, tags = [] }: CompanyTagsProps) => {
     try {
       await dispatch(updateCompany({
         id: companyId,
-        updates: { tags: updatedTags }
+        updates: { 
+          tags: updatedTags 
+        }
       }));
       
       toast({

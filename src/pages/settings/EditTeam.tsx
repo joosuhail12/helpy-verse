@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
@@ -26,7 +25,7 @@ const EditTeam = () => {
   const [teamName, setTeamName] = useState('');
   const [selectedIcon, setSelectedIcon] = useState<string>('');
   const [selectedTeammates, setSelectedTeammates] = useState<string[]>([]);
-  const [selectedChatChannel, setSelectedChatChannel] = useState<string>();
+  const [selectedChatChannel, setSelectedChatChannel] = useState<string | undefined>('');
   const [selectedEmailChannels, setSelectedEmailChannels] = useState<string[]>([]);
   const [routingType, setRoutingType] = useState<'manual' | 'round-robin' | 'load-balanced'>('manual');
   const [routingLimits, setRoutingLimits] = useState<{
@@ -65,8 +64,12 @@ const EditTeam = () => {
             .filter(c => c.type === 'email')
             .map(c => c.id);
           
-          setSelectedChatChannel(chatChannel);
-          setSelectedEmailChannels(emailChannels);
+          if (chatChannel) {
+            setSelectedChatChannel(chatChannel);
+          }
+          if (emailChannels && emailChannels.length > 0) {
+            setSelectedEmailChannels(emailChannels);
+          }
         }
       }
       
@@ -75,7 +78,9 @@ const EditTeam = () => {
         if (typeof team.routing === 'object' && 'type' in team.routing) {
           // New format (object with type property)
           setRoutingType(team.routing.type as 'manual' | 'round-robin' | 'load-balanced');
-          setRoutingLimits(team.routing.limits || {});
+          if (team.routing.limits) {
+            setRoutingLimits(team.routing.limits);
+          }
         } else {
           // Old format (array of RoutingRule objects)
           const routing = team.routing as unknown as RoutingRule[];

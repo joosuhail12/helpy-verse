@@ -20,7 +20,9 @@ export const CompanyDetailSidebar = ({ company }: CompanyDetailSidebarProps) => 
   const handleArchive = () => {
     dispatch(updateCompany({ 
       id: company.id, 
-      updates: { status: 'inactive' } 
+      updates: { 
+        status: 'inactive' as const 
+      }
     }))
       .then(() => {
         navigate('/home/contacts/companies');

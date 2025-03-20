@@ -80,6 +80,14 @@ const CompanyDetail = () => {
   const handleGoBack = () => {
     navigate('/home/contacts/companies');
   };
+  
+  const handleDeleteClick = () => {
+    // Add implementation for delete functionality
+    if (window.confirm("Are you sure you want to delete this company?")) {
+      // Implement delete logic here
+      navigate('/home/contacts/companies');
+    }
+  };
 
   const activities: Activity[] = [
     {
@@ -148,7 +156,7 @@ const CompanyDetail = () => {
 
   return (
     <div className="container mx-auto px-4 py-6 max-w-[1400px]">
-      <CompanyDetailHeader company={company} />
+      <CompanyDetailHeader company={company} onDeleteClick={handleDeleteClick} />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-8">
         {/* Left Column (4/12 width) - Company Information */}
