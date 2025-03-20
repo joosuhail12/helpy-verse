@@ -37,6 +37,10 @@ const CreateChatbot = lazy(() => import('../pages/automation/CreateChatbot').cat
   console.error('Failed to load CreateChatbot:', err);
   throw new Error('Failed to load CreateChatbot');
 }));
+const ContentCenter = lazy(() => import('../pages/automation/ContentCenter').catch((err) => {
+  console.error('Failed to load ContentCenter:', err);
+  throw new Error('Failed to load ContentCenter');
+}));
 
 // Helper to wrap components with Suspense, ProtectedRoute and RouteErrorBoundary
 const withSuspenseAndProtection = (component: ReactNode) => (
@@ -73,6 +77,10 @@ export const automationRoutes = [
       {
         path: 'ai/chatbot-profiles/:id',
         element: <RouteErrorBoundary><Suspense fallback={<LoadingSpinner />}><ChatbotDetail /></Suspense></RouteErrorBoundary>,
+      },
+      {
+        path: 'ai/content-center',
+        element: <RouteErrorBoundary><Suspense fallback={<LoadingSpinner />}><ContentCenter /></Suspense></RouteErrorBoundary>,
       },
     ],
   },
