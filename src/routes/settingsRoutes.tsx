@@ -24,6 +24,9 @@ const Teammates = lazy(() => import('../pages/settings/Teammates'));
 const TeammateDetail = lazy(() => import('../pages/settings/TeammateDetail'));
 const Teams = lazy(() => import('../pages/settings/Teams'));
 const TeamDetail = lazy(() => import('../pages/settings/TeamDetail'));
+const CannedResponses = lazy(() => import('../pages/settings/CannedResponses'));
+const CreateCannedResponse = lazy(() => import('../pages/settings/CreateCannedResponse'));
+const CannedResponseDetail = lazy(() => import('../pages/settings/CannedResponseDetail'));
 
 // Helper to wrap components with Suspense, ProtectedRoute and RouteErrorBoundary
 const withSuspenseAndProtection = (component: ReactNode) => (
@@ -84,6 +87,18 @@ export const settingsRoutes = [
       {
         path: 'teams/:id',
         element: <Suspense fallback={<LoadingSpinner />}><TeamDetail /></Suspense>,
+      },
+      {
+        path: 'canned-responses',
+        element: <Suspense fallback={<LoadingSpinner />}><CannedResponses /></Suspense>,
+      },
+      {
+        path: 'canned-responses/create',
+        element: <Suspense fallback={<LoadingSpinner />}><CreateCannedResponse /></Suspense>,
+      },
+      {
+        path: 'canned-responses/:id',
+        element: <Suspense fallback={<LoadingSpinner />}><CannedResponseDetail /></Suspense>,
       }
     ],
   },
