@@ -17,7 +17,7 @@ interface ContactListItemProps {
 
 const ContactListItem: React.FC<ContactListItemProps> = ({ contact, onClick }) => {
   const dispatch = useAppDispatch();
-  const selectedContacts = useAppSelector((state) => state.contacts.selectedContacts);
+  const selectedContacts = useAppSelector((state) => state.contacts?.selectedContacts || []);
   const isSelected = selectedContacts.includes(contact.id);
 
   const handleCheckboxChange = (e: React.MouseEvent) => {

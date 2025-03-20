@@ -13,8 +13,8 @@ export const useAssociatedContacts = (companyId: string) => {
   const [availableContacts, setAvailableContacts] = useState<Contact[]>([]);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const contacts = useAppSelector((state) => state.contacts.contacts);
-  const loading = useAppSelector((state) => state.contacts.loading);
+  const contacts = useAppSelector((state) => state.contacts?.contacts || []);
+  const loading = useAppSelector((state) => state.contacts?.loading || false);
   const dispatch = useAppDispatch();
 
   useEffect(() => {

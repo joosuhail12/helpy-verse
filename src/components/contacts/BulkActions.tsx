@@ -9,8 +9,8 @@ import { clearSelection } from '@/store/slices/contacts/contactsSlice';
 import { Trash, X } from 'lucide-react';
 
 const BulkActions = () => {
-  const selectedContactIds = useAppSelector((state) => state.contacts.selectedContacts);
-  const contacts = useAppSelector((state) => state.contacts.contacts);
+  const selectedContactIds = useAppSelector((state) => state.contacts?.selectedContacts || []);
+  const contacts = useAppSelector((state) => state.contacts?.contacts || []);
   const dispatch = useAppDispatch();
 
   const handleClearSelection = () => {

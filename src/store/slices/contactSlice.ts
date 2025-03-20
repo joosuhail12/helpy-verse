@@ -35,21 +35,32 @@ const contactSlice = createSlice({
     clearSelectedContacts: (state) => {
       state.selectedContacts = [];
     },
-  },
-  extraReducers: (builder) => {
-    // Add extra reducers as needed
+    toggleSelectContact: (state, action) => {
+      const contactId = action.payload;
+      if (state.selectedContacts.includes(contactId)) {
+        state.selectedContacts = state.selectedContacts.filter(id => id !== contactId);
+      } else {
+        state.selectedContacts.push(contactId);
+      }
+    },
+    selectContact: (state, action) => {
+      state.selectedContact = action.payload;
+    },
+    clearSelection: (state) => {
+      state.selectedContacts = [];
+    },
   },
 });
 
 // Export actions and reducer
-export const { setSelectedContacts, clearSelectedContacts } = contactSlice.actions;
+export const { setSelectedContacts, clearSelectedContacts, toggleSelectContact, selectContact, clearSelection } = contactSlice.actions;
 
 // Selectors
-export const selectContacts = (state: RootState) => state.contacts.items;
-export const selectContactsLoading = (state: RootState) => state.contacts.loading;
-export const selectContactsError = (state: RootState) => state.contacts.error;
-export const selectContactDetails = (state: RootState) => state.contacts.contactDetails;
-export const selectSelectedContact = (state: RootState) => state.contacts.selectedContact;
-export const selectSelectedContacts = (state: RootState) => state.contacts.selectedContacts;
+export const selectContacts = (state: RootState) => state.contacts?.items ?? [];
+export const selectContactsLoading = (state: RootState) => state.contacts?.loading ?? false;
+export const selectContactsError = (state: RootState) => state.contacts?.error ?? null;
+export const selectContactDetails = (state: RootState) => state.contacts?.contactDetails ?? null;
+export const selectSelectedContact = (state: RootState) => state.contacts?.selectedContact ?? null;
+export const selectSelectedContacts = (state: RootState) => state.contacts?.selectedContacts ?? [];
 
 export default contactSlice.reducer;

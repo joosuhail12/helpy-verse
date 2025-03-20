@@ -15,7 +15,7 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     const state = store.getState();
-    // Get token from auth state with proper type checking
+    // Get token from auth state with proper type checking and optional chaining
     const token = state.auth?.user?.data?.accessToken?.token;
     
     if (token) {

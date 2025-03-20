@@ -43,11 +43,11 @@ const companySlice = createSlice({
 export const { setSelectedCompanies, clearSelectedCompanies } = companySlice.actions;
 
 // Selectors
-export const selectCompanies = (state: RootState) => state.companies.companies;
-export const selectCompanyLoading = (state: RootState) => state.companies.loading;
-export const selectCompanyError = (state: RootState) => state.companies.error;
-export const selectCompanyDetails = (state: RootState) => state.companies.companyDetails;
-export const selectSelectedCompany = (state: RootState) => state.companies.selectedCompany;
-export const selectSelectedCompanies = (state: RootState) => state.companies.selectedCompanies;
+export const selectCompanies = (state: RootState) => state.companies?.companies ?? [];
+export const selectCompanyLoading = (state: RootState) => state.companies?.loading ?? false;
+export const selectCompanyError = (state: RootState) => state.companies?.error ?? null;
+export const selectCompanyDetails = (state: RootState) => state.companies?.companyDetails ?? null;
+export const selectSelectedCompany = (state: RootState) => state.companies?.selectedCompany ?? null;
+export const selectSelectedCompanies = (state: RootState) => state.companies?.selectedCompanies ?? [];
 
 export default companySlice.reducer;
