@@ -3,8 +3,8 @@ import { Badge } from "@/components/ui/badge";
 import { UserCircle } from "lucide-react";
 
 interface CustomerHeaderProps {
-  customer: string | null;
-  company: string | null;
+  customer: string;
+  company: string;
 }
 
 const CustomerHeader = ({ customer, company }: CustomerHeaderProps) => {
