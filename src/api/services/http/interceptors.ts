@@ -19,8 +19,8 @@ export const requestInterceptor = async (config: InternalAxiosRequestConfig): Pr
         config.headers.set("Authorization", `Bearer ${token}`);
     }
 
-    // Add workspace_id to all requests
-    const workspaceId = getCookie("workspaceId");
+    // Add workspace_id to all requests if it exists
+    const workspaceId = getCookie("workspaceId") || localStorage.getItem("workspaceId") || process.env.REACT_APP_WORKSPACE_ID;
     if (workspaceId && config.url) {
         const separator = config.url.includes("?") ? "&" : "?";
         config.url += `${separator}workspace_id=${workspaceId}`;
@@ -67,7 +67,18 @@ export const responseErrorInterceptor = (error: any) => {
         // Don't log out on network errors, just report the issue
         return Promise.reject({
             message: "Cannot connect to the server. Please check your network connection and try again later.",
-            isOfflineError: true
+            isOfflineError: true,
+            originalError: error
+        });
+    }
+
+    // CORS errors
+    if (error.message.includes('CORS')) {
+        console.error('CORS error detected:', error.message);
+        return Promise.reject({
+            message: "There was a CORS error. This usually means the API server is not configured to accept requests from this origin.",
+            isCorsError: true,
+            originalError: error
         });
     }
 
@@ -78,7 +89,8 @@ export const responseErrorInterceptor = (error: any) => {
         
         return Promise.reject({
             message: "Authentication failed. Please sign in again.",
-            isAuthError: true
+            isAuthError: true,
+            originalError: error
         });
     }
 
@@ -86,9 +98,13 @@ export const responseErrorInterceptor = (error: any) => {
     if (status >= 500) {
         return Promise.reject({
             message: "Server error. Please try again later.",
-            isServerError: true
+            isServerError: true,
+            originalError: error
         });
     }
 
-    return Promise.reject(error);
+    return Promise.reject({
+        message: errorMessage || "An error occurred while communicating with the server.",
+        originalError: error
+    });
 };
