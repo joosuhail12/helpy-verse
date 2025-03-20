@@ -26,7 +26,7 @@ export const AUTH_ENDPOINTS = {
   FORGOT_PASSWORD: '/auth/forgot-password',
   RESET_PASSWORD: '/auth/reset-password',
   VERIFY_EMAIL: '/auth/verify-email',
-  USER_PROFILE: '/user/profile',
+  USER_PROFILE: '/profile', // Changed from '/user/profile' to '/profile'
 };
 
 // For consistency, ensure the complete path includes the API_BASE_URL

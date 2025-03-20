@@ -6,7 +6,7 @@ import { SortField } from '@/types/tag';
 import { HttpClient } from '@/api/services/http';
 import type { Company } from '@/types/company';
 
-
+// Changed from '/company' to '/company' - ensuring it's the correct API endpoint
 const API_URL = '/company';
 
 export interface CompaniesResponse {
@@ -31,12 +31,22 @@ export interface CompanyParams {
     sortDirection?: 'asc' | 'desc';
     page?: number;
     limit?: number;
+    workspace_id?: string; // Added workspace_id parameter
 }
 
 export const companiesService = {
-    async fetchCompanies(): Promise<CompaniesResponse> {
+    async fetchCompanies(params: CompanyParams = {}): Promise<CompaniesResponse> {
         try {
-            const response = await HttpClient.apiClient.get<CompaniesResponse>(API_URL);
+            // Get workspace ID from env or localStorage
+            const workspaceId = process.env.REACT_APP_WORKSPACE_ID || localStorage.getItem('workspaceId');
+            
+            // Ensure workspace_id is included in params
+            const queryParams = {
+                ...params,
+                workspace_id: params.workspace_id || workspaceId
+            };
+            
+            const response = await HttpClient.apiClient.get<CompaniesResponse>(API_URL, { params: queryParams });
             return response.data;
         } catch (error) {
             console.error('Error fetching companies:', error);
@@ -46,7 +56,15 @@ export const companiesService = {
 
     async createCompany(company: Partial<Company>): Promise<CreateCompaniesResponse> {
         try {
-            const response = await HttpClient.apiClient.post<CreateCompaniesResponse>(API_URL, company);
+            // Get workspace ID from env or localStorage
+            const workspaceId = process.env.REACT_APP_WORKSPACE_ID || localStorage.getItem('workspaceId');
+            
+            const payload = {
+                ...company,
+                workspace_id: workspaceId
+            };
+            
+            const response = await HttpClient.apiClient.post<CreateCompaniesResponse>(API_URL, payload);
             return response.data;
         } catch (error) {
             console.error('Error creating company:', error);
@@ -56,7 +74,15 @@ export const companiesService = {
 
     async updateCompany(id: string, company: Partial<Company>): Promise<CompanyResponse> {
         try {
-            const response = await HttpClient.apiClient.put<CompanyResponse>(`${API_URL}/${id}`, company);
+            // Get workspace ID from env or localStorage
+            const workspaceId = process.env.REACT_APP_WORKSPACE_ID || localStorage.getItem('workspaceId');
+            
+            const payload = {
+                ...company,
+                workspace_id: workspaceId
+            };
+            
+            const response = await HttpClient.apiClient.put<CompanyResponse>(`${API_URL}/${id}`, payload);
             return response.data;
         } catch (error) {
             console.error('Error updating company:', error);
@@ -66,15 +92,26 @@ export const companiesService = {
 
     async deleteCompany(id: string): Promise<void> {
         try {
-            await HttpClient.apiClient.delete(`${API_URL}/${id}`);
+            // Get workspace ID from env or localStorage
+            const workspaceId = process.env.REACT_APP_WORKSPACE_ID || localStorage.getItem('workspaceId');
+            
+            await HttpClient.apiClient.delete(`${API_URL}/${id}`, {
+                params: { workspace_id: workspaceId }
+            });
         } catch (error) {
             console.error('Error deleting company:', error);
             throw new Error('Failed to delete company');
         }
     },
+    
     async getCompany(id: string): Promise<CompanyResponse> {
         try {
-            const response = await HttpClient.apiClient.get<CompanyResponse>(`${API_URL}/${id}`);
+            // Get workspace ID from env or localStorage
+            const workspaceId = process.env.REACT_APP_WORKSPACE_ID || localStorage.getItem('workspaceId');
+            
+            const response = await HttpClient.apiClient.get<CompanyResponse>(`${API_URL}/${id}`, {
+                params: { workspace_id: workspaceId }
+            });
             return response.data;
         } catch (error) {
             console.error('Error fetching company:', error);
@@ -82,5 +119,3 @@ export const companiesService = {
         }
     }
 };
-
-

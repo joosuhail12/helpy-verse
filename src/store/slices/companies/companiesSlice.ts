@@ -1,6 +1,6 @@
-
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../store';
+import { companiesService } from '@/api/services/companiesService';
 
 export interface Company {
   id: string;
@@ -45,14 +45,10 @@ export const fetchCompanies = createAsyncThunk(
   'companies/fetchCompanies',
   async (_, { rejectWithValue }) => {
     try {
-      // Replace with actual API call
-      const response = await fetch('/api/companies');
-      if (!response.ok) {
-        throw new Error('Failed to fetch companies');
-      }
-      return await response.json();
+      const response = await companiesService.fetchCompanies();
+      return response.companies;
     } catch (error: any) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(error.message || 'Failed to fetch companies');
     }
   }
 );
@@ -61,13 +57,10 @@ export const fetchCompanyById = createAsyncThunk(
   'companies/fetchCompanyById',
   async (id: string, { rejectWithValue }) => {
     try {
-      const response = await fetch(`/api/companies/${id}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch company details');
-      }
-      return await response.json();
+      const response = await companiesService.getCompany(id);
+      return response.data;
     } catch (error: any) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(error.message || 'Failed to fetch company details');
     }
   }
 );
@@ -76,17 +69,10 @@ export const createCompany = createAsyncThunk(
   'companies/createCompany',
   async (company: Omit<Company, 'id' | 'createdAt' | 'updatedAt'>, { rejectWithValue }) => {
     try {
-      const response = await fetch('/api/companies', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(company),
-      });
-      if (!response.ok) {
-        throw new Error('Failed to create company');
-      }
-      return await response.json();
+      const response = await companiesService.createCompany(company);
+      return response.data.companyList[0];
     } catch (error: any) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(error.message || 'Failed to create company');
     }
   }
 );
@@ -95,17 +81,10 @@ export const updateCompany = createAsyncThunk(
   'companies/updateCompany',
   async ({ id, updates }: { id: string; updates: Partial<Company> }, { rejectWithValue }) => {
     try {
-      const response = await fetch(`/api/companies/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updates),
-      });
-      if (!response.ok) {
-        throw new Error('Failed to update company');
-      }
-      return await response.json();
+      const response = await companiesService.updateCompany(id, updates);
+      return response.data;
     } catch (error: any) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(error.message || 'Failed to update company');
     }
   }
 );
