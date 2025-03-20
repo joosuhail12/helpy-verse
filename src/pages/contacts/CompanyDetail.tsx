@@ -19,6 +19,7 @@ import { CompanyDeals } from '@/components/companies/detail/CompanyDeals';
 import { CompanyActivity } from '@/components/companies/detail/CompanyActivity';
 import { CompanyNotes } from '@/components/companies/detail/CompanyNotes';
 import { CompanyTickets } from '@/components/companies/detail/CompanyTickets';
+import AssociatedContacts from '@/components/companies/detail/AssociatedContacts';
 import { Card } from '@/components/ui/card';
 import { Building2, Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
 import { Activity } from '@/types/activity';
@@ -227,13 +228,18 @@ const CompanyDetail = () => {
 
         <div className="lg:col-span-8">
           <Tabs defaultValue={activeTab} value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="activities">Activity Timeline</TabsTrigger>
+              <TabsTrigger value="contacts">Contacts</TabsTrigger>
               <TabsTrigger value="tickets">Tickets</TabsTrigger>
             </TabsList>
 
             <TabsContent value="activities">
               <CompanyActivityTimeline activities={activities} />
+            </TabsContent>
+
+            <TabsContent value="contacts">
+              {company.id && <AssociatedContacts companyId={company.id} />}
             </TabsContent>
 
             <TabsContent value="tickets">
