@@ -53,12 +53,10 @@ const EditTeam = () => {
       
       // Handle channels properly based on the actual structure
       if (team.channels) {
-        if (typeof team.channels === 'object' && team.channels !== null && 'chat' in team.channels) {
+        if (typeof team.channels === 'object' && 'chat' in team.channels) {
           // New format (object with chat/email properties)
-          const chatChannel = team.channels.chat as string | undefined;
-          const emailChannels = Array.isArray(team.channels.email) ? team.channels.email as string[] : [];
-          setSelectedChatChannel(chatChannel);
-          setSelectedEmailChannels(emailChannels);
+          setSelectedChatChannel(team.channels.chat);
+          setSelectedEmailChannels(team.channels.email || []);
         } else {
           // Old format (array of Channel objects)
           const channels = team.channels as unknown as Channel[];
@@ -74,26 +72,23 @@ const EditTeam = () => {
       
       // Handle routing properly based on the actual structure
       if (team.routing) {
-        if (typeof team.routing === 'object' && team.routing !== null && 'type' in team.routing) {
+        if (typeof team.routing === 'object' && 'type' in team.routing) {
           // New format (object with type property)
-          const routingType = team.routing.type as 'manual' | 'round-robin' | 'load-balanced';
-          const routingLimits = typeof team.routing.limits === 'object' ? team.routing.limits || {} : {};
-          setRoutingType(routingType);
-          setRoutingLimits(routingLimits);
+          setRoutingType(team.routing.type as 'manual' | 'round-robin' | 'load-balanced');
+          setRoutingLimits(team.routing.limits || {});
         } else {
           // Old format (array of RoutingRule objects)
           const routing = team.routing as unknown as RoutingRule[];
           const mainRule = routing[0];
           if (mainRule) {
-            const routingType = (mainRule.type || 'manual') as 'manual' | 'round-robin' | 'load-balanced';
-            setRoutingType(routingType);
+            setRoutingType(mainRule.type as 'manual' | 'round-robin' | 'load-balanced');
           }
         }
       }
       
       // Handle officeHours properly
       if (team.officeHours) {
-        if (typeof team.officeHours === 'object' && team.officeHours !== null && 'monday' in team.officeHours) {
+        if ('monday' in team.officeHours) {
           // Already in the correct format with day keys
           const typedOfficeHours = team.officeHours as unknown as { [key in DayOfWeek]: TimeSlot[] };
           setOfficeHours({
@@ -130,10 +125,9 @@ const EditTeam = () => {
       // Handle holidays properly
       if (team.holidays) {
         // Convert Holiday objects to strings if needed
-        const holidayArray = Array.isArray(team.holidays) ? team.holidays : [];
-        const holidayStrings = holidayArray.map((h: any) => 
-          typeof h === 'string' ? h : (h && typeof h === 'object' && 'date' in h ? h.date : '')
-        ).filter(Boolean);
+        const holidayStrings = (team.holidays as unknown[]).map((h: any) => 
+          typeof h === 'string' ? h : h.date
+        );
         setSelectedHolidays(holidayStrings);
       }
     }
