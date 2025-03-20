@@ -6,7 +6,6 @@ import { CompanyInformation } from './CompanyInformation';
 import { CompanyActivityTimeline } from './CompanyActivityTimeline';
 import { CompanyDetailSidebar } from './CompanyDetailSidebar';
 import { CompanyCustomObjectData } from './CompanyCustomObjectData';
-import { CompanyRelated } from './CompanyRelated';
 import { CompanyTickets } from './CompanyTickets';
 import AssociatedContacts from './AssociatedContacts';
 import { AlertTriangle } from 'lucide-react';
@@ -34,7 +33,6 @@ export const CompanyDetailContent = ({ company, activities }: CompanyDetailConte
         <CompanyDetailSidebar company={company} />
         <div className="mt-4 space-y-4">
           <CompanyInformation company={company} activities={activities} />
-          <CompanyRelated company={company} />
           <CompanyCustomObjectData company={company} />
         </div>
       </div>
