@@ -48,7 +48,7 @@ const TicketCard = ({ ticket, viewMode, onCopyId, isActive = false }: TicketCard
 
   const getActiveStateClasses = () => {
     if (isActive) {
-      return "border-l-4 border-primary bg-primary-50/50 shadow-lg ring-1 ring-primary/20";
+      return "border-l-4 border-[#8B5CF6] bg-primary-50/50 shadow-[0_0_15px_rgba(139,92,246,0.3)] ring-1 ring-[#8B5CF6]/20";
     }
     return "";
   };
@@ -62,7 +62,7 @@ const TicketCard = ({ ticket, viewMode, onCopyId, isActive = false }: TicketCard
       aria-labelledby={`ticket-${ticket.id}-subject`}
     >
       {isActive && (
-        <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary animate-pulse"></div>
+        <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#8B5CF6] animate-pulse"></div>
       )}
 
       <div className="flex items-start justify-between gap-4">
@@ -71,11 +71,11 @@ const TicketCard = ({ ticket, viewMode, onCopyId, isActive = false }: TicketCard
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Avatar className={`h-8 w-8 ${isActive ? "ring-2 ring-primary" : "ring-2 ring-white"}`}>
+                  <Avatar className={`h-8 w-8 ${isActive ? "ring-2 ring-[#8B5CF6]" : "ring-2 ring-white"}`}>
                     {ticket.assigneeAvatar ? (
                       <AvatarImage src={ticket.assigneeAvatar} alt={ticket.assignee} />
                     ) : (
-                      <AvatarFallback className={`${isActive ? "bg-primary/20 text-primary" : "bg-primary/10 text-primary"} text-xs`}>
+                      <AvatarFallback className={`${isActive ? "bg-[#8B5CF6]/20 text-[#8B5CF6]" : "bg-primary/10 text-primary"} text-xs`}>
                         {ticket.assignee.split(' ').map(name => name[0]).join('')}
                       </AvatarFallback>
                     )}
@@ -87,18 +87,18 @@ const TicketCard = ({ ticket, viewMode, onCopyId, isActive = false }: TicketCard
               </Tooltip>
             </TooltipProvider>
           ) : (
-            <div className={`w-8 h-8 rounded-full ${isActive ? "bg-primary/10" : "bg-gray-100"} flex items-center justify-center ${isActive ? "ring-2 ring-primary/30" : "ring-2 ring-white"}`}>
-              <UserX className={`w-4 h-4 ${isActive ? "text-primary" : "text-gray-400"}`} />
+            <div className={`w-8 h-8 rounded-full ${isActive ? "bg-[#8B5CF6]/10" : "bg-gray-100"} flex items-center justify-center ${isActive ? "ring-2 ring-[#8B5CF6]/30" : "ring-2 ring-white"}`}>
+              <UserX className={`w-4 h-4 ${isActive ? "text-[#8B5CF6]" : "text-gray-400"}`} />
             </div>
           )}
           
           <div className="flex-1 min-w-0 space-y-1">
             <div className="flex items-start justify-between gap-2">
               <div className="flex items-center">
-                {isActive && <ZapIcon className="h-3.5 w-3.5 text-primary mr-1 animate-pulse" />}
+                {isActive && <ZapIcon className="h-3.5 w-3.5 text-[#8B5CF6] mr-1 animate-pulse" />}
                 <h3 
                   id={`ticket-${ticket.id}-subject`}
-                  className={`font-medium text-sm ${isActive ? "text-primary font-semibold" : "text-gray-900"} truncate ${ticket.isUnread ? 'font-semibold' : ''}`}
+                  className={`font-medium text-sm ${isActive ? "text-[#8B5CF6] font-semibold" : "text-gray-900"} truncate ${ticket.isUnread ? 'font-semibold' : ''}`}
                 >
                   {ticket.subject}
                 </h3>
@@ -111,13 +111,13 @@ const TicketCard = ({ ticket, viewMode, onCopyId, isActive = false }: TicketCard
                 className="opacity-0 group-hover:opacity-100 transition-opacity focus:opacity-100 shrink-0"
                 aria-label={`Copy ticket ID ${ticket.id}`}
               >
-                <Copy className="w-3 h-3 text-gray-400 hover:text-primary" />
+                <Copy className="w-3 h-3 text-gray-400 hover:text-[#8B5CF6]" />
               </button>
             </div>
 
             <div className="flex items-center gap-2 flex-wrap">
               <div className="flex items-center gap-1.5 text-xs text-gray-600 min-w-0">
-                <Building className={`w-3 h-3 ${isActive ? "text-primary/70" : "text-gray-400"} shrink-0`} />
+                <Building className={`w-3 h-3 ${isActive ? "text-[#8B5CF6]/70" : "text-gray-400"} shrink-0`} />
                 <span className="truncate">{ticket.company}</span>
               </div>
               <span className="w-1 h-1 rounded-full bg-gray-300"></span>
@@ -125,18 +125,18 @@ const TicketCard = ({ ticket, viewMode, onCopyId, isActive = false }: TicketCard
             </div>
 
             {!isCompact && (
-              <p className={`text-xs ${isActive ? "text-gray-700" : "text-gray-500"} border-t ${isActive ? "border-primary/10" : "border-gray-100/75"} pt-2 line-clamp-2`}>
+              <p className={`text-xs ${isActive ? "text-gray-700" : "text-gray-500"} border-t ${isActive ? "border-[#8B5CF6]/10" : "border-gray-100/75"} pt-2 line-clamp-2`}>
                 {ticket.lastMessage}
               </p>
             )}
 
             {!isCompact && ticket.tags.length > 0 && (
               <div className="flex items-center gap-1.5 flex-wrap pt-1">
-                <Tag className={`w-3 h-3 ${isActive ? "text-primary/70" : "text-gray-400"}`} />
+                <Tag className={`w-3 h-3 ${isActive ? "text-[#8B5CF6]/70" : "text-gray-400"}`} />
                 {ticket.tags.map((tag, index) => (
                   <span
                     key={index}
-                    className={`px-1.5 py-0.5 ${isActive ? "bg-primary/5 text-primary/80" : "bg-gray-100/75 text-gray-600"} rounded-full text-[10px] font-medium`}
+                    className={`px-1.5 py-0.5 ${isActive ? "bg-[#8B5CF6]/5 text-[#8B5CF6]/80" : "bg-gray-100/75 text-gray-600"} rounded-full text-[10px] font-medium`}
                   >
                     {tag}
                   </span>
@@ -154,7 +154,7 @@ const TicketCard = ({ ticket, viewMode, onCopyId, isActive = false }: TicketCard
 
           <TooltipProvider>
             <Tooltip>
-              <TooltipTrigger className={`flex items-center gap-1.5 text-xs ${isActive ? "text-primary/80" : "text-gray-500"}`}>
+              <TooltipTrigger className={`flex items-center gap-1.5 text-xs ${isActive ? "text-[#8B5CF6]/80" : "text-gray-500"}`}>
                 <Clock className="w-3 h-3" />
                 {formatDistanceToNow(new Date(ticket.createdAt), { addSuffix: true })}
               </TooltipTrigger>
@@ -165,10 +165,10 @@ const TicketCard = ({ ticket, viewMode, onCopyId, isActive = false }: TicketCard
           </TooltipProvider>
 
           {!isCompact && (
-            <div className={`flex items-center gap-1.5 text-xs border-t ${isActive ? "border-primary/10" : "border-gray-100/75"} pt-1.5 mt-1`}>
+            <div className={`flex items-center gap-1.5 text-xs border-t ${isActive ? "border-[#8B5CF6]/10" : "border-gray-100/75"} pt-1.5 mt-1`}>
               {ticket.assignee ? (
                 <div className="flex items-center gap-1.5 text-gray-600">
-                  <User className={`w-3 h-3 ${isActive ? "text-primary/70" : ""}`} />
+                  <User className={`w-3 h-3 ${isActive ? "text-[#8B5CF6]/70" : ""}`} />
                   <span>{ticket.assignee}</span>
                 </div>
               ) : (

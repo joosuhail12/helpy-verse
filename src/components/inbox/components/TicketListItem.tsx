@@ -39,7 +39,7 @@ const TicketListItem = ({
 
   const getActiveStateClasses = () => {
     if (isActive) {
-      return "border-l-4 border-primary bg-primary-50/50 shadow-lg transform transition-all duration-300";
+      return "border-l-4 border-[#8B5CF6] bg-primary-50/50 shadow-[0_0_15px_rgba(139,92,246,0.3)] transform transition-all duration-300";
     }
     return "";
   };
@@ -48,7 +48,7 @@ const TicketListItem = ({
     return (
       <Card className={`mb-2 overflow-hidden relative ${isSelected ? "border-primary" : ""} ${isLoading ? "opacity-60" : ""} ${getActiveStateClasses()}`}>
         {isActive && (
-          <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary animate-pulse"></div>
+          <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#8B5CF6] animate-pulse"></div>
         )}
         <div className="flex items-center p-3">
           {onSelect && (
@@ -58,8 +58,8 @@ const TicketListItem = ({
           )}
           <div className="flex-1 min-w-0">
             <div className="flex items-center space-x-2">
-              {isActive && <ZapIcon className="h-4 w-4 text-primary animate-pulse" />}
-              <h3 className={`text-sm font-medium truncate ${isActive ? "text-primary" : ""}`}>{ticket.subject}</h3>
+              {isActive && <ZapIcon className="h-4 w-4 text-[#8B5CF6] animate-pulse" />}
+              <h3 className={`text-sm font-medium truncate ${isActive ? "text-[#8B5CF6]" : ""}`}>{ticket.subject}</h3>
               {ticket.isUnread && <Badge className="bg-blue-500">New</Badge>}
             </div>
             <p className="text-xs text-gray-500 truncate">
@@ -79,7 +79,7 @@ const TicketListItem = ({
     return (
       <Card className={`overflow-hidden relative ${isSelected ? "border-primary" : ""} ${isLoading ? "opacity-60" : ""} ${getActiveStateClasses()}`}>
         {isActive && (
-          <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary animate-pulse"></div>
+          <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#8B5CF6] animate-pulse"></div>
         )}
         <div className="p-4">
           <div className="flex items-start justify-between mb-2">
@@ -90,8 +90,8 @@ const TicketListItem = ({
                 </div>
               )}
               <div className="flex items-center">
-                {isActive && <ZapIcon className="h-4 w-4 text-primary mr-1 animate-pulse" />}
-                <h3 className={`text-base font-medium ${isActive ? "text-primary" : ""}`}>{ticket.subject}</h3>
+                {isActive && <ZapIcon className="h-4 w-4 text-[#8B5CF6] mr-1 animate-pulse" />}
+                <h3 className={`text-base font-medium ${isActive ? "text-[#8B5CF6]" : ""}`}>{ticket.subject}</h3>
               </div>
               {ticket.isUnread && <Badge className="ml-2 bg-blue-500">New</Badge>}
             </div>
@@ -132,7 +132,7 @@ const TicketListItem = ({
   return (
     <Card className={`mb-2 overflow-hidden relative ${isSelected ? "border-primary" : ""} ${isLoading ? "opacity-60" : ""} ${getActiveStateClasses()} transition-all duration-300`}>
       {isActive && (
-        <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary animate-pulse"></div>
+        <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#8B5CF6] animate-pulse"></div>
       )}
       <div className={`flex items-center p-4 ${isActive ? "bg-primary-50/50" : ""}`}>
         {onSelect && (
@@ -141,14 +141,14 @@ const TicketListItem = ({
           </div>
         )}
         <div className="mr-4 flex-shrink-0">
-          <div className={`${isActive ? "bg-primary/10" : "bg-gray-100"} rounded-full p-2 ${isActive ? "ring-2 ring-primary/30" : ""}`}>
-            <Mail className={`h-5 w-5 ${isActive ? "text-primary" : "text-gray-500"}`} />
+          <div className={`${isActive ? "bg-[#8B5CF6]/10" : "bg-gray-100"} rounded-full p-2 ${isActive ? "ring-2 ring-[#8B5CF6]/30" : ""}`}>
+            <Mail className={`h-5 w-5 ${isActive ? "text-[#8B5CF6]" : "text-gray-500"}`} />
           </div>
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center">
-            {isActive && <ZapIcon className="h-4 w-4 text-primary mr-1 animate-pulse" />}
-            <h3 className={`text-sm font-medium ${isActive ? "text-primary font-semibold" : ""}`}>{ticket.subject}</h3>
+            {isActive && <ZapIcon className="h-4 w-4 text-[#8B5CF6] mr-1 animate-pulse" />}
+            <h3 className={`text-sm font-medium ${isActive ? "text-[#8B5CF6] font-semibold" : ""}`}>{ticket.subject}</h3>
             {ticket.isUnread && <Badge className="ml-2 bg-blue-500">New</Badge>}
             {ticket.hasNotification && (
               <Badge className="ml-2 bg-amber-500">
