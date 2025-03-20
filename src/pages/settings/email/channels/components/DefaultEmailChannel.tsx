@@ -11,11 +11,11 @@ interface DefaultEmailChannelProps {
   disabled?: boolean;
 }
 
-export function DefaultEmailChannel({
-  email,
-  isActive,
-  onToggle,
-  disabled
+export function DefaultEmailChannel({ 
+  email, 
+  isActive, 
+  onToggle, 
+  disabled 
 }: DefaultEmailChannelProps) {
   return (
     <div className="bg-muted/30 rounded-lg p-6 space-y-4">
@@ -37,7 +37,7 @@ export function DefaultEmailChannel({
         <Switch
           checked={isActive}
           onCheckedChange={onToggle}
-          disabled={true}
+          disabled={disabled}
         />
       </div>
     </div>
