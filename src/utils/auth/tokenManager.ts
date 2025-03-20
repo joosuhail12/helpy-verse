@@ -8,7 +8,7 @@ import { jwtDecode } from "jwt-decode";
 // Get cookie helpers from HttpClient to avoid circular dependencies
 const { getCookie, setCookie } = cookieFunctions;
 
-// 🟢 Logout User
+// 🟢 Logout User - Improved implementation
 export const handleLogout = async (): Promise<void> => {
     try {
         // Attempt to call logout endpoint if we have a token
@@ -42,6 +42,7 @@ export const handleSetToken = (token: string): boolean => {
         
         // Always store in localStorage first as a reliable backup
         localStorage.setItem("token", token);
+        localStorage.setItem("customerToken", token); // Also store as customerToken for consistency
         
         // Try to set in cookies (this may fail in some environments)
         try {
@@ -67,20 +68,20 @@ export const handleSetToken = (token: string): boolean => {
 export const isAuthenticated = (): boolean => {
     try {
         const tokenInCookie = !!getCookie("customerToken");
-        const tokenInStorage = !!localStorage.getItem("token");
+        const tokenInStorage = !!localStorage.getItem("token") || !!localStorage.getItem("customerToken");
         
         // Consider authenticated if token exists in either place
         return tokenInCookie || tokenInStorage;
     } catch (error) {
         // If cookie access fails, fall back to localStorage
-        return !!localStorage.getItem("token");
+        return !!localStorage.getItem("token") || !!localStorage.getItem("customerToken");
     }
 };
 
 // 🟢 Get auth token - prioritize localStorage for reliability
 export const getAuthToken = (): string => {
     // Prioritize localStorage for more reliable token access
-    const storageToken = localStorage.getItem("token");
+    const storageToken = localStorage.getItem("token") || localStorage.getItem("customerToken");
     if (storageToken) {
         return storageToken;
     }
@@ -91,6 +92,7 @@ export const getAuthToken = (): string => {
         if (cookieToken) {
             // Sync to localStorage for future reliability
             localStorage.setItem("token", cookieToken);
+            localStorage.setItem("customerToken", cookieToken);
             return cookieToken;
         }
     } catch (error) {
