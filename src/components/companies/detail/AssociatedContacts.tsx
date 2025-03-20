@@ -11,12 +11,11 @@ import {
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { fetchCustomers, updateContactCompany } from '@/store/slices/contacts/contactsSlice';
 import { Contact } from '@/types/contact';
-import { MoreVertical, Plus, Loader2, User, Users } from 'lucide-react';
+import { MoreVertical, Plus, Loader2, User, Users, Search, X } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,6 +26,9 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
 import { useNavigate } from 'react-router-dom';
+import { useDebounce } from '@/hooks/useDebounce';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 
 interface AssociatedContactsProps {
   companyId: string;
@@ -34,9 +36,10 @@ interface AssociatedContactsProps {
 
 const AssociatedContacts: React.FC<AssociatedContactsProps> = ({ companyId }) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const [associatedContacts, setAssociatedContacts] = useState<Contact[]>([]);
   const [availableContacts, setAvailableContacts] = useState<Contact[]>([]);
-  const [associateDialogOpen, setAssociateDialogOpen] = useState(false);
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const contacts = useAppSelector((state) => state.contacts.contacts);
   const loading = useAppSelector((state) => state.contacts.loading);
@@ -66,15 +69,11 @@ const AssociatedContacts: React.FC<AssociatedContactsProps> = ({ companyId }) =>
     }
   }, [contacts, companyId]);
 
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
-  };
-
   const filteredContacts = availableContacts.filter(contact => {
     const firstName = contact.firstname.toLowerCase();
     const lastName = contact.lastname.toLowerCase();
     const email = contact.email.toLowerCase();
-    const query = searchQuery.toLowerCase();
+    const query = debouncedSearchQuery.toLowerCase();
     
     return firstName.includes(query) || lastName.includes(query) || email.includes(query);
   });
@@ -90,8 +89,10 @@ const AssociatedContacts: React.FC<AssociatedContactsProps> = ({ companyId }) =>
     // Refresh associated contacts
     fetchAssociatedContacts();
     
-    // Close dialog
-    setAssociateDialogOpen(false);
+    // Close popover
+    setIsPopoverOpen(false);
+    // Clear search query
+    setSearchQuery('');
   };
 
   const handleRemoveAssociation = (contactId: string) => {
@@ -126,64 +127,49 @@ const AssociatedContacts: React.FC<AssociatedContactsProps> = ({ companyId }) =>
           <Users className="h-5 w-5 text-muted-foreground" />
           Associated Contacts
         </CardTitle>
-        <Dialog open={associateDialogOpen} onOpenChange={setAssociateDialogOpen}>
-          <DialogTrigger asChild>
+        <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+          <PopoverTrigger asChild>
             <Button size="sm">
               <Plus className="mr-2 h-4 w-4" />
               Associate Contact
             </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Associate Contact</DialogTitle>
-            </DialogHeader>
-            <div className="py-4">
-              <Input
-                type="search"
-                placeholder="Search contacts..."
-                value={searchQuery}
-                onChange={handleSearch}
-                className="mb-4"
+          </PopoverTrigger>
+          <PopoverContent className="p-0 w-[300px]">
+            <Command>
+              <CommandInput 
+                placeholder="Search contacts..." 
+                value={searchQuery} 
+                onValueChange={setSearchQuery}
+                className="h-9"
               />
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
+              <CommandList>
+                <CommandEmpty className="py-6 text-center text-sm">
                   {filteredContacts.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
-                        No available contacts found
-                      </TableCell>
-                    </TableRow>
+                    <span>No available contacts found</span>
                   ) : (
-                    filteredContacts.map(contact => (
-                      <TableRow key={contact.id}>
-                        <TableCell className="font-medium">
-                          {contact.firstname} {contact.lastname}
-                        </TableCell>
-                        <TableCell>{contact.email}</TableCell>
-                        <TableCell>
-                          <Badge variant={contact.status === 'active' ? 'default' : 'secondary'}>
-                            {contact.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button size="sm" onClick={() => handleAssociateContact(contact.id)}>Associate</Button>
-                        </TableCell>
-                      </TableRow>
-                    ))
+                    <span>Searching...</span>
                   )}
-                </TableBody>
-              </Table>
-            </div>
-          </DialogContent>
-        </Dialog>
+                </CommandEmpty>
+                <CommandGroup>
+                  {filteredContacts.slice(0, 5).map(contact => (
+                    <CommandItem
+                      key={contact.id}
+                      value={`${contact.firstname} ${contact.lastname}`}
+                      onSelect={() => handleAssociateContact(contact.id)}
+                      className="flex justify-between items-center"
+                    >
+                      <div>
+                        <span className="font-medium">{contact.firstname} {contact.lastname}</span>
+                        <p className="text-xs text-muted-foreground">{contact.email}</p>
+                      </div>
+                      <Plus className="h-4 w-4 text-muted-foreground hover:text-primary" />
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
       </CardHeader>
 
       <CardContent>
@@ -191,14 +177,14 @@ const AssociatedContacts: React.FC<AssociatedContactsProps> = ({ companyId }) =>
           <div className="py-8 text-center border rounded-md bg-muted/20">
             <User className="h-12 w-12 text-muted-foreground mx-auto mb-3 opacity-50" />
             <p className="text-muted-foreground mb-4">No contacts associated with this company</p>
-            <Dialog open={associateDialogOpen} onOpenChange={setAssociateDialogOpen}>
-              <DialogTrigger asChild>
+            <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+              <PopoverTrigger asChild>
                 <Button>
                   <Plus className="mr-2 h-4 w-4" />
                   Associate Contact
                 </Button>
-              </DialogTrigger>
-            </Dialog>
+              </PopoverTrigger>
+            </Popover>
           </div>
         ) : (
           <Table>
