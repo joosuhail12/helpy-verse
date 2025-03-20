@@ -1,4 +1,4 @@
-import { getWorkspaceId, handleLogout, getCookie } from "@/utils/helpers/helpers";
+import { getWorkspaceId, handleLogout, getCookie, getClientIdFromCookie } from "@/utils/helpers/helpers";
 import axios, { AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from "axios";
 import { get } from "lodash";
 

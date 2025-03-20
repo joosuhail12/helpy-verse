@@ -13,6 +13,7 @@ interface CurrentTicketCardProps {
   onToggle: () => void;
 }
 
+// TODO: Integrate Tickets
 const CurrentTicketCard = ({ ticket, isOpen, onToggle }: CurrentTicketCardProps) => {
   return (
     <Collapsible open={isOpen} onOpenChange={onToggle}>
@@ -34,14 +35,14 @@ const CurrentTicketCard = ({ ticket, isOpen, onToggle }: CurrentTicketCardProps)
             </div>
             <div className="flex items-center justify-between">
               <span className="text-gray-500">Status</span>
-              <Badge 
-                variant="outline" 
+              <Badge
+                variant="outline"
                 className={
-                  ticket.status === 'open' 
-                    ? 'bg-green-50 text-green-700' 
-                    : ticket.status === 'pending' 
-                    ? 'bg-yellow-50 text-yellow-700'
-                    : 'bg-gray-50 text-gray-700'
+                  ticket.status === 'open'
+                    ? 'bg-green-50 text-green-700'
+                    : ticket.status === 'pending'
+                      ? 'bg-yellow-50 text-yellow-700'
+                      : 'bg-gray-50 text-gray-700'
                 }
               >
                 {ticket.status.charAt(0).toUpperCase() + ticket.status.slice(1)}
@@ -49,14 +50,14 @@ const CurrentTicketCard = ({ ticket, isOpen, onToggle }: CurrentTicketCardProps)
             </div>
             <div className="flex items-center justify-between">
               <span className="text-gray-500">Priority</span>
-              <Badge 
-                variant="outline" 
+              <Badge
+                variant="outline"
                 className={
-                  ticket.priority === 'high' 
-                    ? 'bg-red-50 text-red-700' 
-                    : ticket.priority === 'medium' 
-                    ? 'bg-yellow-50 text-yellow-700'
-                    : 'bg-blue-50 text-blue-700'
+                  ticket.priority === 'high'
+                    ? 'bg-red-50 text-red-700'
+                    : ticket.priority === 'medium'
+                      ? 'bg-yellow-50 text-yellow-700'
+                      : 'bg-blue-50 text-blue-700'
                 }
               >
                 {ticket.priority.charAt(0).toUpperCase() + ticket.priority.slice(1)}
