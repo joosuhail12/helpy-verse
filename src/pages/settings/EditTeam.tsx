@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
@@ -54,9 +55,10 @@ const EditTeam = () => {
         if (typeof team.channels === 'object' && 'chat' in team.channels) {
           setSelectedChatChannel(typeof team.channels.chat === 'string' ? team.channels.chat : '');
           
-          const emailChannels = team.channels.email;
-          if (Array.isArray(emailChannels)) {
-            setSelectedEmailChannels(emailChannels);
+          // Fix the type issue by checking if email exists and is an array
+          const typedChannels = team.channels as unknown as { chat?: string; email?: string[] };
+          if (Array.isArray(typedChannels.email)) {
+            setSelectedEmailChannels(typedChannels.email);
           } else {
             setSelectedEmailChannels([]);
           }
