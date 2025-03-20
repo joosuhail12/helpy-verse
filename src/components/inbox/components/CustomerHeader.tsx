@@ -6,6 +6,7 @@ import { Bot, Info, AlertTriangle } from "lucide-react";
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useToast } from '@/hooks/use-toast';
 import { customerService } from '@/api/services/customerService';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface CustomerHeaderProps {
   customer: string;
@@ -85,7 +86,16 @@ const CustomerHeader = ({ customer, company }: CustomerHeaderProps) => {
             <div className="flex items-center gap-1.5">
               <h3 className="font-semibold text-gray-900 text-sm leading-tight">{customerData.name}</h3>
               {customerData.error && (
-                <AlertTriangle className="h-3.5 w-3.5 text-yellow-500" title="Using fallback data" />
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <AlertTriangle className="h-3.5 w-3.5 text-yellow-500" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Using fallback data</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               )}
             </div>
             <p className="text-xs text-gray-500">{customerData.email}</p>
