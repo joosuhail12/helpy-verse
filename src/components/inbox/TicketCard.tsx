@@ -48,7 +48,7 @@ const TicketCard = ({ ticket, viewMode, onCopyId, isActive = false }: TicketCard
 
   const getActiveStateClasses = () => {
     if (isActive) {
-      return "border-l-4 border-[#8B5CF6] bg-primary-50/50 shadow-[0_0_15px_rgba(139,92,246,0.3)] ring-1 ring-[#8B5CF6]/20";
+      return "border-l-4 border-[#8B5CF6] bg-primary-50/80 shadow-[0_0_20px_rgba(139,92,246,0.4)] ring-1 ring-[#8B5CF6]/30";
     }
     return "";
   };
@@ -62,7 +62,7 @@ const TicketCard = ({ ticket, viewMode, onCopyId, isActive = false }: TicketCard
       aria-labelledby={`ticket-${ticket.id}-subject`}
     >
       {isActive && (
-        <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#8B5CF6] animate-pulse"></div>
+        <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#8B5CF6] animate-pulse"></div>
       )}
 
       <div className="flex items-start justify-between gap-4">
@@ -71,11 +71,11 @@ const TicketCard = ({ ticket, viewMode, onCopyId, isActive = false }: TicketCard
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Avatar className={`h-8 w-8 ${isActive ? "ring-2 ring-[#8B5CF6]" : "ring-2 ring-white"}`}>
+                  <Avatar className={`h-8 w-8 ${isActive ? "ring-2 ring-[#8B5CF6] animate-pulse" : "ring-2 ring-white"}`}>
                     {ticket.assigneeAvatar ? (
                       <AvatarImage src={ticket.assigneeAvatar} alt={ticket.assignee} />
                     ) : (
-                      <AvatarFallback className={`${isActive ? "bg-[#8B5CF6]/20 text-[#8B5CF6]" : "bg-primary/10 text-primary"} text-xs`}>
+                      <AvatarFallback className={`${isActive ? "bg-[#8B5CF6]/30 text-[#8B5CF6]" : "bg-primary/10 text-primary"} text-xs`}>
                         {ticket.assignee.split(' ').map(name => name[0]).join('')}
                       </AvatarFallback>
                     )}
@@ -87,7 +87,7 @@ const TicketCard = ({ ticket, viewMode, onCopyId, isActive = false }: TicketCard
               </Tooltip>
             </TooltipProvider>
           ) : (
-            <div className={`w-8 h-8 rounded-full ${isActive ? "bg-[#8B5CF6]/10" : "bg-gray-100"} flex items-center justify-center ${isActive ? "ring-2 ring-[#8B5CF6]/30" : "ring-2 ring-white"}`}>
+            <div className={`w-8 h-8 rounded-full ${isActive ? "bg-[#8B5CF6]/20" : "bg-gray-100"} flex items-center justify-center ${isActive ? "ring-2 ring-[#8B5CF6]/40 animate-pulse" : "ring-2 ring-white"}`}>
               <UserX className={`w-4 h-4 ${isActive ? "text-[#8B5CF6]" : "text-gray-400"}`} />
             </div>
           )}
@@ -125,7 +125,7 @@ const TicketCard = ({ ticket, viewMode, onCopyId, isActive = false }: TicketCard
             </div>
 
             {!isCompact && (
-              <p className={`text-xs ${isActive ? "text-gray-700" : "text-gray-500"} border-t ${isActive ? "border-[#8B5CF6]/10" : "border-gray-100/75"} pt-2 line-clamp-2`}>
+              <p className={`text-xs ${isActive ? "text-gray-800" : "text-gray-500"} border-t ${isActive ? "border-[#8B5CF6]/20" : "border-gray-100/75"} pt-2 line-clamp-2`}>
                 {ticket.lastMessage}
               </p>
             )}
@@ -136,7 +136,7 @@ const TicketCard = ({ ticket, viewMode, onCopyId, isActive = false }: TicketCard
                 {ticket.tags.map((tag, index) => (
                   <span
                     key={index}
-                    className={`px-1.5 py-0.5 ${isActive ? "bg-[#8B5CF6]/5 text-[#8B5CF6]/80" : "bg-gray-100/75 text-gray-600"} rounded-full text-[10px] font-medium`}
+                    className={`px-1.5 py-0.5 ${isActive ? "bg-[#8B5CF6]/10 text-[#8B5CF6]/90" : "bg-gray-100/75 text-gray-600"} rounded-full text-[10px] font-medium`}
                   >
                     {tag}
                   </span>
@@ -154,7 +154,7 @@ const TicketCard = ({ ticket, viewMode, onCopyId, isActive = false }: TicketCard
 
           <TooltipProvider>
             <Tooltip>
-              <TooltipTrigger className={`flex items-center gap-1.5 text-xs ${isActive ? "text-[#8B5CF6]/80" : "text-gray-500"}`}>
+              <TooltipTrigger className={`flex items-center gap-1.5 text-xs ${isActive ? "text-[#8B5CF6]/90" : "text-gray-500"}`}>
                 <Clock className="w-3 h-3" />
                 {formatDistanceToNow(new Date(ticket.createdAt), { addSuffix: true })}
               </TooltipTrigger>
@@ -165,7 +165,7 @@ const TicketCard = ({ ticket, viewMode, onCopyId, isActive = false }: TicketCard
           </TooltipProvider>
 
           {!isCompact && (
-            <div className={`flex items-center gap-1.5 text-xs border-t ${isActive ? "border-[#8B5CF6]/10" : "border-gray-100/75"} pt-1.5 mt-1`}>
+            <div className={`flex items-center gap-1.5 text-xs border-t ${isActive ? "border-[#8B5CF6]/20" : "border-gray-100/75"} pt-1.5 mt-1`}>
               {ticket.assignee ? (
                 <div className="flex items-center gap-1.5 text-gray-600">
                   <User className={`w-3 h-3 ${isActive ? "text-[#8B5CF6]/70" : ""}`} />
@@ -183,7 +183,7 @@ const TicketCard = ({ ticket, viewMode, onCopyId, isActive = false }: TicketCard
           <div className="absolute right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-7 px-2 text-xs">
+                <Button variant="ghost" size="sm" className={`h-7 px-2 text-xs ${isActive ? "hover:bg-[#8B5CF6]/10 hover:text-[#8B5CF6]/90" : ""}`}>
                   Actions
                 </Button>
               </DropdownMenuTrigger>
