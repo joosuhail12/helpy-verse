@@ -3,7 +3,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "@/components/ui/use-toast";
 import { objectSettingsSchema, type ObjectSettingsFormValues } from "./schema";
-import type { CustomObject } from "@/mock/customObjects";
+import { customObjectService } from "@/api/services/customObject.service";
+import { CustomObject } from "@/types/customObject";
 
 export const useObjectSettingsForm = (object: CustomObject) => {
   const form = useForm<ObjectSettingsFormValues>({
@@ -11,7 +12,7 @@ export const useObjectSettingsForm = (object: CustomObject) => {
     defaultValues: {
       name: object.name,
       description: object.description,
-      connectionType: object.connectionType,
+      connectiontype: object.connectiontype,
       showInCustomerContext: object.showInCustomerContext,
       showInCustomerDetail: object.showInCustomerDetail,
       showInCompanyDetail: object.showInCompanyDetail,
@@ -20,12 +21,20 @@ export const useObjectSettingsForm = (object: CustomObject) => {
 
   const onSubmit = async (data: ObjectSettingsFormValues) => {
     try {
-      // This will be replaced with actual API call
-      console.log("Updating custom object:", data);
-      toast({
-        title: "Success",
-        description: "Custom object updated successfully",
-      });
+      const response = await customObjectService.updateCustomObject(object.id, data);
+
+      if (response.status === "success") {
+        toast({
+          title: "Success",
+          description: "Custom object updated successfully",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to update custom object",
+          variant: "destructive",
+        });
+      }
     } catch (error) {
       toast({
         title: "Error",

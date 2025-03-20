@@ -35,20 +35,20 @@ export const ChannelHeaderSection: React.FC<ChannelHeaderSectionProps> = ({
         <div className="flex items-center gap-2">
           {isEditing ? (
             <IconEmojiPicker
-              selectedEmoji={editedChannel.icon || null}
-              setSelectedEmoji={(emoji) => onChange('icon', emoji || '')}
+              selectedEmoji={editedChannel.emoji || null}
+              setSelectedEmoji={(emoji) => onChange('emoji', emoji || '')}
             />
           ) : (
-            channel.icon && <div className="text-2xl">{channel.icon}</div>
+            editedChannel.emoji && <div className="text-2xl">{editedChannel.emoji}</div>
           )}
           {isEditing ? (
             <Input
-              value={editedChannel.channelName}
-              onChange={(e) => onChange('channelName', e.target.value)}
+              value={editedChannel.name}
+              onChange={(e) => onChange('name', e.target.value)}
               className="max-w-xs"
             />
           ) : (
-            <h2 className="text-xl font-semibold">{channel.channelName}</h2>
+            <h2 className="text-xl font-semibold">{channel.name}</h2>
           )}
           <ChannelStatusBadges isDefault={channel.isDefault} />
         </div>
