@@ -1,4 +1,3 @@
-
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -15,6 +14,7 @@ interface TicketListItemProps {
   viewMode?: ViewMode;
   isLoading?: boolean;
   onCopyId?: (id: string, e: React.MouseEvent) => void;
+  isActive?: boolean;
 }
 
 const TicketListItem = ({
@@ -24,6 +24,7 @@ const TicketListItem = ({
   viewMode = "list",
   isLoading = false,
   onCopyId,
+  isActive = false,
 }: TicketListItemProps) => {
   const handleSelect = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -35,10 +36,16 @@ const TicketListItem = ({
     onCopyId?.(ticket.id, e);
   };
 
-  // Use compact styling if viewMode is compact
+  const getActiveStateClasses = () => {
+    if (isActive) {
+      return "border-primary-500 border-l-4 bg-primary-50/30 shadow-md transform transition-all duration-300";
+    }
+    return "";
+  };
+
   if (viewMode === "compact") {
     return (
-      <Card className={`mb-2 overflow-hidden ${isSelected ? "border-primary" : ""} ${isLoading ? "opacity-60" : ""}`}>
+      <Card className={`mb-2 overflow-hidden ${isSelected ? "border-primary" : ""} ${isLoading ? "opacity-60" : ""} ${getActiveStateClasses()}`}>
         <div className="flex items-center p-3">
           {onSelect && (
             <div className="mr-3" onClick={handleSelect}>
@@ -63,10 +70,9 @@ const TicketListItem = ({
     );
   }
 
-  // Use card styling if viewMode is card
   if (viewMode === "card") {
     return (
-      <Card className={`overflow-hidden ${isSelected ? "border-primary" : ""} ${isLoading ? "opacity-60" : ""}`}>
+      <Card className={`overflow-hidden ${isSelected ? "border-primary" : ""} ${isLoading ? "opacity-60" : ""} ${getActiveStateClasses()}`}>
         <div className="p-4">
           <div className="flex items-start justify-between mb-2">
             <div className="flex items-center">
@@ -112,9 +118,8 @@ const TicketListItem = ({
     );
   }
 
-  // Default list view
   return (
-    <Card className={`mb-2 overflow-hidden ${isSelected ? "border-primary" : ""} ${isLoading ? "opacity-60" : ""}`}>
+    <Card className={`mb-2 overflow-hidden ${isSelected ? "border-primary" : ""} ${isLoading ? "opacity-60" : ""} ${getActiveStateClasses()} transition-all duration-300`}>
       <div className="flex items-center p-4">
         {onSelect && (
           <div className="mr-4" onClick={handleSelect}>

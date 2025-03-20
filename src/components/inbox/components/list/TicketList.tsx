@@ -122,6 +122,7 @@ const TicketList = ({ tickets: initialTickets, isLoading = false, onTicketCreate
                     <TicketListItem
                       ticket={ticket}
                       isSelected={selectedTickets.includes(ticket.id)}
+                      isActive={selectedTicket?.id === ticket.id} // Mark as active if this is the selected ticket
                       onSelect={(e: React.MouseEvent) => {
                         e.stopPropagation();
                         handleSelectTicket(ticket.id);

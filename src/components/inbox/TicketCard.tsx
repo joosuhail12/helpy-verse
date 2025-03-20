@@ -39,16 +39,24 @@ interface TicketCardProps {
   };
   viewMode: ViewMode;
   onCopyId: () => void;
+  isActive?: boolean;
 }
 
-const TicketCard = ({ ticket, viewMode, onCopyId }: TicketCardProps) => {
+const TicketCard = ({ ticket, viewMode, onCopyId, isActive = false }: TicketCardProps) => {
   const isCompact = viewMode === 'list';
+
+  const getActiveStateClasses = () => {
+    if (isActive) {
+      return "border-l-4 border-primary shadow-md bg-primary-50/20";
+    }
+    return "";
+  };
 
   return (
     <div 
       className={`group bg-white rounded-xl p-4 hover:bg-gray-50/50 transition-all cursor-pointer w-full ${
         isCompact ? 'py-3' : ''
-      } ${ticket.isUnread ? 'bg-blue-50/30' : ''}`}
+      } ${ticket.isUnread ? 'bg-blue-50/30' : ''} ${getActiveStateClasses()}`}
       role="article"
       aria-labelledby={`ticket-${ticket.id}-subject`}
     >
