@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppSelector } from '@/hooks/useAppSelector';
@@ -10,7 +11,7 @@ import {
 } from '@/store/slices/companies/companiesSlice';
 import { CompanyDetailHeader } from '@/components/companies/detail/CompanyDetailHeader';
 import { CompanyInformation } from '@/components/companies/detail/CompanyInformation';
-import { CompanyTimeline } from '@/components/companies/detail/CompanyTimeline';
+import { CompanyActivityTimeline } from '@/components/companies/detail/CompanyActivityTimeline';
 import { CompanyDetailSidebar } from '@/components/companies/detail/CompanyDetailSidebar';
 import { CompanyCustomObjectData } from '@/components/companies/detail/CompanyCustomObjectData';
 import { CompanyRelated } from '@/components/companies/detail/CompanyRelated';
@@ -85,16 +86,69 @@ const CompanyDetail = () => {
     }
   };
 
+  // Sample activities for the timeline
   const activities: Activity[] = [
     {
       id: '1',
       type: 'email',
-      description: 'Sent follow-up email',
+      description: 'Sent quarterly review email',
       date: new Date().toISOString(),
       metadata: {
         category: 'positive',
+        responseTime: 15
       },
     },
+    {
+      id: '2',
+      type: 'call',
+      description: 'Sales call with procurement team',
+      date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+      metadata: {
+        category: 'neutral',
+        responseTime: 0
+      },
+    },
+    {
+      id: '3',
+      type: 'meeting',
+      description: 'Quarterly business review',
+      date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+      metadata: {
+        category: 'positive',
+        responseTime: 0
+      },
+    },
+    {
+      id: '4',
+      type: 'note',
+      description: 'Updated company information',
+      date: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
+      metadata: {
+        category: 'update',
+        responseTime: 0
+      },
+    },
+    {
+      id: '5',
+      type: 'ticket',
+      description: 'Support ticket #1234 created',
+      date: new Date(Date.now() - 21 * 24 * 60 * 60 * 1000).toISOString(),
+      metadata: {
+        category: 'neutral',
+        status: 'open',
+        responseTime: 45
+      },
+    },
+    {
+      id: '6',
+      type: 'company_update',
+      description: 'Company status changed to Active',
+      date: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+      metadata: {
+        category: 'update',
+        responseTime: 0
+      },
+    }
   ];
 
   if (loading || isRetrying) {
@@ -179,7 +233,7 @@ const CompanyDetail = () => {
             </TabsList>
 
             <TabsContent value="activities">
-              <CompanyTimeline company={company} />
+              <CompanyActivityTimeline activities={activities} />
             </TabsContent>
 
             <TabsContent value="tickets">
