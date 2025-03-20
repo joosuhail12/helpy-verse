@@ -50,12 +50,72 @@ const EditTeam = () => {
       setTeamName(team.name);
       setSelectedIcon(team.icon || '');
       setSelectedTeammates(team.members.map(member => member.id));
-      setSelectedChatChannel(team.channels?.chat);
-      setSelectedEmailChannels(team.channels?.email || []);
-      setRoutingType(team.routing.type);
-      setRoutingLimits(team.routing.limits || {});
-      setOfficeHours(team.officeHours);
-      setSelectedHolidays(team.holidays || []);
+      
+      // Handle channels properly based on the actual structure
+      if (team.channels) {
+        if (typeof team.channels === 'object' && 'chat' in team.channels) {
+          // New format (object with chat/email properties)
+          setSelectedChatChannel(team.channels.chat);
+          setSelectedEmailChannels(team.channels.email || []);
+        } else {
+          // Old format (array of Channel objects)
+          const channels = team.channels as any[];
+          const chatChannel = channels.find(c => c.type === 'chat')?.id;
+          const emailChannels = channels
+            .filter(c => c.type === 'email')
+            .map(c => c.id);
+          
+          setSelectedChatChannel(chatChannel);
+          setSelectedEmailChannels(emailChannels);
+        }
+      }
+      
+      // Handle routing properly based on the actual structure
+      if (team.routing) {
+        if (typeof team.routing === 'object' && 'type' in team.routing) {
+          // New format (object with type property)
+          setRoutingType(team.routing.type);
+          setRoutingLimits(team.routing.limits || {});
+        } else {
+          // Old format (array of RoutingRule objects)
+          const routing = team.routing as any[];
+          const mainRule = routing[0];
+          if (mainRule) {
+            setRoutingType(mainRule.type || 'manual');
+          }
+        }
+      }
+      
+      // Handle officeHours properly
+      if (team.officeHours) {
+        if ('monday' in team.officeHours) {
+          // Already in the correct format with day keys
+          setOfficeHours(team.officeHours as { [key in DayOfWeek]: TimeSlot[] });
+        } else {
+          // Convert from old format if needed
+          const oldFormat = team.officeHours as any;
+          const days = oldFormat.days || [];
+          const newFormat = {
+            monday: days.includes('monday') ? [{ start: oldFormat.startTime, end: oldFormat.endTime }] : [],
+            tuesday: days.includes('tuesday') ? [{ start: oldFormat.startTime, end: oldFormat.endTime }] : [],
+            wednesday: days.includes('wednesday') ? [{ start: oldFormat.startTime, end: oldFormat.endTime }] : [],
+            thursday: days.includes('thursday') ? [{ start: oldFormat.startTime, end: oldFormat.endTime }] : [],
+            friday: days.includes('friday') ? [{ start: oldFormat.startTime, end: oldFormat.endTime }] : [],
+            saturday: days.includes('saturday') ? [{ start: oldFormat.startTime, end: oldFormat.endTime }] : [],
+            sunday: days.includes('sunday') ? [{ start: oldFormat.startTime, end: oldFormat.endTime }] : [],
+          };
+          setOfficeHours(newFormat);
+        }
+      }
+      
+      // Handle holidays properly
+      if (team.holidays) {
+        // Convert Holiday objects to strings if needed
+        const holidayStrings = team.holidays.map((h: any) => 
+          typeof h === 'string' ? h : h.date
+        );
+        setSelectedHolidays(holidayStrings);
+      }
     }
   }, [team]);
 
@@ -157,7 +217,7 @@ const EditTeam = () => {
           </Button>
           <div className="flex items-center gap-3">
             <Pencil className="h-6 w-6 text-primary" />
-            <h1 className="text-2xl font-semibold text-gray-900">Edit Team: {team.name}</h1>
+            <h1 className="text-2xl font-semibold text-gray-900">Edit Team: {team?.name}</h1>
           </div>
         </div>
       </div>
@@ -170,14 +230,26 @@ const EditTeam = () => {
           setSelectedIcon={setSelectedIcon}
           teammates={teammates}
           selectedTeammates={selectedTeammates}
-          onTeammateToggle={toggleTeammate}
+          onTeammateToggle={(teammateId: string) => {
+            setSelectedTeammates(prev =>
+              prev.includes(teammateId)
+                ? prev.filter(id => id !== teammateId)
+                : [...prev, teammateId]
+            );
+          }}
         />
 
         <TeamCommunicationSection
           selectedChatChannel={selectedChatChannel}
           selectedEmailChannels={selectedEmailChannels}
           onChatChannelSelect={setSelectedChatChannel}
-          onEmailChannelToggle={handleEmailChannelToggle}
+          onEmailChannelToggle={(channelId: string) => {
+            setSelectedEmailChannels(prev =>
+              prev.includes(channelId)
+                ? prev.filter(id => id !== channelId)
+                : [...prev, channelId]
+            );
+          }}
         />
 
         <TeamRoutingSection

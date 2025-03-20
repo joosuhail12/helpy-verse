@@ -1,6 +1,6 @@
 
 import api from '@/services/api';
-import store from '@/store/store';
+import { store } from '@/store/store';
 import { updateTeam as updateTeamAction } from '@/store/slices/teams/teamsSlice';
 
 export const updateTeam = async (teamId: string, teamData: any) => {
