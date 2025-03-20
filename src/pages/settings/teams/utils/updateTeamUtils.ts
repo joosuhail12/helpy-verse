@@ -1,5 +1,5 @@
 
-import api from '@/services/api';
+import api from '@/api/Api';
 import { store } from '@/store/store';
 import { updateTeam as updateTeamAction } from '@/store/slices/teams/teamsSlice';
 
