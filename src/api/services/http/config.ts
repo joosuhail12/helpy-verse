@@ -1,8 +1,8 @@
 
-// Update this file to remove the refresh token endpoint
+// Update this file with the correct backend URL
 
-export const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000/api';
-export const LLM_SERVICE_URL = process.env.REACT_APP_LLM_SERVICE_URL || 'http://localhost:4000/api/llm';
+export const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://dev-socket.pullseai.com/api';
+export const LLM_SERVICE_URL = process.env.REACT_APP_LLM_SERVICE_URL || 'https://dev-socket.pullseai.com/api/llm';
 
 // Increased timeout for better reliability
 export const DEFAULT_TIMEOUT = 60000; // 60 seconds (increased from 30s)

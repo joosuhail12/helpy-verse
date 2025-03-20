@@ -55,7 +55,12 @@ const setAxiosDefaultConfig = (token?: string): void => {
 const checkApiConnection = async () => {
     try {
         console.log(`Checking API connection to ${API_BASE_URL}`);
-        const response = await apiClient.get('/health', { timeout: 5000 });
+        // First try the health endpoint
+        const response = await apiClient.get('/health', { timeout: 5000 })
+          .catch(() => {
+            // If health endpoint fails, try a simple GET to the base URL
+            return apiClient.get('/', { timeout: 5000 });
+          });
         console.log('API connection check result:', response.status);
         return true;
     } catch (error) {
