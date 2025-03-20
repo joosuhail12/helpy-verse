@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppSelector } from '@/hooks/useAppSelector';
@@ -60,7 +59,6 @@ const CompanyDetail = () => {
     loadCompanyDetails();
   }, [id, dispatch]);
 
-  // Auto-retry once if there's an error (but only once to avoid infinite loops)
   useEffect(() => {
     if (error && retryCount < 1 && !isRetrying) {
       const timer = setTimeout(() => {
@@ -82,9 +80,7 @@ const CompanyDetail = () => {
   };
   
   const handleDeleteClick = () => {
-    // Add implementation for delete functionality
     if (window.confirm("Are you sure you want to delete this company?")) {
-      // Implement delete logic here
       navigate('/home/contacts/companies');
     }
   };
@@ -159,7 +155,6 @@ const CompanyDetail = () => {
       <CompanyDetailHeader company={company} onDeleteClick={handleDeleteClick} />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-8">
-        {/* Left Column (4/12 width) - Company Information */}
         <div className="lg:col-span-4">
           {needsAttention && (
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-center gap-2 mb-4">
@@ -176,7 +171,6 @@ const CompanyDetail = () => {
           </div>
         </div>
 
-        {/* Right Column (8/12 width) - Activity Timeline & Tickets */}
         <div className="lg:col-span-8">
           <Tabs defaultValue={activeTab} value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2">

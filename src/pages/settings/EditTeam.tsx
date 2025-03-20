@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
@@ -54,7 +55,7 @@ const EditTeam = () => {
       if (team.channels) {
         if (typeof team.channels === 'object' && 'chat' in team.channels) {
           // New format (object with chat/email properties)
-          setSelectedChatChannel(team.channels.chat);
+          setSelectedChatChannel(team.channels.chat || '');
           setSelectedEmailChannels(team.channels.email || []);
         } else {
           // Old format (array of Channel objects)
@@ -78,7 +79,9 @@ const EditTeam = () => {
         if (typeof team.routing === 'object' && 'type' in team.routing) {
           // New format (object with type property)
           setRoutingType(team.routing.type as 'manual' | 'round-robin' | 'load-balanced');
-          if (team.routing.limits) {
+          
+          // Check if limits exist before setting them
+          if ('limits' in team.routing && team.routing.limits) {
             setRoutingLimits(team.routing.limits);
           }
         } else {

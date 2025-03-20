@@ -2,27 +2,9 @@ import { HttpClient } from "@/api/services/http";
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../store';
 import { companiesService } from '@/api/services/companiesService';
+import { Company as CompanyType } from '@/types/company';
 
-export interface Company {
-  id: string;
-  name: string;
-  website?: string;
-  industry?: string;
-  size?: string;
-  address?: {
-    street?: string;
-    city?: string;
-    state?: string;
-    zipCode?: string;
-    country?: string;
-  };
-  contactInfo?: {
-    email?: string;
-    phone?: string;
-  };
-  createdAt: string;
-  updatedAt: string;
-}
+export type Company = CompanyType;
 
 const API_ENDPOINTS = {
   COMPANIES: '/company',
