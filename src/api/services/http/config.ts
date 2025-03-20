@@ -1,5 +1,5 @@
 
-// Update this file to include the correct refresh token endpoint path
+// Update this file to remove the refresh token endpoint
 
 export const API_BASE_URL = process.env.VITE_API_URL || '/api';
 export const LLM_SERVICE_URL = process.env.VITE_LLM_SERVICE_URL || '/api/llm';
@@ -22,7 +22,6 @@ export const AUTH_ENDPOINTS = {
   LOGIN: '/auth/login',
   REGISTER: '/auth/register',
   LOGOUT: '/auth/logout',
-  REFRESH_TOKEN: '/auth/refresh-token', // This is the current path
   FORGOT_PASSWORD: '/auth/forgot-password',
   RESET_PASSWORD: '/auth/reset-password',
   VERIFY_EMAIL: '/auth/verify-email',

@@ -2,20 +2,8 @@
 import { AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import { get } from 'lodash';
 import { getCookie, handleLogout } from './cookieManager';
-import { isTokenExpired, getAuthToken } from '@/utils/auth/tokenManager';
+import { getAuthToken } from '@/utils/auth/tokenManager';
 import { store } from '@/store/store';
-import { refreshToken } from '@/store/slices/auth/authActions';
-
-// Track if we're currently refreshing to prevent multiple calls
-let isRefreshing = false;
-// Queue of requests to retry after token refresh
-let refreshQueue: (() => void)[] = [];
-
-// Process the refresh queue with the new token
-const processRefreshQueue = () => {
-  refreshQueue.forEach(callback => callback());
-  refreshQueue = [];
-};
 
 // Request Interceptor - Adds Token & Workspace ID to all requests
 export const requestInterceptor = async (config: InternalAxiosRequestConfig): Promise<InternalAxiosRequestConfig> => {
@@ -29,32 +17,6 @@ export const requestInterceptor = async (config: InternalAxiosRequestConfig): Pr
     
     if (token) {
         config.headers.set("Authorization", `Bearer ${token}`);
-        
-        // Check token expiration and refresh if needed (except for refresh/login endpoints)
-        const isAuthEndpoint = config.url?.includes('auth/');
-        
-        if (!isAuthEndpoint && isTokenExpired() && !isRefreshing) {
-            try {
-                isRefreshing = true;
-                console.log('Token expired, attempting refresh');
-                await store.dispatch(refreshToken());
-                
-                // Update the token in the current request
-                const newToken = getAuthToken();
-                if (newToken) {
-                    config.headers.set("Authorization", `Bearer ${newToken}`);
-                }
-                
-                // Process queued requests
-                processRefreshQueue();
-            } catch (error) {
-                console.error('Token refresh failed:', error);
-                // If refresh fails, force logout
-                handleLogout();
-            } finally {
-                isRefreshing = false;
-            }
-        }
     }
 
     // Add workspace_id to all requests
@@ -101,52 +63,13 @@ export const responseErrorInterceptor = (error: any) => {
 
     // Handle authentication errors
     if (status === 401 || errorCode === "UNAUTHORIZED") {
-        console.warn("Authentication error detected");
+        console.warn("Authentication error detected, logging out");
+        handleLogout();
         
-        // Don't logout yet if this is a token refresh attempt
-        if (requestUrl && (requestUrl.includes('refresh-token') || isRefreshing)) {
-            console.warn("Token refresh failed, logging out");
-            handleLogout();
-        } 
-        // If token is expired, try to refresh
-        else if (!isRefreshing && !requestUrl?.includes('auth/login')) {
-            isRefreshing = true;
-            
-            // Create a new promise to retry the original request
-            return new Promise((resolve, reject) => {
-                store.dispatch(refreshToken())
-                    .unwrap()
-                    .then(() => {
-                        // Retry the original request with new token
-                        const originalRequest = error.config;
-                        const newToken = getAuthToken();
-                        
-                        if (newToken) {
-                            originalRequest.headers.Authorization = `Bearer ${newToken}`;
-                        }
-                        
-                        // Process any other queued requests
-                        processRefreshQueue();
-                        
-                        // Retry the original request
-                        resolve(error.response.config);
-                    })
-                    .catch(() => {
-                        console.warn("Token refresh failed, logging out");
-                        handleLogout();
-                        reject(error);
-                    })
-                    .finally(() => {
-                        isRefreshing = false;
-                    });
-            });
-        } else {
-            // Just a regular auth error during login
-            return Promise.reject({
-                message: "Authentication failed. Please check your credentials and try again.",
-                isAuthError: true
-            });
-        }
+        return Promise.reject({
+            message: "Authentication failed. Please sign in again.",
+            isAuthError: true
+        });
     }
 
     // For server errors, provide a clearer message
