@@ -1,19 +1,51 @@
 
 /**
- * Main helpers file that re-exports all utility functions
- * This maintains backward compatibility while organizing code better
+ * Common utility helpers used throughout the application
  */
+import { cookieFunctions } from "@/api/services/http";
+import { handleSetToken as tokenManagerSetToken } from "@/utils/auth/tokenManager";
 
-// Import cookieFunctions first
-import { cookieFunctions } from '@/api/services/http';
-
-// Re-export utilities from HTTP client cookie manager
-export { cookieFunctions };
+// Re-export cookie functions from cookieManager to avoid circular dependencies
 export const { getCookie, setCookie, handleLogout } = cookieFunctions;
 
-// Re-export all other utilities
-export * from '../auth/tokenManager';
-export * from '../encoding/encodingUtils';
-export * from '../performance/performanceUtils';
-export * from '../validation/validationUtils';
-export * from '../formatting/queryStringUtils';
+// Base64 encoding for email addresses (simple obfuscation)
+export const encryptBase64 = (text: string): string => {
+  return window.btoa(unescape(encodeURIComponent(text)));
+};
+
+// Base64 decoding
+export const decryptBase64 = (encoded: string): string => {
+  try {
+    return decodeURIComponent(escape(window.atob(encoded)));
+  } catch (e) {
+    console.error("Error decoding base64:", e);
+    return "";
+  }
+};
+
+// Set workspace ID in both cookie and localStorage for reliability
+export const setWorkspaceId = (workspaceId: string): void => {
+  if (!workspaceId) return;
+  
+  // Set in localStorage
+  localStorage.setItem("workspaceId", workspaceId);
+  
+  // Set in cookie
+  setCookie("workspaceId", workspaceId);
+  
+  console.log(`Workspace ID set to: ${workspaceId}`);
+};
+
+// Re-export the token manager's handleSetToken function
+export const handleSetToken = tokenManagerSetToken;
+
+// Format date to a readable format
+export const formatDate = (date: Date | string | number): string => {
+  const d = new Date(date);
+  return d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
+};
+
+// Check if running in development mode
+export const isDevelopment = (): boolean => {
+  return import.meta.env.MODE === 'development';
+};

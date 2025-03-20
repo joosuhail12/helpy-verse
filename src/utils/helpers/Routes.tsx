@@ -1,17 +1,19 @@
+
 import { ReactNode } from "react";
 import { Navigate } from "react-router-dom";
-import { getCookie } from "./helpers";
-// 🟢 Define RouteProps Interface
+import { isAuthenticated } from "@/utils/auth/tokenManager";
+
+// Define RouteProps Interface
 interface RouteProps {
     children: ReactNode;
 }
 
-// 🟢 Private Route Component
+// Private Route Component
 export const PrivateRoute = ({ children }: RouteProps): JSX.Element => {
-    return getCookie("customerToken") ? <>{children}</> : <Navigate to="/" />;
+    return isAuthenticated() ? <>{children}</> : <Navigate to="/sign-in" />;
 };
 
-// 🟢 Public Route Component
+// Public Route Component
 export const PublicRoute = ({ children }: RouteProps): JSX.Element => {
-    return getCookie("customerToken") ? <Navigate to="/inbox" /> : <>{children}</>;
+    return isAuthenticated() ? <Navigate to="/inbox" /> : <>{children}</>;
 };

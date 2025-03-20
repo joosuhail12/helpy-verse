@@ -1,3 +1,4 @@
+
 /**
  * Configuration for API endpoints with automatic workspace_id header
  */

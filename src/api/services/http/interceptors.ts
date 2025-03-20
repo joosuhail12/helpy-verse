@@ -1,3 +1,4 @@
+
 import { AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import { get } from 'lodash';
 import { getCookie, handleLogout } from './cookieManager';
@@ -19,7 +20,7 @@ export const requestInterceptor = async (config: InternalAxiosRequestConfig): Pr
     }
 
     // Add workspace_id to all requests if it exists - prioritize query param if already set
-    const workspaceId = getCookie("workspaceId") || localStorage.getItem("workspaceId") || process.env.REACT_APP_WORKSPACE_ID;
+    const workspaceId = getCookie("workspaceId") || localStorage.getItem("workspaceId") || import.meta.env.VITE_REACT_APP_WORKSPACE_ID;
     
     // Only add workspace_id if the URL doesn't already have it
     if (workspaceId && config.url && !config.url.includes('workspace_id=')) {
