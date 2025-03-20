@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
@@ -51,14 +50,17 @@ const EditTeam = () => {
       setSelectedIcon(team.icon || '');
       setSelectedTeammates(team.members.map(member => member.id));
       
-      // Handle channels properly based on the actual structure
       if (team.channels) {
         if (typeof team.channels === 'object' && 'chat' in team.channels) {
-          // New format (object with chat/email properties)
-          setSelectedChatChannel(team.channels.chat || '');
-          setSelectedEmailChannels(team.channels.email || []);
+          setSelectedChatChannel(typeof team.channels.chat === 'string' ? team.channels.chat : '');
+          
+          const emailChannels = team.channels.email;
+          if (Array.isArray(emailChannels)) {
+            setSelectedEmailChannels(emailChannels);
+          } else {
+            setSelectedEmailChannels([]);
+          }
         } else {
-          // Old format (array of Channel objects)
           const channels = team.channels as unknown as Channel[];
           const chatChannel = channels.find(c => c.type === 'chat')?.id;
           const emailChannels = channels
@@ -74,30 +76,37 @@ const EditTeam = () => {
         }
       }
       
-      // Handle routing properly based on the actual structure
       if (team.routing) {
         if (typeof team.routing === 'object' && 'type' in team.routing) {
-          // New format (object with type property)
-          setRoutingType(team.routing.type as 'manual' | 'round-robin' | 'load-balanced');
+          const routingType = team.routing.type;
+          if (typeof routingType === 'string' && 
+              (routingType === 'manual' || routingType === 'round-robin' || routingType === 'load-balanced')) {
+            setRoutingType(routingType);
+          }
           
-          // Check if limits exist before setting them
           if ('limits' in team.routing && team.routing.limits) {
-            setRoutingLimits(team.routing.limits);
+            const limits = team.routing.limits as {
+              maxTickets?: number;
+              maxOpenTickets?: number;
+              maxActiveChats?: number;
+            };
+            
+            setRoutingLimits(limits);
           }
         } else {
-          // Old format (array of RoutingRule objects)
           const routing = team.routing as unknown as RoutingRule[];
           const mainRule = routing[0];
-          if (mainRule) {
-            setRoutingType(mainRule.type as 'manual' | 'round-robin' | 'load-balanced');
+          if (mainRule && mainRule.type) {
+            const ruleType = mainRule.type;
+            if (ruleType === 'manual' || ruleType === 'round-robin' || ruleType === 'load-balanced') {
+              setRoutingType(ruleType);
+            }
           }
         }
       }
       
-      // Handle officeHours properly
       if (team.officeHours) {
         if ('monday' in team.officeHours) {
-          // Already in the correct format with day keys
           const typedOfficeHours = team.officeHours as unknown as { [key in DayOfWeek]: TimeSlot[] };
           setOfficeHours({
             monday: typedOfficeHours.monday || [],
@@ -109,7 +118,6 @@ const EditTeam = () => {
             sunday: typedOfficeHours.sunday || []
           });
         } else {
-          // Convert from old format if needed
           const oldFormat = team.officeHours as unknown as {
             days: string[];
             startTime: string;
@@ -130,9 +138,7 @@ const EditTeam = () => {
         }
       }
       
-      // Handle holidays properly
       if (team.holidays) {
-        // Convert Holiday objects to strings if needed
         const holidayStrings = (team.holidays as unknown[]).map((h: any) => 
           typeof h === 'string' ? h : h.date
         );
