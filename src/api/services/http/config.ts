@@ -4,8 +4,9 @@
 export const API_BASE_URL = process.env.VITE_API_URL || '/api';
 export const LLM_SERVICE_URL = process.env.VITE_LLM_SERVICE_URL || '/api/llm';
 
-// Standardized timeout settings
-export const DEFAULT_TIMEOUT = 30000; // 30 seconds
+// Increased timeout for better reliability
+export const DEFAULT_TIMEOUT = 60000; // 60 seconds (increased from 30s)
+export const CONTACTS_TIMEOUT = 90000; // 90 seconds for contacts which might be larger datasets
 
 // CORS configuration for cross-domain requests
 export const CORS_CONFIG = {

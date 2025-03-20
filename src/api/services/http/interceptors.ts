@@ -26,7 +26,7 @@ export const requestInterceptor = async (config: InternalAxiosRequestConfig): Pr
         config.url += `${separator}workspace_id=${workspaceId}`;
     }
 
-    console.log(`API Request to: ${config.url}`);
+    console.log(`API Request to: ${config.url} with timeout: ${config.timeout}ms`);
     return config;
 };
 
@@ -47,6 +47,16 @@ export const responseErrorInterceptor = (error: any) => {
     const errorMessage = get(error, "response.data.message", "Unknown error occurred");
     const errorCode = get(error, "response.data.code", "");
     const requestUrl = error.config?.url;
+    const timeout = error.code === 'ECONNABORTED';
+
+    if (timeout) {
+        console.error(`API Timeout after ${error.config?.timeout || 'unknown'}ms: ${requestUrl}`);
+        return Promise.reject({
+            message: "Request timed out. The server is taking too long to respond.",
+            isTimeoutError: true,
+            originalError: error
+        });
+    }
 
     console.error(`API Error: ${status || 'network'} ${errorMessage} (${errorCode}) on ${requestUrl}`);
 

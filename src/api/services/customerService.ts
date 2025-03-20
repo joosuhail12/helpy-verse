@@ -1,9 +1,8 @@
-
 import type { Contact } from '@/types/contact';
 import { HttpClient } from '@/api/services/http';
 
 const API_URL = '/customer';
-const MAX_RETRIES = 1;
+const MAX_RETRIES = 2;
 
 export interface CustomersResponse {
     status: string;
@@ -39,48 +38,74 @@ export interface CreateCustomerData {
 }
 
 export const customerService = {
-    // ✅ Fetch list of customers
+    // ✅ Fetch list of customers - now using the specialized contacts client with longer timeout
     async fetchCustomers(retryCount = 0): Promise<CustomersResponse> {
         try {
-            const response = await HttpClient.apiClient.get<CustomersResponse>(API_URL);
+            console.log(`Attempting to fetch customers (try ${retryCount + 1}/${MAX_RETRIES + 1})`);
+            const response = await HttpClient.contactsClient.get<CustomersResponse>(API_URL);
+            console.log(`Successfully fetched customers`);
             return response.data;
         } catch (error: any) {
             console.error('Error fetching customers:', error);
             
+            // Check if it's a timeout error
+            if (error.isTimeoutError) {
+                console.log(`Customer fetch timed out`);
+                if (retryCount < MAX_RETRIES) {
+                    console.log(`Retrying fetchCustomers (${retryCount + 1}/${MAX_RETRIES})...`);
+                    // Wait before retrying (exponential backoff)
+                    await new Promise(resolve => setTimeout(resolve, 2000 * (retryCount + 1)));
+                    return this.fetchCustomers(retryCount + 1);
+                }
+                throw new Error('Request timed out after multiple attempts. Please try again later.');
+            }
+            
             // Implement retry for network errors or 5xx server errors
-            if (retryCount < MAX_RETRIES && (error.isServerError || error.isNetworkError)) {
+            if (retryCount < MAX_RETRIES && (error.isServerError || error.isOfflineError)) {
                 console.log(`Retrying fetchCustomers (${retryCount + 1}/${MAX_RETRIES})...`);
                 // Wait before retrying (exponential backoff)
-                await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)));
+                await new Promise(resolve => setTimeout(resolve, 2000 * (retryCount + 1)));
                 return this.fetchCustomers(retryCount + 1);
             }
             
             throw error.isServerError 
                 ? new Error('Server error. Please try again later.') 
-                : new Error('Failed to fetch customers');
+                : new Error(error.message || 'Failed to fetch customers');
         }
     },
 
-    // ✅ Get details of a specific customer
+    // ✅ Get details of a specific customer - now using the specialized contacts client with longer timeout
     async getCustomerDetails(customer_id: string, retryCount = 0): Promise<CustomerResponse> {
         try {
-            console.log(`Fetching customer details for ID: ${customer_id}`);
-            const response = await HttpClient.apiClient.get<CustomerResponse>(`${API_URL}/${customer_id}`);
+            console.log(`Fetching customer details for ID: ${customer_id} (try ${retryCount + 1}/${MAX_RETRIES + 1})`);
+            const response = await HttpClient.contactsClient.get<CustomerResponse>(`${API_URL}/${customer_id}`);
+            console.log(`Successfully fetched customer details for ID: ${customer_id}`);
             return response.data;
         } catch (error: any) {
             console.error('Error fetching customer details:', error);
             
+            // Check if it's a timeout error
+            if (error.isTimeoutError) {
+                if (retryCount < MAX_RETRIES) {
+                    console.log(`Retrying getCustomerDetails (${retryCount + 1}/${MAX_RETRIES})...`);
+                    // Wait before retrying (exponential backoff)
+                    await new Promise(resolve => setTimeout(resolve, 2000 * (retryCount + 1)));
+                    return this.getCustomerDetails(customer_id, retryCount + 1);
+                }
+                throw new Error('Request timed out after multiple attempts. Please try again later.');
+            }
+            
             // Implement retry for network errors or 5xx server errors
-            if (retryCount < MAX_RETRIES && (error.isServerError || error.isNetworkError)) {
+            if (retryCount < MAX_RETRIES && (error.isServerError || error.isOfflineError)) {
                 console.log(`Retrying getCustomerDetails (${retryCount + 1}/${MAX_RETRIES})...`);
                 // Wait before retrying (exponential backoff)
-                await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)));
+                await new Promise(resolve => setTimeout(resolve, 2000 * (retryCount + 1)));
                 return this.getCustomerDetails(customer_id, retryCount + 1);
             }
             
             throw error.isServerError 
                 ? new Error('Server error. Please try again later.') 
-                : new Error('Failed to fetch customer details');
+                : new Error(error.message || 'Failed to fetch customer details');
         }
     },
 

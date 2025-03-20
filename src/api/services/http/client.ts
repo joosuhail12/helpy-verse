@@ -1,6 +1,6 @@
 
 import axios from 'axios';
-import { API_BASE_URL, LLM_SERVICE_URL, DEFAULT_TIMEOUT, CORS_CONFIG } from './config';
+import { API_BASE_URL, LLM_SERVICE_URL, DEFAULT_TIMEOUT, CONTACTS_TIMEOUT, CORS_CONFIG } from './config';
 import { 
   requestInterceptor, 
   requestErrorInterceptor, 
@@ -20,12 +20,24 @@ const apiClient = axios.create({
     withCredentials: CORS_CONFIG.withCredentials, // Important for handling cookies across domains if needed
 });
 
+// ✅ Create a specialized client for contacts API with longer timeout
+const contactsClient = axios.create({
+    baseURL: API_BASE_URL,
+    headers: {
+      "Content-Type": "application/json",
+      ...CORS_CONFIG.headers
+    },
+    timeout: CONTACTS_TIMEOUT, // Use longer timeout for contacts
+    withCredentials: CORS_CONFIG.withCredentials,
+});
+
 // ✅ Set up default axios configuration
 const setAxiosDefaultConfig = (token?: string): void => {
     // If token is provided, use it; otherwise try to get it from cookie
     if (token) {
         apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-        console.log("Authorization header set for API client with provided token");
+        contactsClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+        console.log("Authorization header set for API clients with provided token");
     } else {
         // We'll handle this in the request interceptor instead
         console.log("No token provided, will check in interceptor");
@@ -35,6 +47,10 @@ const setAxiosDefaultConfig = (token?: string): void => {
 // Add interceptors to the API client
 apiClient.interceptors.request.use(requestInterceptor, requestErrorInterceptor);
 apiClient.interceptors.response.use(responseInterceptor, responseErrorInterceptor);
+
+// Add the same interceptors to the contacts client
+contactsClient.interceptors.request.use(requestInterceptor, requestErrorInterceptor);
+contactsClient.interceptors.response.use(responseInterceptor, responseErrorInterceptor);
 
 // ✅ LLM Service Instance
 const llmService = axios.create({
@@ -59,6 +75,7 @@ export const isOffline = (): boolean => {
 // ✅ API Call Wrapper
 export const HttpClient = {
     apiClient, // Standard API client
+    contactsClient, // Specialized client for contacts with longer timeout
     llmService, // LLM-specific instance
     setAxiosDefaultConfig,
     isOffline,

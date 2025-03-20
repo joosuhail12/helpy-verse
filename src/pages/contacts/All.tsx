@@ -10,7 +10,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/components/ui/use-toast';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Clock, RefreshCw } from 'lucide-react';
 import ContactsErrorBoundary from '@/components/contacts/ContactsErrorBoundary';
 
 const AllContacts = () => {
@@ -19,20 +19,41 @@ const AllContacts = () => {
   const loading = useAppSelector(selectContactsLoading);
   const error = useAppSelector(selectContactsError);
   const [retryCount, setRetryCount] = useState(0);
+  const [isTimedOut, setIsTimedOut] = useState(false);
   
   useEffect(() => {
     console.log('AllContacts component mounted, fetching customers');
+    setIsTimedOut(false);
+    
+    const timeoutId = setTimeout(() => {
+      if (loading) {
+        console.log('Request taking longer than expected, showing timeout UI');
+        setIsTimedOut(true);
+      }
+    }, 10000); // Show timeout UI after 10 seconds of loading
+    
     dispatch(fetchCustomers())
       .unwrap()
-      .then(() => console.log('Successfully fetched contacts'))
+      .then(() => {
+        console.log('Successfully fetched contacts');
+        setIsTimedOut(false);
+      })
       .catch((err) => {
         console.error('Error fetching contacts:', err);
+        
+        // Check if it's a timeout error
+        if (err.isTimeoutError) {
+          setIsTimedOut(true);
+        }
+        
         toast({
           title: 'Error loading contacts',
           description: err.message || 'Please try again later',
           variant: 'destructive'
         });
       });
+      
+    return () => clearTimeout(timeoutId);
   }, [dispatch, retryCount]);
 
   // Debug logging
@@ -41,19 +62,43 @@ const AllContacts = () => {
       loading, 
       contactsCount: contacts?.length, 
       error,
+      isTimedOut,
       contactsData: contacts 
     });
-  }, [loading, contacts, error]);
+  }, [loading, contacts, error, isTimedOut]);
 
+  // Show extended loading state with timeout message
   if (loading) {
     return (
       <div className="p-6">
         <Card className="p-4">
-          <div className="space-y-3">
-            <Skeleton className="h-8 w-80" />
-            <Skeleton className="h-4 w-60" />
-            <Skeleton className="h-64 w-full" />
-          </div>
+          {isTimedOut ? (
+            <div className="flex flex-col items-center justify-center p-6 text-center">
+              <Clock className="h-12 w-12 text-amber-500 mb-4" />
+              <h3 className="text-xl font-medium mb-2">Taking longer than expected...</h3>
+              <p className="text-muted-foreground mb-6">
+                We're still trying to load your contacts. This might take a few more moments.
+              </p>
+              <div className="flex gap-4">
+                <Button 
+                  variant="outline"
+                  onClick={() => {
+                    console.log('Retrying fetch customers');
+                    setRetryCount(prev => prev + 1);
+                  }}
+                >
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  Retry Now
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <Skeleton className="h-8 w-80" />
+              <Skeleton className="h-4 w-60" />
+              <Skeleton className="h-64 w-full" />
+            </div>
+          )}
         </Card>
       </div>
     );
