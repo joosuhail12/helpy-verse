@@ -7,7 +7,7 @@ import { getCookie } from './cookieManager'; // adjust the import path if needed
 // Configure API base URL from environment variables
 export const getApiBaseUrl = () => {
   // const apiUrl = 'http://localhost:4000/api';
-  const apiUrl = 'https://dev-socket.pullseap.com/api';
+  const apiUrl = 'https://dev-socket.pullseai.com/api';
   console.log('API Base URL configured:', apiUrl);
   return apiUrl;
 };
