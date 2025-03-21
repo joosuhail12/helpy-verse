@@ -1,4 +1,3 @@
-
 export interface Team {
   id: string;
   name: string;
@@ -94,6 +93,8 @@ export interface TeamCreatePayload {
       maxActiveChats?: number;
     };
   };
+  officeHours?: { [key in DayOfWeek]: TimeSlot[] };
+  holidays?: string[];
 }
 
 export interface TeamIconPickerProps {
