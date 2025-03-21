@@ -1,6 +1,5 @@
-
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { HttpClient } from "@/api/services/http";
+import { HttpClient, cookieFunctions } from "@/api/services/http";
 import { AUTH_ENDPOINTS } from "@/api/services/http/config";
 
 // User data actions
@@ -12,6 +11,15 @@ export const fetchUserData = createAsyncThunk(
       console.log("Fetching user profile data");
       const response = await HttpClient.apiClient.get(AUTH_ENDPOINTS.USER_PROFILE);
       console.log("User profile data fetched successfully");
+      
+      // Save workspace ID from response to cookie if it exists
+      if (response.data?.defaultWorkspaceId) {
+        cookieFunctions.setCookie("workspaceId", response.data.defaultWorkspaceId);
+        console.log("Default workspace ID saved to cookie:", response.data.defaultWorkspaceId);
+      } else {
+        console.warn("No default workspace ID found in user profile response");
+      }
+      
       return response.data;
     } catch (error: any) {
       console.error("Error fetching user data:", error.message);
@@ -25,6 +33,13 @@ export const fetchUserProfile = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await HttpClient.apiClient.get(AUTH_ENDPOINTS.USER_PROFILE);
+      
+      // Save workspace ID from response to cookie if it exists
+      if (response.data?.defaultWorkspaceId) {
+        cookieFunctions.setCookie("workspaceId", response.data.defaultWorkspaceId);
+        console.log("Default workspace ID saved to cookie:", response.data.defaultWorkspaceId);
+      }
+      
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || "Failed to fetch user profile");

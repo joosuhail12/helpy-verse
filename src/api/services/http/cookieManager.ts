@@ -84,6 +84,7 @@ export const handleLogout = (): void => {
         document.cookie = `customerToken=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Lax`;
         document.cookie = `agent_email=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Lax`;
         document.cookie = `workspaceId=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Lax`;
+        console.log("Cleared all auth cookies including workspaceId");
     } catch (error) {
         console.warn("Error clearing cookies:", error);
     }

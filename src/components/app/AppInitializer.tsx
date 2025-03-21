@@ -2,6 +2,8 @@
 import { useEffect } from 'react';
 import { getCookie, handleSetToken } from "@/utils/helpers/helpers";
 import { HttpClient } from "@/api/services/http";
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { fetchUserData } from '@/store/slices/auth/userActions';
 
 export const initializeApp = () => {
   // Check both cookie and localStorage for token, but only cookie for workspace ID
@@ -22,10 +24,18 @@ interface AppInitializerProps {
 }
 
 const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
+  const dispatch = useAppDispatch();
+  
   useEffect(() => {
     // Initialize app with authentication if token exists
     try {
       initializeApp();
+      
+      // Load user data to get workspaceId if we have a token
+      const token = getCookie("customerToken") || localStorage.getItem("token");
+      if (token) {
+        dispatch(fetchUserData());
+      }
     } catch (error) {
       console.error("Error during app initialization:", error);
     }
@@ -43,7 +53,7 @@ const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
     return () => {
       window.removeEventListener("storage", handleStorageChange);
     };
-  }, []);
+  }, [dispatch]);
 
   return <>{children}</>;
 };
