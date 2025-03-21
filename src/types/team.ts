@@ -1,3 +1,4 @@
+
 export interface Team {
   id: string;
   name: string;
@@ -22,6 +23,18 @@ export interface Team {
   holidays: string[]; // Array of ISO date strings
   createdAt: string;
   updatedAt: string;
+}
+
+export interface TeamNew {
+  id: string;
+  name: string;
+  icon?: string;
+  teamMembers?: Array<{
+    id: string;
+    name: string;
+    email: string;
+  }>;
+  teamId?: string;
 }
 
 export type DayOfWeek = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';

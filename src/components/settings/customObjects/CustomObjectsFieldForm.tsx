@@ -10,15 +10,14 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { CustomObjectField } from "@/types/customObject";
 
 interface FieldDetailsFormProps {
     name: string;
-    type: CustomObjectField;
+    type: string;
     required: boolean;
     description: string;
     onNameChange: (value: string) => void;
-    onTypeChange: (value: CustomObjectField) => void;
+    onTypeChange: (value: string) => void;
     onRequiredChange: (value: boolean) => void;
     onDescriptionChange: (value: string) => void;
 }
@@ -46,7 +45,7 @@ const CustomObjectFieldDetailsForm = ({
             </div>
             <div className="grid gap-2">
                 <Label htmlFor="type">Field Type</Label>
-                <Select value={type.toString()} onValueChange={(value) => onTypeChange(value as unknown as CustomObjectField)}>
+                <Select value={type} onValueChange={(value) => onTypeChange(value)}>
                     <SelectTrigger>
                         <SelectValue />
                     </SelectTrigger>
@@ -88,4 +87,3 @@ const CustomObjectFieldDetailsForm = ({
 };
 
 export default CustomObjectFieldDetailsForm;
-

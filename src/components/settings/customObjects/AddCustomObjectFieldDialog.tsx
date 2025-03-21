@@ -12,8 +12,6 @@ import { useToast } from "@/components/ui/use-toast";
 import { useState } from "react";
 import { useCustomDataMutations } from "@/hooks/useCustomDataMutations";
 import { CustomObjectField, CustomFieldType, ValidationRule, FieldDependency, FieldHistoryEntry } from "@/types/customObject";
-// import ValidationRulesSection from './ValidationRulesSection';
-// import DependenciesSection from './DependenciesSection';
 import CustomObjectFieldDetailsForm from './CustomObjectsFieldForm';
 import CustomObjectFieldOptionsSection from './CustomObjectsFieldDetailsSection';
 import { validateFieldName, getDefaultValidationRules } from './utils/customObjectFieldValidation';
@@ -28,18 +26,15 @@ interface AddCustomObjectFieldDialogProps {
 
 const AddCustomObjectFieldDialog = ({ isOpen, onClose, existingFields, customObjectId }: AddCustomObjectFieldDialogProps) => {
     const [name, setName] = useState("");
-    const [type, setType] = useState<CustomFieldType>("text");
-    const [required, setRequired] = useState(false);
+    const [fieldType, setFieldType] = useState<string>("text");
+    const [isRequired, setIsRequired] = useState(false);
     const [description, setDescription] = useState("");
-    const [validationRules, setValidationRules] = useState<ValidationRule[]>([]);
-    const [dependencies, setDependencies] = useState<FieldDependency[]>([]);
     const [options, setOptions] = useState<string[]>([]);
     const { toast } = useToast();
     const [isLoading, setIsLoading] = useState(false);
 
-    const handleTypeChange = (newType: CustomFieldType) => {
-        setType(newType);
-        setValidationRules(getDefaultValidationRules(newType));
+    const handleTypeChange = (newType: string) => {
+        setFieldType(newType);
         if (!['select', 'multi-select'].includes(newType)) {
             setOptions([]);
         }
@@ -64,7 +59,7 @@ const AddCustomObjectFieldDialog = ({ isOpen, onClose, existingFields, customObj
             return;
         }
 
-        if (['select', 'multi-select'].includes(type) && options.length === 0) {
+        if (['select', 'multi-select'].includes(fieldType) && options.length === 0) {
             toast({
                 title: "Validation Error",
                 description: "Please add at least one option for select/multi-select fields.",
@@ -73,7 +68,7 @@ const AddCustomObjectFieldDialog = ({ isOpen, onClose, existingFields, customObj
             return;
         }
 
-        if (['select', 'multi-select'].includes(type)) {
+        if (['select', 'multi-select'].includes(fieldType)) {
             const duplicateOptions = options.filter((option, index) =>
                 options.indexOf(option) !== index
             );
@@ -88,26 +83,17 @@ const AddCustomObjectFieldDialog = ({ isOpen, onClose, existingFields, customObj
         }
 
         try {
-            const timestamp = new Date().toISOString();
-            const historyEntry: FieldHistoryEntry = {
-                id: Math.random().toString(),
-                timestamp,
-                userId: 'current-user',
-                userName: 'Current User',
-                action: 'created',
-                changes: []
-            };
-
+            setIsLoading(true);
             // Make api call here
             const response = await customObjectService.createCustomObjectField(customObjectId, {
                 name,
-                fieldType: type,
-                isRequired: required,
+                fieldType,
+                isRequired,
                 description,
                 defaultValue: "",
                 placeholder: "",
-                options: ['select', 'multi-select'].includes(type) ? options : undefined,
-            })
+                options: ['select', 'multi-select'].includes(fieldType) ? options : undefined,
+            });
 
             toast({
                 title: "Success",
@@ -116,11 +102,9 @@ const AddCustomObjectFieldDialog = ({ isOpen, onClose, existingFields, customObj
 
             onClose();
             setName("");
-            setType("text");
-            setRequired(false);
+            setFieldType("text");
+            setIsRequired(false);
             setDescription("");
-            setValidationRules([]);
-            setDependencies([]);
             setOptions([]);
         } catch (error) {
             toast({
@@ -128,10 +112,12 @@ const AddCustomObjectFieldDialog = ({ isOpen, onClose, existingFields, customObj
                 description: "Failed to add custom field. Please try again.",
                 variant: "destructive",
             });
+        } finally {
+            setIsLoading(false);
         }
     };
 
-    const showOptionsSection = ['select', 'multi-select'].includes(type);
+    const showOptionsSection = ['select', 'multi-select'].includes(fieldType);
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
@@ -147,12 +133,12 @@ const AddCustomObjectFieldDialog = ({ isOpen, onClose, existingFields, customObj
                     <div className="grid gap-4 py-4">
                         <CustomObjectFieldDetailsForm
                             name={name}
-                            type={type}
-                            required={required}
+                            type={fieldType}
+                            required={isRequired}
                             description={description}
                             onNameChange={setName}
                             onTypeChange={handleTypeChange}
-                            onRequiredChange={setRequired}
+                            onRequiredChange={setIsRequired}
                             onDescriptionChange={setDescription}
                         />
 
@@ -162,17 +148,6 @@ const AddCustomObjectFieldDialog = ({ isOpen, onClose, existingFields, customObj
                                 onOptionsChange={setOptions}
                             />
                         )}
-
-                        {/* <ValidationRulesSection
-                            rules={validationRules}
-                            onRulesChange={setValidationRules}
-                        />
-
-                        <DependenciesSection
-                            dependencies={dependencies}
-                            onDependenciesChange={setDependencies}
-                            availableFields={existingFields}
-                        /> */}
                     </div>
 
                     <DialogFooter>
@@ -190,4 +165,3 @@ const AddCustomObjectFieldDialog = ({ isOpen, onClose, existingFields, customObj
 };
 
 export default AddCustomObjectFieldDialog;
-

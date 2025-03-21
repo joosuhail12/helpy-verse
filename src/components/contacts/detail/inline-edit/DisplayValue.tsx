@@ -1,5 +1,5 @@
 
-import { CustomFieldType } from '@/types/customField';
+import { CustomFieldType } from '@/types/customData';
 
 interface DisplayValueProps {
   type: CustomFieldType;

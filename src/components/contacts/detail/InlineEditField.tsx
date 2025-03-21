@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { CustomFieldType } from '@/types/customField';
+import { CustomFieldType } from '@/types/customData';
 import { validateFieldValue } from '@/components/settings/customData/utils/fieldValidation';
 import { EditButtons } from './inline-edit/EditButtons';
 import { EditField } from './inline-edit/EditField';
@@ -48,17 +48,16 @@ export const InlineEditField = ({
   }, [isEditing]);
 
   const handleSave = async () => {
-    // Validate field before saving
     const mockField = {
       id: field,
       name: label,
-      type,
-      required: validation.some(v => v.type === 'required'),
+      fieldType: type,
+      isRequired: validation.some(v => v.type === 'required'),
       validationRules: validation,
       description: '',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      history: []
+      placeholder: '',
+      defaultValue: '',
+      entityType: 'customer'
     };
 
     const validationErrors = validateFieldValue(editValue, mockField);

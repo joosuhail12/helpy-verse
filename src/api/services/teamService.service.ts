@@ -1,7 +1,8 @@
+
 // src/api/services/teamService.ts
 
 import { HttpClient } from './HttpClient';
-import { TeamNew } from '@/types/team';
+import { Team, TeamNew } from '@/types/team';
 
 const API_URL = '/team';
 
@@ -17,9 +18,8 @@ export const teamsService = {
             const response = await HttpClient.apiClient.get<GetAllTeamsResponse>(`${API_URL}`);
             return response.data;
         } catch (error) {
-            console.error('Error fetching canned responses:', error);
-            throw new Error('Failed to fetch canned responses');
+            console.error('Error fetching teams:', error);
+            throw new Error('Failed to fetch teams');
         }
     },
-
 }

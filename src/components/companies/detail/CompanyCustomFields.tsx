@@ -15,7 +15,7 @@ interface CompanyCustomFieldsProps {
 }
 
 export const CompanyCustomFields = ({ company }: CompanyCustomFieldsProps) => {
-  const { data: customFields, isLoading } = useCustomFields('companies');
+  const { data: customFields, isLoading } = useCustomFields('company');
 
   if (isLoading) {
     return (
@@ -34,7 +34,7 @@ export const CompanyCustomFields = ({ company }: CompanyCustomFieldsProps) => {
     );
   }
 
-  if (!customFields?.companies.length) {
+  if (!customFields?.length) {
     return null;
   }
 
@@ -45,7 +45,7 @@ export const CompanyCustomFields = ({ company }: CompanyCustomFieldsProps) => {
       </CardHeader>
       <CardContent className="pt-6">
         <div className="grid gap-6">
-          {customFields.companies.map((field) => (
+          {customFields.filter(field => field.entityType === 'company').map((field) => (
             <div key={field.id} className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground">{field.name}</p>
               <InlineEditField
@@ -53,9 +53,9 @@ export const CompanyCustomFields = ({ company }: CompanyCustomFieldsProps) => {
                 contactId={company.id}
                 field={field.id}
                 label={field.name}
-                type={field.type}
-                options={field.options}
-                validation={field.validationRules}
+                type={field.fieldType}
+                options={field.options || undefined}
+                validation={[]}
               />
             </div>
           ))}

@@ -132,11 +132,14 @@ const emailChannelsSlice = createSlice({
         state.defaultChannel.isActive = false;
       })
       .addCase(updateChannel.fulfilled, (state, action) => {
-        const index = state.channels.findIndex(c => c.id === action.payload[0].id);
-        if (index !== -1) {
-          state.channels = state.channels.map(channel =>
-            channel.id === action.payload[0].id ? action.payload[0] : channel
+        if (action.payload.data && action.payload.data.success === true) {
+          // Update the channel in the state
+          const updatedChannels = state.channels.map(channel => 
+            channel.id === action.payload.channelId ? { ...channel, ...action.payload.updates } : channel
           );
+          state.channels = updatedChannels;
+          state.loading = false;
+          state.error = null;
         }
       })
       .addCase(deleteChannel.fulfilled, (state, action) => {

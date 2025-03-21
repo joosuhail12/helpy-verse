@@ -1,8 +1,8 @@
 
 import { Mail, Phone, CalendarDays, Link2, DollarSign, Text, ToggleLeft, FileText, ListFilter, Files } from "lucide-react";
-import { CustomField } from "@/types/customField";
+import { CustomField } from "@/types/customData";
 
-export const getFieldTypeIcon = (type: CustomField['type']) => {
+export const getFieldTypeIcon = (type: CustomField['fieldType']) => {
   switch (type) {
     case 'email':
       return <Mail className="h-4 w-4 text-purple-500" />;

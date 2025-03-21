@@ -1,9 +1,10 @@
-
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import type { Teammate, NewTeammate, ActivityLog } from '@/types/teammate';
 import { mockTeammates, mockActivityLogs, mockAssignments } from './mockData';
 import { CACHE_DURATION } from './types';
 import type { TeammatesState } from './types';
+import { uuid } from 'uuid';
+import { getErrorMessage } from './utils';
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -106,5 +107,32 @@ export const updateTeammatePermissions = createAsyncThunk(
   async ({ teammateId, permissions }: { teammateId: string, permissions: string[] }) => {
     await delay(1000);
     return { teammateId, permissions };
+  }
+);
+
+export const createTeammate = createAsyncThunk(
+  'teammates/createTeammate',
+  async (teammate: NewTeammate, { rejectWithValue }) => {
+    try {
+      const response = await teammatesService.createTeammate(teammate);
+      
+      const createdTeammate: Teammate = {
+        id: response.data[0].id || uuid(),
+        name: `${teammate.first_name} ${teammate.last_name}`,
+        email: teammate.email,
+        role: teammate.role,
+        status: 'active',
+        teamId: null,
+        createdBy: 'current-user',
+        lastActive: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        avatar: response.data[0].avatar || '',
+        permissions: []
+      };
+      
+      return createdTeammate;
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
+    }
   }
 );

@@ -30,7 +30,7 @@ interface TeammatesBulkActionsProps {
 const TeammatesBulkActions = ({ selectedIds, onClearSelection }: TeammatesBulkActionsProps) => {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [showRoleDialog, setShowRoleDialog] = useState(false);
-  const [newRole, setNewRole] = useState<Teammate['role']>('agent');
+  const [newRole, setNewRole] = useState<Teammate['role']>('WORKSPACE_AGENT');
   const dispatch = useAppDispatch();
   const { toast } = useToast();
 
@@ -115,10 +115,10 @@ const TeammatesBulkActions = ({ selectedIds, onClearSelection }: TeammatesBulkAc
               <SelectValue placeholder="Select new role" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="admin">Admin</SelectItem>
-              <SelectItem value="supervisor">Supervisor</SelectItem>
-              <SelectItem value="agent">Agent</SelectItem>
-              <SelectItem value="viewer">Viewer</SelectItem>
+              <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
+              <SelectItem value="ORGANIZATION_ADMIN">Organization Admin</SelectItem>
+              <SelectItem value="WORKSPACE_ADMIN">Workspace Admin</SelectItem>
+              <SelectItem value="WORKSPACE_AGENT">Workspace Agent</SelectItem>
             </SelectContent>
           </Select>
           <DialogFooter>
@@ -159,4 +159,3 @@ const TeammatesBulkActions = ({ selectedIds, onClearSelection }: TeammatesBulkAc
 };
 
 export default TeammatesBulkActions;
-

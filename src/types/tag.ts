@@ -1,6 +1,5 @@
 
 export interface Tag {
-  data: any;
   id: string;
   name: string;
   color: string;
@@ -21,8 +20,8 @@ export interface Tag {
     id: string;
     title: string;
   }[];
+  data?: any; // Add this property to match what's expected by the API
 }
 
 export type SortField = 'name' | 'tickets' | 'contacts' | 'companies' | 'lastUsed' | 'createdAt';
 export type FilterEntity = 'all' | 'tickets' | 'contacts' | 'companies';
-
