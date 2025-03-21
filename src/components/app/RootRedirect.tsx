@@ -21,8 +21,10 @@ const RootRedirect: React.FC = () => {
     return null;
   }
   
-  // Direct to home/inbox/all as the default authenticated route
-  return token ? <Navigate to="/home/inbox/all" replace /> : <Navigate to="/sign-in" replace />;
+  // If authenticated, go to inbox, otherwise go to landing page
+  return token ? 
+    <Navigate to="/home/inbox/all" replace /> : 
+    <Navigate to="/" replace />;
 };
 
 export default RootRedirect;

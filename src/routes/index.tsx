@@ -4,7 +4,7 @@ import { createBrowserRouter } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import RootRedirect from '../components/app/RootRedirect';
 import RouteErrorBoundary from '@/components/app/RouteErrorBoundary';
-import { PrivateRoute } from '@/utils/helpers/Routes';
+import { PrivateRoute, PublicRoute } from '@/utils/helpers/Routes';
 
 // Define LoadingSpinner first to avoid reference errors
 export const LoadingSpinner = () => (
@@ -64,7 +64,11 @@ const logRoutes = (routes) => {
 export const router = createBrowserRouter([
   {
     path: '/',
-    element: withSuspenseAndErrorHandling(LandingPage),
+    element: (
+      <PublicRoute>
+        {withSuspenseAndErrorHandling(LandingPage)}
+      </PublicRoute>
+    ),
   },
   {
     path: '/home',

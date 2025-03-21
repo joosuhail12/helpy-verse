@@ -1,4 +1,3 @@
-
 import { ReactNode } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { isAuthenticated } from "@/utils/auth/tokenManager";
@@ -28,13 +27,22 @@ export const PrivateRoute = ({ children }: RouteProps): JSX.Element => {
 // Public Route Component
 export const PublicRoute = ({ children }: RouteProps): JSX.Element => {
     const location = useLocation();
+    console.log("PublicRoute: Current path:", location.pathname);
     
     // Don't redirect from landing page or auth pages
     if (location.pathname === '/' || 
         location.pathname.startsWith('/sign-') || 
         location.pathname.includes('password')) {
+        console.log("PublicRoute: Allowing access to public page:", location.pathname);
         return <>{children}</>;
     }
     
-    return isAuthenticated() ? <Navigate to="/home/inbox/all" /> : <>{children}</>;
+    // If user is authenticated and trying to access a non-public page, redirect to inbox
+    if (isAuthenticated()) {
+        console.log("PublicRoute: User is authenticated, redirecting to inbox");
+        return <Navigate to="/home/inbox/all" />;
+    }
+    
+    // Otherwise allow access
+    return <>{children}</>;
 };
