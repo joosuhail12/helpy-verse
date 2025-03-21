@@ -1,8 +1,8 @@
-
 import React, { useEffect, useState } from 'react';
 import ChatHome from '@/components/chat-widget/ChatHome';
 import ConversationList from '@/components/chat-widget/ConversationList';
 import NewChat from '@/components/chat-widget/NewChat';
+import ResponseTime from '@/components/chat-widget/components/ResponseTime';
 import { X, ArrowLeft, Search, Home, MessageSquare } from 'lucide-react';
 
 type WidgetPage = 'home' | 'conversations' | 'new-chat';
@@ -106,7 +106,7 @@ const ChatWidgetStandalone = () => {
         <button 
           onClick={() => navigateTo('home')}
           className={`flex flex-col items-center gap-1 ${currentPage === 'home' 
-            ? 'text-indigo-600' 
+            ? 'text-[#5DCFCF]' 
             : 'text-gray-500'}`}
           aria-label="Home"
         >
@@ -116,7 +116,7 @@ const ChatWidgetStandalone = () => {
         <button 
           onClick={() => navigateTo('conversations')}
           className={`flex flex-col items-center gap-1 ${currentPage === 'conversations' 
-            ? 'text-indigo-600' 
+            ? 'text-[#5DCFCF]' 
             : 'text-gray-500'}`}
           aria-label="Messages"
         >
@@ -125,10 +125,8 @@ const ChatWidgetStandalone = () => {
         </button>
       </div>
 
-      {/* Brand footer */}
-      <div className="py-2 text-center text-xs text-gray-500">
-        Powered by <span className="font-medium">Pullse</span>
-      </div>
+      {/* Brand footer - moved below navigation */}
+      <ResponseTime />
     </div>
   );
 };

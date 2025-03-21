@@ -6,9 +6,9 @@ import React from 'react';
  */
 const WelcomeHeader = () => {
   return (
-    <div className="bg-[#5DCFCF] px-6 py-12 rounded-t-lg">
-      <h2 className="text-2xl font-bold text-black mt-4">Hey there!</h2>
-      <p className="text-black font-medium mt-1">
+    <div className="bg-[#5DCFCF] px-6 py-12 rounded-t-lg shadow-sm">
+      <h2 className="text-2xl font-bold text-white mt-4">Hey there!</h2>
+      <p className="text-white opacity-90 font-medium mt-1">
         How can I help you?
       </p>
     </div>
