@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
-import { fetchTeammateDetails, fetchTeammates } from '@/store/slices/teammates/actions';
+import { fetchTeammates, fetchTeammateDetails } from '@/store/slices/teammates/actions';
 import { selectTeammateById, selectTeammateDetailsLoading } from '@/store/slices/teammates/selectors';
 import { useToast } from "@/hooks/use-toast";
 import { isAuthenticated } from '@/utils/auth/tokenManager';
@@ -64,15 +64,10 @@ export const useTeammateDetail = (teammateId: string | undefined) => {
       dispatch(fetchTeammates())
         .unwrap()
         .then(() => {
-          // After loading all teammates, check if our target teammate was loaded
-          const loadedTeammate = selectTeammateById(dispatch.getState(), teammateId);
-          
-          if (!loadedTeammate) {
-            // If still not found, fetch the specific teammate details
-            console.log(`Teammate ${teammateId} still not found, fetching specific details`);
-            return dispatch(fetchTeammateDetails(teammateId)).unwrap();
-          }
-          return loadedTeammate;
+          // After fetching all teammates, we need to fetch specific teammate details
+          // regardless, since we can't reliably check if the teammate was loaded
+          console.log(`Now fetching specific details for teammate ${teammateId}`);
+          return dispatch(fetchTeammateDetails(teammateId)).unwrap();
         })
         .catch(err => {
           console.error('Error fetching teammate:', err);

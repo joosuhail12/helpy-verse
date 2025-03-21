@@ -4,11 +4,15 @@ import type { Teammate, NewTeammate } from '@/types/teammate';
 import { TeammatesState } from './types';
 import { fetchTeammates as fetchTeammatesThunk } from './thunks';
 import { updateTeammate as updateTeammateThunk } from './thunks';
+import { fetchTeammateDetails as fetchTeammateDetailsThunk } from './thunks';
 import { createTeammate as createTeammateApi } from '@/api/services/teammatesService';
 import { resendInvitation as resendInvitationThunk } from './thunks';
 
 // Re-export the fetchTeammates action for backward compatibility
 export const fetchTeammates = fetchTeammatesThunk;
+
+// Re-export the fetchTeammateDetails action for backward compatibility
+export const fetchTeammateDetails = fetchTeammateDetailsThunk;
 
 // Re-export the updateTeammate action for backward compatibility
 export const updateTeammate = updateTeammateThunk;
