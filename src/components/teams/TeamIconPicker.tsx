@@ -1,6 +1,6 @@
 
 import React from 'react';
-import * as icons from 'lucide-react';
+import * as Icons from 'lucide-react';
 import { Smile } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import {
@@ -22,18 +22,33 @@ import type { TeamIconPickerProps } from '@/types/team';
 import type { LucideIcon } from 'lucide-react';
 
 // Filter out non-icon entries and create properly typed icon array
-const availableIcons = Object.entries(icons)
-  .filter(([name]) => name !== 'createLucideIcon' && name !== 'icons')
-  .map(([name, icon]) => ({
+// These are the common icons that we'll show in the picker
+const iconList = [
+  'User', 'Users', 'Shield', 'Flag', 'Star', 'Heart', 
+  'Briefcase', 'Settings', 'Key', 'Lock', 'Globe', 
+  'Book', 'Code', 'Mail', 'MessageSquare', 'Monitor', 
+  'Tv', 'Camera', 'Phone', 'Tool', 'Utensils', 'Truck', 
+  'Gift', 'Trophy', 'Flower', 'Tree', 'Cloud', 'Sun', 
+  'Moon', 'Wifi', 'Bluetooth', 'Battery', 'Zap', 'Search', 
+  'Check', 'X', 'Plus', 'Minus', 'AlertCircle', 'Info', 'HelpCircle', 'Smile'
+];
+
+// Create the available icons array safely
+const availableIcons = iconList
+  .filter(name => Icons[name as keyof typeof Icons])
+  .map(name => ({
     name,
-    icon: icon as LucideIcon,
+    icon: Icons[name as keyof typeof Icons] as LucideIcon
   }));
 
 const TeamIconPicker = ({ selectedIcon, onIconSelect }: TeamIconPickerProps) => {
   const [openIconPicker, setOpenIconPicker] = React.useState(false);
 
-  // Find the selected icon component
-  const SelectedIcon = selectedIcon ? (icons[selectedIcon as keyof typeof icons] as LucideIcon) : Smile;
+  // Find the selected icon component, default to Smile if not found
+  let SelectedIcon = Smile;
+  if (selectedIcon && Icons[selectedIcon as keyof typeof Icons]) {
+    SelectedIcon = Icons[selectedIcon as keyof typeof Icons] as LucideIcon;
+  }
 
   return (
     <div className="space-y-2">
@@ -85,4 +100,3 @@ const TeamIconPicker = ({ selectedIcon, onIconSelect }: TeamIconPickerProps) => 
 };
 
 export default TeamIconPicker;
-
