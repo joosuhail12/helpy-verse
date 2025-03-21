@@ -16,7 +16,7 @@ const RootRedirect: React.FC = () => {
   console.log('RootRedirect - token exists:', !!token, 'Current path:', location.pathname);
   
   // If we're already on a specific path, don't redirect
-  if (location.pathname !== '/' && location.pathname !== '') {
+  if (location.pathname !== '/home' && location.pathname !== '/home/') {
     console.log('Already on a specific path, not redirecting');
     return null;
   }

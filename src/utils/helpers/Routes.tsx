@@ -1,6 +1,6 @@
 
 import { ReactNode } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { isAuthenticated } from "@/utils/auth/tokenManager";
 
 // Define RouteProps Interface
@@ -25,5 +25,12 @@ export const PrivateRoute = ({ children }: RouteProps): JSX.Element => {
 
 // Public Route Component
 export const PublicRoute = ({ children }: RouteProps): JSX.Element => {
+    const location = useLocation();
+    
+    // Don't redirect from landing page
+    if (location.pathname === '/') {
+        return <>{children}</>;
+    }
+    
     return isAuthenticated() ? <Navigate to="/inbox" /> : <>{children}</>;
 };

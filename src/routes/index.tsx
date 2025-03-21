@@ -24,6 +24,7 @@ const ForgotPassword = lazy(() => import('../pages/ForgotPassword'));
 const ResetPassword = lazy(() => import('../pages/ResetPassword'));
 const SignUp = lazy(() => import('../pages/SignUp'));
 const NotFound = lazy(() => import('../pages/NotFound'));
+const LandingPage = lazy(() => import('../pages/LandingPage'));
 
 // Lazy load dashboard layout
 const DashboardLayoutComponent = lazy(() => import('../layouts/DashboardLayout'));
@@ -40,6 +41,10 @@ const withSuspenseAndErrorHandling = (Component) => (
 export const router = createBrowserRouter([
   {
     path: '/',
+    element: withSuspenseAndErrorHandling(LandingPage),
+  },
+  {
+    path: '/home',
     element: <RootRedirect />,
   },
   {
@@ -59,7 +64,7 @@ export const router = createBrowserRouter([
     element: withSuspenseAndErrorHandling(SignUp),
   },
   {
-    path: '/',
+    path: '/home',
     element: <Suspense fallback={<LoadingSpinner />}><DashboardLayoutComponent /></Suspense>,
     children: [
       ...dashboardRoutes,
