@@ -14,17 +14,17 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, formatTimestamp }) =
   const isUserMessage = message.sender === 'user';
   
   return (
-    <div className={`flex ${isUserMessage ? 'justify-end' : 'justify-start'}`}>
+    <div className={`flex ${isUserMessage ? 'justify-end' : 'justify-start'} mb-3`}>
       <div 
         className={`max-w-[80%] p-3 rounded-lg ${
           isUserMessage 
-            ? 'bg-indigo-600 text-white rounded-br-none' 
+            ? 'bg-gray-900 text-white rounded-br-none' 
             : 'bg-white text-gray-800 border border-gray-100 rounded-bl-none shadow-sm'
         }`}
       >
         <p className="text-sm">{message.text}</p>
         <span className={`text-xs mt-1 block text-right ${
-          isUserMessage ? 'text-indigo-100' : 'text-gray-400'
+          isUserMessage ? 'text-gray-300' : 'text-gray-400'
         }`}>
           {formatTimestamp(message.timestamp)}
         </span>

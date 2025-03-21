@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import MessageItem from './MessageItem';
 import { Message } from '../types';
 
@@ -17,6 +17,13 @@ const MessageList: React.FC<MessageListProps> = ({
   loading,
   formatTimestamp 
 }) => {
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-full">
@@ -31,7 +38,7 @@ const MessageList: React.FC<MessageListProps> = ({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2 px-1">
       {messages.map((msg) => (
         <MessageItem 
           key={msg.id} 
@@ -39,6 +46,7 @@ const MessageList: React.FC<MessageListProps> = ({
           formatTimestamp={formatTimestamp} 
         />
       ))}
+      <div ref={messagesEndRef} />
     </div>
   );
 };

@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Send } from 'lucide-react';
 
 interface MessageInputProps {
@@ -25,17 +25,17 @@ const MessageInput: React.FC<MessageInputProps> = ({
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
           placeholder="Type your message here..."
-          className="w-full border border-gray-200 rounded-lg p-3 pr-12 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-transparent resize-none"
-          rows={3}
+          className="w-full border border-gray-200 rounded-lg p-3 pr-12 focus:outline-none focus:ring-2 focus:ring-gray-900/30 focus:border-transparent resize-none"
+          rows={2}
           disabled={sending}
           autoFocus
         />
         <button
           type="submit"
-          className="absolute right-3 bottom-3 text-primary hover:text-primary/80 disabled:text-gray-400"
+          className="absolute right-3 bottom-3 text-gray-900 hover:text-gray-600 disabled:text-gray-400 bg-gray-100 hover:bg-gray-200 p-2 rounded-full"
           disabled={sending || !newMessage.trim()}
         >
-          <Send className="h-6 w-6" />
+          <Send className="h-4 w-4" />
         </button>
       </form>
     </div>

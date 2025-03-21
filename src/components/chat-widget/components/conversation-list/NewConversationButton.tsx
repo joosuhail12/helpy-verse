@@ -12,7 +12,7 @@ const NewConversationButton: React.FC<NewConversationButtonProps> = ({ onNewChat
   return (
     <button
       onClick={onNewChat}
-      className="py-2 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors text-sm"
+      className="py-2 px-4 bg-gray-900 hover:bg-gray-800 text-white rounded-lg font-medium transition-colors text-sm w-full"
     >
       Start New Conversation
     </button>

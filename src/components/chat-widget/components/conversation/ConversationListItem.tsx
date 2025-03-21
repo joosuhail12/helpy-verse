@@ -36,7 +36,7 @@ const ConversationListItem = ({ conversation, onSelect }: ConversationListItemPr
             <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
               conversation.status === 'resolved' 
                 ? 'bg-green-100 text-green-700' 
-                : 'bg-indigo-100 text-indigo-700'
+                : 'bg-gray-900 text-white'
             }`}>
               {conversation.status === 'resolved' 
                 ? <CheckCircle2 className="h-5 w-5" /> 
@@ -52,7 +52,7 @@ const ConversationListItem = ({ conversation, onSelect }: ConversationListItemPr
             </div>
           </div>
           <div className="flex flex-col items-end">
-            <div className={`text-xs px-2 py-1 rounded-full font-medium text-xs ${
+            <div className={`text-xs px-2 py-1 rounded-full font-medium ${
               conversation.status === 'resolved' 
                 ? 'bg-green-100 text-green-700' 
                 : 'bg-yellow-100 text-yellow-700'
@@ -64,7 +64,7 @@ const ConversationListItem = ({ conversation, onSelect }: ConversationListItemPr
               {conversation.timestamp}
             </div>
             {conversation.unread && (
-              <div className="w-2 h-2 bg-blue-600 rounded-full mt-1"></div>
+              <div className="w-2 h-2 bg-gray-900 rounded-full mt-1"></div>
             )}
           </div>
         </div>

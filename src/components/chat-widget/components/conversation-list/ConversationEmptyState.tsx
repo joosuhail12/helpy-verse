@@ -22,7 +22,7 @@ const ConversationEmptyState = ({ onNewChat }: ConversationEmptyStateProps) => {
       </p>
       <Button 
         onClick={onNewChat}
-        className="bg-indigo-600 hover:bg-indigo-700 text-white"
+        className="bg-gray-900 hover:bg-gray-800 text-white"
       >
         Start a conversation
       </Button>

@@ -39,7 +39,7 @@ const ConversationSearchBar: React.FC<ConversationSearchBarProps> = ({ value, on
         value={searchTerm}
         onChange={handleChange}
         placeholder="Search conversations..."
-        className="w-full bg-gray-50 border border-gray-200 rounded-lg pl-10 pr-10 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-transparent"
+        className="w-full bg-gray-100 border border-gray-200 rounded-lg pl-10 pr-10 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/30 focus:border-transparent"
       />
       {searchTerm && (
         <button

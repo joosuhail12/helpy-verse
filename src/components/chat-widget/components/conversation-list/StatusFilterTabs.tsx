@@ -19,7 +19,7 @@ const StatusFilterTabs: React.FC<StatusFilterTabsProps> = ({
         onClick={() => onFilterChange('all')}
         className={`pb-2 px-3 text-sm font-medium ${
           statusFilter === 'all' 
-            ? 'text-primary border-b-2 border-primary' 
+            ? 'text-gray-900 border-b-2 border-gray-900' 
             : 'text-gray-500 hover:text-gray-700'
         }`}
       >
@@ -29,7 +29,7 @@ const StatusFilterTabs: React.FC<StatusFilterTabsProps> = ({
         onClick={() => onFilterChange('ongoing')}
         className={`pb-2 px-3 text-sm font-medium ${
           statusFilter === 'ongoing' 
-            ? 'text-primary border-b-2 border-primary' 
+            ? 'text-gray-900 border-b-2 border-gray-900' 
             : 'text-gray-500 hover:text-gray-700'
         }`}
       >
@@ -39,7 +39,7 @@ const StatusFilterTabs: React.FC<StatusFilterTabsProps> = ({
         onClick={() => onFilterChange('resolved')}
         className={`pb-2 px-3 text-sm font-medium ${
           statusFilter === 'resolved' 
-            ? 'text-primary border-b-2 border-primary' 
+            ? 'text-gray-900 border-b-2 border-gray-900' 
             : 'text-gray-500 hover:text-gray-700'
         }`}
       >
