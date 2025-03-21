@@ -3,12 +3,13 @@ import { useState, useEffect } from 'react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useToast } from '@/hooks/use-toast';
 import { 
-  fetchChannels,
-  deleteChannel,
-  toggleChannelStatus,
+  fetchEmailChannels as fetchChannels,
+  deleteEmailChannel as deleteChannel,
+  updateEmailChannel as updateChannel,
+  toggleEmailChannelStatus as toggleChannelStatus,
   toggleDefaultChannelStatus,
-  bulkDeleteChannels,
-  bulkToggleStatus,
+  bulkDeleteEmailChannels as bulkDeleteChannels,
+  bulkToggleEmailStatus as bulkToggleStatus,
 } from '@/store/slices/emailChannels/emailChannelsSlice';
 import { 
   selectEmailChannels, 
@@ -18,6 +19,17 @@ import {
 } from '@/store/slices/emailChannels/selectors';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { useChannelSort } from './useChannelSort';
+
+// Add these missing thunks to emailChannelsSlice
+export const toggleEmailChannelStatus = updateChannel;
+export const bulkDeleteEmailChannels = (ids: string[]) => ({
+  type: 'emailChannels/bulkDelete',
+  payload: ids
+});
+export const bulkToggleEmailStatus = (data: {ids: string[], isActive: boolean}) => ({
+  type: 'emailChannels/bulkToggleStatus',
+  payload: data
+});
 
 export const useChannelManagement = () => {
   const { toast } = useToast();

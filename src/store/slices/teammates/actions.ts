@@ -1,6 +1,5 @@
 
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { v4 as uuidv4 } from 'uuid';
 import { Teammate, NewTeammate } from '@/types/teammate';
 import { teammatesService } from '@/api/services/teammateService';
 
@@ -43,7 +42,7 @@ export const updateTeammate = createAsyncThunk(
   }
 );
 
-// Delete a teammate
+// Delete a teammate - mock implementation
 export const deleteTeammate = createAsyncThunk(
   'teammates/deleteTeammate',
   async (id: string) => {
@@ -69,7 +68,33 @@ export const fetchTeammateById = createAsyncThunk(
   }
 );
 
-// Mock function for resending invitation - replace with actual implementation
+// Export teammates - mock implementation
+export const exportTeammates = createAsyncThunk(
+  'teammates/exportTeammates',
+  async () => {
+    try {
+      // Mock implementation
+      return { success: true, url: 'exports/teammates.csv' };
+    } catch (error) {
+      throw error;
+    }
+  }
+);
+
+// Update teammates role in bulk - mock implementation
+export const updateTeammatesRole = createAsyncThunk(
+  'teammates/updateTeammatesRole',
+  async ({ ids, role }: { ids: string[]; role: string }) => {
+    try {
+      // Mock implementation
+      return { success: true, ids, role };
+    } catch (error) {
+      throw error;
+    }
+  }
+);
+
+// Mock function for resending invitation
 export const resendInvitation = createAsyncThunk(
   'teammates/resendInvitation',
   async (email: string) => {

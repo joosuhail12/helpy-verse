@@ -1,68 +1,89 @@
-import type { Team } from '@/types/team';
+
+import { Team } from "@/types/team";
 
 export const mockTeams: Team[] = [
   {
-    id: '1',
-    name: 'Frontend Team',
+    id: "1",
+    name: "Support Team",
+    icon: "Users",
     teamMembers: [
-      { id: '101', name: 'John Doe', email: 'john@example.com' },
-      { id: '102', name: 'Jane Smith', email: 'jane@example.com' }
+      { id: "1", name: "John Doe", email: "john@example.com", role: "Agent", status: "Active" },
+      { id: "2", name: "Jane Smith", email: "jane@example.com", role: "Lead", status: "Active" }
     ],
-    routingStrategy: 'round-robin',
+    routingStrategy: "round-robin",
+    maxTotalTickets: 20,
+    maxOpenTickets: 10,
+    maxActiveChats: 5,
+    createdAt: "2023-01-15T09:30:00Z",
+    updatedAt: "2023-06-22T16:45:00Z",
     officeHours: {
-      monday: [{ start: '09:00', end: '17:00' }],
-      tuesday: [{ start: '09:00', end: '17:00' }],
-      wednesday: [{ start: '09:00', end: '17:00' }],
-      thursday: [{ start: '09:00', end: '17:00' }],
-      friday: [{ start: '09:00', end: '17:00' }],
+      monday: [{ start: "09:00", end: "17:00" }],
+      tuesday: [{ start: "09:00", end: "17:00" }],
+      wednesday: [{ start: "09:00", end: "17:00" }],
+      thursday: [{ start: "09:00", end: "17:00" }],
+      friday: [{ start: "09:00", end: "17:00" }],
       saturday: [],
       sunday: []
     },
-    holidays: ['2024-12-25', '2024-12-31', '2025-01-01'],
-    createdAt: '2024-01-15T10:00:00Z',
-    updatedAt: '2024-03-15T14:30:00Z'
+    holidays: ["2023-12-25", "2024-01-01"],
+    channels: {
+      chat: "support",
+      email: ["support@example.com"]
+    }
   },
   {
-    id: '2',
-    name: 'Backend Team',
+    id: "2",
+    name: "Product Team",
+    icon: "Package",
     teamMembers: [
-      { id: '201', name: 'Mike Johnson', email: 'mike@example.com' },
-      { id: '202', name: 'Sarah Wilson', email: 'sarah@example.com' },
-      { id: '203', name: 'Tom Brown', email: 'tom@example.com' }
+      { id: "3", name: "Mike Johnson", email: "mike@example.com", role: "Agent", status: "Active" },
+      { id: "4", name: "Sarah Williams", email: "sarah@example.com", role: "Lead", status: "Active" },
+      { id: "5", name: "David Brown", email: "david@example.com", role: "Agent", status: "Away" }
     ],
-    routingStrategy: 'load-balanced',
+    routingStrategy: "manual",
+    createdAt: "2023-02-10T11:15:00Z",
+    updatedAt: "2023-07-05T14:30:00Z",
     officeHours: {
-      "monday": [{ "start": "08:00", "end": "16:00" }],
-      "tuesday": [{ "start": "08:00", "end": "16:00" }],
-      "wednesday": [{ "start": "08:00", "end": "16:00" }],
-      "thursday": [{ "start": "08:00", "end": "16:00" }],
-      "friday": [{ "start": "08:00", "end": "16:00" }],
-      "saturday": [],
-      "sunday": []
-    },
-    holidays: ['2024-07-04', '2024-11-28'],
-    createdAt: '2024-02-01T09:00:00Z',
-    updatedAt: '2024-03-14T11:20:00Z'
-  },
-  {
-    id: '3',
-    name: 'Design Team',
-    teamMembers: [
-      { id: '301', name: 'Alice Cooper', email: 'alice@example.com' },
-      { id: '302', name: 'Bob Martin', email: 'bob@example.com' }
-    ],
-    routingStrategy: 'manual',
-    officeHours: {
-      monday: [{ start: '10:00', end: '18:00' }],
-      tuesday: [{ start: '10:00', end: '18:00' }],
-      wednesday: [{ start: '10:00', end: '18:00' }],
-      thursday: [{ start: '10:00', end: '18:00' }],
-      friday: [{ start: '10:00', end: '18:00' }],
+      monday: [{ start: "08:00", end: "16:00" }],
+      tuesday: [{ start: "08:00", end: "16:00" }],
+      wednesday: [{ start: "08:00", end: "16:00" }],
+      thursday: [{ start: "08:00", end: "16:00" }],
+      friday: [{ start: "08:00", end: "16:00" }],
       saturday: [],
       sunday: []
     },
-    holidays: ['2024-05-27', '2024-09-02'],
-    createdAt: '2024-02-15T08:00:00Z',
-    updatedAt: '2024-03-10T16:45:00Z'
+    holidays: ["2023-12-25", "2024-01-01"],
+    channels: {
+      email: ["product@example.com"]
+    }
+  },
+  {
+    id: "3",
+    name: "Marketing Team",
+    icon: "Megaphone",
+    teamMembers: [
+      { id: "6", name: "Emily Davis", email: "emily@example.com", role: "Agent", status: "Active" },
+      { id: "7", name: "Alex Johnson", email: "alex@example.com", role: "Agent", status: "Active" }
+    ],
+    routingStrategy: "load-balanced",
+    maxTotalTickets: 15,
+    maxOpenTickets: 8,
+    maxActiveChats: 3,
+    createdAt: "2023-03-22T13:45:00Z",
+    updatedAt: "2023-08-15T10:20:00Z",
+    officeHours: {
+      monday: [{ start: "10:00", end: "18:00" }],
+      tuesday: [{ start: "10:00", end: "18:00" }],
+      wednesday: [{ start: "10:00", end: "18:00" }],
+      thursday: [{ start: "10:00", end: "18:00" }],
+      friday: [{ start: "10:00", end: "16:00" }],
+      saturday: [],
+      sunday: []
+    },
+    holidays: ["2023-12-25", "2024-01-01", "2023-11-23"],
+    channels: {
+      chat: "marketing",
+      email: ["marketing@example.com"]
+    }
   }
 ];

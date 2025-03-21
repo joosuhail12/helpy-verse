@@ -24,7 +24,7 @@ export const fetchEmailChannels = createAsyncThunk(
   'emailChannels/fetchAll',
   async () => {
     try {
-      const response = await emailChannelsService.getEmailChannels();
+      const response = await emailChannelsService.getAllEmailChannels();
       return response.data;
     } catch (error) {
       throw new Error('Failed to fetch email channels');
@@ -34,7 +34,7 @@ export const fetchEmailChannels = createAsyncThunk(
 
 export const createEmailChannel = createAsyncThunk(
   'emailChannels/create',
-  async (channelData: any) => {
+  async (channelData: EmailChannel) => {
     try {
       const response = await emailChannelsService.createEmailChannel(channelData);
       return response.data;
@@ -46,9 +46,12 @@ export const createEmailChannel = createAsyncThunk(
 
 export const updateEmailChannel = createAsyncThunk(
   'emailChannels/update',
-  async ({ channelId, updates }: { channelId: string; updates: Partial<EmailChannel> }) => {
+  async (channelData: Partial<EmailChannel>) => {
     try {
-      const response = await emailChannelsService.updateEmailChannel(channelId, updates);
+      const response = await emailChannelsService.updateEmailChannel(
+        channelData.id!, 
+        channelData
+      );
       return response.data;
     } catch (error) {
       throw new Error('Failed to update email channel');
@@ -68,6 +71,55 @@ export const deleteEmailChannel = createAsyncThunk(
   }
 );
 
+// Add missing thunks
+export const toggleChannelStatus = createAsyncThunk(
+  'emailChannels/toggleStatus',
+  async ({ id, isActive }: { id: string; isActive: boolean }) => {
+    try {
+      const response = await emailChannelsService.updateEmailChannel(id, { isActive });
+      return response.data;
+    } catch (error) {
+      throw new Error('Failed to toggle channel status');
+    }
+  }
+);
+
+export const toggleDefaultChannelStatus = createAsyncThunk(
+  'emailChannels/toggleDefaultStatus',
+  async (isActive: boolean) => {
+    try {
+      // This is a mock implementation - replace with actual API call
+      return { success: true, isActive };
+    } catch (error) {
+      throw new Error('Failed to toggle default channel status');
+    }
+  }
+);
+
+export const bulkDeleteChannels = createAsyncThunk(
+  'emailChannels/bulkDelete',
+  async (ids: string[]) => {
+    try {
+      // This is a mock implementation - replace with actual API call
+      return { success: true, ids };
+    } catch (error) {
+      throw new Error('Failed to bulk delete channels');
+    }
+  }
+);
+
+export const bulkToggleStatus = createAsyncThunk(
+  'emailChannels/bulkToggleStatus',
+  async ({ ids, isActive }: { ids: string[]; isActive: boolean }) => {
+    try {
+      // This is a mock implementation - replace with actual API call
+      return { success: true, ids, isActive };
+    } catch (error) {
+      throw new Error('Failed to bulk toggle channel status');
+    }
+  }
+);
+
 const emailChannelsSlice = createSlice({
   name: 'emailChannels',
   initialState,
@@ -82,7 +134,8 @@ const emailChannelsSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchEmailChannels.fulfilled, (state, action) => {
-        state.channels = action.payload as unknown as EmailChannel[];
+        const channels = Array.isArray(action.payload) ? action.payload : [action.payload];
+        state.channels = channels as EmailChannel[];
         state.defaultChannel = state.channels.find(channel => channel.isDefault) || null;
         state.loading = false;
       })
@@ -96,9 +149,10 @@ const emailChannelsSlice = createSlice({
         state.error = null;
       })
       .addCase(createEmailChannel.fulfilled, (state, action) => {
-        state.channels.push(action.payload);
-        if (action.payload.isDefault) {
-          state.defaultChannel = action.payload;
+        const channel = action.payload as EmailChannel;
+        state.channels.push(channel);
+        if (channel.isDefault) {
+          state.defaultChannel = channel;
         }
         state.loading = false;
       })
@@ -112,10 +166,11 @@ const emailChannelsSlice = createSlice({
         state.error = null;
       })
       .addCase(updateEmailChannel.fulfilled, (state, action) => {
-        const index = state.channels.findIndex(channel => channel.id === action.payload.id);
+        const updatedChannel = action.payload as EmailChannel;
+        const index = state.channels.findIndex(channel => channel.id === updatedChannel.id);
         if (index !== -1) {
-          state.channels[index] = { ...state.channels[index], ...action.payload };
-          if (action.payload.isDefault) {
+          state.channels[index] = { ...state.channels[index], ...updatedChannel };
+          if (updatedChannel.isDefault) {
             state.defaultChannel = state.channels[index];
           }
         }

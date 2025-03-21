@@ -6,23 +6,21 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Pencil, Trash2, TestTube } from "lucide-react";
+import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { CustomField } from "@/types/customData";
 import DeleteCustomFieldDialog from "./DeleteCustomFieldDialog";
 import EditCustomFieldDialog from "./EditCustomFieldDialog";
-import TestFieldDialog from "./TestFieldDialog";
 
 interface CustomFieldActionsProps {
   field: CustomField;
-  table: 'ticket' | 'customer' | 'company';
+  table: 'ticket' | 'customer' | 'company' | 'contact';
   existingFields: CustomField[];
 }
 
 const CustomFieldActions = ({ field, table, existingFields }: CustomFieldActionsProps) => {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [isTestOpen, setIsTestOpen] = useState(false);
 
   // Create a compatible field object that merges both old and new properties
   const compatibleField: CustomField = {
@@ -34,8 +32,8 @@ const CustomFieldActions = ({ field, table, existingFields }: CustomFieldActions
     entityType: field.entityType || table,
     defaultValue: field.defaultValue || null,
     options: field.options || null,
-    // Add compatibility properties
-    type: field.type || field.fieldType,
+    // Add compatibility properties for new type
+    type: field.type || field.fieldType || 'text',
     required: field.required !== undefined ? field.required : field.isRequired || false,
     createdAt: field.createdAt || new Date().toISOString(),
     updatedAt: field.updatedAt || new Date().toISOString(),
@@ -79,14 +77,6 @@ const CustomFieldActions = ({ field, table, existingFields }: CustomFieldActions
         table={table}
         existingFields={existingFields}
       />
-
-      {isTestOpen && (
-        <TestFieldDialog
-          isOpen={isTestOpen}
-          onClose={() => setIsTestOpen(false)}
-          field={compatibleField}
-        />
-      )}
     </>
   );
 };

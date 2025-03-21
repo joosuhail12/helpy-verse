@@ -2,8 +2,8 @@
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useToast } from '@/hooks/use-toast';
 import { 
-  updateChannel,
-  deleteChannel,  
+  updateEmailChannel as updateChannel, 
+  deleteEmailChannel as deleteChannel,
 } from '@/store/slices/emailChannels/emailChannelsSlice';
 import type { EmailChannel } from '@/types/emailChannel';
 
@@ -29,7 +29,12 @@ export const useChannelOperations = (channel: EmailChannel) => {
 
   const handleUpdate = async (updatedChannel: Partial<EmailChannel>): Promise<boolean> => {
     try {
-      await dispatch(updateChannel({ id: channel.id, ...updatedChannel })).unwrap();
+      const updateData = { 
+        id: channel.id,
+        ...updatedChannel 
+      };
+      
+      await dispatch(updateChannel(updateData)).unwrap();
       toast({
         title: 'Channel updated',
         description: 'The email channel has been updated successfully.',

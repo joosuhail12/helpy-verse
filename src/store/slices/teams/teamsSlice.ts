@@ -1,11 +1,10 @@
 
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import type { Team, TeamsState } from '@/types/team';
-import { teamsService } from '@/api/services/teamsService';
+import teamsService from '@/api/services/teamsService';
 
 const initialState: TeamsState = {
   teams: [],
-  teamDetails: null,
   loading: false,
   error: null,
   areTeamsLoaded: false
@@ -74,7 +73,14 @@ const teamsSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchTeamById.fulfilled, (state, action) => {
-        state.teamDetails = action.payload;
+        // Find and update the team in the teams array if it exists
+        const index = state.teams.findIndex(team => team.id === action.payload.id);
+        if (index !== -1) {
+          state.teams[index] = action.payload;
+        } else {
+          // Add it if it doesn't exist
+          state.teams.push(action.payload);
+        }
         state.loading = false;
       })
       .addCase(fetchTeamById.rejected, (state, action) => {

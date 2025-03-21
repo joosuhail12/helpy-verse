@@ -18,8 +18,13 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import type { TeamIconPickerProps } from '@/types/team';
 import type { LucideIcon } from 'lucide-react';
+
+// Updated interface that matches props usage in the component
+export interface TeamIconPickerProps {
+  selectedIcon: string;
+  onIconSelect: (icon: string) => void;
+}
 
 // Filter out non-icon entries and create properly typed icon array
 const availableIcons = Object.entries(icons)
@@ -85,4 +90,3 @@ const TeamIconPicker = ({ selectedIcon, onIconSelect }: TeamIconPickerProps) => 
 };
 
 export default TeamIconPicker;
-

@@ -1,3 +1,4 @@
+
 import TeamAvailability from '@/components/teams/detail/TeamAvailability';
 import TeamChannels from '@/components/teams/detail/TeamChannels';
 import TeamMembers from '@/components/teams/detail/TeamMembers';
@@ -16,8 +17,8 @@ const TeamDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { loading, error, teamDetails } = useAppSelector((state) => state.teams);
-  const team = teamDetails
+  const { teams, loading, error } = useAppSelector((state) => state.teams);
+  const team = teams.find(t => t.id === id);
 
   useEffect(() => {
     if (id) {
@@ -38,6 +39,12 @@ const TeamDetail = () => {
       </div>
     );
   }
+
+  // Ensure channels.email is an array, if undefined provide empty array
+  const channelsWithDefaultEmail = {
+    ...team.channels,
+    email: team.channels?.email || [],
+  };
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-8">
@@ -66,7 +73,7 @@ const TeamDetail = () => {
 
         <Card className="p-6">
           <h2 className="text-lg font-semibold mb-6">Communication Channels</h2>
-          <TeamChannels channels={team.channels} />
+          <TeamChannels channels={channelsWithDefaultEmail} />
         </Card>
 
         <Card className="p-6">

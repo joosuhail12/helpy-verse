@@ -34,7 +34,6 @@ export type TeamNew = Team;
 // Define the TeamsState interface
 export interface TeamsState {
   teams: Team[];
-  teamDetails: Team | null;
   loading: boolean;
   error: string | null;
   areTeamsLoaded: boolean;
@@ -43,7 +42,7 @@ export interface TeamsState {
 // Props for team-related components
 export interface TeamIconPickerProps {
   selectedIcon: string;
-  setSelectedIcon: (icon: string) => void;
+  onIconSelect: (icon: string) => void;
 }
 
 export interface TeamMembersSelectorProps {
@@ -60,14 +59,14 @@ export interface TeamChannelSelectorProps {
 }
 
 export interface TeamRoutingSelectorProps {
-  routingType: 'manual' | 'round-robin' | 'load-balanced';
-  setRoutingType: (type: 'manual' | 'round-robin' | 'load-balanced') => void;
-  routingLimits: {
+  selectedType: 'manual' | 'round-robin' | 'load-balanced';
+  onTypeSelect: (type: 'manual' | 'round-robin' | 'load-balanced') => void;
+  limits?: {
     maxTotalTickets?: number;
     maxOpenTickets?: number;
     maxActiveChats?: number;
   };
-  setRoutingLimits: (limits: {
+  onLimitsChange?: (limits: {
     maxTotalTickets?: number;
     maxOpenTickets?: number;
     maxActiveChats?: number;

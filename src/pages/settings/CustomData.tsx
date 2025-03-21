@@ -8,16 +8,32 @@ import CustomDataHeader from '@/components/settings/customData/CustomDataHeader'
 import CustomDataTabs from '@/components/settings/customData/CustomDataTabs';
 import { CustomField } from '@/types/customData';
 
+// Type to handle the entity type consistency
+type EntityType = "ticket" | "contact" | "company" | "customer";
+
+// Helper function to normalize entity types
+const normalizeEntityType = (type: EntityType): EntityType => {
+  // Map "customer" to "contact" for backward compatibility
+  return type === "customer" ? "contact" : type;
+};
+
 const CustomData = () => {
-  const [selectedTable, setSelectedTable] = useState<'ticket' | 'contact' | 'company'>('ticket');
+  const [selectedTable, setSelectedTable] = useState<EntityType>('ticket');
   const [isAddFieldOpen, setIsAddFieldOpen] = useState(false);
-  const { data: customFields, isLoading, error } = useCustomFields(selectedTable);
+  
+  // Normalize entity type for API
+  const normalizedTable = normalizeEntityType(selectedTable);
+  
+  const { data: customFields, isLoading, error } = useCustomFields(normalizedTable);
   const { handleImport } = useCustomFieldImport();
   const [currentFields, setCurrentFields] = useState<CustomField[]>([]);
 
   useEffect(() => {
     const fields = customFields?.reduce((acc: CustomField[], field: CustomField) => {
-      if (field.entityType === selectedTable) {
+      const fieldEntityType = normalizeEntityType(field.entityType as EntityType);
+      const selectedEntityType = normalizeEntityType(selectedTable);
+      
+      if (fieldEntityType === selectedEntityType) {
         acc.push(field);
       }
       return acc;
@@ -32,8 +48,12 @@ const CustomData = () => {
     hasSelection: false,
   });
 
+  const handleTableChange = (newTable: EntityType) => {
+    setSelectedTable(newTable);
+  };
+
   const handleImportWrapper = async (importedFields: CustomField[]) => {
-    await handleImport(importedFields, selectedTable);
+    await handleImport(importedFields, normalizedTable);
   };
 
   return (
@@ -47,7 +67,7 @@ const CustomData = () => {
 
       <CustomDataTabs
         selectedTable={selectedTable}
-        onTableChange={setSelectedTable}
+        onTableChange={handleTableChange}
         currentFields={currentFields}
         isLoading={isLoading}
         error={error}

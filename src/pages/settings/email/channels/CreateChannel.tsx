@@ -4,12 +4,11 @@ import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { createChannel } from '@/store/slices/emailChannels/emailChannelsSlice';
+import { createEmailChannel } from '@/store/slices/emailChannels/emailChannelsSlice';
 import { ChannelFormFields } from './components/ChannelFormFields';
 import { useChannelForm } from './hooks/useChannelForm';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2 } from 'lucide-react';
-import type { FieldErrors } from 'react-hook-form';
 import type { EmailChannel } from '@/types/emailChannel';
 
 const CreateChannel = () => {
@@ -40,10 +39,10 @@ const CreateChannel = () => {
   } = useChannelForm({
     onAddChannel: async (channel) => {
       try {
-        const result = await dispatch(createChannel(channel as EmailChannel)).unwrap();
+        const result = await dispatch(createEmailChannel(channel as EmailChannel)).unwrap();
         toast({
           title: "Channel created successfully",
-          description: `${result[0].name} has been created with ${result[0].emailAddress} as the sender.`,
+          description: `${result.name} has been created with ${result.emailAddress} as the sender.`,
           duration: 5000,
         });
         navigate('/home/settings/email/channels');

@@ -77,12 +77,12 @@ const Sidebar = () => {
 
       {activeMainNav !== 'home' && subNavItems[activeMainNav as keyof typeof subNavItems] && (
         <SubNavigation 
-          activeMainNav={activeMainNav}
-          isSecondPanelCollapsed={isSecondPanelCollapsed}
-          toggleSecondPanel={toggleSecondPanel}
+          navItems={subNavItems[activeMainNav as keyof typeof subNavItems]}
+          isCollapsed={isSecondPanelCollapsed}
+          toggleCollapsed={toggleSecondPanel}
           expandedItems={expandedItems}
-          toggleExpanded={toggleExpanded}
-          navigate={navigate}
+          onItemToggle={toggleExpanded}
+          onNavigate={(path) => navigate(path)}
         />
       )}
     </>
@@ -90,4 +90,3 @@ const Sidebar = () => {
 };
 
 export default Sidebar;
-

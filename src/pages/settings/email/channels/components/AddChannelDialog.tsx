@@ -3,7 +3,7 @@ import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { createChannel } from '@/store/slices/emailChannels/emailChannelsSlice';
+import { createEmailChannel } from '@/store/slices/emailChannels/emailChannelsSlice';
 import { ChannelFormFields } from './ChannelFormFields';
 import { useChannelForm } from '../hooks/useChannelForm';
 import { Button } from '@/components/ui/button';
@@ -40,7 +40,7 @@ export function AddChannelDialog({ isOpen, onClose }: AddChannelDialogProps) {
   } = useChannelForm({
     onAddChannel: async (channel) => {
       try {
-        await dispatch(createChannel(channel as EmailChannel)).unwrap();
+        await dispatch(createEmailChannel(channel as EmailChannel)).unwrap();
         toast({
           title: "Channel added",
           description: "The email channel has been added successfully.",

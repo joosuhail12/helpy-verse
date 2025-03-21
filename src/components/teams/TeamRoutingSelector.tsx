@@ -3,7 +3,22 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Users, Repeat2, Scale } from "lucide-react";
-import type { TeamRoutingSelectorProps } from '@/types/team';
+
+// Updated interface to match the component implementation
+export interface TeamRoutingSelectorProps {
+  selectedType: 'manual' | 'round-robin' | 'load-balanced';
+  onTypeSelect: (type: 'manual' | 'round-robin' | 'load-balanced') => void;
+  limits?: {
+    maxTotalTickets?: number;
+    maxOpenTickets?: number;
+    maxActiveChats?: number;
+  };
+  onLimitsChange?: (limits: {
+    maxTotalTickets?: number;
+    maxOpenTickets?: number;
+    maxActiveChats?: number;
+  }) => void;
+}
 
 const TeamRoutingSelector = ({ 
   selectedType, 
@@ -108,4 +123,3 @@ const TeamRoutingSelector = ({
 };
 
 export default TeamRoutingSelector;
-
