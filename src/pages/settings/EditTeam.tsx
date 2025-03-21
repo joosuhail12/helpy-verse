@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
@@ -184,7 +185,7 @@ const EditTeam = () => {
     }
 
     try {
-      const success = await dispatch(updateTeamAction({
+      const result = await updateTeamAction(id, {
         name: teamName,
         icon: selectedIcon,
         members: selectedTeammates,
@@ -200,9 +201,9 @@ const EditTeam = () => {
         },
         officeHours,
         holidays: selectedHolidays,
-      }));
+      });
 
-      if (success) {
+      if (result.success) {
         toast({
           title: "Success",
           description: "Team updated successfully",
