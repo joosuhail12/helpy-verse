@@ -4,13 +4,18 @@ import { Search, X } from 'lucide-react';
 
 interface ConversationSearchBarProps {
   value: string;
-  onSearch: (term: string) => void;
+  onChange?: (term: string) => void;
+  onSearch?: (term: string) => void;
 }
 
 /**
  * Search input for filtering conversations
  */
-const ConversationSearchBar: React.FC<ConversationSearchBarProps> = ({ value, onSearch }) => {
+const ConversationSearchBar: React.FC<ConversationSearchBarProps> = ({ 
+  value, 
+  onChange,
+  onSearch 
+}) => {
   const [searchTerm, setSearchTerm] = useState(value || '');
 
   // Sync with parent component's value
@@ -21,12 +26,14 @@ const ConversationSearchBar: React.FC<ConversationSearchBarProps> = ({ value, on
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     setSearchTerm(newValue);
-    onSearch(newValue);
+    if (onChange) onChange(newValue);
+    if (onSearch) onSearch(newValue);
   };
 
   const handleClear = () => {
     setSearchTerm('');
-    onSearch('');
+    if (onChange) onChange('');
+    if (onSearch) onSearch('');
   };
 
   return (

@@ -12,25 +12,28 @@ const fetchConversations = async (workspaceId: string): Promise<Conversation[]> 
     {
       id: '1',
       title: 'Product Question',
-      preview: 'I have a question about your product features...',
+      lastMessage: 'I have a question about your product features...',
       date: new Date().toISOString(),
-      status: 'open',
+      timestamp: '10:30 AM',
+      status: 'ongoing',
       unread: true,
     },
     {
       id: '2',
       title: 'Billing Support',
-      preview: 'My last invoice seems incorrect...',
+      lastMessage: 'My last invoice seems incorrect...',
       date: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
-      status: 'closed',
+      timestamp: '2:15 PM',
+      status: 'resolved',
       unread: false,
     },
     {
       id: '3',
       title: 'Feature Request',
-      preview: 'Would it be possible to add...',
+      lastMessage: 'Would it be possible to add...',
       date: new Date(Date.now() - 172800000).toISOString(), // 2 days ago
-      status: 'open',
+      timestamp: '9:45 AM',
+      status: 'ongoing',
       unread: true,
     }
   ];
@@ -39,6 +42,7 @@ const fetchConversations = async (workspaceId: string): Promise<Conversation[]> 
 export interface FilterState {
   status: 'all' | 'open' | 'closed';
   searchQuery: string;
+  statusFilter?: 'all' | 'ongoing' | 'resolved';
 }
 
 const useConversations = (workspaceId: string) => {
@@ -74,10 +78,21 @@ const useConversations = (workspaceId: string) => {
     setFilters(prev => ({ ...prev, ...filterUpdates }));
   };
 
+  // Map between status types (for backward compatibility)
+  const mapStatusFilter = (statusFilter: 'all' | 'open' | 'closed' | 'ongoing' | 'resolved') => {
+    if (statusFilter === 'all') return 'all';
+    if (statusFilter === 'open' || statusFilter === 'ongoing') return 'ongoing';
+    if (statusFilter === 'closed' || statusFilter === 'resolved') return 'resolved';
+    return 'all';
+  };
+
   // Apply filters to conversations
   const filteredConversations = conversations.filter(conversation => {
     // Filter by status
-    if (filters.status !== 'all' && conversation.status !== filters.status) {
+    const statusToCheck = filters.statusFilter || filters.status;
+    const mappedStatus = mapStatusFilter(statusToCheck);
+    
+    if (mappedStatus !== 'all' && conversation.status !== mappedStatus) {
       return false;
     }
     
@@ -85,7 +100,7 @@ const useConversations = (workspaceId: string) => {
     if (
       filters.searchQuery && 
       !conversation.title.toLowerCase().includes(filters.searchQuery.toLowerCase()) &&
-      !conversation.preview.toLowerCase().includes(filters.searchQuery.toLowerCase())
+      !conversation.lastMessage.toLowerCase().includes(filters.searchQuery.toLowerCase())
     ) {
       return false;
     }

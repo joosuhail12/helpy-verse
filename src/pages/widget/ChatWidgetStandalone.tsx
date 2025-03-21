@@ -31,9 +31,14 @@ const ChatWidgetStandalone = () => {
   const [themeConfig, setThemeConfig] = useState<Partial<ThemeConfig>>({
     colors: {
       primary: options.primaryColor,
+      secondary: '#4b5563',
       accent: options.primaryColor,
+      background: '#ffffff',
+      text: '#374151',
       headerBackground: options.primaryColor,
-      launcherBackground: options.primaryColor
+      headerText: '#ffffff',
+      launcherBackground: options.primaryColor,
+      launcherText: '#ffffff'
     },
     companyName: options.companyName
   });
@@ -55,9 +60,14 @@ const ChatWidgetStandalone = () => {
         setThemeConfig({
           colors: {
             primary: newOptions.primaryColor,
+            secondary: '#4b5563',
             accent: newOptions.primaryColor,
+            background: '#ffffff',
+            text: '#374151',
             headerBackground: newOptions.primaryColor,
-            launcherBackground: newOptions.primaryColor
+            headerText: '#ffffff',
+            launcherBackground: newOptions.primaryColor,
+            launcherText: '#ffffff'
           },
           companyName: newOptions.companyName,
           logoUrl: newOptions.logoUrl
@@ -88,10 +98,25 @@ const ChatWidgetStandalone = () => {
     const logoUrl = searchParams.get('logoUrl');
     
     if (primaryColor || companyName || logoUrl) {
-      const newTheme: Partial<ThemeConfig> = { ...themeConfig };
+      const newTheme: Partial<ThemeConfig> = { 
+        ...themeConfig,
+        colors: {
+          ...(themeConfig.colors || {
+            primary: '#1f2937',
+            secondary: '#4b5563',
+            accent: '#9b87f5',
+            background: '#ffffff',
+            text: '#374151',
+            headerBackground: '#1f2937',
+            headerText: '#ffffff',
+            launcherBackground: '#1f2937',
+            launcherText: '#ffffff',
+          })
+        }
+      };
       
       if (primaryColor) {
-        if (!newTheme.colors) newTheme.colors = {};
+        if (!newTheme.colors) newTheme.colors = { ...themeConfig.colors } as any;
         newTheme.colors.primary = primaryColor;
         newTheme.colors.accent = primaryColor;
         newTheme.colors.headerBackground = primaryColor;
