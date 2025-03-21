@@ -21,6 +21,17 @@ export const selectTeammatesError = (state: RootState) => {
   if (!state.teammates) {
     return null;
   }
+  
+  // If error is a string, return it directly
+  if (typeof state.teammates.error === 'string') {
+    return state.teammates.error;
+  }
+  
+  // If error is an object, try to extract a meaningful message
+  if (state.teammates.error && typeof state.teammates.error === 'object') {
+    return state.teammates.error.message || JSON.stringify(state.teammates.error);
+  }
+  
   return state.teammates.error || null;
 };
 

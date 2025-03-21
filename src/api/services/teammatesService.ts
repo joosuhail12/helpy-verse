@@ -1,7 +1,6 @@
 
 import api from '../Api';
 import { Teammate, NewTeammate } from '@/types/teammate';
-import { store } from '@/store/store';
 
 // Make sure we're using the correct API base URL from environment variables
 const API_BASE_URL = import.meta.env.VITE_REACT_APP_API_URL || '/api';
@@ -13,10 +12,14 @@ export const getTeammates = async (): Promise<Teammate[]> => {
     
     if (!workspaceId) {
       console.error('No workspace ID found in localStorage');
-      return [];
+      throw new Error('No workspace ID found. Please refresh the page and try again.');
     }
     
     console.log(`Fetching teammates for workspace: ${workspaceId} from ${API_BASE_URL}/user`);
+    
+    // Get auth token to log for debugging
+    const authToken = localStorage.getItem('token') || document.cookie.match(/token=([^;]+)/)?.[1];
+    console.log(`Using auth token: ${authToken ? 'Yes (token exists)' : 'No (token missing)'}`);
     
     const response = await api.get('/user', {
       params: {

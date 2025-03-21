@@ -14,7 +14,7 @@ import TeammatesErrorBoundary from '@/components/teammates/TeammatesErrorBoundar
 import type { Teammate } from '@/types/teammate';
 import { selectAllTeammates, selectTeammatesLoading, selectTeammatesError } from '@/store/slices/teammates/selectors';
 import { Button } from '@/components/ui/button';
-import { AlertCircle, RefreshCw } from 'lucide-react';
+import { AlertCircle, LogIn, RefreshCw } from 'lucide-react';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -42,9 +42,27 @@ const TeammatesPage = () => {
   } = useTeammateFilters(teammates);
 
   useEffect(() => {
+    if (!localStorage.getItem('workspaceId') && import.meta.env.DEV) {
+      const defaultWorkspaceId = '6c22b22f-7bdf-43db-b7c1-9c5884125c63';
+      localStorage.setItem('workspaceId', defaultWorkspaceId);
+      console.log(`Set default workspace ID for development: ${defaultWorkspaceId}`);
+    }
+  }, []);
+
+  useEffect(() => {
     const workspaceId = localStorage.getItem('workspaceId');
     if (workspaceId) {
-      dispatch(fetchTeammates());
+      console.log(`Initial teammates fetch with workspace ID: ${workspaceId}`);
+      dispatch(fetchTeammates())
+        .unwrap()
+        .catch(err => {
+          console.error('Error in initial teammates fetch:', err);
+          toast({
+            title: "Error Loading Teammates",
+            description: typeof err === 'string' ? err : "Failed to load teammates. Please try again.",
+            variant: "destructive",
+          });
+        });
     } else {
       toast({
         title: "Workspace ID Missing",
@@ -56,6 +74,17 @@ const TeammatesPage = () => {
 
   const handleRetry = () => {
     setRetrying(true);
+    const workspaceId = localStorage.getItem('workspaceId');
+    if (!workspaceId) {
+      toast({
+        title: "Workspace ID Missing",
+        description: "No workspace ID found. Please refresh the page.",
+        variant: "destructive",
+      });
+      setRetrying(false);
+      return;
+    }
+    
     dispatch(fetchTeammates())
       .unwrap()
       .then(() => {
@@ -65,15 +94,23 @@ const TeammatesPage = () => {
         });
       })
       .catch((err) => {
+        const errorMessage = typeof err === 'string' 
+          ? err 
+          : err?.message || "Failed to fetch teammates. Please try again.";
+          
         toast({
           title: "Error",
-          description: "Failed to fetch teammates. Please try again.",
+          description: errorMessage,
           variant: "destructive",
         });
       })
       .finally(() => {
         setRetrying(false);
       });
+  };
+
+  const handleLogin = () => {
+    window.location.href = '/signin';
   };
 
   const handleResendInvitation = async (teammateId: string) => {
@@ -94,8 +131,6 @@ const TeammatesPage = () => {
 
   const handleUpdateTeammate = async (teammateId: string, updates: Partial<Teammate>) => {
     try {
-      // Note: Implement the corresponding action in teammatesSlice
-      // await dispatch(updateTeammate({ teammateId, updates })).unwrap();
       toast({
         title: "Success",
         description: "Teammate information has been updated.",
@@ -162,12 +197,19 @@ const TeammatesPage = () => {
   }
 
   if (error) {
+    const isAuthError = typeof error === 'string' && 
+      (error.includes('authentication') || error.includes('Authentication') || 
+       error.includes('auth token') || error.includes('Unauthorized') ||
+       error.includes('UNAUTHORIZED') || error.includes('login'));
+    
     return (
       <div className="p-6 flex flex-col items-center justify-center h-[50vh]">
         <AlertCircle className="h-12 w-12 text-destructive mb-4" />
         <h3 className="text-xl font-semibold mb-2">Failed to load teammates</h3>
         <p className="text-muted-foreground mb-6 text-center max-w-md">
-          {typeof error === 'string' ? error : 'There was an error loading your teammates. Please try again.'}
+          {typeof error === 'string' 
+            ? error 
+            : error?.message || 'There was an error loading your teammates. Please try again.'}
         </p>
         <div className="flex gap-4">
           <Button 
@@ -178,6 +220,17 @@ const TeammatesPage = () => {
             {retrying && <RefreshCw className="h-4 w-4 animate-spin" />}
             {retrying ? 'Retrying...' : 'Retry'}
           </Button>
+          
+          {isAuthError && (
+            <Button 
+              onClick={handleLogin}
+              variant="outline" 
+              className="flex items-center gap-2"
+            >
+              <LogIn className="h-4 w-4" />
+              Sign In Again
+            </Button>
+          )}
         </div>
       </div>
     );

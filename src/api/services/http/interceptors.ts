@@ -1,4 +1,3 @@
-
 import { AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import { get } from 'lodash';
 import { getCookie, handleLogout } from './cookieManager';
@@ -17,6 +16,17 @@ export const requestInterceptor = async (config: InternalAxiosRequestConfig): Pr
     
     if (token) {
         config.headers.set("Authorization", `Bearer ${token}`);
+    } else {
+        // Try getting token from Redux store as fallback
+        const state = store.getState();
+        const storeToken = state.auth?.user?.data?.accessToken?.token;
+        
+        if (storeToken) {
+            config.headers.set("Authorization", `Bearer ${storeToken}`);
+            console.log("Using token from Redux store");
+        } else {
+            console.warn(`Making API request without authentication token to: ${config.url}`);
+        }
     }
 
     // Get workspace_id from localStorage first, then fall back to cookie
@@ -32,6 +42,7 @@ export const requestInterceptor = async (config: InternalAxiosRequestConfig): Pr
         if (!config.params.workspace_id) {
             config.params.workspace_id = workspaceId;
         }
+        console.log(`Request to ${config.url} with workspace_id: ${workspaceId}`);
     } else {
         console.warn(`Making API request without workspace_id to: ${config.url}`);
     }

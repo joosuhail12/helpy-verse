@@ -1,3 +1,4 @@
+
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import type { Teammate } from '@/types/teammate';
 import { 
@@ -14,14 +15,22 @@ const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 export const fetchTeammates = createAsyncThunk(
   'teammates/fetchTeammates',
-  async (_, { rejectWithValue }) => {
+  async (_, { rejectWithValue, getState }) => {
     try {
       const workspaceId = localStorage.getItem('workspaceId');
       console.log('Fetching teammates with workspace ID:', workspaceId);
       
       if (!workspaceId) {
         console.error('Cannot fetch teammates: No workspace ID found');
-        return rejectWithValue('No workspace ID found');
+        return rejectWithValue('No workspace ID found. Please refresh the page.');
+      }
+      
+      // Check if we have an auth token
+      const state = getState() as any;
+      const authToken = state.auth?.user?.data?.accessToken?.token;
+      if (!authToken) {
+        console.error('Cannot fetch teammates: No auth token found');
+        return rejectWithValue('No authentication token found. Please log in again.');
       }
       
       const teammates = await getTeammates();
@@ -31,6 +40,12 @@ export const fetchTeammates = createAsyncThunk(
       return Array.isArray(teammates) ? teammates : [];
     } catch (error: any) {
       console.error('Failed to fetch teammates:', error);
+      
+      // Handle unauthorized errors specifically
+      if (error.response?.status === 401 || error.response?.data?.code === 'UNAUTHORIZED') {
+        return rejectWithValue('Authentication failed. Please log in again.');
+      }
+      
       // Provide more detailed error information
       return rejectWithValue({
         message: error.message || 'Failed to fetch teammates',
