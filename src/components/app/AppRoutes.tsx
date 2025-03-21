@@ -14,12 +14,14 @@ const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'));
 const ResetPassword = lazy(() => import('@/pages/ResetPassword'));
 const NotFound = lazy(() => import('@/pages/NotFound'));
 const DashboardLayout = lazy(() => import('@/layouts/DashboardLayout'));
-const InboxPage = lazy(() => import('@/pages/InboxPage'));
-const ContactsPage = lazy(() => import('@/pages/ContactsPage'));
-const ContactDetailPage = lazy(() => import('@/pages/ContactDetailPage'));
-const CompaniesPage = lazy(() => import('@/pages/CompaniesPage'));
-const CompanyDetailPage = lazy(() => import('@/pages/CompanyDetailPage'));
-const SettingsPage = lazy(() => import('@/pages/SettingsPage'));
+
+// Correct paths for inbox, contacts, and other pages
+const InboxPage = lazy(() => import('@/pages/Inbox'));
+const ContactsPage = lazy(() => import('@/pages/Contacts'));
+const ContactDetailPage = lazy(() => import('@/pages/contacts/Detail'));
+const CompaniesPage = lazy(() => import('@/pages/contacts/Companies'));
+const CompanyDetailPage = lazy(() => import('@/pages/contacts/CompanyDetail'));
+const SettingsPage = lazy(() => import('@/pages/Settings'));
 const ChatWidgetStandalonePage = lazy(() => import('@/pages/widget/ChatWidgetStandalone'));
 
 // Loading spinner component
