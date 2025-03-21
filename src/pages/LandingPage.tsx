@@ -2,6 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import ChatWidgetContainer from '@/components/chat-widget/ChatWidgetContainer';
 
 /**
  * Landing page that is accessible without authentication
@@ -144,6 +145,9 @@ const LandingPage = () => {
           </div>
         </div>
       </footer>
+      
+      {/* Chat Widget */}
+      <ChatWidgetContainer />
     </div>
   );
 };

@@ -30,6 +30,9 @@ const LandingPage = lazy(() => import('../pages/LandingPage'));
 // Lazy load dashboard layout
 const DashboardLayoutComponent = lazy(() => import('../layouts/DashboardLayout'));
 
+// Lazy load the chat widget for standalone use
+const ChatWidgetStandalonePage = lazy(() => import('../pages/widget/ChatWidgetStandalone'));
+
 // Helper to wrap components with Suspense and RouteErrorBoundary
 const withSuspenseAndErrorHandling = (Component) => (
   <RouteErrorBoundary>
@@ -82,6 +85,10 @@ export const router = createBrowserRouter([
   {
     path: '/sign-up',
     element: withSuspenseAndErrorHandling(SignUp),
+  },
+  {
+    path: '/widget/chat',
+    element: withSuspenseAndErrorHandling(ChatWidgetStandalonePage),
   },
   {
     path: '/home',
