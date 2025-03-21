@@ -14,12 +14,12 @@ const TeamMembers = ({ team }: TeamMembersProps) => {
   // Handle different member formats from backend
   const getTeamMembers = () => {
     // If we have teamMembers objects with full details
-    if (team.teamMembers && team.teamMembers.length > 0) {
+    if (team.teamMembers && Array.isArray(team.teamMembers) && team.teamMembers.length > 0) {
       return team.teamMembers;
     }
     
     // If we have members array with just IDs
-    if (team.members && team.members.length > 0) {
+    if (team.members && Array.isArray(team.members) && team.members.length > 0) {
       return team.members.map(memberId => {
         const teammate = allTeammates.find(t => t.id === memberId);
         return teammate ? {

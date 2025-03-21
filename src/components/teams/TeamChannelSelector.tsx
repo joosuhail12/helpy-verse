@@ -120,7 +120,7 @@ const TeamChannelSelector = ({
           </div>
         </div>
 
-        {selectedEmailChannels.length > 0 && (
+        {selectedEmailChannels && selectedEmailChannels.length > 0 && (
           <div className="space-y-2">
             <Label>Selected email addresses</Label>
             <div className="flex flex-wrap gap-2 p-3 bg-gray-50 rounded-md">

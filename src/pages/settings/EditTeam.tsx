@@ -23,6 +23,8 @@ const EditTeam = () => {
   const { teams, loading, error } = useAppSelector((state) => state.teams);
   const team = teams.find(t => t.id === id);
 
+  console.log('Team data in EditTeam:', team);
+
   const [teamName, setTeamName] = useState('');
   const [selectedIcon, setSelectedIcon] = useState<string>('');
   const [selectedTeammates, setSelectedTeammates] = useState<string[]>([]);
@@ -48,13 +50,13 @@ const EditTeam = () => {
   useEffect(() => {
     if (team) {
       console.log('Team data loaded for editing:', team);
-      setTeamName(team.name);
+      setTeamName(team.name || '');
       setSelectedIcon(team.icon || '');
       
       // Handle different member formats
-      if (team.teamMembers && team.teamMembers.length > 0) {
+      if (team.teamMembers && Array.isArray(team.teamMembers) && team.teamMembers.length > 0) {
         setSelectedTeammates(team.teamMembers.map(member => member.id));
-      } else if (team.members && team.members.length > 0) {
+      } else if (team.members && Array.isArray(team.members) && team.members.length > 0) {
         setSelectedTeammates(team.members);
       } else {
         setSelectedTeammates([]);
@@ -63,7 +65,7 @@ const EditTeam = () => {
       // Handle channels
       if (team.channels) {
         setSelectedChatChannel(team.channels.chat);
-        setSelectedEmailChannels(team.channels.email || []);
+        setSelectedEmailChannels(Array.isArray(team.channels.email) ? team.channels.email : []);
       } else {
         setSelectedEmailChannels([]);
       }
@@ -85,11 +87,29 @@ const EditTeam = () => {
       
       // Handle office hours and holidays
       if (team.officeHours) {
-        setOfficeHours(team.officeHours);
+        // Create a copy of the default structure
+        const safeOfficeHours = {
+          monday: [],
+          tuesday: [],
+          wednesday: [],
+          thursday: [],
+          friday: [],
+          saturday: [],
+          sunday: []
+        };
+        
+        // Merge with actual data, ensuring each day has a valid array
+        Object.keys(safeOfficeHours).forEach(day => {
+          safeOfficeHours[day as DayOfWeek] = Array.isArray(team.officeHours?.[day as DayOfWeek]) 
+            ? team.officeHours[day as DayOfWeek] 
+            : [];
+        });
+        
+        setOfficeHours(safeOfficeHours);
       }
       
       if (team.holidays) {
-        setSelectedHolidays(team.holidays);
+        setSelectedHolidays(Array.isArray(team.holidays) ? team.holidays : []);
       }
     }
   }, [team]);

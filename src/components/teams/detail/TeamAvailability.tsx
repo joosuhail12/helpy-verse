@@ -14,7 +14,7 @@ const TeamAvailability = ({ team }: TeamAvailabilityProps) => {
   const daysOfWeek: DayOfWeek[] = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 
   // Convert holiday strings to Date objects for the Calendar component
-  const holidayDates = holidays.length ? holidays.map(date => new Date(date)) : [];
+  const holidayDates = Array.isArray(holidays) ? holidays.map(date => new Date(date)) : [];
 
   return (
     <div className="space-y-8">
@@ -25,7 +25,7 @@ const TeamAvailability = ({ team }: TeamAvailabilityProps) => {
             <div key={day} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
               <span className="capitalize font-medium">{day}</span>
               <div className="flex gap-2">
-                {officeHours[day] && officeHours[day].length > 0 ? (
+                {officeHours[day] && Array.isArray(officeHours[day]) && officeHours[day].length > 0 ? (
                   officeHours[day].map((slot, index) => (
                     <Badge key={index} variant="outline">
                       {slot.start} - {slot.end}
@@ -50,7 +50,7 @@ const TeamAvailability = ({ team }: TeamAvailabilityProps) => {
             disabled
           />
           <div className="space-y-2">
-            {holidays.length > 0 ? (
+            {Array.isArray(holidays) && holidays.length > 0 ? (
               holidays.map((date) => (
                 <div key={date} className="p-2 bg-gray-50 rounded-md">
                   {format(new Date(date), 'PPP')}

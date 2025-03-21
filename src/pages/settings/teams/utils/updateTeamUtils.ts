@@ -8,6 +8,8 @@ export const updateTeamAction = async (teamId: string, teamData: Partial<TeamCre
     // Transform the teamData to match what the backend expects
     const formattedData = { ...teamData };
     
+    console.log('Original team data for update:', teamData);
+    
     // Handle routing structure
     if (teamData.routing) {
       // Set the routing strategy for the backend
@@ -36,11 +38,33 @@ export const updateTeamAction = async (teamId: string, teamData: Partial<TeamCre
     }
 
     // Ensure channels is properly formatted
-    if (teamData.channels && teamData.channels.email === null) {
+    if (teamData.channels) {
+      // Initialize channels with safe defaults if needed
       formattedData.channels = {
-        ...teamData.channels,
-        email: []
+        chat: teamData.channels.chat,
+        email: Array.isArray(teamData.channels.email) ? teamData.channels.email : []
       };
+      
+      // If email is null, set it to an empty array
+      if (formattedData.channels.email === null) {
+        formattedData.channels.email = [];
+      }
+    }
+    
+    // Ensure officeHours is properly handled
+    if (teamData.officeHours) {
+      // Make sure each day has an array of time slots
+      const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+      days.forEach(day => {
+        if (!Array.isArray(teamData.officeHours?.[day as any])) {
+          (teamData.officeHours as any)[day] = [];
+        }
+      });
+    }
+    
+    // Ensure holidays is an array
+    if (teamData.holidays === undefined || teamData.holidays === null) {
+      formattedData.holidays = [];
     }
     
     console.log('Formatted data for team update:', formattedData);

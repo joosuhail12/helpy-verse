@@ -1,4 +1,3 @@
-
 import { HttpClient } from '@/api/services/http';
 import type { Team, TeamCreatePayload, DayOfWeek, TimeSlot } from '@/types/team';
 
@@ -25,28 +24,48 @@ export interface TeamParams {
 // Transform backend team data to frontend team model
 const mapTeamFromBackend = (team: any): Team => {
     console.log('Mapping team from backend:', team);
+    
+    // Initialize office hours with a safe structure
+    const defaultOfficeHours = {
+        monday: [],
+        tuesday: [],
+        wednesday: [],
+        thursday: [],
+        friday: [],
+        saturday: [],
+        sunday: []
+    };
+    
+    // Safely access office hours
+    const officeHours = team.officeHours || defaultOfficeHours;
+    
+    // Ensure each day in officeHours has a valid array
+    Object.keys(defaultOfficeHours).forEach(day => {
+        if (!Array.isArray(officeHours[day])) {
+            officeHours[day] = [];
+        }
+    });
+    
+    // Ensure channels has a valid structure
+    const channels = team.channels || { email: [] };
+    if (!channels.email) {
+        channels.email = [];
+    }
+    
     return {
         id: team.id,
         name: team.name,
         icon: team.icon,
         description: team.description,
-        teamMembers: team.teamMembers || [],
-        members: team.members || [],
-        channels: team.channels || { email: [] },
+        teamMembers: Array.isArray(team.teamMembers) ? team.teamMembers : [],
+        members: Array.isArray(team.members) ? team.members : [],
+        channels: channels,
         routingStrategy: team.routingStrategy || 'manual',
         maxTotalTickets: team.maxTotalTickets,
         maxOpenTickets: team.maxOpenTickets,
         maxActiveChats: team.maxActiveChats,
-        officeHours: team.officeHours || {
-            monday: [],
-            tuesday: [],
-            wednesday: [],
-            thursday: [],
-            friday: [],
-            saturday: [],
-            sunday: []
-        },
-        holidays: team.holidays || [],
+        officeHours: officeHours,
+        holidays: Array.isArray(team.holidays) ? team.holidays : [],
         createdAt: team.createdAt || team.created_at || '',
         updatedAt: team.updatedAt || team.updated_at || '',
         workspaceId: team.workspaceId,
@@ -151,8 +170,24 @@ export const teamsService = {
                 }
             }
             
-            if (team.officeHours) payload.officeHours = team.officeHours;
-            if (team.holidays) payload.holidays = team.holidays;
+            // Handle officeHours and holidays safely
+            if (team.officeHours) {
+                // Ensure all days exist in officeHours
+                const defaultDays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+                const safeOfficeHours: any = {};
+                
+                defaultDays.forEach(day => {
+                    safeOfficeHours[day] = Array.isArray(team.officeHours?.[day as DayOfWeek]) 
+                        ? team.officeHours[day as DayOfWeek] 
+                        : [];
+                });
+                
+                payload.officeHours = safeOfficeHours;
+            }
+            
+            if (team.holidays !== undefined) {
+                payload.holidays = Array.isArray(team.holidays) ? team.holidays : [];
+            }
             
             console.log('Sending team update payload:', payload);
             const response = await HttpClient.apiClient.put<{ data: any }>(`${API_URL}/${id}`, payload);

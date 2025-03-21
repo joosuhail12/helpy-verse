@@ -29,7 +29,7 @@ const TeamChannels = ({ team }: TeamChannelsProps) => {
           <Mail className="h-5 w-5 text-gray-500" />
           <h3 className="font-medium">Email Channels</h3>
         </div>
-        {channels?.email && channels.email.length ? (
+        {channels?.email && Array.isArray(channels.email) && channels.email.length > 0 ? (
           <div className="flex flex-wrap gap-2">
             {channels.email.map((email) => (
               <Badge key={email} variant="outline">{email}</Badge>

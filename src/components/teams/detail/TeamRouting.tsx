@@ -8,10 +8,10 @@ interface TeamRoutingProps {
 }
 
 const TeamRouting = ({ team }: TeamRoutingProps) => {
-  // Use the routing strategy from the backend data
+  // Use the routing strategy from the backend data with a fallback
   const routingType = team.routingStrategy || 'manual';
   
-  // Get limits directly from team properties
+  // Get limits directly from team properties with fallbacks
   const limits = {
     maxTotalTickets: team.maxTotalTickets,
     maxOpenTickets: team.maxOpenTickets,
@@ -27,7 +27,7 @@ const TeamRouting = ({ team }: TeamRoutingProps) => {
       case 'load-balanced':
         return <Scale className="h-5 w-5" />;
       default:
-        return null;
+        return <ArrowLeftRight className="h-5 w-5" />;
     }
   };
 
