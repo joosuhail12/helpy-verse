@@ -61,14 +61,9 @@ const ChatWidgetContainer = () => {
     }
   };
 
-  // Always render the launcher button
-  const renderLauncher = () => (
-    <WidgetLauncher toggleWidget={toggleWidget} isOpen={isOpen} />
-  );
-
   // If widget is minimized, only show the launcher
   if (!isOpen || minimized) {
-    return renderLauncher();
+    return <WidgetLauncher toggleWidget={toggleWidget} isOpen={false} />;
   }
 
   // Check if we should show the navigation bar
@@ -83,12 +78,9 @@ const ChatWidgetContainer = () => {
 
   return (
     <>
-      {/* Always show launcher */}
-      {renderLauncher()}
-      
       {/* Widget container */}
       <div 
-        className="fixed bottom-5 right-5 z-40 flex flex-col bg-white rounded-2xl shadow-2xl overflow-hidden" 
+        className="fixed bottom-20 right-5 z-40 flex flex-col bg-white rounded-2xl shadow-2xl overflow-hidden" 
         style={{ 
           width: '340px', 
           height: '570px', 
@@ -120,6 +112,9 @@ const ChatWidgetContainer = () => {
         {/* Brand footer - only including it once at the bottom */}
         {shouldShowFooter() && <ResponseTime />}
       </div>
+      
+      {/* Launcher positioned below the widget */}
+      <WidgetLauncher toggleWidget={toggleWidget} isOpen={true} />
     </>
   );
 };

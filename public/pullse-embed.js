@@ -1,4 +1,3 @@
-
 /**
  * Lightweight Pullse Chat Widget Embed Script
  * Version: 1.0.0
@@ -59,7 +58,7 @@
     
     // Style the container - matching our React components
     widgetContainer.style.position = 'fixed';
-    widgetContainer.style.bottom = '20px';
+    widgetContainer.style.bottom = '90px'; // Position above the launcher button
     widgetContainer.style.right = '20px';
     widgetContainer.style.width = '340px';
     widgetContainer.style.height = '570px'; // Match height in ChatWidgetContainer
@@ -91,8 +90,7 @@
     widgetOpen = !widgetOpen;
     
     if (widgetOpen) {
-      // Update launcher position and icon - stack above the widget
-      launcherButton.style.bottom = 'calc(570px + 16px)'; // Match height in WidgetLauncher
+      // Do not update launcher position, keep it beneath the widget
       launcherButton.innerHTML = `
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -109,8 +107,7 @@
         widgetContainer.style.transform = 'translateY(0)';
       }, 50);
     } else {
-      // Update launcher position and icon
-      launcherButton.style.bottom = '20px';
+      // Reset launcher icon
       launcherButton.innerHTML = `
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
