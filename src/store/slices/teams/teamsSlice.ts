@@ -1,71 +1,75 @@
 
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { mockTeams } from './mockData';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { teamsService } from '@/api/services/teamsService';
+import type { Team, TeamsState } from '@/types/team';
 
-export interface TeamMember {
-  id: string;
-  name: string;
-  email: string;
-  avatar: string;
-  role: 'manager' | 'agent' | 'supervisor';
-  status: 'active' | 'inactive';
-}
+// Async thunks for API operations
+export const fetchTeams = createAsyncThunk(
+  'teams/fetchTeams',
+  async (params = {}, { rejectWithValue }) => {
+    try {
+      const response = await teamsService.fetchTeams(params);
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to fetch teams');
+    }
+  }
+);
 
-export interface Channel {
-  id: string;
-  name: string;
-  type: 'email' | 'chat' | 'voice' | 'social';
-  isActive: boolean;
-}
+export const fetchTeamById = createAsyncThunk(
+  'teams/fetchTeamById',
+  async (id: string, { rejectWithValue }) => {
+    try {
+      const response = await teamsService.getTeam(id);
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to fetch team details');
+    }
+  }
+);
 
-export interface RoutingRule {
-  id: string;
-  name: string;
-  priority: number;
-  isActive: boolean;
-}
+export const createTeam = createAsyncThunk(
+  'teams/createTeam',
+  async (teamData: any, { rejectWithValue }) => {
+    try {
+      const response = await teamsService.createTeam(teamData);
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to create team');
+    }
+  }
+);
 
-export interface OfficeHours {
-  days: ('monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday')[];
-  startTime: string;
-  endTime: string;
-  timezone: string;
-}
+export const updateTeam = createAsyncThunk(
+  'teams/updateTeam',
+  async ({ id, data }: { id: string; data: any }, { rejectWithValue }) => {
+    try {
+      const response = await teamsService.updateTeam(id, data);
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to update team');
+    }
+  }
+);
 
-export interface Holiday {
-  id: string;
-  name: string;
-  date: string;
-  isRecurring: boolean;
-}
-
-export interface Team {
-  id: string;
-  name: string;
-  description: string;
-  icon: string;
-  color: string;
-  members: TeamMember[];
-  channels: Channel[];
-  routing: RoutingRule[];
-  officeHours: OfficeHours;
-  holidays: Holiday[];
-  createdAt: string;
-  updatedAt: string;
-}
-
-interface TeamsState {
-  teams: Team[];
-  loading: boolean;
-  error: string | null;
-  selectedTeam: Team | null;
-}
+export const deleteTeam = createAsyncThunk(
+  'teams/deleteTeam',
+  async (id: string, { rejectWithValue }) => {
+    try {
+      await teamsService.deleteTeam(id);
+      return id;
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to delete team');
+    }
+  }
+);
 
 const initialState: TeamsState = {
   teams: [],
   loading: false,
   error: null,
-  selectedTeam: null,
+  teamDetails: null,
+  areTeamsLoaded: false
 };
 
 export const teamsSlice = createSlice({
@@ -81,34 +85,87 @@ export const teamsSlice = createSlice({
     setTeams: (state, action: PayloadAction<Team[]>) => {
       state.teams = action.payload;
       state.loading = false;
+      state.areTeamsLoaded = true;
     },
-    addTeam: (state, action: PayloadAction<Team>) => {
-      state.teams.push(action.payload);
-    },
-    updateTeam: (state, action: PayloadAction<{ id: string; updates: Partial<Team> }>) => {
-      const { id, updates } = action.payload;
-      const index = state.teams.findIndex(team => team.id === id);
-      if (index !== -1) {
-        state.teams[index] = { ...state.teams[index], ...updates };
-      }
-    },
-    deleteTeam: (state, action: PayloadAction<string>) => {
-      state.teams = state.teams.filter(team => team.id !== action.payload);
-    },
-    selectTeam: (state, action: PayloadAction<string>) => {
-      state.selectedTeam = state.teams.find(team => team.id === action.payload) || null;
-    },
+    resetTeamDetails: (state) => {
+      state.teamDetails = null;
+    }
+  },
+  extraReducers: (builder) => {
+    builder
+      // Fetch teams
+      .addCase(fetchTeams.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchTeams.fulfilled, (state, action) => {
+        state.teams = action.payload;
+        state.loading = false;
+        state.areTeamsLoaded = true;
+      })
+      .addCase(fetchTeams.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Fetch team by ID
+      .addCase(fetchTeamById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchTeamById.fulfilled, (state, action) => {
+        state.teamDetails = action.payload;
+        state.loading = false;
+      })
+      .addCase(fetchTeamById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Create team
+      .addCase(createTeam.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(createTeam.fulfilled, (state, action) => {
+        state.teams.push(action.payload);
+        state.loading = false;
+      })
+      .addCase(createTeam.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Update team
+      .addCase(updateTeam.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateTeam.fulfilled, (state, action) => {
+        const index = state.teams.findIndex(team => team.id === action.payload.id);
+        if (index !== -1) {
+          state.teams[index] = action.payload;
+        }
+        state.teamDetails = action.payload;
+        state.loading = false;
+      })
+      .addCase(updateTeam.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Delete team
+      .addCase(deleteTeam.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteTeam.fulfilled, (state, action) => {
+        state.teams = state.teams.filter(team => team.id !== action.payload);
+        state.loading = false;
+      })
+      .addCase(deleteTeam.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      });
   },
 });
 
-export const {
-  setLoading,
-  setError,
-  setTeams,
-  addTeam,
-  updateTeam,
-  deleteTeam,
-  selectTeam,
-} = teamsSlice.actions;
+export const { setLoading, setError, setTeams, resetTeamDetails } = teamsSlice.actions;
 
 export default teamsSlice.reducer;

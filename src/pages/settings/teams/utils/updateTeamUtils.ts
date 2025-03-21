@@ -1,28 +1,21 @@
 
-import api from '@/api/Api';
+import { updateTeam } from '@/store/slices/teams/teamsSlice';
 import { store } from '@/store/store';
-import { updateTeam as updateTeamAction } from '@/store/slices/teams/teamsSlice';
+import type { TeamCreatePayload } from '@/types/team';
 
-export const updateTeam = async (teamId: string, teamData: any) => {
+export const updateTeamAction = async (teamId: string, teamData: Partial<TeamCreatePayload>) => {
   try {
-    // In a real application, this would be an API call
-    const response = await api.put(`/teams/${teamId}`, teamData);
+    const resultAction = await store.dispatch(updateTeam({ id: teamId, data: teamData }));
     
-    // If we're using mock data or the API call is not implemented, 
-    // simulate a successful response by updating the Redux store directly
-    if (!response || !response.data) {
-      // Dispatch the action to update the team in Redux store
-      store.dispatch(updateTeamAction({ 
-        id: teamId, 
-        updates: teamData 
-      }));
-      
-      return true;
+    if (updateTeam.fulfilled.match(resultAction)) {
+      return { success: true, data: resultAction.payload };
+    } else if (updateTeam.rejected.match(resultAction)) {
+      throw new Error(resultAction.payload as string || 'Failed to update team');
     }
-
-    return true;
-  } catch (error) {
-    console.error('Error updating team:', error);
+    
+    return { success: true };
+  } catch (error: any) {
+    console.error('Error in updateTeamAction:', error);
     throw error;
   }
 };

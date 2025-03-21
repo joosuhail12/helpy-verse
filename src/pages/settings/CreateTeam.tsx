@@ -10,7 +10,7 @@ import TeamBasicInfo from './teams/components/TeamBasicInfo';
 import TeamCommunicationSection from './teams/components/TeamCommunicationSection';
 import TeamRoutingSection from './teams/components/TeamRoutingSection';
 import TeamAvailabilitySection from './teams/components/TeamAvailabilitySection';
-import { createTeam } from './teams/utils/createTeamUtils';
+import { createTeam } from '@/store/slices/teams/teamsSlice';
 import type { DayOfWeek, TimeSlot } from '@/types/team';
 
 const CreateTeam = () => {
@@ -20,13 +20,13 @@ const CreateTeam = () => {
   const teammates = useAppSelector((state) => state.teammates.teammates);
 
   const [teamName, setTeamName] = useState('');
-  const [selectedIcon, setSelectedIcon] = useState<string>('');
+  const [selectedIcon, setSelectedIcon] = useState<string>('👥');
   const [selectedTeammates, setSelectedTeammates] = useState<string[]>([]);
   const [selectedChatChannel, setSelectedChatChannel] = useState<string>();
   const [selectedEmailChannels, setSelectedEmailChannels] = useState<string[]>([]);
   const [routingType, setRoutingType] = useState<'manual' | 'round-robin' | 'load-balanced'>('manual');
   const [routingLimits, setRoutingLimits] = useState<{
-    maxTickets?: number;
+    maxTotalTickets?: number;
     maxOpenTickets?: number;
     maxActiveChats?: number;
   }>({});
@@ -68,7 +68,7 @@ const CreateTeam = () => {
     }
 
     try {
-      const success = await createTeam({
+      const teamData = {
         name: teamName,
         icon: selectedIcon,
         members: selectedTeammates,
@@ -78,25 +78,27 @@ const CreateTeam = () => {
         },
         routing: {
           type: routingType,
-          ...(routingType === 'load-balanced' && {
-            limits: routingLimits
-          })
+          limits: routingType === 'load-balanced' ? routingLimits : undefined
         },
         officeHours,
         holidays: selectedHolidays,
-      });
+      };
 
-      if (success) {
+      const resultAction = await dispatch(createTeam(teamData));
+      
+      if (createTeam.fulfilled.match(resultAction)) {
         toast({
           title: "Success",
           description: "Team created successfully",
         });
         navigate('/home/settings/teams');
+      } else {
+        throw new Error('Failed to create team');
       }
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to create team. Please try again.",
+        description: error.message || "Failed to create team. Please try again.",
         variant: "destructive",
       });
     }
@@ -174,4 +176,3 @@ const CreateTeam = () => {
 };
 
 export default CreateTeam;
-

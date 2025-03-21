@@ -1,16 +1,21 @@
 
-import api from '@/services/api';
+import { createTeam } from '@/store/slices/teams/teamsSlice';
+import { store } from '@/store/store';
+import type { TeamCreatePayload } from '@/types/team';
 
-export const createTeam = async (teamData: any) => {
+export const createTeamAction = async (teamData: TeamCreatePayload) => {
   try {
-    const response = await api.post('/teams', teamData);
-
-    if (!response.data) {
-      throw new Error('Failed to create team');
+    const resultAction = await store.dispatch(createTeam(teamData));
+    
+    if (createTeam.fulfilled.match(resultAction)) {
+      return { success: true, data: resultAction.payload };
+    } else if (createTeam.rejected.match(resultAction)) {
+      throw new Error(resultAction.payload as string || 'Failed to create team');
     }
-
-    return true;
-  } catch (error) {
+    
+    return { success: true };
+  } catch (error: any) {
+    console.error('Error in createTeamAction:', error);
     throw error;
   }
 };
