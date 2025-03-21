@@ -30,6 +30,21 @@ export const updateTeamAction = async (teamId: string, teamData: Partial<TeamCre
       delete (formattedData as any).routing;
     }
     
+    // Ensure we're passing members, not teamMembers to the backend
+    if (teamData.members) {
+      (formattedData as any).members = teamData.members;
+    }
+
+    // Ensure channels is properly formatted
+    if (teamData.channels && teamData.channels.email === null) {
+      formattedData.channels = {
+        ...teamData.channels,
+        email: []
+      };
+    }
+    
+    console.log('Formatted data for team update:', formattedData);
+    
     const resultAction = await store.dispatch(updateTeam({ id: teamId, data: formattedData }));
     
     if (updateTeam.fulfilled.match(resultAction)) {

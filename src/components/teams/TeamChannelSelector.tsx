@@ -1,122 +1,143 @@
 
-import React from 'react';
-import { Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useState } from 'react';
+import { Check, MessagesSquare, Mail } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
-import type { TeamChannelSelectorProps } from '@/types/team';
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from '@/components/ui/label';
 
-// Mock data - in production this would come from your Node.js backend
-const CHAT_CHANNEL = { id: 'chat-1', name: 'General Chat' };
-
-const AVAILABLE_EMAIL_CHANNELS = [
-  { id: 'email-1', name: 'Support Email' },
-  { id: 'email-2', name: 'Sales Email' },
-  { id: 'email-3', name: 'Billing Email' },
+// Mock data for available channels
+const availableChatChannels = [
+  { id: "chat-1", name: "Live Chat" },
+  { id: "chat-2", name: "Support Chat" },
+  { id: "chat-3", name: "Sales Chat" },
 ];
+
+const availableEmailChannels = [
+  { id: "email-1", name: "support@example.com" },
+  { id: "email-2", name: "sales@example.com" },
+  { id: "email-3", name: "info@example.com" },
+  { id: "email-4", name: "help@example.com" },
+];
+
+interface TeamChannelSelectorProps {
+  selectedChatChannel?: string;
+  selectedEmailChannels: string[];
+  onChatChannelSelect: (channelId: string | undefined) => void;
+  onEmailChannelToggle: (channelId: string) => void;
+}
 
 const TeamChannelSelector = ({
   selectedChatChannel,
-  selectedEmailChannels,
+  selectedEmailChannels = [],
   onChatChannelSelect,
   onEmailChannelToggle,
 }: TeamChannelSelectorProps) => {
+  const [customEmail, setCustomEmail] = useState('');
+
+  const handleAddCustomEmail = () => {
+    if (customEmail && !selectedEmailChannels.includes(customEmail)) {
+      onEmailChannelToggle(customEmail);
+      setCustomEmail('');
+    }
+  };
+
   return (
     <div className="space-y-6">
-      {/* Selected Channels Section */}
       <div className="space-y-4">
-        <h3 className="text-sm font-medium text-muted-foreground">Selected Channels</h3>
-        <div className="flex flex-wrap gap-2 min-h-[2.5rem] p-4 bg-muted/30 rounded-lg">
-          {selectedChatChannel && (
-            <Badge 
-              variant="secondary" 
-              className="flex items-center gap-2 bg-primary/10 text-primary hover:bg-primary/20"
-            >
-              <span>Chat: {CHAT_CHANNEL.name}</span>
-              <button 
-                onClick={() => onChatChannelSelect(undefined)}
-                className="hover:text-destructive transition-colors"
-                aria-label="Remove chat channel"
+        <div className="flex items-center gap-2">
+          <MessagesSquare size={18} />
+          <h3 className="font-medium">Chat Channels</h3>
+        </div>
+
+        <div>
+          <ToggleGroup 
+            type="single" 
+            variant="outline"
+            className="justify-start"
+            value={selectedChatChannel}
+            onValueChange={onChatChannelSelect}
+          >
+            {availableChatChannels.map((channel) => (
+              <ToggleGroupItem 
+                key={channel.id} 
+                value={channel.id}
+                className="flex items-center gap-2"
               >
-                ×
-              </button>
-            </Badge>
-          )}
-          {selectedEmailChannels.map((channelId) => {
-            const channel = AVAILABLE_EMAIL_CHANNELS.find(c => c.id === channelId);
-            return (
-              <Badge 
-                key={channelId} 
-                variant="secondary"
-                className="flex items-center gap-2 bg-primary/10 text-primary hover:bg-primary/20"
-              >
-                <span>Email: {channel?.name}</span>
-                <button 
-                  onClick={() => onEmailChannelToggle(channelId)}
-                  className="hover:text-destructive transition-colors"
-                  aria-label="Remove email channel"
-                >
-                  ×
-                </button>
-              </Badge>
-            );
-          })}
-          {selectedEmailChannels.length === 0 && !selectedChatChannel && (
-            <p className="text-sm text-muted-foreground">
-              No channels selected (team will have access to all channels)
-            </p>
-          )}
+                {selectedChatChannel === channel.id && (
+                  <Check className="h-4 w-4" />
+                )}
+                {channel.name}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
         </div>
       </div>
 
-      {/* Add Channels Section */}
       <div className="space-y-4">
-        <h3 className="text-sm font-medium text-muted-foreground">Add Channels</h3>
-        <div className="space-y-4">
-          {!selectedChatChannel && (
-            <Card className="p-4 hover:bg-accent/50 transition-colors">
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-1 w-full justify-start border-dashed"
-                onClick={() => onChatChannelSelect(CHAT_CHANNEL.id)}
-              >
-                <Plus className="h-4 w-4" />
-                Add Chat Channel
-              </Button>
-            </Card>
-          )}
-          
-          <Card className="p-4">
-            <div className="mb-2">
-              <h4 className="text-sm font-medium">Email Channels</h4>
-              <p className="text-sm text-muted-foreground mb-3">Select multiple email channels for the team</p>
-            </div>
-            <ScrollArea className="h-[200px] pr-4">
-              <div className="space-y-2">
-                {AVAILABLE_EMAIL_CHANNELS.map((channel) => {
-                  const isSelected = selectedEmailChannels.includes(channel.id);
-                  if (!isSelected) {
-                    return (
-                      <Button
-                        key={channel.id}
-                        variant="outline"
-                        size="sm"
-                        className="gap-1 w-full justify-start border-dashed"
-                        onClick={() => onEmailChannelToggle(channel.id)}
-                      >
-                        <Plus className="h-4 w-4" />
-                        {channel.name}
-                      </Button>
-                    );
-                  }
-                  return null;
-                })}
-              </div>
-            </ScrollArea>
-          </Card>
+        <div className="flex items-center gap-2">
+          <Mail size={18} />
+          <h3 className="font-medium">Email Channels</h3>
         </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+          {availableEmailChannels.map((channel) => (
+            <div 
+              key={channel.id}
+              className={`
+                flex items-center justify-between p-3 rounded-md border cursor-pointer
+                ${selectedEmailChannels.includes(channel.id) ? 'border-primary bg-primary/5' : 'border-gray-200'}
+              `}
+              onClick={() => onEmailChannelToggle(channel.id)}
+            >
+              <span>{channel.name}</span>
+              {selectedEmailChannels.includes(channel.id) && (
+                <Check className="h-4 w-4 text-primary" />
+              )}
+            </div>
+          ))}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="customEmail">Add custom email address</Label>
+          <div className="flex items-center gap-2">
+            <Input 
+              id="customEmail"
+              type="email" 
+              placeholder="Enter email address" 
+              value={customEmail}
+              onChange={(e) => setCustomEmail(e.target.value)}
+            />
+            <Button 
+              type="button" 
+              onClick={handleAddCustomEmail}
+              disabled={!customEmail.trim() || !customEmail.includes('@')}
+            >
+              Add
+            </Button>
+          </div>
+        </div>
+
+        {selectedEmailChannels.length > 0 && (
+          <div className="space-y-2">
+            <Label>Selected email addresses</Label>
+            <div className="flex flex-wrap gap-2 p-3 bg-gray-50 rounded-md">
+              {selectedEmailChannels.map((email) => (
+                <Badge 
+                  key={email} 
+                  variant="secondary"
+                  className="px-3 py-1 cursor-pointer"
+                  onClick={() => onEmailChannelToggle(email)}
+                >
+                  {email}
+                  <span className="ml-2 text-gray-500">×</span>
+                </Badge>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

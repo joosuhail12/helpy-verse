@@ -24,6 +24,7 @@ export interface TeamParams {
 
 // Transform backend team data to frontend team model
 const mapTeamFromBackend = (team: any): Team => {
+    console.log('Mapping team from backend:', team);
     return {
         id: team.id,
         name: team.name,
@@ -31,7 +32,7 @@ const mapTeamFromBackend = (team: any): Team => {
         description: team.description,
         teamMembers: team.teamMembers || [],
         members: team.members || [],
-        channels: team.channels,
+        channels: team.channels || { email: [] },
         routingStrategy: team.routingStrategy || 'manual',
         maxTotalTickets: team.maxTotalTickets,
         maxOpenTickets: team.maxOpenTickets,
@@ -122,9 +123,16 @@ export const teamsService = {
             };
             
             if (team.name) payload.name = team.name;
-            if (team.icon) payload.icon = team.icon;
+            if (team.icon !== undefined) payload.icon = team.icon;
             if (team.members) payload.members = team.members;
-            if (team.channels) payload.channels = team.channels;
+            
+            // Handle channels properly
+            if (team.channels) {
+                payload.channels = {
+                    chat: team.channels.chat,
+                    email: Array.isArray(team.channels.email) ? team.channels.email : []
+                };
+            }
             
             // Handle routingStrategy and limits
             if (team.routing) {
@@ -146,7 +154,9 @@ export const teamsService = {
             if (team.officeHours) payload.officeHours = team.officeHours;
             if (team.holidays) payload.holidays = team.holidays;
             
+            console.log('Sending team update payload:', payload);
             const response = await HttpClient.apiClient.put<{ data: any }>(`${API_URL}/${id}`, payload);
+            console.log('Team update response:', response.data);
             return { data: mapTeamFromBackend(response.data.data) };
         } catch (error) {
             console.error('Error updating team:', error);

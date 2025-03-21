@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
@@ -46,6 +47,7 @@ const EditTeam = () => {
 
   useEffect(() => {
     if (team) {
+      console.log('Team data loaded for editing:', team);
       setTeamName(team.name);
       setSelectedIcon(team.icon || '');
       
@@ -62,6 +64,8 @@ const EditTeam = () => {
       if (team.channels) {
         setSelectedChatChannel(team.channels.chat);
         setSelectedEmailChannels(team.channels.email || []);
+      } else {
+        setSelectedEmailChannels([]);
       }
       
       // Handle routing - use routingStrategy directly
@@ -126,6 +130,7 @@ const EditTeam = () => {
     }
 
     try {
+      console.log('Updating team with ID:', id);
       const teamData = {
         name: teamName,
         icon: selectedIcon,
@@ -148,6 +153,7 @@ const EditTeam = () => {
         holidays: selectedHolidays,
       };
 
+      console.log('Team data being submitted:', teamData);
       const result = await updateTeamAction(id, teamData);
 
       if (result.success) {

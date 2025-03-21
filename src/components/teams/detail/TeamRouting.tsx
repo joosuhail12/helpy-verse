@@ -13,7 +13,7 @@ const TeamRouting = ({ team }: TeamRoutingProps) => {
   
   // Get limits directly from team properties
   const limits = {
-    maxTickets: team.maxTotalTickets,
+    maxTotalTickets: team.maxTotalTickets,
     maxOpenTickets: team.maxOpenTickets,
     maxActiveChats: team.maxActiveChats
   };
@@ -39,14 +39,14 @@ const TeamRouting = ({ team }: TeamRoutingProps) => {
         <Badge className="capitalize">{routingType.replace('-', ' ')}</Badge>
       </div>
 
-      {routingType === 'load-balanced' && limits && (
+      {routingType === 'load-balanced' && (
         <div className="space-y-4 mt-4">
           <h3 className="font-medium text-sm text-gray-500">Routing Limits</h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {limits.maxTickets !== undefined && limits.maxTickets !== null && (
+            {limits.maxTotalTickets !== undefined && limits.maxTotalTickets !== null && (
               <div className="p-4 bg-gray-50 rounded-lg">
                 <p className="text-sm text-gray-500">Max Tickets</p>
-                <p className="text-2xl font-semibold">{limits.maxTickets}</p>
+                <p className="text-2xl font-semibold">{limits.maxTotalTickets}</p>
               </div>
             )}
             {limits.maxOpenTickets !== undefined && limits.maxOpenTickets !== null && (
