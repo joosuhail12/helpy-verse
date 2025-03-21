@@ -28,12 +28,10 @@ const mapTeamFromBackend = (team: any): Team => {
         id: team.id,
         name: team.name,
         icon: team.icon,
+        description: team.description,
         teamMembers: team.teamMembers || [],
         members: team.members || [],
-        channels: {
-            chat: team.channels?.chat || undefined,
-            email: team.channels?.email || []
-        },
+        channels: team.channels,
         routingStrategy: team.routingStrategy || 'manual',
         maxTotalTickets: team.maxTotalTickets,
         maxOpenTickets: team.maxOpenTickets,
@@ -49,7 +47,10 @@ const mapTeamFromBackend = (team: any): Team => {
         },
         holidays: team.holidays || [],
         createdAt: team.createdAt || team.created_at || '',
-        updatedAt: team.updatedAt || team.updated_at || ''
+        updatedAt: team.updatedAt || team.updated_at || '',
+        workspaceId: team.workspaceId,
+        clientId: team.clientId,
+        createdBy: team.createdBy
     };
 };
 
@@ -94,9 +95,9 @@ export const teamsService = {
                 members: team.members,
                 channels: team.channels,
                 routingStrategy: team.routing.type,
-                ...(team.routing.limits?.maxTotalTickets && { maxTotalTickets: team.routing.limits.maxTotalTickets }),
-                ...(team.routing.limits?.maxOpenTickets && { maxOpenTickets: team.routing.limits.maxOpenTickets }),
-                ...(team.routing.limits?.maxActiveChats && { maxActiveChats: team.routing.limits.maxActiveChats }),
+                ...(team.routing.limits?.maxTotalTickets !== undefined && { maxTotalTickets: team.routing.limits.maxTotalTickets }),
+                ...(team.routing.limits?.maxOpenTickets !== undefined && { maxOpenTickets: team.routing.limits.maxOpenTickets }),
+                ...(team.routing.limits?.maxActiveChats !== undefined && { maxActiveChats: team.routing.limits.maxActiveChats }),
                 officeHours: team.officeHours,
                 holidays: team.holidays,
                 workspace_id: workspaceId
@@ -125,6 +126,7 @@ export const teamsService = {
             if (team.members) payload.members = team.members;
             if (team.channels) payload.channels = team.channels;
             
+            // Handle routingStrategy and limits
             if (team.routing) {
                 payload.routingStrategy = team.routing.type;
                 

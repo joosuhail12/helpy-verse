@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
@@ -65,9 +64,8 @@ const EditTeam = () => {
         setSelectedEmailChannels(team.channels.email || []);
       }
       
-      // Handle routing
+      // Handle routing - use routingStrategy directly
       if (team.routingStrategy) {
-        // New format from backend
         const routingType = team.routingStrategy as 'manual' | 'round-robin' | 'load-balanced';
         setRoutingType(routingType);
         
@@ -77,18 +75,6 @@ const EditTeam = () => {
             maxTotalTickets: team.maxTotalTickets,
             maxOpenTickets: team.maxOpenTickets,
             maxActiveChats: team.maxActiveChats
-          });
-        }
-      } else if (team.routing && typeof team.routing === 'object' && 'type' in team.routing) {
-        // Legacy format
-        const routingType = team.routing.type;
-        setRoutingType(routingType);
-        
-        if ('limits' in team.routing && team.routing.limits) {
-          setRoutingLimits({
-            maxTotalTickets: team.routing.limits.maxTotalTickets,
-            maxOpenTickets: team.routing.limits.maxOpenTickets,
-            maxActiveChats: team.routing.limits.maxActiveChats
           });
         }
       }
@@ -140,7 +126,7 @@ const EditTeam = () => {
     }
 
     try {
-      const result = await updateTeamAction(id, {
+      const teamData = {
         name: teamName,
         icon: selectedIcon,
         members: selectedTeammates,
@@ -160,7 +146,9 @@ const EditTeam = () => {
         },
         officeHours,
         holidays: selectedHolidays,
-      });
+      };
+
+      const result = await updateTeamAction(id, teamData);
 
       if (result.success) {
         toast({

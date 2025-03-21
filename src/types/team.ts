@@ -3,7 +3,8 @@ export interface Team {
   id: string;
   name: string;
   icon?: string;
-  teamMembers?: Array<{
+  description?: string | null;
+  teamMembers: Array<{
     id: string;
     name: string;
     email: string;
@@ -12,8 +13,8 @@ export interface Team {
   channels?: {
     chat?: string;
     email: string[];
-  };
-  routingStrategy?: 'manual' | 'round-robin' | 'load-balanced';
+  } | null;
+  routingStrategy: 'manual' | 'round-robin' | 'load-balanced';
   maxTotalTickets?: number;
   maxOpenTickets?: number;
   maxActiveChats?: number;
@@ -23,6 +24,9 @@ export interface Team {
   holidays: string[]; // Array of ISO date strings
   createdAt: string;
   updatedAt: string;
+  workspaceId?: string;
+  clientId?: string;
+  createdBy?: string;
 }
 
 // For backward compatibility with existing components

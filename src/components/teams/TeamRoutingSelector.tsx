@@ -16,11 +16,9 @@ const TeamRoutingSelector = ({
     
     const numberValue = value === '' ? undefined : parseInt(value, 10);
     
-    // Handle both property names (maxTickets and maxTotalTickets)
-    if (field === 'maxTickets' || field === 'maxTotalTickets') {
+    if (field === 'maxTotalTickets') {
       onLimitsChange({
         ...(limits || {}),
-        maxTickets: numberValue,
         maxTotalTickets: numberValue
       });
     } else if (field === 'maxOpenTickets') {
@@ -87,12 +85,12 @@ const TeamRoutingSelector = ({
           
           <div className="grid gap-3">
             <div>
-              <Label htmlFor="maxTickets">Maximum Total Tickets</Label>
+              <Label htmlFor="maxTotalTickets">Maximum Total Tickets</Label>
               <Input
-                id="maxTickets"
+                id="maxTotalTickets"
                 type="number"
                 placeholder="No limit"
-                value={limits?.maxTotalTickets !== undefined ? limits.maxTotalTickets : (limits?.maxTickets !== undefined ? limits.maxTickets : '')}
+                value={limits?.maxTotalTickets !== undefined ? limits.maxTotalTickets : ''}
                 onChange={(e) => handleLimitChange('maxTotalTickets', e.target.value)}
                 className="mt-1"
               />

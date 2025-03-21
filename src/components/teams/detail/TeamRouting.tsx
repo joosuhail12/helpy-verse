@@ -8,41 +8,15 @@ interface TeamRoutingProps {
 }
 
 const TeamRouting = ({ team }: TeamRoutingProps) => {
-  // Handle different routing property names
-  const getRoutingType = (): 'manual' | 'round-robin' | 'load-balanced' => {
-    if (team.routingStrategy) {
-      return team.routingStrategy as 'manual' | 'round-robin' | 'load-balanced';
-    }
-    
-    // Legacy format
-    if (team.routing?.type) {
-      return team.routing.type;
-    }
-    
-    return 'manual';
+  // Use the routing strategy from the backend data
+  const routingType = team.routingStrategy || 'manual';
+  
+  // Get limits directly from team properties
+  const limits = {
+    maxTickets: team.maxTotalTickets,
+    maxOpenTickets: team.maxOpenTickets,
+    maxActiveChats: team.maxActiveChats
   };
-  
-  const routingType = getRoutingType();
-  
-  // Get limits from appropriate properties
-  const getLimits = () => {
-    if (team.maxTotalTickets || team.maxOpenTickets || team.maxActiveChats) {
-      return {
-        maxTickets: team.maxTotalTickets,
-        maxOpenTickets: team.maxOpenTickets,
-        maxActiveChats: team.maxActiveChats
-      };
-    }
-    
-    // Legacy format
-    if (team.routing?.limits) {
-      return team.routing.limits;
-    }
-    
-    return null;
-  };
-  
-  const limits = getLimits();
 
   const getRoutingIcon = (type: string) => {
     switch (type) {
@@ -69,19 +43,19 @@ const TeamRouting = ({ team }: TeamRoutingProps) => {
         <div className="space-y-4 mt-4">
           <h3 className="font-medium text-sm text-gray-500">Routing Limits</h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {limits.maxTickets && (
+            {limits.maxTickets !== undefined && limits.maxTickets !== null && (
               <div className="p-4 bg-gray-50 rounded-lg">
                 <p className="text-sm text-gray-500">Max Tickets</p>
                 <p className="text-2xl font-semibold">{limits.maxTickets}</p>
               </div>
             )}
-            {limits.maxOpenTickets && (
+            {limits.maxOpenTickets !== undefined && limits.maxOpenTickets !== null && (
               <div className="p-4 bg-gray-50 rounded-lg">
                 <p className="text-sm text-gray-500">Max Open Tickets</p>
                 <p className="text-2xl font-semibold">{limits.maxOpenTickets}</p>
               </div>
             )}
-            {limits.maxActiveChats && (
+            {limits.maxActiveChats !== undefined && limits.maxActiveChats !== null && (
               <div className="p-4 bg-gray-50 rounded-lg">
                 <p className="text-sm text-gray-500">Max Active Chats</p>
                 <p className="text-2xl font-semibold">{limits.maxActiveChats}</p>

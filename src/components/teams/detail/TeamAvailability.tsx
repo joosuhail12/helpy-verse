@@ -13,6 +13,9 @@ const TeamAvailability = ({ team }: TeamAvailabilityProps) => {
   const holidays = team.holidays || [];
   const daysOfWeek: DayOfWeek[] = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 
+  // Create a copy of the holidays array to avoid mutations
+  const holidayDates = holidays.length ? [...holidays] : [];
+
   return (
     <div className="space-y-8">
       <div className="space-y-4">
@@ -42,13 +45,13 @@ const TeamAvailability = ({ team }: TeamAvailabilityProps) => {
         <div className="grid gap-6 md:grid-cols-2">
           <Calendar
             mode="multiple"
-            selected={holidays.map(date => new Date(date))}
+            selected={holidayDates.map(date => new Date(date))}
             className="rounded-md border"
             disabled
           />
           <div className="space-y-2">
-            {holidays.length > 0 ? (
-              holidays.sort().map((date) => (
+            {holidayDates.length > 0 ? (
+              holidayDates.map((date) => (
                 <div key={date} className="p-2 bg-gray-50 rounded-md">
                   {format(new Date(date), 'PPP')}
                 </div>

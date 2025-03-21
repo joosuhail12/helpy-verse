@@ -10,8 +10,11 @@ export const updateTeamAction = async (teamId: string, teamData: Partial<TeamCre
     
     // Handle routing structure
     if (teamData.routing) {
+      // Set the routing strategy for the backend
+      (formattedData as any).routingStrategy = teamData.routing.type;
+      
+      // Add the limits at the top level for the backend
       if (teamData.routing.limits) {
-        // Add the limits at the top level for the backend
         if (teamData.routing.limits.maxTotalTickets !== undefined) {
           (formattedData as any).maxTotalTickets = teamData.routing.limits.maxTotalTickets;
         }
@@ -23,8 +26,8 @@ export const updateTeamAction = async (teamId: string, teamData: Partial<TeamCre
         }
       }
       
-      // Set the routing strategy for the backend
-      (formattedData as any).routingStrategy = teamData.routing.type;
+      // Remove the routing property as it's not expected by the backend
+      delete (formattedData as any).routing;
     }
     
     const resultAction = await store.dispatch(updateTeam({ id: teamId, data: formattedData }));
