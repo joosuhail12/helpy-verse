@@ -20,7 +20,8 @@ const Teams = () => {
 
   useEffect(() => {
     // Fetch teams from API on component mount
-    dispatch(fetchTeams());
+    // Pass an empty object as params to meet the expected arguments
+    dispatch(fetchTeams({}));
   }, [dispatch]);
 
   if (error) {

@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
@@ -10,7 +9,7 @@ import TeamBasicInfo from './teams/components/TeamBasicInfo';
 import TeamCommunicationSection from './teams/components/TeamCommunicationSection';
 import TeamRoutingSection from './teams/components/TeamRoutingSection';
 import TeamAvailabilitySection from './teams/components/TeamAvailabilitySection';
-import { updateTeam } from './teams/utils/updateTeamUtils';
+import { updateTeamAction } from './teams/utils/updateTeamUtils';
 import TeamsLoadingState from '@/components/teams/TeamsLoadingState';
 import type { DayOfWeek, TimeSlot, Team, Channel, RoutingRule } from '@/types/team';
 
@@ -185,7 +184,7 @@ const EditTeam = () => {
     }
 
     try {
-      const success = await updateTeam(id, {
+      const success = await dispatch(updateTeamAction({
         name: teamName,
         icon: selectedIcon,
         members: selectedTeammates,
@@ -201,7 +200,7 @@ const EditTeam = () => {
         },
         officeHours,
         holidays: selectedHolidays,
-      });
+      }));
 
       if (success) {
         toast({

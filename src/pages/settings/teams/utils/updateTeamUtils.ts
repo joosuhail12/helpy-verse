@@ -19,3 +19,6 @@ export const updateTeamAction = async (teamId: string, teamData: Partial<TeamCre
     throw error;
   }
 };
+
+// Export the updateTeam function directly so it can be imported in EditTeam.tsx
+export { updateTeam } from '@/store/slices/teams/teamsSlice';
