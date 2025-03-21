@@ -13,12 +13,15 @@ import LoadingState from '@/components/teammates/LoadingState';
 import EmptyState from '@/components/teammates/EmptyState';
 import TeammatesErrorBoundary from '@/components/teammates/TeammatesErrorBoundary';
 import type { Teammate } from '@/types/teammate';
+import { selectAllTeammates, selectTeammatesLoading, selectTeammatesError } from '@/store/slices/teammates/selectors';
 
 const ITEMS_PER_PAGE = 10;
 
 const TeammatesPage = () => {
   const dispatch = useAppDispatch();
-  const { teammates, loading, error } = useAppSelector((state) => state.teammates);
+  const teammates = useAppSelector(selectAllTeammates);
+  const loading = useAppSelector(selectTeammatesLoading);
+  const error = useAppSelector(selectTeammatesError);
   const { toast } = useToast();
   const [selectedTeammates, setSelectedTeammates] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);

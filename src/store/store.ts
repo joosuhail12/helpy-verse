@@ -8,11 +8,11 @@ import contactsReducer from './slices/contacts/contactsSlice';
 import companiesReducer from './slices/companies/companiesSlice';
 import inboxReducer from './slices/inboxSlice';
 import tagsReducer from './slices/tagsSlice';
-import teammatesReducer from './slices/teammates/teammatesSlice';
+import { teammatesReducer } from './slices/teammates/teammatesSlice';
 import teamsReducer from './slices/teams/teamsSlice';
-import emailChannelsReducer from './slices/emailChannels/emailChannelsSlice';
-import cannedResponsesReducer from './slices/cannedResponses/cannedResponsesSlice';
-import chatbotsReducer from './slices/chatbots/chatbotsSlice';
+import { emailChannelsReducer } from './slices/emailChannels/emailChannelsSlice';
+import { cannedResponsesReducer } from './slices/cannedResponses/cannedResponsesSlice';
+import { chatbotsReducer } from './slices/chatbots/chatbotsSlice';
 
 // Define the root reducer with all slices
 const rootReducer = {

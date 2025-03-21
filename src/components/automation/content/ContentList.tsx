@@ -26,7 +26,7 @@ export const ContentList = ({ searchQuery }: ContentListProps) => {
   const contentState = useAppSelector((state) => state.content);
   const items = contentState?.items || [];
   const selectedIds = contentState?.selectedIds || [];
-  const filters = contentState?.filters || {};
+  const filters = contentState?.filters || { status: null, category: null, chatbot: null };
   const sort = contentState?.sort || { field: 'lastUpdated', direction: 'desc' };
 
   const handleSelect = (id: string) => {
@@ -43,13 +43,13 @@ export const ContentList = ({ searchQuery }: ContentListProps) => {
   };
 
   const filteredItems = items.filter(item => {
-    if (filters.status && item.status !== filters.status) {
+    if (filters?.status && item.status !== filters.status) {
       return false;
     }
-    if (filters.category && item.category !== filters.category) {
+    if (filters?.category && item.category !== filters.category) {
       return false;
     }
-    if (filters.chatbot && !item.chatbots?.some(bot => bot.id === filters.chatbot)) {
+    if (filters?.chatbot && !item.chatbots?.some(bot => bot.id === filters.chatbot)) {
       return false;
     }
     if (searchQuery && !item.title.toLowerCase().includes(searchQuery.toLowerCase()) && !item.description.toLowerCase().includes(searchQuery.toLowerCase())) {

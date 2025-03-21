@@ -88,8 +88,8 @@ const chatbotsSlice = createSlice({
 });
 
 // Selectors
-export const selectChatbots = (state: RootState) => state.chatbots.chatbots;
-export const selectChatbotsLoading = (state: RootState) => state.chatbots.loading;
-export const selectChatbotsError = (state: RootState) => state.chatbots.error;
+export const selectChatbots = (state: RootState) => state.chatbots?.chatbots || [];
+export const selectChatbotsLoading = (state: RootState) => state.chatbots?.loading || false;
+export const selectChatbotsError = (state: RootState) => state.chatbots?.error || null;
 
 export const chatbotsReducer = chatbotsSlice.reducer;
