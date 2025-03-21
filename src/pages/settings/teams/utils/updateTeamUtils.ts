@@ -3,43 +3,20 @@ import { updateTeam } from '@/store/slices/teams/teamsSlice';
 import { store } from '@/store/store';
 import type { TeamCreatePayload } from '@/types/team';
 
-export const updateTeamAction = async (teamId: string, teamData: Partial<TeamCreatePayload>) => {
+export const updateTeamAction = async (teamId: string, teamData: any) => {
   try {
     // Transform the teamData to match what the backend expects
     const formattedData = { ...teamData };
     
     console.log('Original team data for update:', teamData);
     
-    // Handle routing structure
-    if (teamData.routing) {
-      // Set the routing strategy for the backend
-      (formattedData as any).routingStrategy = teamData.routing.type;
-      
-      // Add the limits at the top level for the backend
-      if (teamData.routing.limits) {
-        if (teamData.routing.limits.maxTotalTickets !== undefined) {
-          (formattedData as any).maxTotalTickets = teamData.routing.limits.maxTotalTickets;
-        }
-        if (teamData.routing.limits.maxOpenTickets !== undefined) {
-          (formattedData as any).maxOpenTickets = teamData.routing.limits.maxOpenTickets;
-        }
-        if (teamData.routing.limits.maxActiveChats !== undefined) {
-          (formattedData as any).maxActiveChats = teamData.routing.limits.maxActiveChats;
-        }
-      }
-      
-      // Remove the routing property as it's not expected by the backend
-      delete (formattedData as any).routing;
-    }
-    
-    // Ensure we're passing members, not teamMembers to the backend
+    // Ensure we're passing members correctly
     if (teamData.members) {
-      (formattedData as any).members = teamData.members;
+      formattedData.members = teamData.members;
     }
 
     // Ensure channels is properly formatted
     if (teamData.channels) {
-      // Initialize channels with safe defaults if needed
       formattedData.channels = {
         chat: teamData.channels.chat,
         email: Array.isArray(teamData.channels.email) ? teamData.channels.email : []
@@ -56,8 +33,8 @@ export const updateTeamAction = async (teamId: string, teamData: Partial<TeamCre
       // Make sure each day has an array of time slots
       const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
       days.forEach(day => {
-        if (!Array.isArray(teamData.officeHours?.[day as any])) {
-          (teamData.officeHours as any)[day] = [];
+        if (!Array.isArray(teamData.officeHours?.[day])) {
+          formattedData.officeHours[day] = [];
         }
       });
     }
@@ -67,14 +44,19 @@ export const updateTeamAction = async (teamId: string, teamData: Partial<TeamCre
       formattedData.holidays = [];
     }
     
+    // Make sure to include workspace_id
+    formattedData.workspace_id = localStorage.getItem('workspaceId');
+    
     console.log('Formatted data for team update:', formattedData);
     
     const resultAction = await store.dispatch(updateTeam({ id: teamId, data: formattedData }));
     
     if (updateTeam.fulfilled.match(resultAction)) {
+      console.log('Team updated successfully:', resultAction.payload);
       return { success: true, data: resultAction.payload };
     } else if (updateTeam.rejected.match(resultAction)) {
-      throw new Error(resultAction.payload as string || 'Failed to update team');
+      console.error('Team update rejected:', resultAction.error);
+      throw new Error(resultAction.error.message || 'Failed to update team');
     }
     
     return { success: true };

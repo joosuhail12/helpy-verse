@@ -136,6 +136,8 @@ export const useTeamEditForm = (team: Team, onSuccess?: () => void) => {
 
     try {
       console.log('Updating team with ID:', team.id);
+      
+      // Prepare the data in the format expected by the backend
       const teamData = {
         name: teamName,
         icon: selectedIcon,
@@ -144,16 +146,12 @@ export const useTeamEditForm = (team: Team, onSuccess?: () => void) => {
           chat: selectedChatChannel,
           email: selectedEmailChannels,
         },
-        routing: {
-          type: routingType,
-          ...(routingType === 'load-balanced' && {
-            limits: {
-              maxTotalTickets: routingLimits.maxTotalTickets,
-              maxOpenTickets: routingLimits.maxOpenTickets,
-              maxActiveChats: routingLimits.maxActiveChats
-            }
-          })
-        },
+        routingStrategy: routingType,
+        ...(routingType === 'load-balanced' && {
+          maxTotalTickets: routingLimits.maxTotalTickets,
+          maxOpenTickets: routingLimits.maxOpenTickets,
+          maxActiveChats: routingLimits.maxActiveChats
+        }),
         officeHours,
         holidays: selectedHolidays,
       };
