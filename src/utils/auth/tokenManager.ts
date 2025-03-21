@@ -1,4 +1,3 @@
-
 /**
  * Token and authentication management utility functions
  */
@@ -143,7 +142,7 @@ export const setWorkspaceId = (id: string): void => {
 };
 
 export const getWorkspaceId = (): string => {
-    // Only check cookies, not localStorage
+    // Only check cookies, not localStorage or environment variables
     try {
         const cookieId = getCookie("workspaceId");
         if (cookieId) {
@@ -154,13 +153,7 @@ export const getWorkspaceId = (): string => {
         console.warn("Error accessing workspace cookie:", error);
     }
     
-    // Fallback to environment variable if cookie is not set
-    const envWorkspaceId = import.meta.env.VITE_REACT_APP_WORKSPACE_ID;
-    if (envWorkspaceId) {
-        console.log("Using workspace ID from environment:", envWorkspaceId);
-        return envWorkspaceId;
-    }
-    
+    // Return empty string if no workspace ID found in cookie
     return "";
 };
 

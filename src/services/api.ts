@@ -15,10 +15,8 @@ const setupApi = () => {
       console.log('API service initialized without auth token');
     }
     
-    // Ensure workspace ID is set for all requests - only from cookie or env
-    const workspaceId = cookieFunctions.getCookie('workspaceId') || 
-                        import.meta.env.VITE_REACT_APP_WORKSPACE_ID ||
-                        'w1';
+    // Ensure workspace ID is set for all requests - only from cookie
+    const workspaceId = cookieFunctions.getCookie('workspaceId');
     
     if (workspaceId) {
       console.log('API service initialized with workspace ID:', workspaceId);

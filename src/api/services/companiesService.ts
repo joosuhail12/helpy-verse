@@ -37,7 +37,7 @@ export interface CompanyParams {
 export const companiesService = {
     async fetchCompanies(params: CompanyParams = {}): Promise<CompaniesResponse> {
         try {
-            // Get workspace ID from cookie only, not localStorage
+            // Get workspace ID from cookie only
             const workspaceId = getCookie('workspaceId');
             
             // Ensure workspace_id is included in params
@@ -58,8 +58,8 @@ export const companiesService = {
 
     async createCompany(company: Partial<Company>): Promise<CreateCompaniesResponse> {
         try {
-            // Get workspace ID from env or localStorage
-                const workspaceId = getCookie('workspaceId');
+            // Get workspace ID from cookie only
+            const workspaceId = getCookie('workspaceId');
             
             const payload = {
                 ...company,
@@ -76,7 +76,7 @@ export const companiesService = {
 
     async updateCompany(id: string, company: Partial<Company>): Promise<CompanyResponse> {
         try {
-            // Get workspace ID from env or localStorage
+            // Get workspace ID from cookie only
             const workspaceId = getCookie('workspaceId');
             
             const payload = {
@@ -94,7 +94,7 @@ export const companiesService = {
 
     async deleteCompany(id: string): Promise<void> {
         try {
-            // Get workspace ID from env or localStorage
+            // Get workspace ID from cookie only
             const workspaceId = getCookie('workspaceId');
             
             await HttpClient.apiClient.delete(`${API_URL}/${id}`, {
@@ -108,7 +108,7 @@ export const companiesService = {
     
     async getCompany(id: string): Promise<CompanyResponse> {
         try {
-            // Get workspace ID from env or localStorage
+            // Get workspace ID from cookie only
             const workspaceId = getCookie('workspaceId');
             
             const response = await HttpClient.apiClient.get<CompanyResponse>(`${API_URL}/${id}`, {
