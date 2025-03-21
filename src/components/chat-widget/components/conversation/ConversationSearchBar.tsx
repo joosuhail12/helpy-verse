@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ArrowRight } from 'lucide-react';
+import { Search, ArrowRight } from 'lucide-react';
 
 interface ConversationSearchBarProps {
   searchQuery: string;
@@ -14,16 +14,22 @@ const ConversationSearchBar = ({ searchQuery, setSearchQuery }: ConversationSear
   return (
     <div className="border-t border-gray-200 p-3">
       <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
         <input
           type="text"
-          placeholder="Type or hum what your looking for"
-          className="w-full border border-gray-200 rounded-md py-2 pr-10 pl-4 text-sm"
+          placeholder="Type or hum what you're looking for"
+          className="w-full border border-gray-200 rounded-full py-2 pl-10 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
-        <button className="absolute right-3 top-1/2 -translate-y-1/2 text-indigo-600">
-          <ArrowRight className="h-5 w-5" />
-        </button>
+        {searchQuery && (
+          <button 
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-indigo-600"
+            onClick={() => setSearchQuery('')}
+          >
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        )}
       </div>
     </div>
   );
