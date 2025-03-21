@@ -14,18 +14,22 @@ interface Conversation {
 
 interface ConversationListItemProps {
   conversation: Conversation;
+  onSelect: (conversationId: string) => void;
 }
 
 /**
  * Individual conversation item in the list
  */
-const ConversationListItem = ({ conversation }: ConversationListItemProps) => {
+const ConversationListItem = ({ conversation, onSelect }: ConversationListItemProps) => {
   return (
     <div 
       key={conversation.id}
       className={`border-b border-gray-100 cursor-pointer transition-colors hover:bg-gray-50 ${
         conversation.unread ? 'bg-blue-50 hover:bg-blue-50/80' : ''
       }`}
+      onClick={() => onSelect(conversation.id)}
+      role="button"
+      aria-label={`Open conversation: ${conversation.title}`}
     >
       <div className="p-4">
         <div className="flex justify-between items-start">

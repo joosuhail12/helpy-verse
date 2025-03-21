@@ -1,18 +1,20 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ChatHome from '@/components/chat-widget/ChatHome';
 import ConversationList from '@/components/chat-widget/ConversationList';
 import NewChat from '@/components/chat-widget/NewChat';
 import ResponseTime from '@/components/chat-widget/components/ResponseTime';
+import ConversationView from '@/components/chat-widget/components/conversation/ConversationView';
 import { X, ArrowLeft, Search, Home, MessageSquare } from 'lucide-react';
 
-type WidgetPage = 'home' | 'conversations' | 'new-chat';
+type WidgetPage = 'home' | 'conversations' | 'new-chat' | 'conversation-detail';
 
 /**
  * Standalone page for the chat widget, used for direct embedding in iframe
  */
 const ChatWidgetStandalone = () => {
   const [currentPage, setCurrentPage] = useState<WidgetPage>('home');
+  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const [options, setOptions] = useState({
     primaryColor: '#5DCFCF',
     welcomeMessage: 'How can we help you today?',
@@ -51,9 +53,27 @@ const ChatWidgetStandalone = () => {
 
   const navigateTo = (page: WidgetPage) => {
     setCurrentPage(page);
+    
+    // Clear current conversation when navigating away from detail
+    if (page !== 'conversation-detail') {
+      setCurrentConversationId(null);
+    }
   };
 
-  // Conversation list header
+  const handleSelectConversation = (conversationId: string) => {
+    setCurrentConversationId(conversationId);
+    setCurrentPage('conversation-detail');
+  };
+
+  const handleConversationCreated = (conversationId?: string) => {
+    if (conversationId) {
+      handleSelectConversation(conversationId);
+    } else {
+      navigateTo('conversations');
+    }
+  };
+
+  // Render header based on current page
   const renderHeader = () => {
     if (currentPage === 'home') {
       return (
@@ -87,6 +107,27 @@ const ChatWidgetStandalone = () => {
       );
     }
     
+    if (currentPage === 'conversation-detail') {
+      return (
+        <div className="p-4 flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => navigateTo('conversations')} 
+              className="text-gray-700"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <h2 className="font-semibold">Conversation</h2>
+          </div>
+          <div className="flex items-center gap-3">
+            <button onClick={closeWidget} className="text-gray-700">
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
+      );
+    }
+    
     return null;
   };
 
@@ -98,8 +139,20 @@ const ChatWidgetStandalone = () => {
       {/* Widget content */}
       <div className="flex-1 overflow-y-auto">
         {currentPage === 'home' && <ChatHome onNewChat={() => navigateTo('new-chat')} />}
-        {currentPage === 'conversations' && <ConversationList onNewChat={() => navigateTo('new-chat')} />}
-        {currentPage === 'new-chat' && <NewChat onConversationCreated={() => navigateTo('conversations')} />}
+        {currentPage === 'conversations' && (
+          <ConversationList 
+            onNewChat={() => navigateTo('new-chat')} 
+            onSelectConversation={handleSelectConversation}
+          />
+        )}
+        {currentPage === 'new-chat' && (
+          <NewChat onConversationCreated={handleConversationCreated} />
+        )}
+        {currentPage === 'conversation-detail' && currentConversationId && (
+          <ConversationView 
+            conversationId={currentConversationId} 
+          />
+        )}
       </div>
 
       {/* Modern widget navigation */}
@@ -116,9 +169,10 @@ const ChatWidgetStandalone = () => {
         </button>
         <button 
           onClick={() => navigateTo('conversations')}
-          className={`flex flex-col items-center gap-1 ${currentPage === 'conversations' 
-            ? 'text-[#5DCFCF]' 
-            : 'text-gray-500'}`}
+          className={`flex flex-col items-center gap-1 ${
+            (currentPage === 'conversations' || currentPage === 'conversation-detail')
+              ? 'text-[#5DCFCF]' 
+              : 'text-gray-500'}`}
           aria-label="Messages"
         >
           <MessageSquare className="h-5 w-5" />

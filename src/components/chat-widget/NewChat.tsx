@@ -1,11 +1,12 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { getAblyChannel } from '@/utils/ably';
 import InfoStep from './form-steps/InfoStep';
 import ChatStep from './form-steps/ChatStep';
+import { isAuthenticated, getUserId } from '@/utils/auth/tokenManager';
 
 interface NewChatProps {
-  onConversationCreated: () => void;
+  onConversationCreated: (conversationId?: string) => void;
 }
 
 /**
@@ -15,13 +16,39 @@ const NewChat: React.FC<NewChatProps> = ({ onConversationCreated }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
-  const [topic, setTopic] = useState('Support');
   const [submitting, setSubmitting] = useState(false);
   const [step, setStep] = useState<'info' | 'chat'>('info');
+  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
+
+  // Check if user is logged in
+  useEffect(() => {
+    const checkUserAuth = async () => {
+      const loggedIn = isAuthenticated();
+      setIsUserLoggedIn(loggedIn);
+      
+      if (loggedIn) {
+        try {
+          // In a real implementation, fetch user info from your backend
+          const userId = getUserId();
+          console.log('Logged in user ID:', userId);
+          
+          // Fetch user profile (mock implementation)
+          setTimeout(() => {
+            setName('Logged User');
+            setEmail('user@example.com');
+          }, 300);
+        } catch (error) {
+          console.error('Error fetching user data:', error);
+        }
+      }
+    };
+    
+    checkUserAuth();
+  }, []);
 
   const handleSubmitInfo = (e: React.FormEvent) => {
     e.preventDefault();
-    if (name && email) {
+    if (isUserLoggedIn || (name && email)) {
       setStep('chat');
     }
   };
@@ -40,20 +67,23 @@ const NewChat: React.FC<NewChatProps> = ({ onConversationCreated }) => {
       await channel.publish('new-ticket', {
         name,
         email,
-        topic,
         message,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        userId: isUserLoggedIn ? getUserId() : null
       });
       
-      console.log('Message sent:', { name, email, message, topic });
+      console.log('Message sent:', { name, email, message });
       
       // Clear form
       setMessage('');
       setSubmitting(false);
       
+      // Generate a mock conversation ID
+      const mockConversationId = `conv-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      
       // Simulate success and redirect to conversations
       setTimeout(() => {
-        onConversationCreated();
+        onConversationCreated(mockConversationId);
       }, 1000);
       
     } catch (error) {
@@ -69,10 +99,9 @@ const NewChat: React.FC<NewChatProps> = ({ onConversationCreated }) => {
         setName={setName}
         email={email}
         setEmail={setEmail}
-        topic={topic}
-        setTopic={setTopic}
         onSubmit={handleSubmitInfo}
         onBack={onConversationCreated}
+        isUserLoggedIn={isUserLoggedIn}
       />
     );
   }
@@ -81,7 +110,6 @@ const NewChat: React.FC<NewChatProps> = ({ onConversationCreated }) => {
     <ChatStep
       name={name}
       email={email}
-      topic={topic}
       message={message}
       setMessage={setMessage}
       onSendMessage={handleSendMessage}

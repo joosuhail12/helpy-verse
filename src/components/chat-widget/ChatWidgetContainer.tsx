@@ -1,12 +1,13 @@
 
 import React, { useState, useEffect } from 'react';
-import { X, Minimize2, MessageSquare, Home, MessageCircle } from 'lucide-react';
+import { X, Minimize2, MessageSquare, Home, MessageCircle, ArrowLeft } from 'lucide-react';
 import ChatHome from './ChatHome';
 import ConversationList from './ConversationList';
 import NewChat from './NewChat';
 import ResponseTime from './components/ResponseTime';
+import ConversationView from './components/conversation/ConversationView';
 
-type WidgetPage = 'home' | 'conversations' | 'new-chat';
+type WidgetPage = 'home' | 'conversations' | 'new-chat' | 'conversation-detail';
 
 /**
  * Main container component for the embeddable chat widget
@@ -15,6 +16,7 @@ const ChatWidgetContainer = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState<WidgetPage>('home');
   const [minimized, setMinimized] = useState(false);
+  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
 
   useEffect(() => {
     // Initialize Ably connection when widget is opened
@@ -43,6 +45,24 @@ const ChatWidgetContainer = () => {
   const navigateTo = (page: WidgetPage) => {
     setCurrentPage(page);
     setMinimized(false);
+    
+    // Clear current conversation when navigating away from detail
+    if (page !== 'conversation-detail') {
+      setCurrentConversationId(null);
+    }
+  };
+
+  const handleSelectConversation = (conversationId: string) => {
+    setCurrentConversationId(conversationId);
+    setCurrentPage('conversation-detail');
+  };
+
+  const handleConversationCreated = (conversationId?: string) => {
+    if (conversationId) {
+      handleSelectConversation(conversationId);
+    } else {
+      navigateTo('conversations');
+    }
   };
 
   // Render the launcher button when widget is closed or minimized
@@ -73,11 +93,29 @@ const ChatWidgetContainer = () => {
     if (currentPage === 'conversations') {
       return (
         <div className="bg-white p-4 flex justify-between items-center border-b border-gray-100">
-          <h2 className="font-semibold">Messages</h2>
-          <button 
-            onClick={toggleWidget}
-            className="text-gray-500 hover:text-gray-700"
-          >
+          <div className="flex items-center gap-3">
+            <button onClick={() => navigateTo('home')} className="text-gray-700">
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <h2 className="font-semibold">Messages</h2>
+          </div>
+          <button onClick={toggleWidget} className="text-gray-700">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+      );
+    }
+    
+    if (currentPage === 'conversation-detail') {
+      return (
+        <div className="bg-white p-4 flex justify-between items-center border-b border-gray-100">
+          <div className="flex items-center gap-3">
+            <button onClick={() => navigateTo('conversations')} className="text-gray-700">
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <h2 className="font-semibold">Conversation</h2>
+          </div>
+          <button onClick={toggleWidget} className="text-gray-700">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -102,8 +140,20 @@ const ChatWidgetContainer = () => {
       {/* Widget content */}
       <div className="flex-1 overflow-y-auto">
         {currentPage === 'home' && <ChatHome onNewChat={() => navigateTo('new-chat')} />}
-        {currentPage === 'conversations' && <ConversationList onNewChat={() => navigateTo('new-chat')} />}
-        {currentPage === 'new-chat' && <NewChat onConversationCreated={() => navigateTo('conversations')} />}
+        {currentPage === 'conversations' && (
+          <ConversationList 
+            onNewChat={() => navigateTo('new-chat')} 
+            onSelectConversation={handleSelectConversation}
+          />
+        )}
+        {currentPage === 'new-chat' && (
+          <NewChat onConversationCreated={handleConversationCreated} />
+        )}
+        {currentPage === 'conversation-detail' && currentConversationId && (
+          <ConversationView 
+            conversationId={currentConversationId} 
+          />
+        )}
       </div>
 
       {/* Modern widget navigation */}
@@ -121,9 +171,11 @@ const ChatWidgetContainer = () => {
         
         <button 
           onClick={() => navigateTo('conversations')}
-          className={`flex flex-col items-center gap-1 ${currentPage === 'conversations' 
-            ? 'text-[#5DCFCF]' 
-            : 'text-gray-500'}`}
+          className={`flex flex-col items-center gap-1 ${
+            (currentPage === 'conversations' || currentPage === 'conversation-detail')
+              ? 'text-[#5DCFCF]' 
+              : 'text-gray-500'
+          }`}
           aria-label="Messages"
         >
           <MessageSquare className="h-5 w-5" />

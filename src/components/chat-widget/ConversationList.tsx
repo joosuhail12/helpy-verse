@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Search, Filter, Plus } from 'lucide-react';
 import { getAblyChannel } from '@/utils/ably';
@@ -21,12 +20,13 @@ interface Conversation {
 
 interface ConversationListProps {
   onNewChat: () => void;
+  onSelectConversation: (conversationId: string) => void;
 }
 
 /**
  * List of existing conversations for the chat widget
  */
-const ConversationList = ({ onNewChat }: ConversationListProps) => {
+const ConversationList = ({ onNewChat, onSelectConversation }: ConversationListProps) => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -34,11 +34,9 @@ const ConversationList = ({ onNewChat }: ConversationListProps) => {
   const [filter, setFilter] = useState<'all' | 'ongoing' | 'resolved'>('all');
 
   useEffect(() => {
-    // In a real implementation, we would fetch conversations from Ably
     const fetchConversations = async () => {
       setLoading(true);
       try {
-        // Mock data - in real implementation this would come from Ably
         const mockConversations: Conversation[] = [
           {
             id: '1',
@@ -87,11 +85,9 @@ const ConversationList = ({ onNewChat }: ConversationListProps) => {
           }
         ];
 
-        // Simulate API delay
         setTimeout(() => {
           setConversations(mockConversations);
           
-          // Group conversations by date
           const grouped = mockConversations.reduce((acc, conversation) => {
             if (!acc[conversation.date]) {
               acc[conversation.date] = [];
@@ -104,10 +100,8 @@ const ConversationList = ({ onNewChat }: ConversationListProps) => {
           setLoading(false);
         }, 500);
 
-        // Example of how we would subscribe to real-time updates with Ably
         const channel = await getAblyChannel('user-conversations');
         channel.subscribe('new-message', (message: any) => {
-          // Update conversations with new message
           console.log('New message received:', message);
         });
 
@@ -123,7 +117,6 @@ const ConversationList = ({ onNewChat }: ConversationListProps) => {
     fetchConversations();
   }, []);
 
-  // Apply filters and search
   const filteredConversations = conversations.filter(conversation => {
     const matchesSearch = conversation.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       conversation.lastMessage.toLowerCase().includes(searchQuery.toLowerCase());
@@ -133,7 +126,6 @@ const ConversationList = ({ onNewChat }: ConversationListProps) => {
     return matchesSearch && matchesFilter;
   });
 
-  // Group filtered conversations by date
   const filteredGroupedConversations = filteredConversations.reduce((acc, conversation) => {
     if (!acc[conversation.date]) {
       acc[conversation.date] = [];
@@ -142,17 +134,18 @@ const ConversationList = ({ onNewChat }: ConversationListProps) => {
     return acc;
   }, {} as {[key: string]: Conversation[]});
 
-  // Render loading state
+  const handleSelectConversation = (conversationId: string) => {
+    onSelectConversation(conversationId);
+  };
+
   if (loading) {
     return <ConversationListLoading />;
   }
 
-  // Render empty state
   if (conversations.length === 0) {
     return <ConversationListEmpty onNewChat={onNewChat} />;
   }
 
-  // No results after filtering
   if (filteredConversations.length === 0) {
     return (
       <div className="flex flex-col h-full bg-white">
@@ -242,7 +235,8 @@ const ConversationList = ({ onNewChat }: ConversationListProps) => {
             {filteredGroupedConversations[date].map((conversation) => (
               <ConversationListItem 
                 key={conversation.id} 
-                conversation={conversation} 
+                conversation={conversation}
+                onSelect={handleSelectConversation}
               />
             ))}
           </React.Fragment>
