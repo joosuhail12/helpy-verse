@@ -1,4 +1,3 @@
-
 import { useNavigate, useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
@@ -20,7 +19,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { mockTeams } from '@/store/slices/teams/mockData';
 
 interface CannedResponseFormValues {
   title: string;
@@ -40,6 +38,7 @@ const CannedResponseDetail = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const response = useAppSelector(state => selectCannedResponseById(state, id ?? ''));
+  const teams = useAppSelector(state => state.teams.teams);
   const [loading, setLoading] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState('');
   const [selectedPermission, setSelectedPermission] = useState<'view' | 'edit'>('view');
@@ -76,7 +75,7 @@ const CannedResponseDetail = () => {
     if (!selectedTeam) return;
 
     const currentShares = form.getValues('sharedWith') || [];
-    const team = mockTeams.find(t => t.id === selectedTeam);
+    const team = teams.find(t => t.id === selectedTeam);
 
     form.setValue('sharedWith', [
       ...currentShares,
@@ -298,7 +297,7 @@ const CannedResponseDetail = () => {
                             <SelectValue placeholder="Select team" />
                           </SelectTrigger>
                           <SelectContent>
-                            {mockTeams.map(team => (
+                            {teams.map(team => (
                               <SelectItem key={team.id} value={team.id}>
                                 {team.name}
                               </SelectItem>
@@ -326,7 +325,7 @@ const CannedResponseDetail = () => {
                           <div key={index} className="flex items-center justify-between p-2 border rounded">
                             <div>
                               <span className="font-medium">
-                                {mockTeams.find(t => t.id === share.teamId)?.name}
+                                {teams.find(t => t.id === share.teamId)?.name}
                               </span>
                               <span className="ml-2 text-sm text-muted-foreground">
                                 ({share.permissions === 'view' ? 'View only' : 'Can edit'})
@@ -417,4 +416,3 @@ const CannedResponseDetail = () => {
 };
 
 export default CannedResponseDetail;
-

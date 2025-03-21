@@ -1,15 +1,14 @@
 
 import { useState, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
 import { useToast } from '@/hooks/use-toast';
 import TicketForm from './TicketForm';
 import type { TicketFormValues } from './types';
 import type { Ticket } from '@/types/ticket';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { useAppSelector } from '@/hooks/useAppSelector';
 import { fetchTeammates } from '@/store/slices/teammates/actions';
 import { setTeams } from '@/store/slices/teams/teamsSlice';
 import { fetchChannels } from '@/store/slices/emailChannels/emailChannelsSlice';
-import { mockTeams } from '@/store/slices/teams/mockData';
 
 interface TicketFormContainerProps {
   onTicketCreated?: (ticket: Ticket) => void;
@@ -20,11 +19,11 @@ const TicketFormContainer = ({ onTicketCreated, onCancel }: TicketFormContainerP
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const dispatch = useAppDispatch();
+  const teams = useAppSelector((state) => state.teams.teams);
   
   // Load teammates, teams, and email channels data when the component mounts
   useEffect(() => {
     dispatch(fetchTeammates());
-    dispatch(setTeams(mockTeams));
     dispatch(fetchChannels());
   }, [dispatch]);
 

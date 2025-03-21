@@ -2,11 +2,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
-import TeamBasicInfo from '../../pages/settings/teams/components/TeamBasicInfo';
-import TeamCommunicationSection from '../../pages/settings/teams/components/TeamCommunicationSection';
-import TeamRoutingSection from '../../pages/settings/teams/components/TeamRoutingSection';
-import TeamAvailabilitySection from '../../pages/settings/teams/components/TeamAvailabilitySection';
-import { updateTeamAction } from '../../pages/settings/teams/utils/updateTeamUtils';
+import { Button } from "@/components/ui/button";
+import TeamBasicInfo from '@/pages/settings/teams/components/TeamBasicInfo';
+import TeamCommunicationSection from '@/pages/settings/teams/components/TeamCommunicationSection';
+import TeamRoutingSection from '@/pages/settings/teams/components/TeamRoutingSection';
+import TeamAvailabilitySection from '@/pages/settings/teams/components/TeamAvailabilitySection';
+import { updateTeamAction } from '@/pages/settings/teams/utils/updateTeamUtils';
 import type { DayOfWeek, TimeSlot, Team } from '@/types/team';
 import type { Teammate } from '@/types/teammate';
 
