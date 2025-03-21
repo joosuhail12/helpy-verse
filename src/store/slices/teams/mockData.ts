@@ -6,7 +6,8 @@ export const mockTeams: Team[] = [
     id: 'team-1',
     name: 'Customer Support',
     icon: '🎯',
-    members: [
+    description: 'Main customer support team',
+    teamMembers: [
       {
         id: 'member-1',
         name: 'Sarah Johnson',
@@ -23,13 +24,12 @@ export const mockTeams: Team[] = [
         email: 'emily.d@example.com',
       }
     ],
+    members: ['member-1', 'member-2', 'member-3'],
     channels: {
       chat: 'Live Chat',
       email: ['support@example.com']
     },
-    routing: {
-      type: 'manual',
-    },
+    routingStrategy: 'manual',
     officeHours: {
       monday: [{ start: '09:00', end: '17:00' }],
       tuesday: [{ start: '09:00', end: '17:00' }],
@@ -50,7 +50,8 @@ export const mockTeams: Team[] = [
     id: 'team-2',
     name: 'Technical Support',
     icon: '🔧',
-    members: [
+    description: 'Specialized technical support team',
+    teamMembers: [
       {
         id: 'member-4',
         name: 'Alex Rivera',
@@ -62,13 +63,12 @@ export const mockTeams: Team[] = [
         email: 'jamie.s@example.com',
       }
     ],
+    members: ['member-4', 'member-5'],
     channels: {
       chat: 'Tech Chat',
       email: ['tech@example.com']
     },
-    routing: {
-      type: 'round-robin',
-    },
+    routingStrategy: 'round-robin',
     officeHours: {
       monday: [{ start: '08:00', end: '20:00' }],
       tuesday: [{ start: '08:00', end: '20:00' }],
