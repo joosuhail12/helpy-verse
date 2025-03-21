@@ -2,6 +2,7 @@
 /**
  * Lightweight Pullse Chat Widget Embed Script
  * Version: 1.0.0
+ * Inspired by Intercom's chat widget design
  */
 
 (function() {
@@ -25,15 +26,15 @@
       </svg>
     `;
     
-    // Style the button
+    // Style the button - using Intercom-inspired styling
     launcherButton.style.position = 'fixed';
     launcherButton.style.bottom = '20px';
     launcherButton.style.right = '20px';
     launcherButton.style.zIndex = '9999';
-    launcherButton.style.width = '48px';
-    launcherButton.style.height = '48px';
+    launcherButton.style.width = '56px';
+    launcherButton.style.height = '56px';
     launcherButton.style.borderRadius = '50%';
-    launcherButton.style.backgroundColor = '#5DCFCF';
+    launcherButton.style.backgroundColor = '#1f2937'; // Dark gray like our updated WidgetLauncher
     launcherButton.style.color = 'white';
     launcherButton.style.border = 'none';
     launcherButton.style.boxShadow = '0 2px 12px rgba(0, 0, 0, 0.15)';
@@ -41,6 +42,7 @@
     launcherButton.style.display = 'flex';
     launcherButton.style.alignItems = 'center';
     launcherButton.style.justifyContent = 'center';
+    launcherButton.style.transition = 'all 0.3s ease-in-out';
     
     // Add event listener
     launcherButton.addEventListener('click', toggleWidget);
@@ -55,18 +57,19 @@
     widgetContainer = document.createElement('div');
     widgetContainer.id = 'pullse-chat-container';
     
-    // Style the container
+    // Style the container - matching our React components
     widgetContainer.style.position = 'fixed';
     widgetContainer.style.bottom = '20px';
     widgetContainer.style.right = '20px';
     widgetContainer.style.width = '340px';
-    widgetContainer.style.height = '520px';
+    widgetContainer.style.height = '570px'; // Match height in ChatWidgetContainer
     widgetContainer.style.zIndex = '9998';
     widgetContainer.style.overflow = 'hidden';
-    widgetContainer.style.borderRadius = '12px';
-    widgetContainer.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.15)';
+    widgetContainer.style.borderRadius = '16px'; // More rounded corners like Intercom
+    widgetContainer.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.15)';
     widgetContainer.style.display = 'none';
     widgetContainer.style.transition = 'all 0.3s ease';
+    widgetContainer.style.backgroundColor = 'white';
     
     // Create iframe
     widgetIframe = document.createElement('iframe');
@@ -88,8 +91,8 @@
     widgetOpen = !widgetOpen;
     
     if (widgetOpen) {
-      // Update launcher position and icon
-      launcherButton.style.bottom = 'calc(520px + 16px)';
+      // Update launcher position and icon - stack above the widget
+      launcherButton.style.bottom = 'calc(570px + 16px)'; // Match height in WidgetLauncher
       launcherButton.innerHTML = `
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -135,6 +138,7 @@
       }
       #pullse-chat-launcher:hover {
         transform: scale(1.05);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
       }
       #pullse-chat-container {
         opacity: 0;
