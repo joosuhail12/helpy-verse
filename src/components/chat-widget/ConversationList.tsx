@@ -1,7 +1,11 @@
 
 import React, { useState, useEffect } from 'react';
-import { Clock, Search, ArrowRight } from 'lucide-react';
 import { getAblyChannel } from '@/utils/ably';
+import ConversationListItem from './components/conversation/ConversationListItem';
+import ConversationListEmpty from './components/conversation/ConversationListEmpty';
+import ConversationListLoading from './components/conversation/ConversationListLoading';
+import ConversationSearchBar from './components/conversation/ConversationSearchBar';
+import ConversationDateHeader from './components/conversation/ConversationDateHeader';
 
 interface Conversation {
   id: string;
@@ -121,80 +125,37 @@ const ConversationList = ({ onNewChat }: ConversationListProps) => {
     conversation.lastMessage.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Render loading state
   if (loading) {
-    return (
-      <div className="flex flex-col h-full items-center justify-center p-6">
-        <div className="w-8 h-8 border-t-2 border-primary rounded-full animate-spin"></div>
-        <p className="mt-4 text-sm text-gray-500 font-medium">Loading conversations...</p>
-      </div>
-    );
+    return <ConversationListLoading />;
   }
 
+  // Render empty state
   if (conversations.length === 0) {
-    return (
-      <div className="flex flex-col h-full items-center justify-center p-6">
-        <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-          <Search className="h-8 w-8 text-gray-400" />
-        </div>
-        <h3 className="text-gray-800 font-semibold">No messages yet</h3>
-        <p className="text-gray-500 text-center mt-2 mb-6 max-w-[250px]">
-          Start your first conversation with our support team
-        </p>
-        <input
-          type="text"
-          placeholder="Type or hum what your looking for"
-          className="w-full border-t border-b border-gray-200 py-3 px-4 text-sm focus:outline-none"
-        />
-      </div>
-    );
+    return <ConversationListEmpty />;
   }
 
   return (
     <div className="flex flex-col h-full bg-white">
-      {/* Date header */}
-      <div className="text-center py-2 text-xs text-gray-500 border-b border-gray-100">
-        April 2024
-      </div>
-      
-      <div className="flex-1 overflow-y-auto">
-        {filteredConversations.map((conversation) => (
-          <div 
-            key={conversation.id}
-            className="border-b border-gray-100 cursor-pointer"
-          >
-            <div className="p-4">
-              <div className="flex justify-between items-start">
-                <h3 className="font-medium text-gray-900">
-                  {conversation.title}
-                </h3>
-                <div className={`text-xs px-3 py-1 rounded-full font-medium ${
-                  conversation.status === 'resolved' 
-                    ? 'bg-green-100 text-green-700' 
-                    : 'bg-yellow-100 text-yellow-700'
-                }`}>
-                  {conversation.status === 'resolved' ? 'Resolved' : 'Ongoing'}
-                </div>
-              </div>
-              <div className="text-xs text-gray-500 mt-1">
-                {conversation.timestamp}
-              </div>
-            </div>
+      {Object.keys(groupedConversations).map(date => (
+        <React.Fragment key={date}>
+          <ConversationDateHeader date={date} />
+          
+          <div className="flex-1 overflow-y-auto">
+            {filteredConversations.map((conversation) => (
+              <ConversationListItem 
+                key={conversation.id} 
+                conversation={conversation} 
+              />
+            ))}
           </div>
-        ))}
-      </div>
+        </React.Fragment>
+      ))}
 
-      <div className="border-t border-gray-200 p-3">
-        <div className="relative">
-          <input
-            type="text"
-            placeholder="Type or hum what your looking for"
-            className="w-full border border-gray-200 rounded-md py-2 pr-10 pl-4 text-sm"
-          />
-          <button className="absolute right-3 top-1/2 -translate-y-1/2 text-indigo-600">
-            <ArrowRight className="h-5 w-5" />
-          </button>
-        </div>
-      </div>
+      <ConversationSearchBar
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+      />
     </div>
   );
 };
