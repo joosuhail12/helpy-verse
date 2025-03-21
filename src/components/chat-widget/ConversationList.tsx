@@ -19,7 +19,8 @@ const ConversationList: React.FC<ConversationListProps> = ({
   onSelectConversation,
   workspaceId 
 }) => {
-  const { conversations, loading } = useConversations(workspaceId);
+  // Changed to use useConversations without any arguments
+  const { conversations, loading } = useConversations();
   
   if (loading) {
     return (
@@ -46,7 +47,7 @@ const ConversationList: React.FC<ConversationListProps> = ({
     <div className="p-4 h-full">
       <div className="flex justify-between items-center mb-4">
         <h2 className="font-semibold text-sm">Your conversations</h2>
-        <NewConversationButton onClick={onNewChat} />
+        <NewConversationButton onNewChat={onNewChat} />
       </div>
       
       <div className="space-y-2">
@@ -54,7 +55,7 @@ const ConversationList: React.FC<ConversationListProps> = ({
           <ConversationListItem 
             key={conversation.id}
             conversation={conversation}
-            onClick={() => onSelectConversation(conversation.id)}
+            onSelect={() => onSelectConversation(conversation.id)}
           />
         ))}
       </div>

@@ -23,7 +23,6 @@ interface ConversationListItemProps {
 const ConversationListItem = ({ conversation, onSelect }: ConversationListItemProps) => {
   return (
     <div 
-      key={conversation.id}
       className={`border-b border-gray-100 cursor-pointer transition-colors hover:bg-gray-50 ${
         conversation.unread ? 'bg-blue-50 hover:bg-blue-50/80' : ''
       }`}

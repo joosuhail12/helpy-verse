@@ -1,9 +1,10 @@
 
 import { useState, useEffect } from 'react';
 import { format, isToday, isYesterday } from 'date-fns';
+import { Message } from '../types';
 
-// Message type definition
-interface Message {
+// Define a new type for the internal message structure
+interface ApiMessage {
   id: string;
   text: string;
   timestamp: string;
@@ -33,8 +34,8 @@ export const useConversation = (conversationId: string, workspaceId?: string) =>
         // Simulate API call
         await new Promise(resolve => setTimeout(resolve, 1000));
         
-        // Mock data
-        const mockMessages: Message[] = [
+        // Mock data - Changed to use ApiMessage type internally
+        const mockApiMessages: ApiMessage[] = [
           {
             id: '1',
             text: 'Hi, how can I help you today?',
@@ -67,7 +68,15 @@ export const useConversation = (conversationId: string, workspaceId?: string) =>
           }
         ];
         
-        setMessages(mockMessages);
+        // Transform the API messages to match the expected Message type
+        const transformedMessages: Message[] = mockApiMessages.map(msg => ({
+          id: msg.id,
+          text: msg.text,
+          timestamp: msg.timestamp,
+          sender: msg.sender.type === 'agent' ? 'agent' : 'user'
+        }));
+        
+        setMessages(transformedMessages);
       } catch (error) {
         console.error('Error fetching messages:', error);
       } finally {
@@ -86,16 +95,12 @@ export const useConversation = (conversationId: string, workspaceId?: string) =>
     setNewMessage('');
     setSending(true);
     
-    // Create a temporary message
+    // Create a temporary message conforming to the Message type from types.ts
     const tempMessage: Message = {
       id: `temp-${Date.now()}`,
       text: messageToSend,
       timestamp: new Date().toISOString(),
-      sender: {
-        id: 'customer-1',
-        name: 'Customer',
-        type: 'customer'
-      }
+      sender: 'user'
     };
     
     // Add to messages immediately for better UX
@@ -123,11 +128,7 @@ export const useConversation = (conversationId: string, workspaceId?: string) =>
           id: `msg-${Date.now() + 1}`,
           text: "Thanks for your message. Our team will get back to you shortly.",
           timestamp: new Date().toISOString(),
-          sender: {
-            id: 'agent-1',
-            name: 'Support Agent',
-            type: 'agent'
-          }
+          sender: 'agent'
         };
         setMessages(prev => [...prev, agentResponse]);
       }, 2000);
