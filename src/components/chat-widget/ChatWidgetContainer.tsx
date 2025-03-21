@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { X, Minimize2, MessageSquare, Home, MessageCircle, ArrowLeft } from 'lucide-react';
+import { X, MessageCircle, Home, MessageSquare } from 'lucide-react';
 import ChatHome from './ChatHome';
 import ConversationList from './ConversationList';
 import NewChat from './NewChat';
@@ -36,10 +36,6 @@ const ChatWidgetContainer = () => {
   const toggleWidget = () => {
     setIsOpen(!isOpen);
     setMinimized(false);
-  };
-
-  const minimizeWidget = () => {
-    setMinimized(true);
   };
 
   const navigateTo = (page: WidgetPage) => {
@@ -80,49 +76,14 @@ const ChatWidgetContainer = () => {
     );
   }
 
-  // Render header based on current page
-  const renderHeader = () => {
-    if (currentPage === 'home') {
-      return (
-        <div className="absolute top-4 left-4 z-10">
-          <div className="w-8 h-8 bg-black/20 rounded-full"></div>
-        </div>
-      );
-    }
-    
-    if (currentPage === 'conversations') {
-      return (
-        <div className="bg-white p-4 flex justify-between items-center border-b border-gray-100">
-          <div className="flex items-center gap-3">
-            <button onClick={() => navigateTo('home')} className="text-gray-700">
-              <ArrowLeft className="h-5 w-5" />
-            </button>
-            <h2 className="font-semibold">Messages</h2>
-          </div>
-          <button onClick={toggleWidget} className="text-gray-700">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-      );
-    }
-    
-    if (currentPage === 'conversation-detail') {
-      return (
-        <div className="bg-white p-4 flex justify-between items-center border-b border-gray-100">
-          <div className="flex items-center gap-3">
-            <button onClick={() => navigateTo('conversations')} className="text-gray-700">
-              <ArrowLeft className="h-5 w-5" />
-            </button>
-            <h2 className="font-semibold">Conversation</h2>
-          </div>
-          <button onClick={toggleWidget} className="text-gray-700">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-      );
-    }
-    
-    return null;
+  // Check if we should show the navigation bar
+  const shouldShowNavBar = () => {
+    return currentPage !== 'conversation-detail';
+  };
+
+  // Check if we should show the brand footer
+  const shouldShowFooter = () => {
+    return currentPage !== 'conversation-detail';
   };
 
   return (
@@ -134,8 +95,31 @@ const ChatWidgetContainer = () => {
         maxHeight: 'calc(100vh - 40px)'
       }}
     >
-      {/* Header */}
-      {renderHeader()}
+      {/* Widget header */}
+      <div className="p-4 flex justify-between items-center border-b border-gray-100">
+        <div className="flex items-center gap-2">
+          {currentPage !== 'home' && (
+            <button
+              onClick={() => navigateTo('home')}
+              className="p-1.5 rounded-full hover:bg-gray-100 text-gray-500"
+            >
+              <Home className="h-5 w-5" />
+            </button>
+          )}
+          <h2 className="font-semibold">
+            {currentPage === 'home' && 'Support Chat'}
+            {currentPage === 'conversations' && 'Your Conversations'}
+            {currentPage === 'new-chat' && 'New Conversation'}
+            {currentPage === 'conversation-detail' && 'Chat'}
+          </h2>
+        </div>
+        <button
+          onClick={toggleWidget}
+          className="p-1.5 rounded-full hover:bg-gray-100 text-gray-500"
+        >
+          <X className="h-5 w-5" />
+        </button>
+      </div>
 
       {/* Widget content */}
       <div className="flex-1 overflow-y-auto">
@@ -152,39 +136,40 @@ const ChatWidgetContainer = () => {
         {currentPage === 'conversation-detail' && currentConversationId && (
           <ConversationView 
             conversationId={currentConversationId} 
+            onBack={() => navigateTo('conversations')}
           />
         )}
       </div>
 
-      {/* Modern widget navigation */}
-      <div className="border-t border-gray-100 py-3 px-6 bg-white flex justify-around items-center">
-        <button 
-          onClick={() => navigateTo('home')}
-          className={`flex flex-col items-center gap-1 ${currentPage === 'home' 
-            ? 'text-[#5DCFCF]' 
-            : 'text-gray-500'}`}
-          aria-label="Home"
-        >
-          <Home className="h-5 w-5" />
-          <span className="text-xs">Home</span>
-        </button>
-        
-        <button 
-          onClick={() => navigateTo('conversations')}
-          className={`flex flex-col items-center gap-1 ${
-            (currentPage === 'conversations' || currentPage === 'conversation-detail')
+      {/* Only show navigation when appropriate */}
+      {shouldShowNavBar() && (
+        <div className="border-t border-gray-100 py-3 px-6 bg-white flex justify-around items-center">
+          <button 
+            onClick={() => navigateTo('home')}
+            className={`flex flex-col items-center gap-1 ${currentPage === 'home' 
               ? 'text-[#5DCFCF]' 
-              : 'text-gray-500'
-          }`}
-          aria-label="Messages"
-        >
-          <MessageSquare className="h-5 w-5" />
-          <span className="text-xs">Messages</span>
-        </button>
-      </div>
+              : 'text-gray-500'}`}
+            aria-label="Home"
+          >
+            <Home className="h-5 w-5" />
+            <span className="text-xs">Home</span>
+          </button>
+          <button 
+            onClick={() => navigateTo('conversations')}
+            className={`flex flex-col items-center gap-1 ${
+              (currentPage === 'conversations' || currentPage === 'conversation-detail')
+                ? 'text-[#5DCFCF]' 
+                : 'text-gray-500'}`}
+            aria-label="Messages"
+          >
+            <MessageSquare className="h-5 w-5" />
+            <span className="text-xs">Messages</span>
+          </button>
+        </div>
+      )}
 
       {/* Brand footer - only including it once at the bottom */}
-      <ResponseTime />
+      {shouldShowFooter() && <ResponseTime />}
     </div>
   );
 };

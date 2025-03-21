@@ -114,6 +114,16 @@ const ChatWidgetStandalone = () => {
     return null;
   };
 
+  // Check if we should show the navigation bar
+  const shouldShowNavBar = () => {
+    return currentPage !== 'conversation-detail';
+  };
+
+  // Check if we should show the brand footer
+  const shouldShowFooter = () => {
+    return currentPage !== 'conversation-detail';
+  };
+
   return (
     <div className="flex flex-col h-screen bg-white rounded-lg overflow-hidden">
       {/* Header */}
@@ -140,7 +150,7 @@ const ChatWidgetStandalone = () => {
       </div>
 
       {/* Only show navigation when not in conversation detail */}
-      {currentPage !== 'conversation-detail' && (
+      {shouldShowNavBar() && (
         <div className="border-t border-gray-100 py-3 px-6 bg-white flex justify-around items-center">
           <button 
             onClick={() => navigateTo('home')}
@@ -167,7 +177,7 @@ const ChatWidgetStandalone = () => {
       )}
 
       {/* Brand footer - only show when not in conversation detail */}
-      {currentPage !== 'conversation-detail' && <ResponseTime />}
+      {shouldShowFooter() && <ResponseTime />}
     </div>
   );
 };

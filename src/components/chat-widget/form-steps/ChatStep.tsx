@@ -36,7 +36,7 @@ const ChatStep: React.FC<ChatStepProps> = ({
         </button>
         <div>
           <h2 className="font-semibold text-gray-800">New Conversation</h2>
-          <p className="text-xs text-gray-500">{name} ({email})</p>
+          <p className="text-xs text-gray-500">{name}</p>
         </div>
       </div>
       
@@ -58,6 +58,7 @@ const ChatStep: React.FC<ChatStepProps> = ({
             rows={3}
             disabled={submitting}
             required
+            autoFocus
           />
           <button
             type="submit"

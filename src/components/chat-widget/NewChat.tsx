@@ -37,6 +37,8 @@ const NewChat: React.FC<NewChatProps> = ({ onConversationCreated }) => {
           setTimeout(() => {
             setName('Logged User');
             setEmail('user@example.com');
+            // Skip info collection step for logged in users
+            setStep('chat');
           }, 300);
         } catch (error) {
           console.error('Error fetching user data:', error);
