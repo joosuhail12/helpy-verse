@@ -21,7 +21,8 @@ const CustomData = lazy(() => import('../pages/settings/CustomData'));
 const CustomObjects = lazy(() => import('../pages/settings/CustomObjects'));
 const CustomObjectDetail = lazy(() => import('../pages/settings/CustomObjectDetail'));
 const Teammates = lazy(() => import('../pages/settings/Teammates'));
-const TeammateDetail = lazy(() => import('../pages/settings/TeammateDetail'));
+// Update path to match the actual location of the TeammateDetail component
+const TeammateDetail = lazy(() => import('../pages/settings/teammates/TeammateDetail'));
 const Teams = lazy(() => import('../pages/settings/Teams'));
 const TeamDetail = lazy(() => import('../pages/settings/TeamDetail'));
 const EditTeam = lazy(() => import('../pages/settings/EditTeam'));
