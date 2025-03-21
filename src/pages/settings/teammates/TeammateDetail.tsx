@@ -1,6 +1,5 @@
 
 import { useParams, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
