@@ -9,20 +9,22 @@ interface WidgetLauncherProps {
 
 /**
  * Launcher button for the chat widget
+ * Styled to match Intercom's launcher button
  */
 const WidgetLauncher: React.FC<WidgetLauncherProps> = ({ toggleWidget, isOpen = false }) => {
   return (
     <div className="fixed z-50" style={{ 
-      bottom: isOpen ? 'calc(520px + 16px)' : '20px', 
+      bottom: isOpen ? 'calc(570px + 16px)' : '20px', 
       right: '20px',
       transition: 'bottom 0.3s ease-in-out'
     }}>
       <button 
         onClick={toggleWidget}
-        className="bg-[#5DCFCF] text-white rounded-full p-3 shadow-lg hover:shadow-xl transition-all flex items-center gap-2 focus:outline-none"
+        className="bg-gray-900 text-white rounded-full p-3 shadow-lg hover:shadow-xl transition-all flex items-center justify-center focus:outline-none"
+        style={{ width: '56px', height: '56px' }}
         aria-label={isOpen ? "Close chat widget" : "Open chat widget"}
       >
-        {isOpen ? <X className="h-5 w-5" /> : <MessageCircle className="h-5 w-5" />}
+        {isOpen ? <X className="h-6 w-6" /> : <MessageCircle className="h-6 w-6" />}
       </button>
     </div>
   );

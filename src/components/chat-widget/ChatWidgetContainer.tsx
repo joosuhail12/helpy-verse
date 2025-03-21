@@ -9,6 +9,7 @@ import { WidgetPage } from './container/types';
 
 /**
  * Main container component for the embeddable chat widget
+ * Styled with Intercom-inspired design
  */
 const ChatWidgetContainer = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -87,10 +88,10 @@ const ChatWidgetContainer = () => {
       
       {/* Widget container */}
       <div 
-        className="fixed bottom-5 right-5 z-40 flex flex-col bg-white rounded-xl shadow-2xl overflow-hidden" 
+        className="fixed bottom-5 right-5 z-40 flex flex-col bg-white rounded-2xl shadow-2xl overflow-hidden" 
         style={{ 
           width: '340px', 
-          height: '520px', 
+          height: '570px', 
           maxHeight: 'calc(100vh - 40px)'
         }}
       >

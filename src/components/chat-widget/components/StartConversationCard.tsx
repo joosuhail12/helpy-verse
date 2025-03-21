@@ -8,26 +8,17 @@ interface StartConversationCardProps {
 
 /**
  * Card component to start a new conversation
+ * Styled like Intercom's "Ask a question" button
  */
 const StartConversationCard = ({ onClick }: StartConversationCardProps) => {
   return (
     <div 
       onClick={onClick}
-      className="cursor-pointer bg-white hover:bg-gray-50 transition-colors duration-200 shadow-sm border border-gray-100 rounded-lg p-5 mb-6"
+      className="cursor-pointer bg-white hover:bg-gray-50 transition-colors duration-200 shadow-sm border border-gray-100 rounded-full p-4 mb-6 flex items-center justify-between"
     >
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="bg-[#5DCFCF]/10 p-2 rounded-full">
-            <MessageCircle className="h-5 w-5 text-[#5DCFCF]" />
-          </div>
-          <div>
-            <h3 className="font-semibold text-gray-900">Send us a message</h3>
-            <p className="text-sm text-gray-500">We typically reply within minutes</p>
-          </div>
-        </div>
-        <div className="text-[#5DCFCF]">
-          <ArrowRight className="h-5 w-5" />
-        </div>
+      <span className="font-medium text-gray-800 pl-2">Ask a question</span>
+      <div className="bg-gray-900 text-white rounded-full h-8 w-8 flex items-center justify-center">
+        <ArrowRight className="h-4 w-4" />
       </div>
     </div>
   );
