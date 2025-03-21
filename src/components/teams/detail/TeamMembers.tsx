@@ -27,7 +27,7 @@ const TeamMembers = ({ team }: TeamMembersProps) => {
           id: teammate.id,
           name: teammate.name,
           email: teammate.email,
-          avatar: teammate.avatar
+          avatar: teammate.avatar || undefined
         } : {
           id: memberId,
           name: 'Unknown Member',
