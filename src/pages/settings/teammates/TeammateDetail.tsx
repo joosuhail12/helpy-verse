@@ -18,6 +18,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 
+/**
+ * TeammateDetail component displays and allows editing of a teammate's profile
+ */
 const TeammateDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
