@@ -40,7 +40,7 @@ export const TeammateAssignments = ({ teammateId }: TeammateAssignmentsProps) =>
                   Role: {assignment.role || 'Member'}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  Joined: {new Date(assignment.joinedAt).toLocaleDateString()}
+                  Joined: {new Date(assignment.startDate || new Date()).toLocaleDateString()}
                 </p>
               </div>
             ))}
