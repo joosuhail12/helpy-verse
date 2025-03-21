@@ -1,6 +1,7 @@
 
 import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from '@/store/store';
+import { Teammate } from '@/types/teammate';
 
 // Basic selectors
 export const selectTeammatesState = (state: RootState) => state.teammates;

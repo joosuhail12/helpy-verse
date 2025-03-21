@@ -26,11 +26,13 @@ const TeamMembers = ({ team }: TeamMembersProps) => {
         return teammate ? {
           id: teammate.id,
           name: teammate.name,
-          email: teammate.email
+          email: teammate.email,
+          avatar: teammate.avatar
         } : {
           id: memberId,
           name: 'Unknown Member',
-          email: 'No email available'
+          email: 'No email available',
+          avatar: undefined
         };
       });
     }
