@@ -1,4 +1,3 @@
-
 /**
  * Token and authentication management utility functions
  */
@@ -24,12 +23,26 @@ export const handleLogout = async (): Promise<void> => {
   } catch (error) {
     console.error('Error during logout process:', error);
   } finally {
-    // Clear workspace ID from localStorage
+    // Clear all tokens and storage
+    localStorage.removeItem("token");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("role");
     localStorage.removeItem("workspaceId");
-    console.log("Cleared workspace ID from localStorage");
+    sessionStorage.removeItem("token");
     
-    // Always clear local tokens regardless of API call success
-    cookieFunctions.handleLogout();
+    // Clear cookies
+    try {
+      document.cookie = `customerToken=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Lax`;
+      document.cookie = `agent_email=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Lax`;
+      document.cookie = `workspaceId=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Lax`;
+    } catch (error) {
+      console.warn("Error clearing cookies:", error);
+    }
+    
+    console.log("User logged out - cleared all tokens and storage");
+    
+    // Force page refresh and redirect to sign-in
+    window.location.href = "/sign-in";
   }
 };
 

@@ -37,12 +37,14 @@ const Sidebar = () => {
   }, [location]);
 
   const handleLogout = () => {
+    // Dispatch the logout action which will handle token clearing and redirection
+    console.log("Logging out user...");
     dispatch(logout());
+    
     toast({
-      title: "Logged out successfully",
-      description: "You have been logged out of your account"
+      title: "Logged out",
+      description: "You have been logged out successfully"
     });
-    navigate('/sign-in', { replace: true });
   };
 
   const toggleExpanded = (itemTitle: string) => {

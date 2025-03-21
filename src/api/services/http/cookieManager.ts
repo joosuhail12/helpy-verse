@@ -105,14 +105,13 @@ export const handleLogout = (): void => {
     localStorage.removeItem("token");
     localStorage.removeItem("userId");
     localStorage.removeItem("role");
+    localStorage.removeItem("workspaceId");
     sessionStorage.removeItem("token");
     
-    console.log("User logged out");
+    console.log("User logged out - storage cleared");
     
     // Use direct navigation for reliability
-    setTimeout(() => {
-        window.location.href = "/sign-in";
-    }, 100);
+    window.location.href = "/sign-in";
 };
 
 // Export cookie helper functions to reduce circular dependencies

@@ -1,6 +1,7 @@
 
 import { createSlice } from '@reduxjs/toolkit';
-import { getCookie, handleLogout } from '@/utils/helpers/helpers';
+import { getCookie } from '@/utils/helpers/helpers';
+import { handleLogout as tokenHandleLogout } from '@/utils/auth/tokenManager';
 import { AuthState } from './types';
 import { 
   loginUser, 
@@ -31,7 +32,8 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
       state.user = null;
       state.error = null;
-      handleLogout(); // Use our improved logout function
+      // Call the improved token manager logout function
+      tokenHandleLogout();
     },
     clearError: (state) => {
       state.error = null;
