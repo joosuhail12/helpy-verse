@@ -4,6 +4,7 @@ import { getAblyChannel } from '@/utils/ably';
 import InfoStep from './form-steps/InfoStep';
 import ChatStep from './form-steps/ChatStep';
 import { isAuthenticated, getUserId } from '@/utils/auth/tokenManager';
+import { toast } from 'sonner';
 
 interface NewChatProps {
   onConversationCreated: (conversationId?: string) => void;
@@ -20,7 +21,7 @@ const NewChat: React.FC<NewChatProps> = ({ onConversationCreated }) => {
   const [step, setStep] = useState<'info' | 'chat'>('info');
   const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
 
-  // Check if user is logged in
+  // Check if user is logged in or has session data
   useEffect(() => {
     const checkUserAuth = async () => {
       const loggedIn = isAuthenticated();
@@ -40,6 +41,17 @@ const NewChat: React.FC<NewChatProps> = ({ onConversationCreated }) => {
         } catch (error) {
           console.error('Error fetching user data:', error);
         }
+      } else {
+        // Check if user info is in session storage
+        const sessionName = sessionStorage.getItem('chat-widget-user-name');
+        const sessionEmail = sessionStorage.getItem('chat-widget-user-email');
+        
+        if (sessionName && sessionEmail) {
+          setName(sessionName);
+          setEmail(sessionEmail);
+          // Skip the info step if user data is available
+          setStep('chat');
+        }
       }
     };
     
@@ -48,7 +60,14 @@ const NewChat: React.FC<NewChatProps> = ({ onConversationCreated }) => {
 
   const handleSubmitInfo = (e: React.FormEvent) => {
     e.preventDefault();
+    
     if (isUserLoggedIn || (name && email)) {
+      // Store user info in session storage for future chats
+      if (!isUserLoggedIn && name && email) {
+        sessionStorage.setItem('chat-widget-user-name', name);
+        sessionStorage.setItem('chat-widget-user-email', email);
+      }
+      
       setStep('chat');
     }
   };
@@ -81,6 +100,9 @@ const NewChat: React.FC<NewChatProps> = ({ onConversationCreated }) => {
       // Generate a mock conversation ID
       const mockConversationId = `conv-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       
+      // Show success notification
+      toast.success('Message sent successfully');
+      
       // Simulate success and redirect to conversations
       setTimeout(() => {
         onConversationCreated(mockConversationId);
@@ -88,6 +110,7 @@ const NewChat: React.FC<NewChatProps> = ({ onConversationCreated }) => {
       
     } catch (error) {
       console.error('Error sending message:', error);
+      toast.error('Failed to send message. Please try again.');
       setSubmitting(false);
     }
   };

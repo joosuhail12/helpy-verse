@@ -108,24 +108,7 @@ const ChatWidgetStandalone = () => {
     }
     
     if (currentPage === 'conversation-detail') {
-      return (
-        <div className="p-4 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <button 
-              onClick={() => navigateTo('conversations')} 
-              className="text-gray-700"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </button>
-            <h2 className="font-semibold">Conversation</h2>
-          </div>
-          <div className="flex items-center gap-3">
-            <button onClick={closeWidget} className="text-gray-700">
-              <X className="h-5 w-5" />
-            </button>
-          </div>
-        </div>
-      );
+      return null; // ConversationView has its own header
     }
     
     return null;
@@ -151,37 +134,40 @@ const ChatWidgetStandalone = () => {
         {currentPage === 'conversation-detail' && currentConversationId && (
           <ConversationView 
             conversationId={currentConversationId} 
+            onBack={() => navigateTo('conversations')}
           />
         )}
       </div>
 
-      {/* Modern widget navigation */}
-      <div className="border-t border-gray-100 py-3 px-6 bg-white flex justify-around items-center">
-        <button 
-          onClick={() => navigateTo('home')}
-          className={`flex flex-col items-center gap-1 ${currentPage === 'home' 
-            ? 'text-[#5DCFCF]' 
-            : 'text-gray-500'}`}
-          aria-label="Home"
-        >
-          <Home className="h-5 w-5" />
-          <span className="text-xs">Home</span>
-        </button>
-        <button 
-          onClick={() => navigateTo('conversations')}
-          className={`flex flex-col items-center gap-1 ${
-            (currentPage === 'conversations' || currentPage === 'conversation-detail')
+      {/* Only show navigation when not in conversation detail */}
+      {currentPage !== 'conversation-detail' && (
+        <div className="border-t border-gray-100 py-3 px-6 bg-white flex justify-around items-center">
+          <button 
+            onClick={() => navigateTo('home')}
+            className={`flex flex-col items-center gap-1 ${currentPage === 'home' 
               ? 'text-[#5DCFCF]' 
               : 'text-gray-500'}`}
-          aria-label="Messages"
-        >
-          <MessageSquare className="h-5 w-5" />
-          <span className="text-xs">Messages</span>
-        </button>
-      </div>
+            aria-label="Home"
+          >
+            <Home className="h-5 w-5" />
+            <span className="text-xs">Home</span>
+          </button>
+          <button 
+            onClick={() => navigateTo('conversations')}
+            className={`flex flex-col items-center gap-1 ${
+              (currentPage === 'conversations' || currentPage === 'conversation-detail')
+                ? 'text-[#5DCFCF]' 
+                : 'text-gray-500'}`}
+            aria-label="Messages"
+          >
+            <MessageSquare className="h-5 w-5" />
+            <span className="text-xs">Messages</span>
+          </button>
+        </div>
+      )}
 
-      {/* Brand footer - only include it once at the bottom */}
-      <ResponseTime />
+      {/* Brand footer - only show when not in conversation detail */}
+      {currentPage !== 'conversation-detail' && <ResponseTime />}
     </div>
   );
 };
