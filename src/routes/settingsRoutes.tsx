@@ -1,4 +1,3 @@
-
 import { lazy, Suspense, ReactNode } from 'react';
 import { ProtectedRoute } from '../components/auth/ProtectedRoute';
 import { Loader2 } from 'lucide-react';
@@ -21,8 +20,6 @@ const CustomData = lazy(() => import('../pages/settings/CustomData'));
 const CustomObjects = lazy(() => import('../pages/settings/CustomObjects'));
 const CustomObjectDetail = lazy(() => import('../pages/settings/CustomObjectDetail'));
 const Teammates = lazy(() => import('../pages/settings/Teammates'));
-// The issue is here - we need to use the correct import path
-// Since we're creating the component directly, we need to import from exact file
 const TeammateDetail = lazy(() => import('../pages/settings/teammates/TeammateDetail'));
 const Teams = lazy(() => import('../pages/settings/Teams'));
 const TeamDetail = lazy(() => import('../pages/settings/TeamDetail'));

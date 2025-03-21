@@ -1,6 +1,6 @@
 
 import { Suspense } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import TeammatesPage from './teammates/TeammatesPage';
 import { Loader2 } from 'lucide-react';
 
@@ -16,10 +16,12 @@ const LoadingSpinner = () => (
  * and provides an outlet for nested routes (like teammate detail)
  */
 const Teammates = () => {
+  const location = useLocation();
+  const isListPage = location.pathname === '/home/settings/teammates';
+  
   return (
     <div>
-      {/* Check if we're on the main teammates route or a nested route */}
-      {window.location.pathname === '/home/settings/teammates' ? (
+      {isListPage ? (
         <TeammatesPage />
       ) : (
         <Suspense fallback={<LoadingSpinner />}>

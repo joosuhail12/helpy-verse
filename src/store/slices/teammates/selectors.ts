@@ -1,77 +1,71 @@
+
 import { RootState } from '@/store/store';
+import { createSelector } from '@reduxjs/toolkit';
 
-// Ensure we always return an array, even if teammates are undefined
-export const selectAllTeammates = (state: RootState) => {
-  if (!state.teammates || !state.teammates.teammates) {
-    console.warn('Teammates state is undefined or null');
-    return [];
-  }
-  return state.teammates.teammates;
-};
+// Basic selectors
+const getTeammatesState = (state: RootState) => state.teammates;
+const getTeammates = (state: RootState) => state.teammates?.teammates || [];
+const getTeammateIds = createSelector(
+  [getTeammates],
+  (teammates) => teammates.map(teammate => teammate.id)
+);
 
-export const selectTeammatesLoading = (state: RootState) => {
-  if (!state.teammates) {
-    return false;
-  }
-  return state.teammates.loading || false;
-};
+// Memoized selectors
+export const selectAllTeammates = createSelector(
+  [getTeammates],
+  (teammates) => teammates
+);
 
-export const selectTeammatesError = (state: RootState) => {
-  if (!state.teammates) {
-    return null;
-  }
-  
-  // If error is a string, return it directly
-  if (typeof state.teammates.error === 'string') {
-    return state.teammates.error;
-  }
-  
-  // If error is an object with a message property, return the message
-  if (state.teammates.error && typeof state.teammates.error === 'object' && 'message' in state.teammates.error) {
-    return (state.teammates.error as Error).message || JSON.stringify(state.teammates.error);
-  }
-  
-  return state.teammates.error || null;
-};
+export const selectTeammatesLoading = createSelector(
+  [getTeammatesState],
+  (teammatesState) => teammatesState?.loading || false
+);
 
-export const selectTeammateById = (state: RootState, teammateId: string) => {
-  if (!state.teammates || !state.teammates.teammates) {
-    return null;
+export const selectTeammatesError = createSelector(
+  [getTeammatesState],
+  (teammatesState) => {
+    if (!teammatesState) return null;
+    
+    // If error is a string, return it directly
+    if (typeof teammatesState.error === 'string') {
+      return teammatesState.error;
+    }
+    
+    // If error is an object with a message property, return the message
+    if (teammatesState.error && typeof teammatesState.error === 'object' && 'message' in teammatesState.error) {
+      return (teammatesState.error as Error).message || JSON.stringify(teammatesState.error);
+    }
+    
+    return teammatesState.error || null;
   }
-  return state.teammates.teammates.find(teammate => teammate.id === teammateId) || null;
-};
+);
 
-export const selectTeammateDetailsLoading = (state: RootState) => {
-  if (!state.teammates) {
-    return false;
-  }
-  return state.teammates.loading || false;
-};
+export const selectTeammateById = createSelector(
+  [getTeammates, (state, teammateId: string) => teammateId],
+  (teammates, teammateId) => teammates.find(teammate => teammate.id === teammateId) || null
+);
 
-export const selectTeammateDetails = (state: RootState) => {
-  if (!state.teammates) {
-    return null;
-  }
-  return state.teammates.selectedTeammate || null;
-};
+export const selectTeammateDetailsLoading = createSelector(
+  [getTeammatesState],
+  (teammatesState) => teammatesState?.loading || false
+);
 
-export const selectTeammateActivities = (state: RootState, teammateId: string) => {
-  if (!state.teammates || !state.teammates.activities) {
-    return [];
-  }
-  return state.teammates.activities[teammateId] || [];
-};
+export const selectTeammateDetails = createSelector(
+  [getTeammatesState],
+  (teammatesState) => teammatesState?.selectedTeammate || null
+);
 
-export const selectTeammateAssignments = (state: RootState, teammateId: string) => {
-  if (!state.teammates || !state.teammates.assignments) {
-    return [];
-  }
-  return state.teammates.assignments[teammateId] || [];
-};
+export const selectTeammateActivities = createSelector(
+  [getTeammatesState, (state, teammateId: string) => teammateId],
+  (teammatesState, teammateId) => teammatesState?.activities[teammateId] || []
+);
 
-export const selectTeammateSessions = (state: RootState, teammateId: string) => {
-  if (!state.teammates || !state.teammates.sessions) {
-    return [];
-  }
-  return state.teammates.sessions[teammateId] || [];
-};
+export const selectTeammateAssignments = createSelector(
+  [getTeammatesState, (state, teammateId: string) => teammateId],
+  (teammatesState, teammateId) => teammatesState?.assignments[teammateId] || []
+);
+
+export const selectTeammateSessions = createSelector(
+  [getTeammatesState, (state, teammateId: string) => teammateId],
+  (teammatesState, teammateId) => teammatesState?.sessions[teammateId] || []
+);
