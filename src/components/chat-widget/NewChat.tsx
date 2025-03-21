@@ -19,7 +19,6 @@ const NewChat: React.FC<NewChatProps> = ({ onConversationCreated, workspaceId })
     topic: ''
   });
   
-  // Fixed the function signature to match InfoStep's onSubmit prop
   const handleSubmitInfo = (data: { name: string; email: string; topic: string }) => {
     setFormData(data);
     setStep('chat');
