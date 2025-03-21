@@ -11,7 +11,7 @@ import { createCannedResponse } from '@/store/slices/cannedResponses/actions';
 import { ResponsePreview } from '@/components/settings/cannedResponses/form/ResponsePreview';
 import { BasicInformationSection } from './cannedResponses/form/BasicInformationSection';
 import { OrganizationSection } from './cannedResponses/form/OrganizationSection';
-import { SharingSettingsSection } from './cannedResponses/form/SharingSettingsSection';
+import SharingSettingsSection from './cannedResponses/form/SharingSettingsSection';
 import { formSchema, type FormValues } from './cannedResponses/formSchema';
 import type { CannedResponse } from '@/mock/cannedResponses';
 

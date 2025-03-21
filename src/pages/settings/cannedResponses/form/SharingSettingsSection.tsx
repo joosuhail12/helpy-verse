@@ -24,11 +24,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import type { CannedResponseFormValues } from '../formSchema';
+import type { FormValues } from '../formSchema';
 import { useAppSelector } from '@/hooks/useAppSelector';
 
 const SharingSettingsSection = () => {
-  const { control, watch, setValue, getValues } = useFormContext<CannedResponseFormValues>();
+  const { control, watch, setValue, getValues } = useFormContext<FormValues>();
   const teams = useAppSelector((state) => state.teams.teams);
   const [selectedTeam, setSelectedTeam] = useState('');
   const [selectedPermission, setSelectedPermission] = useState<'view' | 'edit'>('view');
