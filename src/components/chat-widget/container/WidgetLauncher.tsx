@@ -13,7 +13,7 @@ interface WidgetLauncherProps {
 const WidgetLauncher: React.FC<WidgetLauncherProps> = ({ toggleWidget, isOpen = false }) => {
   return (
     <div className="fixed z-50" style={{ 
-      bottom: '20px', 
+      bottom: isOpen ? 'calc(520px + 16px)' : '20px', 
       right: '20px',
       transition: 'bottom 0.3s ease-in-out'
     }}>
