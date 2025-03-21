@@ -11,11 +11,16 @@ export const fetchUserData = createAsyncThunk(
       const response = await HttpClient.apiClient.get(AUTH_ENDPOINTS.USER_PROFILE);
       console.log("User profile data fetched successfully", response.data);
       
-      // Save workspace ID from response to localStorage if it exists
+      // Save workspace ID from response to localStorage and cookie if it exists
       if (response.data.data?.defaultWorkspaceId) {
         try {
+          const workspaceId = response.data.data.defaultWorkspaceId;
+          
           // Set the workspace ID in localStorage
-          localStorage.setItem("workspaceId", response.data.data.defaultWorkspaceId);
+          localStorage.setItem("workspaceId", workspaceId);
+          
+          // Also set in cookie for cross-tab consistency
+          cookieFunctions.setCookie("workspaceId", workspaceId, 7);
           
           // Verify localStorage was set correctly
           const verifiedValue = localStorage.getItem("workspaceId");

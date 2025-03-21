@@ -6,8 +6,12 @@ import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { fetchUserData } from '@/store/slices/auth/userActions';
 
 export const initializeApp = () => {
-  // Check both cookie and localStorage for token, but only localStorage for workspace ID
+  // Check both cookie and localStorage for token
   const token = getCookie("customerToken") || localStorage.getItem("token");
+  
+  // Check for workspace ID in both localStorage and cookie
+  const workspaceId = localStorage.getItem("workspaceId") || getCookie("workspaceId");
+  
   if (token) {
     console.log("App initialization: Found token, setting up auth");
     // Set token in both places to ensure consistency
@@ -16,6 +20,18 @@ export const initializeApp = () => {
     HttpClient.setAxiosDefaultConfig(token);
   } else {
     console.log("App initialization: No token found");
+  }
+  
+  // Log workspace ID status
+  if (workspaceId) {
+    console.log("App initialization: Found workspace ID:", workspaceId);
+    // Ensure it's set in localStorage for consistent access
+    if (!localStorage.getItem("workspaceId")) {
+      localStorage.setItem("workspaceId", workspaceId);
+      console.log("Synced workspace ID to localStorage");
+    }
+  } else {
+    console.warn("App initialization: No workspace ID found - API requests may fail");
   }
 };
 
@@ -45,6 +61,12 @@ const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
       if (e.key === "token" && !e.newValue) {
         // Token was removed in another tab, log out here too
         window.location.href = "/sign-in";
+      }
+      
+      // Also sync workspace ID changes across tabs
+      if (e.key === "workspaceId" && e.newValue !== localStorage.getItem("workspaceId")) {
+        localStorage.setItem("workspaceId", e.newValue || "");
+        console.log("Workspace ID synced from another tab:", e.newValue);
       }
     };
     

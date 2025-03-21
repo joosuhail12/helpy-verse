@@ -1,3 +1,4 @@
+
 import { HttpClient, cookieFunctions } from '@/api/services/http';
 
 // Re-export the main API client for direct usage
@@ -15,12 +16,16 @@ const setupApi = () => {
       console.log('API service initialized without auth token');
     }
     
-    // Ensure workspace ID is set for all requests - only from cookie
-    const workspaceId = cookieFunctions.getCookie('workspaceId');
+    // Ensure workspace ID is set for all requests - check both localStorage and cookie
+    const workspaceId = localStorage.getItem('workspaceId') || cookieFunctions.getCookie('workspaceId');
     
     if (workspaceId) {
       console.log('API service initialized with workspace ID:', workspaceId);
-      // Don't store workspaceId in localStorage, only use cookies
+      // Ensure it's also in localStorage for consistency
+      if (!localStorage.getItem('workspaceId')) {
+        localStorage.setItem('workspaceId', workspaceId);
+        console.log('Synced workspace ID to localStorage');
+      }
     } else {
       console.warn('API service initialized without workspace ID');
     }

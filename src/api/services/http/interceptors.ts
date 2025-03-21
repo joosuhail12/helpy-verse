@@ -19,8 +19,8 @@ export const requestInterceptor = async (config: InternalAxiosRequestConfig): Pr
         config.headers.set("Authorization", `Bearer ${token}`);
     }
 
-    // Add workspace_id to all requests if it exists - get ONLY from cookie
-    const workspaceId = getCookie("workspaceId");
+    // Get workspace_id from localStorage first, then fall back to cookie
+    const workspaceId = localStorage.getItem("workspaceId") || getCookie("workspaceId");
     
     // Only add workspace_id if the URL doesn't already have it
     if (workspaceId && config.url && !config.url.includes('workspace_id=')) {
@@ -32,6 +32,8 @@ export const requestInterceptor = async (config: InternalAxiosRequestConfig): Pr
         if (!config.params.workspace_id) {
             config.params.workspace_id = workspaceId;
         }
+    } else if (!workspaceId) {
+        console.warn(`Making API request without workspace_id to: ${config.url}`);
     }
 
     console.log(`API Request to: ${config.url} with params:`, config.params);
