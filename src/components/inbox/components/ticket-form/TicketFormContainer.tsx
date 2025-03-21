@@ -1,10 +1,10 @@
 
 import { useState } from 'react';
-import { TicketForm } from './TicketForm';
+import TicketForm from './TicketForm';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import type { TeamMember } from '@/types/ticket';
 
-const TicketFormContainer = ({ onClose }: { onClose: () => void }) => {
+const TicketFormContainer = ({ onClose, onTicketCreated }: { onClose: () => void; onTicketCreated?: (ticket: any) => void }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const teams = useAppSelector(state => state.teams.teams);
   const emailChannels = useAppSelector(state => state.emailChannels.channels);
@@ -27,6 +27,9 @@ const TicketFormContainer = ({ onClose }: { onClose: () => void }) => {
     await new Promise(resolve => setTimeout(resolve, 1000));
     console.log('Submitted ticket data:', data);
     setIsSubmitting(false);
+    if (onTicketCreated) {
+      onTicketCreated(data);
+    }
     onClose();
   };
 

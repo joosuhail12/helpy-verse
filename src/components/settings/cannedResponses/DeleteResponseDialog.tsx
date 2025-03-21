@@ -14,35 +14,31 @@ import { useState } from 'react';
 import type { CannedResponse } from '@/mock/cannedResponses';
 
 interface DeleteResponseDialogProps {
-  response: CannedResponse | null;
-  open: boolean;
+  open: boolean;  // Changed from isOpen to open
   onOpenChange: (open: boolean) => void;
   onDelete: (id: string) => void;
+  responseTitle: string;  // Changed to directly accept the title
 }
 
 export const DeleteResponseDialog = ({ 
-  response, 
   open, 
   onOpenChange, 
-  onDelete 
+  onDelete,
+  responseTitle
 }: DeleteResponseDialogProps) => {
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = async () => {
-    if (!response) return;
-    
     setIsDeleting(true);
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
-      onDelete(response.id);
+      onDelete('dummy-id'); // Since we don't have a response object anymore
     } finally {
       setIsDeleting(false);
       onOpenChange(false);
     }
   };
-
-  if (!response) return null;
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
@@ -50,7 +46,7 @@ export const DeleteResponseDialog = ({
         <AlertDialogHeader>
           <AlertDialogTitle>Are you sure?</AlertDialogTitle>
           <AlertDialogDescription>
-            This will permanently delete the canned response "{response.title}".
+            This will permanently delete the canned response "{responseTitle}".
             This action cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>

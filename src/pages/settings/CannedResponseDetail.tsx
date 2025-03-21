@@ -17,7 +17,8 @@ import { ShortcutTester } from '@/components/settings/cannedResponses/ShortcutTe
 import { DeleteResponseDialog } from '@/components/settings/cannedResponses/DeleteResponseDialog';
 import { ArrowLeft, Pencil, Trash } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
-import { fetchCannedResponseById, deleteCannedResponse } from '@/store/slices/cannedResponses/actions';
+import { fetchCannedResponses, deleteCannedResponse } from '@/store/slices/cannedResponses/actions';
+import { selectCannedResponseById } from '@/store/slices/cannedResponses/selectors';
 
 const CannedResponseDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -26,15 +27,15 @@ const CannedResponseDetail = () => {
   
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   
-  const { cannedResponses, loading, error } = useAppSelector(state => state.cannedResponses);
+  // Use selectors to get data from the store
+  const response = useAppSelector(state => selectCannedResponseById(state, id || ''));
+  const loading = useAppSelector(state => state.cannedResponses.loading);
+  const error = useAppSelector(state => state.cannedResponses.error);
   const teams = useAppSelector(state => state.teams.teams);
   
-  const response = cannedResponses.find(r => r.id === id);
-  
   useEffect(() => {
-    if (id) {
-      dispatch(fetchCannedResponseById(id));
-    }
+    // Fetch all responses instead of a specific one
+    dispatch(fetchCannedResponses());
   }, [dispatch, id]);
   
   const handleDelete = async () => {
@@ -234,8 +235,8 @@ const CannedResponseDetail = () => {
       </Tabs>
       
       <DeleteResponseDialog
-        isOpen={isDeleteDialogOpen}
-        onClose={() => setIsDeleteDialogOpen(false)}
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
         onDelete={handleDelete}
         responseTitle={response.title}
       />

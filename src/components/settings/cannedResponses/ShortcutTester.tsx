@@ -6,9 +6,10 @@ import { Keyboard } from 'lucide-react';
 
 interface ShortcutTesterProps {
   shortcut: string;
+  content: string;  // Adding the content prop to match usage
 }
 
-export const ShortcutTester = ({ shortcut }: ShortcutTesterProps) => {
+export const ShortcutTester = ({ shortcut, content }: ShortcutTesterProps) => {
   const [testInput, setTestInput] = useState('');
   const [isTriggered, setIsTriggered] = useState(false);
 
@@ -24,7 +25,7 @@ export const ShortcutTester = ({ shortcut }: ShortcutTesterProps) => {
     const value = e.target.value;
     setTestInput(value);
     
-    if (value.endsWith(shortcut)) {
+    if (value.endsWith(shortcut + ' ')) {
       setIsTriggered(true);
       setTestInput('');
     }

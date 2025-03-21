@@ -25,3 +25,13 @@ export interface Ticket {
 export type SortField = 'createdAt' | 'priority' | 'status' | 'customer';
 export type SortDirection = 'asc' | 'desc';
 export type ViewMode = 'list' | 'card' | 'compact';
+
+// Adding TeamMember interface to fix the error
+export interface TeamMember {
+  id: string;
+  name: string;
+  email: string;
+  avatar: string;
+  teamId: string;
+  teamName: string;
+}

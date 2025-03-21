@@ -28,8 +28,8 @@ const CreateTicketDialog = ({ open, onOpenChange, onTicketCreated }: CreateTicke
         
         <div className="p-6 pt-4 overflow-y-auto">
           <TicketFormContainer 
+            onClose={() => onOpenChange(false)}
             onTicketCreated={onTicketCreated}
-            onCancel={() => onOpenChange(false)}
           />
         </div>
       </DialogContent>
