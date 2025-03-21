@@ -16,7 +16,10 @@ const TeamMembers = ({ team }: TeamMembersProps) => {
   const getTeamMembers = () => {
     // If we have teamMembers objects with full details
     if (team?.teamMembers && Array.isArray(team.teamMembers) && team.teamMembers.length > 0) {
-      return team.teamMembers;
+      return team.teamMembers.map(member => ({
+        ...member,
+        avatar: member.avatar || undefined
+      }));
     }
     
     // If we have members array with just IDs
