@@ -1,4 +1,3 @@
-
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { HttpClient } from "@/api/services/http";
 import { 
@@ -63,7 +62,7 @@ export const loginUser = createAsyncThunk(
           return rejectWithValue("Authentication server did not provide a valid token. Please try again.");
         }
 
-        // Set workspace ID if available
+        // Set workspace ID if available - only in cookie
         const workspaceId = get(response.data, "data.defaultWorkspaceId", "");
         if (workspaceId) {
           setWorkspaceId(workspaceId);

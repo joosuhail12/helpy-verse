@@ -19,19 +19,24 @@ export const getCookie = (cname: string): string => {
             }
         }
         
-        // Also check localStorage as fallback
-        const localValue = localStorage.getItem(cname);
-        if (localValue) {
-            console.log(`Retrieved ${cname} from localStorage instead of cookie`);
-            return localValue;
+        // Only check localStorage for tokens, not for workspace IDs
+        if (cname === 'customerToken' || cname === 'token') {
+            const localValue = localStorage.getItem(cname);
+            if (localValue) {
+                console.log(`Retrieved ${cname} from localStorage instead of cookie`);
+                return localValue;
+            }
         }
     } catch (error) {
         console.error("Error accessing cookie:", error);
-        // Try localStorage as fallback
-        const localValue = localStorage.getItem(cname);
-        if (localValue) {
-            console.log(`Retrieved ${cname} from localStorage due to cookie error`);
-            return localValue;
+        
+        // Only try localStorage as fallback for tokens
+        if (cname === 'customerToken' || cname === 'token') {
+            const localValue = localStorage.getItem(cname);
+            if (localValue) {
+                console.log(`Retrieved ${cname} from localStorage due to cookie error`);
+                return localValue;
+            }
         }
     }
     
@@ -45,8 +50,10 @@ export const setCookie = (cname: string, cvalue: string, exdays: number = 30): v
         d.setTime(d.getTime() + exdays * 24 * 60 * 60 * 1000);
         const expires = `expires=${d.toUTCString()}`;
         
-        // Always store in localStorage as a backup
-        localStorage.setItem(cname, cvalue);
+        // Only store tokens in localStorage as backup, not workspace IDs
+        if (cname === 'customerToken' || cname === 'token') {
+            localStorage.setItem(cname, cvalue);
+        }
         
         try {
             // Try to set the cookie
@@ -55,15 +62,17 @@ export const setCookie = (cname: string, cvalue: string, exdays: number = 30): v
             console.log(`Setting cookie ${cname}: ${cvalue ? (cvalue.length > 10 ? cvalue.substring(0, 10) + '...' : cvalue) : "empty"}`);
         } catch (cookieError) {
             console.warn(`Couldn't set cookie for ${cname}, using localStorage only:`, cookieError);
-            // We already saved to localStorage above, so no need to do anything else
+            // We already saved to localStorage above for tokens
         }
     } catch (error) {
         console.error("Critical error setting cookie:", error);
-        // Last attempt to save in localStorage
-        try {
-            localStorage.setItem(cname, cvalue);
-        } catch (localError) {
-            console.error("Failed to save to localStorage as well:", localError);
+        // Last attempt to save tokens in localStorage
+        if (cname === 'customerToken' || cname === 'token') {
+            try {
+                localStorage.setItem(cname, cvalue);
+            } catch (localError) {
+                console.error("Failed to save to localStorage as well:", localError);
+            }
         }
     }
 };
@@ -81,8 +90,6 @@ export const handleLogout = (): void => {
     
     // Clear localStorage
     localStorage.removeItem("token");
-    localStorage.removeItem("workspaceId");
-    localStorage.removeItem("agent_email");
     localStorage.removeItem("userId");
     localStorage.removeItem("role");
     sessionStorage.removeItem("token");

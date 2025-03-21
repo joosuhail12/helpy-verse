@@ -4,7 +4,7 @@ import { getCookie, handleSetToken } from "@/utils/helpers/helpers";
 import { HttpClient } from "@/api/services/http";
 
 export const initializeApp = () => {
-  // Check both cookie and localStorage for token
+  // Check both cookie and localStorage for token, but only cookie for workspace ID
   const token = getCookie("customerToken") || localStorage.getItem("token");
   if (token) {
     console.log("App initialization: Found token, setting up auth");

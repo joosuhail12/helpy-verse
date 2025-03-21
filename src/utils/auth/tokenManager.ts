@@ -129,32 +129,36 @@ export const isTokenExpired = (): boolean => {
     }
 };
 
-// 🟢 Workspace ID Management - Enhanced for reliability
+// 🟢 Workspace ID Management - Only use cookies, not localStorage
 export const setWorkspaceId = (id: string): void => {
     if (id) {
-        // Always set in localStorage for reliability
-        localStorage.setItem("workspaceId", id);
-        
-        // Try cookie as well
+        // Only set in cookies, not localStorage
         try {
             setCookie("workspaceId", id);
+            console.log("Workspace ID set in cookie:", id);
         } catch (error) {
-            console.warn("Error setting workspace cookie, using localStorage only:", error);
+            console.error("Error setting workspace cookie:", error);
         }
     }
 };
 
 export const getWorkspaceId = (): string => {
-    // Check localStorage first
-    const storageId = localStorage.getItem("workspaceId");
-    if (storageId) return storageId;
-    
-    // Fall back to cookie
+    // Only check cookies, not localStorage
     try {
         const cookieId = getCookie("workspaceId");
-        if (cookieId) return cookieId;
+        if (cookieId) {
+            console.log("Got workspace ID from cookie:", cookieId);
+            return cookieId;
+        }
     } catch (error) {
         console.warn("Error accessing workspace cookie:", error);
+    }
+    
+    // Fallback to environment variable if cookie is not set
+    const envWorkspaceId = import.meta.env.VITE_REACT_APP_WORKSPACE_ID;
+    if (envWorkspaceId) {
+        console.log("Using workspace ID from environment:", envWorkspaceId);
+        return envWorkspaceId;
     }
     
     return "";

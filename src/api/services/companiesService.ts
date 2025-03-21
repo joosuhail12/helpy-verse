@@ -31,13 +31,13 @@ export interface CompanyParams {
     sortDirection?: 'asc' | 'desc';
     page?: number;
     limit?: number;
-    workspace_id?: string; // Added workspace_id parameter
+    workspace_id?: string;
 }
 
 export const companiesService = {
     async fetchCompanies(params: CompanyParams = {}): Promise<CompaniesResponse> {
         try {
-            // Get workspace ID from env or localStorage
+            // Get workspace ID from cookie only, not localStorage
             const workspaceId = getCookie('workspaceId');
             
             // Ensure workspace_id is included in params
