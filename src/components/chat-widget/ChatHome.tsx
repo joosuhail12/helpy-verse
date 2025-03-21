@@ -2,7 +2,6 @@
 import React from 'react';
 import WelcomeHeader from './components/WelcomeHeader';
 import StartConversationCard from './components/StartConversationCard';
-import ResponseTime from './components/ResponseTime';
 
 interface ChatHomeProps {
   onNewChat: () => void;
@@ -22,8 +21,6 @@ const ChatHome = ({ onNewChat }: ChatHomeProps) => {
         {/* Main action card */}
         <StartConversationCard onClick={onNewChat} />
       </div>
-
-      <ResponseTime />
     </div>
   );
 };
