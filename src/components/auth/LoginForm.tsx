@@ -18,16 +18,23 @@ export const LoginForm = memo(() => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await dispatch(loginUser({ email, password })).unwrap();
+      const result = await dispatch(loginUser({ email, password })).unwrap();
+      console.log("Login successful:", result);
+      
       toast({
         title: "Success",
         description: "Logged in successfully",
       });
-      navigate('/home');
+      
+      // Give time for state to update before navigation
+      setTimeout(() => {
+        navigate('/home');
+      }, 100);
     } catch (error) {
+      console.error("Login error:", error);
       toast({
         title: "Error",
-        description: "Login failed. Please try again.",
+        description: "Login failed. Please check your credentials and try again.",
         variant: "destructive",
       });
     }
@@ -116,4 +123,3 @@ export const LoginForm = memo(() => {
 });
 
 LoginForm.displayName = 'LoginForm';
-
