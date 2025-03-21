@@ -2,10 +2,14 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Contact } from "@/types/contact";
 import { UserCircle, Mail, Phone, Globe, ChevronUp, ChevronDown } from "lucide-react";
 
 interface ContactInfoCardProps {
-  customer: string;
+  customer: {
+    email?: string,
+    phone?: string
+  };
   company: string;
   isOpen: boolean;
   onToggle: () => void;
@@ -28,15 +32,15 @@ const ContactInfoCard = ({ customer, company, isOpen, onToggle }: ContactInfoCar
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-sm">
               <Mail className="h-4 w-4 text-gray-400" />
-              <span className="text-gray-600">{customer}@example.com</span>
+              <span className="text-gray-600">{customer?.email}</span>
             </div>
             <div className="flex items-center gap-2 text-sm">
               <Phone className="h-4 w-4 text-gray-400" />
-              <span className="text-gray-600">+1 (555) 123-4567</span>
+              <span className="text-gray-600">{customer?.phone}</span>
             </div>
             <div className="flex items-center gap-2 text-sm">
               <Globe className="h-4 w-4 text-gray-400" />
-              <span className="text-gray-600">{company}.com</span>
+              <span className="text-gray-600">{company}</span>
             </div>
           </div>
         </CollapsibleContent>

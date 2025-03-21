@@ -22,7 +22,6 @@ const Teams = () => {
         await dispatch(fetchTeams()).unwrap();
       } catch (err) {
         console.log('Using mock data as fallback:', err);
-       
       }
     };
     loadTeams();
