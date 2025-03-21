@@ -8,8 +8,8 @@ import { fetchUserProfile } from '@/store/slices/user/userSlice';
 
 const Dashboard = () => {
   const dispatch = useAppDispatch();
-  const userState = useAppSelector((state) => state.user);
   const auth = useAppSelector((state) => state.auth);
+  const userState = useAppSelector((state) => state.user);
   
   // Safe access to user with fallback for undefined
   const user = userState?.user || null;
