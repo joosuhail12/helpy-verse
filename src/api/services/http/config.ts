@@ -1,9 +1,8 @@
 
 /**
  * Configuration for API endpoints with automatic workspace_id header
+ * Using localStorage only (no cookies)
  */
-
-import { getCookie } from './cookieManager'; // adjust the import path if needed
 
 // Configure API base URL from environment variables
 export const getApiBaseUrl = () => {
@@ -38,10 +37,10 @@ export const DEFAULT_TIMEOUT = 15000; // 15 seconds
 // Maximum retries for critical API calls
 export const MAX_RETRIES = 2;
 
-// CORS configuration with dynamic workspace_id header - prioritize localStorage
+// CORS configuration with dynamic workspace_id header
 export const getCorsConfig = () => {
-  // Get workspace ID from localStorage first, fallback to cookie
-  const workspaceId = localStorage.getItem('workspaceId') || getCookie('workspaceId');
+  // Get workspace ID from localStorage
+  const workspaceId = localStorage.getItem('workspaceId');
   
   return {
     withCredentials: true,
@@ -54,7 +53,7 @@ export const getCorsConfig = () => {
 };
 
 export const CORS_CONFIG = {
-  // Setting withCredentials to true to include cookies in cross-origin requests
+  // Setting withCredentials to true for CORS - may still be needed for some APIs
   withCredentials: true,
   // Add headers that may be needed for CORS preflight requests
   headers: {

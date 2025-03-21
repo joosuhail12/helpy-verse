@@ -1,10 +1,12 @@
+
 /**
  * Token and authentication management utility functions
+ * Using localStorage only (no cookies)
  */
 import { HttpClient, cookieFunctions } from "@/api/services/http";
 import { jwtDecode } from "jwt-decode";
 
-// Get cookie helpers from HttpClient to avoid circular dependencies
+// Get storage helpers from HttpClient to avoid circular dependencies
 const { getCookie, setCookie } = cookieFunctions;
 
 // 🟢 Logout User
@@ -30,15 +32,6 @@ export const handleLogout = async (): Promise<void> => {
     localStorage.removeItem("workspaceId");
     sessionStorage.removeItem("token");
     
-    // Clear cookies
-    try {
-      document.cookie = `customerToken=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Lax`;
-      document.cookie = `agent_email=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Lax`;
-      document.cookie = `workspaceId=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Lax`;
-    } catch (error) {
-      console.warn("Error clearing cookies:", error);
-    }
-    
     console.log("User logged out - cleared all tokens and storage");
     
     // Force page refresh and redirect to sign-in
@@ -57,16 +50,8 @@ export const handleSetToken = (token: string): boolean => {
   try {
     console.log("Setting auth token:", token.substring(0, 10) + "...");
     
-    // Always store in localStorage first as a reliable backup
+    // Store in localStorage only
     localStorage.setItem("token", token);
-    
-    // Try to set in cookies (this may fail in some environments)
-    try {
-      setCookie("customerToken", token, 30);
-    } catch (cookieError) {
-      console.warn("Could not set cookie, using localStorage only", cookieError);
-      // Already saved to localStorage above
-    }
     
     // Configure axios with the new token
     if (HttpClient && HttpClient.setAxiosDefaultConfig) {
@@ -80,41 +65,21 @@ export const handleSetToken = (token: string): boolean => {
   }
 };
 
-// 🟢 Check if user is authenticated - check both cookie and localStorage
+// 🟢 Check if user is authenticated - check localStorage only
 export const isAuthenticated = (): boolean => {
   try {
-    const tokenInCookie = !!getCookie("customerToken");
     const tokenInStorage = !!localStorage.getItem("token");
-    
-    // Consider authenticated if token exists in either place
-    return tokenInCookie || tokenInStorage;
+    return tokenInStorage;
   } catch (error) {
-    // If cookie access fails, fall back to localStorage
-    return !!localStorage.getItem("token");
+    console.error("Error checking authentication:", error);
+    return false;
   }
 };
 
-// 🟢 Get auth token - prioritize localStorage for reliability
+// 🟢 Get auth token - from localStorage only
 export const getAuthToken = (): string => {
-  // Prioritize localStorage for more reliable token access
   const storageToken = localStorage.getItem("token");
-  if (storageToken) {
-    return storageToken;
-  }
-  
-  // Fall back to cookie if needed
-  try {
-    const cookieToken = getCookie("customerToken");
-    if (cookieToken) {
-      // Sync to localStorage for future reliability
-      localStorage.setItem("token", cookieToken);
-      return cookieToken;
-    }
-  } catch (error) {
-    console.warn("Error accessing cookie:", error);
-  }
-  
-  return "";
+  return storageToken || "";
 };
 
 // Check if token is expired - safer version that handles invalid tokens
@@ -146,10 +111,9 @@ export const isTokenExpired = (): boolean => {
   }
 };
 
-// 🟢 Workspace ID Management - Use localStorage instead of cookies
+// 🟢 Workspace ID Management - Use localStorage
 export const setWorkspaceId = (id: string): void => {
   if (id) {
-    // Only set in localStorage, not cookies
     try {
       localStorage.setItem("workspaceId", id);
       console.log("Workspace ID set in localStorage:", id);
@@ -160,7 +124,6 @@ export const setWorkspaceId = (id: string): void => {
 };
 
 export const getWorkspaceId = (): string => {
-  // Only check localStorage, not cookies
   try {
     const storageId = localStorage.getItem("workspaceId");
     if (storageId) {
@@ -171,7 +134,6 @@ export const getWorkspaceId = (): string => {
     console.warn("Error accessing workspace ID in localStorage:", error);
   }
   
-  // Return empty string if no workspace ID found in localStorage
   return "";
 };
 

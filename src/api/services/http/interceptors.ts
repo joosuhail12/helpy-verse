@@ -1,6 +1,7 @@
+
 import { AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import { get } from 'lodash';
-import { getCookie, handleLogout } from './cookieManager';
+import { handleLogout } from './cookieManager';
 import { getAuthToken } from '@/utils/auth/tokenManager';
 import { store } from '@/store/store';
 
@@ -29,8 +30,8 @@ export const requestInterceptor = async (config: InternalAxiosRequestConfig): Pr
         }
     }
 
-    // Get workspace_id from localStorage first, then fall back to cookie
-    const workspaceId = localStorage.getItem("workspaceId") || getCookie("workspaceId");
+    // Get workspace_id from localStorage
+    const workspaceId = localStorage.getItem("workspaceId");
     
     // Always add workspace_id to all requests
     if (workspaceId) {

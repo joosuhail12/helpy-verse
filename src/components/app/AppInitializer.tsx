@@ -1,13 +1,12 @@
 
 import { useEffect } from 'react';
-import { getCookie } from "@/utils/helpers/helpers";
 import { HttpClient } from "@/api/services/http";
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { fetchUserData } from '@/store/slices/auth/userActions';
 
 export const initializeApp = () => {
-  // Check both localStorage and cookie for token
-  const token = localStorage.getItem("token") || getCookie("customerToken");
+  // Check localStorage for token
+  const token = localStorage.getItem("token");
   
   // Check for workspace ID in localStorage
   const workspaceId = localStorage.getItem("workspaceId");
@@ -41,7 +40,7 @@ const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
       initializeApp();
       
       // Load user data to get workspaceId if we have a token
-      const token = localStorage.getItem("token") || getCookie("customerToken");
+      const token = localStorage.getItem("token");
       if (token) {
         dispatch(fetchUserData());
       }

@@ -27,8 +27,7 @@ export const SignIn = memo(() => {
     },
   });
 
-  // Redirect if already authenticated - FIXED: use tokenManager's isAuthenticated
-  // instead of cookie directly to avoid conflicting checks
+  // Redirect if already authenticated - using tokenManager's isAuthenticated
   useEffect(() => {
     if (isAuthenticated()) {
       console.log('User is authenticated, redirecting to:', from); // Debug log

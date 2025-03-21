@@ -1,3 +1,4 @@
+
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { HttpClient } from "@/api/services/http";
 import { AUTH_ENDPOINTS } from "@/api/services/http/config";
@@ -15,7 +16,7 @@ export const fetchUserData = createAsyncThunk(
         try {
           const workspaceId = response.data.data.defaultWorkspaceId;
           
-          // Set the workspace ID in localStorage (primary storage)
+          // Set the workspace ID in localStorage
           localStorage.setItem("workspaceId", workspaceId);
           console.log(`✅ Workspace ID saved to localStorage: ${workspaceId}`);
           

@@ -1,5 +1,5 @@
 
-import { HttpClient, cookieFunctions } from '@/api/services/http';
+import { HttpClient } from '@/api/services/http';
 
 // Get correct API URL from environment variables
 const API_BASE_URL = import.meta.env.VITE_REACT_APP_API_URL || '/api';
@@ -14,8 +14,8 @@ const setupApi = () => {
     console.log('Initializing API service with base URL:', API_BASE_URL);
     HttpClient.apiClient.defaults.baseURL = API_BASE_URL;
     
-    // Check localStorage first for token, then cookie
-    const token = localStorage.getItem('token') || cookieFunctions.getCookie('customerToken');
+    // Check localStorage for token
+    const token = localStorage.getItem('token');
     if (token) {
       // Use the HttpClient's method to set the token to avoid duplicating logic
       HttpClient.setAxiosDefaultConfig(token);
@@ -24,7 +24,7 @@ const setupApi = () => {
       console.log('API service initialized without auth token');
     }
     
-    // Always ensure workspace ID is set for all requests - prioritize localStorage
+    // Always ensure workspace ID is set for all requests
     const workspaceId = localStorage.getItem('workspaceId');
     
     if (workspaceId) {
