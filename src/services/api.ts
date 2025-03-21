@@ -14,7 +14,8 @@ const setupApi = () => {
     console.log('Initializing API service with base URL:', API_BASE_URL);
     HttpClient.apiClient.defaults.baseURL = API_BASE_URL;
     
-    const token = cookieFunctions.getCookie('customerToken') || localStorage.getItem('token');
+    // Check localStorage first for token, then cookie
+    const token = localStorage.getItem('token') || cookieFunctions.getCookie('customerToken');
     if (token) {
       // Use the HttpClient's method to set the token to avoid duplicating logic
       HttpClient.setAxiosDefaultConfig(token);
@@ -24,15 +25,10 @@ const setupApi = () => {
     }
     
     // Always ensure workspace ID is set for all requests - prioritize localStorage
-    const workspaceId = localStorage.getItem('workspaceId') || cookieFunctions.getCookie('workspaceId');
+    const workspaceId = localStorage.getItem('workspaceId');
     
     if (workspaceId) {
       console.log('API service initialized with workspace ID:', workspaceId);
-      // Ensure it's also in localStorage for consistency
-      if (!localStorage.getItem('workspaceId')) {
-        localStorage.setItem('workspaceId', workspaceId);
-        console.log('Synced workspace ID to localStorage');
-      }
       
       // Set a default interceptor to include workspace_id in all requests
       HttpClient.apiClient.interceptors.request.use(config => {

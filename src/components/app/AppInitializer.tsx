@@ -1,32 +1,28 @@
 
 import { useEffect } from 'react';
-import { getCookie, handleSetToken } from "@/utils/helpers/helpers";
+import { getCookie } from "@/utils/helpers/helpers";
 import { HttpClient } from "@/api/services/http";
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { fetchUserData } from '@/store/slices/auth/userActions';
 
 export const initializeApp = () => {
-  // Check both cookie and localStorage for token
-  const token = getCookie("customerToken") || localStorage.getItem("token");
+  // Check both localStorage and cookie for token
+  const token = localStorage.getItem("token") || getCookie("customerToken");
   
-  // Check for workspace ID in localStorage first, then cookie
-  const workspaceId = localStorage.getItem("workspaceId") || getCookie("workspaceId");
+  // Check for workspace ID in localStorage
+  const workspaceId = localStorage.getItem("workspaceId");
   
   if (token) {
     console.log("App initialization: Found token, setting up auth");
-    // Set token in both places to ensure consistency
-    handleSetToken(token);
     // Configure HTTP client
     HttpClient.setAxiosDefaultConfig(token);
   } else {
     console.log("App initialization: No token found");
   }
   
-  // Log workspace ID status and ensure it's set in localStorage
+  // Log workspace ID status
   if (workspaceId) {
     console.log("App initialization: Found workspace ID:", workspaceId);
-    // Ensure it's set in localStorage for consistent access
-    localStorage.setItem("workspaceId", workspaceId);
   } else {
     console.warn("App initialization: No workspace ID found - API requests will likely fail");
   }
@@ -45,7 +41,7 @@ const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
       initializeApp();
       
       // Load user data to get workspaceId if we have a token
-      const token = getCookie("customerToken") || localStorage.getItem("token");
+      const token = localStorage.getItem("token") || getCookie("customerToken");
       if (token) {
         dispatch(fetchUserData());
       }

@@ -38,8 +38,9 @@ export const DEFAULT_TIMEOUT = 15000; // 15 seconds
 // Maximum retries for critical API calls
 export const MAX_RETRIES = 2;
 
-// CORS configuration with dynamic workspace_id header
+// CORS configuration with dynamic workspace_id header - prioritize localStorage
 export const getCorsConfig = () => {
+  // Get workspace ID from localStorage first, fallback to cookie
   const workspaceId = localStorage.getItem('workspaceId') || getCookie('workspaceId');
   
   return {
