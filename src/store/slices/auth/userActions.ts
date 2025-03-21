@@ -1,3 +1,4 @@
+
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { HttpClient, cookieFunctions } from "@/api/services/http";
 import { AUTH_ENDPOINTS } from "@/api/services/http/config";
@@ -8,12 +9,28 @@ export const fetchUserData = createAsyncThunk(
     try {
       console.log("Fetching user profile data");
       const response = await HttpClient.apiClient.get(AUTH_ENDPOINTS.USER_PROFILE);
-      console.log("User profile data fetched successfully");
+      console.log("User profile data fetched successfully", response.data);
       
       // Save workspace ID from response to cookie if it exists
       if (response.data.data?.defaultWorkspaceId) {
-        cookieFunctions.setCookie("workspaceId", response.data.data.defaultWorkspaceId);
-        console.log("Default workspace ID saved to cookie:", response.data.data.defaultWorkspaceId);
+        try {
+          // Set the cookie with explicit parameters for reliability
+          cookieFunctions.setCookie(
+            "workspaceId", 
+            response.data.data.defaultWorkspaceId,
+            30, // 30 days expiry
+          );
+          
+          // Verify cookie was set correctly
+          const verifiedCookieValue = cookieFunctions.getCookie("workspaceId");
+          if (verifiedCookieValue) {
+            console.log("✅ Workspace ID cookie set and verified:", verifiedCookieValue);
+          } else {
+            console.error("❌ Failed to set workspace ID cookie - verification failed");
+          }
+        } catch (cookieError) {
+          console.error("Error setting workspace ID cookie:", cookieError);
+        }
       } else {
         console.warn("No default workspace ID found in user profile response");
       }
@@ -31,11 +48,30 @@ export const fetchUserProfile = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await HttpClient.apiClient.get(AUTH_ENDPOINTS.USER_PROFILE);
+      console.log("User profile fetched:", response.data);
       
       // Save workspace ID from response to cookie if it exists
       if (response.data.data?.defaultWorkspaceId) {
-        cookieFunctions.setCookie("workspaceId", response.data.data.defaultWorkspaceId);
-        console.log("Default workspace ID saved to cookie:", response.data.data.defaultWorkspaceId);
+        try {
+          // Set the cookie with explicit parameters for reliability
+          cookieFunctions.setCookie(
+            "workspaceId", 
+            response.data.data.defaultWorkspaceId,
+            30, // 30 days expiry
+          );
+          
+          // Verify cookie was set correctly
+          const verifiedCookieValue = cookieFunctions.getCookie("workspaceId");
+          if (verifiedCookieValue) {
+            console.log("✅ Workspace ID cookie set and verified:", verifiedCookieValue);
+          } else {
+            console.error("❌ Failed to set workspace ID cookie - verification failed");
+          }
+        } catch (cookieError) {
+          console.error("Error setting workspace ID cookie:", cookieError);
+        }
+      } else {
+        console.warn("No default workspace ID found in user profile response");
       }
       
       return response.data.data;

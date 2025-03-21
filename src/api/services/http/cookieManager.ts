@@ -56,12 +56,24 @@ export const setCookie = (cname: string, cvalue: string, exdays: number = 30): v
         }
         
         try {
-            // Try to set the cookie
+            // Try to set the cookie - use path=/ explicitly and secure/samesite settings
             const cookieString = `${cname}=${cvalue};${expires};path=/;SameSite=Lax`;
             document.cookie = cookieString;
             console.log(`Setting cookie ${cname}: ${cvalue ? (cvalue.length > 10 ? cvalue.substring(0, 10) + '...' : cvalue) : "empty"}`);
+            
+            // Verify cookie was set
+            const verifyCookie = getCookie(cname);
+            if (verifyCookie) {
+                console.log(`✅ Cookie ${cname} set successfully and verified`);
+            } else {
+                console.error(`❌ Failed to set cookie ${cname} - verification failed`);
+                // If we couldn't set the cookie, and this is workspace ID, log the error
+                if (cname === 'workspaceId') {
+                    console.error(`Cookie restrictions may be preventing workspace_id cookie from being set. Check browser settings.`);
+                }
+            }
         } catch (cookieError) {
-            console.warn(`Couldn't set cookie for ${cname}, using localStorage only:`, cookieError);
+            console.warn(`Couldn't set cookie for ${cname}, error:`, cookieError);
             // We already saved to localStorage above for tokens
         }
     } catch (error) {
