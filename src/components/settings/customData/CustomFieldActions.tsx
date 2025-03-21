@@ -24,12 +24,19 @@ const CustomFieldActions = ({ field, table, existingFields }: CustomFieldActions
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isTestOpen, setIsTestOpen] = useState(false);
 
-  // Create a compatible field object that has both old and new properties
+  // Create a compatible field object that merges both old and new properties
   const compatibleField: CustomField = {
     ...field,
-    // Add backward compatibility properties
-    type: field.fieldType,
-    required: field.isRequired,
+    // Add properties for old CustomField type compatibility
+    fieldType: field.fieldType || field.type || 'text',
+    isRequired: field.isRequired !== undefined ? field.isRequired : field.required || false,
+    placeholder: field.placeholder || '',
+    entityType: field.entityType || table,
+    defaultValue: field.defaultValue || null,
+    options: field.options || null,
+    // Add compatibility properties
+    type: field.type || field.fieldType,
+    required: field.required !== undefined ? field.required : field.isRequired || false,
     createdAt: field.createdAt || new Date().toISOString(),
     updatedAt: field.updatedAt || new Date().toISOString(),
     history: field.history || []

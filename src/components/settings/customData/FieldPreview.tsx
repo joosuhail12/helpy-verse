@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { CustomField } from "@/types/customField";
+import { CustomField } from "@/types/customData";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { validateFieldValue } from './utils/fieldValidation';
 import { getSuggestions } from './utils/fieldSuggestions';
@@ -31,10 +31,19 @@ const FieldPreview: React.FC<FieldPreviewProps> = ({ isOpen, onClose, field }) =
   const [isValidating, setIsValidating] = useState(false);
   const { toast } = useToast();
 
+  // Create a compatible field that works with both CustomField types
+  const compatibleField = {
+    ...field,
+    type: field.type || field.fieldType,
+    fieldType: field.fieldType || field.type,
+    required: field.required !== undefined ? field.required : field.isRequired,
+    isRequired: field.isRequired !== undefined ? field.isRequired : field.required
+  };
+
   const validate = (newValue: any) => {
     setIsValidating(true);
     setTimeout(() => {
-      const validationErrors = validateFieldValue(newValue, field);
+      const validationErrors = validateFieldValue(newValue, compatibleField);
       setErrors(validationErrors);
       setIsValidating(false);
 
@@ -50,7 +59,7 @@ const FieldPreview: React.FC<FieldPreviewProps> = ({ isOpen, onClose, field }) =
 
   const handleChange = (newValue: any) => {
     setValue(newValue);
-    setSuggestions(getSuggestions(field.type, newValue));
+    setSuggestions(getSuggestions(compatibleField.type, newValue));
     validate(newValue);
   };
 
@@ -64,7 +73,10 @@ const FieldPreview: React.FC<FieldPreviewProps> = ({ isOpen, onClose, field }) =
       ),
     };
 
-    switch (field.type) {
+    // Determine field type to use, preferring fieldType over type for consistency
+    const fieldType = compatibleField.fieldType || compatibleField.type;
+
+    switch (fieldType) {
       case 'text':
         return <Input {...commonProps} placeholder="Enter text..." />;
       case 'rich-text':
@@ -82,7 +94,7 @@ const FieldPreview: React.FC<FieldPreviewProps> = ({ isOpen, onClose, field }) =
               <SelectValue placeholder="Select an option" />
             </SelectTrigger>
             <SelectContent>
-              {field.options?.map((option) => (
+              {compatibleField.options?.map((option) => (
                 <SelectItem key={option} value={option}>
                   {option}
                 </SelectItem>
@@ -97,7 +109,7 @@ const FieldPreview: React.FC<FieldPreviewProps> = ({ isOpen, onClose, field }) =
               <SelectValue placeholder="Select options" />
             </SelectTrigger>
             <SelectContent>
-              {field.options?.map((option) => (
+              {compatibleField.options?.map((option) => (
                 <SelectItem key={option} value={option}>
                   {option}
                 </SelectItem>

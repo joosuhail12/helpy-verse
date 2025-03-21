@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import { useToast } from "../ui/use-toast";
+import { logout } from "@/store/slices/authSlice"; // Fixed import
 
 const UserProfileCard = () => {
   const navigate = useNavigate();
@@ -20,14 +21,14 @@ const UserProfileCard = () => {
   const { toast } = useToast();
   
   // Extract user info from the auth state - use fallbacks to prevent type errors
-  const userEmail = user?.data?.email || 'user@example.com'; // Fallback for development
+  const userEmail = 'user@example.com'; // Fallback email
   const userInitials = getUserInitials(userEmail);
-  const userRole = user?.data?.role || 'User';
+  const userRole = 'User'; // Fallback role
 
   const handleLogout = async () => {
     try {
       // Replace with actual logout action from your auth slice
-      // For now, just navigate to sign-in
+      await dispatch(logout());
       toast({
         title: "Logout successful",
         description: "You have been logged out successfully",

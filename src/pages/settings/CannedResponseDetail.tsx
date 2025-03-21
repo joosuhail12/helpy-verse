@@ -22,7 +22,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { cannedResponseService, GetCannedResponseDetail } from '@/api/services/cannedResponse.service';
 import { teamsService } from '@/api/services/teamService.service';
 import { CannedResponse, UpdateCannedResponse } from '@/types/cannedResponse';
-import { TeamNew } from '@/types/team';
+import { Team } from '@/types/team';
 
 interface CannedResponseFormValues {
   id: string;
@@ -45,7 +45,7 @@ const CannedResponseDetail = () => {
   const [response, setResponse] = useState<CannedResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState('');
-  const [teams, setTeams] = useState<TeamNew[]>([]);
+  const [teams, setTeams] = useState<Team[]>([]);
   const [selectedPermission, setSelectedPermission] = useState<'view' | 'edit'>('view');
   const [responseLoading, setResponseLoading] = useState(true);
 
@@ -192,15 +192,24 @@ const CannedResponseDetail = () => {
 
     // Check if shared teams are different
     const addedTeams = submittedSharedTeams.filter(
-      (submittedTeam) => !currentSharedTeams.some((currentTeam) => currentTeam.teamId === submittedTeam.teamId)
+      (submittedTeam) => !currentSharedTeams.some((currentTeam) => {
+        if (!currentTeam || typeof currentTeam === 'string') return false;
+        return currentTeam.teamId === submittedTeam.teamId;
+      })
     );
 
     const removedTeams = currentSharedTeams.filter(
-      (currentTeam) => !submittedSharedTeams.some((submittedTeam) => submittedTeam.teamId === currentTeam.teamId)
+      (currentTeam) => {
+        if (!currentTeam || typeof currentTeam === 'string') return false;
+        return !submittedSharedTeams.some((submittedTeam) => submittedTeam.teamId === currentTeam.teamId);
+      }
     );
 
     const updatedTeams = submittedSharedTeams.filter(
-      (submittedTeam) => currentSharedTeams.some((currentTeam) => currentTeam.teamId === submittedTeam.teamId)
+      (submittedTeam) => currentSharedTeams.some((currentTeam) => {
+        if (!currentTeam || typeof currentTeam === 'string') return false;
+        return currentTeam.teamId === submittedTeam.teamId;
+      })
     );
 
     console.log(addedTeams, removedTeams, updatedTeams);
@@ -586,4 +595,3 @@ const CannedResponseDetail = () => {
 };
 
 export default CannedResponseDetail;
-

@@ -23,7 +23,7 @@ const CreateTeam = () => {
   const [selectedIcon, setSelectedIcon] = useState<string>('');
   const [selectedTeammates, setSelectedTeammates] = useState<string[]>([]);
   const [selectedChatChannel, setSelectedChatChannel] = useState<string>();
-  const [selectedEmailChannels, setSelectedEmailChannels] = useState<string[]>();
+  const [selectedEmailChannels, setSelectedEmailChannels] = useState<string[]>([]);
   const [routingType, setRoutingType] = useState<'manual' | 'round-robin' | 'load-balanced'>('manual');
   const [routingLimits, setRoutingLimits] = useState<{
     maxTotalTickets?: number;
@@ -72,7 +72,14 @@ const CreateTeam = () => {
       const resultAction = await dispatch(createTeam({
         name: teamName,
         icon: selectedIcon,
-        members: selectedTeammates,
+        members: selectedTeammates.length,
+        teamMembers: selectedTeammates.map(id => ({
+          id,
+          name: '',
+          email: '',
+          role: '',
+          status: ''
+        })),
         channels: {
           chat: selectedChatChannel,
           email: selectedEmailChannels,
@@ -84,7 +91,6 @@ const CreateTeam = () => {
         officeHours,
         holidays: selectedHolidays,
         id: '',
-        teamMembers: [],
         createdAt: '',
         updatedAt: ''
       }));
@@ -180,4 +186,3 @@ const CreateTeam = () => {
 };
 
 export default CreateTeam;
-

@@ -9,7 +9,7 @@ import CustomDataTabs from '@/components/settings/customData/CustomDataTabs';
 import { CustomField } from '@/types/customData';
 
 const CustomData = () => {
-  const [selectedTable, setSelectedTable] = useState<'ticket' | 'customer' | 'company'>('ticket');
+  const [selectedTable, setSelectedTable] = useState<'ticket' | 'contact' | 'company'>('ticket');
   const [isAddFieldOpen, setIsAddFieldOpen] = useState(false);
   const { data: customFields, isLoading, error } = useCustomFields(selectedTable);
   const { handleImport } = useCustomFieldImport();
@@ -32,8 +32,8 @@ const CustomData = () => {
     hasSelection: false,
   });
 
-  const handleImportWrapper = async (importedFields: any[]) => {
-    // await handleImport(importedFields, selectedTable);
+  const handleImportWrapper = async (importedFields: CustomField[]) => {
+    await handleImport(importedFields, selectedTable);
   };
 
   return (

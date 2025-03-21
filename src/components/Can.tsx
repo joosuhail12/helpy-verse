@@ -3,6 +3,10 @@ import { useAppSelector } from "@/hooks/useAppSelector";
 import { createContextualCan } from "@casl/react";
 import { useEffect, useState } from "react";
 import { defineAppAbility, AppAbility } from "@/utils/ability";
+import { PureAbility } from "@casl/ability";
+
+// Create the ContextualCan component once outside the component render
+const ContextualCan = createContextualCan(PureAbility);
 
 export const Can = (props: any) => {
   const { permissions } = useAppSelector((state) => state.auth);
@@ -27,7 +31,6 @@ export const Can = (props: any) => {
     }
   }, [permissions]);
 
-  // Create and use the ContextualCan component properly
-  const ContextualCan = createContextualCan(ability);
-  return <ContextualCan {...props} />;
+  // Pass the ability to ContextualCan as a prop instead of using it as a component
+  return <ContextualCan ability={ability} {...props} />;
 };

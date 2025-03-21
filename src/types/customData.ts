@@ -39,6 +39,7 @@ export interface FieldHistoryEntry {
     }[];
 }
 
+// Unified CustomField type that combines all properties from both types
 export interface CustomField {
     id: string;
     name: string;
@@ -51,7 +52,7 @@ export interface CustomField {
     description: string | null;
     validationRules?: ValidationRule[];
     history?: FieldHistoryEntry[];
-    // For compatibility with custom field type from customField.ts
+    // For compatibility with old custom field type
     type?: CustomFieldType;
     required?: boolean;
     createdAt?: string;

@@ -27,7 +27,7 @@ const ImportExportFields = ({ fields, table, onImport }: ImportExportFieldsProps
     if (!file) return;
 
     try {
-      let importedFields: CustomField[];
+      let importedFields: any[];
 
       if (file.name.endsWith('.csv')) {
         importedFields = await parseImportedCSV(file);
@@ -37,7 +37,19 @@ const ImportExportFields = ({ fields, table, onImport }: ImportExportFieldsProps
         throw new Error('Unsupported file format. Please use CSV or JSON.');
       }
 
-      onImport(importedFields);
+      // Convert to the expected CustomField format
+      const convertedFields = importedFields.map(field => ({
+        ...field,
+        entityType: field.entityType || table,
+        fieldType: field.fieldType || field.type,
+        isRequired: field.isRequired !== undefined ? field.isRequired : field.required,
+        placeholder: field.placeholder || "",
+        defaultValue: field.defaultValue || null,
+        options: field.options || null,
+        description: field.description || null
+      }));
+      
+      onImport(convertedFields);
       toast({
         title: "Import successful",
         description: `${importedFields.length} fields were imported successfully.`,
