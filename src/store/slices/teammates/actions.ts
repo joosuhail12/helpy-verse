@@ -1,25 +1,37 @@
-
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import type { Teammate, NewTeammate } from '@/types/teammate';
 import { TeammatesState } from './types';
-import { fetchTeammates as fetchTeammatesThunk } from './thunks';
-import { updateTeammate as updateTeammateThunk } from './thunks';
-import { fetchTeammateDetails as fetchTeammateDetailsThunk } from './thunks';
+import { 
+  fetchTeammates as fetchTeammatesThunk,
+  fetchTeammateDetails as fetchTeammateDetailsThunk,
+  fetchTeammateActivities as fetchTeammateActivitiesThunk,
+  fetchTeammateAssignments as fetchTeammateAssignmentsThunk,
+  fetchTeammateSessions as fetchTeammateSessionsThunk
+} from './thunks';
+import { 
+  updateTeammate as updateTeammateThunk,
+  updateTeammatesRole as updateTeammatesRoleThunk,
+  updateTeammatePermissions as updateTeammatePermissionsThunk,
+  resendInvitation as resendInvitationThunk
+} from './thunks';
+import {
+  enable2FA as enable2FAThunk,
+  verify2FA as verify2FAThunk,
+  disable2FA as disable2FAThunk,
+  resetPassword as resetPasswordThunk
+} from './thunks';
+import {
+  terminateSession as terminateSessionThunk
+} from './thunks';
 import { createTeammate as createTeammateApi } from '@/api/services/teammatesService';
-import { resendInvitation as resendInvitationThunk } from './thunks';
 
-// Re-export the fetchTeammates action for backward compatibility
+// Re-export all thunks for backward compatibility
 export const fetchTeammates = fetchTeammatesThunk;
-
-// Re-export the fetchTeammateDetails action for backward compatibility
 export const fetchTeammateDetails = fetchTeammateDetailsThunk;
-
-// Re-export the updateTeammate action for backward compatibility
 export const updateTeammate = updateTeammateThunk;
-
-// Re-export the resendInvitation action for backward compatibility
 export const resendInvitation = resendInvitationThunk;
 
+// Add new teammates
 export const addTeammate = createAsyncThunk(
   'teammates/addTeammate',
   async (newTeammate: NewTeammate, { dispatch }) => {
@@ -32,19 +44,19 @@ export const addTeammate = createAsyncThunk(
   }
 );
 
-export const updateTeammatesRole = createAsyncThunk(
-  'teammates/updateTeammatesRole',
-  async ({ teammateIds, role }: { teammateIds: string[], role: Teammate['role'] }, { rejectWithValue }) => {
-    try {
-      const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-      await delay(1000); // Simulate API call until endpoint is ready
-      return { teammateIds, role };
-    } catch (error) {
-      return rejectWithValue('Failed to update roles');
-    }
-  }
-);
+// Re-export all other thunks for backward compatibility and to maintain unchanged functionality
+export const fetchTeammateActivities = fetchTeammateActivitiesThunk;
+export const fetchTeammateAssignments = fetchTeammateAssignmentsThunk;
+export const fetchTeammateSessions = fetchTeammateSessionsThunk;
+export const updateTeammatesRole = updateTeammatesRoleThunk;
+export const updateTeammatePermissions = updateTeammatePermissionsThunk;
+export const enable2FA = enable2FAThunk;
+export const verify2FA = verify2FAThunk;
+export const disable2FA = disable2FAThunk;
+export const resetPassword = resetPasswordThunk;
+export const terminateSession = terminateSessionThunk;
 
+// Export the existing exportTeammates function that was directly in actions.ts
 export const exportTeammates = createAsyncThunk(
   'teammates/exportTeammates',
   async (teammateIds: string[], { getState, rejectWithValue }) => {
@@ -58,14 +70,5 @@ export const exportTeammates = createAsyncThunk(
     } catch (error) {
       return rejectWithValue('Failed to export teammates');
     }
-  }
-);
-
-export const updateTeammatePermissions = createAsyncThunk(
-  'teammates/updateTeammatePermissions',
-  async ({ teammateId, permissions }: { teammateId: string, permissions: string[] }) => {
-    const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-    await delay(1000); // Simulate API call until endpoint is ready
-    return { teammateId, permissions };
   }
 );
