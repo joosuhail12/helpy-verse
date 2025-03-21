@@ -58,6 +58,15 @@ const teammatesSlice = createSlice({
       .addCase(fetchTeammateDetails.fulfilled, (state, action) => {
         state.loading = false;
         state.selectedTeammate = action.payload;
+        
+        // Also update this teammate in the main teammates array if it exists
+        const index = state.teammates.findIndex(t => t.id === action.payload.id);
+        if (index !== -1) {
+          state.teammates[index] = action.payload;
+        } else {
+          // If not found in the array, add it
+          state.teammates.push(action.payload);
+        }
       })
       .addCase(fetchTeammateDetails.rejected, (state, action) => {
         state.loading = false;

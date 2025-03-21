@@ -1,4 +1,3 @@
-
 import { RootState } from '@/store/store';
 
 // Ensure we always return an array, even if teammates are undefined
@@ -40,6 +39,13 @@ export const selectTeammateById = (state: RootState, teammateId: string) => {
     return null;
   }
   return state.teammates.teammates.find(teammate => teammate.id === teammateId) || null;
+};
+
+export const selectTeammateDetailsLoading = (state: RootState) => {
+  if (!state.teammates) {
+    return false;
+  }
+  return state.teammates.loading || false;
 };
 
 export const selectTeammateDetails = (state: RootState) => {

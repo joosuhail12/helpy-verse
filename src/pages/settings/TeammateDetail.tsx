@@ -1,6 +1,5 @@
 
 import { useParams, useNavigate } from 'react-router-dom';
-import { useAppSelector } from '@/hooks/useAppSelector';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
@@ -14,18 +13,21 @@ import { TeammateAssignments } from './teammates/components/TeammateAssignments'
 import TeammateSecuritySettings from './teammates/components/TeammateSecuritySettings';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { updateTeammate } from '@/store/slices/teammates/actions';
+import { useTeammateDetail } from '@/hooks/useTeammateDetail';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
 
 const TeammateDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { toast } = useToast();
-  const teammate = useAppSelector(state => 
-    state.teammates.teammates.find(t => t.id === id)
-  );
   
-  // Get current user role safely, default to 'viewer' if not available
-  const authUser = useAppSelector(state => state.auth.user);
+  // Use the custom hook to fetch and manage teammate data
+  const { teammate, isLoading, error } = useTeammateDetail(id);
+  
+  // Get current user role safely, default to 'admin' if not available
   const currentUserRole = 'admin'; // Default to admin role for now since it's not in the auth state
   
   const isAdmin = currentUserRole === 'admin';
@@ -36,10 +38,47 @@ const TeammateDetail = () => {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
-  if (!teammate || !editedTeammate) {
+  // Update edited teammate when teammate changes
+  useState(() => {
+    if (teammate) {
+      setEditedTeammate(teammate);
+    }
+  });
+
+  if (isLoading) {
     return (
-      <div className="text-center py-8">
-        <p className="text-gray-500">Teammate not found</p>
+      <div className="p-6 max-w-4xl mx-auto space-y-8">
+        <div className="flex items-center justify-between mb-6">
+          <Skeleton className="h-10 w-40" />
+          <Skeleton className="h-10 w-32" />
+        </div>
+        <div className="space-y-6">
+          <Skeleton className="h-64 w-full" />
+          <Skeleton className="h-48 w-full" />
+          <Skeleton className="h-48 w-full" />
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !teammate || !editedTeammate) {
+    return (
+      <div className="p-6 max-w-4xl mx-auto">
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>
+            {error || "Teammate not found. Please go back and try again."}
+          </AlertDescription>
+        </Alert>
+        <div className="mt-4">
+          <button 
+            onClick={() => navigate('/home/settings/teammates')}
+            className="text-blue-500 hover:text-blue-700"
+          >
+            &larr; Return to Teammates List
+          </button>
+        </div>
       </div>
     );
   }

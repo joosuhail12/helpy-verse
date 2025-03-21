@@ -1,4 +1,3 @@
-
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import type { Teammate } from '@/types/teammate';
 import { 
@@ -29,7 +28,7 @@ export const fetchTeammates = createAsyncThunk(
       // Get auth token directly from localStorage using tokenManager
       const authToken = getAuthToken();
       if (!authToken) {
-        console.error('Cannot fetch teammates: No auth token found in localStorage');
+        console.error('Cannot fetch teammates: No auth token found');
         return rejectWithValue('No authentication token found. Please log in again.');
       }
       
@@ -60,10 +59,38 @@ export const fetchTeammateDetails = createAsyncThunk(
   'teammates/fetchTeammateDetails',
   async (id: string, { rejectWithValue }) => {
     try {
+      const workspaceId = localStorage.getItem('workspaceId');
+      
+      if (!workspaceId) {
+        console.error('Cannot fetch teammate details: No workspace ID found');
+        return rejectWithValue('No workspace ID found. Please refresh the page.');
+      }
+      
+      // Get auth token
+      const authToken = getAuthToken();
+      if (!authToken) {
+        console.error('Cannot fetch teammate details: No auth token found');
+        return rejectWithValue('No authentication token found. Please log in again.');
+      }
+      
+      console.log(`Fetching details for teammate ID: ${id}`);
       const teammate = await getTeammateById(id);
+      console.log('Teammate details response:', teammate);
+      
+      if (!teammate) {
+        return rejectWithValue(`Teammate with ID ${id} not found`);
+      }
+      
       return teammate;
     } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to fetch teammate details');
+      console.error(`Error fetching teammate with ID ${id}:`, error);
+      
+      // Handle unauthorized errors specifically
+      if (error.response?.status === 401) {
+        return rejectWithValue('Authentication failed. Please log in again.');
+      }
+      
+      return rejectWithValue(error.message || `Failed to fetch teammate with ID ${id}`);
     }
   }
 );
