@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import ChatHome from '@/components/chat-widget/ChatHome';
 import ConversationList from '@/components/chat-widget/ConversationList';
 import NewChat from '@/components/chat-widget/NewChat';
-import { X, Minimize2, MessageSquare, Home } from 'lucide-react';
+import { X, Minimize2, MessageSquare, Home, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 type WidgetPage = 'home' | 'conversations' | 'new-chat';
@@ -64,25 +64,25 @@ const ChatWidgetStandalone = () => {
 
   // Apply custom styling based on received options
   const headerStyle = {
-    backgroundColor: options.primaryColor
+    background: `linear-gradient(to right, ${options.primaryColor}, ${options.primaryColor}CC)`,
   };
 
   return (
-    <div className="flex flex-col h-screen bg-white">
-      {/* Widget header */}
+    <div className="flex flex-col h-screen bg-gray-50">
+      {/* Modern widget header */}
       <div className="p-4 flex justify-between items-center text-white" style={headerStyle}>
         <h3 className="font-semibold text-lg">Customer Support</h3>
         <div className="flex gap-2">
           <button 
             onClick={minimizeWidget} 
-            className="text-white/90 hover:text-white hover:bg-white/10 p-1.5 rounded-full transition-colors"
+            className="text-white/90 hover:text-white hover:bg-white/10 p-1.5 rounded-full transition-colors focus:outline-none"
             aria-label="Minimize chat"
           >
             <Minimize2 className="h-5 w-5" />
           </button>
           <button 
             onClick={closeWidget}
-            className="text-white/90 hover:text-white hover:bg-white/10 p-1.5 rounded-full transition-colors"
+            className="text-white/90 hover:text-white hover:bg-white/10 p-1.5 rounded-full transition-colors focus:outline-none"
             aria-label="Close chat"
           >
             <X className="h-5 w-5" />
@@ -91,25 +91,29 @@ const ChatWidgetStandalone = () => {
       </div>
 
       {/* Widget content */}
-      <div className="flex-1 overflow-y-auto bg-white">
+      <div className="flex-1 overflow-y-auto bg-gray-50">
         {currentPage === 'home' && <ChatHome onNewChat={() => navigateTo('new-chat')} />}
         {currentPage === 'conversations' && <ConversationList onNewChat={() => navigateTo('new-chat')} />}
         {currentPage === 'new-chat' && <NewChat onConversationCreated={() => navigateTo('conversations')} />}
       </div>
 
-      {/* Widget navigation */}
-      <div className="border-t border-gray-200 p-3 bg-white flex justify-between items-center">
-        <div className="flex gap-3">
+      {/* Modern widget navigation */}
+      <div className="border-t border-gray-100 p-2.5 bg-white flex justify-between items-center">
+        <div className="flex gap-2">
           <button 
             onClick={() => navigateTo('home')}
-            className={`p-2 rounded-lg transition-colors ${currentPage === 'home' ? 'bg-primary/10 text-primary' : 'text-gray-600 hover:bg-gray-100'}`}
+            className={`p-2 rounded-lg transition-colors ${currentPage === 'home' 
+              ? 'bg-primary/10 text-primary' 
+              : 'text-gray-500 hover:bg-gray-100'}`}
             aria-label="Home"
           >
             <Home className="h-5 w-5" />
           </button>
           <button 
             onClick={() => navigateTo('conversations')}
-            className={`p-2 rounded-lg transition-colors ${currentPage === 'conversations' ? 'bg-primary/10 text-primary' : 'text-gray-600 hover:bg-gray-100'}`}
+            className={`p-2 rounded-lg transition-colors ${currentPage === 'conversations' 
+              ? 'bg-primary/10 text-primary' 
+              : 'text-gray-500 hover:bg-gray-100'}`}
             aria-label="Conversations"
           >
             <MessageSquare className="h-5 w-5" />
@@ -117,7 +121,7 @@ const ChatWidgetStandalone = () => {
         </div>
         <Button
           onClick={() => navigateTo('new-chat')}
-          className="rounded-full px-4 py-2 text-sm"
+          className="flex items-center gap-1.5 rounded-full px-4 py-2 text-sm shadow-md hover:shadow-lg"
           style={{ backgroundColor: options.primaryColor }}
           size="sm"
         >
@@ -125,9 +129,10 @@ const ChatWidgetStandalone = () => {
         </Button>
       </div>
 
-      {/* Powered by footer */}
-      <div className="bg-gray-900 text-white text-xs py-2.5 text-center font-medium">
-        Powered by Pullse
+      {/* Brand footer */}
+      <div className="bg-gray-900 text-white py-2.5 text-center flex items-center justify-center gap-1.5 text-xs">
+        <span className="font-medium">Powered by Pullse</span>
+        <ExternalLink className="h-3 w-3 opacity-75" />
       </div>
     </div>
   );

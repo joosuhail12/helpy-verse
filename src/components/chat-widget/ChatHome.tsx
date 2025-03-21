@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { MessageSquare, ArrowRight } from 'lucide-react';
+import { MessageSquare, ArrowRight, ExternalLink } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 
 interface ChatHomeProps {
@@ -13,20 +13,23 @@ interface ChatHomeProps {
 const ChatHome = ({ onNewChat }: ChatHomeProps) => {
   return (
     <div className="flex flex-col h-full">
-      {/* Hero welcome section */}
-      <div className="bg-gradient-to-r from-primary/10 to-primary/5 p-6 rounded-lg mb-4">
-        <h2 className="text-xl font-semibold text-gray-800">Hello there 👋</h2>
-        <p className="text-gray-600 mt-1">How can we help you today?</p>
+      {/* Modern welcome header */}
+      <div className="bg-gradient-to-r from-primary/20 to-primary/5 px-6 py-8 rounded-b-2xl">
+        <h2 className="text-xl font-semibold text-gray-800">Hey there 👋</h2>
+        <p className="text-gray-600 mt-1 font-light">
+          We're here to help. What can we do for you today?
+        </p>
       </div>
       
-      {/* Main action card */}
-      <div className="px-6 pb-6 flex-1">
+      {/* Content area */}
+      <div className="px-6 py-6 flex-1">
+        {/* Main action card */}
         <Card 
           onClick={onNewChat}
-          className="cursor-pointer group transition-all hover:shadow-md border border-gray-200 mb-4 overflow-hidden"
+          className="cursor-pointer group transition-all hover:shadow-md border-0 bg-white shadow-sm mb-4 overflow-hidden rounded-xl"
         >
-          <div className="flex items-center gap-4 p-4">
-            <div className="bg-primary/10 p-2.5 rounded-full text-primary">
+          <div className="flex items-center gap-4 p-5">
+            <div className="bg-gradient-to-br from-primary to-primary/90 p-3 rounded-full text-white">
               <MessageSquare className="h-5 w-5" />
             </div>
             <div className="flex-1">
@@ -39,17 +42,32 @@ const ChatHome = ({ onNewChat }: ChatHomeProps) => {
           </div>
         </Card>
 
-        {/* Optional personalized tip */}
-        <div className="bg-amber-50 rounded-lg p-4 border border-amber-100">
-          <h4 className="font-medium text-amber-800 text-sm mb-1">Quick Tip</h4>
-          <p className="text-sm text-amber-700">
-            You can also browse our knowledge base for instant answers to common questions.
+        {/* Modern quick links */}
+        <div className="mt-4 mb-6">
+          <h4 className="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-3">Quick Links</h4>
+          <div className="flex flex-col gap-2.5">
+            <a href="#" className="text-sm text-gray-700 hover:text-primary flex items-center gap-1.5 font-medium">
+              <ExternalLink className="h-3.5 w-3.5" />
+              <span>Visit our help center</span>
+            </a>
+            <a href="#" className="text-sm text-gray-700 hover:text-primary flex items-center gap-1.5 font-medium">
+              <ExternalLink className="h-3.5 w-3.5" />
+              <span>View pricing plans</span>
+            </a>
+          </div>
+        </div>
+
+        {/* Personalized tip with modern design */}
+        <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
+          <h4 className="font-medium text-blue-800 text-sm mb-1">💡 Pro Tip</h4>
+          <p className="text-sm text-blue-700">
+            Send us a screenshot if you're experiencing an issue - it helps us resolve your problem faster.
           </p>
         </div>
       </div>
 
-      <div className="mt-auto text-sm text-center text-gray-500 px-4 border-t border-gray-100 py-3">
-        We typically reply within a few minutes
+      <div className="mt-auto text-xs text-center text-gray-500 px-4 border-t border-gray-100 py-3.5 font-medium">
+        Average response time: <span className="text-primary">5 minutes</span>
       </div>
     </div>
   );

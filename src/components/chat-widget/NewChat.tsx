@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Send, ArrowLeft, User, Mail, FileText, PaperclipIcon } from 'lucide-react';
+import { Send, ArrowLeft, User, Mail, FileText, PaperclipIcon, Smile } from 'lucide-react';
 import { getAblyChannel } from '@/utils/ably';
 
 interface NewChatProps {
@@ -63,8 +63,8 @@ const NewChat = ({ onConversationCreated }: NewChatProps) => {
 
   if (step === 'info') {
     return (
-      <div className="flex flex-col h-full">
-        <div className="p-4 border-b flex items-center gap-3 sticky top-0 bg-white z-10">
+      <div className="flex flex-col h-full bg-white">
+        <div className="px-4 py-3 border-b flex items-center gap-3 sticky top-0 bg-white z-10 shadow-sm">
           <button 
             onClick={onConversationCreated} 
             className="text-gray-500 hover:text-gray-700 p-1.5 hover:bg-gray-100 rounded-full transition-colors"
@@ -75,9 +75,11 @@ const NewChat = ({ onConversationCreated }: NewChatProps) => {
         </div>
         
         <div className="flex-1 p-6 overflow-y-auto">
-          <p className="text-gray-600 mb-6">
-            Please provide your information to help us serve you better
-          </p>
+          <div className="bg-gray-50 p-4 rounded-xl mb-6">
+            <p className="text-gray-600 text-sm">
+              Please provide your information to help us serve you better
+            </p>
+          </div>
           
           <form onSubmit={handleSubmitInfo} className="space-y-5">
             <div>
@@ -93,7 +95,7 @@ const NewChat = ({ onConversationCreated }: NewChatProps) => {
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-transparent bg-white shadow-sm"
                   placeholder="John Doe"
                 />
               </div>
@@ -112,7 +114,7 @@ const NewChat = ({ onConversationCreated }: NewChatProps) => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-transparent bg-white shadow-sm"
                   placeholder="your@email.com"
                 />
               </div>
@@ -129,7 +131,7 @@ const NewChat = ({ onConversationCreated }: NewChatProps) => {
                 <select
                   value={topic}
                   onChange={(e) => setTopic(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-transparent appearance-none bg-white"
+                  className="w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-transparent appearance-none bg-white shadow-sm"
                 >
                   <option value="Support">Support</option>
                   <option value="Billing">Billing</option>
@@ -142,7 +144,7 @@ const NewChat = ({ onConversationCreated }: NewChatProps) => {
             
             <button
               type="submit"
-              className="w-full bg-primary text-white py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
+              className="w-full bg-primary text-white py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 shadow-md"
             >
               Continue
               <ArrowLeft className="h-4 w-4 rotate-180" />
@@ -154,8 +156,8 @@ const NewChat = ({ onConversationCreated }: NewChatProps) => {
   }
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="p-4 border-b flex items-center gap-3 sticky top-0 bg-white z-10">
+    <div className="flex flex-col h-full bg-white">
+      <div className="px-4 py-3 border-b flex items-center gap-3 sticky top-0 bg-white z-10 shadow-sm">
         <button 
           onClick={() => setStep('info')} 
           className="text-gray-500 hover:text-gray-700 p-1.5 hover:bg-gray-100 rounded-full transition-colors"
@@ -169,34 +171,48 @@ const NewChat = ({ onConversationCreated }: NewChatProps) => {
       </div>
       
       <div className="flex-1 p-4 overflow-y-auto bg-gray-50">
-        <div className="p-6 mb-4">
-          <div className="bg-primary/10 p-4 rounded-lg rounded-tl-none max-w-[85%] shadow-sm">
+        <div className="flex flex-col items-start space-y-4">
+          <div className="bg-white p-4 rounded-2xl rounded-tl-none max-w-[85%] shadow-sm border border-gray-100">
             <p className="text-gray-800">
               👋 Hi {name.split(' ')[0]}! How can we help you with your {topic.toLowerCase()} query today?
             </p>
             <span className="text-xs text-gray-500 mt-2 block">Support Team • Just now</span>
           </div>
+          
+          <div className="w-full flex justify-center my-2">
+            <div className="text-xs font-medium text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+              Today, {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </div>
+          </div>
         </div>
       </div>
       
-      <form onSubmit={handleSendMessage} className="border-t p-3 flex items-center gap-2 bg-white">
+      <form onSubmit={handleSendMessage} className="border-t p-3 flex items-center gap-2 bg-white shadow-md">
         <button
           type="button"
           className="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100"
         >
           <PaperclipIcon className="h-5 w-5" />
         </button>
-        <input
-          type="text"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          className="flex-1 p-2.5 bg-gray-100 border-none rounded-full focus:outline-none focus:ring-2 focus:ring-primary/30 focus:bg-white"
-          placeholder="Type your message..."
-          disabled={submitting}
-        />
+        <button
+          type="button"
+          className="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100"
+        >
+          <Smile className="h-5 w-5" />
+        </button>
+        <div className="flex-1 relative">
+          <input
+            type="text"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            className="w-full py-3 px-4 bg-gray-100 border-none rounded-full focus:outline-none focus:ring-2 focus:ring-primary/30 focus:bg-white shadow-inner"
+            placeholder="Type your message..."
+            disabled={submitting}
+          />
+        </div>
         <button
           type="submit"
-          className={`bg-primary text-white p-3 rounded-full transition-colors ${!message.trim() || submitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-primary/90'}`}
+          className={`bg-primary text-white p-3 rounded-full transition-colors shadow-md ${!message.trim() || submitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-primary/90 hover:shadow-lg'}`}
           disabled={!message.trim() || submitting}
         >
           {submitting ? (
