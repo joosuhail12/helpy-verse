@@ -1,12 +1,19 @@
 
 import { HttpClient, cookieFunctions } from '@/api/services/http';
 
+// Get correct API URL from environment variables
+const API_BASE_URL = import.meta.env.VITE_REACT_APP_API_URL || '/api';
+
 // Re-export the main API client for direct usage
 const api = HttpClient.apiClient;
 
 // Configure the API client on import
 const setupApi = () => {
   try {
+    // Set API base URL
+    console.log('Initializing API service with base URL:', API_BASE_URL);
+    HttpClient.apiClient.defaults.baseURL = API_BASE_URL;
+    
     const token = cookieFunctions.getCookie('customerToken') || localStorage.getItem('token');
     if (token) {
       // Use the HttpClient's method to set the token to avoid duplicating logic
@@ -26,6 +33,17 @@ const setupApi = () => {
         localStorage.setItem('workspaceId', workspaceId);
         console.log('Synced workspace ID to localStorage');
       }
+      
+      // Set a default interceptor to include workspace_id in all requests
+      HttpClient.apiClient.interceptors.request.use(config => {
+        if (!config.params) {
+          config.params = {};
+        }
+        if (!config.params.workspace_id) {
+          config.params.workspace_id = workspaceId;
+        }
+        return config;
+      });
     } else {
       console.warn('API service initialized without workspace ID - API requests may fail');
     }

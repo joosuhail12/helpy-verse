@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
@@ -14,6 +13,8 @@ import EmptyState from '@/components/teammates/EmptyState';
 import TeammatesErrorBoundary from '@/components/teammates/TeammatesErrorBoundary';
 import type { Teammate } from '@/types/teammate';
 import { selectAllTeammates, selectTeammatesLoading, selectTeammatesError } from '@/store/slices/teammates/selectors';
+import { Button } from '@/components/ui/button';
+import { AlertCircle, RefreshCw } from 'lucide-react';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -27,6 +28,7 @@ const TeammatesPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState<keyof Teammate | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [retrying, setRetrying] = useState(false);
 
   const {
     searchQuery,
@@ -40,8 +42,39 @@ const TeammatesPage = () => {
   } = useTeammateFilters(teammates);
 
   useEffect(() => {
-    dispatch(fetchTeammates());
-  }, [dispatch]);
+    const workspaceId = localStorage.getItem('workspaceId');
+    if (workspaceId) {
+      dispatch(fetchTeammates());
+    } else {
+      toast({
+        title: "Workspace ID Missing",
+        description: "No workspace ID found. Please refresh the page.",
+        variant: "destructive",
+      });
+    }
+  }, [dispatch, toast]);
+
+  const handleRetry = () => {
+    setRetrying(true);
+    dispatch(fetchTeammates())
+      .unwrap()
+      .then(() => {
+        toast({
+          title: "Success",
+          description: "Teammates data refreshed successfully.",
+        });
+      })
+      .catch((err) => {
+        toast({
+          title: "Error",
+          description: "Failed to fetch teammates. Please try again.",
+          variant: "destructive",
+        });
+      })
+      .finally(() => {
+        setRetrying(false);
+      });
+  };
 
   const handleResendInvitation = async (teammateId: string) => {
     try {
@@ -128,12 +161,45 @@ const TeammatesPage = () => {
     );
   }
 
+  if (error) {
+    return (
+      <div className="p-6 flex flex-col items-center justify-center h-[50vh]">
+        <AlertCircle className="h-12 w-12 text-destructive mb-4" />
+        <h3 className="text-xl font-semibold mb-2">Failed to load teammates</h3>
+        <p className="text-muted-foreground mb-6 text-center max-w-md">
+          {typeof error === 'string' ? error : 'There was an error loading your teammates. Please try again.'}
+        </p>
+        <div className="flex gap-4">
+          <Button 
+            onClick={handleRetry} 
+            disabled={retrying} 
+            className="flex items-center gap-2"
+          >
+            {retrying && <RefreshCw className="h-4 w-4 animate-spin" />}
+            {retrying ? 'Retrying...' : 'Retry'}
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <TeammatesErrorBoundary>
       <div className="p-6 space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-semibold text-gray-900">Teammates</h1>
-          <AddTeammateDialog />
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              onClick={handleRetry}
+              className="flex items-center gap-2"
+              disabled={retrying}
+            >
+              <RefreshCw className={`h-4 w-4 ${retrying ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+            <AddTeammateDialog />
+          </div>
         </div>
 
         <TeammatesFilters

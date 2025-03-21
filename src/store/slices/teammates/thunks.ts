@@ -1,4 +1,3 @@
-
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import type { Teammate } from '@/types/teammate';
 import { 
@@ -17,7 +16,14 @@ export const fetchTeammates = createAsyncThunk(
   'teammates/fetchTeammates',
   async (_, { rejectWithValue }) => {
     try {
-      console.log('Fetching teammates with workspace ID:', localStorage.getItem('workspaceId'));
+      const workspaceId = localStorage.getItem('workspaceId');
+      console.log('Fetching teammates with workspace ID:', workspaceId);
+      
+      if (!workspaceId) {
+        console.error('Cannot fetch teammates: No workspace ID found');
+        return rejectWithValue('No workspace ID found');
+      }
+      
       const teammates = await getTeammates();
       console.log('Teammates API response:', teammates);
       
@@ -25,7 +31,12 @@ export const fetchTeammates = createAsyncThunk(
       return Array.isArray(teammates) ? teammates : [];
     } catch (error: any) {
       console.error('Failed to fetch teammates:', error);
-      return rejectWithValue(error.message || 'Failed to fetch teammates');
+      // Provide more detailed error information
+      return rejectWithValue({
+        message: error.message || 'Failed to fetch teammates',
+        status: error.response?.status,
+        data: error.response?.data
+      });
     }
   }
 );

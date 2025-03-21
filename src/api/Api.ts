@@ -2,7 +2,10 @@
 import { store } from '@/store/store';
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
+// Use the environment variable for API base URL with fallback
+const API_BASE_URL = import.meta.env.VITE_REACT_APP_API_URL || '/api';
+
+console.log('Using API base URL:', API_BASE_URL);
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -34,8 +37,10 @@ api.interceptors.request.use(
       if (!config.params.workspace_id) {
         config.params.workspace_id = workspaceId;
       }
+      
+      console.log(`API Request to ${config.url} with workspace_id: ${workspaceId}`);
     } else {
-      console.warn('Making API request without workspace_id', config.url);
+      console.warn(`Making API request without workspace_id to: ${config.url}`);
     }
     
     return config;
@@ -45,8 +50,16 @@ api.interceptors.request.use(
 
 // Add response interceptor for error handling
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log(`API Response from ${response.config.url}: Status ${response.status}`);
+    return response;
+  },
   (error) => {
+    // Log detailed error information
+    const status = error.response?.status;
+    const url = error.config?.url;
+    console.error(`API Error: ${status || 'network'} on ${url}`, error);
+    
     // Handle common errors like 401 Unauthorized
     if (error.response && error.response.status === 401) {
       // Dispatch logout action

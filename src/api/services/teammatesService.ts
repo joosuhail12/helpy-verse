@@ -1,23 +1,47 @@
 
 import api from '../Api';
 import { Teammate, NewTeammate } from '@/types/teammate';
+import { store } from '@/store/store';
+
+// Make sure we're using the correct API base URL from environment variables
+const API_BASE_URL = import.meta.env.VITE_REACT_APP_API_URL || '/api';
 
 export const getTeammates = async (): Promise<Teammate[]> => {
   try {
     // Get workspace ID directly from localStorage to ensure it's included
     const workspaceId = localStorage.getItem('workspaceId');
+    
+    if (!workspaceId) {
+      console.error('No workspace ID found in localStorage');
+      return [];
+    }
+    
+    console.log(`Fetching teammates for workspace: ${workspaceId} from ${API_BASE_URL}/user`);
+    
     const response = await api.get('/user', {
       params: {
         workspace_id: workspaceId
       }
     });
     
-    if (!response.data || !response.data.data) {
-      console.error('API response missing data structure:', response);
+    // Added more detailed logging to diagnose the response structure
+    console.log('Raw API response:', response);
+    
+    if (!response.data) {
+      console.error('API response missing data:', response);
       return [];
     }
     
-    return response.data.data;
+    // Handle different response structures
+    const teammates = response.data.data || response.data;
+    
+    if (!Array.isArray(teammates)) {
+      console.error('API response is not an array:', teammates);
+      return [];
+    }
+    
+    console.log(`Successfully retrieved ${teammates.length} teammates`);
+    return teammates;
   } catch (error) {
     console.error('Error fetching teammates:', error);
     throw error;
