@@ -1,8 +1,8 @@
 
 import { ChevronLeft, ChevronRight, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import MainNavigation from './MainNavigation';
 import SubNavigation from './SubNavigation';
 import { mainNavItems, subNavItems } from './navigationConfig';
@@ -12,29 +12,10 @@ import { toast } from '@/components/ui/use-toast';
 
 const Sidebar = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const dispatch = useAppDispatch();
-  
-  // Get the current route segment to determine active nav
-  const currentRoute = location.pathname.split('/');
-  const initialMainNav = currentRoute[1] === 'inbox' ? 'inbox' : 
-                        (currentRoute[1] === 'home' && currentRoute[2] ? currentRoute[2] : 'home');
-  
-  const [activeMainNav, setActiveMainNav] = useState(initialMainNav);
+  const [activeMainNav, setActiveMainNav] = useState(window.location.pathname.split('/')[1] || 'home');
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const [isSecondPanelCollapsed, setIsSecondPanelCollapsed] = useState(false);
-
-  // Update activeMainNav when route changes
-  useEffect(() => {
-    const currentRoute = location.pathname.split('/');
-    if (currentRoute[1] === 'inbox') {
-      setActiveMainNav('inbox');
-    } else if (currentRoute[1] === 'home' && currentRoute[2]) {
-      setActiveMainNav(currentRoute[2]);
-    } else if (currentRoute[1] === 'home') {
-      setActiveMainNav('home');
-    }
-  }, [location]);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -57,8 +38,10 @@ const Sidebar = () => {
     setIsSecondPanelCollapsed(prev => !prev);
   };
 
-  // Show secondary nav only for non-home items that have sub-items
-  const shouldShowSecondaryNav = activeMainNav !== 'home' && subNavItems[activeMainNav as keyof typeof subNavItems];
+  // Add debug logging
+  console.log('Current auth state:', localStorage.getItem('auth'));
+  console.log('Current path:', window.location.pathname);
+  console.log('Active main nav:', activeMainNav);
 
   return (
     <>
@@ -92,7 +75,7 @@ const Sidebar = () => {
         </Button>
       </div>
 
-      {shouldShowSecondaryNav && (
+      {activeMainNav !== 'home' && subNavItems[activeMainNav as keyof typeof subNavItems] && (
         <SubNavigation 
           activeMainNav={activeMainNav}
           isSecondPanelCollapsed={isSecondPanelCollapsed}
@@ -107,3 +90,4 @@ const Sidebar = () => {
 };
 
 export default Sidebar;
+

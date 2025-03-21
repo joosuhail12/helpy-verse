@@ -26,7 +26,7 @@ export const CompaniesList = ({ companies, loading }: CompaniesListProps) => {
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      dispatch(setSelectedCompanies(companies?.map(company => company.id)));
+      dispatch(setSelectedCompanies(companies.map(company => company.id)));
     } else {
       dispatch(setSelectedCompanies([]));
     }
@@ -35,7 +35,7 @@ export const CompaniesList = ({ companies, loading }: CompaniesListProps) => {
   if (loading) {
     return <LoadingState />;
   }
-  console.log(companies);
+
   if (companies.length === 0) {
     return (
       <div className="text-center py-12">
@@ -70,7 +70,7 @@ export const CompaniesList = ({ companies, loading }: CompaniesListProps) => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {companies?.map(company => (
+          {companies.map(company => (
             <CompanyListItem key={company.id} company={company} />
           ))}
         </TableBody>

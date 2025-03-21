@@ -2,9 +2,9 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Shield, Key, LogOut } from 'lucide-react';
-import { TwoFactorSetup } from './security/TwoFactorSetup';
-import { ActiveSessions } from './security/ActiveSessions';
-import { PasswordReset } from './security/PasswordReset';
+import TwoFactorSetup from './security/TwoFactorSetup';
+import ActiveSessions from './security/ActiveSessions';
+import PasswordReset from './security/PasswordReset';
 
 interface TeammateSecuritySettingsProps {
   teammateId: string;

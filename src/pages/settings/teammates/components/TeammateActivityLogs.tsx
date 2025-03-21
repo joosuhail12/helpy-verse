@@ -5,14 +5,15 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Clock, Activity } from "lucide-react";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import { formatDistanceToNow } from "date-fns";
-import { selectTeammateActivities } from "@/store/slices/teammates/selectors";
 
 interface TeammateActivityLogsProps {
   teammateId: string;
 }
 
 const TeammateActivityLogs = ({ teammateId }: TeammateActivityLogsProps) => {
-  const activities = useAppSelector(state => selectTeammateActivities(state, teammateId));
+  const activities = useAppSelector(state => 
+    state.teammates.activityLogs.filter(log => log.teammateId === teammateId)
+  );
 
   const getActivityIcon = (type: string) => {
     switch (type) {

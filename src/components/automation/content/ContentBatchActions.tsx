@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { updateContentStatus, reassignChatbot, deleteContents, clearSelection } from '@/store/slices/content/contentSlice';
+import { updateContentStatus, reassignChatbot, deleteContent, clearSelection } from '@/store/slices/content/contentSlice';
 import type { ContentStatus } from '@/types/content';
 
 interface ContentBatchActionsProps {
@@ -35,7 +35,7 @@ export const ContentBatchActions = ({ selectedIds }: ContentBatchActionsProps) =
   const { toast } = useToast();
 
   const handleDelete = useCallback(() => {
-    dispatch(deleteContents(selectedIds));
+    dispatch(deleteContent(selectedIds));
     setShowDeleteDialog(false);
     dispatch(clearSelection());
     toast({
@@ -55,7 +55,7 @@ export const ContentBatchActions = ({ selectedIds }: ContentBatchActionsProps) =
   }, [selectedIds, newStatus, dispatch, toast]);
 
   const handleReassign = useCallback((chatbotId: string, chatbotName: string) => {
-    dispatch(reassignChatbot({ contentIds: selectedIds, chatbotId, chatbotName }));
+    dispatch(reassignChatbot({ ids: selectedIds, chatbotId, chatbotName }));
     setShowReassignDialog(false);
     dispatch(clearSelection());
     toast({
@@ -137,9 +137,6 @@ export const ContentBatchActions = ({ selectedIds }: ContentBatchActionsProps) =
               <SelectItem value="processing">Processing</SelectItem>
               <SelectItem value="completed">Completed</SelectItem>
               <SelectItem value="failed">Failed</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="inactive">Inactive</SelectItem>
-              <SelectItem value="draft">Draft</SelectItem>
             </SelectContent>
           </Select>
           <DialogFooter>
@@ -185,3 +182,4 @@ export const ContentBatchActions = ({ selectedIds }: ContentBatchActionsProps) =
     </div>
   );
 };
+

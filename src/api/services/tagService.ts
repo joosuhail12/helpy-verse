@@ -1,5 +1,5 @@
 import type { Tag, SortField, FilterEntity } from '@/types/tag';
-import { HttpClient } from '@/api/services/http';
+import { HttpClient } from '@/api/services/HttpClient';
 
 const API_URL = '/tag';
 

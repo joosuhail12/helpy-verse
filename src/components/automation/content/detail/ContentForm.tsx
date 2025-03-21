@@ -17,7 +17,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { updateContent } from '@/store/slices/content/contentSlice';
-import type { Content, ContentVersion, User } from '@/types/content';
+import type { Content } from '@/types/content';
 
 const formSchema = z.object({
   title: z.string().min(2, 'Title must be at least 2 characters'),
@@ -38,37 +38,35 @@ export const ContentForm = ({ content }: ContentFormProps) => {
     defaultValues: {
       title: content.title,
       description: content.description,
-      content: content.content || '',
+      content: content.content,
     },
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      const currentUser: User = {
-        id: 'current-user',
-        name: 'Current User',
-        avatar: 'https://api.dicebear.com/7.x/avatars/svg?seed=current-user',
-      };
-
-      const newVersion: ContentVersion = {
+      const newVersion = {
         id: `v${Date.now()}`,
         contentId: content.id,
         content: content.content || '',
         createdAt: new Date().toISOString(),
-        createdBy: currentUser,
-        changes: 'Updated content details',
+        createdBy: {
+          id: 'current-user',
+          name: 'Current User',
+          avatar: 'https://api.dicebear.com/7.x/avatars/svg?seed=current-user',
+        },
+        changes: 'Updated content',
       };
 
-      const currentVersions = Array.isArray(content.versions) ? [...content.versions] : [];
+      const updates = {
+        ...values,
+        versions: [...(content.versions || []), newVersion],
+        lastEditedBy: newVersion.createdBy,
+        lastUpdated: new Date().toISOString(),
+      };
 
       dispatch(updateContent({ 
         id: content.id, 
-        data: {
-          ...values,
-          versions: [...currentVersions, newVersion],
-          lastEditedBy: currentUser,
-          lastUpdated: new Date().toISOString(),
-        }
+        updates 
       }));
 
       toast({

@@ -1,69 +1,65 @@
 
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { UserCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
-import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { updateContact, clearSelection } from '@/store/slices/contacts/contactsSlice';
-import { AlignCenter, Check, ChevronDown } from 'lucide-react';
+import { updateContact } from '@/store/slices/contacts/contactsSlice';
+import { useToast } from '@/hooks/use-toast';
 
 interface StatusActionsProps {
-  selectedContactIds: string[];
+  selectedContacts: string[];
 }
 
-export const StatusActions: React.FC<StatusActionsProps> = ({ selectedContactIds }) => {
-  const { toast } = useToast();
+export const StatusActions = ({ selectedContacts }: StatusActionsProps) => {
+  const [selectedStatus, setSelectedStatus] = useState('');
   const dispatch = useAppDispatch();
+  const { toast } = useToast();
 
-  const handleSetStatus = async (status: 'active' | 'inactive') => {
-    try {
-      // Update each contact
-      for (const contactId of selectedContactIds) {
-        await dispatch(updateContact({
-          contactId,
-          data: { status }
-        })).unwrap();
-      }
+  const handleStatusUpdate = () => {
+    if (!selectedStatus) return;
 
-      toast({
-        title: "Status updated",
-        description: `Updated ${selectedContactIds.length} contacts to ${status}`,
-      });
+    selectedContacts.forEach(contactId => {
+      dispatch(updateContact({
+        id: contactId,
+        status: selectedStatus as 'active' | 'inactive'
+      }));
+    });
 
-      dispatch(clearSelection());
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update contact status",
-        variant: "destructive",
-      });
-    }
+    toast({
+      title: "Status updated",
+      description: `Updated status for ${selectedContacts.length} contacts`,
+    });
+    setSelectedStatus('');
   };
 
-  if (selectedContactIds.length === 0) return null;
-
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm">
-          Set Status <ChevronDown className="ml-2 h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent>
-        <DropdownMenuItem onClick={() => handleSetStatus('active')}>
-          <Check className="mr-2 h-4 w-4 text-green-500" />
-          Mark as Active
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => handleSetStatus('inactive')}>
-          <AlignCenter className="mr-2 h-4 w-4 text-gray-500" />
-          Mark as Inactive
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <div className="flex items-center gap-2">
+      <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+        <SelectTrigger className="w-[180px]">
+          <SelectValue placeholder="Update status..." />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="active">Active</SelectItem>
+          <SelectItem value="inactive">Inactive</SelectItem>
+        </SelectContent>
+      </Select>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={handleStatusUpdate}
+        disabled={selectedContacts.length === 0 || !selectedStatus}
+      >
+        <UserCheck className="h-4 w-4 mr-2" />
+        Update Status
+      </Button>
+    </div>
   );
 };
+

@@ -3,7 +3,7 @@ import { Check, X, ExternalLink, Globe, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { format, isPast, addDays } from 'date-fns';
-import type { Domain } from '@/mock/domains';
+import { Domain } from '@/types/domains';
 import { DomainBadge } from '../DomainBadge';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
@@ -22,24 +22,24 @@ interface DomainListItemProps {
   onNavigate: (id: string) => void;
 }
 
-export const DomainListItem = ({ 
-  domain, 
+export const DomainListItem = ({
+  domain,
   selected,
   onSelect,
-  onVerify, 
-  onDelete, 
-  onNavigate 
+  onVerify,
+  onDelete,
+  onNavigate
 }: DomainListItemProps) => {
   const { toast } = useToast();
-  const isExpiringSoon = isPast(addDays(new Date(domain.dateAdded), 365));
-  
+  // const isExpiringSoon = isPast(addDays(new Date(domain.createdAt), 365));
+
   return (
     <div className={cn(
       "flex items-center justify-between p-6 transition-all group",
       "hover:bg-muted/50 hover:shadow-sm",
       "rounded-lg mx-2 my-1",
       selected && "bg-primary/5",
-      isExpiringSoon && "bg-red-50/50"
+      // isExpiringSoon && "bg-red-50/50"
     )}>
       <div className="flex items-center gap-4">
         <Checkbox
@@ -72,8 +72,8 @@ export const DomainListItem = ({
             >
               {domain.domain}
             </button>
-            <DomainBadge status={domain.status} />
-            {isExpiringSoon && (
+            <DomainBadge status={domain.isVerified} />
+            {/* {isExpiringSoon && (
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div className="flex items-center gap-1 text-xs font-medium text-destructive animate-pulse">
@@ -85,14 +85,14 @@ export const DomainListItem = ({
                   <p>This domain will expire soon. Please renew it to continue using it.</p>
                 </TooltipContent>
               </Tooltip>
-            )}
+            )} */}
           </div>
           <p className="text-sm text-muted-foreground mt-1">
-            Added on {format(new Date(domain.dateAdded), 'MMM d, yyyy')}
+            Added on {format(new Date(domain.createdAt), 'MMM d, yyyy')}
           </p>
-          {domain.status === 'failed' && domain.error && (
+          {/* {domain.isVerified === false && (
             <p className="text-sm text-destructive mt-1">{domain.error}</p>
-          )}
+          )} */}
         </div>
       </div>
       <div className="flex items-center gap-2">
@@ -109,7 +109,7 @@ export const DomainListItem = ({
           <ExternalLink className="h-4 w-4 mr-1" />
           Manage
         </Button>
-        {domain.status === 'pending' && (
+        {domain.isVerified === false && (
           <Button
             variant="outline"
             size="sm"

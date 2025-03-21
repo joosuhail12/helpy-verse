@@ -1,202 +1,137 @@
-
-import { useState, useRef, useEffect } from 'react';
-import { Pencil, Check, X } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { useToast } from '@/hooks/use-toast';
+import { CustomFieldType } from '@/types/customField';
+import { validateFieldValue } from '@/components/settings/customData/utils/fieldValidation';
+import { EditButtons } from './inline-edit/EditButtons';
+import { EditField } from './inline-edit/EditField';
+import { DisplayValue } from './inline-edit/DisplayValue';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { updateContact } from '@/store/slices/contacts/contactsSlice';
-import { useOnClickOutside } from '@/hooks/useOnClickOutside';
+import { updateCustomer } from '@/store/slices/contacts/contactsSlice';
 
-export interface InlineEditFieldProps {
-  value: string;
+interface InlineEditFieldProps {
+  value: string | number | boolean | string[];
   contactId: string;
+  field: string;
   label: string;
-  fieldName?: string; // New prop for backward compatibility
-  field?: string;     // Keep for backward compatibility
-  type?: 'text' | 'date' | 'select' | 'email' | 'phone' | 'url';
-  options?: Array<{ value: string; label: string }> | string[];
-  onSave?: (value: string) => void;
-  validation?: Record<string, any>;
+  type?: CustomFieldType;
+  options?: string[];
+  validation?: {
+    type: 'required' | 'minLength' | 'maxLength' | 'regex' | 'min' | 'max';
+    value: string | number;
+    message: string;
+  }[];
 }
 
-export const InlineEditField = ({ 
-  value, 
-  contactId, 
-  label, 
-  fieldName, 
+export const InlineEditField = ({
+  value,
+  contactId,
   field,
+  label,
   type = 'text',
-  options,
-  onSave 
+  options = [],
+  validation = []
 }: InlineEditFieldProps) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [editValue, setEditValue] = useState(value);
-  const inputRef = useRef<HTMLInputElement | null>(null);
-  const selectRef = useRef<HTMLSelectElement | null>(null);
-  const wrapperRef = useRef<HTMLDivElement>(null);
+  const [editValue, setEditValue] = useState<string | number | boolean | string[]>(value);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
+  const inputRef = useRef<HTMLInputElement>(null);
   const dispatch = useAppDispatch();
 
-  // Use the fieldName if provided, otherwise fallback to field for backward compatibility
-  const actualFieldName = fieldName || field || label.toLowerCase();
-
-  useOnClickOutside(wrapperRef, () => {
-    if (isEditing) {
-      handleCancel();
-    }
-  });
-
   useEffect(() => {
-    if (isEditing) {
-      if (type === 'select' && selectRef.current) {
-        selectRef.current.focus();
-      } else if (inputRef.current) {
-        inputRef.current.focus();
-      }
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
     }
-  }, [isEditing, type]);
-
-  useEffect(() => {
-    setEditValue(value);
-  }, [value]);
-
-  const handleEdit = () => {
-    setIsEditing(true);
-  };
+  }, [isEditing]);
 
   const handleSave = async () => {
-    if (editValue === value) {
-      setIsEditing(false);
+    // Validate field before saving
+    const mockField = {
+      id: field,
+      name: label,
+      type,
+      required: validation.some(v => v.type === 'required'),
+      validationRules: validation,
+      description: '',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      history: []
+    };
+
+    const validationErrors = validateFieldValue(editValue, mockField);
+    if (validationErrors.length > 0) {
+      setError(validationErrors[0]);
+      toast({
+        title: 'Validation Error',
+        description: validationErrors[0],
+        variant: 'destructive',
+      });
       return;
     }
 
+    setIsSaving(true);
+    setError(null);
     try {
-      // Create an update object dynamically based on field name
-      const updateData: Record<string, string> = {};
-      updateData[actualFieldName] = editValue;
-
-      await dispatch(updateContact({
-        contactId,
-        data: updateData
-      }));
-
-      if (onSave) {
-        onSave(editValue);
-      }
-    } catch (error) {
-      console.error('Failed to update field:', error);
-    } finally {
+      await dispatch(updateCustomer({ customer_id: contactId, [field]: editValue }));
       setIsEditing(false);
+      toast({
+        title: 'Success',
+        description: `${label} has been updated.`,
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: `Failed to update ${label.toLowerCase()}.`,
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSaving(false);
     }
   };
 
   const handleCancel = () => {
     setEditValue(value);
     setIsEditing(false);
+    setError(null);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>) => {
-    if (e.key === 'Enter') {
-      handleSave();
-    } else if (e.key === 'Escape') {
-      handleCancel();
-    }
-  };
-
-  const renderInput = () => {
-    switch(type) {
-      case 'select':
-        return (
-          <select 
-            ref={selectRef}
-            value={editValue}
-            onChange={(e) => setEditValue(e.target.value)}
-            onKeyDown={handleKeyDown}
-            className="w-full border rounded px-2 py-1"
-          >
-            {Array.isArray(options) && options.map((option, index) => {
-              if (typeof option === 'string') {
-                return (
-                  <option key={index} value={option}>
-                    {option}
-                  </option>
-                );
-              } else {
-                return (
-                  <option key={index} value={option.value}>
-                    {option.label}
-                  </option>
-                );
-              }
-            })}
-          </select>
-        );
-      case 'date':
-        return (
-          <Input
-            ref={inputRef}
-            type="date"
-            value={editValue}
-            onChange={(e) => setEditValue(e.target.value)}
-            onKeyDown={handleKeyDown}
-            className="w-full"
-          />
-        );
-      default:
-        return (
-          <Input
-            ref={inputRef}
+  if (isEditing) {
+    return (
+      <div className="space-y-1">
+        <div className="flex items-center gap-2">
+          <EditField
             type={type}
             value={editValue}
-            onChange={(e) => setEditValue(e.target.value)}
-            onKeyDown={handleKeyDown}
-            className="w-full"
+            onChange={(newValue) => setEditValue(newValue)}
+            options={options}
+            isSaving={isSaving}
+            inputRef={inputRef}
           />
-        );
-    }
-  };
+          <EditButtons
+            onSave={handleSave}
+            onCancel={handleCancel}
+            isSaving={isSaving}
+          />
+        </div>
+        {error && <p className="text-sm text-red-500">{error}</p>}
+      </div>
+    );
+  }
 
   return (
-    <div ref={wrapperRef} className="group relative w-full">
-      {isEditing ? (
-        <div className="flex w-full gap-2">
-          {renderInput()}
-          <div className="flex gap-1">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={handleSave}
-              className="h-8 w-8 p-0"
-            >
-              <Check className="h-4 w-4" />
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={handleCancel}
-              className="h-8 w-8 p-0"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      ) : (
-        <div className="flex items-center justify-between">
-          <span className={`block ${!value ? 'text-muted-foreground italic' : ''}`}>
-            {value || 'Not set'}
-          </span>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={handleEdit}
-            className="opacity-0 group-hover:opacity-100 h-8 w-8 p-0"
-          >
-            <Pencil className="h-4 w-4" />
-          </Button>
-        </div>
-      )}
+    <div className="group flex items-center gap-2">
+      <DisplayValue type={type} value={value} />
+      <Button
+        size="sm"
+        variant="ghost"
+        onClick={() => setIsEditing(true)}
+        className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+      >
+        <Pencil className="h-4 w-4 text-gray-500" />
+      </Button>
     </div>
   );
 };

@@ -36,15 +36,11 @@ export interface CustomAction {
   createdBy: {
     id: string;
     name: string;
-    avatar?: string; // Make avatar optional
   };
   enabled: boolean;
-  category: string;
-  isActive: boolean;
   connectedChatbots?: Array<{
     id: string;
     name: string;
   }>;
 }
 
-export type Action = CustomAction;

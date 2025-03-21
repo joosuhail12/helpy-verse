@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, Filter, X, Tag as TagIcon } from 'lucide-react';
+import { BulkActions } from './BulkActions';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import {
@@ -12,7 +13,6 @@ import {
 } from "@/components/ui/popover";
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import BulkActions from './BulkActions';
 
 interface SearchCriteria {
   field: string;
@@ -80,7 +80,7 @@ export const ContactListControls = () => {
         </div>
         <Popover>
           <PopoverTrigger asChild>
-            <Button
+            <Button 
               variant="outline"
               className={showFilters ? 'bg-gray-100' : ''}
             >
@@ -96,7 +96,7 @@ export const ContactListControls = () => {
                   Add Criteria
                 </Button>
               </div>
-
+              
               {searchCriteria.map((criteria, index) => (
                 <div key={index} className="flex items-start gap-2">
                   <select
@@ -125,7 +125,7 @@ export const ContactListControls = () => {
                   </Button>
                 </div>
               ))}
-
+              
               {searchCriteria.length > 0 && (
                 <div className="flex flex-wrap gap-2 pt-2">
                   {searchCriteria.map((criteria, index) => (

@@ -3,11 +3,6 @@ import { Content } from '@/types/content';
 import { addDays, subDays } from 'date-fns';
 
 const today = new Date();
-const defaultAuthor = {
-  id: 'user1',
-  name: 'John Doe',
-  avatar: 'https://api.dicebear.com/7.x/avatars/svg?seed=John',
-};
 
 export const hrContent: Content[] = [
   {
@@ -15,12 +10,9 @@ export const hrContent: Content[] = [
     title: 'Onboarding Checklist',
     description: 'New employee onboarding procedures and requirements',
     category: 'hr',
-    contentType: 'checklist',
     type: 'file',
     status: 'completed',
-    createdAt: subDays(today, 10).toISOString(),
     lastUpdated: subDays(today, 5).toISOString(),
-    author: defaultAuthor,
     messageCount: 890,
     content: `# New Employee Onboarding Checklist
 

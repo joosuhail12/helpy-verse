@@ -1,4 +1,3 @@
-
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
@@ -8,9 +7,7 @@ import TeamsEmptyState from '@/components/teams/TeamsEmptyState';
 import TeamsList from '@/components/teams/TeamsList';
 import { Button } from "@/components/ui/button";
 import { Plus, Users } from "lucide-react";
-import { setLoading, setError, setTeams } from '@/store/slices/teams/teamsSlice';
-import { mockTeams } from '@/store/slices/teams/mockData';
-import type { Team as TeamType } from '@/types/team';
+import { fetchTeams } from '@/store/slices/teams/teamsSlice';
 
 const Teams = () => {
   const navigate = useNavigate();
@@ -18,56 +15,16 @@ const Teams = () => {
   const { teams, loading, error } = useAppSelector((state) => state.teams);
 
   useEffect(() => {
-    const fetchTeams = async () => {
+    const loadTeams = async () => {
       try {
-        dispatch(setLoading(true));
-        const response = await fetch('/api/teams');
-        if (!response.ok) {
-          throw new Error('API request failed');
-        }
-        const data = await response.json();
-        dispatch(setTeams(data));
+        console.log('Fetching teams');
+        await dispatch(fetchTeams()).unwrap();
       } catch (err) {
-        console.log('Using mock data as fallback:', mockTeams);
-        // Convert the mockTeams to the expected Team type format before dispatching
-        const formattedTeams = mockTeams.map(team => {
-          const formattedTeam: TeamType = {
-            ...team,
-            channels: {
-              chat: team.channels.find(c => c.type === 'chat')?.id,
-              email: team.channels.filter(c => c.type === 'email').map(c => c.id)
-            },
-            routing: {
-              type: team.routing[0]?.name?.toLowerCase() === 'round-robin' ? 'round-robin' : 
-                    team.routing[0]?.name?.toLowerCase() === 'load-balanced' ? 'load-balanced' : 'manual',
-              limits: {
-                maxTickets: 50,
-                maxOpenTickets: 10,
-                maxActiveChats: 5
-              }
-            },
-            officeHours: {
-              monday: team.officeHours?.days?.includes('monday') ? [{ start: team.officeHours.startTime || '09:00', end: team.officeHours.endTime || '17:00' }] : [],
-              tuesday: team.officeHours?.days?.includes('tuesday') ? [{ start: team.officeHours.startTime || '09:00', end: team.officeHours.endTime || '17:00' }] : [],
-              wednesday: team.officeHours?.days?.includes('wednesday') ? [{ start: team.officeHours.startTime || '09:00', end: team.officeHours.endTime || '17:00' }] : [],
-              thursday: team.officeHours?.days?.includes('thursday') ? [{ start: team.officeHours.startTime || '09:00', end: team.officeHours.endTime || '17:00' }] : [],
-              friday: team.officeHours?.days?.includes('friday') ? [{ start: team.officeHours.startTime || '09:00', end: team.officeHours.endTime || '17:00' }] : [],
-              saturday: team.officeHours?.days?.includes('saturday') ? [{ start: team.officeHours.startTime || '09:00', end: team.officeHours.endTime || '17:00' }] : [],
-              sunday: team.officeHours?.days?.includes('sunday') ? [{ start: team.officeHours.startTime || '09:00', end: team.officeHours.endTime || '17:00' }] : [],
-            },
-            holidays: team.holidays.map(h => typeof h === 'string' ? h : h.date),
-            createdAt: team.createdAt || new Date().toISOString(),
-            updatedAt: team.updatedAt || new Date().toISOString()
-          };
-          return formattedTeam;
-        });
-        
-        // Using type assertion to resolve dispatch type errors
-        dispatch(setTeams(formattedTeams as any));
+        console.log('Using mock data as fallback:', err);
+
       }
     };
-
-    fetchTeams();
+    loadTeams();
   }, [dispatch]);
 
   if (error) {
@@ -100,8 +57,7 @@ const Teams = () => {
       {teams.length === 0 ? (
         <TeamsEmptyState />
       ) : (
-        // Using type assertion to fix incompatible types
-        <TeamsList teams={teams as any} />
+        <TeamsList teams={teams} />
       )}
     </div>
   );

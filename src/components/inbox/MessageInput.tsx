@@ -85,7 +85,7 @@ const MessageInput = ({
   };
 
   return (
-    <div className="p-4 bg-white border-t">
+    <div className="border-t p-4 bg-white">
       <div className={cn(
         "border rounded-lg mb-3",
         isInternalNote && "border-yellow-400 bg-yellow-50"
@@ -106,7 +106,7 @@ const MessageInput = ({
           setIsAttachmentSheetOpen={setIsAttachmentSheetOpen}
         />
         <div 
-          className={`cursor-text max-h-40 overflow-y-auto ${disabled ? 'opacity-50 pointer-events-none' : ''}`}
+          className={`cursor-text ${disabled ? 'opacity-50 pointer-events-none' : ''}`}
           onClick={() => editor?.commands.focus()}
         >
           <EditorContent 

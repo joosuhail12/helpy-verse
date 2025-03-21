@@ -1,13 +1,11 @@
 
-import { useEditor, EditorContent, ReactRenderer } from '@tiptap/react';
+import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Mention from '@tiptap/extension-mention';
 import Placeholder from '@tiptap/extension-placeholder';
-import CannedResponseEditorToolbar from './CannedResponseEditorToolbar';
 import MentionList from '@/components/inbox/components/MentionList';
 import { cn } from '@/lib/utils';
 import { useCallback } from 'react';
-import tippy from 'tippy.js';
 
 interface CannedResponseEditorProps {
   content: string;
@@ -43,43 +41,34 @@ export const CannedResponseEditor = ({
 
             return {
               onStart: (props: any) => {
-                component = new ReactRenderer(MentionList, {
-                  props,
-                  editor: props.editor,
+                component = new MentionList({
+                  items: props.items,
+                  command: props.command,
                 });
 
-                popup = tippy('body', {
-                  getReferenceClientRect: props.clientRect,
-                  appendTo: () => document.body,
-                  content: component.element,
-                  showOnCreate: true,
-                  interactive: true,
-                  trigger: 'manual',
-                  placement: 'bottom-start',
-                });
+                popup = document.createElement('div');
+                popup.className = 'mention-popup';
+                popup.appendChild(component.element);
+                document.body.appendChild(popup);
+
+                popup.style.position = 'absolute';
+                popup.style.left = `${props.clientRect.x}px`;
+                popup.style.top = `${props.clientRect.y}px`;
               },
               onUpdate: (props: any) => {
-                component.updateProps(props);
-                
-                popup[0].setProps({
-                  getReferenceClientRect: props.clientRect,
-                });
+                component.update(props);
+                popup.style.left = `${props.clientRect.x}px`;
+                popup.style.top = `${props.clientRect.y}px`;
               },
               onKeyDown: (props: any) => {
                 if (props.event.key === 'Escape') {
-                  popup[0].hide();
+                  popup.remove();
                   return true;
                 }
-                
-                return component.ref?.onKeyDown(props);
+                return component.onKeyDown(props);
               },
               onExit: () => {
-                if (popup && popup[0]) {
-                  popup[0].destroy();
-                }
-                if (component) {
-                  component.destroy();
-                }
+                popup.remove();
               },
             };
           },
@@ -100,7 +89,7 @@ export const CannedResponseEditor = ({
       },
       handleKeyDown: (view, event) => {
         if (event.ctrlKey || event.metaKey) {
-          switch(event.key) {
+          switch (event.key) {
             case 'b':
               event.preventDefault();
               view.dispatch(view.state.tr.setMeta('format', 'bold'));
@@ -138,10 +127,6 @@ export const CannedResponseEditor = ({
       "border rounded-md",
       disabled && "opacity-50"
     )}>
-      <CannedResponseEditorToolbar 
-        editor={editor}
-        disabled={disabled}
-      />
       <EditorContent editor={editor} />
       <div className="px-3 py-2 border-t text-xs text-muted-foreground flex justify-between items-center">
         <div>
@@ -154,3 +139,4 @@ export const CannedResponseEditor = ({
     </div>
   );
 };
+

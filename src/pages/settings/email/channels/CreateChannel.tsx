@@ -9,6 +9,8 @@ import { ChannelFormFields } from './components/ChannelFormFields';
 import { useChannelForm } from './hooks/useChannelForm';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2 } from 'lucide-react';
+import type { FieldErrors } from 'react-hook-form';
+import type { EmailChannel } from '@/types/emailChannel';
 
 const CreateChannel = () => {
   const { toast } = useToast();
@@ -16,19 +18,19 @@ const CreateChannel = () => {
   const dispatch = useAppDispatch();
 
   const {
-    channelName,
-    setChannelName,
+    name,
+    setName,
     senderName,
     setSenderName,
-    email,
-    setEmail,
-    autoBccEmail,
-    setAutoBccEmail,
-    noReplyEmail,
-    setNoReplyEmail,
+    emailAddress,
+    setEmailAddress,
+    autoBccMail,
+    setAutoBccMail,
+    noReplyMail,
+    setNoReplyMail,
     selectedEmoji,
     setSelectedEmoji,
-    selectedTeamId,
+    teamId,
     setSelectedTeamId,
     handleSubmit,
     errors,
@@ -38,18 +40,10 @@ const CreateChannel = () => {
   } = useChannelForm({
     onAddChannel: async (channel) => {
       try {
-        // Ensure required properties are present for the Redux action
-        const completeChannel = {
-          ...channel,
-          // Add these fields to make it compatible with the expected type
-          name: channel.channelName,
-          domainStatus: 'pending' as const, // use correct literal type
-        };
-        
-        const result = await dispatch(createChannel(completeChannel)).unwrap();
+        const result = await dispatch(createChannel(channel as EmailChannel)).unwrap();
         toast({
           title: "Channel created successfully",
-          description: `${result.channelName} has been created with ${result.email} as the sender.`,
+          description: `${result[0].name} has been created with ${result[0].emailAddress} as the sender.`,
           duration: 5000,
         });
         navigate('/home/settings/email/channels');
@@ -88,19 +82,19 @@ const CreateChannel = () => {
       <Card className="p-6">
         <form onSubmit={handleSubmit} className="space-y-6">
           <ChannelFormFields
-            channelName={channelName}
-            setChannelName={setChannelName}
+            channelName={name}
+            setChannelName={setName}
             senderName={senderName}
             setSenderName={setSenderName}
-            email={email}
-            setEmail={setEmail}
-            autoBccEmail={autoBccEmail}
-            setAutoBccEmail={setAutoBccEmail}
-            noReplyEmail={noReplyEmail}
-            setNoReplyEmail={setNoReplyEmail}
+            email={emailAddress}
+            setEmail={setEmailAddress}
+            autoBccEmail={autoBccMail}
+            setAutoBccEmail={setAutoBccMail}
+            noReplyEmail={noReplyMail}
+            setNoReplyEmail={setNoReplyMail}
             selectedEmoji={selectedEmoji}
             setSelectedEmoji={setSelectedEmoji}
-            selectedTeamId={selectedTeamId}
+            selectedTeamId={teamId}
             setSelectedTeamId={setSelectedTeamId}
             errors={errors as unknown as Record<string, string>}
             touched={touched}

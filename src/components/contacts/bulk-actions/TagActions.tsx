@@ -1,141 +1,75 @@
 
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { TagIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
-import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { updateContact, clearSelection } from '@/store/slices/contacts/contactsSlice';
-import { Tag, ChevronDown, Plus } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import type { Contact } from '@/types/contact';
+import { updateContact } from '@/store/slices/contacts/contactsSlice';
+import { useToast } from '@/hooks/use-toast';
 
 interface TagActionsProps {
-  selectedContactIds: string[];
-  contacts: Contact[];
+  selectedContacts: string[];
+  contacts: any[];
 }
 
-export const TagActions: React.FC<TagActionsProps> = ({ selectedContactIds, contacts }) => {
-  const [newTag, setNewTag] = useState('');
-  const [showAddTag, setShowAddTag] = useState(false);
-  const { toast } = useToast();
+export const TagActions = ({ selectedContacts, contacts }: TagActionsProps) => {
+  const [selectedTag, setSelectedTag] = useState('');
   const dispatch = useAppDispatch();
+  const { toast } = useToast();
 
-  // Get all existing tags from contacts
-  const allTags = Array.from(
-    new Set(
-      contacts
-        .flatMap(contact => contact.tags || [])
-        .filter(tag => tag) // Filter out null/undefined
-    )
-  ).sort();
+  const handleBulkTagging = () => {
+    if (!selectedTag) return;
 
-  const handleAddTag = async (tag: string) => {
-    try {
-      for (const contactId of selectedContactIds) {
-        const contact = contacts.find(c => c.id === contactId);
-        if (contact) {
-          const existingTags = contact.tags || [];
-          if (!existingTags.includes(tag)) {
-            await dispatch(updateContact({
-              contactId,
-              data: { tags: [...existingTags, tag] }
-            })).unwrap();
-          }
-        }
+    selectedContacts.forEach(contactId => {
+      const contact = contacts.find(c => c.id === contactId);
+      if (!contact) return;
+
+      const currentTags = Array.isArray(contact.tags) ? contact.tags : [];
+      if (!currentTags.includes(selectedTag)) {
+        dispatch(updateContact({
+          id: contactId,
+          tags: [...currentTags, selectedTag]
+        }));
       }
+    });
 
-      toast({
-        title: "Tags added",
-        description: `Added tag "${tag}" to ${selectedContactIds.length} contacts`,
-      });
-      
-      setNewTag('');
-      setShowAddTag(false);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to add tags",
-        variant: "destructive",
-      });
-    }
+    toast({
+      title: "Tags updated",
+      description: `Updated tags for ${selectedContacts.length} contacts`,
+    });
+    setSelectedTag('');
   };
-
-  const handleCreateTag = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newTag.trim()) {
-      handleAddTag(newTag.trim());
-    }
-  };
-
-  if (selectedContactIds.length === 0) return null;
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm">
-          <Tag className="mr-2 h-4 w-4" />
-          Manage Tags <ChevronDown className="ml-2 h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56">
-        {allTags.length > 0 ? (
-          <>
-            <div className="p-2 text-sm font-medium">Add existing tag</div>
-            {allTags.map(tag => (
-              <DropdownMenuItem key={tag} onClick={() => handleAddTag(tag)}>
-                <span className="text-sm">{tag}</span>
-              </DropdownMenuItem>
-            ))}
-          </>
-        ) : (
-          <div className="p-2 text-sm text-muted-foreground">No existing tags</div>
-        )}
-        
-        <DropdownMenuSeparator />
-        
-        {showAddTag ? (
-          <form onSubmit={handleCreateTag} className="p-2">
-            <Input
-              size={1}
-              value={newTag}
-              onChange={(e) => setNewTag(e.target.value)}
-              placeholder="Enter new tag"
-              className="mb-2"
-              autoFocus
-            />
-            <div className="flex gap-2">
-              <Button 
-                type="submit" 
-                variant="outline" 
-                size="sm" 
-                className="w-full"
-                disabled={!newTag.trim()}
-              >
-                Add
-              </Button>
-              <Button 
-                type="button" 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => setShowAddTag(false)}
-              >
-                Cancel
-              </Button>
-            </div>
-          </form>
-        ) : (
-          <DropdownMenuItem onClick={() => setShowAddTag(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            <span>Create new tag</span>
-          </DropdownMenuItem>
-        )}
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <div className="flex items-center gap-2">
+      <Select value={selectedTag} onValueChange={setSelectedTag}>
+        <SelectTrigger className="w-[180px]">
+          <SelectValue placeholder="Add tag..." />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="important">Important</SelectItem>
+          <SelectItem value="follow-up">Follow-up</SelectItem>
+          <SelectItem value="vip">VIP</SelectItem>
+          <SelectItem value="lead">Lead</SelectItem>
+          <SelectItem value="customer">Customer</SelectItem>
+        </SelectContent>
+      </Select>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={handleBulkTagging}
+        disabled={selectedContacts.length === 0 || !selectedTag}
+      >
+        <TagIcon className="h-4 w-4 mr-2" />
+        Apply Tag
+      </Button>
+    </div>
   );
 };
+

@@ -2,7 +2,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { selectContent, toggleContentSelection } from '@/store/slices/content/contentSlice';
+import { selectContent, deselectContent } from '@/store/slices/content/contentSlice';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import type { Content } from '@/types/content';
 import {
@@ -23,14 +23,17 @@ interface ContentListProps {
 export const ContentList = ({ searchQuery }: ContentListProps) => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const contentState = useAppSelector((state) => state.content);
-  const items = contentState?.items || [];
-  const selectedIds = contentState?.selectedIds || [];
-  const filters = contentState?.filters || { status: null, category: null, chatbot: null };
-  const sort = contentState?.sort || { field: 'lastUpdated', direction: 'desc' };
+  const items = useAppSelector((state) => state.content.items);
+  const selectedIds = useAppSelector((state) => state.content.selectedIds);
+  const filters = useAppSelector((state) => state.content.filters);
+  const sort = useAppSelector((state) => state.content.sort);
 
   const handleSelect = (id: string) => {
-    dispatch(toggleContentSelection(id));
+    if (selectedIds.includes(id)) {
+      dispatch(deselectContent(id));
+    } else {
+      dispatch(selectContent(id));
+    }
   };
 
   const handleRowClick = (content: Content, event: React.MouseEvent) => {
@@ -38,18 +41,17 @@ export const ContentList = ({ searchQuery }: ContentListProps) => {
     if ((event.target as HTMLElement).closest('.checkbox-wrapper')) {
       return;
     }
-    dispatch(selectContent(content.id));
     navigate(`/home/automation/ai/content-center/${content.id}`);
   };
 
   const filteredItems = items.filter(item => {
-    if (filters?.status && item.status !== filters.status) {
+    if (filters.status && item.status !== filters.status) {
       return false;
     }
-    if (filters?.category && item.category !== filters.category) {
+    if (filters.category && item.category !== filters.category) {
       return false;
     }
-    if (filters?.chatbot && !item.chatbots?.some(bot => bot.id === filters.chatbot)) {
+    if (filters.chatbotId && !item.chatbots?.some(bot => bot.id === filters.chatbotId)) {
       return false;
     }
     if (searchQuery && !item.title.toLowerCase().includes(searchQuery.toLowerCase()) && !item.description.toLowerCase().includes(searchQuery.toLowerCase())) {
@@ -66,10 +68,6 @@ export const ContentList = ({ searchQuery }: ContentListProps) => {
 
     if (sortField === 'title') {
       comparison = a.title.localeCompare(b.title);
-    } else if (sortField === 'lastUpdated') {
-      const dateA = new Date(a.lastUpdated).getTime();
-      const dateB = new Date(b.lastUpdated).getTime();
-      comparison = dateA - dateB;
     } else if (sortField === 'messageCount') {
       comparison = a.messageCount - b.messageCount;
     } else {

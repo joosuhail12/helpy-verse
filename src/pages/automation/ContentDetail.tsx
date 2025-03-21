@@ -11,15 +11,6 @@ import { ChatbotConnection } from '@/components/automation/content/detail/Chatbo
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { Separator } from '@/components/ui/separator';
 
-// Mock available chatbots for selection
-const availableChatbots = [
-  { id: 'chatbot-1', name: 'Sales Assistant' },
-  { id: 'chatbot-2', name: 'Customer Support' },
-  { id: 'chatbot-3', name: 'Product Specialist' },
-  { id: 'chatbot-4', name: 'Technical Help' },
-  { id: 'chatbot-5', name: 'Onboarding Guide' },
-];
-
 const ContentDetail = () => {
   const { id } = useParams<{ id: string }>();
   const content = useAppSelector((state) => 
@@ -44,10 +35,7 @@ const ContentDetail = () => {
         <div className="grid gap-8 grid-cols-1 xl:grid-cols-2">
           <div className="space-y-8">
             <ContentForm content={content} />
-            <ChatbotConnection 
-              content={content} 
-              availableChatbots={availableChatbots} 
-            />
+            <ChatbotConnection content={content} />
             
             <Card className="p-6 space-y-6">
               <ContentTags content={content} />

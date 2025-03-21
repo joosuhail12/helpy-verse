@@ -64,3 +64,4 @@ export interface QueryGroup {
   combinator: 'and' | 'or';
   rules: (QueryRule | QueryGroup)[];
 }
+

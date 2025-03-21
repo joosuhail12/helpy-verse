@@ -1,242 +1,169 @@
 
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { RootState } from '../store';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
-export type Session = {
+interface Session {
   id: string;
-  device: string;
-  browser: string;
+  teammateId: string;
+  deviceType: string;
+  deviceName: string;
   location: string;
-  ip: string;
   lastActive: string;
-  isCurrentSession: boolean;
-};
+}
 
-export type SecurityState = {
-  sessions: Session[];
-  twoFactorEnabled: boolean;
+interface SecurityState {
+  teammateSettings: Record<string, {
+    is2FAEnabled: boolean;
+    qrCodeUrl: string;
+  }>;
+  sessions: Record<string, Session[]>;
   loading: boolean;
   error: string | null;
-  teammateSettings: {
-    id: string;
-    twoFactorEnabled: boolean;
-    passwordLastChanged: string;
-    securityEvents: {
-      date: string;
-      event: string;
-      ip: string;
-      location: string;
-    }[];
-  } | null;
-};
+}
 
 const initialState: SecurityState = {
-  sessions: [],
-  twoFactorEnabled: false,
+  teammateSettings: {},
+  sessions: {},
   loading: false,
-  error: null,
-  teammateSettings: null,
+  error: null
 };
-
-// Async thunks
-export const fetchSessions = createAsyncThunk(
-  'security/fetchSessions',
-  async (_, { rejectWithValue }) => {
-    try {
-      // Replace with actual API call
-      const response = await fetch('/api/security/sessions');
-      if (!response.ok) {
-        throw new Error('Failed to fetch sessions');
-      }
-      return await response.json();
-    } catch (error: any) {
-      return rejectWithValue(error.message);
-    }
-  }
-);
-
-export const revokeSession = createAsyncThunk(
-  'security/revokeSession',
-  async (sessionId: string, { rejectWithValue }) => {
-    try {
-      // Replace with actual API call
-      const response = await fetch(`/api/security/sessions/${sessionId}`, {
-        method: 'DELETE',
-      });
-      if (!response.ok) {
-        throw new Error('Failed to revoke session');
-      }
-      return sessionId;
-    } catch (error: any) {
-      return rejectWithValue(error.message);
-    }
-  }
-);
 
 export const enable2FA = createAsyncThunk(
   'security/enable2FA',
-  async (_, { rejectWithValue }) => {
-    try {
-      // Replace with actual API call
-      const response = await fetch('/api/security/2fa/enable', {
-        method: 'POST',
-      });
-      if (!response.ok) {
-        throw new Error('Failed to enable 2FA');
-      }
-      return await response.json();
-    } catch (error: any) {
-      return rejectWithValue(error.message);
-    }
+  async (teammateId: string) => {
+    // Replace with your actual API call
+    const response = await fetch(`/api/teammate/${teammateId}/2fa/enable`, {
+      method: 'POST'
+    });
+    if (!response.ok) throw new Error('Failed to enable 2FA');
+    return response.json();
   }
 );
 
 export const disable2FA = createAsyncThunk(
   'security/disable2FA',
-  async (_, { rejectWithValue }) => {
-    try {
-      // Replace with actual API call
-      const response = await fetch('/api/security/2fa/disable', {
-        method: 'POST',
-      });
-      if (!response.ok) {
-        throw new Error('Failed to disable 2FA');
-      }
-      return await response.json();
-    } catch (error: any) {
-      return rejectWithValue(error.message);
-    }
+  async (teammateId: string) => {
+    // Replace with your actual API call
+    const response = await fetch(`/api/teammate/${teammateId}/2fa/disable`, {
+      method: 'POST'
+    });
+    if (!response.ok) throw new Error('Failed to disable 2FA');
+    return teammateId;
   }
 );
 
 export const verify2FA = createAsyncThunk(
   'security/verify2FA',
-  async (code: string, { rejectWithValue }) => {
-    try {
-      // Replace with actual API call
-      const response = await fetch('/api/security/2fa/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code }),
-      });
-      if (!response.ok) {
-        throw new Error('Failed to verify 2FA code');
-      }
-      return await response.json();
-    } catch (error: any) {
-      return rejectWithValue(error.message);
-    }
+  async ({ teammateId, code }: { teammateId: string; code: string }) => {
+    // Replace with your actual API call
+    const response = await fetch(`/api/teammate/${teammateId}/2fa/verify`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ code })
+    });
+    if (!response.ok) throw new Error('Failed to verify 2FA code');
+    return teammateId;
+  }
+);
+
+export const fetchSessions = createAsyncThunk(
+  'security/fetchSessions',
+  async (teammateId: string) => {
+    // Replace with your actual API call
+    const response = await fetch(`/api/teammate/${teammateId}/sessions`);
+    if (!response.ok) throw new Error('Failed to fetch sessions');
+    return { teammateId, sessions: await response.json() };
+  }
+);
+
+export const revokeSession = createAsyncThunk(
+  'security/revokeSession',
+  async ({ teammateId, sessionId }: { teammateId: string; sessionId: string }) => {
+    // Replace with your actual API call
+    const response = await fetch(`/api/teammate/${teammateId}/sessions/${sessionId}`, {
+      method: 'DELETE'
+    });
+    if (!response.ok) throw new Error('Failed to revoke session');
+    return { teammateId, sessionId };
   }
 );
 
 export const resetPassword = createAsyncThunk(
   'security/resetPassword',
-  async (data: { teammateId: string; newPassword: string }, { rejectWithValue }) => {
-    try {
-      // Replace with actual API call
-      const response = await fetch(`/api/security/password-reset`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-      if (!response.ok) {
-        throw new Error('Failed to reset password');
-      }
-      return await response.json();
-    } catch (error: any) {
-      return rejectWithValue(error.message);
-    }
-  }
-);
-
-export const initializeTeammateSecurity = createAsyncThunk(
-  'security/initializeTeammateSecurity',
-  async (teammateId: string, { rejectWithValue }) => {
-    try {
-      // Replace with actual API call
-      const response = await fetch(`/api/teammates/${teammateId}/security`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch teammate security settings');
-      }
-      return await response.json();
-    } catch (error: any) {
-      return rejectWithValue(error.message);
-    }
+  async ({ teammateId, currentPassword, newPassword }: {
+    teammateId: string;
+    currentPassword: string;
+    newPassword: string;
+  }) => {
+    // Replace with your actual API call
+    const response = await fetch(`/api/teammate/${teammateId}/password`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ currentPassword, newPassword })
+    });
+    if (!response.ok) throw new Error('Failed to reset password');
+    return teammateId;
   }
 );
 
 const securitySlice = createSlice({
   name: 'security',
   initialState,
-  reducers: {},
+  reducers: {
+    initializeTeammateSecurity: (state, action) => {
+      const teammateId = action.payload;
+      if (!state.teammateSettings[teammateId]) {
+        state.teammateSettings[teammateId] = {
+          is2FAEnabled: false,
+          qrCodeUrl: ''
+        };
+      }
+      if (!state.sessions[teammateId]) {
+        state.sessions[teammateId] = [];
+      }
+    }
+  },
   extraReducers: (builder) => {
     builder
-      // Fetch sessions
-      .addCase(fetchSessions.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+      .addCase(enable2FA.fulfilled, (state, action) => {
+        const { teammateId, qrCodeUrl } = action.payload;
+        state.teammateSettings[teammateId] = {
+          is2FAEnabled: false,
+          qrCodeUrl
+        };
+      })
+      .addCase(verify2FA.fulfilled, (state, action) => {
+        const teammateId = action.payload;
+        if (state.teammateSettings[teammateId]) {
+          state.teammateSettings[teammateId].is2FAEnabled = true;
+          state.teammateSettings[teammateId].qrCodeUrl = '';
+        }
+      })
+      .addCase(disable2FA.fulfilled, (state, action) => {
+        const teammateId = action.payload;
+        if (state.teammateSettings[teammateId]) {
+          state.teammateSettings[teammateId].is2FAEnabled = false;
+          state.teammateSettings[teammateId].qrCodeUrl = '';
+        }
       })
       .addCase(fetchSessions.fulfilled, (state, action) => {
-        state.loading = false;
-        state.sessions = action.payload;
-      })
-      .addCase(fetchSessions.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
-      // Revoke session
-      .addCase(revokeSession.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+        const { teammateId, sessions } = action.payload;
+        state.sessions[teammateId] = sessions;
       })
       .addCase(revokeSession.fulfilled, (state, action) => {
-        state.loading = false;
-        state.sessions = state.sessions.filter(session => session.id !== action.payload);
-      })
-      .addCase(revokeSession.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
-      // Enable 2FA
-      .addCase(enable2FA.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(enable2FA.fulfilled, (state) => {
-        state.loading = false;
-        state.twoFactorEnabled = true;
-      })
-      .addCase(enable2FA.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
-      // Disable 2FA
-      .addCase(disable2FA.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(disable2FA.fulfilled, (state) => {
-        state.loading = false;
-        state.twoFactorEnabled = false;
-      })
-      .addCase(disable2FA.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
-      // Initialize teammate security
-      .addCase(initializeTeammateSecurity.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(initializeTeammateSecurity.fulfilled, (state, action) => {
-        state.loading = false;
-        state.teammateSettings = action.payload;
-      })
-      .addCase(initializeTeammateSecurity.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
+        const { teammateId, sessionId } = action.payload;
+        if (state.sessions[teammateId]) {
+          state.sessions[teammateId] = state.sessions[teammateId].filter(
+            session => session.id !== sessionId
+          );
+        }
       });
   },
 });
 
-export const securityReducer = securitySlice.reducer;
+export const { initializeTeammateSecurity } = securitySlice.actions;
+export default securitySlice.reducer;
+

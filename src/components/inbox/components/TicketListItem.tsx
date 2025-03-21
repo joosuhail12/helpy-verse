@@ -1,199 +1,149 @@
 
-import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
+import { Loader2, Bell, AtSign, UserPlus, MessageCircle } from 'lucide-react';
 import { Checkbox } from "@/components/ui/checkbox";
-import { formatDistanceToNow } from "date-fns";
-import { Copy, Mail, User, ZapIcon } from "lucide-react";
-import TicketPriorityBadge from "../TicketPriorityBadge";
-import TicketStatusBadge from "../TicketStatusBadge";
-import type { Ticket, ViewMode } from "@/types/ticket";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import TicketCard from '../TicketCard';
+import type { Ticket, ViewMode } from '@/types/ticket';
 
 interface TicketListItemProps {
   ticket: Ticket;
-  isSelected?: boolean;
-  onSelect?: (e: React.MouseEvent) => void;
-  viewMode?: ViewMode;
-  isLoading?: boolean;
-  onCopyId?: (id: string, e: React.MouseEvent) => void;
-  isActive?: boolean;
+  viewMode: ViewMode;
+  isSelected: boolean;
+  isLoading: boolean;
+  onSelect: (ticketId: string) => void;
+  onCopyId: (id: string) => void;
 }
+
+const getNotificationIcon = (type: string) => {
+  switch (type) {
+    case 'mention':
+      return <AtSign className="h-3 w-3" />;
+    case 'assignment':
+      return <UserPlus className="h-3 w-3" />;
+    case 'new_response':
+      return <MessageCircle className="h-3 w-3" />;
+    default:
+      return <Bell className="h-3 w-3" />;
+  }
+};
+
+const getNotificationText = (type: string) => {
+  switch (type) {
+    case 'mention':
+      return 'You were mentioned in this ticket';
+    case 'assignment':
+      return 'You were assigned to this ticket';
+    case 'new_response':
+      return 'New response on this ticket';
+    default:
+      return 'This ticket has been updated';
+  }
+};
+
+const getNotificationColor = (type: string) => {
+  switch (type) {
+    case 'mention':
+      return 'text-blue-500 bg-blue-50 ring-1 ring-blue-100';
+    case 'assignment':
+      return 'text-purple-500 bg-purple-50 ring-1 ring-purple-100';
+    case 'new_response':
+      return 'text-green-500 bg-green-50 ring-1 ring-green-100';
+    case 'new_ticket':
+      return 'text-amber-500 bg-amber-50 ring-1 ring-amber-100';
+    default:
+      return 'text-gray-500 bg-gray-50 ring-1 ring-gray-100';
+  }
+};
+
+const getCardBackground = (type: string | undefined) => {
+  if (!type) return '';
+  
+  switch (type) {
+    case 'mention':
+      return 'bg-gradient-to-br from-blue-50/50 to-white border-blue-100/50';
+    case 'assignment':
+      return 'bg-gradient-to-br from-purple-50/50 to-white border-purple-100/50';
+    case 'new_response':
+      return 'bg-gradient-to-br from-green-50/50 to-white border-green-100/50';
+    case 'new_ticket':
+      return 'bg-gradient-to-br from-amber-50/50 to-white border-amber-100/50';
+    default:
+      return '';
+  }
+};
 
 const TicketListItem = ({
   ticket,
-  isSelected = false,
+  viewMode,
+  isSelected,
+  isLoading,
   onSelect,
-  viewMode = "list",
-  isLoading = false,
   onCopyId,
-  isActive = false,
 }: TicketListItemProps) => {
-  const handleSelect = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onSelect?.(e);
-  };
-
-  const handleCopyId = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onCopyId?.(ticket.id, e);
-  };
-
-  const getActiveStateClasses = () => {
-    if (isActive) {
-      return "border-l-4 border-[#8B5CF6] bg-primary-50/80 shadow-[0_0_20px_rgba(139,92,246,0.4)] transform transition-all duration-300";
-    }
-    return "";
-  };
-
-  if (viewMode === "compact") {
-    return (
-      <Card className={`mb-2 overflow-hidden relative ${isSelected ? "border-primary" : ""} ${isLoading ? "opacity-60" : ""} ${getActiveStateClasses()}`}>
-        {isActive && (
-          <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#8B5CF6] animate-pulse"></div>
-        )}
-        <div className="flex items-center p-3">
-          {onSelect && (
-            <div className="mr-3" onClick={handleSelect}>
-              <Checkbox checked={isSelected} />
-            </div>
-          )}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center space-x-2">
-              {isActive && <ZapIcon className="h-4 w-4 text-[#8B5CF6] animate-pulse" />}
-              <h3 className={`text-sm font-medium truncate ${isActive ? "text-[#8B5CF6] font-semibold" : ""}`}>{ticket.subject}</h3>
-              {ticket.isUnread && <Badge className="bg-blue-500">New</Badge>}
-            </div>
-            <p className="text-xs text-gray-500 truncate">
-              {ticket.customer} • {formatDistanceToNow(new Date(ticket.createdAt), { addSuffix: true })}
-            </p>
-          </div>
-          <div className="flex items-center space-x-2 ml-2">
-            <TicketStatusBadge status={ticket.status} size="sm" />
-            <TicketPriorityBadge priority={ticket.priority} size="sm" />
-          </div>
-        </div>
-      </Card>
-    );
-  }
-
-  if (viewMode === "card") {
-    return (
-      <Card className={`overflow-hidden relative ${isSelected ? "border-primary" : ""} ${isLoading ? "opacity-60" : ""} ${getActiveStateClasses()}`}>
-        {isActive && (
-          <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#8B5CF6] animate-pulse"></div>
-        )}
-        <div className="p-4">
-          <div className="flex items-start justify-between mb-2">
-            <div className="flex items-center">
-              {onSelect && (
-                <div className="mr-3" onClick={handleSelect}>
-                  <Checkbox checked={isSelected} />
-                </div>
-              )}
-              <div className="flex items-center">
-                {isActive && <ZapIcon className="h-4 w-4 text-[#8B5CF6] mr-1 animate-pulse" />}
-                <h3 className={`text-base font-medium ${isActive ? "text-[#8B5CF6] font-semibold" : ""}`}>{ticket.subject}</h3>
-              </div>
-              {ticket.isUnread && <Badge className="ml-2 bg-blue-500">New</Badge>}
-            </div>
-            <div className="flex space-x-1">
-              <TicketStatusBadge status={ticket.status} />
-              <TicketPriorityBadge priority={ticket.priority} />
-            </div>
-          </div>
-          <p className="text-sm text-gray-700 mb-3">{ticket.lastMessage}</p>
-          <div className="flex items-center justify-between text-xs text-gray-500">
-            <div className="flex items-center">
-              <User className="w-3 h-3 mr-1" />
-              <span>{ticket.customer}</span>
-              {ticket.company && (
-                <>
-                  <span className="mx-1">•</span>
-                  <span>{ticket.company}</span>
-                </>
-              )}
-            </div>
-            <div className="flex items-center">
-              <span>{formatDistanceToNow(new Date(ticket.createdAt), { addSuffix: true })}</span>
-              {onCopyId && (
-                <button 
-                  onClick={handleCopyId}
-                  className="ml-2 text-gray-400 hover:text-gray-600"
-                >
-                  <Copy className="w-3 h-3" />
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      </Card>
-    );
-  }
-
   return (
-    <Card className={`mb-2 overflow-hidden relative ${isSelected ? "border-primary" : ""} ${isLoading ? "opacity-60" : ""} ${getActiveStateClasses()} transition-all duration-300`}>
-      {isActive && (
-        <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#8B5CF6] animate-pulse"></div>
-      )}
-      <div className={`flex items-center p-4 ${isActive ? "bg-primary-50/80" : ""}`}>
-        {onSelect && (
-          <div className="mr-4" onClick={handleSelect}>
-            <Checkbox checked={isSelected} />
+    <div className="group relative px-1 py-0.5">
+      <div className="absolute left-4 top-1/2 -translate-y-1/2 z-10">
+        <Checkbox
+          checked={isSelected}
+          onCheckedChange={() => onSelect(ticket.id)}
+          aria-label={`Select ticket ${ticket.id}`}
+          className="h-3.5 w-3.5 rounded-[4px] border-gray-300"
+        />
+      </div>
+      
+      <div 
+        className={`pl-8 group relative rounded-xl border shadow-sm hover:shadow-md transition-all duration-200 
+          ${ticket.isUnread ? 'bg-gradient-to-br from-blue-50/30 to-white border-blue-100/50' : 'border-gray-100'}
+          ${ticket.hasNotification ? getCardBackground(ticket.notificationType) : 'bg-white border-gray-100'}
+          focus-within:ring-1 focus-within:ring-primary/50`}
+        tabIndex={0}
+        role="article"
+        aria-label={`Ticket from ${ticket.customer}: ${ticket.subject}`}
+      >
+        {isLoading && (
+          <div className="absolute inset-0 bg-white/50 backdrop-blur-sm flex items-center justify-center rounded-xl z-20">
+            <Loader2 className="h-3 w-3 animate-spin text-primary" />
           </div>
         )}
-        <div className="mr-4 flex-shrink-0">
-          <div className={`${isActive ? "bg-[#8B5CF6]/20" : "bg-gray-100"} rounded-full p-2 ${isActive ? "ring-2 ring-[#8B5CF6]/40 animate-pulse" : ""}`}>
-            <Mail className={`h-5 w-5 ${isActive ? "text-[#8B5CF6]" : "text-gray-500"}`} />
-          </div>
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center">
-            {isActive && <ZapIcon className="h-4 w-4 text-[#8B5CF6] mr-1 animate-pulse" />}
-            <h3 className={`text-sm font-medium ${isActive ? "text-[#8B5CF6] font-semibold" : ""}`}>{ticket.subject}</h3>
-            {ticket.isUnread && <Badge className="ml-2 bg-blue-500">New</Badge>}
-            {ticket.hasNotification && (
-              <Badge className="ml-2 bg-amber-500">
-                {ticket.notificationType === "mention" ? "Mention" : "Assignment"}
-              </Badge>
-            )}
-          </div>
-          <p className="text-xs text-gray-500 mb-1">
-            From: {ticket.customer} {ticket.company && `(${ticket.company})`}
-          </p>
-          <p className={`text-sm ${isActive ? "text-gray-800" : "text-gray-700"} truncate`}>{ticket.lastMessage}</p>
-        </div>
-        <div className="ml-4 flex-shrink-0 flex flex-col items-end space-y-2">
-          <div className="flex space-x-2">
-            <TicketStatusBadge status={ticket.status} />
-            <TicketPriorityBadge priority={ticket.priority} />
-          </div>
-          <div className="flex items-center text-xs text-gray-500">
-            <span>{formatDistanceToNow(new Date(ticket.createdAt), { addSuffix: true })}</span>
-            {onCopyId && (
-              <button 
-                onClick={handleCopyId}
-                className="ml-2 text-gray-400 hover:text-gray-600"
-              >
-                <Copy className="w-3 h-3" />
-              </button>
-            )}
-          </div>
-          {ticket.tags.length > 0 && (
-            <div className="flex gap-1 flex-wrap justify-end mt-2">
-              {ticket.tags.slice(0, 2).map((tag) => (
-                <Badge key={tag} variant="outline" className="text-xs">
-                  {tag}
-                </Badge>
-              ))}
-              {ticket.tags.length > 2 && (
-                <Badge variant="outline" className="text-xs">
-                  +{ticket.tags.length - 2}
-                </Badge>
-              )}
+        
+        <div className="relative">
+          <TicketCard 
+            ticket={ticket} 
+            viewMode={viewMode}
+            onCopyId={() => onCopyId(ticket.id)}
+          />
+          
+          {ticket.hasNotification && ticket.notificationType && (
+            <div className="absolute right-3 top-3">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className={`p-1.5 rounded-full transition-transform hover:scale-110 ${getNotificationColor(ticket.notificationType)}`}>
+                      {getNotificationIcon(ticket.notificationType)}
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="text-xs">{getNotificationText(ticket.notificationType)}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           )}
         </div>
       </div>
-    </Card>
+    </div>
   );
 };
 

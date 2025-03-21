@@ -1,11 +1,15 @@
 
-import api from '@/services/api';
-
 export const createTeam = async (teamData: any) => {
   try {
-    const response = await api.post('/teams', teamData);
+    const response = await fetch('/api/teams', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(teamData),
+    });
 
-    if (!response.data) {
+    if (!response.ok) {
       throw new Error('Failed to create team');
     }
 
@@ -14,3 +18,4 @@ export const createTeam = async (teamData: any) => {
     throw error;
   }
 };
+

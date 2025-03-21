@@ -31,7 +31,6 @@ const NavigationItem = ({
   navigate,
   filterMenuItems,
 }: NavigationItemProps) => {
-  // Parent items with children should toggle expansion instead of navigating
   if (item.children) {
     return (
       <div>
@@ -114,7 +113,6 @@ const NavigationItem = ({
     );
   }
 
-  // Leaf items (without children) should navigate directly
   return (
     <TooltipProvider delayDuration={0}>
       <Tooltip>
@@ -156,3 +154,4 @@ const NavigationItem = ({
 };
 
 export default NavigationItem;
+

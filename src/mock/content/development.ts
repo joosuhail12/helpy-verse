@@ -3,11 +3,6 @@ import { Content } from '@/types/content';
 import { addDays, subDays } from 'date-fns';
 
 const today = new Date();
-const defaultAuthor = {
-  id: 'user1',
-  name: 'John Doe',
-  avatar: 'https://api.dicebear.com/7.x/avatars/svg?seed=John',
-};
 
 export const developmentContent: Content[] = [
   {
@@ -15,12 +10,9 @@ export const developmentContent: Content[] = [
     title: 'Data Processing Script',
     description: 'Python script for processing customer data',
     category: 'development',
-    contentType: 'code',
     type: 'snippet',
     status: 'processing',
-    createdAt: subDays(today, 5).toISOString(),
     lastUpdated: subDays(today, 1).toISOString(),
-    author: defaultAuthor,
     messageCount: 320,
     progress: 45,
     content: `import pandas as pd

@@ -11,7 +11,7 @@ export const createActionSchema = z.object({
   parameters: z.string(),
   parameterDescriptions: z.string(),
   connectedChatbots: z.array(z.string()),
-  category: z.string().default('Custom'),
 });
 
 export type FormValues = z.infer<typeof createActionSchema>;
+

@@ -1,5 +1,4 @@
 
-import { useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { ContentList } from '@/components/automation/content/ContentList';
 import { ContentHeader } from '@/components/automation/content/ContentHeader';
@@ -13,20 +12,11 @@ import { ProcessingMetrics } from '@/components/automation/content/analytics/Pro
 import { CategoryDistribution } from '@/components/automation/content/analytics/CategoryDistribution';
 import { ContentBatchActions } from '@/components/automation/content/ContentBatchActions';
 import { useAppSelector } from '@/hooks/useAppSelector';
-import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { SearchBar } from '@/components/automation/content/search/SearchBar';
-import { fetchContentStats } from '@/store/slices/automation/contentCenterSlice';
 
 const ContentCenter = () => {
-  const dispatch = useAppDispatch();
-  const contentState = useAppSelector((state) => state.content);
-  const selectedIds = contentState?.selectedIds || [];
-  const searchQuery = contentState?.search?.query || '';
-  
-  useEffect(() => {
-    // Fetch content stats when component mounts
-    dispatch(fetchContentStats());
-  }, [dispatch]);
+  const selectedIds = useAppSelector((state) => state.content.selectedIds);
+  const searchQuery = useAppSelector((state) => state.content.search.query);
 
   return (
     <div className="min-h-screen bg-background">

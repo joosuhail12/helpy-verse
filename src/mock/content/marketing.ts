@@ -3,11 +3,6 @@ import { Content } from '@/types/content';
 import { addDays, subDays } from 'date-fns';
 
 const today = new Date();
-const defaultAuthor = {
-  id: 'user1',
-  name: 'John Doe',
-  avatar: 'https://api.dicebear.com/7.x/avatars/svg?seed=John',
-};
 
 export const marketingContent: Content[] = [
   {
@@ -15,12 +10,9 @@ export const marketingContent: Content[] = [
     title: 'Email Templates',
     description: 'Collection of marketing email templates',
     category: 'marketing',
-    contentType: 'email',
     type: 'snippet',
     status: 'completed',
-    createdAt: subDays(today, 7).toISOString(),
     lastUpdated: subDays(today, 3).toISOString(),
-    author: defaultAuthor,
     messageCount: 450,
     content: `<!DOCTYPE html>
 <html>

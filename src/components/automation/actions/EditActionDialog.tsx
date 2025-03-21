@@ -25,15 +25,15 @@ export function EditActionDialog({ action, open, onOpenChange }: EditActionDialo
   }, [action]);
 
   const handleSubmit = () => {
-    dispatch(updateAction({
-      id: action.id,
-      updates: {
-        name,
-        description,
-        endpoint,
-        updatedAt: new Date().toISOString(),
-      }
-    }));
+    const updatedAction: CustomAction = {
+      ...action,
+      name,
+      description,
+      endpoint,
+      updatedAt: new Date().toISOString(),
+    };
+
+    dispatch(updateAction(updatedAction));
     onOpenChange(false);
   };
 

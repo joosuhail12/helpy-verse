@@ -1,114 +1,119 @@
 
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { mockTeams } from './mockData';
-
-export interface TeamMember {
-  id: string;
-  name: string;
-  email: string;
-  avatar: string;
-  role: 'manager' | 'agent' | 'supervisor';
-  status: 'active' | 'inactive';
-}
-
-export interface Channel {
-  id: string;
-  name: string;
-  type: 'email' | 'chat' | 'voice' | 'social';
-  isActive: boolean;
-}
-
-export interface RoutingRule {
-  id: string;
-  name: string;
-  priority: number;
-  isActive: boolean;
-}
-
-export interface OfficeHours {
-  days: ('monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday')[];
-  startTime: string;
-  endTime: string;
-  timezone: string;
-}
-
-export interface Holiday {
-  id: string;
-  name: string;
-  date: string;
-  isRecurring: boolean;
-}
-
-export interface Team {
-  id: string;
-  name: string;
-  description: string;
-  icon: string;
-  color: string;
-  members: TeamMember[];
-  channels: Channel[];
-  routing: RoutingRule[];
-  officeHours: OfficeHours;
-  holidays: Holiday[];
-  createdAt: string;
-  updatedAt: string;
-}
-
-interface TeamsState {
-  teams: Team[];
-  loading: boolean;
-  error: string | null;
-  selectedTeam: Team | null;
-}
+import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
+import type { Team, TeamsState } from '@/types/team';
+import { HttpClient } from '@/api/services/HttpClient';
+import teamsService from '@/api/services/teamsService';
 
 const initialState: TeamsState = {
   teams: [],
   loading: false,
   error: null,
-  selectedTeam: null,
+  teamDetails: null,
+  areTeamsLoaded: false
 };
 
-export const teamsSlice = createSlice({
+// fetch teams
+export const fetchTeams = createAsyncThunk('teams/fetchTeams', async () => {
+  const response = await teamsService.fetchTeams();
+  return response.data;
+});
+
+// fetch team by id
+export const fetchTeamById = createAsyncThunk('teams/fetchTeamById', async (id: string) => {
+  const response = await teamsService.getTeamById(id);
+  return response.data;
+});
+
+// create team
+export const createTeam = createAsyncThunk('teams/createTeam', async (team: Team) => {
+  const response = await teamsService.createTeam(team);
+  return response.data;
+});
+
+// update team
+export const updateTeam = createAsyncThunk(
+  'teams/updateTeam',
+  async ({ id, team }: { id: string; team: Team }) => {
+    const response = await teamsService.updateTeam(id, team);
+    return response.data;
+  }
+);
+
+const teamsSlice = createSlice({
   name: 'teams',
   initialState,
   reducers: {
-    setLoading: (state, action: PayloadAction<boolean>) => {
-      state.loading = action.payload;
-    },
-    setError: (state, action: PayloadAction<string | null>) => {
-      state.error = action.payload;
-    },
     setTeams: (state, action: PayloadAction<Team[]>) => {
       state.teams = action.payload;
       state.loading = false;
+      state.error = null;
     },
-    addTeam: (state, action: PayloadAction<Team>) => {
-      state.teams.push(action.payload);
+    setLoading: (state, action: PayloadAction<boolean>) => {
+      state.loading = action.payload;
     },
-    updateTeam: (state, action: PayloadAction<{ id: string; updates: Partial<Team> }>) => {
-      const { id, updates } = action.payload;
-      const index = state.teams.findIndex(team => team.id === id);
-      if (index !== -1) {
-        state.teams[index] = { ...state.teams[index], ...updates };
-      }
+    setError: (state, action: PayloadAction<string>) => {
+      state.error = action.payload;
+      state.loading = false;
     },
-    deleteTeam: (state, action: PayloadAction<string>) => {
-      state.teams = state.teams.filter(team => team.id !== action.payload);
-    },
-    selectTeam: (state, action: PayloadAction<string>) => {
-      state.selectedTeam = state.teams.find(team => team.id === action.payload) || null;
-    },
+  },
+  extraReducers: (builder) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    builder.addCase(fetchTeams.pending, (state) => {
+      state.loading = true;
+    }),
+      builder.addCase(fetchTeams.fulfilled, (state, action) => {
+        state.teams = action.payload;
+        state.loading = false;
+        state.error = null;
+        state.areTeamsLoaded = true;
+      }),
+      builder.addCase(fetchTeams.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+        state.areTeamsLoaded = true;
+      }),
+      builder.addCase(fetchTeamById.pending, (state) => {
+        state.loading = true;
+      }),
+      builder.addCase(fetchTeamById.fulfilled, (state, action) => {
+        state.teamDetails = action.payload;
+        state.loading = false;
+        state.error = null;
+        state.areTeamsLoaded = true;
+      }),
+      builder.addCase(fetchTeamById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+        state.areTeamsLoaded = true;
+      }),
+      builder.addCase(createTeam.pending, (state) => {
+        state.loading = true;
+      }),
+      builder.addCase(createTeam.fulfilled, (state, action) => {
+        state.teams = [...state.teams, action.payload];
+        state.loading = false;
+        state.areTeamsLoaded = true;
+      }),
+      builder.addCase(createTeam.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+        state.areTeamsLoaded = true;
+      }),
+      builder.addCase(updateTeam.pending, (state) => {
+        state.loading = true;
+      }),
+      builder.addCase(updateTeam.fulfilled, (state, action) => {
+        state.teams = state.teams.map((team) => team.id === action.payload.id ? action.payload : team);
+        state.loading = false;
+        state.areTeamsLoaded = true;
+      }),
+      builder.addCase(updateTeam.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+        state.areTeamsLoaded = true;
+      });
   },
 });
 
-export const {
-  setLoading,
-  setError,
-  setTeams,
-  addTeam,
-  updateTeam,
-  deleteTeam,
-  selectTeam,
-} = teamsSlice.actions;
-
+export const { setTeams, setLoading, setError } = teamsSlice.actions;
 export default teamsSlice.reducer;

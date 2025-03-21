@@ -22,10 +22,9 @@ import { mockChatbots } from '@/mock/chatbots';
 
 export const ContentFilters = () => {
   const dispatch = useAppDispatch();
-  const contentState = useAppSelector((state) => state.content);
-  const filters = contentState?.filters || { status: null, category: null, chatbot: null };
+  const filters = useAppSelector((state) => state.content.filters);
 
-  const statuses: ContentStatus[] = ['completed', 'processing', 'queued', 'failed', 'active', 'inactive', 'draft'];
+  const statuses: ContentStatus[] = ['completed', 'processing', 'queued', 'failed'];
 
   const handleClearFilters = () => {
     dispatch(clearFilters());
@@ -34,7 +33,7 @@ export const ContentFilters = () => {
   const renderFilterBadges = () => {
     const badges = [];
 
-    if (filters?.status) {
+    if (filters.status) {
       badges.push(
         <Badge
           key="status"
@@ -54,7 +53,7 @@ export const ContentFilters = () => {
       );
     }
 
-    if (filters?.category) {
+    if (filters.category) {
       badges.push(
         <Badge
           key="category"
@@ -74,8 +73,8 @@ export const ContentFilters = () => {
       );
     }
 
-    if (filters?.chatbot) {
-      const chatbot = mockChatbots.find(c => c.id === filters.chatbot);
+    if (filters.chatbotId) {
+      const chatbot = mockChatbots.find(c => c.id === filters.chatbotId);
       badges.push(
         <Badge
           key="chatbot"
@@ -115,7 +114,7 @@ export const ContentFilters = () => {
               >
                 <Check
                   className={`mr-2 h-4 w-4 ${
-                    filters?.status === status ? 'opacity-100' : 'opacity-0'
+                    filters.status === status ? 'opacity-100' : 'opacity-0'
                   }`}
                 />
                 {status}
@@ -138,7 +137,7 @@ export const ContentFilters = () => {
               >
                 <Check
                   className={`mr-2 h-4 w-4 ${
-                    filters?.category === category.name ? 'opacity-100' : 'opacity-0'
+                    filters.category === category.name ? 'opacity-100' : 'opacity-0'
                   }`}
                 />
                 {category.name}
@@ -161,7 +160,7 @@ export const ContentFilters = () => {
               >
                 <Check
                   className={`mr-2 h-4 w-4 ${
-                    filters?.chatbot === chatbot.id ? 'opacity-100' : 'opacity-0'
+                    filters.chatbotId === chatbot.id ? 'opacity-100' : 'opacity-0'
                   }`}
                 />
                 {chatbot.name}

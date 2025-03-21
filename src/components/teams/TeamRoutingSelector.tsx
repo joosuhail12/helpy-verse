@@ -70,8 +70,8 @@ const TeamRoutingSelector = ({
                   type="number"
                   min={0}
                   max={50}
-                  value={limits.maxTickets || 0}
-                  onChange={handleLimitChange('maxTickets')}
+                  value={limits.maxTotalTickets || 0}
+                  onChange={handleLimitChange('maxTotalTickets')}
                   className="w-full"
                 />
               </div>

@@ -5,8 +5,6 @@ import Placeholder from '@tiptap/extension-placeholder';
 import type { Editor } from '@tiptap/react';
 import type { Ticket } from '@/types/ticket';
 import MentionList from '../components/MentionList';
-import { ReactRenderer } from '@tiptap/react';
-import tippy from 'tippy.js';
 
 export const createEditorConfig = (
   content: string,
@@ -23,7 +21,7 @@ export const createEditorConfig = (
         suggestion: {
           items: () => [
             { label: ticket.customer, value: 'customer' },
-            { label: ticket.company || 'Company', value: 'company' },
+            { label: ticket.company, value: 'company' },
             { label: `Ticket #${ticket.id}`, value: 'ticket' },
           ],
           render: () => {
@@ -32,43 +30,34 @@ export const createEditorConfig = (
 
             return {
               onStart: (props: any) => {
-                component = new ReactRenderer(MentionList, {
-                  props,
-                  editor: props.editor,
+                component = new MentionList({
+                  items: props.items,
+                  command: props.command,
                 });
 
-                popup = tippy('body', {
-                  getReferenceClientRect: props.clientRect,
-                  appendTo: () => document.body,
-                  content: component.element,
-                  showOnCreate: true,
-                  interactive: true,
-                  trigger: 'manual',
-                  placement: 'bottom-start',
-                });
+                popup = document.createElement('div');
+                popup.className = 'mention-popup';
+                popup.appendChild(component.element);
+                document.body.appendChild(popup);
+
+                popup.style.position = 'absolute';
+                popup.style.left = `${props.clientRect.x}px`;
+                popup.style.top = `${props.clientRect.y}px`;
               },
               onUpdate: (props: any) => {
-                component.updateProps(props);
-                
-                popup[0].setProps({
-                  getReferenceClientRect: props.clientRect,
-                });
+                component.update(props);
+                popup.style.left = `${props.clientRect.x}px`;
+                popup.style.top = `${props.clientRect.y}px`;
               },
               onKeyDown: (props: any) => {
                 if (props.event.key === 'Escape') {
-                  popup[0].hide();
+                  popup.remove();
                   return true;
                 }
-                
-                return component.ref?.onKeyDown(props);
+                return component.onKeyDown(props);
               },
               onExit: () => {
-                if (popup && popup[0]) {
-                  popup[0].destroy();
-                }
-                if (component) {
-                  component.destroy();
-                }
+                popup.remove();
               },
             };
           },

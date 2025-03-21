@@ -1,67 +1,179 @@
 
-import React from 'react';
-import { Users } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import ContactSearchPopover from './associatedContacts/ContactSearchPopover';
-import ContactsTable from './associatedContacts/ContactsTable';
-import EmptyContactsState from './associatedContacts/EmptyContactsState';
-import LoadingState from './associatedContacts/LoadingState';
-import { useAssociatedContacts } from './associatedContacts/useAssociatedContacts';
+import { useAppSelector } from '@/hooks/useAppSelector';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { Contact } from '@/types/contact';
+import { Company } from '@/types/company';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { User, Plus, Search, Check } from 'lucide-react';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Input } from '@/components/ui/input';
+import { useState } from 'react';
+import { updateContact } from '@/store/slices/contacts/contactsSlice';
+import { useToast } from '@/hooks/use-toast';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Command,
+  CommandInput,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+} from "@/components/ui/command";
 
 interface AssociatedContactsProps {
-  companyId: string;
+  company: Company;
 }
 
-const AssociatedContacts: React.FC<AssociatedContactsProps> = ({ companyId }) => {
-  const {
-    searchQuery,
-    setSearchQuery,
-    associatedContacts,
-    isPopoverOpen,
-    setIsPopoverOpen,
-    isLoading,
-    loading,
-    filteredContacts,
-    handleAssociateContact,
-    handleRemoveAssociation
-  } = useAssociatedContacts(companyId);
+export const AssociatedContacts = ({ company }: AssociatedContactsProps) => {
+  const dispatch = useAppDispatch();
+  const { toast } = useToast();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [addContactSearch, setAddContactSearch] = useState('');
 
-  if (isLoading || loading) {
-    return <LoadingState />;
-  }
+  // Get all contacts and filter for those associated with this company
+  const contacts = useAppSelector((state) => 
+    state.contacts.contacts.filter(contact => contact.company === company.name)
+  );
+
+  // Get all contacts not associated with this company for adding
+  const availableContacts = useAppSelector((state) => 
+    state.contacts.contacts.filter(contact => 
+      contact.company !== company.name && 
+      (
+        contact.firstname.toLowerCase().includes(addContactSearch.toLowerCase()) ||
+        contact.lastname.toLowerCase().includes(addContactSearch.toLowerCase()) ||
+        contact.email.toLowerCase().includes(addContactSearch.toLowerCase())
+      )
+    )
+  );
+
+  // Filter displayed contacts based on search
+  const filteredContacts = contacts.filter(contact =>
+    contact.firstname.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    contact.lastname.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    contact.email.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const handleAddContact = async (contact: Contact) => {
+    try {
+      dispatch(updateContact({ 
+        id: contact.id,
+        company: company.name,
+        updatedAt: new Date().toISOString(),
+      }));
+      
+      toast({
+        title: "Contact added",
+        description: `${contact.firstname} ${contact.lastname} has been added to ${company.name}`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add contact to company",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-xl flex items-center gap-2">
-          <Users className="h-5 w-5 text-muted-foreground" />
-          Associated Contacts
-        </CardTitle>
-        <ContactSearchPopover
-          isOpen={isPopoverOpen}
-          onOpenChange={setIsPopoverOpen}
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          filteredContacts={filteredContacts}
-          onAssociateContact={handleAssociateContact}
-        />
+    <Card className="bg-white/60 backdrop-blur-sm border-purple-100/50 shadow-lg shadow-purple-500/5">
+      <CardHeader className="border-b border-purple-100/20 pb-4">
+        <CardTitle className="text-lg font-semibold text-purple-900">Associated Contacts</CardTitle>
       </CardHeader>
+      <CardContent className="pt-6">
+        <div className="mb-4 relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Input
+            placeholder="Search contacts..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9"
+          />
+        </div>
 
-      <CardContent>
-        {associatedContacts.length === 0 ? (
-          <EmptyContactsState 
-            isPopoverOpen={isPopoverOpen} 
-            setIsPopoverOpen={setIsPopoverOpen} 
-          />
+        {filteredContacts.length === 0 ? (
+          <div className="text-center py-8">
+            <div className="mx-auto w-12 h-12 rounded-full bg-purple-50 flex items-center justify-center mb-3">
+              <User className="h-6 w-6 text-purple-400" />
+            </div>
+            <h3 className="text-sm font-medium text-gray-900 mb-1">No Contacts Found</h3>
+            <p className="text-sm text-gray-500">
+              {searchQuery ? "Try adjusting your search terms." : "Start by adding contacts to this company."}
+            </p>
+          </div>
         ) : (
-          <ContactsTable 
-            contacts={associatedContacts} 
-            onRemoveAssociation={handleRemoveAssociation} 
-          />
+          <div className="space-y-4">
+            {filteredContacts.map((contact) => (
+              <div key={contact.id} className="flex items-center justify-between p-3 bg-purple-50/50 rounded-lg">
+                <div className="flex items-center space-x-3">
+                  <Avatar>
+                    <AvatarFallback>
+                      {contact.firstname[0]}
+                      {contact.lastname[0]}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-medium text-gray-900">{contact.firstname} {contact.lastname}</p>
+                    <p className="text-sm text-gray-500">{contact.title || 'No title'}</p>
+                  </div>
+                </div>
+                <Button variant="ghost" size="sm" className="text-purple-600">
+                  View Details
+                </Button>
+              </div>
+            ))}
+          </div>
         )}
+
+        <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+          <DialogContent className="sm:max-w-[475px]">
+            <DialogHeader>
+              <DialogTitle>Add Contact to {company.name}</DialogTitle>
+            </DialogHeader>
+            <Command className="rounded-lg border shadow-md">
+              <CommandInput
+                placeholder="Search contacts..."
+                value={addContactSearch}
+                onValueChange={setAddContactSearch}
+              />
+              <CommandEmpty>No contacts found.</CommandEmpty>
+              <CommandGroup className="max-h-[300px] overflow-auto">
+                {availableContacts.map((contact) => (
+                  <CommandItem
+                    key={contact.id}
+                    className="flex items-center justify-between py-2 px-2 cursor-pointer"
+                    onSelect={() => {
+                      handleAddContact(contact);
+                      setShowAddDialog(false);
+                      setAddContactSearch('');
+                    }}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <Avatar>
+                        <AvatarFallback>
+                          {contact.firstname[0]}
+                          {contact.lastname[0]}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="font-medium">{contact.firstname} {contact.lastname}</p>
+                        <p className="text-sm text-gray-500">{contact.email}</p>
+                      </div>
+                    </div>
+                    <Check className="h-4 w-4 text-gray-400" />
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </Command>
+          </DialogContent>
+        </Dialog>
       </CardContent>
     </Card>
   );
 };
-
-export default AssociatedContacts;

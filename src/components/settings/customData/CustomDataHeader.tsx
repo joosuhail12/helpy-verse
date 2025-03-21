@@ -7,7 +7,7 @@ import type { CustomField } from "@/types/customField";
 interface CustomDataHeaderProps {
   onAddField: () => void;
   currentFields: CustomField[];
-  selectedTable: 'tickets' | 'contacts' | 'companies';
+  selectedTable: 'ticket' | 'customer' | 'company';
   onImport: (fields: CustomField[]) => Promise<void>;
 }
 

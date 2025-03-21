@@ -2,33 +2,28 @@
 import { Checkbox } from "@/components/ui/checkbox";
 
 interface SelectionControlsProps {
-  selectedCount?: number;
-  totalCount?: number;
-  allSelected?: boolean;
-  indeterminate?: boolean;
-  onSelectAll: (checked: boolean) => void;
+  selectedCount: number;
+  totalCount: number;
+  onSelectAll: () => void;
 }
 
-const SelectionControls = ({ 
-  selectedCount = 0, 
-  totalCount = 0, 
-  allSelected = false, 
-  indeterminate = false, 
-  onSelectAll 
+const SelectionControls = ({
+  selectedCount,
+  totalCount,
+  onSelectAll,
 }: SelectionControlsProps) => {
+  if (totalCount === 0) return null;
+
   return (
-    <div className="flex items-center gap-2">
-      <Checkbox 
-        checked={allSelected}
-        data-state={indeterminate ? "indeterminate" : allSelected ? "checked" : "unchecked"}
+    <div className="flex items-center gap-2 mb-4">
+      <Checkbox
+        checked={selectedCount === totalCount}
         onCheckedChange={onSelectAll}
-        aria-label={`Select all ${totalCount} items`}
+        aria-label="Select all tickets"
       />
-      {selectedCount > 0 && (
-        <span className="text-sm text-gray-600">
-          {selectedCount} selected
-        </span>
-      )}
+      <span className="text-sm text-gray-600">
+        {selectedCount} selected
+      </span>
     </div>
   );
 };

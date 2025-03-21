@@ -3,27 +3,31 @@ import type { Teammate, ActivityLog, TeamAssignment } from '@/types/teammate';
 
 export const mockTeammates: Teammate[] = [
   {
-    id: '1',
-    name: 'Jane Smith',
-    email: 'jane@example.com',
-    role: 'admin',
+    id: '373c643f-0109-485e-b614-c96c7816a63d',
+    name: 'UserTest30 test',
+    email: 'usertest30@example.com',
+    role: 'WORKSPACE_AGENT',
     status: 'active',
-    lastActive: '2023-05-15T10:30:00Z',
-    createdAt: '2023-01-01T08:00:00Z',
-    permissions: ['manage_users', 'manage_settings', 'manage_content'],
-    is2FAEnabled: true,
+    teamId: null,
+    createdBy: 'CLI',
+    createdAt: '2025-02-07T11:02:45.774553',
+    lastActive: '2025-02-07T11:19:21.031',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=UserTest30test',
+    permissions: ['manage_tickets', 'view_reports']
   },
   {
-    id: '2',
-    name: 'John Doe',
-    email: 'john@example.com',
-    role: 'agent',
+    id: 'a8f43e32-6fc6-45a7-b0eb-8a4e5b90cb78',
+    name: 'manminder tomar',
+    email: 'manminder@example.com',
+    role: 'WORKSPACE_AGENT',
     status: 'active',
-    lastActive: '2023-05-14T14:45:00Z',
-    createdAt: '2023-01-15T09:30:00Z',
-    permissions: ['view_tickets', 'respond_tickets'],
-    is2FAEnabled: false,
-  },
+    teamId: null,
+    createdBy: '373c643f-0109-485e-b614-c96c7816a63d',
+    createdAt: '2025-02-13T18:36:22.977863',
+    lastActive: null,
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=manmindertomar',
+    permissions: ['view_reports']
+  }
 ];
 
 export const mockActivityLogs: ActivityLog[] = [
@@ -43,25 +47,13 @@ export const mockActivityLogs: ActivityLog[] = [
   }
 ];
 
-export const mockSessions = [
-  {
-    id: '1',
-    teammateId: '1',
-    deviceType: 'desktop',
-    deviceName: 'Chrome on Windows',
-    location: 'New York, USA',
-    lastActive: new Date().toISOString(),
-    ipAddress: '192.168.1.1'
-  }
-];
-
 export const mockAssignments: TeamAssignment[] = [
   {
     id: '1',
     teammateId: '1',
-    teamName: 'Support Team',
-    role: 'Lead',
+    teamName: 'Customer Support',
+    role: 'Team Lead',
     status: 'active',
-    startDate: '2023-01-01T08:00:00Z'
+    startDate: '2024-01-01T00:00:00.000Z'
   }
 ];

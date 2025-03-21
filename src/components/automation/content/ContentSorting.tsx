@@ -3,36 +3,33 @@ import { ArrowDown, ArrowUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
-import { setSortField, setSortDirection } from '@/store/slices/content/contentSlice';
-import type { SortField } from '@/types/content';
+import { setSortField, setSortDirection, type SortField } from '@/store/slices/content/contentSlice';
 
 export const ContentSorting = () => {
   const dispatch = useAppDispatch();
-  const contentState = useAppSelector((state) => state.content);
-  const sort = contentState?.sort || { field: 'lastUpdated', direction: 'desc' };
-  const { field, direction } = sort;
+  const sort = useAppSelector((state) => state.content.sort);
 
-  const handleSort = (sortField: SortField) => {
-    if (sortField === field) {
-      dispatch(setSortDirection(direction === 'asc' ? 'desc' : 'asc'));
+  const handleSort = (field: SortField) => {
+    if (sort.field === field) {
+      dispatch(setSortDirection(sort.direction === 'asc' ? 'desc' : 'asc'));
     } else {
-      dispatch(setSortField(sortField));
+      dispatch(setSortField(field));
       dispatch(setSortDirection('asc'));
     }
   };
 
-  const renderSortButton = (sortField: SortField, label: string) => (
+  const renderSortButton = (field: SortField, label: string) => (
     <Button
       variant="ghost"
       size="sm"
-      onClick={() => handleSort(sortField)}
+      onClick={() => handleSort(field)}
       className={`flex items-center gap-1 ${
-        field === sortField ? 'text-purple-600' : 'text-gray-600'
+        sort.field === field ? 'text-purple-600' : 'text-gray-600'
       }`}
     >
       {label}
-      {field === sortField && (
-        direction === 'asc' ? (
+      {sort.field === field && (
+        sort.direction === 'asc' ? (
           <ArrowUp className="h-4 w-4" />
         ) : (
           <ArrowDown className="h-4 w-4" />

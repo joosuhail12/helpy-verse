@@ -1,63 +1,70 @@
 
-import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { TableCell, TableRow } from '@/components/ui/table';
 import { Contact } from '@/types/contact';
+import { TableCell, TableRow } from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { MoreHorizontal } from 'lucide-react';
+import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
-import { MoreVertical } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { toggleSelectContact, selectContact } from '@/store/slices/contacts/contactsSlice';
-import { useAppSelector } from '@/hooks/useAppSelector';
+import { toggleContactSelection } from '@/store/slices/contacts/contactsSlice';
+import { ContactActivityBadge } from './ContactActivityBadge';
 
 interface ContactListItemProps {
   contact: Contact;
-  onClick: () => void;
+  isSelected: boolean;
 }
 
-const ContactListItem: React.FC<ContactListItemProps> = ({ contact, onClick }) => {
+export const ContactListItem = ({ contact, isSelected }: ContactListItemProps) => {
+  const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const selectedContacts = useAppSelector((state) => state.contacts?.selectedContacts || []);
-  const isSelected = selectedContacts.includes(contact.id);
-
-  const handleCheckboxChange = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    dispatch(toggleSelectContact(contact.id));
-  };
 
   const handleRowClick = () => {
-    dispatch(selectContact(contact.id));
-    onClick();
+    navigate(`/home/contacts/${contact.id}`);
+  };
+
+  const handleCheckboxClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    dispatch(toggleContactSelection(contact.id));
   };
 
   return (
-    <TableRow
+    <TableRow 
+      className="cursor-pointer hover:bg-gray-50"
       onClick={handleRowClick}
-      className="cursor-pointer hover:bg-muted/50"
     >
-      <TableCell className="w-12" onClick={handleCheckboxChange}>
+      <TableCell onClick={handleCheckboxClick}>
         <Checkbox checked={isSelected} />
       </TableCell>
       <TableCell>
-        <div className="font-medium">{contact.firstname} {contact.lastname}</div>
-        <div className="text-sm text-muted-foreground">{contact.email}</div>
+        {contact.firstname} {contact.lastname}
       </TableCell>
+      <TableCell>{contact.email}</TableCell>
       <TableCell>{contact.company || '-'}</TableCell>
       <TableCell>
-        <Badge
-          variant={contact.status === 'active' ? 'default' : 'secondary'}
-          className="capitalize"
-        >
+        <Badge variant={contact.type === 'customer' ? 'default' : 'secondary'}>
+          {contact.type}
+        </Badge>
+      </TableCell>
+      <TableCell>
+        <Badge variant={contact.status === 'active' ? 'default' : 'destructive'}>
           {contact.status}
         </Badge>
       </TableCell>
-      <TableCell className="text-right">
+      <TableCell>
+        {contact.lastContacted 
+          ? format(new Date(contact.lastContacted), 'MMM dd, yyyy')
+          : '-'}
+      </TableCell>
+      <TableCell>
+        <ContactActivityBadge contact={contact} />
+      </TableCell>
+      <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
         <Button variant="ghost" size="icon">
-          <MoreVertical className="h-4 w-4" />
+          <MoreHorizontal className="h-4 w-4" />
         </Button>
       </TableCell>
     </TableRow>
   );
 };
-
-export default ContactListItem;

@@ -29,10 +29,10 @@ const SortingControls = ({
           <div className="space-y-1">
             <Button
               variant="ghost"
-              onClick={() => onSort('createdAt')}
-              className={`w-full justify-between ${sortField === 'createdAt' ? 'text-primary' : ''}`}
+              onClick={() => onSort('date')}
+              className={`w-full justify-between ${sortField === 'date' ? 'text-primary' : ''}`}
             >
-              Date {sortField === 'createdAt' && (sortDirection === 'asc' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />)}
+              Date {sortField === 'date' && (sortDirection === 'asc' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />)}
             </Button>
             <Button
               variant="ghost"
@@ -58,13 +58,13 @@ const SortingControls = ({
     <div className="flex items-center gap-4">
       <div className="flex items-center gap-2" role="group" aria-label="Sort options">
         <button
-          onClick={() => onSort('createdAt')}
+          onClick={() => onSort('date')}
           className={`px-3 py-1.5 text-sm font-medium rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary/50 ${
-            sortField === 'createdAt' ? 'text-primary' : 'text-gray-600'
+            sortField === 'date' ? 'text-primary' : 'text-gray-600'
           }`}
-          aria-pressed={sortField === 'createdAt'}
+          aria-pressed={sortField === 'date'}
         >
-          Date {sortField === 'createdAt' && (sortDirection === 'asc' ? <ChevronUp className="inline w-4 h-4" /> : <ChevronDown className="inline w-4 h-4" />)}
+          Date {sortField === 'date' && (sortDirection === 'asc' ? <ChevronUp className="inline w-4 h-4" /> : <ChevronDown className="inline w-4 h-4" />)}
         </button>
         <button
           onClick={() => onSort('priority')}

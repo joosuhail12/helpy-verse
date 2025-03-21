@@ -1,4 +1,3 @@
-
 import type { Tag, SortField, FilterEntity } from '@/types/tag';
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -21,8 +20,7 @@ export const mockTags: Tag[] = [
     preview: [
       { type: 'ticket', id: '1', title: 'Login page error' },
       { type: 'contact', id: '2', title: 'John Smith' }
-    ],
-    data: {} // Adding the required data property
+    ]
   },
   { 
     id: '2', 
@@ -39,8 +37,7 @@ export const mockTags: Tag[] = [
     ],
     preview: [
       { type: 'ticket', id: '3', title: 'Add dark mode' }
-    ],
-    data: {} // Adding the required data property
+    ]
   },
   { 
     id: '3', 
@@ -57,8 +54,7 @@ export const mockTags: Tag[] = [
     ],
     preview: [
       { type: 'ticket', id: '4', title: 'Password reset issue' }
-    ],
-    data: {} // Adding the required data property
+    ]
   },
   { 
     id: '4', 
@@ -73,8 +69,7 @@ export const mockTags: Tag[] = [
       { date: '2024-02-20', total: 8 },
       { date: '2024-03-20', total: 8 }
     ],
-    preview: [],
-    data: {} // Adding the required data property
+    preview: []
   },
   { 
     id: '5', 
@@ -91,8 +86,7 @@ export const mockTags: Tag[] = [
     ],
     preview: [
       { type: 'ticket', id: '5', title: 'UI improvement suggestions' }
-    ],
-    data: {} // Adding the required data property
+    ]
   }
 ];
 

@@ -1,112 +1,142 @@
-
-import { useState } from 'react';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { PlusCircle, Tag } from 'lucide-react';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { useTags } from '@/hooks/useTags';
+import { useEffect, useState } from 'react';
 import { updateCompany } from '@/store/slices/companies/companiesSlice';
 import { useToast } from '@/hooks/use-toast';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+} from '@/components/ui/card';
+import { Tag, X, Pencil, Check } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import Select from 'react-select';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { useAppSelector } from '@/hooks/useAppSelector';
+import { fetchTags } from '@/store/slices/tagsSlice';
 
 interface CompanyTagsProps {
-  companyId: string;
-  tags: string[] | { id: string; name: string; }[];
+  company: { id: string; tags: { id: string; name: string }[] };
 }
 
-export const CompanyTags = ({ companyId, tags = [] }: CompanyTagsProps) => {
-  const { toast } = useToast();
+export const CompanyTags = ({ company }: CompanyTagsProps) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [selectedTags, setSelectedTags] = useState<{ id: string; name: string }[]>(company.tags || []);
   const dispatch = useAppDispatch();
-  const { data: allTags, isLoading } = useTags();
-  const [isOpen, setIsOpen] = useState(false);
+  const { toast } = useToast();
 
-  // Normalize tags to handle both string[] and object[] formats
-  const normalizedTags = tags.map(tag => 
-    typeof tag === 'string' ? tag : tag.id
-  );
+  const availableTags = useAppSelector(state => state.tags.items);
 
-  const handleTagToggle = async (tagId: string) => {
-    const updatedTags = normalizedTags.includes(tagId)
-      ? normalizedTags.filter(t => t !== tagId) 
-      : [...normalizedTags, tagId];
-    
-    try {
-      await dispatch(updateCompany({
-        id: companyId,
-        updates: { 
-          tags: updatedTags 
-        }
-      }));
-      
-      toast({
-        title: "Tags updated",
-        description: "Company tags have been updated successfully.",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update tags. Please try again.",
-        variant: "destructive",
-      });
-    }
-    
-    setIsOpen(false);
+  useEffect(() => {
+    dispatch(fetchTags({
+      page: 1,
+      limit: 1000,
+      sortField: 'createdAt',
+      sortDirection: 'desc',
+      filterEntity: 'all',
+      searchQuery: '',
+    }));
+  }, [dispatch]);
+
+  const handleSelectTags = (selectedOptions: { value: string; label: string }[]) => {
+    const newSelectedTags = selectedOptions.map(option => ({
+      id: option.value,
+      name: option.label,
+    }));
+    setSelectedTags(newSelectedTags);
   };
 
-  // Find tag names for display
-  const displayTags = normalizedTags
-    .map(tagId => allTags?.find(t => t.id === tagId))
-    .filter(Boolean);
+  const handleRemoveTag = (tagId: string) => {
+    setSelectedTags(prevTags => prevTags.filter(tag => tag.id !== tagId));
+  };
+
+  const handleSaveTags = async () => {
+    await dispatch(updateCompany({
+      id: company.id,
+      company: { tags: selectedTags },
+    }));
+
+    toast({
+      title: "Tags updated",
+      description: "Tags have been updated successfully.",
+    });
+
+    setIsEditing(false);
+  };
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="text-sm font-medium text-gray-500">Tags</h3>
-        <Popover open={isOpen} onOpenChange={setIsOpen}>
-          <PopoverTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-8 px-2">
-              <PlusCircle className="h-3.5 w-3.5 text-gray-400" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-64 p-2" align="end">
-            <div className="space-y-1 max-h-[300px] overflow-y-auto">
-              {isLoading ? (
-                <p className="text-sm text-center py-2 text-gray-500">Loading tags...</p>
-              ) : allTags?.length ? (
-                allTags.map(tag => (
-                  <Button
-                    key={tag.id}
-                    variant="ghost"
-                    className={`w-full justify-start text-left h-8 px-2 ${
-                      normalizedTags.includes(tag.id) ? 'bg-gray-100' : ''
-                    }`}
-                    onClick={() => handleTagToggle(tag.id)}
+    <Card className="border-none shadow-none bg-gray-50/50 transition-all duration-300">
+      <CardHeader className="border-b pb-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Tag className="h-4 w-4 text-gray-500" />
+            <CardTitle className="text-lg">Tags</CardTitle>
+          </div>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setIsEditing(!isEditing)}
+            className="h-8 w-8 p-0"
+          >
+            {isEditing ? (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={handleSaveTags}
+                className="h-8 w-8 p-0"
+              >
+                <Check className="h-4 w-4 text-green-500" />
+              </Button>
+            ) : (
+              <Pencil className="h-4 w-4" />
+            )}
+          </Button>
+        </div>
+      </CardHeader>
+
+      <CardContent className="pt-6">
+        {isEditing ? (
+          <div className="space-y-4 transition-all duration-300">
+            <Select
+              isMulti
+              value={selectedTags.map(tag => ({ value: tag.id, label: tag.name }))}
+              onChange={handleSelectTags}
+              options={availableTags
+                .filter(tag => !selectedTags.some(selected => selected.id === tag.id))
+                .map(tag => ({ value: tag.id, label: tag.name }))
+              }
+              className="w-60"
+              placeholder="Select tags"
+            />
+
+            <div className="flex flex-wrap gap-2">
+              {selectedTags.map(tag => (
+                <Badge key={tag.id} variant="secondary" className="flex items-center gap-1 transition-all duration-300">
+                  {tag.name}
+                  <button
+                    onClick={() => handleRemoveTag(tag.id)}
+                    className="ml-1 hover:text-red-500 transition-colors"
                   >
-                    <Tag className={`h-3.5 w-3.5 mr-2 ${
-                      normalizedTags.includes(tag.id) ? 'text-primary' : 'text-gray-400'
-                    }`} />
-                    <span className="truncate">{tag.name}</span>
-                  </Button>
-                ))
-              ) : (
-                <p className="text-sm text-center py-2 text-gray-500">No tags available</p>
-              )}
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              ))}
             </div>
-          </PopoverContent>
-        </Popover>
-      </div>
-      
-      <div className="flex flex-wrap gap-2 min-h-[32px]">
-        {displayTags.length > 0 ? (
-          displayTags.map(tag => tag && (
-            <Badge key={tag.id} variant="secondary" className="text-xs">
-              {tag.name}
-            </Badge>
-          ))
+          </div>
         ) : (
-          <p className="text-sm text-gray-500 italic">No tags assigned</p>
+          <div className="flex flex-wrap gap-2 transition-all duration-300">
+            {company.tags.length > 0 ? (
+              company.tags.map(tag => (
+                <Badge key={tag.id} variant="secondary" className="transition-all duration-300">
+                  {tag.name}
+                </Badge>
+              ))
+            ) : (
+              <p className="text-gray-500 italic">No tags added</p>
+            )}
+          </div>
         )}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
-};
+}; 

@@ -17,8 +17,7 @@ const mockTicket = {
   createdAt: '2024-03-15T09:00:00Z',
   updatedAt: '2024-03-15T09:05:00Z',
   isUnread: false,
-  categories: ['product', 'mobile'],
-  recipients: ['sarah.johnson@example.com'] // Added recipients array
+  categories: ['product', 'mobile']
 };
 
 describe('MessageToolbar', () => {
@@ -74,3 +73,4 @@ describe('MessageToolbar', () => {
     expect(onInsertPlaceholder).toHaveBeenCalledWith('ticket');
   });
 });
+

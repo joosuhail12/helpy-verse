@@ -59,14 +59,13 @@ export const ActionDetailDialog = ({ action, open, onOpenChange }: ActionDetailD
     debounce((data: z.infer<typeof actionFormSchema>) => {
       if (!action) return;
       
-      dispatch(updateAction({
-        id: action.id,
-        updates: {
-          ...data,
-          headers: JSON.parse(data.headers),
-        }
-      }));
+      const updatedAction: CustomAction = {
+        ...action,
+        ...data,
+        headers: JSON.parse(data.headers),
+      };
       
+      dispatch(updateAction(updatedAction));
       toast({
         title: "Changes auto-saved",
         description: "Your changes have been automatically saved.",
@@ -145,14 +144,13 @@ export const ActionDetailDialog = ({ action, open, onOpenChange }: ActionDetailD
     form.handleSubmit((data) => {
       if (!action) return;
       
-      dispatch(updateAction({
-        id: action.id,
-        updates: {
-          ...data,
-          headers: JSON.parse(data.headers),
-        }
-      }));
+      const updatedAction: CustomAction = {
+        ...action,
+        ...data,
+        headers: JSON.parse(data.headers),
+      };
       
+      dispatch(updateAction(updatedAction));
       setIsDirty(false);
       toast({
         title: "Changes saved",
@@ -182,30 +180,15 @@ export const ActionDetailDialog = ({ action, open, onOpenChange }: ActionDetailD
                 isDirty={isDirty}
                 onParameterChange={(params) => {
                   if (!action) return;
-                  dispatch(updateAction({
-                    id: action.id,
-                    updates: { parameters: params }
-                  }));
+                  const updatedAction = { ...action, parameters: params };
+                  dispatch(updateAction(updatedAction));
                   setIsDirty(true);
                 }}
                 onTest={handleTest}
                 testConfig={testConfig}
                 onSaveTestConfig={setTestConfig}
                 onUpdate={(updatedAction) => {
-                  dispatch(updateAction({
-                    id: updatedAction.id, 
-                    updates: {
-                      name: updatedAction.name,
-                      description: updatedAction.description,
-                      toolName: updatedAction.toolName,
-                      endpoint: updatedAction.endpoint,
-                      method: updatedAction.method,
-                      parameters: updatedAction.parameters,
-                      headers: updatedAction.headers,
-                      connectedChatbots: updatedAction.connectedChatbots,
-                      enabled: updatedAction.enabled
-                    }
-                  }));
+                  dispatch(updateAction(updatedAction));
                   setIsDirty(true);
                 }}
               />
@@ -227,3 +210,4 @@ export const ActionDetailDialog = ({ action, open, onOpenChange }: ActionDetailD
     </>
   );
 };
+
