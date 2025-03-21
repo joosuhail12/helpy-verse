@@ -6,7 +6,7 @@ import type { Team, TeamsState } from '@/types/team';
 // Async thunks for API operations
 export const fetchTeams = createAsyncThunk(
   'teams/fetchTeams',
-  async (params = {}, { rejectWithValue }) => {
+  async (params: Record<string, any> = {}, { rejectWithValue }) => {
     try {
       const response = await teamsService.fetchTeams(params);
       return response.data;

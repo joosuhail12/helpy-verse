@@ -30,7 +30,7 @@ const TeamsList = ({ teams }: TeamsListProps) => {
                   <div>
                     <h3 className="font-medium text-gray-900">{team.name}</h3>
                     <p className="text-sm text-gray-500">
-                      {team.teamMembers?.length || team.members?.length || 0} members
+                      {team.members?.length || 0} members
                     </p>
                   </div>
                 </div>

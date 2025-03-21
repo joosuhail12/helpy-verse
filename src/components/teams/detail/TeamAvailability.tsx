@@ -2,16 +2,15 @@
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { Badge } from "@/components/ui/badge";
-import type { DayOfWeek, TimeSlot } from '@/types/team';
+import type { DayOfWeek, TimeSlot, Team } from '@/types/team';
 
 interface TeamAvailabilityProps {
-  officeHours: {
-    [key in DayOfWeek]: TimeSlot[];
-  };
-  holidays: string[];
+  team: Team;
 }
 
-const TeamAvailability = ({ officeHours, holidays }: TeamAvailabilityProps) => {
+const TeamAvailability = ({ team }: TeamAvailabilityProps) => {
+  const officeHours = team.officeHours || {};
+  const holidays = team.holidays || [];
   const daysOfWeek: DayOfWeek[] = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 
   return (
@@ -23,7 +22,7 @@ const TeamAvailability = ({ officeHours, holidays }: TeamAvailabilityProps) => {
             <div key={day} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
               <span className="capitalize font-medium">{day}</span>
               <div className="flex gap-2">
-                {officeHours[day].length > 0 ? (
+                {officeHours[day] && officeHours[day].length > 0 ? (
                   officeHours[day].map((slot, index) => (
                     <Badge key={index} variant="outline">
                       {slot.start} - {slot.end}

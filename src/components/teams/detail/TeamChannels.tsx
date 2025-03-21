@@ -1,15 +1,15 @@
 
 import { Badge } from "@/components/ui/badge";
 import { MessageSquare, Mail } from "lucide-react";
+import { Team } from '@/types/team';
 
 interface TeamChannelsProps {
-  channels?: {
-    chat?: string;
-    email: string[];
-  };
+  team: Team;
 }
 
-const TeamChannels = ({ channels }: TeamChannelsProps) => {
+const TeamChannels = ({ team }: TeamChannelsProps) => {
+  const channels = team.channels || { email: [] };
+  
   return (
     <div className="space-y-6">
       <div className="space-y-2">
@@ -29,7 +29,7 @@ const TeamChannels = ({ channels }: TeamChannelsProps) => {
           <Mail className="h-5 w-5 text-gray-500" />
           <h3 className="font-medium">Email Channels</h3>
         </div>
-        {channels?.email.length ? (
+        {channels?.email && channels.email.length ? (
           <div className="flex flex-wrap gap-2">
             {channels.email.map((email) => (
               <Badge key={email} variant="outline">{email}</Badge>

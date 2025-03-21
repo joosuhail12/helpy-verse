@@ -60,7 +60,7 @@ export const teamsService = {
                 members: team.members,
                 channels: team.channels,
                 routingStrategy: team.routing.type,
-                ...(team.routing.limits?.maxTotalTickets && { maxTotalTickets: team.routing.limits.maxTotalTickets }),
+                ...(team.routing.limits?.maxTickets && { maxTotalTickets: team.routing.limits.maxTickets }),
                 ...(team.routing.limits?.maxOpenTickets && { maxOpenTickets: team.routing.limits.maxOpenTickets }),
                 ...(team.routing.limits?.maxActiveChats && { maxActiveChats: team.routing.limits.maxActiveChats }),
                 workspace_id: workspaceId
@@ -93,8 +93,8 @@ export const teamsService = {
                 payload.routingStrategy = team.routing.type;
                 
                 if (team.routing.limits) {
-                    if (team.routing.limits.maxTotalTickets !== undefined) {
-                        payload.maxTotalTickets = team.routing.limits.maxTotalTickets;
+                    if (team.routing.limits.maxTickets !== undefined) {
+                        payload.maxTotalTickets = team.routing.limits.maxTickets;
                     }
                     if (team.routing.limits.maxOpenTickets !== undefined) {
                         payload.maxOpenTickets = team.routing.limits.maxOpenTickets;

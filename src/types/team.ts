@@ -8,6 +8,11 @@ export interface Team {
     name: string;
     email: string;
   }>;
+  teamMembers?: Array<{
+    id: string;
+    name: string;
+    email: string;
+  }>;
   channels?: {
     chat?: string;
     email: string[];
@@ -69,6 +74,8 @@ export interface TeamsState {
   teams: Team[];
   loading: boolean;
   error: string | null;
+  teamDetails: Team | null;
+  areTeamsLoaded: boolean;
 }
 
 export interface TeamCreatePayload {

@@ -1,16 +1,14 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Team } from '@/types/team';
 
 interface TeamMembersProps {
-  members: Array<{
-    id: string;
-    name: string;
-    email: string;
-  }>;
+  team: Team;
 }
 
-const TeamMembers = ({ members }: TeamMembersProps) => {
+const TeamMembers = ({ team }: TeamMembersProps) => {
+  const members = team.members || [];
   return (
     <div className="space-y-4">
       {members.map((member) => (
