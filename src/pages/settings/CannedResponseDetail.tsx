@@ -202,7 +202,7 @@ const CannedResponseDetail = () => {
                     {response.sharedWith.map((share, index) => (
                       <li key={index} className="flex items-center justify-between p-2 bg-muted rounded-md">
                         <span>
-                          {teams.find(t => t.id === share.teamId)?.name || share.teamName} 
+                          {teams.find(t => t.id === share.sharedWith.teamId)?.name || share.sharedWith.teamName} 
                           <span className="ml-2 text-xs">
                             ({share.permissions === 'view' ? 'View only' : 'Can edit'})
                           </span>

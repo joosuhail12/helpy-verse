@@ -2,6 +2,7 @@
 import type { Ticket } from '@/types/ticket';
 import type { Contact } from '@/types/contact';
 import type { EmailChannel } from '@/types/emailChannel';
+import type { TeamMember } from '@/types/ticket';
 
 export type Recipient = Contact | { id: string; email: string; isNew?: boolean };
 
@@ -27,6 +28,9 @@ export interface TicketFormProps {
   onSubmit: (values: TicketFormValues, callback: () => void) => void;
   initialValues?: Partial<TicketFormValues>;
   isSubmitting?: boolean;
+  onCancel: () => void;
+  assignees: TeamMember[];
+  emailChannels: EmailChannel[];
 }
 
 export interface CreateTicketDialogProps {

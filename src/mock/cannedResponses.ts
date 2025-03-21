@@ -112,4 +112,3 @@ export const mockCannedResponses: CannedResponse[] = [
     updatedAt: '2024-03-10T11:00:00Z'
   }
 ];
-
