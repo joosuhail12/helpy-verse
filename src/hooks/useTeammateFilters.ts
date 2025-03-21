@@ -18,15 +18,27 @@ export const useTeammateFilters = (teammates: Teammate[] = []) => {
     }
   };
 
-  const filteredTeammates = (teammates || []).filter(teammate => {
-    const matchesSearch = searchQuery.toLowerCase() === '' || 
-      teammate.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      teammate.email.toLowerCase().includes(searchQuery.toLowerCase());
+  // Ensure teammates is always an array, even if undefined is passed
+  const teammatesArray = Array.isArray(teammates) ? teammates : [];
+
+  const filteredTeammates = teammatesArray.filter(teammate => {
+    // Skip filtering if teammate is invalid
+    if (!teammate || typeof teammate !== 'object') return false;
+
+    const teammateNameLower = (teammate.name || '').toLowerCase();
+    const teammateEmailLower = (teammate.email || '').toLowerCase();
+    const searchQueryLower = searchQuery.toLowerCase();
+
+    const matchesSearch = searchQuery === '' || 
+      teammateNameLower.includes(searchQueryLower) ||
+      teammateEmailLower.includes(searchQueryLower);
 
     const matchesRole = roleFilter === 'all_roles' || teammate.role === roleFilter;
     const matchesStatus = statusFilter === 'all_statuses' || teammate.status === statusFilter;
 
     if (roleFilter === 'recent') {
+      // Handle recent teammates
+      if (!teammate.createdAt) return false;
       const recentDate = subDays(new Date(), 7);
       return new Date(teammate.createdAt) >= recentDate;
     }

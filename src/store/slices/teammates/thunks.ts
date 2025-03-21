@@ -17,9 +17,14 @@ export const fetchTeammates = createAsyncThunk(
   'teammates/fetchTeammates',
   async (_, { rejectWithValue }) => {
     try {
+      console.log('Fetching teammates with workspace ID:', localStorage.getItem('workspaceId'));
       const teammates = await getTeammates();
-      return teammates;
+      console.log('Teammates API response:', teammates);
+      
+      // Ensure we always return an array, even if the API returned nothing
+      return Array.isArray(teammates) ? teammates : [];
     } catch (error: any) {
+      console.error('Failed to fetch teammates:', error);
       return rejectWithValue(error.message || 'Failed to fetch teammates');
     }
   }

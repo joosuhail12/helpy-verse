@@ -1,51 +1,28 @@
 
-import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from '@/store/store';
-import { Teammate } from '@/types/teammate';
 
-// Basic selectors
-export const selectTeammatesState = (state: RootState) => state.teammates;
+// Ensure we always return an array, even if teammates are undefined
+export const selectAllTeammates = (state: RootState) => {
+  return state.teammates?.teammates || [];
+};
 
-export const selectAllTeammates = (state: RootState) => state.teammates.teammates;
+export const selectTeammatesLoading = (state: RootState) => 
+  state.teammates?.loading || false;
 
-export const selectTeammatesLoading = (state: RootState) => state.teammates.loading;
+export const selectTeammatesError = (state: RootState) => 
+  state.teammates?.error || null;
 
-export const selectTeammatesError = (state: RootState) => state.teammates.error;
+export const selectTeammateById = (state: RootState, teammateId: string) => 
+  state.teammates?.teammates?.find(teammate => teammate.id === teammateId) || null;
 
-export const selectSelectedTeammate = (state: RootState) => state.teammates.selectedTeammate;
+export const selectTeammateDetails = (state: RootState) => 
+  state.teammates?.selectedTeammate || null;
 
-// Derived selectors
-export const selectTeammateById = createSelector(
-  [selectAllTeammates, (_, teammateId: string) => teammateId],
-  (teammates, teammateId) => teammates.find(teammate => teammate.id === teammateId)
-);
+export const selectTeammateActivities = (state: RootState, teammateId: string) => 
+  state.teammates?.activities[teammateId] || [];
 
-export const selectTeammateActivities = createSelector(
-  [(state: RootState) => state.teammates.activities, (_, teammateId: string) => teammateId],
-  (activities, teammateId) => activities[teammateId] || []
-);
+export const selectTeammateAssignments = (state: RootState, teammateId: string) => 
+  state.teammates?.assignments[teammateId] || [];
 
-export const selectTeammateAssignments = createSelector(
-  [(state: RootState) => state.teammates.assignments, (_, teammateId: string) => teammateId],
-  (assignments, teammateId) => assignments[teammateId] || []
-);
-
-export const selectTeammateSessions = createSelector(
-  [(state: RootState) => state.teammates.sessions, (_, teammateId: string) => teammateId],
-  (sessions, teammateId) => sessions[teammateId] || []
-);
-
-export const selectActiveTeammates = createSelector(
-  [selectAllTeammates],
-  (teammates) => teammates.filter(teammate => teammate.status === 'active')
-);
-
-export const selectInactiveTeammates = createSelector(
-  [selectAllTeammates],
-  (teammates) => teammates.filter(teammate => teammate.status === 'inactive')
-);
-
-export const selectTeammatesByRole = createSelector(
-  [selectAllTeammates, (_, role: Teammate['role']) => role],
-  (teammates, role) => teammates.filter(teammate => teammate.role === role)
-);
+export const selectTeammateSessions = (state: RootState, teammateId: string) => 
+  state.teammates?.sessions[teammateId] || [];
