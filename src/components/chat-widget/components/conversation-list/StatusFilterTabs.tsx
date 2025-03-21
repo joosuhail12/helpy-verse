@@ -2,48 +2,53 @@
 import React from 'react';
 
 interface StatusFilterTabsProps {
-  statusFilter: 'all' | 'ongoing' | 'resolved';
-  onFilterChange: (status: 'all' | 'ongoing' | 'resolved') => void;
+  selectedStatus: 'all' | 'open' | 'closed';
+  onStatusChange: (status: 'all' | 'open' | 'closed') => void;
+  accentColor?: string;
 }
 
 /**
- * Tabs for filtering conversations by status
+ * Component for filtering conversations by status
  */
 const StatusFilterTabs: React.FC<StatusFilterTabsProps> = ({ 
-  statusFilter, 
-  onFilterChange 
+  selectedStatus, 
+  onStatusChange,
+  accentColor = '#1f2937'
 }) => {
   return (
-    <div className="flex mt-3 border-b">
+    <div className="flex border-b border-gray-100">
       <button
-        onClick={() => onFilterChange('all')}
-        className={`pb-2 px-3 text-sm font-medium ${
-          statusFilter === 'all' 
-            ? 'text-gray-900 border-b-2 border-gray-900' 
-            : 'text-gray-500 hover:text-gray-700'
+        onClick={() => onStatusChange('all')}
+        className={`flex-1 p-2 text-sm font-medium border-b-2 ${
+          selectedStatus === 'all' 
+            ? 'border-current' 
+            : 'border-transparent text-gray-500'
         }`}
+        style={{ color: selectedStatus === 'all' ? accentColor : undefined }}
       >
         All
       </button>
       <button
-        onClick={() => onFilterChange('ongoing')}
-        className={`pb-2 px-3 text-sm font-medium ${
-          statusFilter === 'ongoing' 
-            ? 'text-gray-900 border-b-2 border-gray-900' 
-            : 'text-gray-500 hover:text-gray-700'
+        onClick={() => onStatusChange('open')}
+        className={`flex-1 p-2 text-sm font-medium border-b-2 ${
+          selectedStatus === 'open' 
+            ? 'border-current' 
+            : 'border-transparent text-gray-500'
         }`}
+        style={{ color: selectedStatus === 'open' ? accentColor : undefined }}
       >
-        Ongoing
+        Open
       </button>
       <button
-        onClick={() => onFilterChange('resolved')}
-        className={`pb-2 px-3 text-sm font-medium ${
-          statusFilter === 'resolved' 
-            ? 'text-gray-900 border-b-2 border-gray-900' 
-            : 'text-gray-500 hover:text-gray-700'
+        onClick={() => onStatusChange('closed')}
+        className={`flex-1 p-2 text-sm font-medium border-b-2 ${
+          selectedStatus === 'closed' 
+            ? 'border-current' 
+            : 'border-transparent text-gray-500'
         }`}
+        style={{ color: selectedStatus === 'closed' ? accentColor : undefined }}
       >
-        Resolved
+        Closed
       </button>
     </div>
   );

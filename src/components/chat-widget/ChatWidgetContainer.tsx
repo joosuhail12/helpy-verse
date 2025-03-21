@@ -6,17 +6,25 @@ import WidgetContent from './container/WidgetContent';
 import NavigationBar from './container/NavigationBar';
 import WidgetLauncher from './container/WidgetLauncher';
 import { WidgetPage } from './container/types';
+import { ThemeProvider, ThemeConfig } from './theme/ThemeContext';
+
+interface ChatWidgetContainerProps {
+  workspaceId?: string;
+  themeConfig?: Partial<ThemeConfig>;
+}
 
 /**
  * Main container component for the embeddable chat widget
  * Styled with Intercom-inspired design
  */
-const ChatWidgetContainer = () => {
+const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({ 
+  workspaceId = '6c22b22f-7bdf-43db-b7c1-9c5884125c63',
+  themeConfig = {}
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState<WidgetPage>('home');
   const [minimized, setMinimized] = useState(false);
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
-  const [workspaceId, setWorkspaceId] = useState<string>('6c22b22f-7bdf-43db-b7c1-9c5884125c63');
 
   useEffect(() => {
     // Initialize Ably connection when widget is opened
@@ -63,7 +71,11 @@ const ChatWidgetContainer = () => {
 
   // If widget is minimized, only show the launcher
   if (!isOpen || minimized) {
-    return <WidgetLauncher toggleWidget={toggleWidget} isOpen={false} />;
+    return (
+      <ThemeProvider initialTheme={themeConfig}>
+        <WidgetLauncher toggleWidget={toggleWidget} isOpen={false} />
+      </ThemeProvider>
+    );
   }
 
   // Check if we should show the navigation bar
@@ -77,7 +89,7 @@ const ChatWidgetContainer = () => {
   };
 
   return (
-    <>
+    <ThemeProvider initialTheme={themeConfig}>
       {/* Widget container */}
       <div 
         className="fixed bottom-20 right-5 z-40 flex flex-col bg-white rounded-2xl shadow-2xl overflow-hidden" 
@@ -115,7 +127,7 @@ const ChatWidgetContainer = () => {
       
       {/* Launcher positioned below the widget */}
       <WidgetLauncher toggleWidget={toggleWidget} isOpen={true} />
-    </>
+    </ThemeProvider>
   );
 };
 

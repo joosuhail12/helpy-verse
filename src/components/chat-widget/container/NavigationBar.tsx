@@ -1,56 +1,46 @@
 
 import React from 'react';
-import { Home, MessageSquare, HelpCircle, Rss } from 'lucide-react';
-import { NavigationBarProps } from './types';
+import { Home, MessageSquare } from 'lucide-react';
+import { WidgetPage } from './types';
+import { useTheme } from '../theme/ThemeContext';
+
+interface NavigationBarProps {
+  currentPage: WidgetPage;
+  navigateTo: (page: WidgetPage) => void;
+}
 
 /**
  * Bottom navigation bar for the chat widget
- * Styled like Intercom's bottom navigation
  */
-const NavigationBar: React.FC<NavigationBarProps> = ({ 
-  currentPage, 
-  navigateTo 
-}) => {
+const NavigationBar: React.FC<NavigationBarProps> = ({ currentPage, navigateTo }) => {
+  const { theme } = useTheme();
+  
+  const activeColor = theme.colors.primary;
+  const inactiveColor = theme.colors.secondary;
+  
   return (
-    <div className="border-t border-gray-100 py-3 bg-white grid grid-cols-4 items-center">
+    <div className="border-t border-gray-100 py-2 px-6 bg-white flex justify-around items-center">
       <button 
         onClick={() => navigateTo('home')}
-        className={`flex flex-col items-center gap-1 ${
-          currentPage === 'home' 
-            ? 'text-gray-900' 
-            : 'text-gray-500'}`}
+        className="flex flex-col items-center gap-1"
+        style={{ color: currentPage === 'home' ? activeColor : inactiveColor }}
         aria-label="Home"
       >
-        <Home className="h-5 w-5" />
+        <Home className="h-4 w-4" />
         <span className="text-xs">Home</span>
       </button>
-      
       <button 
         onClick={() => navigateTo('conversations')}
-        className={`flex flex-col items-center gap-1 ${
-          (currentPage === 'conversations' || currentPage === 'conversation-detail')
-            ? 'text-gray-900' 
-            : 'text-gray-500'}`}
+        className="flex flex-col items-center gap-1"
+        style={{ 
+          color: (currentPage === 'conversations' || currentPage === 'conversation-detail') 
+            ? activeColor 
+            : inactiveColor 
+        }}
         aria-label="Messages"
       >
-        <MessageSquare className="h-5 w-5" />
+        <MessageSquare className="h-4 w-4" />
         <span className="text-xs">Messages</span>
-      </button>
-      
-      <button 
-        className="flex flex-col items-center gap-1 text-gray-500"
-        aria-label="Help"
-      >
-        <HelpCircle className="h-5 w-5" />
-        <span className="text-xs">Help</span>
-      </button>
-      
-      <button 
-        className="flex flex-col items-center gap-1 text-gray-500"
-        aria-label="News"
-      >
-        <Rss className="h-5 w-5" />
-        <span className="text-xs">News</span>
       </button>
     </div>
   );

@@ -7,6 +7,7 @@ import NewChat from '@/components/chat-widget/NewChat';
 import ResponseTime from '@/components/chat-widget/components/ResponseTime';
 import ConversationView from '@/components/chat-widget/components/conversation/ConversationView';
 import { X, ArrowLeft, Search, Home, MessageSquare } from 'lucide-react';
+import { ThemeProvider, ThemeConfig } from '@/components/chat-widget/theme/ThemeContext';
 
 type WidgetPage = 'home' | 'conversations' | 'new-chat' | 'conversation-detail';
 
@@ -19,10 +20,22 @@ const ChatWidgetStandalone = () => {
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   
   const [options, setOptions] = useState({
-    primaryColor: '#5DCFCF',
+    primaryColor: '#1f2937',
     welcomeMessage: 'How can we help you today?',
     agentName: 'Support Team',
-    workspaceId: searchParams.get('workspace') || '6c22b22f-7bdf-43db-b7c1-9c5884125c63'
+    workspaceId: searchParams.get('workspace') || '6c22b22f-7bdf-43db-b7c1-9c5884125c63',
+    companyName: 'Support Chat'
+  });
+
+  // Create theme config from options
+  const [themeConfig, setThemeConfig] = useState<Partial<ThemeConfig>>({
+    colors: {
+      primary: options.primaryColor,
+      accent: options.primaryColor,
+      headerBackground: options.primaryColor,
+      launcherBackground: options.primaryColor
+    },
+    companyName: options.companyName
   });
 
   // Listen for options passed via postMessage
@@ -31,10 +44,24 @@ const ChatWidgetStandalone = () => {
       // Validate message origin for security in real implementation
       if (event.data && event.data.type === 'PULLSE_CHAT_OPTIONS') {
         console.log('Received widget options:', event.data.options);
-        setOptions(prev => ({
-          ...prev,
+        const newOptions = {
+          ...options,
           ...event.data.options
-        }));
+        };
+        
+        setOptions(newOptions);
+        
+        // Update theme configuration
+        setThemeConfig({
+          colors: {
+            primary: newOptions.primaryColor,
+            accent: newOptions.primaryColor,
+            headerBackground: newOptions.primaryColor,
+            launcherBackground: newOptions.primaryColor
+          },
+          companyName: newOptions.companyName,
+          logoUrl: newOptions.logoUrl
+        });
       }
     };
 
@@ -43,7 +70,7 @@ const ChatWidgetStandalone = () => {
     return () => {
       window.removeEventListener('message', handleMessage);
     };
-  }, []);
+  }, [options]);
 
   // Get workspace ID from URL parameters
   useEffect(() => {
@@ -53,6 +80,33 @@ const ChatWidgetStandalone = () => {
         ...prev,
         workspaceId: workspaceParam
       }));
+    }
+    
+    // Process theme from URL parameters
+    const primaryColor = searchParams.get('primaryColor');
+    const companyName = searchParams.get('companyName');
+    const logoUrl = searchParams.get('logoUrl');
+    
+    if (primaryColor || companyName || logoUrl) {
+      const newTheme: Partial<ThemeConfig> = { ...themeConfig };
+      
+      if (primaryColor) {
+        if (!newTheme.colors) newTheme.colors = {};
+        newTheme.colors.primary = primaryColor;
+        newTheme.colors.accent = primaryColor;
+        newTheme.colors.headerBackground = primaryColor;
+        newTheme.colors.launcherBackground = primaryColor;
+      }
+      
+      if (companyName) {
+        newTheme.companyName = companyName;
+      }
+      
+      if (logoUrl) {
+        newTheme.logoUrl = logoUrl;
+      }
+      
+      setThemeConfig(newTheme);
     }
   }, [searchParams]);
 
@@ -139,70 +193,67 @@ const ChatWidgetStandalone = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-white rounded-lg overflow-hidden">
-      {/* Header */}
-      {renderHeader()}
+    <ThemeProvider initialTheme={themeConfig}>
+      <div className="flex flex-col h-screen bg-white rounded-lg overflow-hidden">
+        {/* Header */}
+        {renderHeader()}
 
-      {/* Widget content */}
-      <div className="flex-1 overflow-y-auto">
-        {currentPage === 'home' && (
-          <ChatHome 
-            onNewChat={() => navigateTo('new-chat')}
-            workspaceId={options.workspaceId}
-          />
-        )}
-        {currentPage === 'conversations' && (
-          <ConversationList 
-            onNewChat={() => navigateTo('new-chat')} 
-            onSelectConversation={handleSelectConversation}
-            workspaceId={options.workspaceId}
-          />
-        )}
-        {currentPage === 'new-chat' && (
-          <NewChat 
-            onConversationCreated={handleConversationCreated}
-            workspaceId={options.workspaceId}
-          />
-        )}
-        {currentPage === 'conversation-detail' && currentConversationId && (
-          <ConversationView 
-            conversationId={currentConversationId} 
-            onBack={() => navigateTo('conversations')}
-            workspaceId={options.workspaceId}
-          />
-        )}
-      </div>
-
-      {/* Only show navigation when not in conversation detail */}
-      {shouldShowNavBar() && (
-        <div className="border-t border-gray-100 py-2 px-6 bg-white flex justify-around items-center">
-          <button 
-            onClick={() => navigateTo('home')}
-            className={`flex flex-col items-center gap-1 ${currentPage === 'home' 
-              ? 'text-[#5DCFCF]' 
-              : 'text-gray-500'}`}
-            aria-label="Home"
-          >
-            <Home className="h-4 w-4" />
-            <span className="text-xs">Home</span>
-          </button>
-          <button 
-            onClick={() => navigateTo('conversations')}
-            className={`flex flex-col items-center gap-1 ${
-              (currentPage === 'conversations' || currentPage === 'conversation-detail')
-                ? 'text-[#5DCFCF]' 
-                : 'text-gray-500'}`}
-            aria-label="Messages"
-          >
-            <MessageSquare className="h-4 w-4" />
-            <span className="text-xs">Messages</span>
-          </button>
+        {/* Widget content */}
+        <div className="flex-1 overflow-y-auto">
+          {currentPage === 'home' && (
+            <ChatHome 
+              onNewChat={() => navigateTo('new-chat')}
+              workspaceId={options.workspaceId}
+            />
+          )}
+          {currentPage === 'conversations' && (
+            <ConversationList 
+              onNewChat={() => navigateTo('new-chat')} 
+              onSelectConversation={handleSelectConversation}
+              workspaceId={options.workspaceId}
+            />
+          )}
+          {currentPage === 'new-chat' && (
+            <NewChat 
+              onConversationCreated={handleConversationCreated}
+              workspaceId={options.workspaceId}
+            />
+          )}
+          {currentPage === 'conversation-detail' && currentConversationId && (
+            <ConversationView 
+              conversationId={currentConversationId} 
+              onBack={() => navigateTo('conversations')}
+              workspaceId={options.workspaceId}
+            />
+          )}
         </div>
-      )}
 
-      {/* Brand footer - only show when not in conversation detail */}
-      {shouldShowFooter() && <ResponseTime />}
-    </div>
+        {/* Only show navigation when not in conversation detail */}
+        {shouldShowNavBar() && (
+          <div className="border-t border-gray-100 py-2 px-6 bg-white flex justify-around items-center">
+            <button 
+              onClick={() => navigateTo('home')}
+              className={`flex flex-col items-center gap-1`}
+              aria-label="Home"
+            >
+              <Home className="h-4 w-4" />
+              <span className="text-xs">Home</span>
+            </button>
+            <button 
+              onClick={() => navigateTo('conversations')}
+              className={`flex flex-col items-center gap-1`}
+              aria-label="Messages"
+            >
+              <MessageSquare className="h-4 w-4" />
+              <span className="text-xs">Messages</span>
+            </button>
+          </div>
+        )}
+
+        {/* Brand footer - only show when not in conversation detail */}
+        {shouldShowFooter() && <ResponseTime />}
+      </div>
+    </ThemeProvider>
   );
 };
 

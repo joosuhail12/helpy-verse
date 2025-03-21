@@ -1,32 +1,35 @@
 
 import React from 'react';
-import { MessageCircle, X } from 'lucide-react';
+import { MessageSquare, X } from 'lucide-react';
+import { useTheme } from '../theme/ThemeContext';
 
 interface WidgetLauncherProps {
   toggleWidget: () => void;
-  isOpen?: boolean;
+  isOpen: boolean;
 }
 
 /**
  * Launcher button for the chat widget
- * Styled to match Intercom's launcher button
  */
-const WidgetLauncher: React.FC<WidgetLauncherProps> = ({ toggleWidget, isOpen = false }) => {
+const WidgetLauncher: React.FC<WidgetLauncherProps> = ({ toggleWidget, isOpen }) => {
+  const { theme } = useTheme();
+  
   return (
-    <div className="fixed z-50" style={{ 
-      bottom: '20px', 
-      right: '20px',
-      transition: 'bottom 0.3s ease-in-out'
-    }}>
-      <button 
-        onClick={toggleWidget}
-        className="bg-gray-900 text-white rounded-full p-3 shadow-lg hover:shadow-xl transition-all flex items-center justify-center focus:outline-none"
-        style={{ width: '56px', height: '56px' }}
-        aria-label={isOpen ? "Close chat widget" : "Open chat widget"}
-      >
-        {isOpen ? <X className="h-6 w-6" /> : <MessageCircle className="h-6 w-6" />}
-      </button>
-    </div>
+    <button
+      onClick={toggleWidget}
+      className="fixed bottom-5 right-5 z-30 w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 ease-in-out"
+      style={{ 
+        backgroundColor: theme.colors.launcherBackground,
+        color: theme.colors.launcherText 
+      }}
+      aria-label={isOpen ? "Close chat" : "Open chat"}
+    >
+      {isOpen ? (
+        <X className="h-6 w-6" />
+      ) : (
+        <MessageSquare className="h-6 w-6" />
+      )}
+    </button>
   );
 };
 

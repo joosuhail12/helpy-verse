@@ -8,7 +8,9 @@
  * <script>
  *   Pullse.init({
  *     workspaceId: 'YOUR_WORKSPACE_ID',
- *     primaryColor: '#8B5CF6'
+ *     primaryColor: '#1f2937',
+ *     companyName: 'Your Company',
+ *     logoUrl: 'https://yourcompany.com/logo.png'
  *   });
  * </script>
  */
@@ -17,11 +19,14 @@
   // Define default options
   const defaultOptions = {
     workspaceId: '',
-    primaryColor: '#9b87f5',
+    primaryColor: '#1f2937',
     position: 'right',
     welcomeMessage: 'How can we help you today?',
     agentName: 'Support Team',
     hideOnPaths: [],
+    companyName: 'Support Chat',
+    logoUrl: '',
+    borderRadius: '12px'
   };
 
   let isInitialized = false;
@@ -65,7 +70,7 @@
       
       // Mark as initialized
       isInitialized = true;
-      console.log('Pullse Chat Widget initialized successfully.');
+      console.log('Pullse Chat Widget initialized successfully with options:', widgetOptions);
     },
     
     open: function() {
@@ -93,6 +98,32 @@
       } else {
         openWidget();
       }
+    },
+    
+    updateTheme: function(themeOptions) {
+      if (!isInitialized) {
+        console.error('Pullse Chat Widget is not initialized. Call init() first.');
+        return;
+      }
+      
+      // Update theme options
+      widgetOptions = {
+        ...widgetOptions,
+        ...themeOptions
+      };
+      
+      // Update styles
+      updateStyles();
+      
+      // If widget is open, refresh the iframe
+      if (widgetOpen && widgetIframe && widgetIframe.contentWindow) {
+        widgetIframe.contentWindow.postMessage({
+          type: 'PULLSE_CHAT_OPTIONS',
+          options: widgetOptions
+        }, '*');
+      }
+      
+      console.log('Pullse Chat Widget theme updated successfully.');
     }
   };
   
@@ -100,7 +131,25 @@
   function addStyles() {
     const styleElement = document.createElement('style');
     styleElement.id = 'pullse-chat-styles';
-    styleElement.textContent = `
+    
+    const formattedStyles = getWidgetStyles();
+    styleElement.textContent = formattedStyles;
+    
+    document.head.appendChild(styleElement);
+  }
+  
+  // Helper function to update styles
+  function updateStyles() {
+    const styleElement = document.getElementById('pullse-chat-styles');
+    if (styleElement) {
+      const formattedStyles = getWidgetStyles();
+      styleElement.textContent = formattedStyles;
+    }
+  }
+  
+  // Helper function to get widget styles
+  function getWidgetStyles() {
+    return `
       #pullse-chat-launcher {
         background-color: ${widgetOptions.primaryColor};
         color: white;
@@ -125,7 +174,7 @@
         border: none;
         width: 350px;
         height: 500px;
-        border-radius: 12px;
+        border-radius: ${widgetOptions.borderRadius};
         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
         background-color: white;
         transition: opacity 0.3s ease, transform 0.3s ease;
@@ -147,8 +196,6 @@
         }
       }
     `;
-    
-    document.head.appendChild(styleElement);
   }
   
   // Helper function to create widget container
@@ -192,11 +239,26 @@
     if (!widgetIframe) {
       widgetIframe = document.createElement('iframe');
       widgetIframe.id = 'pullse-chat-iframe';
-      widgetIframe.src = `https://widget.pullse.ai/chat/${widgetOptions.workspaceId}`;
+      
+      // Create URL with theme parameters
+      let iframeSrc = `https://widget.pullse.ai/chat/${widgetOptions.workspaceId}`;
+      
+      // Add theme parameters to URL
+      const urlParams = new URLSearchParams();
+      if (widgetOptions.primaryColor) urlParams.append('primaryColor', widgetOptions.primaryColor);
+      if (widgetOptions.companyName) urlParams.append('companyName', widgetOptions.companyName);
+      if (widgetOptions.logoUrl) urlParams.append('logoUrl', widgetOptions.logoUrl);
+      
+      // Append parameters if any exist
+      if (urlParams.toString()) {
+        iframeSrc += `?${urlParams.toString()}`;
+      }
+      
+      widgetIframe.src = iframeSrc;
       
       // For development/testing, we can load from localhost
       if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        widgetIframe.src = `${window.location.origin}/widget/chat`;
+        widgetIframe.src = `${window.location.origin}/widget/chat?${urlParams.toString()}`;
       }
       
       // Add messaging to pass options to iframe
