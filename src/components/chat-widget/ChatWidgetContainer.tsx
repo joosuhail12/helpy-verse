@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { X, Minimize2, MessageSquare, Home, MessageCircle } from 'lucide-react';
 import ChatHome from './ChatHome';
@@ -130,7 +131,7 @@ const ChatWidgetContainer = () => {
         </button>
       </div>
 
-      {/* Brand footer - moved below navigation */}
+      {/* Brand footer - only including it once at the bottom */}
       <ResponseTime />
     </div>
   );

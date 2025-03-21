@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import ChatHome from '@/components/chat-widget/ChatHome';
 import ConversationList from '@/components/chat-widget/ConversationList';
@@ -125,7 +126,7 @@ const ChatWidgetStandalone = () => {
         </button>
       </div>
 
-      {/* Brand footer - moved below navigation */}
+      {/* Brand footer - only include it once at the bottom */}
       <ResponseTime />
     </div>
   );
