@@ -16,10 +16,9 @@ const TeamMembers = ({ team }: TeamMembersProps) => {
   const getTeamMembers = () => {
     // If we have teamMembers objects with full details
     if (team?.teamMembers && Array.isArray(team.teamMembers) && team.teamMembers.length > 0) {
-      return team.teamMembers.map(member => ({
-        ...member,
-        avatar: member.avatar || undefined
-      }));
+      // The teamMembers objects don't have avatar property in their type definition
+      // so we don't try to access it directly
+      return team.teamMembers;
     }
     
     // If we have members array with just IDs
@@ -30,12 +29,11 @@ const TeamMembers = ({ team }: TeamMembersProps) => {
           id: teammate.id,
           name: teammate.name,
           email: teammate.email,
-          avatar: teammate.avatar || undefined
+          avatar: teammate.avatar
         } : {
           id: memberId,
           name: 'Unknown Member',
-          email: 'No email available',
-          avatar: undefined
+          email: 'No email available'
         };
       });
     }
