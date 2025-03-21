@@ -6,10 +6,10 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import type { Teammate } from '@/types/teammate';
-import { getRoleBadgeVariant, getRoleDescription } from './utils/roleUtils';
+import { getRoleBadgeVariant, getRoleDescription, getRoleDisplayName } from './utils/roleUtils';
 
 interface TeammateRoleBadgeProps {
-  role: Teammate['role'];
+  role?: Teammate['role'];
 }
 
 const TeammateRoleBadge = ({ role }: TeammateRoleBadgeProps) => {
@@ -17,7 +17,7 @@ const TeammateRoleBadge = ({ role }: TeammateRoleBadgeProps) => {
     <Tooltip>
       <TooltipTrigger>
         <Badge variant={getRoleBadgeVariant(role)}>
-          {role}
+          {getRoleDisplayName(role)}
         </Badge>
       </TooltipTrigger>
       <TooltipContent>

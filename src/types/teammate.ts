@@ -3,9 +3,11 @@ export interface Teammate {
   id: string;
   name: string;
   email: string;
-  role: 'admin' | 'supervisor' | 'agent' | 'viewer';
+  role?: 'WORKSPACE_AGENT' | 'ORGANIZATION_ADMIN' | 'WORKSPACE_ADMIN' | 'SUPER_ADMIN';
+  teamId: string | null;
+  createdBy: string;
   status: 'active' | 'inactive';
-  lastActive: string;
+  lastActive: string | null;
   createdAt: string;
   avatar?: string;
   permissions: string[];
@@ -13,9 +15,12 @@ export interface Teammate {
 }
 
 export interface NewTeammate {
-  name: string;
+  first_name: string;
+  last_name: string;
+  password: string;
+  confirm_password: string;
   email: string;
-  role: 'admin' | 'supervisor' | 'agent' | 'viewer';
+  role: 'WORKSPACE_AGENT' | 'ORGANIZATION_ADMIN' | 'WORKSPACE_ADMIN' | 'SUPER_ADMIN';
 }
 
 export interface ActivityLog {

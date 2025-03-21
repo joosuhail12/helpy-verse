@@ -3,13 +3,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Team } from '@/types/team';
 import { useAppSelector } from '@/hooks/useAppSelector';
+import { selectAllTeammates } from '@/store/slices/teammates/selectors';
 
 interface TeamMembersProps {
   team: Team;
 }
 
 const TeamMembers = ({ team }: TeamMembersProps) => {
-  const allTeammates = useAppSelector(state => state.teammates.teammates);
+  const allTeammates = useAppSelector(selectAllTeammates);
   
   // Handle different member formats from backend
   const getTeamMembers = () => {
@@ -47,6 +48,7 @@ const TeamMembers = ({ team }: TeamMembersProps) => {
           <div key={member.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
             <div className="flex items-center space-x-3">
               <Avatar>
+                <AvatarImage src={member.avatar} />
                 <AvatarFallback>{member.name?.charAt(0) || '?'}</AvatarFallback>
               </Avatar>
               <div>

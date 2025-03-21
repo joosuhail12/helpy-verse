@@ -3,7 +3,7 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Send, Edit, Lock, Unlock, Trash, Mail } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -83,6 +83,16 @@ const TeammateTableRow = ({
     navigate(`/home/settings/teammates/${teammate.id}`);
   };
 
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return 'Never';
+    try {
+      return format(parseISO(dateString), 'MMM d, yyyy HH:mm');
+    } catch (error) {
+      console.error("Invalid date format:", dateString);
+      return 'Invalid Date';
+    }
+  };
+
   return (
     <TableRow className="animate-fade-in">
       <TableCell>
@@ -106,7 +116,7 @@ const TeammateTableRow = ({
         </div>
       </TableCell>
       <TableCell>
-        <TeammateRoleBadge role={teammate.role} />
+        <TeammateRoleBadge role={teammate.role || 'WORKSPACE_AGENT'} />
       </TableCell>
       <TableCell>
         <TeammateStatusBadge status={teammate.status} />
@@ -114,15 +124,19 @@ const TeammateTableRow = ({
       <TableCell>
         <Tooltip>
           <TooltipTrigger>
-            <span>{format(new Date(teammate.lastActive), 'MMM d, yyyy HH:mm')}</span>
+            <span>{formatDate(teammate.lastActive)}</span>
           </TooltipTrigger>
           <TooltipContent>
-            <p className="text-sm">Last seen at {format(new Date(teammate.lastActive), 'PPpp')}</p>
+            <p className="text-sm">
+              {teammate.lastActive 
+                ? `Last seen at ${formatDate(teammate.lastActive)}`
+                : 'Has not logged in yet'}
+            </p>
           </TooltipContent>
         </Tooltip>
       </TableCell>
       <TableCell>
-        {format(new Date(teammate.createdAt), 'MMM d, yyyy')}
+        {formatDate(teammate.createdAt)}
       </TableCell>
       <TableCell>
         <div className="flex items-center gap-2">
@@ -186,4 +200,3 @@ const TeammateTableRow = ({
 };
 
 export default TeammateTableRow;
-

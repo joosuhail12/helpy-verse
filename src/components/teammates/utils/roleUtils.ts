@@ -1,30 +1,52 @@
 
 import type { Teammate } from '@/types/teammate';
 
-export const getRoleBadgeVariant = (role: Teammate['role']) => {
+export const getRoleBadgeVariant = (role?: Teammate['role']) => {
+  if (!role) return 'outline';
+  
   switch (role) {
-    case 'admin':
+    case 'SUPER_ADMIN':
+    case 'ORGANIZATION_ADMIN':
+      return 'destructive';
+    case 'WORKSPACE_ADMIN':
       return 'default';
-    case 'supervisor':
+    case 'WORKSPACE_AGENT':
       return 'secondary';
-    case 'agent':
-      return 'outline';
     default:
-      return 'secondary';
+      return 'outline';
   }
 };
 
-export const getRoleDescription = (role: Teammate['role']) => {
+export const getRoleDescription = (role?: Teammate['role']) => {
+  if (!role) return 'Standard user with basic access privileges';
+  
   switch (role) {
-    case 'admin':
-      return 'Full access to all features and settings';
-    case 'supervisor':
-      return 'Can manage team members and view reports';
-    case 'agent':
-      return 'Can handle tickets and chat with customers';
-    case 'viewer':
-      return 'Can only view tickets and reports';
+    case 'SUPER_ADMIN':
+      return 'Full access to all system features and settings';
+    case 'ORGANIZATION_ADMIN':
+      return 'Administrative access across the entire organization';
+    case 'WORKSPACE_ADMIN':
+      return 'Administrative access within this workspace';
+    case 'WORKSPACE_AGENT':
+      return 'Standard user with basic access privileges';
     default:
-      return '';
+      return 'Standard user with basic access privileges';
+  }
+};
+
+export const getRoleDisplayName = (role?: Teammate['role']) => {
+  if (!role) return 'Agent';
+  
+  switch (role) {
+    case 'SUPER_ADMIN':
+      return 'Super Admin';
+    case 'ORGANIZATION_ADMIN':
+      return 'Org Admin';
+    case 'WORKSPACE_ADMIN':
+      return 'Admin';
+    case 'WORKSPACE_AGENT':
+      return 'Agent';
+    default:
+      return 'Agent';
   }
 };
