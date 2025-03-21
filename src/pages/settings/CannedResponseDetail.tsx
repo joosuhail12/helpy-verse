@@ -1,13 +1,10 @@
 
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { useAppSelector } from '@/hooks/useAppSelector';
+import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DeleteResponseDialog } from '@/components/settings/cannedResponses/DeleteResponseDialog';
-import { toast } from '@/components/ui/use-toast';
-import { fetchCannedResponses, deleteCannedResponse } from '@/store/slices/cannedResponses/actions';
-import { selectCannedResponseById } from '@/store/slices/cannedResponses/selectors';
+
+// Import the new custom hook
+import { useCannedResponseDetail } from '@/hooks/useCannedResponseDetail';
 
 // Import the new component files
 import { ResponseHeader } from '@/components/settings/cannedResponses/detail/ResponseHeader';
@@ -19,41 +16,17 @@ import { ResponseError } from '@/components/settings/cannedResponses/detail/Resp
 import { ResponseNotFound } from '@/components/settings/cannedResponses/detail/ResponseNotFound';
 
 const CannedResponseDetail = () => {
-  const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const dispatch = useAppDispatch();
-  
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  
-  // Use selectors to get data from the store
-  const response = useAppSelector(state => selectCannedResponseById(state, id || ''));
-  const loading = useAppSelector(state => state.cannedResponses.loading);
-  const error = useAppSelector(state => state.cannedResponses.error);
-  const teams = useAppSelector(state => state.teams.teams);
-  
-  useEffect(() => {
-    // Fetch all responses instead of a specific one
-    dispatch(fetchCannedResponses());
-  }, [dispatch, id]);
-  
-  const handleDelete = async () => {
-    try {
-      if (id) {
-        await dispatch(deleteCannedResponse(id)).unwrap();
-        toast({
-          title: 'Success',
-          description: 'Canned response deleted successfully',
-        });
-        navigate('/home/settings/canned-responses');
-      }
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to delete canned response',
-        variant: 'destructive',
-      });
-    }
-  };
+  // Use the custom hook to get all the state and handlers
+  const {
+    response,
+    loading,
+    error,
+    teams,
+    isDeleteDialogOpen,
+    openDeleteDialog,
+    closeDeleteDialog,
+    handleDelete
+  } = useCannedResponseDetail();
   
   if (loading) {
     return <ResponseLoading />;
@@ -74,7 +47,7 @@ const CannedResponseDetail = () => {
         category={response.category}
         shortcut={response.shortcut}
         id={response.id}
-        onDeleteClick={() => setIsDeleteDialogOpen(true)}
+        onDeleteClick={openDeleteDialog}
       />
       
       <Tabs defaultValue="preview">
@@ -110,7 +83,7 @@ const CannedResponseDetail = () => {
       
       <DeleteResponseDialog
         open={isDeleteDialogOpen}
-        onOpenChange={setIsDeleteDialogOpen}
+        onOpenChange={closeDeleteDialog}
         onDelete={handleDelete}
         responseTitle={response.title}
       />
