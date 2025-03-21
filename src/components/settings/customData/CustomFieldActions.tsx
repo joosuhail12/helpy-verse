@@ -24,6 +24,17 @@ const CustomFieldActions = ({ field, table, existingFields }: CustomFieldActions
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isTestOpen, setIsTestOpen] = useState(false);
 
+  // Create a compatible field object that has both old and new properties
+  const compatibleField: CustomField = {
+    ...field,
+    // Add backward compatibility properties
+    type: field.fieldType,
+    required: field.isRequired,
+    createdAt: field.createdAt || new Date().toISOString(),
+    updatedAt: field.updatedAt || new Date().toISOString(),
+    history: field.history || []
+  };
+
   return (
     <>
       <DropdownMenu>
@@ -33,10 +44,6 @@ const CustomFieldActions = ({ field, table, existingFields }: CustomFieldActions
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          {/* <DropdownMenuItem onClick={() => setIsTestOpen(true)}>
-            <TestTube className="mr-2 h-4 w-4" />
-            Test Field
-          </DropdownMenuItem> */}
           <DropdownMenuItem onClick={() => setIsEditOpen(true)}>
             <Pencil className="mr-2 h-4 w-4" />
             Edit
@@ -54,23 +61,25 @@ const CustomFieldActions = ({ field, table, existingFields }: CustomFieldActions
       <DeleteCustomFieldDialog
         isOpen={isDeleteOpen}
         onClose={() => setIsDeleteOpen(false)}
-        field={field}
+        field={compatibleField}
         table={table}
       />
 
       <EditCustomFieldDialog
         isOpen={isEditOpen}
         onClose={() => setIsEditOpen(false)}
-        field={field}
+        field={compatibleField}
         table={table}
         existingFields={existingFields}
       />
 
-      <TestFieldDialog
-        isOpen={isTestOpen}
-        onClose={() => setIsTestOpen(false)}
-        field={field}
-      />
+      {isTestOpen && (
+        <TestFieldDialog
+          isOpen={isTestOpen}
+          onClose={() => setIsTestOpen(false)}
+          field={compatibleField}
+        />
+      )}
     </>
   );
 };

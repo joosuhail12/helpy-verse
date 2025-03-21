@@ -15,6 +15,7 @@ interface ContactCustomFieldsProps {
 }
 
 export const ContactCustomFields = ({ contact }: ContactCustomFieldsProps) => {
+  // Change 'contacts' to 'contact' to match the expected enum values
   const { data: customFields, isLoading } = useCustomFields('contact');
 
   if (isLoading) {
@@ -38,7 +39,9 @@ export const ContactCustomFields = ({ contact }: ContactCustomFieldsProps) => {
     return null;
   }
 
-  const customerFields = customFields.filter(field => field.entityType === 'customer');
+  // Filter by customer entityType (either 'customer' or 'contact')
+  const customerFields = customFields.filter(field => 
+    field.entityType === 'customer' || field.entityType === 'contact');
   
   if (customerFields.length === 0) {
     return null;
@@ -55,7 +58,7 @@ export const ContactCustomFields = ({ contact }: ContactCustomFieldsProps) => {
             <div key={field.id} className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground">{field.name}</p>
               <InlineEditField
-                value={contact[field.id] || ''}
+                value={contact[field.id] as string | number | boolean | string[] || ''}
                 contactId={contact.id}
                 field={field.id}
                 label={field.name}

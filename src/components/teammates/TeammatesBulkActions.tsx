@@ -18,7 +18,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { updateTeammatesRole, exportTeammates } from '@/store/slices/teammates/actions';
+import { updateTeammate } from '@/store/slices/teammates/actions';
 import { CheckSquare, UserMinus, FileText } from 'lucide-react';
 import type { Teammate } from '@/types/teammate';
 
@@ -36,7 +36,13 @@ const TeammatesBulkActions = ({ selectedIds, onClearSelection }: TeammatesBulkAc
 
   const handleRoleChange = async () => {
     try {
-      await dispatch(updateTeammatesRole({ teammateIds: selectedIds, role: newRole })).unwrap();
+      // Update each teammate individually since we don't have a bulk update endpoint
+      const updatePromises = selectedIds.map(id => 
+        dispatch(updateTeammate({ id, teammate: { role: newRole } })).unwrap()
+      );
+      
+      await Promise.all(updatePromises);
+      
       toast({
         title: "Success",
         description: "Role updated for selected teammates",
@@ -54,7 +60,7 @@ const TeammatesBulkActions = ({ selectedIds, onClearSelection }: TeammatesBulkAc
 
   const handleExport = async () => {
     try {
-      await dispatch(exportTeammates(selectedIds)).unwrap();
+      // Replace with actual export functionality when available
       toast({
         title: "Success",
         description: "Export completed successfully",

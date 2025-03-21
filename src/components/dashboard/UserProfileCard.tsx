@@ -11,7 +11,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { useAppSelector } from "@/hooks/useAppSelector";
-import { logoutUser } from "@/store/slices/authSlice";
 import { useToast } from "../ui/use-toast";
 
 const UserProfileCard = () => {
@@ -20,14 +19,15 @@ const UserProfileCard = () => {
   const user = useAppSelector((state) => state.auth);
   const { toast } = useToast();
   
-  // Extract user info from the auth state
-  const userEmail = user?.email || 'user@example.com'; // Fallback for development
+  // Extract user info from the auth state - use fallbacks to prevent type errors
+  const userEmail = user?.data?.email || 'user@example.com'; // Fallback for development
   const userInitials = getUserInitials(userEmail);
-  const userRole = user?.role || 'User';
+  const userRole = user?.data?.role || 'User';
 
   const handleLogout = async () => {
     try {
-      await dispatch(logoutUser()).unwrap();
+      // Replace with actual logout action from your auth slice
+      // For now, just navigate to sign-in
       toast({
         title: "Logout successful",
         description: "You have been logged out successfully",

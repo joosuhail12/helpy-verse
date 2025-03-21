@@ -56,7 +56,7 @@ export const InlineEditField = ({
       isRequired: validation.some(v => v.type === 'required'),
       placeholder: '',
       options: options as string[] | null,
-      entityType: 'customer',
+      entityType: 'customer' as const,
       defaultValue: null,
       description: null,
       validationRules: validation

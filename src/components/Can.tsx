@@ -14,7 +14,7 @@ export const Can = (props: any) => {
       
       // Only proceed if permissions exist
       if (permissions.length > 0) {
-        // Convert permissions to the expected format
+        // Convert permissions to the expected format for CASL
         const formattedPermissions = permissions.map(perm => ({
           action: perm.action as "read" | "create" | "update" | "delete",
           subject: perm.subject as string
@@ -27,7 +27,7 @@ export const Can = (props: any) => {
     }
   }, [permissions]);
 
-  // Use the Can component with the current ability
-  const ContextualCan = createContextualCan(ability.rules);
+  // Create and use the ContextualCan component properly
+  const ContextualCan = createContextualCan(ability);
   return <ContextualCan {...props} />;
 };

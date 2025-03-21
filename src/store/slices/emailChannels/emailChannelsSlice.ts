@@ -1,10 +1,11 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import type { EmailChannel, CreateEmailChannelDto } from '@/types/emailChannel';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { EmailChannel } from '@/types/emailChannel';
+import { RootState } from '@/store/store';
 import { emailChannelsService } from '@/api/services/emailChannels.service';
 
 interface EmailChannelsState {
   channels: EmailChannel[];
-  loading: boolean;
+  status: 'idle' | 'loading' | 'succeeded' | 'failed';
   error: string | null;
   defaultChannel: {
     email: string;
@@ -15,7 +16,7 @@ interface EmailChannelsState {
 
 const initialState: EmailChannelsState = {
   channels: [],
-  loading: false,
+  status: 'idle',
   error: null,
   defaultChannel: {
     email: "",
@@ -97,11 +98,11 @@ const emailChannelsSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchChannels.pending, (state) => {
-        state.loading = true;
+        state.status = 'loading';
         state.error = null;
       })
       .addCase(fetchChannels.fulfilled, (state, action) => {
-        state.loading = false;
+        state.status = 'succeeded';
 
         // Find default channel and set it if exists
         const defaultChannel = action.payload.emailChannels.find((channel: EmailChannel) => channel.isDefault);
@@ -123,7 +124,7 @@ const emailChannelsSlice = createSlice({
         }
       })
       .addCase(fetchChannels.rejected, (state, action) => {
-        state.loading = false;
+        state.status = 'failed';
         state.error = action.error.message || 'Failed to fetch channels';
       })
       .addCase(createChannel.fulfilled, (state, action) => {
@@ -132,22 +133,25 @@ const emailChannelsSlice = createSlice({
         state.defaultChannel.isActive = false;
       })
       .addCase(updateChannel.fulfilled, (state, action) => {
-        if (action.payload.data && action.payload.data.success === true) {
-          // Update the channel in the state
-          const updatedChannels = state.channels.map(channel => 
-            channel.id === action.payload.channelId ? { ...channel, ...action.payload.updates } : channel
-          );
-          state.channels = updatedChannels;
-          state.loading = false;
-          state.error = null;
+        const { id, ...updates } = action.payload;
+        const index = state.channels.findIndex(channel => channel.id === id);
+        if (index !== -1) {
+          state.channels[index] = { ...state.channels[index], ...updates };
         }
+        state.status = 'succeeded';
       })
       .addCase(deleteChannel.fulfilled, (state, action) => {
-        state.channels = state.channels.filter(c => c.id !== action.payload);
-        // Re-enable default channel if no custom channels exist
-        if (state.channels.length === 0) {
-          state.defaultChannel.isActive = true;
+        if (typeof action.payload === 'string') {
+          // If the payload is a string (channel ID), filter it out
+          state.channels = state.channels.filter(channel => channel.id !== action.payload);
+        } else if (action.payload && typeof action.payload === 'object') {
+          // If the payload is an object with success property, check the id
+          const channelId = typeof action.payload === 'object' && 'id' in action.payload 
+            ? action.payload.id 
+            : '';
+          state.channels = state.channels.filter(channel => channel.id !== channelId);
         }
+        state.status = 'succeeded';
       })
       .addCase(toggleChannelStatus.fulfilled, (state, action) => {
         const index = state.channels.findIndex(c => c.id === action.payload[0].id);

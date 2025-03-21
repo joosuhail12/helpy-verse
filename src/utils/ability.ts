@@ -2,7 +2,7 @@
 import { AbilityBuilder, createMongoAbility, MongoAbility } from "@casl/ability";
 
 // Define the allowed action types explicitly to match what's used in the application
-export type Actions = "read" | "create" | "update" | "delete" | "manage";
+export type Actions = "read" | "create" | "update" | "delete" | "manage" | "archive";
 export type Subjects = 
   | "User" 
   | "Post" 

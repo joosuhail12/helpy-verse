@@ -46,9 +46,14 @@ export interface CustomField {
     isRequired: boolean;
     placeholder: string;
     options: string[] | null;
-    entityType: "ticket" | "customer" | "company";
+    entityType: "ticket" | "customer" | "company" | "contact";
     defaultValue: string | null;
     description: string | null;
     validationRules?: ValidationRule[];
     history?: FieldHistoryEntry[];
+    // For compatibility with custom field type from customField.ts
+    type?: CustomFieldType;
+    required?: boolean;
+    createdAt?: string;
+    updatedAt?: string;
 }

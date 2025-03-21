@@ -55,7 +55,7 @@ export const CompanyCustomFields = ({ company }: CompanyCustomFieldsProps) => {
             <div key={field.id} className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground">{field.name}</p>
               <InlineEditField
-                value={company[field.id] || ''}
+                value={company[field.id] as string | number | boolean | string[] || ''}
                 companyId={company.id}
                 field={field.id}
                 label={field.name}
