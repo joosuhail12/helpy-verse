@@ -55,7 +55,7 @@ const withSuspenseAndProtection = (component: ReactNode) => (
 
 export const automationRoutes = [
   {
-    path: 'home/automation',
+    path: 'automation',
     element: withSuspenseAndProtection(<Automation />),
     children: [
       {

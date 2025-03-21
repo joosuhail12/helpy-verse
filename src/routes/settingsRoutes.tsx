@@ -1,3 +1,4 @@
+
 import { lazy, Suspense, ReactNode } from 'react';
 import { ProtectedRoute } from '../components/auth/ProtectedRoute';
 import { Loader2 } from 'lucide-react';
@@ -41,7 +42,7 @@ const withSuspenseAndProtection = (component: ReactNode) => (
 
 export const settingsRoutes = [
   {
-    path: 'home/settings',
+    path: 'settings',
     element: withSuspenseAndProtection(<Settings />),
     children: [
       {

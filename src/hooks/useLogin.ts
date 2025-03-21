@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from './useAppDispatch';
@@ -11,7 +10,7 @@ import { HttpClient } from '@/api/services/http';
 /**
  * Custom hook to handle login functionality
  */
-export const useLogin = (redirectPath: string = '/home/inbox') => {
+export const useLogin = (redirectPath: string = '/home/inbox/all') => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
