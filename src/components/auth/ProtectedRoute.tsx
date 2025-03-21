@@ -47,7 +47,7 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
       // Get token directly from tokenManager
       const token = getAuthToken();
       const isTokenPresent = !!token;
-      console.log('ProtectedRoute: Token exists:', isTokenPresent, isTokenPresent ? 'Token value found' : 'No token value');
+      console.log('ProtectedRoute: Token exists:', isTokenPresent, isTokenPresent ? 'Token value found' : 'No token value', 'Current path:', location.pathname);
       
       // Check token validity
       if (isTokenPresent) {

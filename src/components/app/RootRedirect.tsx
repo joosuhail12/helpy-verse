@@ -21,8 +21,8 @@ const RootRedirect: React.FC = () => {
     return null;
   }
   
-  // Direct to home/contacts/all instead of just /home
-  return token ? <Navigate to="/home/contacts/all" replace /> : <Navigate to="/sign-in" replace />;
+  // Direct to inbox instead of contacts (which might not be set up)
+  return token ? <Navigate to="/home/inbox" replace /> : <Navigate to="/sign-in" replace />;
 };
 
 export default RootRedirect;

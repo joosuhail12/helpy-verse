@@ -11,7 +11,7 @@ import { HttpClient } from '@/api/services/http';
 /**
  * Custom hook to handle login functionality
  */
-export const useLogin = (redirectPath: string = '/home') => {
+export const useLogin = (redirectPath: string = '/home/inbox') => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -97,6 +97,7 @@ export const useLogin = (redirectPath: string = '/home') => {
         // Double-check auth status before redirecting
         setTimeout(() => {
           if (isAuthenticated()) {
+            console.log('Redirecting to:', redirectPath);
             navigate(redirectPath, { replace: true });
           } else {
             console.error('Login appeared successful but token was not set correctly');

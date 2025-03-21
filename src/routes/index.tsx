@@ -38,6 +38,25 @@ const withSuspenseAndErrorHandling = (Component) => (
   </RouteErrorBoundary>
 );
 
+// Log all available routes for debugging
+const logRoutes = (routes) => {
+  console.log('Available routes:');
+  const flattenRoutes = (routeArray, parentPath = '') => {
+    routeArray.forEach(route => {
+      if (route.path) {
+        const fullPath = parentPath ? `${parentPath}/${route.path}` : route.path;
+        console.log(`- ${fullPath}`);
+      }
+      if (route.children) {
+        const nextParent = route.path ? (parentPath ? `${parentPath}/${route.path}` : route.path) : parentPath;
+        flattenRoutes(route.children, nextParent);
+      }
+    });
+  };
+  
+  flattenRoutes(routes);
+};
+
 export const router = createBrowserRouter([
   {
     path: '/',
@@ -80,6 +99,7 @@ export const router = createBrowserRouter([
 ]);
 
 // Log the routes for debugging
+logRoutes(router.routes);
 console.log('Routes initialized:', router.routes);
 
 export default router;
