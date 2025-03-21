@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Clock, Check, MessageSquare, Search, Plus, Filter } from 'lucide-react';
+import { Clock, Search } from 'lucide-react';
 import { getAblyChannel } from '@/utils/ably';
 
 interface Conversation {
@@ -9,7 +9,8 @@ interface Conversation {
   lastMessage: string;
   timestamp: string;
   unread: boolean;
-  status: 'active' | 'resolved';
+  status: 'resolved' | 'ongoing';
+  date: string;
 }
 
 interface ConversationListProps {
@@ -23,6 +24,7 @@ const ConversationList = ({ onNewChat }: ConversationListProps) => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [groupedConversations, setGroupedConversations] = useState<{[key: string]: Conversation[]}>({});
 
   useEffect(() => {
     // In a real implementation, we would fetch conversations from Ably
@@ -33,25 +35,65 @@ const ConversationList = ({ onNewChat }: ConversationListProps) => {
         const mockConversations: Conversation[] = [
           {
             id: '1',
-            title: 'Billing Question',
-            lastMessage: 'Thank you for your help with my invoice question.',
-            timestamp: '2 hours ago',
+            title: 'Purchase Query',
+            lastMessage: 'I need help with my recent purchase.',
+            timestamp: 'Today',
             unread: false,
-            status: 'resolved'
+            status: 'ongoing',
+            date: 'April 2024'
           },
           {
             id: '2',
-            title: 'Product Support',
-            lastMessage: 'I need help setting up the integration with our CRM.',
-            timestamp: '1 day ago',
-            unread: true,
-            status: 'active'
+            title: 'Membership renewal',
+            lastMessage: 'When does my membership expire?',
+            timestamp: 'Yesterday',
+            unread: false,
+            status: 'resolved',
+            date: 'April 2024'
+          },
+          {
+            id: '3',
+            title: 'Copyrights',
+            lastMessage: 'I need information about copyright policy.',
+            timestamp: '24/4/24',
+            unread: false,
+            status: 'ongoing',
+            date: 'April 2024'
+          },
+          {
+            id: '4',
+            title: 'Cancellation policy',
+            lastMessage: 'How can I cancel my subscription?',
+            timestamp: '20/4/24',
+            unread: false,
+            status: 'resolved',
+            date: 'April 2024'
+          },
+          {
+            id: '5',
+            title: 'Music Search',
+            lastMessage: 'I can\'t find the song I\'m looking for.',
+            timestamp: '15/4/24',
+            unread: false,
+            status: 'resolved',
+            date: 'April 2024'
           }
         ];
 
         // Simulate API delay
         setTimeout(() => {
           setConversations(mockConversations);
+          
+          // Group conversations by date
+          const grouped = mockConversations.reduce((acc, conversation) => {
+            if (!acc[conversation.date]) {
+              acc[conversation.date] = [];
+            }
+            acc[conversation.date].push(conversation);
+            return acc;
+          }, {} as {[key: string]: Conversation[]});
+          
+          setGroupedConversations(grouped);
           setLoading(false);
         }, 500);
 
@@ -82,7 +124,7 @@ const ConversationList = ({ onNewChat }: ConversationListProps) => {
   if (loading) {
     return (
       <div className="flex flex-col h-full items-center justify-center p-6">
-        <div className="w-10 h-10 border-t-2 border-primary rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-t-2 border-primary rounded-full animate-spin"></div>
         <p className="mt-4 text-sm text-gray-500 font-medium">Loading conversations...</p>
       </div>
     );
@@ -91,93 +133,67 @@ const ConversationList = ({ onNewChat }: ConversationListProps) => {
   if (conversations.length === 0) {
     return (
       <div className="flex flex-col h-full items-center justify-center p-6">
-        <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-          <MessageSquare className="h-10 w-10 text-gray-400" />
+        <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+          <Search className="h-8 w-8 text-gray-400" />
         </div>
-        <h3 className="text-gray-800 font-semibold text-lg">No conversations yet</h3>
+        <h3 className="text-gray-800 font-semibold">No messages yet</h3>
         <p className="text-gray-500 text-center mt-2 mb-6 max-w-[250px]">
           Start your first conversation with our support team
         </p>
-        <button 
-          onClick={onNewChat}
-          className="bg-primary text-white px-5 py-2.5 rounded-full font-medium hover:bg-primary/90 transition-colors flex items-center gap-2 shadow-md"
-        >
-          <Plus className="h-4 w-4" />
-          New Conversation
-        </button>
+        <input
+          type="text"
+          placeholder="Type or hum what your looking for"
+          className="w-full border-t border-b border-gray-200 py-3 px-4 text-sm focus:outline-none"
+        />
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="p-4 border-b sticky top-0 bg-white z-10 shadow-sm">
-        <h2 className="font-semibold text-gray-800 mb-3">Recent Conversations</h2>
-        <div className="flex gap-2">
-          <div className="relative flex-1">
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-              <Search className="h-4 w-4" />
-            </div>
-            <input
-              type="text"
-              placeholder="Search conversations..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-transparent"
-            />
-          </div>
-          <button className="p-2.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50">
-            <Filter className="h-4 w-4" />
-          </button>
-        </div>
+    <div className="flex flex-col h-full bg-white">
+      {/* Date header */}
+      <div className="text-center py-2 text-xs text-gray-500 border-b border-gray-100">
+        April 2024
       </div>
       
       <div className="flex-1 overflow-y-auto">
-        {filteredConversations.length === 0 ? (
-          <div className="p-6 text-center text-gray-500">
-            No conversations matching your search
-          </div>
-        ) : (
-          filteredConversations.map((conversation) => (
-            <div 
-              key={conversation.id}
-              className={`p-4 border-b hover:bg-gray-50 cursor-pointer transition-colors ${conversation.unread ? 'bg-blue-50/50' : ''}`}
-            >
+        {filteredConversations.map((conversation) => (
+          <div 
+            key={conversation.id}
+            className="border-b border-gray-100 cursor-pointer"
+          >
+            <div className="p-4">
               <div className="flex justify-between items-start">
-                <h3 className={`font-medium ${conversation.unread ? 'text-blue-700' : 'text-gray-800'}`}>
+                <h3 className="font-medium text-gray-900">
                   {conversation.title}
                 </h3>
-                <span className="text-xs text-gray-500 flex items-center gap-1 whitespace-nowrap">
-                  <Clock className="h-3 w-3" />
-                  {conversation.timestamp}
-                </span>
-              </div>
-              <p className="text-sm text-gray-600 mt-1 line-clamp-2">{conversation.lastMessage}</p>
-              <div className="flex justify-between items-center mt-2">
-                <span className={`text-xs px-2 py-1 rounded-full inline-flex items-center gap-1 
-                  ${conversation.status === 'active' 
+                <div className={`text-xs px-3 py-1 rounded-full font-medium ${
+                  conversation.status === 'resolved' 
                     ? 'bg-green-100 text-green-700' 
-                    : 'bg-gray-100 text-gray-700'}`}>
-                  {conversation.status === 'active' ? 'Active' : 'Resolved'}
-                  {conversation.status === 'resolved' && <Check className="h-3 w-3" />}
-                </span>
-                {conversation.unread && (
-                  <span className="w-2.5 h-2.5 bg-blue-600 rounded-full"></span>
-                )}
+                    : 'bg-yellow-100 text-yellow-700'
+                }`}>
+                  {conversation.status === 'resolved' ? 'Resolved' : 'Ongoing'}
+                </div>
+              </div>
+              <div className="text-xs text-gray-500 mt-1">
+                {conversation.timestamp}
               </div>
             </div>
-          ))
-        )}
+          </div>
+        ))}
       </div>
 
-      <div className="p-3 border-t bg-white sticky bottom-0">
-        <button 
-          onClick={onNewChat}
-          className="w-full bg-primary text-white py-2.5 rounded-lg font-medium hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 shadow-sm"
-        >
-          <Plus className="h-4 w-4" />
-          New Conversation
-        </button>
+      <div className="border-t border-gray-200 p-3">
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Type or hum what your looking for"
+            className="w-full border border-gray-200 rounded-md py-2 pr-10 pl-4 text-sm"
+          />
+          <button className="absolute right-3 top-1/2 -translate-y-1/2 text-indigo-600">
+            <ArrowRight className="h-5 w-5" />
+          </button>
+        </div>
       </div>
     </div>
   );

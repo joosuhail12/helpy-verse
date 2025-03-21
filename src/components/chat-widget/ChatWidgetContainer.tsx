@@ -1,10 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
-import { X, Minimize2, MessageSquare, Home, Send, MessageCircle } from 'lucide-react';
+import { X, Minimize2, MessageSquare, Home, MessageCircle } from 'lucide-react';
 import ChatHome from './ChatHome';
 import ConversationList from './ConversationList';
 import NewChat from './NewChat';
-import { Button } from '@/components/ui/button';
 
 type WidgetPage = 'home' | 'conversations' | 'new-chat';
 
@@ -51,91 +50,89 @@ const ChatWidgetContainer = () => {
       <div className="fixed bottom-5 right-5 z-50">
         <button 
           onClick={toggleWidget}
-          className="bg-primary text-white rounded-full p-4 shadow-xl hover:shadow-2xl hover:bg-primary/90 transition-all hover:scale-105 flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2"
+          className="bg-[#5DCFCF] text-white rounded-full p-4 shadow-lg hover:shadow-xl transition-all flex items-center gap-2 focus:outline-none"
           aria-label="Open chat widget"
         >
           <MessageCircle className="h-6 w-6" />
-          {minimized && (
-            <span className="font-medium pr-1 animate-fadeSlideIn">Continue Chat</span>
-          )}
         </button>
       </div>
     );
   }
 
-  return (
-    <div 
-      className="fixed bottom-5 right-5 z-50 flex flex-col bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-50" 
-      style={{ 
-        width: '380px', 
-        height: '600px', 
-        maxHeight: 'calc(100vh - 40px)',
-        boxShadow: '0 10px 50px rgba(0, 0, 0, 0.15)'
-      }}
-    >
-      {/* Widget header with modern gradient */}
-      <div className="bg-gradient-to-r from-primary to-primary/90 text-white p-4 flex justify-between items-center">
-        <h3 className="font-semibold text-lg">Customer Support</h3>
-        <div className="flex gap-2">
-          <button 
-            onClick={minimizeWidget} 
-            className="text-white/90 hover:text-white hover:bg-white/10 p-1.5 rounded-full transition-colors focus:outline-none"
-            aria-label="Minimize chat"
-          >
-            <Minimize2 className="h-5 w-5" />
-          </button>
+  // Render header based on current page
+  const renderHeader = () => {
+    if (currentPage === 'home') {
+      return (
+        <div className="absolute top-4 left-4 z-10">
+          <div className="w-8 h-8 bg-black/20 rounded-full"></div>
+        </div>
+      );
+    }
+    
+    if (currentPage === 'conversations') {
+      return (
+        <div className="bg-white p-4 flex justify-between items-center border-b border-gray-100">
+          <h2 className="font-semibold">Messages</h2>
           <button 
             onClick={toggleWidget}
-            className="text-white/90 hover:text-white hover:bg-white/10 p-1.5 rounded-full transition-colors focus:outline-none"
-            aria-label="Close chat"
+            className="text-gray-500 hover:text-gray-700"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
-      </div>
+      );
+    }
+    
+    return null;
+  };
+
+  return (
+    <div 
+      className="fixed bottom-5 right-5 z-50 flex flex-col bg-white rounded-xl shadow-2xl overflow-hidden" 
+      style={{ 
+        width: '340px', 
+        height: '550px', 
+        maxHeight: 'calc(100vh - 40px)'
+      }}
+    >
+      {/* Header */}
+      {renderHeader()}
 
       {/* Widget content */}
-      <div className="flex-1 overflow-y-auto bg-gray-50">
+      <div className="flex-1 overflow-y-auto">
         {currentPage === 'home' && <ChatHome onNewChat={() => navigateTo('new-chat')} />}
         {currentPage === 'conversations' && <ConversationList onNewChat={() => navigateTo('new-chat')} />}
         {currentPage === 'new-chat' && <NewChat onConversationCreated={() => navigateTo('conversations')} />}
       </div>
 
       {/* Modern widget navigation */}
-      <div className="border-t border-gray-100 p-2.5 bg-white flex justify-between items-center">
-        <div className="flex gap-2">
-          <button 
-            onClick={() => navigateTo('home')}
-            className={`p-2 rounded-lg transition-colors ${currentPage === 'home' 
-              ? 'bg-primary/10 text-primary' 
-              : 'text-gray-500 hover:bg-gray-100'}`}
-            aria-label="Home"
-          >
-            <Home className="h-5 w-5" />
-          </button>
-          <button 
-            onClick={() => navigateTo('conversations')}
-            className={`p-2 rounded-lg transition-colors ${currentPage === 'conversations' 
-              ? 'bg-primary/10 text-primary' 
-              : 'text-gray-500 hover:bg-gray-100'}`}
-            aria-label="Conversations"
-          >
-            <MessageSquare className="h-5 w-5" />
-          </button>
-        </div>
-        <Button 
-          onClick={() => navigateTo('new-chat')}
-          className="flex items-center gap-1.5 rounded-full px-4 py-2 text-sm bg-primary hover:bg-primary/90 transition-all shadow-md hover:shadow-lg"
-          size="sm"
+      <div className="border-t border-gray-100 py-3 px-6 bg-white flex justify-around items-center">
+        <button 
+          onClick={() => navigateTo('home')}
+          className={`flex flex-col items-center gap-1 ${currentPage === 'home' 
+            ? 'text-indigo-600' 
+            : 'text-gray-500'}`}
+          aria-label="Home"
         >
-          <span>New Chat</span>
-          <Send className="h-3.5 w-3.5" />
-        </Button>
+          <Home className="h-5 w-5" />
+          <span className="text-xs">Home</span>
+        </button>
+        
+        <button 
+          onClick={() => navigateTo('conversations')}
+          className={`flex flex-col items-center gap-1 ${currentPage === 'conversations' 
+            ? 'text-indigo-600' 
+            : 'text-gray-500'}`}
+          aria-label="Messages"
+        >
+          <MessageSquare className="h-5 w-5" />
+          <span className="text-xs">Messages</span>
+        </button>
       </div>
 
-      {/* Powered by footer */}
-      <div className="bg-gray-900 text-white text-xs py-2 text-center font-medium">
-        Powered by Pullse
+      {/* Brand footer */}
+      <div className="py-2 text-center bg-white text-xs text-gray-500 border-t border-gray-100">
+        Powered by <span className="font-medium">Pullse</span>
       </div>
     </div>
   );

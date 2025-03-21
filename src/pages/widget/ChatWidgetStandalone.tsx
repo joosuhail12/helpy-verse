@@ -3,8 +3,7 @@ import React, { useEffect, useState } from 'react';
 import ChatHome from '@/components/chat-widget/ChatHome';
 import ConversationList from '@/components/chat-widget/ConversationList';
 import NewChat from '@/components/chat-widget/NewChat';
-import { X, Minimize2, MessageSquare, Home, ExternalLink } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { X, ArrowLeft, Search, Home, MessageSquare } from 'lucide-react';
 
 type WidgetPage = 'home' | 'conversations' | 'new-chat';
 
@@ -14,7 +13,7 @@ type WidgetPage = 'home' | 'conversations' | 'new-chat';
 const ChatWidgetStandalone = () => {
   const [currentPage, setCurrentPage] = useState<WidgetPage>('home');
   const [options, setOptions] = useState({
-    primaryColor: '#9b87f5',
+    primaryColor: '#5DCFCF',
     welcomeMessage: 'How can we help you today?',
     agentName: 'Support Team',
     workspaceId: ''
@@ -49,90 +48,86 @@ const ChatWidgetStandalone = () => {
     }
   };
 
-  const minimizeWidget = () => {
-    // Send message to parent window to minimize the widget
-    if (window.parent) {
-      window.parent.postMessage({
-        type: 'PULLSE_MINIMIZE_WIDGET'
-      }, '*');
-    }
-  };
-
   const navigateTo = (page: WidgetPage) => {
     setCurrentPage(page);
   };
 
-  // Apply custom styling based on received options
-  const headerStyle = {
-    background: `linear-gradient(to right, ${options.primaryColor}, ${options.primaryColor}CC)`,
+  // Conversation list header
+  const renderHeader = () => {
+    if (currentPage === 'home') {
+      return (
+        <div className="absolute top-4 left-4">
+          <div className="w-8 h-8 bg-black/20 rounded-full"></div>
+        </div>
+      );
+    }
+    
+    if (currentPage === 'conversations') {
+      return (
+        <div className="p-4 flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => navigateTo('home')} 
+              className="text-gray-700"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <h2 className="font-semibold">Messages</h2>
+          </div>
+          <div className="flex items-center gap-3">
+            <button className="text-gray-700">
+              <Search className="h-5 w-5" />
+            </button>
+            <button onClick={closeWidget} className="text-gray-700">
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
+      );
+    }
+    
+    return null;
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
-      {/* Modern widget header */}
-      <div className="p-4 flex justify-between items-center text-white" style={headerStyle}>
-        <h3 className="font-semibold text-lg">Customer Support</h3>
-        <div className="flex gap-2">
-          <button 
-            onClick={minimizeWidget} 
-            className="text-white/90 hover:text-white hover:bg-white/10 p-1.5 rounded-full transition-colors focus:outline-none"
-            aria-label="Minimize chat"
-          >
-            <Minimize2 className="h-5 w-5" />
-          </button>
-          <button 
-            onClick={closeWidget}
-            className="text-white/90 hover:text-white hover:bg-white/10 p-1.5 rounded-full transition-colors focus:outline-none"
-            aria-label="Close chat"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-      </div>
+    <div className="flex flex-col h-screen bg-white rounded-lg overflow-hidden">
+      {/* Header */}
+      {renderHeader()}
 
       {/* Widget content */}
-      <div className="flex-1 overflow-y-auto bg-gray-50">
+      <div className="flex-1 overflow-y-auto">
         {currentPage === 'home' && <ChatHome onNewChat={() => navigateTo('new-chat')} />}
         {currentPage === 'conversations' && <ConversationList onNewChat={() => navigateTo('new-chat')} />}
         {currentPage === 'new-chat' && <NewChat onConversationCreated={() => navigateTo('conversations')} />}
       </div>
 
       {/* Modern widget navigation */}
-      <div className="border-t border-gray-100 p-2.5 bg-white flex justify-between items-center">
-        <div className="flex gap-2">
-          <button 
-            onClick={() => navigateTo('home')}
-            className={`p-2 rounded-lg transition-colors ${currentPage === 'home' 
-              ? 'bg-primary/10 text-primary' 
-              : 'text-gray-500 hover:bg-gray-100'}`}
-            aria-label="Home"
-          >
-            <Home className="h-5 w-5" />
-          </button>
-          <button 
-            onClick={() => navigateTo('conversations')}
-            className={`p-2 rounded-lg transition-colors ${currentPage === 'conversations' 
-              ? 'bg-primary/10 text-primary' 
-              : 'text-gray-500 hover:bg-gray-100'}`}
-            aria-label="Conversations"
-          >
-            <MessageSquare className="h-5 w-5" />
-          </button>
-        </div>
-        <Button
-          onClick={() => navigateTo('new-chat')}
-          className="flex items-center gap-1.5 rounded-full px-4 py-2 text-sm shadow-md hover:shadow-lg"
-          style={{ backgroundColor: options.primaryColor }}
-          size="sm"
+      <div className="border-t border-gray-100 py-3 px-6 bg-white flex justify-around items-center">
+        <button 
+          onClick={() => navigateTo('home')}
+          className={`flex flex-col items-center gap-1 ${currentPage === 'home' 
+            ? 'text-indigo-600' 
+            : 'text-gray-500'}`}
+          aria-label="Home"
         >
-          New Chat
-        </Button>
+          <Home className="h-5 w-5" />
+          <span className="text-xs">Home</span>
+        </button>
+        <button 
+          onClick={() => navigateTo('conversations')}
+          className={`flex flex-col items-center gap-1 ${currentPage === 'conversations' 
+            ? 'text-indigo-600' 
+            : 'text-gray-500'}`}
+          aria-label="Messages"
+        >
+          <MessageSquare className="h-5 w-5" />
+          <span className="text-xs">Messages</span>
+        </button>
       </div>
 
       {/* Brand footer */}
-      <div className="bg-gray-900 text-white py-2.5 text-center flex items-center justify-center gap-1.5 text-xs">
-        <span className="font-medium">Powered by Pullse</span>
-        <ExternalLink className="h-3 w-3 opacity-75" />
+      <div className="py-2 text-center text-xs text-gray-500">
+        Powered by <span className="font-medium">Pullse</span>
       </div>
     </div>
   );

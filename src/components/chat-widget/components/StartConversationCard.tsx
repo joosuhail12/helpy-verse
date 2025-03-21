@@ -1,7 +1,6 @@
 
 import React from 'react';
-import { MessageSquare, ArrowRight } from 'lucide-react';
-import { Card } from '@/components/ui/card';
+import { ArrowRight } from 'lucide-react';
 
 interface StartConversationCardProps {
   onClick: () => void;
@@ -12,23 +11,20 @@ interface StartConversationCardProps {
  */
 const StartConversationCard = ({ onClick }: StartConversationCardProps) => {
   return (
-    <Card 
+    <div 
       onClick={onClick}
-      className="cursor-pointer group transition-all hover:shadow-md border-0 bg-white shadow-sm mb-4 overflow-hidden rounded-xl"
+      className="cursor-pointer bg-white shadow-sm rounded-lg p-5 mb-6"
     >
-      <div className="flex items-center gap-4 p-5">
-        <div className="bg-gradient-to-br from-primary to-primary/90 p-3 rounded-full text-white">
-          <MessageSquare className="h-5 w-5" />
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="font-semibold text-indigo-900">Send us a message</h3>
+          <p className="text-sm text-gray-500">We'll get back to you as soon as we can</p>
         </div>
-        <div className="flex-1">
-          <h3 className="font-medium text-gray-800 flex items-center gap-1.5">
-            Start a conversation
-            <ArrowRight className="h-3.5 w-3.5 text-primary opacity-0 -translate-x-2 transition-all group-hover:opacity-100 group-hover:translate-x-0" />
-          </h3>
-          <p className="text-sm text-gray-500">Get help from our support team</p>
+        <div className="text-indigo-700">
+          <ArrowRight className="h-5 w-5" />
         </div>
       </div>
-    </Card>
+    </div>
   );
 };
 

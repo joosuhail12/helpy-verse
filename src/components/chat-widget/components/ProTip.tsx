@@ -2,17 +2,11 @@
 import React from 'react';
 
 /**
- * ProTip component displaying helpful information for users
+ * ProTip component - removed as per new design
  */
 const ProTip = () => {
-  return (
-    <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
-      <h4 className="font-medium text-blue-800 text-sm mb-1">💡 Pro Tip</h4>
-      <p className="text-sm text-blue-700">
-        Send us a screenshot if you're experiencing an issue - it helps us resolve your problem faster.
-      </p>
-    </div>
-  );
+  // This component is now empty as per the new design screenshot
+  return null;
 };
 
 export default ProTip;

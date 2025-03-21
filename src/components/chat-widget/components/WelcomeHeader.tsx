@@ -6,10 +6,10 @@ import React from 'react';
  */
 const WelcomeHeader = () => {
   return (
-    <div className="bg-gradient-to-r from-primary/20 to-primary/5 px-6 py-8 rounded-b-2xl">
-      <h2 className="text-xl font-semibold text-gray-800">Hey there 👋</h2>
-      <p className="text-gray-600 mt-1 font-light">
-        We're here to help. What can we do for you today?
+    <div className="bg-[#5DCFCF] px-6 py-12 rounded-t-lg">
+      <h2 className="text-2xl font-bold text-black mt-4">Hey there!</h2>
+      <p className="text-black font-medium mt-1">
+        How can I help you?
       </p>
     </div>
   );

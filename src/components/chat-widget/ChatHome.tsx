@@ -2,8 +2,6 @@
 import React from 'react';
 import WelcomeHeader from './components/WelcomeHeader';
 import StartConversationCard from './components/StartConversationCard';
-import QuickLinks from './components/QuickLinks';
-import ProTip from './components/ProTip';
 import ResponseTime from './components/ResponseTime';
 
 interface ChatHomeProps {
@@ -11,7 +9,7 @@ interface ChatHomeProps {
 }
 
 /**
- * Home page for the chat widget showing welcome message and personalization options
+ * Home page for the chat widget showing welcome message and start conversation button
  */
 const ChatHome = ({ onNewChat }: ChatHomeProps) => {
   return (
@@ -20,15 +18,9 @@ const ChatHome = ({ onNewChat }: ChatHomeProps) => {
       <WelcomeHeader />
       
       {/* Content area */}
-      <div className="px-6 py-6 flex-1">
+      <div className="px-4 py-4 flex-1 bg-white">
         {/* Main action card */}
         <StartConversationCard onClick={onNewChat} />
-
-        {/* Modern quick links */}
-        <QuickLinks />
-
-        {/* Personalized tip with modern design */}
-        <ProTip />
       </div>
 
       <ResponseTime />
