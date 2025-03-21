@@ -1,4 +1,3 @@
-
 import { createSlice } from '@reduxjs/toolkit';
 import { TeammatesState } from './types';
 import {
@@ -13,7 +12,7 @@ import {
   disable2FA,
   terminateSession,
   resetPassword
-} from './thunks';
+} from './actions';
 
 const initialState: TeammatesState = {
   teammates: [],
@@ -135,5 +134,5 @@ const teammatesSlice = createSlice({
 });
 
 export const teammatesReducer = teammatesSlice.reducer;
-export * from './thunks';
+export * from './actions';
 export * from './selectors';
