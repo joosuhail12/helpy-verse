@@ -10,6 +10,7 @@ const initialState: TeamsState = {
   error: null,
   teamDetails: null,
   areTeamsLoaded: false
+  teamDetails: null
 };
 
 // fetch teams
