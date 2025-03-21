@@ -27,17 +27,14 @@ const LoadingSpinner = () => (
 
 const DashboardLayout = () => {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen w-full">
       <ErrorBoundary FallbackComponent={ErrorFallback}>
-        <main className="flex-1">
-          <Suspense fallback={<LoadingSpinner />}>
-            <Outlet />
-          </Suspense>
-        </main>
+        <Suspense fallback={<LoadingSpinner />}>
+          <Outlet />
+        </Suspense>
       </ErrorBoundary>
     </div>
   );
 };
 
 export default DashboardLayout;
-

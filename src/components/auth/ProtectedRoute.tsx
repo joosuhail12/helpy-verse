@@ -10,20 +10,22 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const isAuthenticated = auth.isAuthenticated;
   
   useEffect(() => {
+    // Add debug logging for auth state
+    console.log('ProtectedRoute: Auth state =', auth);
+    console.log('ProtectedRoute: isAuthenticated =', isAuthenticated);
+    
     // Short timeout to ensure auth state is fully loaded
     const timer = setTimeout(() => {
       setIsChecking(false);
+      console.log('ProtectedRoute: isChecking =', false);
     }, 100);
     
     return () => clearTimeout(timer);
-  }, []);
+  }, [auth, isAuthenticated]);
   
-  console.log('ProtectedRoute: Auth state =', auth);
-  console.log('ProtectedRoute: isAuthenticated =', isAuthenticated);
-  console.log('ProtectedRoute: isChecking =', isChecking);
-
   // Show nothing while checking authentication to prevent flashes
   if (isChecking) {
+    console.log('ProtectedRoute: isChecking =', isChecking);
     return null;
   }
 

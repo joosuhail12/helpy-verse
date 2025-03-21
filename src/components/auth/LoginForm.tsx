@@ -1,7 +1,7 @@
 
 import { ArrowRight } from "lucide-react";
-import { useState, memo } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect, memo } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAppDispatch } from "../../hooks/useAppDispatch";
 import { useAppSelector } from "../../hooks/useAppSelector";
 import { loginUser } from "../../store/slices/authSlice";
@@ -13,7 +13,24 @@ export const LoginForm = memo(() => {
   const dispatch = useAppDispatch();
   const auth = useAppSelector((state) => state.auth);
   const loading = auth?.loading ?? false;
+  const isAuthenticated = auth?.isAuthenticated ?? false;
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Log auth state for debugging
+  useEffect(() => {
+    console.log('SignIn component rendering');
+    console.log('Auth state:', auth);
+  }, [auth]);
+  
+  // Handle redirection if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      console.log('User is authenticated, redirecting to home');
+      const from = location.state?.from?.pathname || '/home';
+      navigate(from, { replace: true });
+    }
+  }, [isAuthenticated, location.state, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,10 +43,7 @@ export const LoginForm = memo(() => {
         description: "Logged in successfully",
       });
       
-      // Give time for state to update before navigation
-      setTimeout(() => {
-        navigate('/home');
-      }, 100);
+      // Navigation handled by the useEffect above
     } catch (error) {
       console.error("Login error:", error);
       toast({

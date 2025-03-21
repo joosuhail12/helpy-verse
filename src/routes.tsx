@@ -1,7 +1,9 @@
+
 import { lazy, Suspense } from 'react';
 import { createBrowserRouter } from 'react-router-dom';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { Loader2 } from 'lucide-react';
+import Sidebar from './components/dashboard/Sidebar';
 
 // Layouts
 const DashboardLayout = lazy(() => import('@/layouts/DashboardLayout').catch(() => {
@@ -96,9 +98,14 @@ export const router = createBrowserRouter([
     path: '/home',
     element: (
       <ProtectedRoute>
-        <Suspense fallback={<LoadingSpinner />}>
-          <DashboardLayout />
-        </Suspense>
+        <div className="flex min-h-screen bg-gray-50">
+          <Sidebar />
+          <main className="flex-1 overflow-x-hidden">
+            <Suspense fallback={<LoadingSpinner />}>
+              <DashboardLayout />
+            </Suspense>
+          </main>
+        </div>
       </ProtectedRoute>
     ),
     children: [
@@ -121,51 +128,41 @@ export const router = createBrowserRouter([
           {
             path: 'ai/action-center',
             element: (
-              <ProtectedRoute>
-                <Suspense fallback={<LoadingSpinner />}>
-                  <ActionCenter />
-                </Suspense>
-              </ProtectedRoute>
+              <Suspense fallback={<LoadingSpinner />}>
+                <ActionCenter />
+              </Suspense>
             ),
           },
           {
             path: 'ai/action-center/create',
             element: (
-              <ProtectedRoute>
-                <Suspense fallback={<LoadingSpinner />}>
-                  <CreateAction />
-                </Suspense>
-              </ProtectedRoute>
+              <Suspense fallback={<LoadingSpinner />}>
+                <CreateAction />
+              </Suspense>
             ),
           },
           {
             path: 'ai/chatbot-profiles',
             element: (
-              <ProtectedRoute>
-                <Suspense fallback={<LoadingSpinner />}>
-                  <ChatbotProfiles />
-                </Suspense>
-              </ProtectedRoute>
+              <Suspense fallback={<LoadingSpinner />}>
+                <ChatbotProfiles />
+              </Suspense>
             ),
           },
           {
             path: 'ai/chatbot-profiles/create',
             element: (
-              <ProtectedRoute>
-                <Suspense fallback={<LoadingSpinner />}>
-                  <CreateChatbot />
-                </Suspense>
-              </ProtectedRoute>
+              <Suspense fallback={<LoadingSpinner />}>
+                <CreateChatbot />
+              </Suspense>
             ),
           },
           {
             path: 'ai/chatbot-profiles/:id',
             element: (
-              <ProtectedRoute>
-                <Suspense fallback={<LoadingSpinner />}>
-                  <ChatbotDetail />
-                </Suspense>
-              </ProtectedRoute>
+              <Suspense fallback={<LoadingSpinner />}>
+                <ChatbotDetail />
+              </Suspense>
             ),
           },
         ],
