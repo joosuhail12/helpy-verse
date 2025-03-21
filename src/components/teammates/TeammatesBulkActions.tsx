@@ -18,7 +18,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { updateTeammate } from '@/store/slices/teammates/actions';
+import { updateTeammatesRole, exportTeammates } from '@/store/slices/teammates/actions';
 import { CheckSquare, UserMinus, FileText } from 'lucide-react';
 import type { Teammate } from '@/types/teammate';
 
@@ -30,19 +30,13 @@ interface TeammatesBulkActionsProps {
 const TeammatesBulkActions = ({ selectedIds, onClearSelection }: TeammatesBulkActionsProps) => {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [showRoleDialog, setShowRoleDialog] = useState(false);
-  const [newRole, setNewRole] = useState<Teammate['role']>('WORKSPACE_AGENT');
+  const [newRole, setNewRole] = useState<Teammate['role']>('agent');
   const dispatch = useAppDispatch();
   const { toast } = useToast();
 
   const handleRoleChange = async () => {
     try {
-      // Update each teammate individually since we don't have a bulk update endpoint
-      const updatePromises = selectedIds.map(id => 
-        dispatch(updateTeammate({ id, teammate: { role: newRole } })).unwrap()
-      );
-      
-      await Promise.all(updatePromises);
-      
+      await dispatch(updateTeammatesRole({ teammateIds: selectedIds, role: newRole })).unwrap();
       toast({
         title: "Success",
         description: "Role updated for selected teammates",
@@ -60,7 +54,7 @@ const TeammatesBulkActions = ({ selectedIds, onClearSelection }: TeammatesBulkAc
 
   const handleExport = async () => {
     try {
-      // Replace with actual export functionality when available
+      await dispatch(exportTeammates(selectedIds)).unwrap();
       toast({
         title: "Success",
         description: "Export completed successfully",
@@ -121,10 +115,10 @@ const TeammatesBulkActions = ({ selectedIds, onClearSelection }: TeammatesBulkAc
               <SelectValue placeholder="Select new role" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
-              <SelectItem value="ORGANIZATION_ADMIN">Organization Admin</SelectItem>
-              <SelectItem value="WORKSPACE_ADMIN">Workspace Admin</SelectItem>
-              <SelectItem value="WORKSPACE_AGENT">Workspace Agent</SelectItem>
+              <SelectItem value="admin">Admin</SelectItem>
+              <SelectItem value="supervisor">Supervisor</SelectItem>
+              <SelectItem value="agent">Agent</SelectItem>
+              <SelectItem value="viewer">Viewer</SelectItem>
             </SelectContent>
           </Select>
           <DialogFooter>
@@ -165,3 +159,4 @@ const TeammatesBulkActions = ({ selectedIds, onClearSelection }: TeammatesBulkAc
 };
 
 export default TeammatesBulkActions;
+

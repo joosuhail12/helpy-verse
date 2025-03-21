@@ -1,136 +1,130 @@
 
 import { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
-import { Loader2, Key } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { resetPassword } from '@/store/slices/securitySlice';
+import { useAppSelector } from '@/hooks/useAppSelector';
+import { resetPassword } from '@/store/slices/teammates/teammatesSlice';
+import { useToast } from '@/hooks/use-toast';
+import { Lock, Eye, EyeOff } from 'lucide-react';
 
 interface PasswordResetProps {
   teammateId: string;
 }
 
-const PasswordReset = ({ teammateId }: PasswordResetProps) => {
+export const PasswordReset: React.FC<PasswordResetProps> = ({ teammateId }) => {
   const dispatch = useAppDispatch();
   const { toast } = useToast();
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleResetPassword = async () => {
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (newPassword !== confirmPassword) {
-      setError("New passwords don't match");
+      toast({
+        title: 'Passwords do not match',
+        description: 'Please ensure your new password and confirmation password match.',
+        variant: 'destructive',
+      });
       return;
     }
 
-    if (newPassword.length < 8) {
-      setError("Password must be at least 8 characters long");
-      return;
-    }
-
-    setIsLoading(true);
+    setIsProcessing(true);
     try {
-      await dispatch(resetPassword({
-        teammateId,
-        currentPassword,
-        newPassword
+      await dispatch(resetPassword({ 
+        teammateId, 
+        newPassword 
       })).unwrap();
       
       toast({
-        description: "Password has been updated successfully.",
+        title: 'Password reset successful',
+        description: 'The password has been reset successfully.',
       });
-      setIsDialogOpen(false);
+      
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
-      setError('');
     } catch (error) {
       toast({
-        variant: "destructive",
-        description: "Failed to update password. Please check your current password and try again.",
+        title: 'Failed to reset password',
+        description: 'There was an error resetting the password. Please try again.',
+        variant: 'destructive',
       });
     } finally {
-      setIsLoading(false);
+      setIsProcessing(false);
     }
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-lg font-medium">Password Reset</h3>
-          <p className="text-sm text-gray-500">
-            Change your account password
-          </p>
-        </div>
-        <Button onClick={() => setIsDialogOpen(true)}>
-          <Key className="h-4 w-4 mr-2" />
-          Change Password
-        </Button>
-      </div>
-
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Change Password</DialogTitle>
-            <DialogDescription>
-              Enter your current password and choose a new password below.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4">
-            {error && (
-              <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-            
-            <div className="space-y-2">
-              <Label htmlFor="currentPassword">Current Password</Label>
+    <Card>
+      <CardHeader>
+        <CardTitle>Reset Password</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleResetPassword} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="current-password">Current Password</Label>
+            <div className="relative">
               <Input
-                id="currentPassword"
-                type="password"
+                id="current-password"
+                type={showPassword ? 'text' : 'password'}
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
+                className="pr-10"
+                required
+                disabled={isProcessing}
               />
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="absolute right-0 top-0 h-full"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </Button>
             </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="newPassword">New Password</Label>
-              <Input
-                id="newPassword"
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm New Password</Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-              />
-            </div>
-
-            <Button onClick={handleResetPassword} className="w-full" disabled={isLoading}>
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Update Password
-            </Button>
           </div>
-        </DialogContent>
-      </Dialog>
-    </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="new-password">New Password</Label>
+            <Input
+              id="new-password"
+              type={showPassword ? 'text' : 'password'}
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              required
+              disabled={isProcessing}
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="confirm-password">Confirm New Password</Label>
+            <Input
+              id="confirm-password"
+              type={showPassword ? 'text' : 'password'}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              disabled={isProcessing}
+            />
+          </div>
+          
+          <Button 
+            type="submit" 
+            className="w-full" 
+            disabled={isProcessing || !currentPassword || !newPassword || !confirmPassword}
+          >
+            <Lock className="mr-2 h-4 w-4" />
+            {isProcessing ? 'Resetting Password...' : 'Reset Password'}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
   );
 };
-
-export default PasswordReset;

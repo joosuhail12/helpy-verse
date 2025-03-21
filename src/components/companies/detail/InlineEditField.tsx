@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { CustomFieldType } from '@/types/customData';
+import { CustomFieldType } from '@/types/customField';
 import { validateFieldValue } from '@/components/settings/customData/utils/fieldValidation';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { updateCompany } from '@/store/slices/companies/companiesSlice';
@@ -52,14 +52,13 @@ export const InlineEditField = ({
     const mockField = {
       id: field,
       name: label,
-      fieldType: type,
-      isRequired: validation.some(v => v.type === 'required'),
-      placeholder: '',
-      options: options as string[] | null,
-      entityType: 'company' as const,
-      defaultValue: null,
-      description: null,
-      validationRules: validation
+      type,
+      required: validation.some(v => v.type === 'required'),
+      validationRules: validation,
+      description: '',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      history: []
     };
 
     const validationErrors = validateFieldValue(editValue, mockField);
@@ -76,7 +75,11 @@ export const InlineEditField = ({
     setIsSaving(true);
     setError(null);
     try {
-      await dispatch(updateCompany({ id: companyId, company: { [field]: editValue } }));
+      // Correctly structure the updates parameter
+      const updates: Record<string, any> = {};
+      updates[field] = editValue;
+      
+      await dispatch(updateCompany({ id: companyId, updates }));
       setIsEditing(false);
       toast({
         title: 'Success',
@@ -110,6 +113,7 @@ export const InlineEditField = ({
             options={options}
             isSaving={isSaving}
             inputRef={inputRef}
+            field={field}
           />
           <EditButtons
             onSave={handleSave}

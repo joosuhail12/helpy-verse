@@ -15,8 +15,11 @@ export const SearchBar = () => {
   const [open, setOpen] = useState(false);
   const dispatch = useAppDispatch();
   const triggerRef = useRef<HTMLButtonElement>(null);
-  const { query, suggestions, history } = useAppSelector((state) => state.content.search);
-  const filters = useAppSelector((state) => state.content.filters);
+  
+  const contentState = useAppSelector((state) => state.content);
+  const search = contentState?.search || { query: '', suggestions: [], history: [] };
+  const filters = contentState?.filters || {};
+  const { query, suggestions, history } = search;
   
   const debouncedQuery = useDebounce(query, 300);
 
@@ -134,4 +137,3 @@ export const SearchBar = () => {
     </div>
   );
 };
-

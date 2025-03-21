@@ -1,299 +1,36 @@
 
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { HttpClient } from "@/api/services/HttpClient";
-import { encryptBase64, setCookie, setWorkspaceId, handleSetToken, deleteCookie, getCookie } from '@/utils/helpers/helpers';
-import { get } from "lodash";
+// This file re-exports everything from the refactored auth slice
+// for backward compatibility
 
-export type ActionType = "create" | "read" | "update" | "delete" | "archive" | "manage";
+import { 
+  logout, 
+  clearError,
+  loginUser,
+  registerUser,
+  requestPasswordReset,
+  confirmPasswordReset,
+  fetchUserData,
+  fetchUserProfile,
+  fetchWorkspaceData,
+  getUserPermission
+} from './auth/authSlice';
 
-export interface Permission {
-  action: ActionType | ActionType[]; // Can be a single string or an array of actions
-  subject: string;
-  conditions?: {
-    clineId: string;
-  };
-}
-
-// Define Permissions Array Type
-export type Permissions = Permission[];
-
-
-export interface AuthState {
-  isAuthenticated: boolean;
-  user: {
-    status: "success" | "error";
-    message: string;
-    data: {
-      id: string;
-      accessToken: {
-        token: string;
-        expiry: number;
-        issuedAt: string;
-        userAgent: string;
-        ip: string;
-      };
-      defaultWorkspaceId: string;
-    };
-  } | null;
-  loading: boolean;
-  error: string | null;
-  permissions: Permissions;
-}
-
-const initialState: AuthState = {
-  isAuthenticated: !!getCookie("customerToken"),
-  user: null,
-  loading: false,
-  error: null,
-  permissions: [],
+export { 
+  logout, 
+  clearError,
+  loginUser,
+  registerUser,
+  requestPasswordReset,
+  confirmPasswordReset,
+  fetchUserData,
+  fetchUserProfile,
+  fetchWorkspaceData,
+  getUserPermission
 };
 
-const TEST_ADMIN = {
-  email: 'admin@test.com',
-  password: 'admin123'
-};
+// Use 'export type' when re-exporting types with isolatedModules enabled
+export type { Permission, Permissions, AuthState } from './auth/types';
+export type { ActionType } from '@/utils/ability';
 
-interface Credentials {
-  email: string;
-  password: string;
-}
-
-export const loginUser = createAsyncThunk(
-  "auth/login",
-  async (credentials: Credentials, { rejectWithValue }) => {
-    try {
-      const response = await HttpClient.apiClient.post("/auth/login", {
-        username: credentials.email,
-        password: credentials.password,
-        recaptchaId: "",
-      });
-
-      return response.data;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data || "Invalid credentials");
-    }
-  }
-);
-
-export const fetchUserData = createAsyncThunk(
-  "user/fetchData",
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await HttpClient.apiClient.get("/user/profile");
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(error.response?.data || "An error occurred");
-    }
-  }
-);
-
-export const registerUser = createAsyncThunk(
-  'auth/register',
-  async (credentials: {
-    fullName: string;
-    email: string;
-    password: string;
-    companyName: string;
-  }) => {
-    try {
-      // TODO: Replace with actual API call
-      const response = await fetch('YOUR_API_URL/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(credentials),
-      });
-
-      if (!response.ok) throw new Error('Registration failed');
-
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      throw error;
-    }
-  }
-);
-
-export const getUserPermission = createAsyncThunk(
-  "auth/getUserPermission",
-  async () => {
-    try {
-      const response = await HttpClient.apiClient.get("/profile/abilities");
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  }
-);
-
-
-export const requestPasswordReset = createAsyncThunk(
-  'auth/requestPasswordReset',
-  async (credentials: { email: string }) => {
-    try {
-      const response = await fetch('YOUR_API_URL/auth/forgot-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(credentials),
-      });
-
-      if (!response.ok) throw new Error('Password reset request failed');
-
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      throw error;
-    }
-  }
-);
-
-export const fetchUserProfile = createAsyncThunk(
-  "auth/fetchUserProfile",
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await HttpClient.apiClient.get("/profile");
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(error.response?.data || "Failed to fetch user profile");
-    }
-  }
-);
-
-export const fetchWorkspaceData = createAsyncThunk(
-  "auth/fetchWorkspaceData",
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await HttpClient.apiClient.get("/workspace/6c22b22f-7bdf-43db-b7c1-9c5884125c63");
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(error.response?.data || "Failed to fetch workspace data");
-    }
-  }
-);
-
-const authSlice = createSlice({
-  name: 'auth',
-  initialState: initialState,
-  reducers: {
-    logout: (state) => {
-      state.isAuthenticated = false;
-      state.user = null;
-      state.error = null;
-      deleteCookie("customerToken");
-    },
-    clearError: (state) => {
-      state.error = null;
-    },
-  },
-  extraReducers: (builder) => {
-    builder
-      // Login actions
-      .addCase(loginUser.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(loginUser.fulfilled, (state, action) => {
-        state.loading = false;
-        state.isAuthenticated = true;
-        state.user = action.payload;
-
-        const loginData = action.payload?.data;
-        if (loginData) {
-          const email = loginData?.username || "";
-          const encryptedEmail = encryptBase64(email);
-          setCookie("agent_email", encryptedEmail);
-
-          handleSetToken(loginData?.accessToken?.token || "");
-
-          setWorkspaceId(get(action.payload, "data.defaultWorkspaceId", ""));
-
-          HttpClient.setAxiosDefaultConfig();
-        }
-      })
-      .addCase(loginUser.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message || 'Login failed';
-      })
-      // Password reset actions
-      .addCase(requestPasswordReset.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(requestPasswordReset.fulfilled, (state) => {
-        state.loading = false;
-      })
-      .addCase(requestPasswordReset.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message || 'Password reset request failed';
-      })
-      // Register actions
-      .addCase(registerUser.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(registerUser.fulfilled, (state, action) => {
-        state.loading = false;
-        state.isAuthenticated = true;
-        state.user = action.payload;
-      })
-      .addCase(registerUser.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message || 'Registration failed';
-      })
-      .addCase(fetchUserData.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(fetchUserData.fulfilled, (state, action) => {
-        state.loading = false;
-        state.user = action.payload;
-      })
-      .addCase(fetchUserData.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message || 'User data fetch failed';
-      })
-      .addCase(getUserPermission.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(getUserPermission.fulfilled, (state, action) => {
-        state.loading = false;
-        state.permissions = action.payload;
-      })
-      .addCase(getUserPermission.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message || 'User permission fetch failed';
-      })
-      .addCase(fetchUserProfile.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(fetchUserProfile.fulfilled, (state, action) => {
-        state.loading = false;
-        state.user = action.payload;
-      })
-      .addCase(fetchUserProfile.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message || 'Failed to fetch user profile';
-      })
-      .addCase(fetchWorkspaceData.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(fetchWorkspaceData.fulfilled, (state, action) => {
-        state.loading = false;
-        state.user = action.payload;
-      })
-      .addCase(fetchWorkspaceData.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message || 'Failed to fetch workspace data';
-      });
-  },
-});
-
-export const { logout, clearError } = authSlice.actions;
-export default authSlice.reducer;
-
+// Do not re-export the default export to avoid the circular dependency
+// Instead, consumers should import the reducer directly from './auth/authSlice'

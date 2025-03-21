@@ -1,5 +1,5 @@
 
-import { CustomField } from "@/types/customData";
+import { CustomField } from "@/types/customField";
 
 export const getDuplicateFields = (fields: CustomField[]): string[] => {
   const fieldNames = fields.map(f => f.name.toLowerCase());
@@ -7,9 +7,9 @@ export const getDuplicateFields = (fields: CustomField[]): string[] => {
 };
 
 export const filterFields = (fields: CustomField[], searchQuery: string): CustomField[] => {
-  return fields.filter(field =>
-    field?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    field?.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    field?.fieldType?.toLowerCase().includes(searchQuery.toLowerCase())
+  return fields.filter(field => 
+    field.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    field.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    field.type.toLowerCase().includes(searchQuery.toLowerCase())
   );
 };

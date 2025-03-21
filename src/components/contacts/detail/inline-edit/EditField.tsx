@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { CustomFieldType } from '@/types/customData';
+import { CustomFieldType } from '@/types/customField';
 import { CompanySearchInput } from './CompanySearchInput';
 
 interface EditFieldProps {
@@ -146,3 +146,4 @@ export const EditField = ({
       );
   }
 };
+

@@ -3,7 +3,7 @@ import { TableRow, TableCell } from "@/components/ui/table";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical } from "lucide-react";
-import { CustomField } from "@/types/customData";
+import { CustomField } from "@/types/customField";
 
 interface SortableTableRowProps {
   field: CustomField;
@@ -26,9 +26,9 @@ export const SortableTableRow = ({ field, children }: SortableTableRowProps) => 
 
   return (
     <TableRow ref={setNodeRef} style={style}>
-      {/* <TableCell className="w-[40px] cursor-grab" {...attributes} {...listeners}>
+      <TableCell className="w-[40px] cursor-grab" {...attributes} {...listeners}>
         <GripVertical className="h-4 w-4 text-gray-400" />
-      </TableCell> */}
+      </TableCell>
       {children}
     </TableRow>
   );

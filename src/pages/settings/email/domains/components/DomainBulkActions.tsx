@@ -25,13 +25,13 @@ export const DomainBulkActions = ({
         </span>
       </div>
       <div className="flex items-center gap-2">
-        {/* <Button
+        <Button
           variant="outline"
           size="sm"
           onClick={onVerify}
         >
           Verify Selected
-        </Button> */}
+        </Button>
         <Button
           variant="outline"
           size="sm"
@@ -40,14 +40,14 @@ export const DomainBulkActions = ({
           <FileDown className="h-4 w-4 mr-2" />
           Export
         </Button>
-        {/* <Button
+        <Button
           variant="destructive"
           size="sm"
           onClick={onDelete}
         >
           <Trash2 className="h-4 w-4 mr-2" />
           Delete
-        </Button> */}
+        </Button>
       </div>
     </div>
   );

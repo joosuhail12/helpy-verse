@@ -1,39 +1,34 @@
 
 import { useAppSelector } from "@/hooks/useAppSelector";
-import { createContextualCan } from "@casl/react";
-import { useEffect, useState } from "react";
-import { defineAppAbility, AppAbility } from "@/utils/ability";
-import { AnyAbility, PureAbility } from "@casl/ability";
+import { createContext, createElement, useContext, useEffect, useState } from "react";
+import { AppAbility, defineAppAbility } from "@/utils/ability";
 
-// Create the Can component that uses CASL properly
-const Can = (props: any) => {
-  const { permissions } = useAppSelector((state) => state.auth);
+// Create our own AbilityContext since @casl/react doesn't export it directly in the version we're using
+export const AbilityContext = createContext<AppAbility | undefined>(undefined);
+
+export const Can = (props: any) => {
+  const auth = useAppSelector((state) => state.auth);
+  const permissions = auth?.permissions || [];
   const [ability, setAbility] = useState<AppAbility>(defineAppAbility());
-  
-  // Create the ContextualCan component inside the component to ensure proper typing
-  const ContextualCan = createContextualCan<AnyAbility>(ability as any);
 
   useEffect(() => {
-    if (permissions && Array.isArray(permissions)) {
+    if (permissions && permissions.length > 0) {
       const newAbility = defineAppAbility();
-      
-      // Only proceed if permissions exist
-      if (permissions.length > 0) {
-        // Convert permissions to the expected format for CASL
-        const formattedPermissions = permissions.map(perm => ({
-          action: perm.action as "read" | "create" | "update" | "delete",
-          subject: perm.subject as string
-        }));
-        
-        newAbility.update(formattedPermissions);
-      }
-      
+      // Type-casting to any to avoid TypeScript errors
+      // The actual implementation of CASL will validate the rules
+      newAbility.update(permissions as any);
       setAbility(newAbility);
     }
   }, [permissions]);
 
-  // Return the ContextualCan component with props
-  return <ContextualCan {...props} />;
+  return createElement(AbilityContext.Provider, { value: ability }, props.do(ability));
 };
 
-export { Can };
+// Hook to use ability context in components
+export const useAbility = () => {
+  const context = useContext(AbilityContext);
+  if (context === undefined) {
+    throw new Error('useAbility must be used within a Can provider');
+  }
+  return context;
+};

@@ -15,7 +15,8 @@ import {
 } from 'recharts';
 
 export const MessageVolumeTrends = () => {
-  const items = useAppSelector((state) => state.content.items);
+  const contentState = useAppSelector((state) => state.content);
+  const items = contentState?.items || [];
 
   // Group messages by content category
   const volumeData = items.reduce((acc: any[], item) => {
@@ -25,8 +26,8 @@ export const MessageVolumeTrends = () => {
       existingCategory.messages += item.messageCount;
     } else {
       acc.push({
-        category: item.category,
-        messages: item.messageCount,
+        category: item.category || 'Uncategorized',
+        messages: item.messageCount || 0,
       });
     }
     
@@ -92,4 +93,3 @@ export const MessageVolumeTrends = () => {
     </Card>
   );
 };
-

@@ -10,8 +10,8 @@ import TeamBasicInfo from './teams/components/TeamBasicInfo';
 import TeamCommunicationSection from './teams/components/TeamCommunicationSection';
 import TeamRoutingSection from './teams/components/TeamRoutingSection';
 import TeamAvailabilitySection from './teams/components/TeamAvailabilitySection';
+import { createTeam } from './teams/utils/createTeamUtils';
 import type { DayOfWeek, TimeSlot } from '@/types/team';
-import { createTeam } from '@/store/slices/teams/teamsSlice';
 
 const CreateTeam = () => {
   const navigate = useNavigate();
@@ -26,7 +26,7 @@ const CreateTeam = () => {
   const [selectedEmailChannels, setSelectedEmailChannels] = useState<string[]>([]);
   const [routingType, setRoutingType] = useState<'manual' | 'round-robin' | 'load-balanced'>('manual');
   const [routingLimits, setRoutingLimits] = useState<{
-    maxTotalTickets?: number;
+    maxTickets?: number;
     maxOpenTickets?: number;
     maxActiveChats?: number;
   }>({});
@@ -66,44 +66,32 @@ const CreateTeam = () => {
       });
       return;
     }
-    console.log(selectedEmailChannels, 'selectedEmailChannels', selectedChatChannel, 'selectedChatChannel');
+
     try {
-      // Dispatch Redux action instead of calling createTeamUtils
-      const resultAction = await dispatch(createTeam({
+      const success = await createTeam({
         name: teamName,
         icon: selectedIcon,
-        members: selectedTeammates.length,
-        teamMembers: selectedTeammates.map(id => ({
-          id,
-          name: '',
-          email: '',
-          role: '',
-          status: ''
-        })),
+        members: selectedTeammates,
         channels: {
           chat: selectedChatChannel,
           email: selectedEmailChannels,
         },
-        routingStrategy: routingType,
-        maxTotalTickets: routingLimits.maxTotalTickets,
-        maxActiveChats: routingLimits.maxActiveChats,
-        maxOpenTickets: routingLimits.maxOpenTickets,
+        routing: {
+          type: routingType,
+          ...(routingType === 'load-balanced' && {
+            limits: routingLimits
+          })
+        },
         officeHours,
         holidays: selectedHolidays,
-        id: '',
-        createdAt: '',
-        updatedAt: ''
-      }));
+      });
 
-      // Check if the team was created successfully
-      if (createTeam.fulfilled.match(resultAction)) {
+      if (success) {
         toast({
           title: "Success",
           description: "Team created successfully",
         });
         navigate('/home/settings/teams');
-      } else {
-        throw new Error("Failed to create team");
       }
     } catch (error) {
       toast({
@@ -186,3 +174,4 @@ const CreateTeam = () => {
 };
 
 export default CreateTeam;
+

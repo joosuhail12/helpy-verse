@@ -1,7 +1,7 @@
 
 import { TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { CustomField } from "@/types/customData";
+import { CustomField } from "@/types/customField";
 
 interface TableHeaderProps {
   filteredFields: CustomField[];

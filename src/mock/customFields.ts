@@ -123,6 +123,6 @@ export const mockCustomFields: CustomFields = {
         }
       ]
     }
-  ]
+  ],
+  fields: [] // Add the missing required field
 };
-

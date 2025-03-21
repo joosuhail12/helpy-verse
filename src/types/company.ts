@@ -32,9 +32,8 @@ export interface Company {
   businessModel?: 'b2b' | 'b2c' | 'b2b2c';
   preferredLanguage?: string;
   timezone?: string;
+  lastActivity?: string;
+  tags?: string[] | { id: string; name: string }[];
   createdAt: string;
   updatedAt: string;
-  tags?: { id: string; name: string }[]; // Explicitly defined
-
 }
-

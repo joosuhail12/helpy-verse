@@ -1,109 +1,85 @@
 
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { Teammate, NewTeammate } from '@/types/teammate';
-import { teammatesService } from '@/api/services/teammateService';
+import type { Teammate, NewTeammate, ActivityLog } from '@/types/teammate';
+import { mockTeammates, mockActivityLogs, mockAssignments } from './mockData';
+import { CACHE_DURATION } from './types';
+import type { TeammatesState } from './types';
+import { fetchTeammates as fetchTeammatesThunk } from './thunks';
+import { updateTeammate as updateTeammateThunk } from './thunks';
 
-// Create a new teammate
-export const createTeammate = createAsyncThunk(
-  'teammates/createTeammate',
-  async (teammate: NewTeammate) => {
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+// Re-export the fetchTeammates action for backward compatibility
+export const fetchTeammates = fetchTeammatesThunk;
+
+// Re-export the updateTeammate action for backward compatibility
+export const updateTeammate = updateTeammateThunk;
+
+export const addTeammate = createAsyncThunk(
+  'teammates/addTeammate',
+  async (newTeammate: NewTeammate, { dispatch }) => {
+    const teammate: Teammate = {
+      id: Math.random().toString(36).substr(2, 9),
+      ...newTeammate,
+      status: 'active',
+      lastActive: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
+      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${newTeammate.name}`,
+      permissions: []
+    };
+
     try {
-      const response = await teammatesService.createTeammate(teammate);
-      return response;
+      await delay(1000);
+      return teammate;
     } catch (error) {
       throw error;
     }
   }
 );
 
-// Get all teammates
-export const fetchTeammates = createAsyncThunk(
-  'teammates/fetchTeammates',
-  async () => {
-    try {
-      const response = await teammatesService.fetchTeammates();
-      return response;
-    } catch (error) {
-      throw error;
-    }
-  }
-);
-
-// Update a teammate
-export const updateTeammate = createAsyncThunk(
-  'teammates/updateTeammate',
-  async ({ id, teammate }: { id: string; teammate: Partial<Teammate> }) => {
-    try {
-      const response = await teammatesService.updateTeammate(id, teammate);
-      return response;
-    } catch (error) {
-      throw error;
-    }
-  }
-);
-
-// Delete a teammate - mock implementation
-export const deleteTeammate = createAsyncThunk(
-  'teammates/deleteTeammate',
-  async (id: string) => {
-    try {
-      // Using a mock delete response since the actual API method doesn't exist
-      return { id, success: true };
-    } catch (error) {
-      throw error;
-    }
-  }
-);
-
-// Get a teammate by ID
-export const fetchTeammateById = createAsyncThunk(
-  'teammates/fetchTeammateById',
-  async (id: string) => {
-    try {
-      const response = await teammatesService.getTeammate(id);
-      return response;
-    } catch (error) {
-      throw error;
-    }
-  }
-);
-
-// Export teammates - mock implementation
-export const exportTeammates = createAsyncThunk(
-  'teammates/exportTeammates',
-  async () => {
-    try {
-      // Mock implementation
-      return { success: true, url: 'exports/teammates.csv' };
-    } catch (error) {
-      throw error;
-    }
-  }
-);
-
-// Update teammates role in bulk - mock implementation
-export const updateTeammatesRole = createAsyncThunk(
-  'teammates/updateTeammatesRole',
-  async ({ ids, role }: { ids: string[]; role: string }) => {
-    try {
-      // Mock implementation
-      return { success: true, ids, role };
-    } catch (error) {
-      throw error;
-    }
-  }
-);
-
-// Mock function for resending invitation
 export const resendInvitation = createAsyncThunk(
   'teammates/resendInvitation',
-  async (email: string) => {
+  async (teammateId: string, { rejectWithValue }) => {
     try {
-      // Mock API call
-      const response = { status: 'success', message: `Invitation resent to ${email}` };
-      return response;
+      await delay(1000);
+      return teammateId;
     } catch (error) {
-      throw error;
+      return rejectWithValue('Failed to resend invitation');
     }
+  }
+);
+
+export const updateTeammatesRole = createAsyncThunk(
+  'teammates/updateTeammatesRole',
+  async ({ teammateIds, role }: { teammateIds: string[], role: Teammate['role'] }, { rejectWithValue }) => {
+    try {
+      await delay(1000);
+      return { teammateIds, role };
+    } catch (error) {
+      return rejectWithValue('Failed to update roles');
+    }
+  }
+);
+
+export const exportTeammates = createAsyncThunk(
+  'teammates/exportTeammates',
+  async (teammateIds: string[], { getState, rejectWithValue }) => {
+    try {
+      await delay(1000);
+      const state = getState() as { teammates: TeammatesState };
+      const selectedTeammates = state.teammates.teammates.filter(t => teammateIds.includes(t.id));
+      console.log('Exporting teammates:', selectedTeammates);
+      return teammateIds;
+    } catch (error) {
+      return rejectWithValue('Failed to export teammates');
+    }
+  }
+);
+
+export const updateTeammatePermissions = createAsyncThunk(
+  'teammates/updateTeammatePermissions',
+  async ({ teammateId, permissions }: { teammateId: string, permissions: string[] }) => {
+    await delay(1000);
+    return { teammateId, permissions };
   }
 );

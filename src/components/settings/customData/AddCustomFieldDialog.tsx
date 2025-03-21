@@ -11,7 +11,7 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { useState } from "react";
 import { useCustomDataMutations } from "@/hooks/useCustomDataMutations";
-import { CustomField, CustomFieldType, ValidationRule, FieldDependency, FieldHistoryEntry } from "@/types/customData";
+import type { CustomField, CustomFieldType, ValidationRule, FieldDependency, FieldHistoryEntry } from "@/types/customField";
 import ValidationRulesSection from './ValidationRulesSection';
 import DependenciesSection from './DependenciesSection';
 import FieldOptionsSection from './FieldOptionsSection';
@@ -21,7 +21,7 @@ import { validateFieldName, getDefaultValidationRules } from './utils/fieldValid
 interface AddCustomFieldDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  table: 'ticket' | 'customer' | 'company';
+  table: 'tickets' | 'contacts' | 'companies';
   existingFields: CustomField[];
 }
 
@@ -46,7 +46,7 @@ const AddCustomFieldDialog = ({ isOpen, onClose, table, existingFields }: AddCus
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    
     const nameValidationErrors = validateFieldName(name, existingFields);
     if (nameValidationErrors.length > 0) {
       toast({
@@ -73,7 +73,7 @@ const AddCustomFieldDialog = ({ isOpen, onClose, table, existingFields }: AddCus
     }
 
     if (['select', 'multi-select'].includes(type)) {
-      const duplicateOptions = options.filter((option, index) =>
+      const duplicateOptions = options.filter((option, index) => 
         options.indexOf(option) !== index
       );
       if (duplicateOptions.length > 0) {
@@ -101,24 +101,21 @@ const AddCustomFieldDialog = ({ isOpen, onClose, table, existingFields }: AddCus
         table,
         field: {
           name,
-          fieldType: type,
-          isRequired: required,
+          type,
+          required,
           description,
-          // validationRules,
-          entityType: table,
-          placeholder: "",
-          defaultValue: "",
-          // dependencies,
+          validationRules,
+          dependencies,
           options: ['select', 'multi-select'].includes(type) ? options : undefined,
-          // history: [historyEntry]
+          history: [historyEntry]
         }
       });
-
+      
       toast({
         title: "Success",
         description: "Custom field has been added successfully.",
       });
-
+      
       onClose();
       setName("");
       setType("text");
@@ -148,7 +145,7 @@ const AddCustomFieldDialog = ({ isOpen, onClose, table, existingFields }: AddCus
               Add a new custom field to the {table} table.
             </DialogDescription>
           </DialogHeader>
-
+          
           <div className="grid gap-4 py-4">
             <FieldDetailsForm
               name={name}
@@ -160,19 +157,19 @@ const AddCustomFieldDialog = ({ isOpen, onClose, table, existingFields }: AddCus
               onRequiredChange={setRequired}
               onDescriptionChange={setDescription}
             />
-
+            
             {showOptionsSection && (
               <FieldOptionsSection
                 options={options}
                 onOptionsChange={setOptions}
               />
             )}
-
+            
             <ValidationRulesSection
               rules={validationRules}
               onRulesChange={setValidationRules}
             />
-
+            
             <DependenciesSection
               dependencies={dependencies}
               onDependenciesChange={setDependencies}

@@ -1,3 +1,4 @@
+
 export interface Contact {
   id: string;
   firstname: string;
@@ -16,17 +17,32 @@ export interface Contact {
   source?: 'website' | 'referral' | 'marketing' | 'sales' | 'other';
   assignedTo?: string;
   accountValue?: number;
-  tags?: { id: string; name: string }[]; // Explicitly defined
+  tags: string[];
   notes?: string;
   lastContacted?: string;
-  createdAt?: string;
-  updatedAt?: string;
+  createdAt: string;
+  updatedAt: string;
   // Address fields
   street?: string;
   city?: string;
   state?: string;
   postalCode?: string;
   country?: string;
-  // Adjusted index signature to exclude complex object types
-  [key: string]: string | number | boolean | string[] | undefined | { id: string; name: string }[] | unknown;
+  // Communication preferences
+  emailOptIn?: boolean;
+  smsOptIn?: boolean;
+  communicationPreferences?: {
+    email: boolean;
+    sms: boolean;
+    phone: boolean;
+    mail: boolean;
+  };
+  // Activity tracking
+  totalOrders?: number;
+  totalSpent?: number;
+  lastActivity?: string;
+  visitCount?: number;
+  leadScore?: number;
+  // Add index signature for custom fields
+  [key: string]: string | number | string[] | undefined | boolean | object;
 }

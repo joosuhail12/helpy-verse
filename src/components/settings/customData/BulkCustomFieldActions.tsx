@@ -21,12 +21,12 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
-import { CustomField } from "@/types/customData";
+import { CustomField } from "@/types/customField";
 import { useCustomDataMutations } from "@/hooks/useCustomDataMutations";
 
 interface BulkCustomFieldActionsProps {
   selectedFields: CustomField[];
-  table: 'ticket' | 'contact' | 'company';
+  table: 'tickets' | 'contacts' | 'companies';
   onSelectionChange: (fields: CustomField[]) => void;
 }
 
@@ -47,7 +47,7 @@ const BulkCustomFieldActions = ({
           updateCustomField({
             table,
             fieldId: field.id,
-            updates: { isRequired: bulkRequired },
+            updates: { required: bulkRequired },
           })
         )
       );

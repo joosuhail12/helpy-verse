@@ -3,13 +3,17 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeftRight, RotateCcw, Scale } from "lucide-react";
 
 interface TeamRoutingProps {
-  routingStrategy: string;
-  maxTotalTickets?: number;
-  maxOpenTickets?: number;
-  maxActiveChats?: number;
+  routing: {
+    type: 'manual' | 'round-robin' | 'load-balanced';
+    limits?: {
+      maxTickets?: number;
+      maxOpenTickets?: number;
+      maxActiveChats?: number;
+    };
+  };
 }
 
-const TeamRouting = ({ routingStrategy, maxTotalTickets, maxOpenTickets, maxActiveChats }: TeamRoutingProps) => {
+const TeamRouting = ({ routing }: TeamRoutingProps) => {
   const getRoutingIcon = (type: string) => {
     switch (type) {
       case 'manual':
@@ -22,34 +26,34 @@ const TeamRouting = ({ routingStrategy, maxTotalTickets, maxOpenTickets, maxActi
         return null;
     }
   };
-  console.log(maxTotalTickets, maxOpenTickets, maxActiveChats);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        {getRoutingIcon(routingStrategy)}
-        <Badge className="capitalize">{routingStrategy.replace('-', ' ')}</Badge>
+        {getRoutingIcon(routing.type)}
+        <Badge className="capitalize">{routing.type.replace('-', ' ')}</Badge>
       </div>
 
-      {routingStrategy === 'load-balanced' && (
+      {routing.type === 'load-balanced' && routing.limits && (
         <div className="space-y-4 mt-4">
           <h3 className="font-medium text-sm text-gray-500">Routing Limits</h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {maxTotalTickets && (
+            {routing.limits.maxTickets && (
               <div className="p-4 bg-gray-50 rounded-lg">
                 <p className="text-sm text-gray-500">Max Tickets</p>
-                <p className="text-2xl font-semibold">{maxTotalTickets}</p>
+                <p className="text-2xl font-semibold">{routing.limits.maxTickets}</p>
               </div>
             )}
-            {maxOpenTickets && (
+            {routing.limits.maxOpenTickets && (
               <div className="p-4 bg-gray-50 rounded-lg">
                 <p className="text-sm text-gray-500">Max Open Tickets</p>
-                <p className="text-2xl font-semibold">{maxOpenTickets}</p>
+                <p className="text-2xl font-semibold">{routing.limits.maxOpenTickets}</p>
               </div>
             )}
-            {maxActiveChats && (
+            {routing.limits.maxActiveChats && (
               <div className="p-4 bg-gray-50 rounded-lg">
                 <p className="text-sm text-gray-500">Max Active Chats</p>
-                <p className="text-2xl font-semibold">{maxActiveChats}</p>
+                <p className="text-2xl font-semibold">{routing.limits.maxActiveChats}</p>
               </div>
             )}
           </div>

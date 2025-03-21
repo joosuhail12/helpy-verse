@@ -3,6 +3,11 @@ import { Content } from '@/types/content';
 import { addDays, subDays } from 'date-fns';
 
 const today = new Date();
+const defaultAuthor = {
+  id: 'user1',
+  name: 'John Doe',
+  avatar: 'https://api.dicebear.com/7.x/avatars/svg?seed=John',
+};
 
 export const salesContent: Content[] = [
   {
@@ -10,9 +15,12 @@ export const salesContent: Content[] = [
     title: 'Product Pricing Calculator',
     description: 'JavaScript snippet for calculating product pricing with discounts',
     category: 'sales',
+    contentType: 'calculator',
     type: 'snippet',
     status: 'completed',
+    createdAt: subDays(today, 5).toISOString(),
     lastUpdated: subDays(today, 2).toISOString(),
+    author: defaultAuthor,
     messageCount: 850,
     content: `function calculatePrice(basePrice, quantity, discountCode) {
   const discounts = {

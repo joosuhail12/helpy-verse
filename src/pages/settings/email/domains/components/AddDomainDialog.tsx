@@ -14,9 +14,10 @@ import {
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { AddNewDomain, Domain } from '@/types/domains';
+import type { Domain } from '@/mock/domains';
+
 interface AddDomainDialogProps {
-  onAddDomain: (domain: AddNewDomain) => void;
+  onAddDomain: (domain: Domain) => void;
   className?: string;
   variant?: 'default' | 'outline';
 }
@@ -49,9 +50,34 @@ export const AddDomainDialog = ({ onAddDomain, className, variant = 'default' }:
       return;
     }
 
-    const domain: AddNewDomain = {
+    const domain: Domain = {
+      id: Date.now().toString(),
       domain: domainValue,
-      name: domainName,
+      status: 'pending',
+      dateAdded: new Date().toISOString(),
+      verificationRecord: `lovable-verify=${Math.random().toString(36).substring(7)}`,
+      ownerConfirmed: true,
+      dnsRecords: [
+        {
+          type: 'TXT',
+          name: `_lovable-verification.${domainValue}`,
+          value: `lovable-verify=${Math.random().toString(36).substring(7)}`,
+          ttl: 3600
+        },
+        {
+          type: 'MX',
+          name: domainValue,
+          value: 'mx.lovable.mail',
+          ttl: 3600,
+          priority: 10
+        },
+        {
+          type: 'CNAME',
+          name: `mail.${domainValue}`,
+          value: 'mail.lovable.com',
+          ttl: 3600
+        }
+      ]
     };
 
     onAddDomain(domain);
@@ -126,7 +152,7 @@ export const AddDomainDialog = ({ onAddDomain, className, variant = 'default' }:
           <Button variant="outline" onClick={() => setIsOpen(false)}>
             Cancel
           </Button>
-          <Button
+          <Button 
             onClick={handleAddDomain}
             disabled={!domainName || !domainValue || !ownerConfirmed}
           >

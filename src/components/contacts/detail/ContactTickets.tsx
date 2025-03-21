@@ -26,6 +26,7 @@ export const ContactTickets = ({ contact }: ContactTicketsProps) => {
       isUnread: true,
       hasNotification: true,
       notificationType: 'mention' as const,
+      recipients: [contact.email] // Added recipients array
     },
     {
       id: '2',
@@ -39,6 +40,7 @@ export const ContactTickets = ({ contact }: ContactTicketsProps) => {
       priority: 'medium' as const,
       createdAt: '2024-03-14T15:30:00Z',
       isUnread: false,
+      recipients: [contact.email] // Added recipients array
     },
   ].filter(ticket => ticket.customer === `${contact.firstname} ${contact.lastname}`);
 
@@ -55,4 +57,3 @@ export const ContactTickets = ({ contact }: ContactTicketsProps) => {
     </Card>
   );
 };
-

@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CustomField, FieldDependency } from "@/types/customData";
+import { CustomField, FieldDependency } from "@/types/customField";
 import { Plus, X } from "lucide-react";
 
 interface DependenciesSectionProps {

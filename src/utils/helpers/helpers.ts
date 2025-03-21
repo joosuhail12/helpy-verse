@@ -1,175 +1,51 @@
-import { HttpClient } from "@/api/services/HttpClient";
 
-// 🟢 Get Cookie
-export const getCookie = (cname: string): string => {
-    return document.cookie
-        .split("; ")
-        .find((row) => row.startsWith(`${cname}=`))
-        ?.split("=")[1]
-        ?.trim() || "";
+/**
+ * Common utility helpers used throughout the application
+ */
+import { cookieFunctions } from "@/api/services/http";
+import { handleSetToken as tokenManagerSetToken } from "@/utils/auth/tokenManager";
+
+// Re-export cookie functions from cookieManager to avoid circular dependencies
+export const { getCookie, setCookie, handleLogout } = cookieFunctions;
+
+// Base64 encoding for email addresses (simple obfuscation)
+export const encryptBase64 = (text: string): string => {
+  return window.btoa(unescape(encodeURIComponent(text)));
 };
 
-// 🟢 Set Cookie
-export const setCookie = (cname: string, cvalue: string, exdays: number = 10): void => {
-    const d = new Date();
-    d.setTime(d.getTime() + exdays * 24 * 60 * 60 * 1000);
-    const expires = `expires=${d.toUTCString()}`;
-    document.cookie = `${cname}=${cvalue};${expires};path=/`;
+// Base64 decoding
+export const decryptBase64 = (encoded: string): string => {
+  try {
+    return decodeURIComponent(escape(window.atob(encoded)));
+  } catch (e) {
+    console.error("Error decoding base64:", e);
+    return "";
+  }
 };
 
-// 🟢 Delete Cookie
-export const deleteCookie = (name: string): void => {
-    document.cookie = `${name}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;`;
+// Set workspace ID in both cookie and localStorage for reliability
+export const setWorkspaceId = (workspaceId: string): void => {
+  if (!workspaceId) return;
+  
+  // Set in localStorage
+  localStorage.setItem("workspaceId", workspaceId);
+  
+  // Set in cookie
+  setCookie("workspaceId", workspaceId);
+  
+  console.log(`Workspace ID set to: ${workspaceId}`);
 };
 
-// 🟢 Logout User
-export const handleLogout = (): void => {
-    deleteCookie("customerToken");
-    window.location.href = "/";
+// Re-export the token manager's handleSetToken function
+export const handleSetToken = tokenManagerSetToken;
+
+// Format date to a readable format
+export const formatDate = (date: Date | string | number): string => {
+  const d = new Date(date);
+  return d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
 };
 
-// 🟢 Set Auth Token
-export const handleSetToken = (token: string): boolean => {
-    setCookie("customerToken", token);
-    HttpClient.setAxiosDefaultConfig();
-    return true;
+// Check if running in development mode
+export const isDevelopment = (): boolean => {
+  return import.meta.env.MODE === 'development';
 };
-
-// 🟢 Workspace ID Management
-export const setWorkspaceId = (id: string): void => {
-    setCookie("workspaceId", id);
-};
-
-export const getWorkspaceId = (): string => {
-    return getCookie("workspaceId");
-};
-
-export const getClientIdFromCookie = (): string | undefined => {
-    return getCookie('clientId');
-};
-
-export const setClientId = (id: string): void => {
-    setCookie('clientId', id)
-}
-
-// 🟢 Debounce Function with Immediate Execution
-export const debounceWithImmediate = <T>(
-    func: (props: T) => void,
-    immediateFunc: (props: T) => void,
-    delay: number
-): ((props: T) => void) => {
-    let timeoutId: NodeJS.Timeout;
-    let immediateCall = true;
-    return (props: T) => {
-        clearTimeout(timeoutId);
-        if (immediateCall) {
-            immediateFunc(props);
-            immediateCall = false;
-        }
-        timeoutId = setTimeout(() => {
-            immediateCall = true;
-            func(props);
-        }, delay);
-    };
-};
-
-// 🟢 Convert Array to Query String
-interface QueryObject {
-    type: string;
-    data: string | number;
-}
-
-export const arrayToQueryString = (objArray: QueryObject[]): string => {
-    return objArray
-        .map((obj) => `${encodeURIComponent(obj.type)}=${encodeURIComponent(obj.data)}`)
-        .join("&");
-};
-
-// 🟢 Email Validator
-export const isEmail = (email: string): boolean => {
-    const regex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
-    return regex.test(email);
-};
-
-// 🟢 URL Validator
-export const isValidHttpUrl = (str: string): boolean => {
-    try {
-        new URL(str);
-        return true;
-    } catch {
-        return false;
-    }
-};
-
-// 🟢 Extract Name from URL
-export const getNameFromUrl = (url: string): string => {
-    const regex = /[http,https]:\/\/(.+?)\./;
-    const match = url.match(regex);
-    return match ? match[1] : "";
-};
-
-// 🟢 Throttle Function
-export const throttle = <T extends (...args: any[]) => void>(
-    func: T,
-    delay: number
-): ((...args: Parameters<T>) => void) => {
-    let lastCall = 0;
-    return function (...args: Parameters<T>) {
-        const now = Date.now();
-        if (now - lastCall >= delay) {
-            func(...args);
-            lastCall = now;
-        }
-    };
-};
-
-// 🟢 Base64 Encode & Decode
-export const encryptBase64 = (text: string): string => btoa(text);
-export const decryptBase64 = (encryptText: string): string => {
-    try {
-        return atob(encryptText);
-    } catch {
-        return "";
-    }
-};
-
-// 🟢 Convert Text to Delta
-export const convertTextToDelta = (text: string): { insert: string }[] => {
-    return [{ insert: text }];
-};
-
-// 🟢 Convert Delta to Plain Text
-interface DeltaOperation {
-    insert: string | { mention?: { value: string } };
-}
-
-export const convertDeltaToPlainText = (ops: DeltaOperation[]): string => {
-    return ops.map((op) => (typeof op.insert === "string" ? op.insert : op.insert.mention?.value || "")).join("");
-};
-
-// 🟢 Convert Delta to Text
-export const convertDeltaToText = (delta?: { ops: DeltaOperation[] }): string => {
-    if (!delta) return "";
-    return convertDeltaToPlainText(delta.ops);
-};
-
-// 🟢 Replace `mustache` Templating with Native JavaScript
-export const variabledText = (plainText: string, data: Record<string, any>): string => {
-    return plainText.replace(/\{\{(.*?)\}\}/g, (_, key) => {
-        const keys = key.trim().split(".");
-        let value: any = data;
-        for (const k of keys) {
-            value = value?.[k];
-            if (value === undefined) return "";
-        }
-        return String(value);
-    });
-};
-
-// 🟢 Role Checks
-export const isOrganizationAdmin = (): boolean => localStorage.getItem("role") === "ORGANIZATION_ADMIN";
-export const isWorkspaceAdmin = (): boolean => localStorage.getItem("role") === "WORKSPACE_ADMIN";
-export const isWorkspaceAgent = (): boolean => localStorage.getItem("role") === "WORKSPACE_AGENT";
-
-// 🟢 Get User ID
-export const getUserId = (): string | null => localStorage.getItem("userId");

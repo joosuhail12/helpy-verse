@@ -1,78 +1,113 @@
 
-import { useState } from 'react';
-import { NavigationItem, SubNavItem } from './types/navigation';
-import { NavigationHeader } from './navigation/NavigationHeader';
-import { NavigationItem as NavItem } from './navigation/NavigationItem';
-import { SearchInput } from './navigation/SearchInput';
+import { useLocation } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { subNavItems } from './navigationConfig';
+import UserProfileCard from './UserProfileCard';
+import NavigationHeader from './navigation/NavigationHeader';
+import SearchInput from './navigation/SearchInput';
+import NavigationItem from './navigation/NavigationItem';
 
-export interface SubNavigationProps {
-  navItems: NavigationItem[];
-  isCollapsed: boolean;
-  toggleCollapsed: () => void;
+interface SubNavigationProps {
+  activeMainNav: string;
+  isSecondPanelCollapsed: boolean;
+  toggleSecondPanel: () => void;
   expandedItems: string[];
-  onItemToggle: (itemTitle: string) => void;
-  onNavigate: (path: string) => void;
+  toggleExpanded: (itemTitle: string) => void;
+  navigate: (path: string) => void;
 }
 
-const SubNavigation = ({
-  navItems,
-  isCollapsed,
-  toggleCollapsed,
-  expandedItems,
-  onItemToggle,
-  onNavigate
+const SubNavigation = ({ 
+  activeMainNav, 
+  isSecondPanelCollapsed, 
+  toggleSecondPanel, 
+  expandedItems, 
+  toggleExpanded, 
+  navigate 
 }: SubNavigationProps) => {
+  const location = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (event.ctrlKey && event.key === '/') {
+        const searchInput = document.querySelector('input[type="text"]') as HTMLInputElement;
+        if (searchInput) {
+          event.preventDefault();
+          searchInput.focus();
+        }
+      }
+      if (event.ctrlKey && event.key === '[') {
+        toggleSecondPanel();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [toggleSecondPanel]);
+
+  const isItemActive = (path: string) => location.pathname === path;
   
-  // Filter nav items based on search query
-  const filteredItems = searchQuery.trim() === ''
-    ? navItems
-    : navItems.filter(item => {
-        // Match parent item title
-        if (item.title.toLowerCase().includes(searchQuery.toLowerCase())) {
-          return true;
-        }
-        // Match child item titles
-        if (item.children?.some(child => 
-          child.title.toLowerCase().includes(searchQuery.toLowerCase())
-        )) {
-          return true;
-        }
-        return false;
-      });
+  const hasActiveChild = (children: any[]) => {
+    return children.some(child => 
+      isItemActive(child.path) || 
+      (child.children && hasActiveChild(child.children))
+    );
+  };
+
+  const filterMenuItems = (items: any[]) => {
+    return items.filter(item => {
+      const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      if (item.children) {
+        const filteredChildren = filterMenuItems(item.children);
+        return matchesSearch || filteredChildren.length > 0;
+      }
+      
+      return matchesSearch;
+    });
+  };
+
+  const currentNavItems = subNavItems[activeMainNav as keyof typeof subNavItems] || [];
+  const filteredNavItems = searchQuery ? filterMenuItems(currentNavItems) : currentNavItems;
 
   return (
     <div 
-      className={`h-screen bg-white/80 backdrop-blur-xl border-r border-purple-100/50 shadow-lg transition-all duration-300 flex flex-col ${
-        isCollapsed ? 'w-0 opacity-0 overflow-hidden' : 'w-64 opacity-100'
-      }`}
+      className={`${
+        isSecondPanelCollapsed ? 'w-12' : 'w-64'
+      } min-h-screen bg-white/60 backdrop-blur-lg border-r border-purple-100/50 transition-all duration-300 ease-in-out relative flex flex-col`}
     >
-      <NavigationHeader 
-        title="Navigation" 
-        isCollapsed={isCollapsed}
-        onToggleCollapse={toggleCollapsed}
-      />
-      
-      <div className="px-4 py-3">
-        <SearchInput 
-          value={searchQuery}
-          onChange={setSearchQuery}
-          placeholder="Search..."
+      <div className="flex-1 p-4">
+        <NavigationHeader
+          activeMainNav={activeMainNav}
+          isSecondPanelCollapsed={isSecondPanelCollapsed}
+          toggleSecondPanel={toggleSecondPanel}
         />
-      </div>
-      
-      <div className="flex-1 overflow-y-auto py-2 px-3">
-        {filteredItems.map((item, index) => (
-          <NavItem
-            key={`${item.title}-${index}`}
-            item={item}
-            isExpanded={expandedItems.includes(item.title)}
-            onToggleExpand={() => onItemToggle(item.title)}
-            onNavigate={onNavigate}
-            isSearching={searchQuery.trim() !== ''}
+
+        {!isSecondPanelCollapsed && (
+          <SearchInput
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
           />
-        ))}
+        )}
+
+        <div className="space-y-1">
+          {filteredNavItems.map((item: any) => (
+            <NavigationItem
+              key={item.title}
+              item={item}
+              isSecondPanelCollapsed={isSecondPanelCollapsed}
+              expandedItems={expandedItems}
+              toggleExpanded={toggleExpanded}
+              hasActiveChild={hasActiveChild}
+              isItemActive={isItemActive}
+              navigate={navigate}
+              filterMenuItems={filterMenuItems}
+            />
+          ))}
+        </div>
       </div>
+
+      <UserProfileCard isCollapsed={isSecondPanelCollapsed} />
     </div>
   );
 };

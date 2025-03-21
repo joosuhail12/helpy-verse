@@ -1,121 +1,179 @@
 
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { emailChannelsService } from '@/api/services/emailChannels.service';
+import { RootState } from '../../store';
 import { EmailChannel } from '@/types/emailChannel';
 
 export interface EmailChannelsState {
   channels: EmailChannel[];
   defaultChannel: EmailChannel | null;
   hasDomainVerified: boolean;
-  error: string | null;
   loading: boolean;
+  error: string | null;
 }
 
 const initialState: EmailChannelsState = {
   channels: [],
   defaultChannel: null,
   hasDomainVerified: false,
-  error: null,
   loading: false,
+  error: null,
 };
 
-// Async Thunks
-export const fetchEmailChannels = createAsyncThunk(
-  'emailChannels/fetchAll',
-  async () => {
+// Async thunks
+export const fetchChannels = createAsyncThunk(
+  'emailChannels/fetchChannels',
+  async (_, { rejectWithValue }) => {
     try {
-      const response = await emailChannelsService.getAllEmailChannels();
-      return response.data;
-    } catch (error) {
-      throw new Error('Failed to fetch email channels');
+      // Replace with actual API call
+      const response = await fetch('/api/email/channels');
+      if (!response.ok) {
+        throw new Error('Failed to fetch channels');
+      }
+      return await response.json();
+    } catch (error: any) {
+      return rejectWithValue(error.message);
     }
   }
 );
 
-export const createEmailChannel = createAsyncThunk(
-  'emailChannels/create',
-  async (channelData: EmailChannel) => {
+export const createChannel = createAsyncThunk(
+  'emailChannels/createChannel',
+  async (channel: Omit<EmailChannel, 'id' | 'createdAt' | 'updatedAt'>, { rejectWithValue }) => {
     try {
-      const response = await emailChannelsService.createEmailChannel(channelData);
-      return response.data;
-    } catch (error) {
-      throw new Error('Failed to create email channel');
+      // Replace with actual API call
+      const response = await fetch('/api/email/channels', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(channel),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to create channel');
+      }
+      return await response.json();
+    } catch (error: any) {
+      return rejectWithValue(error.message);
     }
   }
 );
 
-export const updateEmailChannel = createAsyncThunk(
-  'emailChannels/update',
-  async (channelData: Partial<EmailChannel>) => {
+export const updateChannel = createAsyncThunk(
+  'emailChannels/updateChannel',
+  async ({ id, updates }: { id: string; updates: Partial<EmailChannel> }, { rejectWithValue }) => {
     try {
-      const response = await emailChannelsService.updateEmailChannel(
-        channelData.id!, 
-        channelData
-      );
-      return response.data;
-    } catch (error) {
-      throw new Error('Failed to update email channel');
+      // Replace with actual API call
+      const response = await fetch(`/api/email/channels/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to update channel');
+      }
+      return await response.json();
+    } catch (error: any) {
+      return rejectWithValue(error.message);
     }
   }
 );
 
-export const deleteEmailChannel = createAsyncThunk(
-  'emailChannels/delete',
-  async (channelId: string) => {
+export const deleteChannel = createAsyncThunk(
+  'emailChannels/deleteChannel',
+  async (id: string, { rejectWithValue }) => {
     try {
-      await emailChannelsService.deleteEmailChannel(channelId);
-      return channelId;
-    } catch (error) {
-      throw new Error('Failed to delete email channel');
+      // Replace with actual API call
+      const response = await fetch(`/api/email/channels/${id}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to delete channel');
+      }
+      return id;
+    } catch (error: any) {
+      return rejectWithValue(error.message);
     }
   }
 );
 
-// Add missing thunks
 export const toggleChannelStatus = createAsyncThunk(
-  'emailChannels/toggleStatus',
-  async ({ id, isActive }: { id: string; isActive: boolean }) => {
+  'emailChannels/toggleChannelStatus',
+  async (id: string, { rejectWithValue, getState }) => {
     try {
-      const response = await emailChannelsService.updateEmailChannel(id, { isActive });
-      return response.data;
-    } catch (error) {
-      throw new Error('Failed to toggle channel status');
+      const state = getState() as RootState;
+      const channel = state.emailChannels.channels.find(c => c.id === id);
+      if (!channel) {
+        throw new Error('Channel not found');
+      }
+      
+      // Replace with actual API call
+      const response = await fetch(`/api/email/channels/${id}/toggle-status`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isActive: !channel.isActive }),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to toggle channel status');
+      }
+      return await response.json();
+    } catch (error: any) {
+      return rejectWithValue(error.message);
     }
   }
 );
 
 export const toggleDefaultChannelStatus = createAsyncThunk(
-  'emailChannels/toggleDefaultStatus',
-  async (isActive: boolean) => {
+  'emailChannels/toggleDefaultChannelStatus',
+  async (id: string, { rejectWithValue }) => {
     try {
-      // This is a mock implementation - replace with actual API call
-      return { success: true, isActive };
-    } catch (error) {
-      throw new Error('Failed to toggle default channel status');
+      // Replace with actual API call
+      const response = await fetch(`/api/email/channels/${id}/set-default`, {
+        method: 'POST',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to set default channel');
+      }
+      return await response.json();
+    } catch (error: any) {
+      return rejectWithValue(error.message);
     }
   }
 );
 
 export const bulkDeleteChannels = createAsyncThunk(
-  'emailChannels/bulkDelete',
-  async (ids: string[]) => {
+  'emailChannels/bulkDeleteChannels',
+  async (ids: string[], { rejectWithValue }) => {
     try {
-      // This is a mock implementation - replace with actual API call
-      return { success: true, ids };
-    } catch (error) {
-      throw new Error('Failed to bulk delete channels');
+      // Replace with actual API call
+      const response = await fetch(`/api/email/channels/bulk-delete`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids }),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to delete channels');
+      }
+      return ids;
+    } catch (error: any) {
+      return rejectWithValue(error.message);
     }
   }
 );
 
 export const bulkToggleStatus = createAsyncThunk(
   'emailChannels/bulkToggleStatus',
-  async ({ ids, isActive }: { ids: string[]; isActive: boolean }) => {
+  async ({ ids, isActive }: { ids: string[]; isActive: boolean }, { rejectWithValue }) => {
     try {
-      // This is a mock implementation - replace with actual API call
-      return { success: true, ids, isActive };
-    } catch (error) {
-      throw new Error('Failed to bulk toggle channel status');
+      // Replace with actual API call
+      const response = await fetch(`/api/email/channels/bulk-toggle-status`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids, isActive }),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to update channels status');
+      }
+      return { ids, isActive };
+    } catch (error: any) {
+      return rejectWithValue(error.message);
     }
   }
 );
@@ -123,81 +181,87 @@ export const bulkToggleStatus = createAsyncThunk(
 const emailChannelsSlice = createSlice({
   name: 'emailChannels',
   initialState,
-  reducers: {
-    resetEmailChannelsState: () => initialState,
-  },
+  reducers: {},
   extraReducers: (builder) => {
     builder
-      // Fetch Email Channels
-      .addCase(fetchEmailChannels.pending, (state) => {
+      // Fetch channels
+      .addCase(fetchChannels.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchEmailChannels.fulfilled, (state, action) => {
-        const channels = Array.isArray(action.payload) ? action.payload : [action.payload];
-        state.channels = channels as EmailChannel[];
-        state.defaultChannel = state.channels.find(channel => channel.isDefault) || null;
+      .addCase(fetchChannels.fulfilled, (state, action) => {
         state.loading = false;
+        state.channels = action.payload.channels;
+        state.defaultChannel = action.payload.defaultChannel;
+        state.hasDomainVerified = action.payload.hasDomainVerified;
       })
-      .addCase(fetchEmailChannels.rejected, (state, action) => {
+      .addCase(fetchChannels.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Failed to fetch email channels';
+        state.error = action.payload as string;
       })
-      // Create Email Channel
-      .addCase(createEmailChannel.pending, (state) => {
+      // Create channel
+      .addCase(createChannel.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(createEmailChannel.fulfilled, (state, action) => {
-        const channel = action.payload as EmailChannel;
-        state.channels.push(channel);
-        if (channel.isDefault) {
-          state.defaultChannel = channel;
+      .addCase(createChannel.fulfilled, (state, action) => {
+        state.loading = false;
+        state.channels.push(action.payload);
+        if (action.payload.isDefault) {
+          state.defaultChannel = action.payload;
         }
+      })
+      .addCase(createChannel.rejected, (state, action) => {
         state.loading = false;
+        state.error = action.payload as string;
       })
-      .addCase(createEmailChannel.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message || 'Failed to create email channel';
-      })
-      // Update Email Channel
-      .addCase(updateEmailChannel.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(updateEmailChannel.fulfilled, (state, action) => {
-        const updatedChannel = action.payload as EmailChannel;
-        const index = state.channels.findIndex(channel => channel.id === updatedChannel.id);
+      // Update channel
+      .addCase(updateChannel.fulfilled, (state, action) => {
+        const index = state.channels.findIndex(channel => channel.id === action.payload.id);
         if (index !== -1) {
-          state.channels[index] = { ...state.channels[index], ...updatedChannel };
-          if (updatedChannel.isDefault) {
-            state.defaultChannel = state.channels[index];
-          }
+          state.channels[index] = action.payload;
         }
-        state.loading = false;
+        if (action.payload.isDefault) {
+          state.defaultChannel = action.payload;
+        }
       })
-      .addCase(updateEmailChannel.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message || 'Failed to update email channel';
-      })
-      // Delete Email Channel
-      .addCase(deleteEmailChannel.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(deleteEmailChannel.fulfilled, (state, action) => {
+      // Delete channel
+      .addCase(deleteChannel.fulfilled, (state, action) => {
         state.channels = state.channels.filter(channel => channel.id !== action.payload);
         if (state.defaultChannel && state.defaultChannel.id === action.payload) {
           state.defaultChannel = null;
         }
-        state.loading = false;
       })
-      .addCase(deleteEmailChannel.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message || 'Failed to delete email channel';
+      // Toggle channel status
+      .addCase(toggleChannelStatus.fulfilled, (state, action) => {
+        const index = state.channels.findIndex(channel => channel.id === action.payload.id);
+        if (index !== -1) {
+          state.channels[index] = action.payload;
+        }
+      })
+      // Toggle default channel status
+      .addCase(toggleDefaultChannelStatus.fulfilled, (state, action) => {
+        state.channels = state.channels.map(channel => ({
+          ...channel,
+          isDefault: channel.id === action.payload.id
+        }));
+        state.defaultChannel = action.payload;
+      })
+      // Bulk delete channels
+      .addCase(bulkDeleteChannels.fulfilled, (state, action) => {
+        state.channels = state.channels.filter(channel => !action.payload.includes(channel.id));
+        if (state.defaultChannel && action.payload.includes(state.defaultChannel.id)) {
+          state.defaultChannel = null;
+        }
+      })
+      // Bulk toggle status
+      .addCase(bulkToggleStatus.fulfilled, (state, action) => {
+        const { ids, isActive } = action.payload;
+        state.channels = state.channels.map(channel => 
+          ids.includes(channel.id) ? { ...channel, isActive } : channel
+        );
       });
   },
 });
 
-export const { resetEmailChannelsState } = emailChannelsSlice.actions;
-export default emailChannelsSlice.reducer;
+export const emailChannelsReducer = emailChannelsSlice.reducer;

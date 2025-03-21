@@ -5,19 +5,23 @@ export interface Ticket {
   customer: string;
   lastMessage: string;
   assignee: string | null;
-  company: string;
   tags: string[];
-  status: 'open' | 'closed' | 'pending';
+  status: 'open' | 'pending' | 'closed';
   priority: 'low' | 'medium' | 'high';
   createdAt: string;
-  isUnread?: boolean;
   updatedAt?: string;
-  assigneeAvatar?: string;
-  categories?: string[];
+  isUnread: boolean;
+  recipients: string[];
+  channel?: string;
+  
+  // Additional properties needed by components
+  company?: string;
   hasNotification?: boolean;
-  notificationType?: 'mention' | 'update' | 'assignment' | 'new_response' | 'new_ticket';
+  notificationType?: 'mention' | 'assignment';
+  categories?: string[];
 }
 
-export type SortField = 'date' | 'priority' | 'status';
+// Add types referenced in the code but not defined
+export type SortField = 'createdAt' | 'priority' | 'status' | 'customer';
 export type SortDirection = 'asc' | 'desc';
-export type ViewMode = 'compact' | 'expanded';
+export type ViewMode = 'list' | 'card' | 'compact';

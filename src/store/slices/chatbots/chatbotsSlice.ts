@@ -1,117 +1,95 @@
 
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import type { Chatbot } from '@/types/chatbot';
-import type { QueryGroup } from '@/types/queryBuilder';
-import { mockChatbots } from '@/mock/chatbots';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { Chatbot } from '@/types/chatbot';
+import { RootState } from '../../store';
 
-interface ChatbotsState {
-  items: Chatbot[];
+export type ChatbotsState = {
+  chatbots: Chatbot[];
   loading: boolean;
   error: string | null;
-  currentChatbot: Chatbot | null;
-}
-
-const initialState: ChatbotsState = {
-  items: mockChatbots,
-  loading: false,
-  error: null,
-  currentChatbot: null,
 };
 
+const initialState: ChatbotsState = {
+  chatbots: [],
+  loading: false,
+  error: null,
+};
+
+// Async thunks
 export const fetchChatbots = createAsyncThunk(
   'chatbots/fetchChatbots',
-  async () => {
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return mockChatbots;
+  async (_, { rejectWithValue }) => {
+    try {
+      // Replace with actual API call
+      const response = await fetch('/api/chatbots');
+      if (!response.ok) {
+        throw new Error('Failed to fetch chatbots');
+      }
+      return await response.json();
+    } catch (error: any) {
+      return rejectWithValue(error.message);
+    }
   }
 );
 
 export const createChatbot = createAsyncThunk(
   'chatbots/createChatbot',
-  async (chatbot: Omit<Chatbot, 'id' | 'createdAt'>) => {
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    const newChatbot: Chatbot = {
-      ...chatbot,
-      id: Date.now().toString(),
-      createdAt: new Date().toISOString(),
-    };
-    return newChatbot;
-  }
-);
-
-export const updateChatbotAudienceRules = createAsyncThunk(
-  'chatbots/updateAudienceRules',
-  async ({ chatbotId, rules }: { chatbotId: string; rules: QueryGroup }) => {
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return { chatbotId, rules };
+  async (chatbot: Omit<Chatbot, 'id' | 'createdAt' | 'updatedAt'>, { rejectWithValue }) => {
+    try {
+      // Replace with actual API call
+      const response = await fetch('/api/chatbots', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(chatbot),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to create chatbot');
+      }
+      return await response.json();
+    } catch (error: any) {
+      return rejectWithValue(error.message);
+    }
   }
 );
 
 const chatbotsSlice = createSlice({
   name: 'chatbots',
   initialState,
-  reducers: {
-    setCurrentChatbot: (state, action) => {
-      state.currentChatbot = action.payload;
-    },
-    clearCurrentChatbot: (state) => {
-      state.currentChatbot = null;
-    },
-  },
+  reducers: {},
   extraReducers: (builder) => {
     builder
+      // Fetch chatbots
       .addCase(fetchChatbots.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(fetchChatbots.fulfilled, (state, action) => {
-        state.items = action.payload;
         state.loading = false;
+        state.chatbots = action.payload;
       })
       .addCase(fetchChatbots.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Failed to fetch chatbots';
+        state.error = action.payload as string;
       })
+      // Create chatbot
       .addCase(createChatbot.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(createChatbot.fulfilled, (state, action) => {
-        state.items.push(action.payload);
         state.loading = false;
+        state.chatbots.push(action.payload);
       })
       .addCase(createChatbot.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Failed to create chatbot';
-      })
-      .addCase(updateChatbotAudienceRules.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(updateChatbotAudienceRules.fulfilled, (state, action) => {
-        const chatbot = state.items.find(c => c.id === action.payload.chatbotId);
-        if (chatbot) {
-          chatbot.audienceRules = action.payload.rules;
-        }
-        state.loading = false;
-      })
-      .addCase(updateChatbotAudienceRules.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message || 'Failed to update audience rules';
+        state.error = action.payload as string;
       });
   },
 });
 
-export const { setCurrentChatbot, clearCurrentChatbot } = chatbotsSlice.actions;
+// Selectors
+export const selectChatbots = (state: RootState) => state.chatbots?.chatbots || [];
+export const selectChatbotsLoading = (state: RootState) => state.chatbots?.loading || false;
+export const selectChatbotsError = (state: RootState) => state.chatbots?.error || null;
 
-export const selectChatbots = (state: { chatbots: ChatbotsState }) => state.chatbots.items;
-export const selectChatbotsLoading = (state: { chatbots: ChatbotsState }) => state.chatbots.loading;
-export const selectChatbotsError = (state: { chatbots: ChatbotsState }) => state.chatbots.error;
-export const selectCurrentChatbot = (state: { chatbots: ChatbotsState }) => state.chatbots.currentChatbot;
-
-export default chatbotsSlice.reducer;
-
+export const chatbotsReducer = chatbotsSlice.reducer;

@@ -6,7 +6,7 @@ import { SnippetPreview } from './preview/SnippetPreview';
 import { FilePreview } from './preview/FilePreview';
 import { WebsitePreview } from './preview/WebsitePreview';
 import { VersionHistory } from './history/VersionHistory';
-import type { Content, ContentVersion } from '@/types/content';
+import type { Content, ContentVersion, User } from '@/types/content';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { updateContent } from '@/store/slices/content/contentSlice';
 
@@ -24,27 +24,33 @@ export const ContentPreview = ({ content }: ContentPreviewProps) => {
   const handleSave = async () => {
     setIsSaving(true);
     try {
+      const currentUser: User = {
+        id: 'user1',
+        name: 'John Doe',
+        avatar: 'https://api.dicebear.com/7.x/avatars/svg?seed=John',
+      };
+
       // Create a new version
       const newVersion: ContentVersion = {
         id: `v${Date.now()}`,
         contentId: content.id,
         content: content.content || '',
         createdAt: new Date().toISOString(),
-        createdBy: {
-          id: 'user1',
-          name: 'John Doe',
-          avatar: 'https://api.dicebear.com/7.x/avatars/svg?seed=John',
-        },
+        createdBy: currentUser,
         changes: 'Updated content',
       };
 
-      const updates = {
-        content: editableContent,
-        versions: [...(content.versions || []), newVersion],
-        lastEditedBy: newVersion.createdBy,
-      };
+      const currentVersions = Array.isArray(content.versions) ? [...content.versions] : [];
 
-      dispatch(updateContent({ id: content.id, updates }));
+      dispatch(updateContent({ 
+        id: content.id, 
+        data: { 
+          content: editableContent,
+          versions: [...currentVersions, newVersion],
+          lastEditedBy: currentUser
+        } 
+      }));
+      
       setIsEditing(false);
       toast({
         title: 'Success',
@@ -70,7 +76,9 @@ export const ContentPreview = ({ content }: ContentPreviewProps) => {
   };
 
   const renderPreview = () => {
-    switch (content.type) {
+    const contentType = content.type || 'snippet';
+    
+    switch (contentType) {
       case 'snippet':
         return (
           <SnippetPreview
@@ -88,7 +96,11 @@ export const ContentPreview = ({ content }: ContentPreviewProps) => {
       case 'website':
         return <WebsitePreview content={content} />;
       default:
-        return null;
+        return (
+          <div className="p-4 bg-muted/30 rounded text-center">
+            <p className="text-muted-foreground">No preview available for this content type</p>
+          </div>
+        );
     }
   };
 

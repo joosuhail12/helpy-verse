@@ -10,7 +10,8 @@ interface CaslProviderProps {
 
 const CaslProvider: React.FC<CaslProviderProps> = ({ children }) => {
     const dispatch = useAppDispatch();
-    const { user, isAuthenticated } = useAppSelector((state) => state.auth);
+    const auth = useAppSelector((state) => state.auth);
+    const isAuthenticated = auth?.isAuthenticated || false;
 
     useEffect(() => {
         if (isAuthenticated) {

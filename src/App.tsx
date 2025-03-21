@@ -1,30 +1,14 @@
 
-import { RouterProvider } from 'react-router-dom';
-import { router } from './routes';
-import { Toaster } from './components/ui/toaster';
-import { Provider } from 'react-redux';
-import { store } from './store/store';
-import CaslProvider from './components/CaslProvider';
-import { useEffect } from 'react';
-import './App.css';
+import React from "react";
+import AppProviders from "./components/app/AppProviders";
+import AppRoutes from "./components/app/AppRoutes";
 
-function App() {
-  useEffect(() => {
-    console.log('App mounted');
-    
-    // Log authentication state on start
-    const authState = store.getState().auth;
-    console.log('Initial auth state:', authState);
-  }, []);
-
+const App = () => {
   return (
-    <Provider store={store}>
-      <CaslProvider>
-        <RouterProvider router={router} />
-        <Toaster />
-      </CaslProvider>
-    </Provider>
+    <AppProviders>
+      <AppRoutes />
+    </AppProviders>
   );
-}
+};
 
 export default App;

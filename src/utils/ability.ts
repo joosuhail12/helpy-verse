@@ -1,28 +1,17 @@
+import { AbilityBuilder, AbilityClass, InferSubjects, PureAbility } from "@casl/ability";
+import { Permission } from "@/store/slices/auth/types";
 
-import { AbilityBuilder, createMongoAbility, MongoAbility } from "@casl/ability";
+// Create/export the ActionType type if it doesn't already exist
+export type ActionType = "create" | "read" | "update" | "delete" | "archive" | "manage";
 
-// Define the allowed action types explicitly to match what's used in the application
-export type Actions = "read" | "create" | "update" | "delete" | "manage" | "archive";
-export type Subjects = 
-  | "User" 
-  | "Post" 
-  | "Comment" 
-  | "Nothing" 
-  | "Ticket" 
-  | "Contact" 
-  | "Company" 
-  | "Team" 
-  | "Teammate" 
-  | string;
+type Subjects = InferSubjects<{ subject: string } | 'all'>;
+export type AppAbility = PureAbility<[ActionType, Subjects]>;
 
-export type AppAbility = MongoAbility<[Actions, Subjects]>;
+export const defineAppAbility = () => {
+  const { can, build } = new AbilityBuilder(PureAbility as AbilityClass<AppAbility>);
 
-export const defineAppAbility = (): AppAbility => {
-    const { can, rules } = new AbilityBuilder<AppAbility>(createMongoAbility);
+  // Define default abilities (if any)
+  // can('read', 'Article'); // Example: can read articles
 
-    can("read", "Nothing");
-
-    return createMongoAbility(rules);
+  return build();
 };
-
-export const ability = defineAppAbility();

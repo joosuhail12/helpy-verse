@@ -1,33 +1,24 @@
 
 export interface EmailChannel {
   id: string;
-  name: string;
-  emoji: string;
-  teamId: string;
+  name?: string;
+  channelName: string;
   senderName: string;
-  emailAddress: string;
-  autoBccMail: string;
-  noReplyMail: string;
-  allowAgentOutbound: boolean;
-  allowAgentName: boolean;
-  orignalSenderAsRequester: boolean;
-  createdBy: string;
-  createdAt: string;
-  updatedAt: string;
-  deletedAt: string;
-  isActive: boolean;
-  isDefault: boolean;
-  
-  // Legacy properties for backward compatibility
-  channelName?: string;
-  email?: string;
+  email: string;
   autoBccEmail?: string;
   noReplyEmail?: string;
   icon?: string;
-  type?: 'sending' | 'receiving' | 'both';
-  allowAgentConversations?: boolean;
-  useAgentNames?: boolean;
-  useOriginalSender?: boolean;
+  type: 'sending' | 'receiving' | 'both';
+  createdAt: string;
+  updatedAt?: string;
+  teamId?: string;
+  domainStatus?: 'verified' | 'pending' | 'failed';
+  allowAgentConversations: boolean;
+  useAgentNames: boolean;
+  useOriginalSender: boolean;
+  isActive: boolean;
+  isDefault?: boolean;
+  isVerified?: boolean;
 }
 
 export interface CreateEmailChannelDto {
@@ -43,4 +34,6 @@ export interface CreateEmailChannelDto {
   useAgentNames: boolean;
   useOriginalSender: boolean;
   isActive: boolean;
+  name?: string;
+  domainStatus?: 'verified' | 'pending' | 'failed';
 }

@@ -7,7 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { useForm } from 'react-hook-form';
 import { toast } from '@/components/ui/use-toast';
-import { ArrowLeft, History, Share2, Star, Copy, Loader2 } from 'lucide-react';
+import { ArrowLeft, History, Share2, Star, Copy } from 'lucide-react';
+import type { CannedResponse, CannedResponseShare } from '@/mock/cannedResponses';
 import { Link } from 'react-router-dom';
 import { CategoryCombobox } from '@/components/settings/cannedResponses/CategoryCombobox';
 import { CannedResponseEditor } from '@/components/settings/cannedResponses/CannedResponseEditor';
@@ -19,280 +20,117 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { cannedResponseService, GetCannedResponseDetail } from '@/api/services/cannedResponse.service';
-import { teamsService } from '@/api/services/teamService.service';
-import { CannedResponse, UpdateCannedResponse } from '@/types/cannedResponse';
-import { Team } from '@/types/team';
+import { mockTeams } from '@/store/slices/teams/mockData';
 
 interface CannedResponseFormValues {
-  id: string;
-  name: string;
-  message: string;
+  title: string;
+  content: string;
   shortcut: string;
   category: string;
   isShared: boolean;
-  sharedTeams?: Array<{
+  sharedWith?: Array<{
     teamId: string;
-    name?: string;
-    typeOfSharing: 'view' | 'edit';
+    teamName?: string;
+    permissions: 'view' | 'edit';
   }>;
 }
 
 const CannedResponseDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  // const dispatch = useAppDispatch();
-  const [response, setResponse] = useState<CannedResponse | null>(null);
+  const dispatch = useAppDispatch();
+  const response = useAppSelector(state => selectCannedResponseById(state, id ?? ''));
   const [loading, setLoading] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState('');
-  const [teams, setTeams] = useState<Team[]>([]);
   const [selectedPermission, setSelectedPermission] = useState<'view' | 'edit'>('view');
-  const [responseLoading, setResponseLoading] = useState(true);
 
   const form = useForm<CannedResponseFormValues>({
     defaultValues: {
-      id: id,
-      name: '',
-      message: '',
+      title: '',
+      content: '',
       shortcut: '',
       category: '',
       isShared: false,
-      sharedTeams: [],
+      sharedWith: [],
     },
   });
 
   useEffect(() => {
     if (response) {
       form.reset({
-        id: response.id,
-        name: response.name,
-        message: response.message,
+        title: response.title,
+        content: response.content,
         shortcut: response.shortcut,
         category: response.category,
         isShared: response.isShared,
-        sharedTeams: response.sharedTeams?.map(share => ({
-          teamId: share.teamId || '',
-          name: share.name,
-          typeOfSharing: share.typeOfSharing,
+        sharedWith: response.sharedWith?.map(share => ({
+          teamId: share.sharedWith.teamId || '',
+          teamName: share.sharedWith.teamName,
+          permissions: share.permissions,
         })) || [],
       });
     }
   }, [response, form]);
 
-
-  useEffect(() => {
-    const getCannedResponseDetails = async () => {
-      await cannedResponseService.getCannedResponseDetails(id).then((response) => {
-        setResponse(response.data);
-        form.reset({
-          id: response.data.id,
-          name: response.data.name,
-          message: response.data.message,
-          shortcut: response.data.shortcut,
-          category: response.data.category,
-          isShared: response.data.isShared,
-          sharedTeams: response.data.sharedTeams?.map(share => ({
-            teamId: share.teamId || '',
-            name: share.name,
-            typeOfSharing: share.typeOfSharing,
-          })) || [],
-        });
-      }).catch((error) => {
-        console.error('Error fetching canned response:', error.data);
-        toast({
-          title: "Error",
-          description: "Failed to fetch canned response: " + error?.message,
-          variant: "destructive",
-        });
-      }).finally(() => {
-        setResponseLoading(false);
-      });
-    };
-
-    const getAllTeams = async () => {
-      try {
-        const teams = await teamsService.getAllTeams();
-
-        setTeams(teams.data);
-      } catch (error) {
-        toast({
-          title: "Error",
-          description: "Failed to fetch teams",
-          variant: "destructive",
-        });
-      }
-    }
-
-    getAllTeams();
-    getCannedResponseDetails();
-  }, []);
-
   const handleAddShare = () => {
     if (!selectedTeam) return;
 
-    const currentShares = form.getValues('sharedTeams') || [];
-    const team = teams.find(t => t.id === selectedTeam);
+    const currentShares = form.getValues('sharedWith') || [];
+    const team = mockTeams.find(t => t.id === selectedTeam);
 
-    if (currentShares.some(t => t.teamId === selectedTeam)) {
-      toast({
-        title: "Error",
-        description: "Team already shared",
-        variant: "destructive",
-      });
-
-      return;
-    }
-
-    form.setValue('sharedTeams', [
+    form.setValue('sharedWith', [
       ...currentShares,
       {
         teamId: selectedTeam,
-        name: team?.name,
-        typeOfSharing: selectedPermission,
+        teamName: team?.name,
+        permissions: selectedPermission,
       }
     ]);
-    console.log(form.getValues('sharedTeams'))
+
     setSelectedTeam('');
     setSelectedPermission('view');
   };
 
   const handleRemoveShare = (index: number) => {
-    const currentShares = form.getValues('sharedTeams') || [];
-    form.setValue('sharedTeams', currentShares.filter((_, i) => i !== index));
+    const currentShares = form.getValues('sharedWith') || [];
+    form.setValue('sharedWith', currentShares.filter((_, i) => i !== index));
   };
-
-  const createUpdatedCannedResponseObject = (currentData: CannedResponse, submittedData: CannedResponseFormValues) => {
-    // Create an object to hold the updated fields
-    const updatedData: { [key: string]: any } = { id: currentData.id };
-
-    // Compare and add the fields that have changed
-    if (currentData.name !== submittedData.name) {
-      updatedData.name = submittedData.name;
-    }
-
-    if (currentData.message !== submittedData.message) {
-      updatedData.message = submittedData.message;
-    }
-
-    if (currentData.shortcut !== submittedData.shortcut) {
-      updatedData.shortcut = submittedData.shortcut;
-    }
-
-    if (currentData.category !== submittedData.category) {
-      updatedData.category = submittedData.category;
-    }
-
-    if (currentData.isShared !== submittedData.isShared) {
-      updatedData.isShared = submittedData.isShared;
-    }
-
-    // Check for changes in shared teams
-    const currentSharedTeams = currentData.sharedTeams || [];
-    const submittedSharedTeams = submittedData.sharedTeams || [];
-
-    // Check if shared teams are different
-    const addedTeams = submittedSharedTeams.filter(
-      (submittedTeam) => !currentSharedTeams.some((currentTeam) => {
-        if (!currentTeam || typeof currentTeam === 'string') return false;
-        return currentTeam.teamId === submittedTeam.teamId;
-      })
-    );
-
-    const removedTeams = currentSharedTeams.filter(
-      (currentTeam) => {
-        if (!currentTeam || typeof currentTeam === 'string') return false;
-        return !submittedSharedTeams.some((submittedTeam) => submittedTeam.teamId === currentTeam.teamId);
-      }
-    );
-
-    const updatedTeams = submittedSharedTeams.filter(
-      (submittedTeam) => currentSharedTeams.some((currentTeam) => {
-        if (!currentTeam || typeof currentTeam === 'string') return false;
-        return currentTeam.teamId === submittedTeam.teamId;
-      })
-    );
-
-    console.log(addedTeams, removedTeams, updatedTeams);
-
-    if (addedTeams.length > 0) {
-      const addedTeamsData = addedTeams.map((team) => ({
-        teamId: team.teamId,
-        typeOfSharing: team.typeOfSharing,
-        action: 'add',
-      }));
-
-      updatedData.sharedTeams = [
-        ...(updatedData.sharedTeams || []),
-        ...addedTeamsData
-      ];
-    }
-
-    if (removedTeams.length > 0) {
-      const removedTeamsData = removedTeams.map((team) => ({
-        teamId: team.teamId,
-        typeOfSharing: team.typeOfSharing,
-        action: 'remove',
-      }));
-
-      updatedData.sharedTeams = [
-        ...(updatedData.sharedTeams || []),
-        ...removedTeamsData
-      ];
-    }
-
-    if (updatedTeams.length > 0) {
-      const updatedTeamsData = updatedTeams.map((team) => ({
-        teamId: team.teamId,
-        typeOfSharing: team.typeOfSharing,
-        action: 'update',
-      }));
-
-      updatedData.sharedTeams = [
-        ...(updatedData.sharedTeams || []),
-        ...updatedTeamsData
-      ];
-    }
-
-    if (updatedData.sharedTeams?.length === 0) {
-      updatedData.isShared = false;
-      delete updatedData.sharedTeams;
-    }
-
-    return updatedData;
-  };
-
 
   const onSubmit = async (data: CannedResponseFormValues) => {
     if (!response) return;
 
     try {
       setLoading(true);
+      // Transform the form shared data to match CannedResponseShare interface
+      const transformedSharedWith: CannedResponseShare[] = data.sharedWith?.map(share => ({
+        id: Date.now().toString() + Math.random().toString(36).substr(2, 9), // Generate a unique ID
+        responseId: response.id,
+        sharedWith: {
+          teamId: share.teamId,
+          teamName: share.teamName,
+        },
+        permissions: share.permissions,
+        createdAt: new Date().toISOString(),
+      })) || [];
 
-      // Create the object with the updated fields
-      const updatedCannedResponse = createUpdatedCannedResponseObject(response, data);
-      console.log(data);
-
-      console.log(updatedCannedResponse);
-
-      if (Object.keys(updatedCannedResponse).length === 1) {
-        // If no fields other than 'id' are present, it means no updates were made
-        toast({
-          title: "No changes",
-          description: "No changes were made to the canned response.",
-        });
-        return;
-      }
-
-      await cannedResponseService.updateCannedResponse(updatedCannedResponse as UpdateCannedResponse);
-
+      await dispatch(updateCannedResponse({
+        ...response,
+        title: data.title,
+        content: data.content,
+        shortcut: data.shortcut,
+        category: data.category,
+        isShared: data.isShared,
+        sharedWith: transformedSharedWith,
+        updatedAt: new Date().toISOString(),
+      })).unwrap();
+      
       toast({
         title: "Success",
         description: "Canned response updated successfully",
       });
-
+      
       navigate('/home/settings/canned-responses');
     } catch (error) {
-      console.error(error);
       toast({
         title: "Error",
         description: "Failed to update canned response",
@@ -304,27 +142,19 @@ const CannedResponseDetail = () => {
   };
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(response?.message || '');
+    navigator.clipboard.writeText(response?.content || '');
     toast({
       title: "Copied",
       description: "Response content copied to clipboard",
     });
   };
 
-  if (!responseLoading && !response) {
+  if (!response) {
     return (
       <div className="p-6">
         <div className="text-red-500">Response not found</div>
       </div>
     );
-  }
-
-  if (responseLoading) {
-    return (
-      <div className="flex items-center justify-center py-16">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    )
   }
 
   return (
@@ -348,14 +178,14 @@ const CannedResponseDetail = () => {
             <Copy className="h-4 w-4 mr-2" />
             Copy
           </Button>
-          {/* <Button variant="outline" size="sm">
-              <History className="h-4 w-4 mr-2" />
-              History
-            </Button> */}
-          {/* <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm">
+            <History className="h-4 w-4 mr-2" />
+            History
+          </Button>
+          <Button variant="outline" size="sm">
             <Star className="h-4 w-4 mr-2" />
             Favorite
-          </Button> */}
+          </Button>
         </div>
       </div>
 
@@ -370,12 +200,12 @@ const CannedResponseDetail = () => {
                 <CardContent className="space-y-4">
                   <FormField
                     control={form.control}
-                    name="name"
+                    name="title"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Name</FormLabel>
+                        <FormLabel>Title</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="Enter a name" />
+                          <Input {...field} placeholder="Enter a title" />
                         </FormControl>
                       </FormItem>
                     )}
@@ -383,10 +213,10 @@ const CannedResponseDetail = () => {
 
                   <FormField
                     control={form.control}
-                    name="message"
+                    name="content"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Message</FormLabel>
+                        <FormLabel>Content</FormLabel>
                         <FormControl>
                           <CannedResponseEditor
                             content={field.value}
@@ -468,14 +298,14 @@ const CannedResponseDetail = () => {
                             <SelectValue placeholder="Select team" />
                           </SelectTrigger>
                           <SelectContent>
-                            {teams.map(team => (
+                            {mockTeams.map(team => (
                               <SelectItem key={team.id} value={team.id}>
                                 {team.name}
                               </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
-
+                        
                         <Select value={selectedPermission} onValueChange={(val: 'view' | 'edit') => setSelectedPermission(val)}>
                           <SelectTrigger className="w-[150px]">
                             <SelectValue placeholder="Permissions" />
@@ -492,14 +322,14 @@ const CannedResponseDetail = () => {
                       </div>
 
                       <div className="space-y-2">
-                        {form.watch('sharedTeams')?.map((share, index) => (
+                        {form.watch('sharedWith')?.map((share, index) => (
                           <div key={index} className="flex items-center justify-between p-2 border rounded">
                             <div>
                               <span className="font-medium">
-                                {teams?.find(t => t.id === share.teamId)?.name}
+                                {mockTeams.find(t => t.id === share.teamId)?.name}
                               </span>
                               <span className="ml-2 text-sm text-muted-foreground">
-                                ({share.typeOfSharing === 'view' ? 'View only' : 'Can edit'})
+                                ({share.permissions === 'view' ? 'View only' : 'Can edit'})
                               </span>
                             </div>
                             <Button
@@ -535,18 +365,16 @@ const CannedResponseDetail = () => {
             <CardContent className="space-y-4">
               <div>
                 <div className="text-sm font-medium">Total Uses</div>
-                <div className="text-2xl font-bold">{response.numberOfTimesUsed || 0}</div>
+                <div className="text-2xl font-bold">{response.usageStats?.totalUses || 0}</div>
               </div>
-              {/* <Separator /> */}
+              <Separator />
               <div>
-                {/* <div className="text-sm font-medium">Last Used</div> */}
-                {/* <div className="text-muted-foreground">
-                  {response.usageStats?.lastUsed ? new Date(response.).toLocaleDateString() : 'Never'}
+                <div className="text-sm font-medium">Last Used</div>
+                <div className="text-muted-foreground">
+                  {response.usageStats?.lastUsed ? new Date(response.usageStats.lastUsed).toLocaleDateString() : 'Never'}
                 </div>
-                          TODO: Implement last used date
-                */}
               </div>
-              {/* <Separator />
+              <Separator />
               <div>
                 <div className="text-sm font-medium">Used By</div>
                 <div className="mt-2 flex flex-wrap gap-2">
@@ -557,13 +385,10 @@ const CannedResponseDetail = () => {
                   ))}
                 </div>
               </div>
-                    // TODO: Implement used by users
-              
-              */}
             </CardContent>
           </Card>
 
-          {/* <Card>
+          <Card>
             <CardHeader>
               <CardTitle>Version History</CardTitle>
             </CardHeader>
@@ -585,9 +410,6 @@ const CannedResponseDetail = () => {
               ))}
             </CardContent>
           </Card>
-          
-                    /// TODO: Implement version history
-          */}
         </div>
       </div>
     </div>
@@ -595,3 +417,4 @@ const CannedResponseDetail = () => {
 };
 
 export default CannedResponseDetail;
+

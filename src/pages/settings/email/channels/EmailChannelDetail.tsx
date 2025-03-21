@@ -93,17 +93,17 @@ const EmailChannelDetail = () => {
           ) : (
             <ChannelInfo
               senderName={channel.senderName}
-              email={channel.emailAddress}
-              autoBccEmail={channel.autoBccMail}
-              noReplyEmail={channel.noReplyMail}
+              email={channel.email}
+              autoBccEmail={channel.autoBccEmail}
+              noReplyEmail={channel.noReplyEmail}
             />
           )}
 
           <div className="pt-6 border-t">
             <ChannelEmailSettings
-              allowAgentConversations={editedChannel?.allowAgentOutbound || false}
-              useAgentNames={editedChannel?.allowAgentName || false}
-              useOriginalSender={editedChannel?.orignalSenderAsRequester || false}
+              allowAgentConversations={editedChannel?.allowAgentConversations || false}
+              useAgentNames={editedChannel?.useAgentNames || false}
+              useOriginalSender={editedChannel?.useOriginalSender || false}
               onSettingChange={handleSettingChange}
               isEditing={isEditing}
             />

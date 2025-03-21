@@ -1,35 +1,47 @@
 
 import { configureStore } from '@reduxjs/toolkit';
-import actionsReducer from './slices/actions/actionsSlice';
-import chatbotsReducer from './slices/chatbots/chatbotsSlice';
+import authReducer from './slices/auth/authSlice';
+import { actionsReducer } from './slices/actions/actionsSlice';
 import contentReducer from './slices/content/contentSlice';
-import authReducer from './slices/authSlice';
-import companiesReducer from './slices/companies/companiesSlice';
+import contentCenterReducer from './slices/automation/contentCenterSlice';
 import contactsReducer from './slices/contacts/contactsSlice';
-import teammatesReducer from './slices/teammates/teammatesSlice';
-import teamsReducer from './slices/teams/teamsSlice';
-import securityReducer from './slices/securitySlice';
+import companiesReducer from './slices/companies/companiesSlice';
+import inboxReducer from './slices/inboxSlice';
 import tagsReducer from './slices/tagsSlice';
-import emailChannelsReducer from './slices/emailChannels/emailChannelsSlice';
-import cannedResponsesReducer from './slices/cannedResponses/cannedResponsesSlice';
+import { teammatesReducer } from './slices/teammates/teammatesSlice';
+import teamsReducer from './slices/teams/teamsSlice';
+import { emailChannelsReducer } from './slices/emailChannels/emailChannelsSlice';
+import { cannedResponsesReducer } from './slices/cannedResponses/cannedResponsesSlice';
+import { chatbotsReducer } from './slices/chatbots/chatbotsSlice';
+import userReducer from './slices/user/userSlice';
+
+// Define the root reducer with all slices
+const rootReducer = {
+  auth: authReducer,
+  actions: actionsReducer,
+  content: contentReducer,
+  contentCenter: contentCenterReducer,
+  contacts: contactsReducer,
+  companies: companiesReducer,
+  inbox: inboxReducer,
+  tags: tagsReducer,
+  teammates: teammatesReducer,
+  teams: teamsReducer,
+  emailChannels: emailChannelsReducer,
+  cannedResponses: cannedResponsesReducer,
+  chatbots: chatbotsReducer,
+  user: userReducer,
+};
 
 export const store = configureStore({
-  reducer: {
-    actions: actionsReducer,
-    chatbots: chatbotsReducer,
-    content: contentReducer,
-    auth: authReducer,
-    companies: companiesReducer,
-    contacts: contactsReducer,
-    teammates: teammatesReducer,
-    teams: teamsReducer,
-    security: securityReducer,
-    tags: tagsReducer,
-    emailChannels: emailChannelsReducer,
-    cannedResponses: cannedResponsesReducer,
-  },
+  reducer: rootReducer,
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: false,
+    }),
 });
 
-export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
+export type RootState = ReturnType<typeof store.getState>;
 
+export default store;

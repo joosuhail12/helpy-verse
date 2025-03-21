@@ -1,16 +1,16 @@
-import { useEffect, useState } from 'react';
-import {
-  FormField,
-  FormItem,
-  FormLabel,
+
+import { useState } from 'react';
+import { 
+  FormField, 
+  FormItem, 
+  FormLabel, 
   FormControl,
   FormDescription
 } from '@/components/ui/form';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { toast } from '@/components/ui/use-toast';
-import {
+import { 
   Select,
   SelectContent,
   SelectItem,
@@ -21,8 +21,7 @@ import { X } from 'lucide-react';
 import { CollapsibleFormSection } from '@/components/settings/cannedResponses/form/CollapsibleFormSection';
 import { UseFormReturn } from 'react-hook-form';
 import type { FormValues } from '../formSchema';
-import { teamsService } from '@/api/services/teamService.service';
-import { TeamNew } from '@/types/team';
+import { mockTeams } from '@/store/slices/teams/mockData';
 
 interface SharingSettingsSectionProps {
   form: UseFormReturn<FormValues>;
@@ -31,29 +30,19 @@ interface SharingSettingsSectionProps {
 export const SharingSettingsSection = ({ form }: SharingSettingsSectionProps) => {
   const [selectedTeam, setSelectedTeam] = useState('');
   const [selectedPermission, setSelectedPermission] = useState<'view' | 'edit'>('view');
-  const [teams, setTeams] = useState<TeamNew[]>([]);
 
   const handleAddShare = () => {
     if (!selectedTeam) return;
 
-    const currentShares = form.getValues('sharedTeams') || [];
-    const teamExists = currentShares.some((share) => share.teamId === selectedTeam);
+    const currentShares = form.getValues('sharedWith') || [];
+    const team = mockTeams.find(t => t.id === selectedTeam);
 
-    if (teamExists) {
-      toast({
-        title: "Error",
-        description: "Team already shared",
-        variant: "destructive",
-      });
-
-      return;
-    }
-
-    form.setValue('sharedTeams', [
+    form.setValue('sharedWith', [
       ...currentShares,
       {
         teamId: selectedTeam,
-        typeOfSharing: selectedPermission,
+        teamName: team?.name,
+        permissions: selectedPermission,
       }
     ]);
 
@@ -62,29 +51,9 @@ export const SharingSettingsSection = ({ form }: SharingSettingsSectionProps) =>
   };
 
   const handleRemoveShare = (index: number) => {
-    const currentShares = form.getValues('sharedTeams') || [];
-    form.setValue('sharedTeams', currentShares.filter((_, i) => i !== index));
+    const currentShares = form.getValues('sharedWith') || [];
+    form.setValue('sharedWith', currentShares.filter((_, i) => i !== index));
   };
-
-  useEffect(() => {
-    const getAllTeams = async () => {
-      try {
-        const teams = await teamsService.getAllTeams();
-        console.log(teams);
-
-        setTeams(teams.data);
-      } catch (error) {
-        console.error('Error fetching teams:', error);
-        toast({
-          title: "Error",
-          description: "Failed to fetch teams",
-          variant: "destructive",
-        });
-      }
-    }
-
-    getAllTeams();
-  }, []);
 
   return (
     <CollapsibleFormSection title="Sharing Settings">
@@ -117,14 +86,14 @@ export const SharingSettingsSection = ({ form }: SharingSettingsSectionProps) =>
                 <SelectValue placeholder="Select team" />
               </SelectTrigger>
               <SelectContent>
-                {teams.map(team => (
+                {mockTeams.map(team => (
                   <SelectItem key={team.id} value={team.id}>
                     {team.name}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-
+            
             <Select value={selectedPermission} onValueChange={(val: 'view' | 'edit') => setSelectedPermission(val)}>
               <SelectTrigger className="w-[150px]">
                 <SelectValue placeholder="Permissions" />
@@ -141,14 +110,14 @@ export const SharingSettingsSection = ({ form }: SharingSettingsSectionProps) =>
           </div>
 
           <div className="space-y-2">
-            {form.watch('sharedTeams')?.map((share, index) => (
+            {form.watch('sharedWith')?.map((share, index) => (
               <div key={index} className="flex items-center justify-between p-2 border rounded">
                 <div>
                   <span className="font-medium">
-                    {teams.find(t => t.id === share.teamId)?.name}
+                    {mockTeams.find(t => t.id === share.teamId)?.name}
                   </span>
                   <span className="ml-2 text-sm text-muted-foreground">
-                    ({share.typeOfSharing === 'view' ? 'View only' : 'Can edit'})
+                    ({share.permissions === 'view' ? 'View only' : 'Can edit'})
                   </span>
                 </div>
                 <Button

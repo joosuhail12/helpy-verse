@@ -1,36 +1,46 @@
-import { useState } from 'react';
+
+import { useEffect, useState } from 'react';
 import type { Tag, SortField, FilterEntity } from '@/types/tag';
+import { tagService } from '@/api/services/tagService';
 
-export const useTags = (searchQuery: string, filterEntity: FilterEntity, sortField: SortField, sortDirection: 'asc' | 'desc') => {
-  const [tags, setTags] = useState<Tag[]>();
+export const useTags = (
+  searchQuery: string = "",
+  filterEntity: FilterEntity = "all",
+  sortField: SortField = "name",
+  sortDirection: 'asc' | 'desc' = 'asc'
+) => {
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  let filteredTags = tags.filter(tag =>
-    tag.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  useEffect(() => {
+    const fetchTags = async () => {
+      try {
+        setIsLoading(true);
+        // Call your tag service API here
+        const response = await tagService.fetchTags({
+          searchQuery,
+          filterEntity,
+          sortField,
+          sortDirection
+        });
+        setTags(response.data || []);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching tags:', err);
+        setError('Failed to load tags');
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  if (filterEntity !== 'all') {
-    filteredTags = filteredTags.filter(tag => tag.counts[filterEntity] > 0);
-  }
-
-  filteredTags.sort((a, b) => {
-    let valueA: any = sortField === 'name' ? a.name : 
-                      sortField === 'lastUsed' ? new Date(a.lastUsed).getTime() :
-                      sortField === 'createdAt' ? new Date(a.createdAt).getTime() :
-                      a.counts[sortField];
-    let valueB: any = sortField === 'name' ? b.name :
-                      sortField === 'lastUsed' ? new Date(b.lastUsed).getTime() :
-                      sortField === 'createdAt' ? new Date(b.createdAt).getTime() :
-                      b.counts[sortField];
-    
-    if (sortDirection === 'desc') {
-      [valueA, valueB] = [valueB, valueA];
-    }
-    
-    return valueA < valueB ? -1 : valueA > valueB ? 1 : 0;
-  });
+    fetchTags();
+  }, [searchQuery, filterEntity, sortField, sortDirection]);
 
   return {
-    tags: filteredTags,
-    setTags,
+    data: tags,
+    isLoading,
+    error,
+    setTags
   };
 };

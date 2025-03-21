@@ -1,75 +1,77 @@
 
-import React from 'react';
-
-export interface MentionItem {
-  label: string;
-  value: string;
-}
+import React, { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 
 interface MentionListProps {
-  items: MentionItem[];
-  command: (item: MentionItem) => void;
+  items: { label: string; value: string }[];
+  command: (props: { id: string }) => void;
 }
 
-class MentionList {
-  element: HTMLElement;
-  items: MentionItem[];
-  command: (item: MentionItem) => void;
-  selectedIndex: number;
+const MentionList = forwardRef((props: MentionListProps, ref) => {
+  const [selectedIndex, setSelectedIndex] = useState(0);
 
-  constructor({ items, command }: MentionListProps) {
-    this.items = items;
-    this.command = command;
-    this.selectedIndex = 0;
-
-    this.element = document.createElement('div');
-    this.element.className = 'bg-white shadow-lg rounded-lg p-2 space-y-1';
-    this.createItems();
-  }
-
-  createItems() {
-    this.element.innerHTML = '';
-    this.items.forEach((item, index) => {
-      const button = document.createElement('button');
-      button.className = `w-full text-left px-2 py-1 rounded ${
-        index === this.selectedIndex ? 'bg-primary text-primary-foreground' : 'hover:bg-secondary'
-      }`;
-      button.textContent = item.label;
-      button.onclick = () => this.selectItem(index);
-      this.element.appendChild(button);
-    });
-  }
-
-  selectItem(index: number) {
-    this.selectedIndex = index;
-    this.command(this.items[index]);
-  }
-
-  update({ items }: { items: MentionItem[] }) {
-    this.items = items;
-    this.createItems();
-  }
-
-  onKeyDown({ event }: { event: KeyboardEvent }) {
-    if (event.key === 'ArrowUp') {
-      this.selectedIndex = (this.selectedIndex + this.items.length - 1) % this.items.length;
-      this.createItems();
-      return true;
+  const selectItem = (index: number) => {
+    const item = props.items[index];
+    if (item) {
+      props.command({ id: item.value });
     }
+  };
 
-    if (event.key === 'ArrowDown') {
-      this.selectedIndex = (this.selectedIndex + 1) % this.items.length;
-      this.createItems();
-      return true;
-    }
+  const upHandler = () => {
+    setSelectedIndex((selectedIndex + props.items.length - 1) % props.items.length);
+  };
 
-    if (event.key === 'Enter') {
-      this.selectItem(this.selectedIndex);
-      return true;
-    }
+  const downHandler = () => {
+    setSelectedIndex((selectedIndex + 1) % props.items.length);
+  };
 
-    return false;
+  const enterHandler = () => {
+    selectItem(selectedIndex);
+  };
+
+  useEffect(() => setSelectedIndex(0), [props.items]);
+
+  useImperativeHandle(ref, () => ({
+    onKeyDown: ({ event }: { event: KeyboardEvent }) => {
+      if (event.key === 'ArrowUp') {
+        upHandler();
+        return true;
+      }
+
+      if (event.key === 'ArrowDown') {
+        downHandler();
+        return true;
+      }
+
+      if (event.key === 'Enter') {
+        enterHandler();
+        return true;
+      }
+
+      return false;
+    },
+  }));
+
+  if (props.items.length === 0) {
+    return null;
   }
-}
+
+  return (
+    <div className="mentions-menu">
+      <ul className="bg-white shadow-md rounded border border-gray-200 py-1 max-h-60 overflow-y-auto">
+        {props.items.map((item, index) => (
+          <li
+            key={index}
+            className={`px-4 py-2 hover:bg-gray-100 cursor-pointer ${index === selectedIndex ? 'bg-gray-100' : ''}`}
+            onClick={() => selectItem(index)}
+          >
+            {item.label}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+});
+
+MentionList.displayName = 'MentionList';
 
 export default MentionList;

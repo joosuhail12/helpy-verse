@@ -43,7 +43,7 @@ const TeamChannelSelector = ({
               </button>
             </Badge>
           )}
-          {selectedEmailChannels?.map((channelId) => {
+          {selectedEmailChannels.map((channelId) => {
             const channel = AVAILABLE_EMAIL_CHANNELS.find(c => c.id === channelId);
             return (
               <Badge 
@@ -62,7 +62,7 @@ const TeamChannelSelector = ({
               </Badge>
             );
           })}
-          {selectedEmailChannels?.length === 0 && !selectedChatChannel && (
+          {selectedEmailChannels.length === 0 && !selectedChatChannel && (
             <p className="text-sm text-muted-foreground">
               No channels selected (team will have access to all channels)
             </p>
@@ -96,7 +96,7 @@ const TeamChannelSelector = ({
             <ScrollArea className="h-[200px] pr-4">
               <div className="space-y-2">
                 {AVAILABLE_EMAIL_CHANNELS.map((channel) => {
-                  const isSelected = selectedEmailChannels?.includes(channel.id);
+                  const isSelected = selectedEmailChannels.includes(channel.id);
                   if (!isSelected) {
                     return (
                       <Button

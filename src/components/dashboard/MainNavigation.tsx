@@ -25,7 +25,11 @@ const MainNavigation = ({ activeMainNav, setActiveMainNav, navigate }: MainNavig
         mainNavItems.forEach((item, index) => {
           if (event.key === `${index + 1}`) {
             setActiveMainNav(item.id);
-            navigate(item.path);
+            // Only navigate if it's a direct route without children
+            const hasSubNav = item.id !== 'home';
+            if (!hasSubNav) {
+              navigate(item.path);
+            }
           }
         });
       }
@@ -38,7 +42,7 @@ const MainNavigation = ({ activeMainNav, setActiveMainNav, navigate }: MainNavig
   return (
     <div className="flex flex-col items-center justify-center gap-3">
       {mainNavItems.map((item, index) => {
-        const isActive = location.pathname.startsWith(`/home/${item.id}`);
+        const isActive = activeMainNav === item.id || location.pathname.startsWith(`/home/${item.id}`);
         
         return (
           <TooltipProvider key={item.id}>
@@ -54,7 +58,11 @@ const MainNavigation = ({ activeMainNav, setActiveMainNav, navigate }: MainNavig
                   }`}
                   onClick={() => {
                     setActiveMainNav(item.id);
-                    navigate(item.path);
+                    // Only navigate if it's a direct route without children
+                    const hasSubNav = item.id !== 'home';
+                    if (!hasSubNav) {
+                      navigate(item.path);
+                    }
                   }}
                 >
                   {isActive && (

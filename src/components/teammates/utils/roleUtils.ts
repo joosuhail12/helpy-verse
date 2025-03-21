@@ -3,12 +3,11 @@ import type { Teammate } from '@/types/teammate';
 
 export const getRoleBadgeVariant = (role: Teammate['role']) => {
   switch (role) {
-    case 'SUPER_ADMIN':
-    case 'ORGANIZATION_ADMIN':
+    case 'admin':
       return 'default';
-    case 'WORKSPACE_ADMIN':
+    case 'supervisor':
       return 'secondary';
-    case 'WORKSPACE_AGENT':
+    case 'agent':
       return 'outline';
     default:
       return 'secondary';
@@ -17,14 +16,14 @@ export const getRoleBadgeVariant = (role: Teammate['role']) => {
 
 export const getRoleDescription = (role: Teammate['role']) => {
   switch (role) {
-    case 'SUPER_ADMIN':
-      return 'Full access to all features and settings across organizations';
-    case 'ORGANIZATION_ADMIN':
-      return 'Full access to all features and settings within the organization';
-    case 'WORKSPACE_ADMIN':
-      return 'Can manage team members and view reports within workspace';
-    case 'WORKSPACE_AGENT':
+    case 'admin':
+      return 'Full access to all features and settings';
+    case 'supervisor':
+      return 'Can manage team members and view reports';
+    case 'agent':
       return 'Can handle tickets and chat with customers';
+    case 'viewer':
+      return 'Can only view tickets and reports';
     default:
       return '';
   }

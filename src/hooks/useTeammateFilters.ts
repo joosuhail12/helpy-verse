@@ -30,7 +30,7 @@ export const useTeammateFilters = (teammates: Teammate[]) => {
       const recentDate = subDays(new Date(), 7);
       return new Date(teammate.createdAt) >= recentDate;
     }
-    console.log(teammate.role, roleFilter, matchesRole, matchesStatus, matchesSearch);
+
     return matchesSearch && matchesRole && matchesStatus;
   });
 

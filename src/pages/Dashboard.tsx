@@ -1,218 +1,145 @@
 
-import { useEffect, useState } from 'react';
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Users, Settings, Headphones, Home, MessageSquare, HardDrive, Bot, BookText, Tag, Send, ArrowRight } from 'lucide-react';
-import MainNavigation from '@/components/dashboard/MainNavigation';
-import SubNavigation from '@/components/dashboard/SubNavigation';
-import HeaderNavigation from '@/components/dashboard/HeaderNavigation';
-import UserProfileCard from '@/components/dashboard/UserProfileCard';
-import { cn } from '@/lib/utils';
-import { type MainNavItem } from '@/components/dashboard/types/navigation';
-import { CaslProvider } from '@/components/CaslProvider';
-
-const mainNavItems: MainNavItem[] = [
-  {
-    id: 'home',
-    title: 'Home',
-    path: '/home',
-    icon: Home
-  },
-  {
-    id: 'tickets',
-    title: 'Tickets',
-    path: '/home/tickets',
-    icon: Headphones,
-    children: [
-      {
-        title: 'All Tickets',
-        path: '/home/tickets'
-      },
-      {
-        title: 'My Tickets',
-        path: '/home/tickets/my-tickets'
-      },
-      {
-        title: 'Unassigned',
-        path: '/home/tickets/unassigned'
-      }
-    ]
-  },
-  {
-    id: 'contacts',
-    title: 'Contacts',
-    path: '/home/contacts',
-    icon: Users,
-    children: [
-      {
-        title: 'All Contacts',
-        path: '/home/contacts'
-      },
-      {
-        title: 'Companies',
-        path: '/home/contacts/companies'
-      },
-      {
-        title: 'Tags',
-        path: '/home/contacts/tags'
-      }
-    ]
-  },
-  {
-    id: 'teammates',
-    title: 'Teammates',
-    path: '/home/teammates',
-    icon: Users,
-  },
-  {
-    id: 'channels',
-    title: 'Channels',
-    path: '/home/channels',
-    icon: Send,
-    children: [
-      {
-        title: 'Email',
-        path: '/home/channels/email'
-      },
-      {
-        title: 'Live Chat',
-        path: '/home/channels/chat'
-      },
-      {
-        title: 'Knowledge Base',
-        path: '/home/channels/kb'
-      }
-    ]
-  },
-  {
-    id: 'automation',
-    title: 'Automation',
-    path: '/home/automation',
-    icon: Bot,
-    children: [
-      {
-        title: 'Chatbots',
-        path: '/home/automation/chatbots'
-      },
-      {
-        title: 'Content Manager',
-        path: '/home/automation/content'
-      },
-      {
-        title: 'Actions',
-        path: '/home/automation/actions'
-      }
-    ]
-  },
-  {
-    id: 'settings',
-    title: 'Settings',
-    path: '/home/settings',
-    icon: Settings,
-    children: [
-      {
-        title: 'General',
-        path: '/home/settings'
-      },
-      {
-        title: 'Teams',
-        path: '/home/settings/teams'
-      },
-      {
-        title: 'Custom Data',
-        path: '/home/settings/custom-data'
-      },
-      {
-        title: 'Canned Responses',
-        path: '/home/settings/canned-responses'
-      },
-      {
-        title: 'Tags',
-        path: '/home/settings/tags'
-      }
-    ]
-  }
-];
+import { fetchUserProfile } from '@/store/slices/user/userSlice';
 
 const Dashboard = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const [activeMainNav, setActiveMainNav] = useState<string>('');
-  const [subNavItems, setSubNavItems] = useState<any[]>([]);
-
-  const userData = useAppSelector((state) => state.auth);
-  console.log('Current auth state:', userData);
+  const dispatch = useAppDispatch();
+  const auth = useAppSelector((state) => state.auth);
+  const userState = useAppSelector((state) => state.user);
+  
+  // Safe access to user with fallback for undefined
+  const user = userState?.user || null;
+  const loading = userState?.loading || false;
 
   useEffect(() => {
-    const currentPath = location.pathname;
-    console.log('Current path:', currentPath);
-    
-    // Find which main nav item is active based on the current path
-    const activeItem = mainNavItems.find(item => 
-      currentPath === item.path || currentPath.startsWith(`${item.path}/`)
-    );
-    
-    const activeId = activeItem?.id || '';
-    setActiveMainNav(activeId);
-    console.log('Active main nav:', activeId);
-    
-    // Set sub-navigation items based on the active main nav
-    if (activeItem && activeItem.children) {
-      setSubNavItems(activeItem.children);
-    } else {
-      setSubNavItems([]);
+    if (auth.isAuthenticated) {
+      dispatch(fetchUserProfile());
     }
-  }, [location.pathname]);
-  
-  // Get the appropriate email display - note the fallback for development
-  const userEmail = "user@example.com"; // Default fallback email
-  
-  return (
-    <CaslProvider>
-      <div className="flex h-screen overflow-hidden">
-        {/* Main Navigation */}
-        <MainNavigation 
-          items={mainNavItems} 
-          activeItem={activeMainNav}
-          isCollapsed={isCollapsed}
-          onCollapsedChange={setIsCollapsed}
-        />
-        
-        {/* Sub Navigation - conditionally rendered */}
-        <AnimatePresence mode="wait">
-          {subNavItems.length > 0 && (
-            <SubNavigation 
-              items={subNavItems} 
-              isCollapsed={isCollapsed} 
-              onToggle={() => setIsCollapsed(!isCollapsed)}
-            />
-          )}
-        </AnimatePresence>
-        
-        {/* Main Content */}
-        <motion.div 
-          className={cn(
-            "flex flex-col flex-1 h-full overflow-hidden",
-            subNavItems.length === 0 && !isCollapsed ? "ml-[280px]" : "",
-            subNavItems.length === 0 && isCollapsed ? "ml-[80px]" : "",
-            subNavItems.length > 0 ? "ml-0" : ""
-          )}
-          initial={{ opacity: 0.8 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.2 }}
-        >
-          {/* Header */}
-          <HeaderNavigation email={userEmail} />
-          
-          {/* Content Area */}
-          <div className="flex-1 overflow-auto bg-gray-50">
-            <Outlet />
-          </div>
-        </motion.div>
+  }, [dispatch, auth.isAuthenticated]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
-    </CaslProvider>
+    );
+  }
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold mb-8">Dashboard</h1>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Contacts</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">1,243</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Active Tickets</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">23</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Response Rate</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">94%</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Tabs defaultValue="overview">
+        <TabsList className="mb-6">
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="activity">Recent Activity</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+        </TabsList>
+        <TabsContent value="overview">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Welcome Back{user?.firstName ? `, ${user.firstName}` : ''}!</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  Here's a summary of your workspace activity and pending tasks.
+                </p>
+                <div className="mt-4 space-y-4">
+                  <div>
+                    <p className="font-medium">Your Role</p>
+                    <p className="text-muted-foreground">{user?.role || 'User'}</p>
+                  </div>
+                  <div>
+                    <p className="font-medium">Email</p>
+                    <p className="text-muted-foreground">{user?.email || 'Not available'}</p>
+                  </div>
+                  <div>
+                    <p className="font-medium">Workspace</p>
+                    <p className="text-muted-foreground">{user?.workspace?.name || 'Default Workspace'}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Recent Notifications</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="border-l-4 border-blue-500 pl-4 py-2">
+                    <p className="font-medium">New message received</p>
+                    <p className="text-sm text-muted-foreground">10 minutes ago</p>
+                  </div>
+                  <div className="border-l-4 border-green-500 pl-4 py-2">
+                    <p className="font-medium">Task completed</p>
+                    <p className="text-sm text-muted-foreground">1 hour ago</p>
+                  </div>
+                  <div className="border-l-4 border-yellow-500 pl-4 py-2">
+                    <p className="font-medium">Meeting reminder</p>
+                    <p className="text-sm text-muted-foreground">Tomorrow, 10:00 AM</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+        <TabsContent value="activity">
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Activity</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {/* Activity content would go here */}
+              <p className="text-muted-foreground">Your recent activities will appear here.</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="analytics">
+          <Card>
+            <CardHeader>
+              <CardTitle>Analytics</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {/* Analytics content would go here */}
+              <p className="text-muted-foreground">Analytics data will be displayed here.</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 };
 

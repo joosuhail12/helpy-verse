@@ -1,23 +1,18 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { CustomField } from '@/types/customData';
-import { customDataService } from '@/api/services/customData.service';
+import { mockCustomFields } from '@/mock/customFields';
+import type { CustomFields } from '@/types/customField';
 
-// Convert from contact to customer for API
-const mapEntityType = (type: 'ticket' | 'contact' | 'company'): 'ticket' | 'customer' | 'company' => {
-  if (type === 'contact') return 'customer';
-  return type;
+// This would normally fetch from your Node.js backend
+const fetchCustomFields = async (): Promise<CustomFields> => {
+  // Simulating API call
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  return mockCustomFields;
 };
 
-const fetchCustomFields = async (table: 'ticket' | 'contact' | 'company'): Promise<CustomField[]> => {
-  const mappedType = mapEntityType(table);
-  const response = await customDataService.getAllCustomData(mappedType);
-  return response || [];
-};
-
-export const useCustomFields = (table: 'ticket' | 'contact' | 'company') => {
+export const useCustomFields = (table: 'tickets' | 'contacts' | 'companies') => {
   return useQuery({
     queryKey: ['customFields', table],
-    queryFn: () => fetchCustomFields(table),
+    queryFn: fetchCustomFields
   });
 };

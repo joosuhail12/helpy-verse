@@ -10,7 +10,7 @@ import {
 import { Import, FileDown } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { exportFieldsToCSV, exportFieldsToJSON, parseImportedCSV, parseImportedJSON } from './utils/importExportUtils';
-import type { CustomField } from '@/types/customData';
+import type { CustomField } from '@/types/customField';
 
 interface ImportExportFieldsProps {
   fields: CustomField[];
@@ -27,8 +27,8 @@ const ImportExportFields = ({ fields, table, onImport }: ImportExportFieldsProps
     if (!file) return;
 
     try {
-      let importedFields: any[];
-
+      let importedFields: CustomField[];
+      
       if (file.name.endsWith('.csv')) {
         importedFields = await parseImportedCSV(file);
       } else if (file.name.endsWith('.json')) {
@@ -37,19 +37,7 @@ const ImportExportFields = ({ fields, table, onImport }: ImportExportFieldsProps
         throw new Error('Unsupported file format. Please use CSV or JSON.');
       }
 
-      // Convert to the expected CustomField format
-      const convertedFields = importedFields.map(field => ({
-        ...field,
-        entityType: field.entityType || table,
-        fieldType: field.fieldType || field.type,
-        isRequired: field.isRequired !== undefined ? field.isRequired : field.required,
-        placeholder: field.placeholder || "",
-        defaultValue: field.defaultValue || null,
-        options: field.options || null,
-        description: field.description || null
-      }));
-      
-      onImport(convertedFields);
+      onImport(importedFields);
       toast({
         title: "Import successful",
         description: `${importedFields.length} fields were imported successfully.`,
@@ -77,21 +65,16 @@ const ImportExportFields = ({ fields, table, onImport }: ImportExportFieldsProps
         accept=".csv,.json"
         className="hidden"
       />
-      {/*
-TODO: Implement ImportExportFields component
-
-*/}
-
-
-      {/* <Button
+      
+      <Button
         variant="outline"
         onClick={() => fileInputRef.current?.click()}
       >
         <Import className="w-4 h-4 mr-2" />
         Import Fields
-      </Button> */}
+      </Button>
 
-      {/* <DropdownMenu>
+      <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="outline">
             <FileDown className="w-4 h-4 mr-2" />
@@ -106,7 +89,7 @@ TODO: Implement ImportExportFields component
             Export as JSON
           </DropdownMenuItem>
         </DropdownMenuContent>
-      </DropdownMenu> */}
+      </DropdownMenu>
     </div>
   );
 };

@@ -1,11 +1,11 @@
 
 import { useCustomDataMutations } from "./useCustomDataMutations";
-import type { CustomField } from "@/types/customData";
+import type { CustomField } from "@/types/customField";
 
 export const useCustomFieldImport = () => {
   const { addCustomField } = useCustomDataMutations();
 
-  const handleImport = async (importedFields: CustomField[], table: 'ticket' | 'contact' | 'company') => {
+  const handleImport = async (importedFields: CustomField[], table: 'tickets' | 'contacts' | 'companies') => {
     const timestamp = new Date().toISOString();
     // Add each imported field using the existing mutation
     for (const field of importedFields) {
@@ -13,13 +13,20 @@ export const useCustomFieldImport = () => {
         table,
         field: {
           name: field.name,
-          fieldType: field.fieldType,
-          isRequired: field.isRequired,
-          description: field.description || null,
-          options: field.options || null,
-          placeholder: field.placeholder || null,
-          defaultValue: field.defaultValue || null,
-          entityType: table === 'contact' ? 'customer' : table as any
+          type: field.type,
+          required: field.required,
+          description: field.description,
+          options: field.options,
+          validationRules: field.validationRules,
+          dependencies: field.dependencies,
+          history: [{
+            id: Math.random().toString(),
+            timestamp,
+            userId: 'system',
+            userName: 'System Import',
+            action: 'created',
+            changes: []
+          }]
         }
       });
     }

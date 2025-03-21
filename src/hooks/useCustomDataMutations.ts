@@ -1,64 +1,46 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { CustomField } from '@/types/customData';
-import { customDataService } from '@/api/services/customData.service';
+import type { CustomField } from '@/types/customField';
 
 // These would normally interact with your Node.js backend
-const addCustomFieldApi = async ({ table, field }: {
-  table: string;
-  field: Omit<CustomField, 'id' | 'createdAt' | 'updatedAt'>;
+const addCustomFieldApi = async ({ table, field }: { 
+  table: string; 
+  field: Omit<CustomField, 'id' | 'createdAt' | 'updatedAt'>; 
 }) => {
-  const body = {
-    name: field.name,
-    entityType: table as "ticket" | "customer" | "company",
-    fieldType: field.fieldType,
-    placeholder: field.placeholder || null,
-    defaultValue: field.defaultValue || null,
-    isRequired: field.isRequired,
-    options: field.options,
-    description: field.description || null
-  }
-
-  const response = await customDataService.createCustomData(body);
-
-  return response.data;
+  // Simulating API call
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  return {
+    id: Math.random().toString(),
+    ...field,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
 };
 
-const updateCustomFieldApi = async ({
-  table,
-  fieldId,
-  updates
-}: {
-  table: string;
-  fieldId: string;
-  updates: Partial<CustomField>;
+const updateCustomFieldApi = async ({ 
+  table, 
+  fieldId, 
+  updates 
+}: { 
+  table: string; 
+  fieldId: string; 
+  updates: Partial<CustomField>; 
 }) => {
-  const body = {
-    name: updates.name,
-    entityType: table as "ticket" | "customer" | "company",
-    fieldType: updates.fieldType,
-    placeholder: updates.placeholder || null,
-    defaultValue: updates.defaultValue || null,
-    isRequired: updates.isRequired,
-    options: updates.options,
-    description: updates.description || null
-  }
-
-  const response = await customDataService.updateCustomData(body, fieldId);
-
-  return response.data;
+  // Simulating API call
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  return { ...updates, id: fieldId };
 };
 
-const deleteCustomFieldApi = async ({
-  table,
-  fieldId
-}: {
-  table: string;
-  fieldId: string;
+const deleteCustomFieldApi = async ({ 
+  table, 
+  fieldId 
+}: { 
+  table: string; 
+  fieldId: string; 
 }) => {
-  const response = await customDataService.deleteCustomData(fieldId);
-
-  return response.data;
+  // Simulating API call
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  return { success: true };
 };
 
 export const useCustomDataMutations = () => {

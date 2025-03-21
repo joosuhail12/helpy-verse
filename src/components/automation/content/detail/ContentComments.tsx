@@ -6,7 +6,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { formatDistanceToNow } from 'date-fns';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { updateContent } from '@/store/slices/content/contentSlice';
-import type { Content, ContentComment } from '@/types/content';
+import type { Content, ContentComment, User } from '@/types/content';
 
 interface ContentCommentsProps {
   content: Content;
@@ -31,11 +31,12 @@ export const ContentComments = ({ content }: ContentCommentsProps) => {
       },
     };
 
-    const updatedComments = [...(content.comments || []), newComment];
+    const currentComments = Array.isArray(content.comments) ? [...content.comments] : [];
+    const updatedComments = [...currentComments, newComment];
     
     dispatch(updateContent({ 
       id: content.id, 
-      updates: { comments: updatedComments }
+      data: { comments: updatedComments }
     }));
 
     setComment('');
@@ -80,6 +81,11 @@ export const ContentComments = ({ content }: ContentCommentsProps) => {
               <p className="text-sm">{comment.text}</p>
             </div>
           ))}
+          {!content.comments?.length && (
+            <p className="text-center text-muted-foreground py-4">
+              No comments yet
+            </p>
+          )}
         </div>
       </ScrollArea>
     </div>

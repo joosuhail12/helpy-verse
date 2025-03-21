@@ -1,89 +1,151 @@
 
-import { Team } from "@/types/team";
+import { Team } from './teamsSlice';
 
 export const mockTeams: Team[] = [
   {
-    id: "1",
-    name: "Support Team",
-    icon: "Users",
-    teamMembers: [
-      { id: "1", name: "John Doe", email: "john@example.com", role: "Agent", status: "Active" },
-      { id: "2", name: "Jane Smith", email: "jane@example.com", role: "Lead", status: "Active" }
+    id: 'team-1',
+    name: 'Customer Support',
+    description: 'Front-line team handling customer inquiries and issues',
+    icon: '🎯',
+    color: '#4F46E5',
+    members: [
+      {
+        id: 'member-1',
+        name: 'Sarah Johnson',
+        email: 'sarah.j@example.com',
+        avatar: 'https://api.dicebear.com/7.x/avatars/svg?seed=Sarah',
+        role: 'manager',
+        status: 'active'
+      },
+      {
+        id: 'member-2',
+        name: 'Michael Chen',
+        email: 'michael.c@example.com',
+        avatar: 'https://api.dicebear.com/7.x/avatars/svg?seed=Michael',
+        role: 'agent',
+        status: 'active'
+      },
+      {
+        id: 'member-3',
+        name: 'Emily Davis',
+        email: 'emily.d@example.com',
+        avatar: 'https://api.dicebear.com/7.x/avatars/svg?seed=Emily',
+        role: 'agent',
+        status: 'active'
+      }
     ],
-    routingStrategy: "round-robin",
-    maxTotalTickets: 20,
-    maxOpenTickets: 10,
-    maxActiveChats: 5,
-    createdAt: "2023-01-15T09:30:00Z",
-    updatedAt: "2023-06-22T16:45:00Z",
+    channels: [
+      {
+        id: 'channel-1',
+        name: 'Support Email',
+        type: 'email',
+        isActive: true
+      },
+      {
+        id: 'channel-2',
+        name: 'Live Chat',
+        type: 'chat',
+        isActive: true
+      }
+    ],
+    routing: [
+      {
+        id: 'rule-1',
+        name: 'Priority Customers',
+        priority: 1,
+        isActive: true
+      },
+      {
+        id: 'rule-2',
+        name: 'Standard Routing',
+        priority: 2,
+        isActive: true
+      }
+    ],
     officeHours: {
-      monday: [{ start: "09:00", end: "17:00" }],
-      tuesday: [{ start: "09:00", end: "17:00" }],
-      wednesday: [{ start: "09:00", end: "17:00" }],
-      thursday: [{ start: "09:00", end: "17:00" }],
-      friday: [{ start: "09:00", end: "17:00" }],
-      saturday: [],
-      sunday: []
+      days: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
+      startTime: '09:00',
+      endTime: '17:00',
+      timezone: 'America/New_York'
     },
-    holidays: ["2023-12-25", "2024-01-01"],
-    channels: {
-      chat: "support",
-      email: ["support@example.com"]
-    }
+    holidays: [
+      {
+        id: 'holiday-1',
+        name: 'New Year\'s Day',
+        date: '2023-01-01',
+        isRecurring: true
+      },
+      {
+        id: 'holiday-2',
+        name: 'Independence Day',
+        date: '2023-07-04',
+        isRecurring: true
+      }
+    ],
+    createdAt: '2023-01-10T08:30:00Z',
+    updatedAt: '2023-06-15T14:45:00Z'
   },
   {
-    id: "2",
-    name: "Product Team",
-    icon: "Package",
-    teamMembers: [
-      { id: "3", name: "Mike Johnson", email: "mike@example.com", role: "Agent", status: "Active" },
-      { id: "4", name: "Sarah Williams", email: "sarah@example.com", role: "Lead", status: "Active" },
-      { id: "5", name: "David Brown", email: "david@example.com", role: "Agent", status: "Away" }
+    id: 'team-2',
+    name: 'Technical Support',
+    description: 'Specialized team handling complex technical issues',
+    icon: '🔧',
+    color: '#10B981',
+    members: [
+      {
+        id: 'member-4',
+        name: 'Alex Rivera',
+        email: 'alex.r@example.com',
+        avatar: 'https://api.dicebear.com/7.x/avatars/svg?seed=Alex',
+        role: 'supervisor',
+        status: 'active'
+      },
+      {
+        id: 'member-5',
+        name: 'Jamie Smith',
+        email: 'jamie.s@example.com',
+        avatar: 'https://api.dicebear.com/7.x/avatars/svg?seed=Jamie',
+        role: 'agent',
+        status: 'active'
+      }
     ],
-    routingStrategy: "manual",
-    createdAt: "2023-02-10T11:15:00Z",
-    updatedAt: "2023-07-05T14:30:00Z",
-    officeHours: {
-      monday: [{ start: "08:00", end: "16:00" }],
-      tuesday: [{ start: "08:00", end: "16:00" }],
-      wednesday: [{ start: "08:00", end: "16:00" }],
-      thursday: [{ start: "08:00", end: "16:00" }],
-      friday: [{ start: "08:00", end: "16:00" }],
-      saturday: [],
-      sunday: []
-    },
-    holidays: ["2023-12-25", "2024-01-01"],
-    channels: {
-      email: ["product@example.com"]
-    }
-  },
-  {
-    id: "3",
-    name: "Marketing Team",
-    icon: "Megaphone",
-    teamMembers: [
-      { id: "6", name: "Emily Davis", email: "emily@example.com", role: "Agent", status: "Active" },
-      { id: "7", name: "Alex Johnson", email: "alex@example.com", role: "Agent", status: "Active" }
+    channels: [
+      {
+        id: 'channel-3',
+        name: 'Tech Support Email',
+        type: 'email',
+        isActive: true
+      },
+      {
+        id: 'channel-4',
+        name: 'Support Phone Line',
+        type: 'voice',
+        isActive: true
+      }
     ],
-    routingStrategy: "load-balanced",
-    maxTotalTickets: 15,
-    maxOpenTickets: 8,
-    maxActiveChats: 3,
-    createdAt: "2023-03-22T13:45:00Z",
-    updatedAt: "2023-08-15T10:20:00Z",
+    routing: [
+      {
+        id: 'rule-3',
+        name: 'Technical Issues',
+        priority: 1,
+        isActive: true
+      }
+    ],
     officeHours: {
-      monday: [{ start: "10:00", end: "18:00" }],
-      tuesday: [{ start: "10:00", end: "18:00" }],
-      wednesday: [{ start: "10:00", end: "18:00" }],
-      thursday: [{ start: "10:00", end: "18:00" }],
-      friday: [{ start: "10:00", end: "16:00" }],
-      saturday: [],
-      sunday: []
+      days: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'],
+      startTime: '08:00',
+      endTime: '20:00',
+      timezone: 'America/Los_Angeles'
     },
-    holidays: ["2023-12-25", "2024-01-01", "2023-11-23"],
-    channels: {
-      chat: "marketing",
-      email: ["marketing@example.com"]
-    }
+    holidays: [
+      {
+        id: 'holiday-3',
+        name: 'Christmas Day',
+        date: '2023-12-25',
+        isRecurring: true
+      }
+    ],
+    createdAt: '2023-02-18T10:15:00Z',
+    updatedAt: '2023-05-22T16:30:00Z'
   }
 ];

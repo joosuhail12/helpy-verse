@@ -4,12 +4,11 @@ import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { createEmailChannel } from '@/store/slices/emailChannels/emailChannelsSlice';
+import { createChannel } from '@/store/slices/emailChannels/emailChannelsSlice';
 import { ChannelFormFields } from './components/ChannelFormFields';
 import { useChannelForm } from './hooks/useChannelForm';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2 } from 'lucide-react';
-import type { EmailChannel } from '@/types/emailChannel';
 
 const CreateChannel = () => {
   const { toast } = useToast();
@@ -17,19 +16,19 @@ const CreateChannel = () => {
   const dispatch = useAppDispatch();
 
   const {
-    name,
-    setName,
+    channelName,
+    setChannelName,
     senderName,
     setSenderName,
-    emailAddress,
-    setEmailAddress,
-    autoBccMail,
-    setAutoBccMail,
-    noReplyMail,
-    setNoReplyMail,
+    email,
+    setEmail,
+    autoBccEmail,
+    setAutoBccEmail,
+    noReplyEmail,
+    setNoReplyEmail,
     selectedEmoji,
     setSelectedEmoji,
-    teamId,
+    selectedTeamId,
     setSelectedTeamId,
     handleSubmit,
     errors,
@@ -39,10 +38,18 @@ const CreateChannel = () => {
   } = useChannelForm({
     onAddChannel: async (channel) => {
       try {
-        const result = await dispatch(createEmailChannel(channel as EmailChannel)).unwrap();
+        // Ensure required properties are present for the Redux action
+        const completeChannel = {
+          ...channel,
+          // Add these fields to make it compatible with the expected type
+          name: channel.channelName,
+          domainStatus: 'pending' as const, // use correct literal type
+        };
+        
+        const result = await dispatch(createChannel(completeChannel)).unwrap();
         toast({
           title: "Channel created successfully",
-          description: `${result.name} has been created with ${result.emailAddress} as the sender.`,
+          description: `${result.channelName} has been created with ${result.email} as the sender.`,
           duration: 5000,
         });
         navigate('/home/settings/email/channels');
@@ -81,19 +88,19 @@ const CreateChannel = () => {
       <Card className="p-6">
         <form onSubmit={handleSubmit} className="space-y-6">
           <ChannelFormFields
-            channelName={name}
-            setChannelName={setName}
+            channelName={channelName}
+            setChannelName={setChannelName}
             senderName={senderName}
             setSenderName={setSenderName}
-            email={emailAddress}
-            setEmail={setEmailAddress}
-            autoBccEmail={autoBccMail}
-            setAutoBccEmail={setAutoBccMail}
-            noReplyEmail={noReplyMail}
-            setNoReplyEmail={setNoReplyMail}
+            email={email}
+            setEmail={setEmail}
+            autoBccEmail={autoBccEmail}
+            setAutoBccEmail={setAutoBccEmail}
+            noReplyEmail={noReplyEmail}
+            setNoReplyEmail={setNoReplyEmail}
             selectedEmoji={selectedEmoji}
             setSelectedEmoji={setSelectedEmoji}
-            selectedTeamId={teamId}
+            selectedTeamId={selectedTeamId}
             setSelectedTeamId={setSelectedTeamId}
             errors={errors as unknown as Record<string, string>}
             touched={touched}

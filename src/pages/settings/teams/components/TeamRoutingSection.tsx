@@ -6,12 +6,12 @@ interface TeamRoutingSectionProps {
   routingType: 'manual' | 'round-robin' | 'load-balanced';
   setRoutingType: (type: 'manual' | 'round-robin' | 'load-balanced') => void;
   routingLimits: {
-    maxTotalTickets?: number;
+    maxTickets?: number;
     maxOpenTickets?: number;
     maxActiveChats?: number;
   };
   setRoutingLimits: (limits: {
-    maxTotalTickets?: number;
+    maxTickets?: number;
     maxOpenTickets?: number;
     maxActiveChats?: number;
   }) => void;

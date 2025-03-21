@@ -2,12 +2,12 @@
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import ImportExportFields from './ImportExportFields';
-import type { CustomField } from "@/types/customData";
+import type { CustomField } from "@/types/customField";
 
 interface CustomDataHeaderProps {
   onAddField: () => void;
   currentFields: CustomField[];
-  selectedTable: 'ticket' | 'customer' | 'company';
+  selectedTable: 'tickets' | 'contacts' | 'companies';
   onImport: (fields: CustomField[]) => Promise<void>;
 }
 
@@ -17,11 +17,6 @@ const CustomDataHeader = ({
   selectedTable,
   onImport
 }: CustomDataHeaderProps) => {
-  // Create a compatible function wrapper for onImport
-  const handleImport = async (fields: CustomField[]): Promise<void> => {
-    await onImport(fields);
-  };
-
   return (
     <div className="flex items-center justify-between">
       <h1 className="text-2xl font-semibold">Custom Data Fields</h1>
@@ -29,7 +24,7 @@ const CustomDataHeader = ({
         <ImportExportFields
           fields={currentFields}
           table={selectedTable}
-          onImport={handleImport}
+          onImport={onImport}
         />
         <Button onClick={onAddField}>
           <Plus className="w-4 h-4 mr-2" />

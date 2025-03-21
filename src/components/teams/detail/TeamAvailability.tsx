@@ -1,3 +1,4 @@
+
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { Badge } from "@/components/ui/badge";
@@ -10,18 +11,15 @@ interface TeamAvailabilityProps {
   holidays: string[];
 }
 
-
 const TeamAvailability = ({ officeHours, holidays }: TeamAvailabilityProps) => {
   const daysOfWeek: DayOfWeek[] = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
-  console.log(officeHours, holidays);
 
   return (
     <div className="space-y-8">
       <div className="space-y-4">
         <h3 className="font-medium">Office Hours</h3>
         <div className="space-y-4">
-
-          {daysOfWeek && daysOfWeek.length > 0 && officeHours && Object.keys(officeHours).length > 0 && daysOfWeek?.map((day) => (
+          {daysOfWeek.map((day) => (
             <div key={day} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
               <span className="capitalize font-medium">{day}</span>
               <div className="flex gap-2">
@@ -45,13 +43,13 @@ const TeamAvailability = ({ officeHours, holidays }: TeamAvailabilityProps) => {
         <div className="grid gap-6 md:grid-cols-2">
           <Calendar
             mode="multiple"
-            selected={holidays?.map(date => new Date(date))}
+            selected={holidays.map(date => new Date(date))}
             className="rounded-md border"
             disabled
           />
           <div className="space-y-2">
-            {holidays && holidays.length > 0 ? (
-              [...holidays].sort().map((date) => (
+            {holidays.length > 0 ? (
+              holidays.sort().map((date) => (
                 <div key={date} className="p-2 bg-gray-50 rounded-md">
                   {format(new Date(date), 'PPP')}
                 </div>

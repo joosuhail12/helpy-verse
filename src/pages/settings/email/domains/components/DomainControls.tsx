@@ -3,13 +3,13 @@ import React from 'react';
 import { Search } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Domain } from '@/types/domains';
+import type { Domain } from '@/mock/domains';
 
 interface DomainControlsProps {
   searchQuery: string;
   onSearchChange: (value: string) => void;
-  statusFilter: 'verified' | 'pending' | 'all';
-  onStatusFilterChange: (value: 'verified' | 'pending' | 'all') => void;
+  statusFilter: Domain['status'] | 'all';
+  onStatusFilterChange: (value: Domain['status'] | 'all') => void;
   sortBy: 'date' | 'name';
   onSortChange: (value: 'date' | 'name') => void;
 }
@@ -36,7 +36,7 @@ export const DomainControls = ({
       <div className="flex gap-4">
         <Select
           value={statusFilter}
-          onValueChange={(value) => onStatusFilterChange(value as 'pending' | 'verified' | 'all')}
+          onValueChange={(value) => onStatusFilterChange(value as Domain['status'] | 'all')}
         >
           <SelectTrigger className="w-[140px]">
             <SelectValue placeholder="Filter status" />
@@ -45,7 +45,7 @@ export const DomainControls = ({
             <SelectItem value="all">All Status</SelectItem>
             <SelectItem value="verified">Verified</SelectItem>
             <SelectItem value="pending">Pending</SelectItem>
-            {/* <SelectItem value="failed">Failed</SelectItem> */}
+            <SelectItem value="failed">Failed</SelectItem>
           </SelectContent>
         </Select>
         <Select

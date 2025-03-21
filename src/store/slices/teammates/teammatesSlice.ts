@@ -1,120 +1,130 @@
 
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import type { TeammatesState } from './types';
-import { mockActivityLogs, mockAssignments } from './mockData';
-import type { ActivityLog, NewTeammate, Teammate } from '@/types/teammate';
-import { teammatesService } from '@/api/services/teammateService';
+import { createSlice } from '@reduxjs/toolkit';
+import { TeammatesState } from './types';
+import {
+  fetchTeammates,
+  fetchTeammateDetails,
+  fetchTeammateActivities,
+  fetchTeammateAssignments,
+  fetchTeammateSessions,
+  updateTeammate,
+  enable2FA,
+  verify2FA,
+  disable2FA,
+  terminateSession,
+  resetPassword
+} from './thunks';
 
 const initialState: TeammatesState = {
   teammates: [],
-  activityLogs: [],
-  assignments: [],
+  selectedTeammate: null,
+  activities: {},
+  assignments: {},
+  sessions: {},
   loading: false,
   error: null,
   lastFetchTime: null,
-  retryCount: 0,
-  teammatesDetails: null
+  retryCount: 0
 };
-
-// fetchTeammates
-export const fetchTeammates = createAsyncThunk('teammates/fetchTeammates', async () => {
-  try {
-    const response = await teammatesService.fetchTeammates();
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
-});
-
-export const createTeammate = createAsyncThunk('teammates/createTeammate', async (teammate: NewTeammate) => {
-  try {
-    const response = await teammatesService.createTeammate(teammate);
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
-});
-
-export const updateTeammate = createAsyncThunk('teammates/updateTeammate', async (teammate: Teammate) => {
-  try {
-    const response = await teammatesService.updateTeammate(teammate.id, teammate);
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
-});
-
-export const getTeammate = createAsyncThunk('teammates/getTeammate', async (teammateId: string) => {
-  try {
-    const response = await teammatesService.getTeammate(teammateId);
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
-});
-
-
 
 const teammatesSlice = createSlice({
   name: 'teammates',
   initialState,
-  reducers: {
-    addTeammateOptimistic: (state, action) => {
-      state.teammates.push(action.payload);
-    },
-    updateRolesOptimistic: (state, action) => {
-      const { teammateIds, role } = action.payload;
-      state.teammates = state.teammates.map(teammate =>
-        teammateIds.includes(teammate.id)
-          ? { ...teammate, role }
-          : teammate
-      );
-    },
-    addActivityLog: (state, action) => {
-      state.activityLogs.unshift(action.payload);
-    }
-  },
+  reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(fetchTeammates.fulfilled, (state, action) => {
-        state.teammates = action.payload;
-        state.loading = false;
-        state.error = null;
-      })
-      .addCase(fetchTeammates.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message || 'Failed to fetch teammates';
-      })
-      .addCase(fetchTeammates.pending, (state, action) => {
+      // fetchTeammates
+      .addCase(fetchTeammates.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(createTeammate.fulfilled, (state, action) => {
+      .addCase(fetchTeammates.fulfilled, (state, action) => {
+        state.loading = false;
         state.teammates = action.payload;
+        state.lastFetchTime = Date.now();
+        state.retryCount = 0;
       })
-      .addCase(createTeammate.rejected, (state, action) => {
+      .addCase(fetchTeammates.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Failed to create teammate';
+        state.error = action.payload as string;
+        state.retryCount += 1;
       })
+      
+      // fetchTeammateDetails
+      .addCase(fetchTeammateDetails.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchTeammateDetails.fulfilled, (state, action) => {
+        state.loading = false;
+        state.selectedTeammate = action.payload;
+      })
+      .addCase(fetchTeammateDetails.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      
+      // fetchTeammateActivities
+      .addCase(fetchTeammateActivities.fulfilled, (state, action) => {
+        const { teammateId, activities } = action.payload;
+        state.activities[teammateId] = activities;
+      })
+      
+      // fetchTeammateAssignments
+      .addCase(fetchTeammateAssignments.fulfilled, (state, action) => {
+        const { teammateId, assignments } = action.payload;
+        state.assignments[teammateId] = assignments;
+      })
+      
+      // fetchTeammateSessions
+      .addCase(fetchTeammateSessions.fulfilled, (state, action) => {
+        const { teammateId, sessions } = action.payload;
+        state.sessions[teammateId] = sessions;
+      })
+      
+      // updateTeammate
       .addCase(updateTeammate.fulfilled, (state, action) => {
-        state.teammates = state.teammates.map(teammate =>
-          teammate.id === action.payload.id ? action.payload : teammate
+        const updatedTeammate = action.payload;
+        state.teammates = state.teammates.map(teammate => 
+          teammate.id === updatedTeammate.id ? updatedTeammate : teammate
         );
+        if (state.selectedTeammate?.id === updatedTeammate.id) {
+          state.selectedTeammate = updatedTeammate;
+        }
       })
-      .addCase(updateTeammate.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message || 'Failed to update teammate';
+      
+      // 2FA operations
+      .addCase(verify2FA.fulfilled, (state, action) => {
+        if (state.selectedTeammate && state.selectedTeammate.id === action.payload.teammateId) {
+          state.selectedTeammate.is2FAEnabled = true;
+        }
+        const teammateIndex = state.teammates.findIndex(t => t.id === action.payload.teammateId);
+        if (teammateIndex !== -1) {
+          state.teammates[teammateIndex].is2FAEnabled = true;
+        }
       })
-      .addCase(getTeammate.fulfilled, (state, action) => {
-        console.log(action.payload);
-        state.teammatesDetails = action.payload;
+      .addCase(disable2FA.fulfilled, (state, action) => {
+        if (state.selectedTeammate && state.selectedTeammate.id === action.payload.teammateId) {
+          state.selectedTeammate.is2FAEnabled = false;
+        }
+        const teammateIndex = state.teammates.findIndex(t => t.id === action.payload.teammateId);
+        if (teammateIndex !== -1) {
+          state.teammates[teammateIndex].is2FAEnabled = false;
+        }
       })
-      .addCase(getTeammate.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message || 'Failed to get teammate';
+      
+      // Session operations
+      .addCase(terminateSession.fulfilled, (state, action) => {
+        const { teammateId, sessionId } = action.payload;
+        if (state.sessions[teammateId]) {
+          state.sessions[teammateId] = state.sessions[teammateId].filter(
+            session => session.id !== sessionId
+          );
+        }
       });
   },
 });
 
-export const { addTeammateOptimistic, updateRolesOptimistic, addActivityLog } = teammatesSlice.actions;
-export default teammatesSlice.reducer;
+export const teammatesReducer = teammatesSlice.reducer;
+export * from './thunks';
+export * from './selectors';

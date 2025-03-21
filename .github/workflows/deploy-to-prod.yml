@@ -68,13 +68,11 @@ jobs:
           if [ -d "/home/pullse/pullse_frontend_lovable_new" ]; then
             echo "Extracting version from package.json..."
             VERSION=$(jq -r .version /home/pullse/pullse_frontend_lovable_new/package.json || echo "unknown_version")
-            TIMESTAMP=$(date '+%Y-%m-%d_%H-%M-%S')
-            VERSION_WITH_TIMESTAMP="${VERSION}-${TIMESTAMP}"
 
             if [ "$VERSION" != "unknown_version" ]; then
-              echo "Renaming old frontend to pullse_frontend_lovable_${VERSION_WITH_TIMESTAMP}..."
+              echo "Renaming old frontend to pullse_frontend_lovable_$VERSION..."
               if [ -d "/home/pullse/pullse_frontend_lovable" ]; then
-                mv /home/pullse/pullse_frontend_lovable /home/pullse/archives/pullse_frontend_lovable_${VERSION_WITH_TIMESTAMP}
+                mv /home/pullse/pullse_frontend_lovable /home/pullse/archives/pullse_frontend_lovable_$VERSION
               fi
             else
               echo "WARNING: Version extraction failed!"

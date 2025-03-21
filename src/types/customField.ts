@@ -58,4 +58,5 @@ export interface CustomFields {
   tickets: CustomField[];
   contacts: CustomField[];
   companies: CustomField[];
+  fields: CustomField[]; // Now included as a required field
 }

@@ -14,7 +14,7 @@ interface ContactCustomFieldsProps {
 }
 
 export const ContactCustomFields = ({ contact }: ContactCustomFieldsProps) => {
-  const { data: customFields, isLoading } = useCustomFields('contact');
+  const { data: customFields, isLoading } = useCustomFields('contacts');
 
   if (isLoading) {
     return (
@@ -33,7 +33,7 @@ export const ContactCustomFields = ({ contact }: ContactCustomFieldsProps) => {
     );
   }
 
-  if (!customFields?.length) {
+  if (!customFields?.contacts.length) {
     return null;
   }
 
@@ -44,7 +44,7 @@ export const ContactCustomFields = ({ contact }: ContactCustomFieldsProps) => {
       </CardHeader>
       <CardContent className="pt-6">
         <div className="grid gap-6">
-          {customFields.filter(field => field.entityType === 'customer').map((field) => (
+          {customFields.contacts.map((field) => (
             <div key={field.id} className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground">{field.name}</p>
               <p className="text-sm">-</p>
@@ -55,3 +55,4 @@ export const ContactCustomFields = ({ contact }: ContactCustomFieldsProps) => {
     </Card>
   );
 };
+

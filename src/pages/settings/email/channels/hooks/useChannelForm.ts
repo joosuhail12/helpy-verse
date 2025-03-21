@@ -3,7 +3,8 @@ import { useForm } from 'react-hook-form';
 import { useState } from 'react';
 import type { EmailChannel } from '@/types/emailChannel';
 
-type EmailChannelFormData = Omit<EmailChannel, 'id' | 'createdAt' | 'updatedAt' | 'isVerified'>
+interface EmailChannelFormData
+  extends Omit<EmailChannel, 'id' | 'createdAt' | 'updatedAt' | 'isVerified'> {}
 
 interface UseChannelFormProps {
   onAddChannel?: (data: EmailChannelFormData) => Promise<void>;
@@ -19,20 +20,18 @@ export const useChannelForm = (props?: UseChannelFormProps) => {
     watch,
   } = useForm<EmailChannelFormData>({
     defaultValues: {
-      name: '',
-      emoji: '',
-      teamId: '',
+      channelName: '',
       senderName: '',
-      emailAddress: '',
-      autoBccMail: '',
-      noReplyMail: '',
-      allowAgentOutbound: false,
-      allowAgentName: false,
-      orignalSenderAsRequester: false,
-      createdBy: '',
-      deletedAt: '',
-      isActive: false,
+      email: '',
+      autoBccEmail: '',
+      noReplyEmail: '',
+      icon: '',
+      type: 'both',
       isDefault: false,
+      teamId: '',
+      allowAgentConversations: false,
+      useAgentNames: false,
+      useOriginalSender: false,
     },
   });
 
@@ -46,7 +45,7 @@ export const useChannelForm = (props?: UseChannelFormProps) => {
     if (props?.onAddChannel) {
       await props.onAddChannel({
         ...data,
-        emoji: selectedEmoji || '',
+        icon: selectedEmoji || '',
       });
     }
   };
@@ -60,18 +59,18 @@ export const useChannelForm = (props?: UseChannelFormProps) => {
     selectedEmoji,
     setSelectedEmoji,
     // Convenience getters for form values
-    name: values.name,
+    channelName: values.channelName,
     senderName: values.senderName,
-    emailAddress: values.emailAddress,
-    autoBccMail: values.autoBccMail,
-    noReplyMail: values.noReplyMail,
-    teamId: values.teamId,
+    email: values.email,
+    autoBccEmail: values.autoBccEmail,
+    noReplyEmail: values.noReplyEmail,
+    selectedTeamId: values.teamId,
     // Convenience setters
-    setName: (value: string) => setFieldValue('name', value),
+    setChannelName: (value: string) => setFieldValue('channelName', value),
     setSenderName: (value: string) => setFieldValue('senderName', value),
-    setEmailAddress: (value: string) => setFieldValue('emailAddress', value),
-    setAutoBccMail: (value: string) => setFieldValue('autoBccMail', value),
-    setNoReplyMail: (value: string) => setFieldValue('noReplyMail', value),
+    setEmail: (value: string) => setFieldValue('email', value),
+    setAutoBccEmail: (value: string) => setFieldValue('autoBccEmail', value),
+    setNoReplyEmail: (value: string) => setFieldValue('noReplyEmail', value),
     setSelectedTeamId: (value?: string) => setFieldValue('teamId', value || ''),
     // Form state helpers
     errors,
