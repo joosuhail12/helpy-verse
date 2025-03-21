@@ -14,12 +14,12 @@ const TeamMembers = ({ team }: TeamMembersProps) => {
   // Handle different member formats from backend
   const getTeamMembers = () => {
     // If we have teamMembers objects with full details
-    if (team.teamMembers && Array.isArray(team.teamMembers) && team.teamMembers.length > 0) {
+    if (team?.teamMembers && Array.isArray(team.teamMembers) && team.teamMembers.length > 0) {
       return team.teamMembers;
     }
     
     // If we have members array with just IDs
-    if (team.members && Array.isArray(team.members) && team.members.length > 0) {
+    if (team?.members && Array.isArray(team.members) && team.members.length > 0) {
       return team.members.map(memberId => {
         const teammate = allTeammates.find(t => t.id === memberId);
         return teammate ? {
@@ -47,11 +47,11 @@ const TeamMembers = ({ team }: TeamMembersProps) => {
           <div key={member.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
             <div className="flex items-center space-x-3">
               <Avatar>
-                <AvatarFallback>{member.name.charAt(0)}</AvatarFallback>
+                <AvatarFallback>{member.name?.charAt(0) || '?'}</AvatarFallback>
               </Avatar>
               <div>
-                <p className="font-medium">{member.name}</p>
-                <p className="text-sm text-gray-500">{member.email}</p>
+                <p className="font-medium">{member.name || 'Unknown'}</p>
+                <p className="text-sm text-gray-500">{member.email || 'No email'}</p>
               </div>
             </div>
             <Badge variant="secondary">Member</Badge>

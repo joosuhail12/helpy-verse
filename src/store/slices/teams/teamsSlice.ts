@@ -1,4 +1,3 @@
-
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { teamsService } from '@/api/services/teamsService';
 import type { Team, TeamsState } from '@/types/team';
@@ -93,7 +92,6 @@ export const teamsSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Fetch teams
       .addCase(fetchTeams.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -107,7 +105,6 @@ export const teamsSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-      // Fetch team by ID
       .addCase(fetchTeamById.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -120,7 +117,6 @@ export const teamsSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-      // Create team
       .addCase(createTeam.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -133,7 +129,6 @@ export const teamsSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-      // Update team
       .addCase(updateTeam.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -150,7 +145,6 @@ export const teamsSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-      // Delete team
       .addCase(deleteTeam.pending, (state) => {
         state.loading = true;
         state.error = null;

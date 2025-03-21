@@ -8,7 +8,7 @@ interface TeamChannelsProps {
 }
 
 const TeamChannels = ({ team }: TeamChannelsProps) => {
-  const channels = team.channels || { email: [] };
+  const channels = team?.channels || { email: [] };
   
   return (
     <div className="space-y-6">
@@ -31,8 +31,8 @@ const TeamChannels = ({ team }: TeamChannelsProps) => {
         </div>
         {channels?.email && Array.isArray(channels.email) && channels.email.length > 0 ? (
           <div className="flex flex-wrap gap-2">
-            {channels.email.map((email) => (
-              <Badge key={email} variant="outline">{email}</Badge>
+            {channels.email.map((email, index) => (
+              <Badge key={`${email}-${index}`} variant="outline">{email}</Badge>
             ))}
           </div>
         ) : (

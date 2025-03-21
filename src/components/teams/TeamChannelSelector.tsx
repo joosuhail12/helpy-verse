@@ -1,26 +1,16 @@
-
 import { useState } from 'react';
 import { Check, MessagesSquare, Mail } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from '@/components/ui/label';
+import { useAppSelector } from '@/hooks/useAppSelector';
 
-// Mock data for available channels
-const availableChatChannels = [
-  { id: "chat-1", name: "Live Chat" },
-  { id: "chat-2", name: "Support Chat" },
-  { id: "chat-3", name: "Sales Chat" },
-];
-
-const availableEmailChannels = [
-  { id: "email-1", name: "support@example.com" },
-  { id: "email-2", name: "sales@example.com" },
-  { id: "email-3", name: "info@example.com" },
-  { id: "email-4", name: "help@example.com" },
-];
+interface Channel {
+  id: string;
+  name: string;
+}
 
 interface TeamChannelSelectorProps {
   selectedChatChannel?: string;
@@ -36,6 +26,19 @@ const TeamChannelSelector = ({
   onEmailChannelToggle,
 }: TeamChannelSelectorProps) => {
   const [customEmail, setCustomEmail] = useState('');
+  
+  const availableChatChannels: Channel[] = [
+    { id: "chat-1", name: "Live Chat" },
+    { id: "chat-2", name: "Support Chat" },
+    { id: "chat-3", name: "Sales Chat" },
+  ];
+  
+  const availableEmailChannels: Channel[] = [
+    { id: "support@example.com", name: "support@example.com" },
+    { id: "sales@example.com", name: "sales@example.com" },
+    { id: "info@example.com", name: "info@example.com" },
+    { id: "help@example.com", name: "help@example.com" },
+  ];
 
   const handleAddCustomEmail = () => {
     if (customEmail && !selectedEmailChannels.includes(customEmail)) {
