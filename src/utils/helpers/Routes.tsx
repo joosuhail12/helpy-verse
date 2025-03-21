@@ -1,3 +1,4 @@
+
 import { ReactNode } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { isAuthenticated } from "@/utils/auth/tokenManager";
@@ -29,8 +30,9 @@ export const PublicRoute = ({ children }: RouteProps): JSX.Element => {
     const location = useLocation();
     console.log("PublicRoute: Current path:", location.pathname);
     
-    // Don't redirect from landing page or auth pages
+    // Don't redirect from landing page, index page, or auth pages
     if (location.pathname === '/' || 
+        location.pathname === '/index' || 
         location.pathname.startsWith('/sign-') || 
         location.pathname.includes('password')) {
         console.log("PublicRoute: Allowing access to public page:", location.pathname);

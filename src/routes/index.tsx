@@ -71,6 +71,14 @@ export const router = createBrowserRouter([
     ),
   },
   {
+    path: '/index',
+    element: (
+      <PublicRoute>
+        {withSuspenseAndErrorHandling(LandingPage)}
+      </PublicRoute>
+    ),
+  },
+  {
     path: '/home',
     element: <RootRedirect />,
   },
