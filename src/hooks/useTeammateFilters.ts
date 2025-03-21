@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { subDays } from 'date-fns';
 import type { Teammate } from '@/types/teammate';
 
-export const useTeammateFilters = (teammates: Teammate[]) => {
+export const useTeammateFilters = (teammates: Teammate[] = []) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState('all_roles');
   const [statusFilter, setStatusFilter] = useState('all_statuses');
@@ -18,7 +18,7 @@ export const useTeammateFilters = (teammates: Teammate[]) => {
     }
   };
 
-  const filteredTeammates = teammates.filter(teammate => {
+  const filteredTeammates = (teammates || []).filter(teammate => {
     const matchesSearch = searchQuery.toLowerCase() === '' || 
       teammate.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       teammate.email.toLowerCase().includes(searchQuery.toLowerCase());

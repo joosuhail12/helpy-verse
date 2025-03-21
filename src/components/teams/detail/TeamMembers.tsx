@@ -9,11 +9,18 @@ interface TeamMembersProps {
   team: Team;
 }
 
+interface TeamMember {
+  id: string;
+  name: string;
+  email: string;
+  avatar?: string;
+}
+
 const TeamMembers = ({ team }: TeamMembersProps) => {
   const allTeammates = useAppSelector(selectAllTeammates);
   
   // Handle different member formats from backend
-  const getTeamMembers = () => {
+  const getTeamMembers = (): TeamMember[] => {
     // If we have teamMembers objects with full details
     if (team?.teamMembers && Array.isArray(team.teamMembers) && team.teamMembers.length > 0) {
       // The teamMembers objects don't have avatar property in their type definition
