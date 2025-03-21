@@ -9,7 +9,7 @@ export const initializeApp = () => {
   // Check both cookie and localStorage for token
   const token = getCookie("customerToken") || localStorage.getItem("token");
   
-  // Check for workspace ID in both localStorage and cookie
+  // Check for workspace ID in localStorage first, then cookie
   const workspaceId = localStorage.getItem("workspaceId") || getCookie("workspaceId");
   
   if (token) {
@@ -22,16 +22,13 @@ export const initializeApp = () => {
     console.log("App initialization: No token found");
   }
   
-  // Log workspace ID status
+  // Log workspace ID status and ensure it's set in localStorage
   if (workspaceId) {
     console.log("App initialization: Found workspace ID:", workspaceId);
     // Ensure it's set in localStorage for consistent access
-    if (!localStorage.getItem("workspaceId")) {
-      localStorage.setItem("workspaceId", workspaceId);
-      console.log("Synced workspace ID to localStorage");
-    }
+    localStorage.setItem("workspaceId", workspaceId);
   } else {
-    console.warn("App initialization: No workspace ID found - API requests may fail");
+    console.warn("App initialization: No workspace ID found - API requests will likely fail");
   }
 };
 

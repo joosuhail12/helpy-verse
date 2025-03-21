@@ -16,7 +16,7 @@ const setupApi = () => {
       console.log('API service initialized without auth token');
     }
     
-    // Ensure workspace ID is set for all requests - check both localStorage and cookie
+    // Always ensure workspace ID is set for all requests - prioritize localStorage
     const workspaceId = localStorage.getItem('workspaceId') || cookieFunctions.getCookie('workspaceId');
     
     if (workspaceId) {
@@ -27,7 +27,7 @@ const setupApi = () => {
         console.log('Synced workspace ID to localStorage');
       }
     } else {
-      console.warn('API service initialized without workspace ID');
+      console.warn('API service initialized without workspace ID - API requests may fail');
     }
   } catch (error) {
     console.error('Error setting up API client:', error);

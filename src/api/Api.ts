@@ -11,7 +11,7 @@ const api = axios.create({
   },
 });
 
-// Add request interceptor for auth token
+// Add request interceptor for auth token and workspace ID
 api.interceptors.request.use(
   (config) => {
     const state = store.getState();
@@ -20,6 +20,22 @@ api.interceptors.request.use(
     
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+    }
+    
+    // Get workspace_id from localStorage and add to all requests
+    const workspaceId = localStorage.getItem('workspaceId');
+    
+    if (workspaceId) {
+      // Add workspace_id to params if they exist, otherwise create params
+      if (!config.params) {
+        config.params = {};
+      }
+      
+      if (!config.params.workspace_id) {
+        config.params.workspace_id = workspaceId;
+      }
+    } else {
+      console.warn('Making API request without workspace_id', config.url);
     }
     
     return config;
