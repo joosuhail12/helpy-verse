@@ -1,86 +1,42 @@
 
-import { useState, useEffect } from 'react';
-import { useToast } from '@/hooks/use-toast';
-import TicketForm from './TicketForm';
-import type { TicketFormValues } from './types';
-import type { Ticket } from '@/types/ticket';
-import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { useState } from 'react';
+import { TicketForm } from './TicketForm';
 import { useAppSelector } from '@/hooks/useAppSelector';
-import { fetchTeammates } from '@/store/slices/teammates/actions';
-import { setTeams } from '@/store/slices/teams/teamsSlice';
-import { fetchChannels } from '@/store/slices/emailChannels/emailChannelsSlice';
+import type { TeamMember } from '@/types/ticket';
 
-interface TicketFormContainerProps {
-  onTicketCreated?: (ticket: Ticket) => void;
-  onCancel?: () => void;
-}
-
-const TicketFormContainer = ({ onTicketCreated, onCancel }: TicketFormContainerProps) => {
+const TicketFormContainer = ({ onClose }: { onClose: () => void }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toast } = useToast();
-  const dispatch = useAppDispatch();
-  const teams = useAppSelector((state) => state.teams.teams);
+  const teams = useAppSelector(state => state.teams.teams);
+  const emailChannels = useAppSelector(state => state.emailChannels.channels);
   
-  // Load teammates, teams, and email channels data when the component mounts
-  useEffect(() => {
-    dispatch(fetchTeammates());
-    dispatch(fetchChannels());
-  }, [dispatch]);
+  // Convert team members from teams to TeamMember format
+  const assigneeOptions: TeamMember[] = teams.flatMap(team => 
+    team.teamMembers.map(member => ({
+      id: member.id,
+      name: member.name,
+      email: member.email,
+      avatar: '',
+      teamId: team.id,
+      teamName: team.name
+    }))
+  );
 
-  const handleSubmit = async (values: TicketFormValues, callback: () => void) => {
+  const handleSubmit = async (data: any) => {
     setIsSubmitting(true);
-    
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Create a new ticket from form values
-      const newTicket: Ticket = {
-        id: Date.now().toString(),
-        subject: values.subject,
-        customer: values.recipients.map(r => 
-          'firstname' in r ? `${r.firstname} ${r.lastname}` : r.email
-        ).join(', '),
-        lastMessage: values.message,
-        assignee: values.assignee?.type === 'teammate' ? values.assignee.name : null,
-        tags: [],
-        status: values.status,
-        priority: values.priority,
-        createdAt: new Date().toISOString(),
-        isUnread: true,
-        recipients: values.recipients.map(r => r.id),
-        // Include the email channel information
-        channel: values.emailChannel?.channelName || 'Default Channel'
-      };
-      
-      // In a real app, you would dispatch an action to add the ticket to your store
-      // dispatch(addTicket(newTicket));
-      
-      toast({
-        title: "Ticket created",
-        description: `Ticket "${values.subject}" has been created successfully via ${values.emailChannel?.channelName}`,
-      });
-      
-      if (onTicketCreated) {
-        onTicketCreated(newTicket);
-      }
-      
-      callback();
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to create ticket. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+    // Mock API call delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    console.log('Submitted ticket data:', data);
+    setIsSubmitting(false);
+    onClose();
   };
 
   return (
     <TicketForm
+      assignees={assigneeOptions}
+      emailChannels={emailChannels}
       onSubmit={handleSubmit}
       isSubmitting={isSubmitting}
+      onCancel={onClose}
     />
   );
 };

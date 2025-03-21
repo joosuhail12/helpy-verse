@@ -8,6 +8,7 @@ import TeamCommunicationSection from '@/pages/settings/teams/components/TeamComm
 import TeamRoutingSection from '@/pages/settings/teams/components/TeamRoutingSection';
 import TeamAvailabilitySection from '@/pages/settings/teams/components/TeamAvailabilitySection';
 import { updateTeamAction } from '@/pages/settings/teams/utils/updateTeamUtils';
+import TeamEditActions from './TeamEditActions';
 import type { DayOfWeek, TimeSlot, Team } from '@/types/team';
 import type { Teammate } from '@/types/teammate';
 
@@ -227,21 +228,12 @@ const TeamEditForm = ({ team, teammates, onSuccess }: TeamEditFormProps) => {
         onHolidaysChange={setSelectedHolidays}
       />
 
-      <div className="flex justify-end gap-4 mt-4">
-        <Button
-          variant="outline"
-          onClick={() => navigate(`/home/settings/teams/${team.id}`)}
-        >
-          Cancel
-        </Button>
-        <Button
-          onClick={handleUpdateTeam}
-          disabled={!teamName.trim()}
-          className="px-8"
-        >
-          Update Team
-        </Button>
-      </div>
+      <TeamEditActions
+        teamId={team.id}
+        teamName={teamName}
+        onUpdateTeam={handleUpdateTeam}
+        isSubmitDisabled={!teamName.trim()}
+      />
     </div>
   );
 };

@@ -73,7 +73,7 @@ const CreateCannedResponse = () => {
             <div className="space-y-6">
               <BasicInformationSection form={form} />
               <OrganizationSection form={form} />
-              <SharingSettingsSection form={form} />
+              <SharingSettingsSection />
             </div>
 
             <div className="space-y-6">
