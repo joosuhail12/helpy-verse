@@ -8,8 +8,41 @@ interface TeamRoutingProps {
 }
 
 const TeamRouting = ({ team }: TeamRoutingProps) => {
-  const routingType = team.routing?.type || 'manual';
-  const limits = team.routing?.limits;
+  // Handle different routing property names
+  const getRoutingType = (): 'manual' | 'round-robin' | 'load-balanced' => {
+    if (team.routingStrategy) {
+      return team.routingStrategy as 'manual' | 'round-robin' | 'load-balanced';
+    }
+    
+    // Legacy format
+    if (team.routing?.type) {
+      return team.routing.type;
+    }
+    
+    return 'manual';
+  };
+  
+  const routingType = getRoutingType();
+  
+  // Get limits from appropriate properties
+  const getLimits = () => {
+    if (team.maxTotalTickets || team.maxOpenTickets || team.maxActiveChats) {
+      return {
+        maxTickets: team.maxTotalTickets,
+        maxOpenTickets: team.maxOpenTickets,
+        maxActiveChats: team.maxActiveChats
+      };
+    }
+    
+    // Legacy format
+    if (team.routing?.limits) {
+      return team.routing.limits;
+    }
+    
+    return null;
+  };
+  
+  const limits = getLimits();
 
   const getRoutingIcon = (type: string) => {
     switch (type) {
@@ -26,6 +59,7 @@ const TeamRouting = ({ team }: TeamRoutingProps) => {
 
   return (
     <div className="space-y-6">
+      <h3 className="font-medium text-lg mb-4">Ticket Routing</h3>
       <div className="flex items-center gap-3">
         {getRoutingIcon(routingType)}
         <Badge className="capitalize">{routingType.replace('-', ' ')}</Badge>

@@ -2,29 +2,66 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Team } from '@/types/team';
+import { useAppSelector } from '@/hooks/useAppSelector';
 
 interface TeamMembersProps {
   team: Team;
 }
 
 const TeamMembers = ({ team }: TeamMembersProps) => {
-  const members = team.members || [];
+  const allTeammates = useAppSelector(state => state.teammates.teammates);
+  
+  // Handle different member formats from backend
+  const getTeamMembers = () => {
+    // If we have teamMembers objects with full details
+    if (team.teamMembers && team.teamMembers.length > 0) {
+      return team.teamMembers;
+    }
+    
+    // If we have members array with just IDs
+    if (team.members && team.members.length > 0) {
+      return team.members.map(memberId => {
+        const teammate = allTeammates.find(t => t.id === memberId);
+        return teammate ? {
+          id: teammate.id,
+          name: teammate.name,
+          email: teammate.email
+        } : {
+          id: memberId,
+          name: 'Unknown Member',
+          email: 'No email available'
+        };
+      });
+    }
+    
+    return [];
+  };
+  
+  const members = getTeamMembers();
+  
   return (
     <div className="space-y-4">
-      {members.map((member) => (
-        <div key={member.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-          <div className="flex items-center space-x-3">
-            <Avatar>
-              <AvatarFallback>{member.name.charAt(0)}</AvatarFallback>
-            </Avatar>
-            <div>
-              <p className="font-medium">{member.name}</p>
-              <p className="text-sm text-gray-500">{member.email}</p>
+      <h3 className="font-medium text-lg mb-4">Team Members</h3>
+      {members.length > 0 ? (
+        members.map((member) => (
+          <div key={member.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <div className="flex items-center space-x-3">
+              <Avatar>
+                <AvatarFallback>{member.name.charAt(0)}</AvatarFallback>
+              </Avatar>
+              <div>
+                <p className="font-medium">{member.name}</p>
+                <p className="text-sm text-gray-500">{member.email}</p>
+              </div>
             </div>
+            <Badge variant="secondary">Member</Badge>
           </div>
-          <Badge variant="secondary">Member</Badge>
+        ))
+      ) : (
+        <div className="text-center py-8 text-gray-500">
+          No team members added yet.
         </div>
-      ))}
+      )}
     </div>
   );
 };

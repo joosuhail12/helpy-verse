@@ -12,7 +12,7 @@ import TeamRoutingSection from './teams/components/TeamRoutingSection';
 import TeamAvailabilitySection from './teams/components/TeamAvailabilitySection';
 import { updateTeamAction } from './teams/utils/updateTeamUtils';
 import TeamsLoadingState from '@/components/teams/TeamsLoadingState';
-import type { DayOfWeek, TimeSlot, Team, Channel, RoutingRule } from '@/types/team';
+import type { DayOfWeek, TimeSlot } from '@/types/team';
 
 const EditTeam = () => {
   const { id } = useParams<{ id: string }>();
@@ -30,7 +30,7 @@ const EditTeam = () => {
   const [selectedEmailChannels, setSelectedEmailChannels] = useState<string[]>([]);
   const [routingType, setRoutingType] = useState<'manual' | 'round-robin' | 'load-balanced'>('manual');
   const [routingLimits, setRoutingLimits] = useState<{
-    maxTickets?: number;
+    maxTotalTickets?: number;
     maxOpenTickets?: number;
     maxActiveChats?: number;
   }>({});
@@ -49,102 +49,57 @@ const EditTeam = () => {
     if (team) {
       setTeamName(team.name);
       setSelectedIcon(team.icon || '');
-      setSelectedTeammates(team.members.map(member => member.id));
       
+      // Handle different member formats
+      if (team.teamMembers && team.teamMembers.length > 0) {
+        setSelectedTeammates(team.teamMembers.map(member => member.id));
+      } else if (team.members && team.members.length > 0) {
+        setSelectedTeammates(team.members);
+      } else {
+        setSelectedTeammates([]);
+      }
+      
+      // Handle channels
       if (team.channels) {
-        if (typeof team.channels === 'object' && 'chat' in team.channels) {
-          setSelectedChatChannel(typeof team.channels.chat === 'string' ? team.channels.chat : '');
-          
-          // Fix the type issue by checking if email exists and is an array
-          const typedChannels = team.channels as unknown as { chat?: string; email?: string[] };
-          if (Array.isArray(typedChannels.email)) {
-            setSelectedEmailChannels(typedChannels.email);
-          } else {
-            setSelectedEmailChannels([]);
-          }
-        } else {
-          const channels = team.channels as unknown as Channel[];
-          const chatChannel = channels.find(c => c.type === 'chat')?.id;
-          const emailChannels = channels
-            .filter(c => c.type === 'email')
-            .map(c => c.id);
-          
-          if (chatChannel) {
-            setSelectedChatChannel(chatChannel);
-          }
-          if (emailChannels && emailChannels.length > 0) {
-            setSelectedEmailChannels(emailChannels);
-          }
-        }
+        setSelectedChatChannel(team.channels.chat);
+        setSelectedEmailChannels(team.channels.email || []);
       }
       
-      if (team.routing) {
-        if (typeof team.routing === 'object' && 'type' in team.routing) {
-          const routingType = team.routing.type;
-          if (typeof routingType === 'string' && 
-              (routingType === 'manual' || routingType === 'round-robin' || routingType === 'load-balanced')) {
-            setRoutingType(routingType);
-          }
-          
-          if ('limits' in team.routing && team.routing.limits) {
-            const limits = team.routing.limits as {
-              maxTickets?: number;
-              maxOpenTickets?: number;
-              maxActiveChats?: number;
-            };
-            
-            setRoutingLimits(limits);
-          }
-        } else {
-          const routing = team.routing as unknown as RoutingRule[];
-          const mainRule = routing[0];
-          if (mainRule && mainRule.type) {
-            const ruleType = mainRule.type;
-            if (ruleType === 'manual' || ruleType === 'round-robin' || ruleType === 'load-balanced') {
-              setRoutingType(ruleType);
-            }
-          }
-        }
-      }
-      
-      if (team.officeHours) {
-        if ('monday' in team.officeHours) {
-          const typedOfficeHours = team.officeHours as unknown as { [key in DayOfWeek]: TimeSlot[] };
-          setOfficeHours({
-            monday: typedOfficeHours.monday || [],
-            tuesday: typedOfficeHours.tuesday || [],
-            wednesday: typedOfficeHours.wednesday || [],
-            thursday: typedOfficeHours.thursday || [],
-            friday: typedOfficeHours.friday || [],
-            saturday: typedOfficeHours.saturday || [],
-            sunday: typedOfficeHours.sunday || []
+      // Handle routing
+      if (team.routingStrategy) {
+        // New format from backend
+        const routingType = team.routingStrategy as 'manual' | 'round-robin' | 'load-balanced';
+        setRoutingType(routingType);
+        
+        // Set routing limits
+        if (routingType === 'load-balanced') {
+          setRoutingLimits({
+            maxTotalTickets: team.maxTotalTickets,
+            maxOpenTickets: team.maxOpenTickets,
+            maxActiveChats: team.maxActiveChats
           });
-        } else {
-          const oldFormat = team.officeHours as unknown as {
-            days: string[];
-            startTime: string;
-            endTime: string;
-          };
-          
-          const days = oldFormat.days || [];
-          const newFormat = {
-            monday: days.includes('monday') ? [{ start: oldFormat.startTime, end: oldFormat.endTime }] : [],
-            tuesday: days.includes('tuesday') ? [{ start: oldFormat.startTime, end: oldFormat.endTime }] : [],
-            wednesday: days.includes('wednesday') ? [{ start: oldFormat.startTime, end: oldFormat.endTime }] : [],
-            thursday: days.includes('thursday') ? [{ start: oldFormat.startTime, end: oldFormat.endTime }] : [],
-            friday: days.includes('friday') ? [{ start: oldFormat.startTime, end: oldFormat.endTime }] : [],
-            saturday: days.includes('saturday') ? [{ start: oldFormat.startTime, end: oldFormat.endTime }] : [],
-            sunday: days.includes('sunday') ? [{ start: oldFormat.startTime, end: oldFormat.endTime }] : [],
-          };
-          setOfficeHours(newFormat);
         }
+      } else if (team.routing && typeof team.routing === 'object' && 'type' in team.routing) {
+        // Legacy format
+        const routingType = team.routing.type;
+        setRoutingType(routingType);
+        
+        if ('limits' in team.routing && team.routing.limits) {
+          setRoutingLimits({
+            maxTotalTickets: team.routing.limits.maxTotalTickets,
+            maxOpenTickets: team.routing.limits.maxOpenTickets,
+            maxActiveChats: team.routing.limits.maxActiveChats
+          });
+        }
+      }
+      
+      // Handle office hours and holidays
+      if (team.officeHours) {
+        setOfficeHours(team.officeHours);
       }
       
       if (team.holidays) {
-        const holidayStrings = (team.holidays as unknown[]).map((h: any) => 
-          typeof h === 'string' ? h : h.date
-        );
-        setSelectedHolidays(holidayStrings);
+        setSelectedHolidays(team.holidays);
       }
     }
   }, [team]);
@@ -196,7 +151,11 @@ const EditTeam = () => {
         routing: {
           type: routingType,
           ...(routingType === 'load-balanced' && {
-            limits: routingLimits
+            limits: {
+              maxTotalTickets: routingLimits.maxTotalTickets,
+              maxOpenTickets: routingLimits.maxOpenTickets,
+              maxActiveChats: routingLimits.maxActiveChats
+            }
           })
         },
         officeHours,
@@ -211,6 +170,7 @@ const EditTeam = () => {
         navigate(`/home/settings/teams/${id}`);
       }
     } catch (error) {
+      console.error("Update team error:", error);
       toast({
         title: "Error",
         description: "Failed to update team. Please try again.",

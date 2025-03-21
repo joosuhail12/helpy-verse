@@ -2,110 +2,139 @@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Users, Repeat2, Scale } from "lucide-react";
+import { ArrowLeftRight, RotateCcw, Scale } from "lucide-react";
 import type { TeamRoutingSelectorProps } from '@/types/team';
 
-const TeamRoutingSelector = ({ 
-  selectedType, 
+const TeamRoutingSelector = ({
+  selectedType,
   onTypeSelect,
-  limits = {},
-  onLimitsChange = () => {}
+  limits,
+  onLimitsChange
 }: TeamRoutingSelectorProps) => {
-  const handleLimitChange = (key: keyof typeof limits) => (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(e.target.value) || 0;
-    onLimitsChange({
-      ...limits,
-      [key]: value
-    });
+  const handleLimitChange = (field: string, value: string) => {
+    if (!onLimitsChange) return;
+    
+    const numberValue = value === '' ? undefined : parseInt(value, 10);
+    
+    // Handle both property names (maxTickets and maxTotalTickets)
+    if (field === 'maxTickets' || field === 'maxTotalTickets') {
+      onLimitsChange({
+        ...(limits || {}),
+        maxTickets: numberValue,
+        maxTotalTickets: numberValue
+      });
+    } else if (field === 'maxOpenTickets') {
+      onLimitsChange({
+        ...(limits || {}),
+        maxOpenTickets: numberValue
+      });
+    } else if (field === 'maxActiveChats') {
+      onLimitsChange({
+        ...(limits || {}),
+        maxActiveChats: numberValue
+      });
+    }
   };
 
   return (
-    <RadioGroup
-      value={selectedType}
-      onValueChange={(value: 'manual' | 'round-robin' | 'load-balanced') => onTypeSelect(value)}
-      className="space-y-4"
-    >
-      <div className="flex items-start space-x-4 p-4 rounded-lg border border-gray-200 hover:bg-accent/50 transition-colors">
-        <RadioGroupItem value="manual" id="manual" className="mt-1" />
-        <div className="flex-1 space-y-2">
-          <div className="flex items-center space-x-2">
-            <Users className="h-5 w-5 text-primary" />
-            <Label htmlFor="manual" className="font-medium">Manual Routing</Label>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Team members manually pick tickets from the queue. Best for teams that want full control over ticket assignment.
-          </p>
-        </div>
-      </div>
-
-      <div className="flex items-start space-x-4 p-4 rounded-lg border border-gray-200 hover:bg-accent/50 transition-colors">
-        <RadioGroupItem value="round-robin" id="round-robin" className="mt-1" />
-        <div className="flex-1 space-y-2">
-          <div className="flex items-center space-x-2">
-            <Repeat2 className="h-5 w-5 text-primary" />
-            <Label htmlFor="round-robin" className="font-medium">Round Robin Routing</Label>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Tickets are automatically assigned to team members in a sequential order. Ensures even distribution of workload.
-          </p>
-        </div>
-      </div>
-
-      <div className="flex items-start space-x-4 p-4 rounded-lg border border-gray-200 hover:bg-accent/50 transition-colors">
-        <RadioGroupItem value="load-balanced" id="load-balanced" className="mt-1" />
-        <div className="flex-1 space-y-2">
-          <div className="flex items-center space-x-2">
-            <Scale className="h-5 w-5 text-primary" />
-            <Label htmlFor="load-balanced" className="font-medium">Load Balanced Routing</Label>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Tickets are assigned based on team members' current workload. Optimizes for team capacity and availability.
-          </p>
-          
-          {selectedType === 'load-balanced' && (
-            <div className="mt-4 space-y-6 pt-4 border-t">
-              <div className="space-y-4">
-                <Label className="text-sm font-medium">Maximum Total Tickets</Label>
-                <Input
-                  type="number"
-                  min={0}
-                  max={50}
-                  value={limits.maxTickets || 0}
-                  onChange={handleLimitChange('maxTickets')}
-                  className="w-full"
-                />
-              </div>
-
-              <div className="space-y-4">
-                <Label className="text-sm font-medium">Maximum Open Tickets</Label>
-                <Input
-                  type="number"
-                  min={0}
-                  max={30}
-                  value={limits.maxOpenTickets || 0}
-                  onChange={handleLimitChange('maxOpenTickets')}
-                  className="w-full"
-                />
-              </div>
-
-              <div className="space-y-4">
-                <Label className="text-sm font-medium">Maximum Active Chats</Label>
-                <Input
-                  type="number"
-                  min={0}
-                  max={10}
-                  value={limits.maxActiveChats || 0}
-                  onChange={handleLimitChange('maxActiveChats')}
-                  className="w-full"
-                />
-              </div>
+    <div className="space-y-6">
+      <div>
+        <RadioGroup value={selectedType} onValueChange={(v) => onTypeSelect(v as 'manual' | 'round-robin' | 'load-balanced')}>
+          <div className="flex items-start space-x-2 mb-4">
+            <RadioGroupItem value="manual" id="manual" className="mt-1" />
+            <div className="grid gap-1.5">
+              <Label htmlFor="manual" className="flex items-center gap-2">
+                <ArrowLeftRight className="h-4 w-4" />
+                Manual Assignment
+              </Label>
+              <p className="text-sm text-gray-500">
+                Agents manually pick up tickets from the team queue.
+              </p>
             </div>
-          )}
-        </div>
+          </div>
+          
+          <div className="flex items-start space-x-2 mb-4">
+            <RadioGroupItem value="round-robin" id="round-robin" className="mt-1" />
+            <div className="grid gap-1.5">
+              <Label htmlFor="round-robin" className="flex items-center gap-2">
+                <RotateCcw className="h-4 w-4" />
+                Round Robin
+              </Label>
+              <p className="text-sm text-gray-500">
+                Tickets are assigned to team members in rotation.
+              </p>
+            </div>
+          </div>
+          
+          <div className="flex items-start space-x-2">
+            <RadioGroupItem value="load-balanced" id="load-balanced" className="mt-1" />
+            <div className="grid gap-1.5">
+              <Label htmlFor="load-balanced" className="flex items-center gap-2">
+                <Scale className="h-4 w-4" />
+                Load Balanced
+              </Label>
+              <p className="text-sm text-gray-500">
+                Tickets are assigned based on agent workload and capacity.
+              </p>
+            </div>
+          </div>
+        </RadioGroup>
       </div>
-    </RadioGroup>
+
+      {selectedType === 'load-balanced' && (
+        <div className="bg-gray-50 p-4 rounded-lg space-y-4">
+          <h3 className="text-sm font-medium">Agent Capacity Limits</h3>
+          
+          <div className="grid gap-3">
+            <div>
+              <Label htmlFor="maxTickets">Maximum Total Tickets</Label>
+              <Input
+                id="maxTickets"
+                type="number"
+                placeholder="No limit"
+                value={limits?.maxTotalTickets !== undefined ? limits.maxTotalTickets : (limits?.maxTickets !== undefined ? limits.maxTickets : '')}
+                onChange={(e) => handleLimitChange('maxTotalTickets', e.target.value)}
+                className="mt-1"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Maximum number of tickets an agent can have at any time
+              </p>
+            </div>
+            
+            <div>
+              <Label htmlFor="maxOpenTickets">Maximum Open Tickets</Label>
+              <Input
+                id="maxOpenTickets"
+                type="number"
+                placeholder="No limit"
+                value={limits?.maxOpenTickets !== undefined ? limits.maxOpenTickets : ''}
+                onChange={(e) => handleLimitChange('maxOpenTickets', e.target.value)}
+                className="mt-1"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Maximum number of open tickets an agent can have
+              </p>
+            </div>
+            
+            <div>
+              <Label htmlFor="maxActiveChats">Maximum Active Chats</Label>
+              <Input
+                id="maxActiveChats"
+                type="number"
+                placeholder="No limit"
+                value={limits?.maxActiveChats !== undefined ? limits.maxActiveChats : ''}
+                onChange={(e) => handleLimitChange('maxActiveChats', e.target.value)}
+                className="mt-1"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Maximum number of active chat conversations an agent can handle
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 
 export default TeamRoutingSelector;
-

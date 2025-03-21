@@ -11,6 +11,19 @@ interface TeamsListProps {
 
 const TeamsList = ({ teams }: TeamsListProps) => {
   const navigate = useNavigate();
+  
+  // Handle different member formats
+  const getMemberCount = (team: Team): number => {
+    if (team.teamMembers && team.teamMembers.length > 0) {
+      return team.teamMembers.length;
+    }
+    
+    if (team.members && team.members.length > 0) {
+      return team.members.length;
+    }
+    
+    return 0;
+  };
 
   return (
     <div className="space-y-4">
@@ -30,7 +43,7 @@ const TeamsList = ({ teams }: TeamsListProps) => {
                   <div>
                     <h3 className="font-medium text-gray-900">{team.name}</h3>
                     <p className="text-sm text-gray-500">
-                      {team.members?.length || 0} members
+                      {getMemberCount(team)} members
                     </p>
                   </div>
                 </div>

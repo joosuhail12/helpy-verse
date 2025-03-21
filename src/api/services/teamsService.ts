@@ -1,6 +1,6 @@
 
 import { HttpClient } from '@/api/services/http';
-import type { Team, TeamCreatePayload } from '@/types/team';
+import type { Team, TeamCreatePayload, DayOfWeek, TimeSlot } from '@/types/team';
 
 // API endpoint for teams
 const API_URL = '/team';
@@ -22,6 +22,37 @@ export interface TeamParams {
     workspace_id?: string;
 }
 
+// Transform backend team data to frontend team model
+const mapTeamFromBackend = (team: any): Team => {
+    return {
+        id: team.id,
+        name: team.name,
+        icon: team.icon,
+        teamMembers: team.teamMembers || [],
+        members: team.members || [],
+        channels: {
+            chat: team.channels?.chat || undefined,
+            email: team.channels?.email || []
+        },
+        routingStrategy: team.routingStrategy || 'manual',
+        maxTotalTickets: team.maxTotalTickets,
+        maxOpenTickets: team.maxOpenTickets,
+        maxActiveChats: team.maxActiveChats,
+        officeHours: team.officeHours || {
+            monday: [],
+            tuesday: [],
+            wednesday: [],
+            thursday: [],
+            friday: [],
+            saturday: [],
+            sunday: []
+        },
+        holidays: team.holidays || [],
+        createdAt: team.createdAt || team.created_at || '',
+        updatedAt: team.updatedAt || team.updated_at || ''
+    };
+};
+
 export const teamsService = {
     async fetchTeams(params: TeamParams = {}): Promise<TeamsResponse> {
         try {
@@ -35,12 +66,15 @@ export const teamsService = {
             };
             
             console.log('Fetching teams with params:', queryParams);
-            const response = await HttpClient.apiClient.get<{ data: Team[] }>(API_URL, { params: queryParams });
+            const response = await HttpClient.apiClient.get<{ data: any[] }>(API_URL, { params: queryParams });
             console.log('Teams response:', response.data);
             
+            // Map backend data to frontend model
+            const mappedTeams = response.data.data?.map(mapTeamFromBackend) || [];
+            
             return {
-                data: response.data.data || [],
-                total: response.data.data?.length || 0
+                data: mappedTeams,
+                total: mappedTeams.length
             };
         } catch (error) {
             console.error('Error fetching teams:', error);
@@ -60,14 +94,16 @@ export const teamsService = {
                 members: team.members,
                 channels: team.channels,
                 routingStrategy: team.routing.type,
-                ...(team.routing.limits?.maxTickets && { maxTotalTickets: team.routing.limits.maxTickets }),
+                ...(team.routing.limits?.maxTotalTickets && { maxTotalTickets: team.routing.limits.maxTotalTickets }),
                 ...(team.routing.limits?.maxOpenTickets && { maxOpenTickets: team.routing.limits.maxOpenTickets }),
                 ...(team.routing.limits?.maxActiveChats && { maxActiveChats: team.routing.limits.maxActiveChats }),
+                officeHours: team.officeHours,
+                holidays: team.holidays,
                 workspace_id: workspaceId
             };
             
-            const response = await HttpClient.apiClient.post<{ data: Team }>(API_URL, payload);
-            return { data: response.data.data };
+            const response = await HttpClient.apiClient.post<{ data: any }>(API_URL, payload);
+            return { data: mapTeamFromBackend(response.data.data) };
         } catch (error) {
             console.error('Error creating team:', error);
             throw new Error('Failed to create team');
@@ -93,8 +129,8 @@ export const teamsService = {
                 payload.routingStrategy = team.routing.type;
                 
                 if (team.routing.limits) {
-                    if (team.routing.limits.maxTickets !== undefined) {
-                        payload.maxTotalTickets = team.routing.limits.maxTickets;
+                    if (team.routing.limits.maxTotalTickets !== undefined) {
+                        payload.maxTotalTickets = team.routing.limits.maxTotalTickets;
                     }
                     if (team.routing.limits.maxOpenTickets !== undefined) {
                         payload.maxOpenTickets = team.routing.limits.maxOpenTickets;
@@ -105,8 +141,11 @@ export const teamsService = {
                 }
             }
             
-            const response = await HttpClient.apiClient.put<{ data: Team }>(`${API_URL}/${id}`, payload);
-            return { data: response.data.data };
+            if (team.officeHours) payload.officeHours = team.officeHours;
+            if (team.holidays) payload.holidays = team.holidays;
+            
+            const response = await HttpClient.apiClient.put<{ data: any }>(`${API_URL}/${id}`, payload);
+            return { data: mapTeamFromBackend(response.data.data) };
         } catch (error) {
             console.error('Error updating team:', error);
             throw new Error('Failed to update team');
@@ -132,10 +171,10 @@ export const teamsService = {
             // Get workspace ID from localStorage
             const workspaceId = localStorage.getItem('workspaceId');
             
-            const response = await HttpClient.apiClient.get<{ data: Team }>(`${API_URL}/${id}`, {
+            const response = await HttpClient.apiClient.get<{ data: any }>(`${API_URL}/${id}`, {
                 params: { workspace_id: workspaceId }
             });
-            return { data: response.data.data };
+            return { data: mapTeamFromBackend(response.data.data) };
         } catch (error) {
             console.error('Error fetching team:', error);
             throw new Error('Failed to fetch team details');

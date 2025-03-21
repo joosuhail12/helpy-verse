@@ -1,29 +1,22 @@
+
 export interface Team {
   id: string;
   name: string;
   icon?: string;
-  members: Array<{
-    id: string;
-    name: string;
-    email: string;
-  }>;
   teamMembers?: Array<{
     id: string;
     name: string;
     email: string;
   }>;
+  members?: string[];
   channels?: {
     chat?: string;
     email: string[];
   };
-  routing: {
-    type: 'manual' | 'round-robin' | 'load-balanced';
-    limits?: {
-      maxTickets?: number;
-      maxOpenTickets?: number;
-      maxActiveChats?: number;
-    };
-  };
+  routingStrategy?: 'manual' | 'round-robin' | 'load-balanced';
+  maxTotalTickets?: number;
+  maxOpenTickets?: number;
+  maxActiveChats?: number;
   officeHours: {
     [key in DayOfWeek]: TimeSlot[];
   };
@@ -88,7 +81,7 @@ export interface TeamCreatePayload {
   routing: {
     type: 'manual' | 'round-robin' | 'load-balanced';
     limits?: {
-      maxTickets?: number;
+      maxTotalTickets?: number;
       maxOpenTickets?: number;
       maxActiveChats?: number;
     };
@@ -123,12 +116,12 @@ export interface TeamRoutingSelectorProps {
   selectedType: 'manual' | 'round-robin' | 'load-balanced';
   onTypeSelect: (type: 'manual' | 'round-robin' | 'load-balanced') => void;
   limits?: {
-    maxTickets?: number;
+    maxTotalTickets?: number;
     maxOpenTickets?: number;
     maxActiveChats?: number;
   };
   onLimitsChange?: (limits: {
-    maxTickets?: number;
+    maxTotalTickets?: number;
     maxOpenTickets?: number;
     maxActiveChats?: number;
   }) => void;
