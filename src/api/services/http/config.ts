@@ -40,8 +40,8 @@ export const MAX_RETRIES = 2;
 
 // CORS configuration with dynamic workspace_id header
 export const getCorsConfig = () => {
-  const workspaceId = getCookie('workspaceId');
-  console.log('Workspace ID from cookie:', workspaceId);
+  const workspaceId = localStorage.getItem('workspaceId');
+  console.log('Workspace ID from localStorage:', workspaceId);
   return {
     withCredentials: true,
     headers: {

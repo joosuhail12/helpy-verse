@@ -3,7 +3,7 @@
 
 import { FilterEntity } from '@/types/tag';
 import { SortField } from '@/types/tag';
-import { getCookie, HttpClient } from '@/api/services/http';
+import { HttpClient } from '@/api/services/http';
 import type { Company } from '@/types/company';
 
 // Changed from '/company' to '/company' - ensuring it's the correct API endpoint
@@ -37,8 +37,8 @@ export interface CompanyParams {
 export const companiesService = {
     async fetchCompanies(params: CompanyParams = {}): Promise<CompaniesResponse> {
         try {
-            // Get workspace ID from cookie only
-            const workspaceId = getCookie('workspaceId');
+            // Get workspace ID from localStorage
+            const workspaceId = localStorage.getItem('workspaceId');
             
             // Ensure workspace_id is included in params
             const queryParams = {
@@ -58,8 +58,8 @@ export const companiesService = {
 
     async createCompany(company: Partial<Company>): Promise<CreateCompaniesResponse> {
         try {
-            // Get workspace ID from cookie only
-            const workspaceId = getCookie('workspaceId');
+            // Get workspace ID from localStorage
+            const workspaceId = localStorage.getItem('workspaceId');
             
             const payload = {
                 ...company,
@@ -76,8 +76,8 @@ export const companiesService = {
 
     async updateCompany(id: string, company: Partial<Company>): Promise<CompanyResponse> {
         try {
-            // Get workspace ID from cookie only
-            const workspaceId = getCookie('workspaceId');
+            // Get workspace ID from localStorage
+            const workspaceId = localStorage.getItem('workspaceId');
             
             const payload = {
                 ...company,
@@ -94,8 +94,8 @@ export const companiesService = {
 
     async deleteCompany(id: string): Promise<void> {
         try {
-            // Get workspace ID from cookie only
-            const workspaceId = getCookie('workspaceId');
+            // Get workspace ID from localStorage
+            const workspaceId = localStorage.getItem('workspaceId');
             
             await HttpClient.apiClient.delete(`${API_URL}/${id}`, {
                 params: { workspace_id: workspaceId }
@@ -108,8 +108,8 @@ export const companiesService = {
     
     async getCompany(id: string): Promise<CompanyResponse> {
         try {
-            // Get workspace ID from cookie only
-            const workspaceId = getCookie('workspaceId');
+            // Get workspace ID from localStorage
+            const workspaceId = localStorage.getItem('workspaceId');
             
             const response = await HttpClient.apiClient.get<CompanyResponse>(`${API_URL}/${id}`, {
                 params: { workspace_id: workspaceId }

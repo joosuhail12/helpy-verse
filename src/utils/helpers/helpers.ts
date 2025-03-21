@@ -23,12 +23,12 @@ export const decryptBase64 = (encoded: string): string => {
   }
 };
 
-// Set workspace ID in cookie only (not localStorage) for reliability
+// Set workspace ID in localStorage (not cookie) for reliability
 export const setWorkspaceId = (workspaceId: string): void => {
   if (!workspaceId) return;
   
-  // Set only in cookie
-  setCookie("workspaceId", workspaceId);
+  // Set in localStorage
+  localStorage.setItem("workspaceId", workspaceId);
   
   console.log(`Workspace ID set to: ${workspaceId}`);
 };

@@ -1,7 +1,5 @@
-
 import type { Contact } from '@/types/contact';
 import { HttpClient } from '@/api/services/http';
-import { getCookie } from '@/utils/cookies/cookieManager';
 
 
 const API_URL = '/customer';
@@ -46,9 +44,9 @@ export const customerService = {
         try {
             console.log(`Attempting to fetch customers (try ${retryCount + 1}/${MAX_RETRIES + 1})`);
             
-            // Get workspace ID from env or localStorage
-            console.log('Fetching customers', getCookie('workspaceId'));
-            const workspaceId = getCookie('workspaceId');
+            // Get workspace ID from localStorage
+            const workspaceId = localStorage.getItem('workspaceId');
+            console.log('Fetching customers with workspace ID:', workspaceId);
             
             // Check if we should use a test response for development
             if (import.meta.env.DEV && import.meta.env.VITE_REACT_APP_USE_MOCK_DATA === 'true') {
@@ -120,8 +118,8 @@ export const customerService = {
         try {
             console.log(`Fetching customer details for ID: ${customer_id} (try ${retryCount + 1}/${MAX_RETRIES + 1})`);
             
-            // Get workspace ID from env or localStorage
-            const workspaceId = getCookie('workspaceId');
+            // Get workspace ID from localStorage
+            const workspaceId = localStorage.getItem('workspaceId');
             
             const response = await HttpClient.contactsClient.get<CustomerResponse>(`${API_URL}/${customer_id}`, {
                 params: { workspace_id: workspaceId }
@@ -160,7 +158,7 @@ export const customerService = {
     async createCustomer(customerData: Omit<CreateCustomerData, 'workspace_id'>): Promise<CustomerResponse> {
         try {
             // Get workspace ID from env or localStorage
-            const workspaceId = getCookie('workspaceId');
+            const workspaceId = localStorage.getItem('workspaceId');
             
             const payload = {
                 ...customerData,
@@ -184,7 +182,7 @@ export const customerService = {
             formData.append('file', csvFile);
             
             // Get workspace ID from env or localStorage
-            const workspaceId = getCookie('workspaceId');
+            const workspaceId = localStorage.getItem('workspaceId');
             formData.append('workspace_id', workspaceId);
 
             await HttpClient.apiClient.post(`${API_URL}/import`, formData, {
@@ -202,7 +200,7 @@ export const customerService = {
     async updateCustomer(customer_id: string, customerData: Partial<Contact>): Promise<Contact> {
         try {
             // Get workspace ID from env or localStorage
-            const workspaceId = getCookie('workspaceId');
+            const workspaceId = localStorage.getItem('workspaceId');
             
             const payload = {
                 ...customerData,
@@ -223,7 +221,7 @@ export const customerService = {
     async deleteContact(customer_id: string): Promise<void> {
         try {
             // Get workspace ID from env or localStorage
-            const workspaceId = getCookie('workspaceId');
+            const workspaceId = localStorage.getItem('workspaceId');
             
             await HttpClient.apiClient.delete(`${API_URL}/${customer_id}`, {
                 params: { workspace_id: workspaceId }

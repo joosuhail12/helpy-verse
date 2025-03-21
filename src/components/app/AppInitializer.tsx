@@ -6,7 +6,7 @@ import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { fetchUserData } from '@/store/slices/auth/userActions';
 
 export const initializeApp = () => {
-  // Check both cookie and localStorage for token, but only cookie for workspace ID
+  // Check both cookie and localStorage for token, but only localStorage for workspace ID
   const token = getCookie("customerToken") || localStorage.getItem("token");
   if (token) {
     console.log("App initialization: Found token, setting up auth");

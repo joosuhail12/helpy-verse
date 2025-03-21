@@ -11,25 +11,21 @@ export const fetchUserData = createAsyncThunk(
       const response = await HttpClient.apiClient.get(AUTH_ENDPOINTS.USER_PROFILE);
       console.log("User profile data fetched successfully", response.data);
       
-      // Save workspace ID from response to cookie if it exists
+      // Save workspace ID from response to localStorage if it exists
       if (response.data.data?.defaultWorkspaceId) {
         try {
-          // Set the cookie with explicit parameters for reliability
-          cookieFunctions.setCookie(
-            "workspaceId", 
-            response.data.data.defaultWorkspaceId,
-            30, // 30 days expiry
-          );
+          // Set the workspace ID in localStorage
+          localStorage.setItem("workspaceId", response.data.data.defaultWorkspaceId);
           
-          // Verify cookie was set correctly
-          const verifiedCookieValue = cookieFunctions.getCookie("workspaceId");
-          if (verifiedCookieValue) {
-            console.log("✅ Workspace ID cookie set and verified:", verifiedCookieValue);
+          // Verify localStorage was set correctly
+          const verifiedValue = localStorage.getItem("workspaceId");
+          if (verifiedValue) {
+            console.log("✅ Workspace ID saved to localStorage and verified:", verifiedValue);
           } else {
-            console.error("❌ Failed to set workspace ID cookie - verification failed");
+            console.error("❌ Failed to save workspace ID to localStorage - verification failed");
           }
-        } catch (cookieError) {
-          console.error("Error setting workspace ID cookie:", cookieError);
+        } catch (storageError) {
+          console.error("Error saving workspace ID to localStorage:", storageError);
         }
       } else {
         console.warn("No default workspace ID found in user profile response");
@@ -50,25 +46,21 @@ export const fetchUserProfile = createAsyncThunk(
       const response = await HttpClient.apiClient.get(AUTH_ENDPOINTS.USER_PROFILE);
       console.log("User profile fetched:", response.data);
       
-      // Save workspace ID from response to cookie if it exists
+      // Save workspace ID from response to localStorage if it exists
       if (response.data.data?.defaultWorkspaceId) {
         try {
-          // Set the cookie with explicit parameters for reliability
-          cookieFunctions.setCookie(
-            "workspaceId", 
-            response.data.data.defaultWorkspaceId,
-            30, // 30 days expiry
-          );
+          // Set the workspace ID in localStorage
+          localStorage.setItem("workspaceId", response.data.data.defaultWorkspaceId);
           
-          // Verify cookie was set correctly
-          const verifiedCookieValue = cookieFunctions.getCookie("workspaceId");
-          if (verifiedCookieValue) {
-            console.log("✅ Workspace ID cookie set and verified:", verifiedCookieValue);
+          // Verify localStorage was set correctly
+          const verifiedValue = localStorage.getItem("workspaceId");
+          if (verifiedValue) {
+            console.log("✅ Workspace ID saved to localStorage and verified:", verifiedValue);
           } else {
-            console.error("❌ Failed to set workspace ID cookie - verification failed");
+            console.error("❌ Failed to save workspace ID to localStorage - verification failed");
           }
-        } catch (cookieError) {
-          console.error("Error setting workspace ID cookie:", cookieError);
+        } catch (storageError) {
+          console.error("Error saving workspace ID to localStorage:", storageError);
         }
       } else {
         console.warn("No default workspace ID found in user profile response");

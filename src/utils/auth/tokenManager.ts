@@ -1,3 +1,4 @@
+
 /**
  * Token and authentication management utility functions
  */
@@ -23,6 +24,10 @@ export const handleLogout = async (): Promise<void> => {
   } catch (error) {
     console.error('Error during logout process:', error);
   } finally {
+    // Clear workspace ID from localStorage
+    localStorage.removeItem("workspaceId");
+    console.log("Cleared workspace ID from localStorage");
+    
     // Always clear local tokens regardless of API call success
     cookieFunctions.handleLogout();
   }
@@ -128,32 +133,32 @@ export const isTokenExpired = (): boolean => {
   }
 };
 
-// 🟢 Workspace ID Management - Only use cookies, not localStorage
+// 🟢 Workspace ID Management - Use localStorage instead of cookies
 export const setWorkspaceId = (id: string): void => {
   if (id) {
-    // Only set in cookies, not localStorage
+    // Only set in localStorage, not cookies
     try {
-      setCookie("workspaceId", id);
-      console.log("Workspace ID set in cookie:", id);
+      localStorage.setItem("workspaceId", id);
+      console.log("Workspace ID set in localStorage:", id);
     } catch (error) {
-      console.error("Error setting workspace cookie:", error);
+      console.error("Error setting workspace ID in localStorage:", error);
     }
   }
 };
 
 export const getWorkspaceId = (): string => {
-  // Only check cookies, not localStorage or environment variables
+  // Only check localStorage, not cookies
   try {
-    const cookieId = getCookie("workspaceId");
-    if (cookieId) {
-      console.log("Got workspace ID from cookie:", cookieId);
-      return cookieId;
+    const storageId = localStorage.getItem("workspaceId");
+    if (storageId) {
+      console.log("Got workspace ID from localStorage:", storageId);
+      return storageId;
     }
   } catch (error) {
-    console.warn("Error accessing workspace cookie:", error);
+    console.warn("Error accessing workspace ID in localStorage:", error);
   }
   
-  // Return empty string if no workspace ID found in cookie
+  // Return empty string if no workspace ID found in localStorage
   return "";
 };
 
