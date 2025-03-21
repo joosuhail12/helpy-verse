@@ -7,6 +7,7 @@ import ErrorBoundary from '../common/ErrorBoundary';
 
 // Eager load important routes for better UX
 import SignIn from '@/pages/SignIn';
+import LandingPage from '@/pages/LandingPage';
 
 // Lazy load other routes
 const SignUp = lazy(() => import('@/pages/SignUp'));
@@ -36,6 +37,28 @@ export const AppRoutes = () => {
     <BrowserRouter>
       <Routes>
         {/* Public routes */}
+        <Route 
+          path="/" 
+          element={
+            <PublicRoute>
+              <ErrorBoundary>
+                <LandingPage />
+              </ErrorBoundary>
+            </PublicRoute>
+          } 
+        />
+        
+        <Route 
+          path="/index" 
+          element={
+            <PublicRoute>
+              <ErrorBoundary>
+                <LandingPage />
+              </ErrorBoundary>
+            </PublicRoute>
+          } 
+        />
+        
         <Route 
           path="/sign-in" 
           element={
@@ -111,9 +134,6 @@ export const AppRoutes = () => {
             </PrivateRoute>
           } 
         />
-        
-        {/* Redirect root to sign in */}
-        <Route path="/" element={<Navigate to="/sign-in" replace />} />
         
         {/* 404 route */}
         <Route 
