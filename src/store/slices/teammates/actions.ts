@@ -1,138 +1,120 @@
+
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import type { Teammate, NewTeammate, ActivityLog } from '@/types/teammate';
-import { mockTeammates, mockActivityLogs, mockAssignments } from './mockData';
+import { RootState } from '@/store/store';
+import { Teammate, NewTeammate } from '@/types/teammate';
+import { v4 as uuidv4 } from 'uuid';
+import { teammateService } from '@/api/services/teammateService';
 import { CACHE_DURATION } from './types';
-import type { TeammatesState } from './types';
-import { uuid } from 'uuid';
-import { getErrorMessage } from './utils';
 
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
+// Fetch all teammates
 export const fetchTeammates = createAsyncThunk(
-  'teammates/fetchTeammates',
-  async (_, { getState, rejectWithValue }) => {
-    const state = getState() as { teammates: TeammatesState };
+  'teammates/fetchAll',
+  async (_, { getState }) => {
+    const state = getState() as RootState;
+    const now = Date.now();
+    const lastFetch = state.teammates.lastFetchTime;
     
-    if (state.teammates.lastFetchTime) {
-      const timeSinceLastFetch = Date.now() - state.teammates.lastFetchTime;
-      if (timeSinceLastFetch < CACHE_DURATION) {
-        return state.teammates.teammates;
-      }
+    // If we have data and it's recent, don't fetch again
+    if (
+      lastFetch &&
+      now - lastFetch < CACHE_DURATION &&
+      state.teammates.teammates.length > 0 &&
+      !state.teammates.error
+    ) {
+      return state.teammates.teammates;
     }
-
-    try {
-      await delay(1000);
-      return mockTeammates;
-    } catch (error) {
-      if (state.teammates.retryCount < 3) {
-        await delay(1000 * (state.teammates.retryCount + 1));
-        return rejectWithValue('Failed to fetch teammates. Retrying...');
-      }
-      return rejectWithValue('Failed to fetch teammates after multiple retries');
-    }
+    
+    const response = await teammateService.getAllTeammates();
+    return response.data;
   }
 );
 
-export const addTeammate = createAsyncThunk(
-  'teammates/addTeammate',
-  async (newTeammate: NewTeammate, { dispatch }) => {
-    const teammate: Teammate = {
-      id: Math.random().toString(36).substr(2, 9),
-      ...newTeammate,
-      status: 'active',
-      lastActive: new Date().toISOString(),
-      createdAt: new Date().toISOString(),
-      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${newTeammate.name}`,
-      permissions: []
-    };
-
-    try {
-      await delay(1000);
-      return teammate;
-    } catch (error) {
-      throw error;
-    }
-  }
-);
-
-export const resendInvitation = createAsyncThunk(
-  'teammates/resendInvitation',
-  async (teammateId: string, { rejectWithValue }) => {
-    try {
-      await delay(1000);
-      return teammateId;
-    } catch (error) {
-      return rejectWithValue('Failed to resend invitation');
-    }
-  }
-);
-
-export const updateTeammatesRole = createAsyncThunk(
-  'teammates/updateTeammatesRole',
-  async ({ teammateIds, role }: { teammateIds: string[], role: Teammate['role'] }, { rejectWithValue }) => {
-    try {
-      await delay(1000);
-      return { teammateIds, role };
-    } catch (error) {
-      return rejectWithValue('Failed to update roles');
-    }
-  }
-);
-
-export const exportTeammates = createAsyncThunk(
-  'teammates/exportTeammates',
-  async (teammateIds: string[], { getState, rejectWithValue }) => {
-    try {
-      await delay(1000);
-      const state = getState() as { teammates: TeammatesState };
-      const selectedTeammates = state.teammates.teammates.filter(t => teammateIds.includes(t.id));
-      console.log('Exporting teammates:', selectedTeammates);
-      return teammateIds;
-    } catch (error) {
-      return rejectWithValue('Failed to export teammates');
-    }
-  }
-);
-
-export const updateTeammate = createAsyncThunk(
-  'teammates/updateTeammate',
-  async (teammate: Teammate) => {
-    await delay(1000);
-    return teammate;
-  }
-);
-
-export const updateTeammatePermissions = createAsyncThunk(
-  'teammates/updateTeammatePermissions',
-  async ({ teammateId, permissions }: { teammateId: string, permissions: string[] }) => {
-    await delay(1000);
-    return { teammateId, permissions };
-  }
-);
-
+// Create a new teammate
 export const createTeammate = createAsyncThunk(
-  'teammates/createTeammate',
-  async (teammate: NewTeammate, { rejectWithValue }) => {
+  'teammates/create',
+  async (newTeammate: NewTeammate, { rejectWithValue }) => {
     try {
-      const response = await teammatesService.createTeammate(teammate);
-      
-      const createdTeammate: Teammate = {
-        id: response.data[0].id || uuid(),
-        name: `${teammate.first_name} ${teammate.last_name}`,
-        email: teammate.email,
-        role: teammate.role,
+      // Create full teammate object
+      const teammate: Teammate = {
+        id: uuidv4(),
+        name: `${newTeammate.first_name} ${newTeammate.last_name}`,
+        email: newTeammate.email,
+        role: newTeammate.role,
         status: 'active',
-        teamId: null,
-        createdBy: 'current-user',
         lastActive: new Date().toISOString(),
         createdAt: new Date().toISOString(),
-        avatar: response.data[0].avatar || '',
-        permissions: []
+        teamId: '', // Default empty teamId
+        createdBy: '', // Default empty createdBy
+        avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${newTeammate.first_name} ${newTeammate.last_name}`,
+        permissions: [],
+        first_name: newTeammate.first_name,
+        last_name: newTeammate.last_name
       };
       
-      return createdTeammate;
-    } catch (error) {
-      return rejectWithValue(getErrorMessage(error));
+      const response = await teammateService.createTeammate(newTeammate);
+      
+      // Combine API response with local data as needed
+      return {
+        ...teammate,
+        ...response.data
+      };
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || 'Failed to create teammate');
+    }
+  }
+);
+
+// Update an existing teammate
+export const updateTeammate = createAsyncThunk(
+  'teammates/update',
+  async (
+    { id, updates }: { id: string; updates: Partial<Teammate> },
+    { rejectWithValue }
+  ) => {
+    try {
+      const response = await teammateService.updateTeammate(id, updates);
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || 'Failed to update teammate');
+    }
+  }
+);
+
+// Delete a teammate
+export const deleteTeammate = createAsyncThunk(
+  'teammates/delete',
+  async (id: string, { rejectWithValue }) => {
+    try {
+      await teammateService.deleteTeammate(id);
+      return id;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || 'Failed to delete teammate');
+    }
+  }
+);
+
+// Fetch a single teammate's details
+export const fetchTeammateDetails = createAsyncThunk(
+  'teammates/fetchDetails',
+  async (id: string, { rejectWithValue }) => {
+    try {
+      const response = await teammateService.getTeammateById(id);
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || 'Failed to fetch teammate details');
+    }
+  }
+);
+
+// Fetch teammate activity logs
+export const fetchTeammateActivity = createAsyncThunk(
+  'teammates/fetchActivity',
+  async (id: string, { rejectWithValue }) => {
+    try {
+      const response = await teammateService.getTeammateActivity(id);
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || 'Failed to fetch teammate activity');
     }
   }
 );

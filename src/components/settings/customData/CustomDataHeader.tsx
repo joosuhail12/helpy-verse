@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import ImportExportFields from './ImportExportFields';
-import type { CustomField } from "@/types/customField";
+import type { CustomField } from "@/types/customData";
 
 interface CustomDataHeaderProps {
   onAddField: () => void;

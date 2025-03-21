@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -53,11 +54,12 @@ export const InlineEditField = ({
       name: label,
       fieldType: type,
       isRequired: validation.some(v => v.type === 'required'),
-      validationRules: validation,
-      description: '',
       placeholder: '',
-      defaultValue: '',
-      entityType: 'customer'
+      options: options as string[] | null,
+      entityType: 'customer',
+      defaultValue: null,
+      description: null,
+      validationRules: validation
     };
 
     const validationErrors = validateFieldValue(editValue, mockField);

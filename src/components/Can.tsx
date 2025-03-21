@@ -11,16 +11,23 @@ export const Can = (props: any) => {
   useEffect(() => {
     if (permissions && Array.isArray(permissions)) {
       const newAbility = defineAppAbility();
-      // Convert permissions to the expected format before updating
-      const formattedPermissions = permissions.map(perm => ({
-        action: typeof perm.action === 'string' ? perm.action : perm.action[0],
-        subject: perm.subject
-      }));
-      newAbility.update(formattedPermissions);
+      
+      // Only proceed if permissions exist
+      if (permissions.length > 0) {
+        // Convert permissions to the expected format
+        const formattedPermissions = permissions.map(perm => ({
+          action: perm.action as "read" | "create" | "update" | "delete",
+          subject: perm.subject as string
+        }));
+        
+        newAbility.update(formattedPermissions);
+      }
+      
       setAbility(newAbility);
     }
   }, [permissions]);
 
-  const ContextualCan = createContextualCan(ability);
+  // Use the Can component with the current ability
+  const ContextualCan = createContextualCan(ability.rules);
   return <ContextualCan {...props} />;
 };

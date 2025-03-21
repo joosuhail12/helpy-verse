@@ -2,7 +2,7 @@
 import { Company } from '@/types/company';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCustomFields } from '@/hooks/useCustomFields';
-import { InlineEditField } from '@/components/contacts/detail/InlineEditField';
+import { InlineEditField } from './InlineEditField';
 import {
   Card,
   CardHeader,
@@ -38,6 +38,12 @@ export const CompanyCustomFields = ({ company }: CompanyCustomFieldsProps) => {
     return null;
   }
 
+  const companyFields = customFields.filter(field => field.entityType === 'company');
+
+  if (companyFields.length === 0) {
+    return null;
+  }
+
   return (
     <Card className="border-none shadow-none bg-gray-50/50">
       <CardHeader className="border-b pb-4">
@@ -45,17 +51,16 @@ export const CompanyCustomFields = ({ company }: CompanyCustomFieldsProps) => {
       </CardHeader>
       <CardContent className="pt-6">
         <div className="grid gap-6">
-          {customFields.filter(field => field.entityType === 'company').map((field) => (
+          {companyFields.map((field) => (
             <div key={field.id} className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground">{field.name}</p>
               <InlineEditField
                 value={company[field.id] || ''}
-                contactId={company.id}
+                companyId={company.id}
                 field={field.id}
                 label={field.name}
                 type={field.fieldType}
-                options={field.options || undefined}
-                validation={[]}
+                options={field.options || []}
               />
             </div>
           ))}

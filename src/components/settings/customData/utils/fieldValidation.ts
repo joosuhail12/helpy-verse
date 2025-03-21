@@ -65,3 +65,52 @@ export const validateField = (field: CustomField): string[] => {
   
   return errors;
 };
+
+export const validateFieldName = (name: string, existingFields: CustomField[]): string[] => {
+  const errors: string[] = [];
+  
+  if (!name || name.trim() === '') {
+    errors.push("Field name is required");
+  }
+  
+  const nameExists = existingFields.some(field => field.name.toLowerCase() === name.toLowerCase());
+  if (nameExists) {
+    errors.push("A field with this name already exists");
+  }
+  
+  return errors;
+};
+
+export const getDefaultValidationRules = (fieldType: CustomFieldType): ValidationRule[] => {
+  switch (fieldType) {
+    case 'text':
+    case 'rich-text':
+      return [];
+    case 'number':
+    case 'currency':
+      return [];
+    case 'date':
+      return [];
+    case 'email':
+      return [
+        {
+          type: 'regex',
+          value: '^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$',
+          message: 'Please enter a valid email address'
+        }
+      ];
+    case 'url':
+      return [
+        {
+          type: 'regex',
+          value: '^(https?:\\/\\/)?(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{2,256}\\.[a-z]{2,6}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)$',
+          message: 'Please enter a valid URL'
+        }
+      ];
+    case 'phone':
+    case 'tel':
+      return [];
+    default:
+      return [];
+  }
+};

@@ -17,12 +17,12 @@ export const DomainVerificationSteps = ({ domain }: DomainVerificationStepsProps
     {
       title: 'Configure DNS',
       description: 'Add required DNS records',
-      status: domain.isVerified ? 'complete' : 'pending',
+      status: domain.isVerified ? 'complete' : 'current',
     },
     {
       title: 'Verify',
       description: 'Verify domain ownership',
-      status: domain.isVerified ? 'complete' : 'current',
+      status: domain.isVerified ? 'complete' : 'pending',
     },
   ];
 

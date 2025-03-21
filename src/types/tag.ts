@@ -20,7 +20,7 @@ export interface Tag {
     id: string;
     title: string;
   }[];
-  data?: any; // Add this property to match what's expected by the API
+  data?: any; // Required for API compatibility
 }
 
 export type SortField = 'name' | 'tickets' | 'contacts' | 'companies' | 'lastUsed' | 'createdAt';

@@ -1,21 +1,21 @@
 
 import { Contact } from '@/types/contact';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useCustomFields } from '@/hooks/useCustomFields';
-import { InlineEditField } from '../InlineEditField';
 import {
   Card,
   CardHeader,
   CardTitle,
   CardContent,
 } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { InlineEditField } from '../InlineEditField';
 
 interface ContactCustomFieldsProps {
   contact: Contact;
 }
 
 export const ContactCustomFields = ({ contact }: ContactCustomFieldsProps) => {
-  const { data: customFields, isLoading } = useCustomFields('contacts');
+  const { data: customFields, isLoading } = useCustomFields('contact');
 
   if (isLoading) {
     return (
@@ -34,7 +34,13 @@ export const ContactCustomFields = ({ contact }: ContactCustomFieldsProps) => {
     );
   }
 
-  if (!customFields?.contacts.length) {
+  if (!customFields?.length) {
+    return null;
+  }
+
+  const customerFields = customFields.filter(field => field.entityType === 'customer');
+  
+  if (customerFields.length === 0) {
     return null;
   }
 
@@ -45,7 +51,7 @@ export const ContactCustomFields = ({ contact }: ContactCustomFieldsProps) => {
       </CardHeader>
       <CardContent className="pt-6">
         <div className="grid gap-6">
-          {customFields.contacts.map((field) => (
+          {customerFields.map((field) => (
             <div key={field.id} className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground">{field.name}</p>
               <InlineEditField
@@ -53,9 +59,8 @@ export const ContactCustomFields = ({ contact }: ContactCustomFieldsProps) => {
                 contactId={contact.id}
                 field={field.id}
                 label={field.name}
-                type={field.type}
-                options={field.options}
-                validation={field.validationRules}
+                type={field.fieldType}
+                options={field.options || []}
               />
             </div>
           ))}

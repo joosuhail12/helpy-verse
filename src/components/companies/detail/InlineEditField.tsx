@@ -1,8 +1,9 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { CustomFieldType } from '@/types/customField';
+import { CustomFieldType } from '@/types/customData';
 import { validateFieldValue } from '@/components/settings/customData/utils/fieldValidation';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { updateCompany } from '@/store/slices/companies/companiesSlice';
@@ -51,13 +52,14 @@ export const InlineEditField = ({
     const mockField = {
       id: field,
       name: label,
-      type,
-      required: validation.some(v => v.type === 'required'),
-      validationRules: validation,
-      description: '',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      history: []
+      fieldType: type,
+      isRequired: validation.some(v => v.type === 'required'),
+      placeholder: '',
+      options: options as string[] | null,
+      entityType: 'company',
+      defaultValue: null,
+      description: null,
+      validationRules: validation
     };
 
     const validationErrors = validateFieldValue(editValue, mockField);
@@ -133,4 +135,4 @@ export const InlineEditField = ({
       </Button>
     </div>
   );
-}; 
+};

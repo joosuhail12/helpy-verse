@@ -1,14 +1,3 @@
-export type CustomField = {
-    id: string;
-    name: string;
-    fieldType: string;
-    isRequired: boolean;
-    placeholder: string;
-    options: string[] | null;
-    entityType: "ticket" | "customer" | "company";
-    defaultValue: string | null;
-    description: string | null;
-}
 
 export type CustomFieldType =
     | 'text'
@@ -48,4 +37,18 @@ export interface FieldHistoryEntry {
         oldValue: any;
         newValue: any;
     }[];
+}
+
+export interface CustomField {
+    id: string;
+    name: string;
+    fieldType: CustomFieldType;
+    isRequired: boolean;
+    placeholder: string;
+    options: string[] | null;
+    entityType: "ticket" | "customer" | "company";
+    defaultValue: string | null;
+    description: string | null;
+    validationRules?: ValidationRule[];
+    history?: FieldHistoryEntry[];
 }
