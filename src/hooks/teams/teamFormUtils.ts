@@ -1,5 +1,5 @@
 
-import type { Team, DayOfWeek } from '@/types/team';
+import type { Team, DayOfWeek, TimeSlot } from '@/types/team';
 
 export const extractTeamMemberIds = (team: Team): string[] => {
   if (team.teamMembers && Array.isArray(team.teamMembers) && team.teamMembers.length > 0) {
