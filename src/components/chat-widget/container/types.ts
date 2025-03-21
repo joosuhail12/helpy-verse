@@ -18,4 +18,5 @@ export interface WidgetContentProps {
   navigateTo: (page: WidgetPage) => void;
   handleSelectConversation: (conversationId: string) => void;
   handleConversationCreated: (conversationId?: string) => void;
+  workspaceId?: string;
 }

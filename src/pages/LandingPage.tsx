@@ -1,8 +1,7 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import ChatWidgetContainer from '@/components/chat-widget/ChatWidgetContainer';
 
 /**
  * Landing page that is accessible without authentication
@@ -10,6 +9,19 @@ import ChatWidgetContainer from '@/components/chat-widget/ChatWidgetContainer';
  */
 const LandingPage = () => {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Load the chat widget embed script
+    const script = document.createElement('script');
+    script.src = '/pullse-embed.js';
+    script.async = true;
+    document.body.appendChild(script);
+
+    return () => {
+      // Clean up script on unmount
+      document.body.removeChild(script);
+    };
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-purple-50">
@@ -145,9 +157,6 @@ const LandingPage = () => {
           </div>
         </div>
       </footer>
-      
-      {/* Chat Widget */}
-      <ChatWidgetContainer />
     </div>
   );
 };

@@ -1,25 +1,33 @@
 
 import React from 'react';
 import WelcomeHeader from './components/WelcomeHeader';
+import ProTip from './components/ProTip';
+import QuickLinks from './components/QuickLinks';
 import StartConversationCard from './components/StartConversationCard';
 
 interface ChatHomeProps {
   onNewChat: () => void;
+  workspaceId?: string;
 }
 
 /**
- * Home page for the chat widget showing welcome message and start conversation button
+ * Home screen of the chat widget
  */
-const ChatHome = ({ onNewChat }: ChatHomeProps) => {
+const ChatHome: React.FC<ChatHomeProps> = ({ onNewChat, workspaceId }) => {
   return (
-    <div className="flex flex-col h-full">
-      {/* Modern welcome header */}
+    <div className="p-4 flex flex-col h-full">
       <WelcomeHeader />
       
-      {/* Content area */}
-      <div className="px-4 py-4 flex-1 bg-white">
-        {/* Main action card */}
-        <StartConversationCard onClick={onNewChat} />
+      <div className="mt-4 mb-6">
+        <ProTip />
+      </div>
+      
+      <div className="flex-grow">
+        <QuickLinks />
+        
+        <div className="mt-6">
+          <StartConversationCard onClick={onNewChat} />
+        </div>
       </div>
     </div>
   );

@@ -4,14 +4,20 @@ import ConversationHeader from './ConversationHeader';
 import MessageList from './message/MessageList';
 import MessageInput from './message/MessageInput';
 import { useConversation } from './hooks/useConversation';
-import { ConversationViewProps } from './types';
+
+interface ConversationViewProps {
+  conversationId: string;
+  onBack: () => void;
+  workspaceId?: string;
+}
 
 /**
  * Conversation detail view component
  */
 const ConversationView: React.FC<ConversationViewProps> = ({ 
   conversationId,
-  onBack 
+  onBack,
+  workspaceId
 }) => {
   const {
     messages,
@@ -21,7 +27,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
     sending,
     handleSendMessage,
     formatTimestamp
-  } = useConversation(conversationId);
+  } = useConversation(conversationId, workspaceId);
 
   return (
     <div className="flex flex-col h-full">

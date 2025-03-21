@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import ChatHome from '@/components/chat-widget/ChatHome';
 import ConversationList from '@/components/chat-widget/ConversationList';
 import NewChat from '@/components/chat-widget/NewChat';
@@ -13,13 +14,15 @@ type WidgetPage = 'home' | 'conversations' | 'new-chat' | 'conversation-detail';
  * Standalone page for the chat widget, used for direct embedding in iframe
  */
 const ChatWidgetStandalone = () => {
+  const [searchParams] = useSearchParams();
   const [currentPage, setCurrentPage] = useState<WidgetPage>('home');
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
+  
   const [options, setOptions] = useState({
     primaryColor: '#5DCFCF',
     welcomeMessage: 'How can we help you today?',
     agentName: 'Support Team',
-    workspaceId: ''
+    workspaceId: searchParams.get('workspace') || '6c22b22f-7bdf-43db-b7c1-9c5884125c63'
   });
 
   // Listen for options passed via postMessage
@@ -41,6 +44,17 @@ const ChatWidgetStandalone = () => {
       window.removeEventListener('message', handleMessage);
     };
   }, []);
+
+  // Get workspace ID from URL parameters
+  useEffect(() => {
+    const workspaceParam = searchParams.get('workspace');
+    if (workspaceParam) {
+      setOptions(prev => ({
+        ...prev,
+        workspaceId: workspaceParam
+      }));
+    }
+  }, [searchParams]);
 
   const closeWidget = () => {
     // Send message to parent window to close the widget
@@ -85,22 +99,22 @@ const ChatWidgetStandalone = () => {
     
     if (currentPage === 'conversations') {
       return (
-        <div className="p-4 flex justify-between items-center">
+        <div className="p-3 flex justify-between items-center">
           <div className="flex items-center gap-3">
             <button 
               onClick={() => navigateTo('home')} 
               className="text-gray-700"
             >
-              <ArrowLeft className="h-5 w-5" />
+              <ArrowLeft className="h-4 w-4" />
             </button>
-            <h2 className="font-semibold">Messages</h2>
+            <h2 className="font-semibold text-sm">Messages</h2>
           </div>
           <div className="flex items-center gap-3">
             <button className="text-gray-700">
-              <Search className="h-5 w-5" />
+              <Search className="h-4 w-4" />
             </button>
             <button onClick={closeWidget} className="text-gray-700">
-              <X className="h-5 w-5" />
+              <X className="h-4 w-4" />
             </button>
           </div>
         </div>
@@ -131,27 +145,37 @@ const ChatWidgetStandalone = () => {
 
       {/* Widget content */}
       <div className="flex-1 overflow-y-auto">
-        {currentPage === 'home' && <ChatHome onNewChat={() => navigateTo('new-chat')} />}
+        {currentPage === 'home' && (
+          <ChatHome 
+            onNewChat={() => navigateTo('new-chat')}
+            workspaceId={options.workspaceId}
+          />
+        )}
         {currentPage === 'conversations' && (
           <ConversationList 
             onNewChat={() => navigateTo('new-chat')} 
             onSelectConversation={handleSelectConversation}
+            workspaceId={options.workspaceId}
           />
         )}
         {currentPage === 'new-chat' && (
-          <NewChat onConversationCreated={handleConversationCreated} />
+          <NewChat 
+            onConversationCreated={handleConversationCreated}
+            workspaceId={options.workspaceId}
+          />
         )}
         {currentPage === 'conversation-detail' && currentConversationId && (
           <ConversationView 
             conversationId={currentConversationId} 
             onBack={() => navigateTo('conversations')}
+            workspaceId={options.workspaceId}
           />
         )}
       </div>
 
       {/* Only show navigation when not in conversation detail */}
       {shouldShowNavBar() && (
-        <div className="border-t border-gray-100 py-3 px-6 bg-white flex justify-around items-center">
+        <div className="border-t border-gray-100 py-2 px-6 bg-white flex justify-around items-center">
           <button 
             onClick={() => navigateTo('home')}
             className={`flex flex-col items-center gap-1 ${currentPage === 'home' 
@@ -159,7 +183,7 @@ const ChatWidgetStandalone = () => {
               : 'text-gray-500'}`}
             aria-label="Home"
           >
-            <Home className="h-5 w-5" />
+            <Home className="h-4 w-4" />
             <span className="text-xs">Home</span>
           </button>
           <button 
@@ -170,7 +194,7 @@ const ChatWidgetStandalone = () => {
                 : 'text-gray-500'}`}
             aria-label="Messages"
           >
-            <MessageSquare className="h-5 w-5" />
+            <MessageSquare className="h-4 w-4" />
             <span className="text-xs">Messages</span>
           </button>
         </div>

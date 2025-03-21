@@ -15,6 +15,7 @@ const ChatWidgetContainer = () => {
   const [currentPage, setCurrentPage] = useState<WidgetPage>('home');
   const [minimized, setMinimized] = useState(false);
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
+  const [workspaceId, setWorkspaceId] = useState<string>('6c22b22f-7bdf-43db-b7c1-9c5884125c63');
 
   useEffect(() => {
     // Initialize Ably connection when widget is opened
@@ -59,9 +60,14 @@ const ChatWidgetContainer = () => {
     }
   };
 
-  // Render the launcher button when widget is closed or minimized
+  // Always render the launcher button
+  const renderLauncher = () => (
+    <WidgetLauncher toggleWidget={toggleWidget} isOpen={isOpen} />
+  );
+
+  // If widget is minimized, only show the launcher
   if (!isOpen || minimized) {
-    return <WidgetLauncher toggleWidget={toggleWidget} />;
+    return renderLauncher();
   }
 
   // Check if we should show the navigation bar
@@ -75,38 +81,45 @@ const ChatWidgetContainer = () => {
   };
 
   return (
-    <div 
-      className="fixed bottom-5 right-5 z-50 flex flex-col bg-white rounded-xl shadow-2xl overflow-hidden" 
-      style={{ 
-        width: '340px', 
-        height: '550px', 
-        maxHeight: 'calc(100vh - 40px)'
-      }}
-    >
-      {/* Widget header */}
-      <WidgetHeader 
-        currentPage={currentPage} 
-        navigateTo={navigateTo} 
-        toggleWidget={toggleWidget} 
-      />
+    <>
+      {/* Always show launcher */}
+      {renderLauncher()}
+      
+      {/* Widget container */}
+      <div 
+        className="fixed bottom-5 right-5 z-40 flex flex-col bg-white rounded-xl shadow-2xl overflow-hidden" 
+        style={{ 
+          width: '340px', 
+          height: '520px', 
+          maxHeight: 'calc(100vh - 40px)'
+        }}
+      >
+        {/* Widget header */}
+        <WidgetHeader 
+          currentPage={currentPage} 
+          navigateTo={navigateTo} 
+          toggleWidget={toggleWidget} 
+        />
 
-      {/* Widget content */}
-      <WidgetContent 
-        currentPage={currentPage}
-        currentConversationId={currentConversationId}
-        navigateTo={navigateTo}
-        handleSelectConversation={handleSelectConversation}
-        handleConversationCreated={handleConversationCreated}
-      />
+        {/* Widget content */}
+        <WidgetContent 
+          currentPage={currentPage}
+          currentConversationId={currentConversationId}
+          navigateTo={navigateTo}
+          handleSelectConversation={handleSelectConversation}
+          handleConversationCreated={handleConversationCreated}
+          workspaceId={workspaceId}
+        />
 
-      {/* Only show navigation when appropriate */}
-      {shouldShowNavBar() && (
-        <NavigationBar currentPage={currentPage} navigateTo={navigateTo} />
-      )}
+        {/* Only show navigation when appropriate */}
+        {shouldShowNavBar() && (
+          <NavigationBar currentPage={currentPage} navigateTo={navigateTo} />
+        )}
 
-      {/* Brand footer - only including it once at the bottom */}
-      {shouldShowFooter() && <ResponseTime />}
-    </div>
+        {/* Brand footer - only including it once at the bottom */}
+        {shouldShowFooter() && <ResponseTime />}
+      </div>
+    </>
   );
 };
 

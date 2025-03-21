@@ -11,7 +11,7 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
   navigateTo 
 }) => {
   return (
-    <div className="border-t border-gray-100 py-3 px-6 bg-white flex justify-around items-center">
+    <div className="border-t border-gray-100 py-2 px-6 bg-white flex justify-around items-center">
       <button 
         onClick={() => navigateTo('home')}
         className={`flex flex-col items-center gap-1 ${
@@ -20,7 +20,7 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
             : 'text-gray-500'}`}
         aria-label="Home"
       >
-        <Home className="h-5 w-5" />
+        <Home className="h-4 w-4" />
         <span className="text-xs">Home</span>
       </button>
       <button 
@@ -31,7 +31,7 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
             : 'text-gray-500'}`}
         aria-label="Messages"
       >
-        <MessageSquare className="h-5 w-5" />
+        <MessageSquare className="h-4 w-4" />
         <span className="text-xs">Messages</span>
       </button>
     </div>

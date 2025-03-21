@@ -1,74 +1,111 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { ArrowLeft, Send } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/components/ui/use-toast';
 
 interface ChatStepProps {
-  name: string;
-  email: string;
-  message: string;
-  setMessage: (message: string) => void;
-  onSendMessage: (e: React.FormEvent) => void;
+  data: {
+    name: string;
+    email: string;
+    topic: string;
+  };
   onBack: () => void;
-  submitting: boolean;
+  onConversationCreated: (conversationId?: string) => void;
+  workspaceId?: string;
 }
 
-/**
- * Chat message input step for new conversation
- */
-const ChatStep: React.FC<ChatStepProps> = ({
-  name,
-  email,
-  message,
-  setMessage,
-  onSendMessage,
-  onBack,
-  submitting
+const ChatStep: React.FC<ChatStepProps> = ({ 
+  data, 
+  onBack, 
+  onConversationCreated,
+  workspaceId 
 }) => {
+  const [message, setMessage] = useState('');
+  const [sending, setSending] = useState(false);
+  const { toast } = useToast();
+  
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!message.trim()) return;
+    
+    setSending(true);
+    
+    try {
+      // Here you would actually create the conversation with your API
+      console.log('Creating conversation with workspace ID:', workspaceId);
+      console.log('Form data:', { ...data, message });
+      
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // For demo purposes we'll generate a random ID
+      const conversationId = `conv-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+      
+      onConversationCreated(conversationId);
+      
+      toast({
+        title: "Conversation started",
+        description: "Your message has been sent to our team.",
+      });
+    } catch (error) {
+      console.error('Error starting conversation:', error);
+      toast({
+        title: "Error",
+        description: "Could not start conversation. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setSending(false);
+    }
+  };
+  
   return (
-    <div className="flex flex-col h-full bg-white">
-      <div className="px-4 py-3 border-b flex items-center gap-3 sticky top-0 bg-white z-10 shadow-sm">
+    <div className="flex flex-col h-full">
+      <div className="p-4 border-b flex items-center">
         <button 
-          onClick={onBack} 
-          className="text-gray-500 hover:text-gray-700 p-1.5 hover:bg-gray-100 rounded-full transition-colors"
-          disabled={submitting}
+          onClick={onBack}
+          className="p-1.5 rounded-full hover:bg-gray-100 mr-3"
+          aria-label="Go back"
         >
-          <ArrowLeft className="h-5 w-5" />
+          <ArrowLeft className="h-4 w-4" />
         </button>
         <div>
-          <h2 className="font-semibold text-gray-800">New Conversation</h2>
-          <p className="text-xs text-gray-500">{name}</p>
+          <h3 className="font-medium text-sm">{data.topic || 'New conversation'}</h3>
+          <p className="text-xs text-gray-500">{data.name} • {data.email}</p>
         </div>
       </div>
       
-      <div className="flex-1 p-4 bg-gray-50 overflow-y-auto">
-        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+      <div className="flex-grow p-4 bg-gray-50">
+        <div className="bg-white p-3 rounded-lg shadow-sm border border-gray-100 mb-4">
           <p className="text-sm text-gray-700">
-            Hi {name.split(' ')[0]}, how can we help you today?
+            Please let us know how we can help you with "{data.topic || 'your question'}"
           </p>
         </div>
       </div>
       
-      <div className="p-4 border-t border-gray-100">
-        <form onSubmit={onSendMessage} className="relative">
-          <textarea
+      <form onSubmit={handleSubmit} className="p-3 border-t">
+        <div className="flex gap-2">
+          <Textarea
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            placeholder="Type your message here..."
-            className="w-full border border-gray-200 rounded-lg p-3 pr-12 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-transparent resize-none"
-            rows={3}
-            disabled={submitting}
-            required
-            autoFocus
+            placeholder="Type your message..."
+            className="min-h-[80px] text-sm"
+            disabled={sending}
           />
-          <button
-            type="submit"
-            className="absolute right-3 bottom-3 text-primary hover:text-primary/80 disabled:text-gray-400"
-            disabled={submitting || !message.trim()}
+          <Button 
+            type="submit" 
+            size="icon" 
+            className="h-10 w-10 mt-auto bg-[#5DCFCF] hover:bg-[#4bb8b8]"
+            disabled={!message.trim() || sending}
           >
-            <Send className="h-6 w-6" />
-          </button>
-        </form>
-      </div>
+            <Send className="h-4 w-4" />
+            <span className="sr-only">Send message</span>
+          </Button>
+        </div>
+      </form>
     </div>
   );
 };

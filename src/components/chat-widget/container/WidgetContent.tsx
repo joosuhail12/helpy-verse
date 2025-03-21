@@ -7,40 +7,67 @@ import ConversationView from '../components/conversation/ConversationView';
 import { WidgetContentProps } from './types';
 
 /**
- * Main content component for the chat widget
+ * Content container for the different widget pages
  */
 const WidgetContent: React.FC<WidgetContentProps> = ({
   currentPage,
   currentConversationId,
   navigateTo,
   handleSelectConversation,
-  handleConversationCreated
+  handleConversationCreated,
+  workspaceId
 }) => {
-  return (
-    <div className="flex-1 overflow-y-auto">
-      {currentPage === 'home' && (
-        <ChatHome onNewChat={() => navigateTo('new-chat')} />
-      )}
-      
-      {currentPage === 'conversations' && (
+  // Render content based on current page
+  switch (currentPage) {
+    case 'home':
+      return (
+        <ChatHome 
+          onNewChat={() => navigateTo('new-chat')} 
+          workspaceId={workspaceId}
+        />
+      );
+    
+    case 'conversations':
+      return (
         <ConversationList 
           onNewChat={() => navigateTo('new-chat')} 
           onSelectConversation={handleSelectConversation}
+          workspaceId={workspaceId}
         />
-      )}
+      );
+    
+    case 'new-chat':
+      return (
+        <NewChat 
+          onConversationCreated={handleConversationCreated}
+          workspaceId={workspaceId} 
+        />
+      );
+    
+    case 'conversation-detail':
+      if (!currentConversationId) {
+        return (
+          <div className="flex-1 flex items-center justify-center p-4">
+            <p className="text-gray-500">No conversation selected</p>
+          </div>
+        );
+      }
       
-      {currentPage === 'new-chat' && (
-        <NewChat onConversationCreated={handleConversationCreated} />
-      )}
-      
-      {currentPage === 'conversation-detail' && currentConversationId && (
+      return (
         <ConversationView 
           conversationId={currentConversationId} 
           onBack={() => navigateTo('conversations')}
+          workspaceId={workspaceId}
         />
-      )}
-    </div>
-  );
+      );
+    
+    default:
+      return (
+        <div className="flex-1 flex items-center justify-center p-4">
+          <p className="text-gray-500">Unknown page</p>
+        </div>
+      );
+  }
 };
 
 export default WidgetContent;
