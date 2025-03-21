@@ -1,8 +1,7 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+
+import { RouterProvider } from 'react-router-dom';
+import { router } from './routes';
+import { Toaster } from './components/ui/toaster';
 import { Provider } from 'react-redux';
 import { store } from './store/store';
 import { Suspense, lazy, useEffect } from 'react';
@@ -67,87 +66,27 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     return <Navigate to="/sign-in" replace />;
   }
 
-  return <>{children}</>;
-};
+import CaslProvider from './components/CaslProvider';
+import { useEffect } from 'react';
+import './App.css';
 
-const LoadingFallback = () => (
-  <div className="min-h-screen w-full gradient-background flex items-center justify-center">
-    <div className="w-full max-w-3xl p-6 md:p-8">
-      <div className="auth-card opacity-40">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 w-48 bg-gray-200 rounded"></div>
-          <div className="h-64 bg-gray-200 rounded"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-);
+function App() {
+  useEffect(() => {
+    console.log('App mounted');
+    
+    // Log authentication state on start
+    const authState = store.getState().auth;
+    console.log('Initial auth state:', authState);
+  }, []);
 
-const ErrorBoundary = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="min-h-screen">
-      {children}
-    </div>
-  );
-};
-
-const App = () => (
-  <Provider store={store}>
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
+    <Provider store={store}>
+      <CaslProvider>
+        <RouterProvider router={router} />
         <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <ErrorBoundary>
-            <CaslProvider>
-              <Suspense fallback={<LoadingFallback />}>
-                <Routes>
-                  <Route path="/" element={<RootComponent />} />
-                  <Route path="/sign-in" element={<SignIn />} />
-                  <Route path="/sign-up" element={<SignUp />} />
-                  <Route path="/forgot-password" element={<ForgotPassword />} />
-                  <Route
-                    path="/home/*"
-                    element={
-                      <ProtectedRoute>
-                        <Home />
-                      </ProtectedRoute>
-                    }
-                  >
-                    <Route path="inbox/all" element={<AllTickets />} />
-                    <Route path="contacts/all" element={<AllContacts />} />
-                    <Route path="contacts/companies" element={<Companies />} />
-                    <Route path="contacts/companies/:id" element={<CompanyDetail />} />
-                    <Route path="contacts/:id" element={<ContactDetail />} />
-                    <Route path="settings/tags" element={<Tags />} />
-                    <Route path="settings/teams" element={<Teams />} />
-                    <Route path="settings/teams/create" element={<CreateTeam />} />
-                    <Route path="settings/teammates" element={<Teammates />} />
-                    <Route path="settings/teammates/:id" element={<TeammateDetail />} />
-                    <Route path="settings/teams/:id" element={<TeamDetail />} />
-                    <Route path="settings/custom-data" element={<CustomData />} />
-                    <Route path="settings/custom-objects" element={<CustomObjects />} />
-                    <Route path="settings/custom-objects/:id" element={<CustomObjectDetail />} />
-                    <Route path="settings/canned-responses" element={<CannedResponses />} />
-                    <Route path="settings/canned-responses/create" element={<CreateCannedResponse />} />
-                    <Route path="settings/canned-responses/:id" element={<CannedResponseDetail />} />
-                    <Route path="settings/email/domains" element={<Domains />} />
-                    <Route path="settings/email/domains/:id" element={<DomainDetail />} />
-                    <Route path="settings/email/channels" element={<Channels />} />
-                    <Route path="settings/email/channels/create" element={<CreateChannel />} />
-                    <Route path="settings/email/channels/:id" element={<EmailChannelDetail />} />
-                    <Route path="automation/ai/content-center" element={<ContentCenter />} />
-                    <Route path="automation/ai/content-center/create" element={<CreateContent />} />
-                  </Route>
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </Suspense>
-            </CaslProvider>
-          </ErrorBoundary>
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
-  </Provider>
-);
+      </CaslProvider>
+    </Provider>
+  );
+}
 
 export default App;

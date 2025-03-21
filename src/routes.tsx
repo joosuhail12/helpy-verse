@@ -1,13 +1,26 @@
-
 import { lazy, Suspense } from 'react';
 import { createBrowserRouter } from 'react-router-dom';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { Loader2 } from 'lucide-react';
 
-// Layout components
+// Layouts
 const DashboardLayout = lazy(() => import('@/layouts/DashboardLayout').catch(() => {
   console.error('Failed to load DashboardLayout');
   throw new Error('Failed to load DashboardLayout');
+}));
+
+// Auth Pages
+const SignIn = lazy(() => import('@/pages/SignIn').catch(() => {
+  console.error('Failed to load SignIn page');
+  throw new Error('Failed to load SignIn page');
+}));
+const SignUp = lazy(() => import('@/pages/SignUp').catch(() => {
+  console.error('Failed to load SignUp page');
+  throw new Error('Failed to load SignUp page');
+}));
+const ForgotPassword = lazy(() => import('@/pages/ForgotPassword').catch(() => {
+  console.error('Failed to load ForgotPassword page');
+  throw new Error('Failed to load ForgotPassword page');
 }));
 
 // Page components
@@ -51,77 +64,109 @@ export const router = createBrowserRouter([
     path: '/',
     element: (
       <Suspense fallback={<LoadingSpinner />}>
-        <DashboardLayout />
+        <SignIn />
       </Suspense>
+    ),
+  },
+  {
+    path: '/sign-in',
+    element: (
+      <Suspense fallback={<LoadingSpinner />}>
+        <SignIn />
+      </Suspense>
+    ),
+  },
+  {
+    path: '/sign-up',
+    element: (
+      <Suspense fallback={<LoadingSpinner />}>
+        <SignUp />
+      </Suspense>
+    ),
+  },
+  {
+    path: '/forgot-password',
+    element: (
+      <Suspense fallback={<LoadingSpinner />}>
+        <ForgotPassword />
+      </Suspense>
+    ),
+  },
+  {
+    path: '/home',
+    element: (
+      <ProtectedRoute>
+        <Suspense fallback={<LoadingSpinner />}>
+          <DashboardLayout />
+        </Suspense>
+      </ProtectedRoute>
     ),
     children: [
       {
-        path: 'home',
+        index: true,
         element: (
           <Suspense fallback={<LoadingSpinner />}>
             <Home />
           </Suspense>
         ),
+      },
+      {
+        path: 'automation',
+        element: (
+          <Suspense fallback={<LoadingSpinner />}>
+            <Automation />
+          </Suspense>
+        ),
         children: [
           {
-            path: 'automation',
+            path: 'ai/action-center',
             element: (
-              <Suspense fallback={<LoadingSpinner />}>
-                <Automation />
-              </Suspense>
+              <ProtectedRoute>
+                <Suspense fallback={<LoadingSpinner />}>
+                  <ActionCenter />
+                </Suspense>
+              </ProtectedRoute>
             ),
-            children: [
-              {
-                path: 'ai/action-center',
-                element: (
-                  <ProtectedRoute>
-                    <Suspense fallback={<LoadingSpinner />}>
-                      <ActionCenter />
-                    </Suspense>
-                  </ProtectedRoute>
-                ),
-              },
-              {
-                path: 'ai/action-center/create',
-                element: (
-                  <ProtectedRoute>
-                    <Suspense fallback={<LoadingSpinner />}>
-                      <CreateAction />
-                    </Suspense>
-                  </ProtectedRoute>
-                ),
-              },
-              {
-                path: 'ai/chatbot-profiles',
-                element: (
-                  <ProtectedRoute>
-                    <Suspense fallback={<LoadingSpinner />}>
-                      <ChatbotProfiles />
-                    </Suspense>
-                  </ProtectedRoute>
-                ),
-              },
-              {
-                path: 'ai/chatbot-profiles/create',
-                element: (
-                  <ProtectedRoute>
-                    <Suspense fallback={<LoadingSpinner />}>
-                      <CreateChatbot />
-                    </Suspense>
-                  </ProtectedRoute>
-                ),
-              },
-              {
-                path: 'ai/chatbot-profiles/:id',
-                element: (
-                  <ProtectedRoute>
-                    <Suspense fallback={<LoadingSpinner />}>
-                      <ChatbotDetail />
-                    </Suspense>
-                  </ProtectedRoute>
-                ),
-              },
-            ],
+          },
+          {
+            path: 'ai/action-center/create',
+            element: (
+              <ProtectedRoute>
+                <Suspense fallback={<LoadingSpinner />}>
+                  <CreateAction />
+                </Suspense>
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: 'ai/chatbot-profiles',
+            element: (
+              <ProtectedRoute>
+                <Suspense fallback={<LoadingSpinner />}>
+                  <ChatbotProfiles />
+                </Suspense>
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: 'ai/chatbot-profiles/create',
+            element: (
+              <ProtectedRoute>
+                <Suspense fallback={<LoadingSpinner />}>
+                  <CreateChatbot />
+                </Suspense>
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: 'ai/chatbot-profiles/:id',
+            element: (
+              <ProtectedRoute>
+                <Suspense fallback={<LoadingSpinner />}>
+                  <ChatbotDetail />
+                </Suspense>
+              </ProtectedRoute>
+            ),
           },
         ],
       },
