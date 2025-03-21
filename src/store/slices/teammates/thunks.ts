@@ -9,13 +9,14 @@ import {
   resendTeammateInvitation
 } from '@/api/services/teammatesService';
 import { TeammatesState } from './types';
+import { getAuthToken } from '@/utils/auth/tokenManager';
 
 // Helper to simulate API call for mocked features that aren't implemented yet
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 export const fetchTeammates = createAsyncThunk(
   'teammates/fetchTeammates',
-  async (_, { rejectWithValue, getState }) => {
+  async (_, { rejectWithValue }) => {
     try {
       const workspaceId = localStorage.getItem('workspaceId');
       console.log('Fetching teammates with workspace ID:', workspaceId);
@@ -25,11 +26,10 @@ export const fetchTeammates = createAsyncThunk(
         return rejectWithValue('No workspace ID found. Please refresh the page.');
       }
       
-      // Check if we have an auth token
-      const state = getState() as any;
-      const authToken = state.auth?.user?.data?.accessToken?.token;
+      // Get auth token directly from localStorage using tokenManager
+      const authToken = getAuthToken();
       if (!authToken) {
-        console.error('Cannot fetch teammates: No auth token found');
+        console.error('Cannot fetch teammates: No auth token found in localStorage');
         return rejectWithValue('No authentication token found. Please log in again.');
       }
       

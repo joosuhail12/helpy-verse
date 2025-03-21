@@ -5,6 +5,7 @@ import { useAppSelector } from '@/hooks/useAppSelector';
 import { fetchTeammates } from '@/store/slices/teammates/actions';
 import { useToast } from "@/hooks/use-toast";
 import { selectAllTeammates, selectTeammatesLoading, selectTeammatesError } from '@/store/slices/teammates/selectors';
+import { isAuthenticated } from '@/utils/auth/tokenManager';
 
 /**
  * Hook for fetching and managing teammates data
@@ -26,6 +27,17 @@ export const useTeammatesData = () => {
   }, []);
 
   useEffect(() => {
+    // First check if we're authenticated before even attempting to fetch teammates
+    if (!isAuthenticated()) {
+      console.warn('User is not authenticated, cannot fetch teammates');
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to view teammates.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const workspaceId = localStorage.getItem('workspaceId');
     if (workspaceId) {
       console.log(`Initial teammates fetch with workspace ID: ${workspaceId}`);
@@ -33,11 +45,21 @@ export const useTeammatesData = () => {
         .unwrap()
         .catch(err => {
           console.error('Error in initial teammates fetch:', err);
-          toast({
-            title: "Error Loading Teammates",
-            description: typeof err === 'string' ? err : "Failed to load teammates. Please try again.",
-            variant: "destructive",
-          });
+          
+          // Handle authentication errors specially
+          if (typeof err === 'string' && err.includes('authentication')) {
+            toast({
+              title: "Authentication Error",
+              description: "Your session may have expired. Please sign in again.",
+              variant: "destructive",
+            });
+          } else {
+            toast({
+              title: "Error Loading Teammates",
+              description: typeof err === 'string' ? err : "Failed to load teammates. Please try again.",
+              variant: "destructive",
+            });
+          }
         });
     } else {
       toast({
@@ -50,6 +72,18 @@ export const useTeammatesData = () => {
 
   const handleRetry = () => {
     setRetrying(true);
+    
+    // Check authentication first
+    if (!isAuthenticated()) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to view teammates.",
+        variant: "destructive",
+      });
+      setRetrying(false);
+      return;
+    }
+    
     const workspaceId = localStorage.getItem('workspaceId');
     if (!workspaceId) {
       toast({
