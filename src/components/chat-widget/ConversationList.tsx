@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Clock, Check } from 'lucide-react';
+import { Clock, Check, MessageSquare } from 'lucide-react';
 import { getAblyChannel } from '@/utils/ably';
 
 interface Conversation {
