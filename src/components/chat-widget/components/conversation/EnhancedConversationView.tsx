@@ -38,7 +38,7 @@ const EnhancedConversationView: React.FC<EnhancedConversationViewProps> = ({
   // Simulate agent typing after user sends a message
   const handleSendWithTypingIndicator = (e: React.FormEvent) => {
     e.preventDefault();
-    handleSendMessage();
+    handleSendMessage(e);
     
     // Show typing indicator for 2 seconds
     setIsAgentTyping(true);
