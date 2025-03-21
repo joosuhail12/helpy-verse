@@ -2,9 +2,9 @@
 import React, { useState } from 'react';
 import ConversationHeader from './ConversationHeader';
 import EnhancedMessageInput from './message/EnhancedMessageInput';
-import { useConversation } from './hooks/useConversation';
 import EnhancedMessageList from './message/EnhancedMessageList';
 import TypingIndicator from './TypingIndicator';
+import useEnhancedConversation from './hooks/useEnhancedConversation';
 
 interface EnhancedConversationViewProps {
   conversationId: string;
@@ -33,11 +33,12 @@ const EnhancedConversationView: React.FC<EnhancedConversationViewProps> = ({
     handleSendMessage,
     formatTimestamp,
     totalMessages
-  } = useConversation(conversationId, workspaceId, page, messagesPerPage);
+  } = useEnhancedConversation(conversationId, workspaceId, page, messagesPerPage);
 
   // Simulate agent typing after user sends a message
   const handleSendWithTypingIndicator = (e: React.FormEvent) => {
-    handleSendMessage(e);
+    e.preventDefault();
+    handleSendMessage();
     
     // Show typing indicator for 2 seconds
     setIsAgentTyping(true);

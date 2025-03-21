@@ -3,7 +3,7 @@ import React from 'react';
 import { ThemeProvider } from '@/components/chat-widget/theme/ThemeContext';
 import useWidgetOptions from './hooks/useWidgetOptions';
 import useStandaloneNavigation from './hooks/useStandaloneNavigation';
-import StandaloneLayout from './components/StandaloneLayout';
+import EnhancedStandaloneLayout from './components/EnhancedStandaloneLayout';
 import EnhancedStandaloneContent from './components/EnhancedStandaloneContent';
 
 /**
@@ -22,7 +22,7 @@ const EnhancedChatWidgetStandalone = () => {
 
   return (
     <ThemeProvider initialTheme={themeConfig}>
-      <StandaloneLayout
+      <EnhancedStandaloneLayout
         currentPage={currentPage}
         currentConversationId={currentConversationId}
         navigateTo={navigateTo}
