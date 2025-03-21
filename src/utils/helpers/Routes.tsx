@@ -10,27 +10,31 @@ interface RouteProps {
 
 // Private Route Component
 export const PrivateRoute = ({ children }: RouteProps): JSX.Element => {
-    console.log("ProtectedRoute: Checking authentication status");
+    const location = useLocation();
+    console.log("PrivateRoute: Checking authentication status for path:", location.pathname);
+    
     const isAuth = isAuthenticated();
-    console.log(`ProtectedRoute: Token exists: ${isAuth ? 'true' : 'false'} ${isAuth ? 'Token value found' : 'No token found'}`);
+    console.log(`PrivateRoute: Token exists: ${isAuth ? 'true' : 'false'} ${isAuth ? 'Token value found' : 'No token found'}`);
     
     if (isAuth) {
-        console.log("ProtectedRoute: Token exists, rendering protected content");
+        console.log("PrivateRoute: Token exists, rendering protected content for path:", location.pathname);
         return <>{children}</>;
     }
     
-    console.log("ProtectedRoute: No token, redirecting to login");
-    return <Navigate to="/sign-in" />;
+    console.log("PrivateRoute: No token, redirecting to login from path:", location.pathname);
+    return <Navigate to="/sign-in" state={{ from: location.pathname }} />;
 };
 
 // Public Route Component
 export const PublicRoute = ({ children }: RouteProps): JSX.Element => {
     const location = useLocation();
     
-    // Don't redirect from landing page
-    if (location.pathname === '/') {
+    // Don't redirect from landing page or auth pages
+    if (location.pathname === '/' || 
+        location.pathname.startsWith('/sign-') || 
+        location.pathname.includes('password')) {
         return <>{children}</>;
     }
     
-    return isAuthenticated() ? <Navigate to="/inbox" /> : <>{children}</>;
+    return isAuthenticated() ? <Navigate to="/home/inbox/all" /> : <>{children}</>;
 };

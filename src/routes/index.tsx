@@ -88,7 +88,7 @@ export const router = createBrowserRouter([
     children: [
       ...dashboardRoutes,
       ...inboxRoutes,
-      ...settingsRoutes,
+      ...settingsRoutes, 
       ...automationRoutes,
     ],
   },

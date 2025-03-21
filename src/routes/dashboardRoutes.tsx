@@ -32,28 +32,23 @@ const withSuspenseAndProtection = (Component) => (
 
 export const dashboardRoutes = [
   {
-    path: 'home',
+    path: '',
     element: withSuspenseAndProtection(Dashboard),
   },
   {
-    path: 'home/contacts/all',
+    path: 'contacts/all',
     element: withSuspenseAndProtection(AllContacts),
   },
   {
-    path: 'home/contacts/companies',
+    path: 'contacts/companies',
     element: withSuspenseAndProtection(Companies),
   },
   {
-    path: 'home/contacts/companies/:id',
+    path: 'contacts/companies/:id',
     element: withSuspenseAndProtection(CompanyDetail),
   },
   {
-    path: 'home/contacts/:id',
+    path: 'contacts/:id',
     element: withSuspenseAndProtection(ContactDetail),
-  },
-  // Redirect default path to a meaningful location
-  {
-    path: '',
-    element: <Navigate to="/home/contacts/all" replace />,
   },
 ];

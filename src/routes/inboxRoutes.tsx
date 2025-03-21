@@ -32,7 +32,7 @@ const withSuspenseAndProtection = (Component) => (
 export const inboxRoutes = [
   {
     path: 'inbox',
-    element: <Navigate to="/inbox/all" replace />,
+    element: <Navigate to="inbox/all" replace />,
   },
   {
     path: 'inbox/your-inbox',
