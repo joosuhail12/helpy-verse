@@ -1,4 +1,3 @@
-
 import { initializeAbly, eventHandlers } from './ablyConnection';
 import { ChatMessage } from './types';
 import { throttle } from '@/utils/performance/performanceUtils';
@@ -46,16 +45,13 @@ export const subscribeToConversation = (
         // Then handle the channel cleanup with proper typing
         try {
           if (channel) {
-            // Properly type the channel with the correct Ably types
-            const typedChannel = channel as Ably.Types.RealtimeChannel;
-            
             // Check if methods exist before calling them
-            if (typedChannel && typeof typedChannel.unsubscribe === 'function') {
-              typedChannel.unsubscribe();
+            if (typeof channel.unsubscribe === 'function') {
+              channel.unsubscribe();
             }
             // Fallback to detach if unsubscribe is not available
-            else if (typedChannel && typeof typedChannel.detach === 'function') {
-              typedChannel.detach();
+            else if (typeof channel.detach === 'function') {
+              channel.detach();
             }
           }
         } catch (error) {
