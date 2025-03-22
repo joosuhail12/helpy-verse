@@ -1,4 +1,3 @@
-
 import { initializeAbly, eventHandlers } from './ablyConnection';
 import { ChatMessage } from './types';
 import { throttle } from '@/utils/performance/performanceUtils';
@@ -34,16 +33,26 @@ export const subscribeToConversation = (
         eventHandlers[`conversation:${conversationId}`].push(unsubscribe);
       }
       
-      // Return the unsubscribe function
+      // Return a cleanup function that properly handles both the event subscription
+      // and the channel cleanup
       return () => {
+        // First handle the event subscription
         if (typeof unsubscribe === 'function') {
           unsubscribe();
         }
         
-        // Also clean up the channel subscription
-        // We need to check if the channel object has the unsubscribe method
-        if (channel && typeof channel.unsubscribe === 'function') {
-          channel.unsubscribe('message');
+        // Then handle the channel cleanup - using a safer approach
+        try {
+          // Only attempt to unsubscribe if the channel exists and has appropriate methods
+          if (channel) {
+            // Use a type guard to check if unsubscribe is available as a method
+            const channelWithMethods = channel as any;
+            if (channelWithMethods && typeof channelWithMethods.unsubscribe === 'function') {
+              channelWithMethods.unsubscribe('message');
+            }
+          }
+        } catch (error) {
+          console.error('Error during channel cleanup:', error);
         }
       };
     }).catch(err => {
