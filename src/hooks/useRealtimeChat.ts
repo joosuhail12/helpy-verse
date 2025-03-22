@@ -52,7 +52,7 @@ export const useRealtimeChat = (conversationId: string | null, options: UseRealt
     if (conversationId && connectionState === 'connected') {
       try {
         const { updateTypingStatus } = await import('@/utils/ably');
-        await updateTypingStatus(conversationId, options.userId, options.userName, false);
+        await updateTypingStatus(conversationId, options.userId, false);
       } catch (error) {
         console.error('Error updating typing status:', error);
       }

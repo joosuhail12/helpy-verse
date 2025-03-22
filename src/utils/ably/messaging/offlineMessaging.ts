@@ -9,6 +9,9 @@ import { MESSAGE_STATUS } from '@/config/constants';
 // Local storage key for queued messages
 const QUEUE_STORAGE_KEY = 'chat_queued_messages';
 
+// Define valid message status types
+type MessageStatus = 'queued' | 'sending' | 'sent' | 'failed';
+
 /**
  * Load queued messages from localStorage
  */
@@ -45,7 +48,7 @@ export const queueMessage = (
     ...message,
     conversationId,
     userId,
-    status: MESSAGE_STATUS.QUEUED
+    status: 'queued' as MessageStatus
   };
   
   const queuedMessages = loadQueuedMessages();
@@ -60,7 +63,7 @@ export const queueMessage = (
  */
 export const updateMessageStatus = (
   messageId: string,
-  status: 'queued' | 'sending' | 'sent' | 'failed'
+  status: MessageStatus
 ): void => {
   const queuedMessages = loadQueuedMessages();
   const updatedMessages = queuedMessages.map(msg => 
@@ -83,7 +86,7 @@ export const removeFromQueue = (messageId: string): void => {
  */
 export const checkForFailedMessages = (): boolean => {
   const queuedMessages = loadQueuedMessages();
-  return queuedMessages.some(msg => msg.status === MESSAGE_STATUS.FAILED);
+  return queuedMessages.some(msg => msg.status === 'failed');
 };
 
 /**
@@ -99,12 +102,12 @@ export const resendFailedMessages = async (
 ): Promise<QueuedMessage[]> => {
   const queuedMessages = loadQueuedMessages();
   const failedMessages = queuedMessages.filter(msg => 
-    msg.status === MESSAGE_STATUS.FAILED
+    msg.status === 'failed'
   );
   
   for (const message of failedMessages) {
     try {
-      updateMessageStatus(message.id, MESSAGE_STATUS.SENDING);
+      updateMessageStatus(message.id, 'sending');
       
       await sendFunction(
         message.conversationId,
@@ -117,9 +120,13 @@ export const resendFailedMessages = async (
       removeFromQueue(message.id);
     } catch (error) {
       console.error(`Failed to resend message ${message.id}:`, error);
-      updateMessageStatus(message.id, MESSAGE_STATUS.FAILED);
+      updateMessageStatus(message.id, 'failed');
     }
   }
   
   return loadQueuedMessages();
 };
+
+// Add named exports for better imports
+export const hasFailedMessages = checkForFailedMessages;
+export const retryFailedMessages = resendFailedMessages;

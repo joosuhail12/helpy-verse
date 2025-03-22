@@ -16,7 +16,7 @@ interface UseTypingIndicatorOptions {
  */
 export const useTypingIndicator = (conversationId: string | null, connectionState: string, options: UseTypingIndicatorOptions) => {
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
-  const typingMonitorRef = useRef<() => void | null>(() => null);
+  const typingMonitorRef = useRef<(() => void) | null>(null);
   
   // Monitor typing indicators
   useEffect(() => {
@@ -29,14 +29,21 @@ export const useTypingIndicator = (conversationId: string | null, connectionStat
     
     console.log(`Monitoring typing indicators in conversation: ${conversationId}`);
     
-    // Set up new monitor
-    typingMonitorRef.current = monitorTypingIndicators(conversationId, (users) => {
-      setTypingUsers(users);
-    });
+    // Set up new monitor with proper async handling
+    const setupMonitor = async () => {
+      const cleanup = await monitorTypingIndicators(conversationId, (users) => {
+        setTypingUsers(users);
+      });
+      
+      typingMonitorRef.current = cleanup;
+    };
+    
+    setupMonitor();
     
     return () => {
       if (typingMonitorRef.current) {
         typingMonitorRef.current();
+        typingMonitorRef.current = null;
       }
     };
   }, [conversationId, connectionState]);
@@ -47,16 +54,16 @@ export const useTypingIndicator = (conversationId: string | null, connectionStat
       // This runs after debounce period - typing stopped
       async () => {
         if (!conversationId || connectionState !== 'connected') return;
-        await updateTypingStatus(conversationId, options.userId, options.userName, false);
+        await updateTypingStatus(conversationId, options.userId, false);
       },
       // This runs immediately - typing started
       async () => {
         if (!conversationId || connectionState !== 'connected') return;
-        await updateTypingStatus(conversationId, options.userId, options.userName, true);
+        await updateTypingStatus(conversationId, options.userId, true);
       },
       1000 // 1 second debounce
     ),
-    [conversationId, connectionState, options.userId, options.userName]
+    [conversationId, connectionState, options.userId]
   );
   
   // Handle typing indicator
