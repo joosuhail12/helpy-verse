@@ -9,14 +9,14 @@ import { throttle } from '@/utils/performance/performanceUtils';
 export const subscribeToConversation = (
   conversationId: string,
   onMessage: (message: ChatMessage) => void
-): () => void => {
+): (() => void) => {
   try {
     // Optimize by not awaiting connection - this speeds up subscription
     const subscriptionPromise = initializeAbly().then(ably => {
       const channel = ably.channels.get(`conversation:${conversationId}`);
       
       // Subscribe with optimized message handling
-      const unsubscribeFunc = channel.subscribe('message', (message) => {
+      const unsubscribe = channel.subscribe('message', (message) => {
         // Use requestAnimationFrame to handle messages in animation frame
         // for better UI performance when receiving rapid messages
         window.requestAnimationFrame(() => {
@@ -30,14 +30,14 @@ export const subscribeToConversation = (
       }
       
       // Make sure we only store function type callbacks
-      if (typeof unsubscribeFunc === 'function') {
-        eventHandlers[`conversation:${conversationId}`].push(unsubscribeFunc);
+      if (typeof unsubscribe === 'function') {
+        eventHandlers[`conversation:${conversationId}`].push(unsubscribe);
       }
       
       // Return the unsubscribe function
       return () => {
-        if (typeof unsubscribeFunc === 'function') {
-          unsubscribeFunc();
+        if (typeof unsubscribe === 'function') {
+          unsubscribe();
         }
       };
     }).catch(err => {
