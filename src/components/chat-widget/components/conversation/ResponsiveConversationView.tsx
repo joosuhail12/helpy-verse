@@ -1,18 +1,21 @@
 
 import React, { useEffect, useState } from 'react';
-import { ArrowLeft } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import useConnectionState from '@/hooks/chat/useConnectionState';
 import useMessages from '@/hooks/chat/useMessages';
 import useMessageSubscription from '@/hooks/chat/useMessageSubscription';
 import useOfflineMessaging from '@/hooks/chat/useOfflineMessaging';
-import EnhancedMessageList from './message/EnhancedMessageList';
-import OfflineAwareMessageInput from './message/OfflineAwareMessageInput';
+import EnhancedMessageInput from './message/EnhancedMessageInput';
 import ConnectionStatus from '../ConnectionStatus';
 import { selectConnectionState } from '@/store/slices/chat/selectors';
 import { useIsMobile } from '@/hooks/use-mobile';
 import AnimatedContainer from '../../animations/AnimatedContainer';
 import { Message } from './types';
+import GroupedMessageList from './message/GroupedMessageList';
+import EnhancedConversationHeader from './EnhancedConversationHeader';
+import MessageErrorBoundary from '../../error-handling/MessageErrorBoundary';
+import MessageFallback from '../../error-handling/MessageFallback';
+import { ParticipantInfo } from '@/utils/ably/types';
 
 interface ResponsiveConversationViewProps {
   conversationId: string;
@@ -21,7 +24,7 @@ interface ResponsiveConversationViewProps {
 }
 
 /**
- * Responsive conversation view component with offline support
+ * Responsive conversation view component with enhanced features
  */
 const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
   conversationId,
@@ -34,6 +37,8 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
   const isMobile = useIsMobile();
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [uploadingFiles, setUploadingFiles] = useState(false);
+  const [searchResults, setSearchResults] = useState<Message[] | null>(null);
+  const [activeParticipants, setActiveParticipants] = useState<ParticipantInfo[]>([]);
   
   // Initialize connection
   useConnectionState(conversationId);
@@ -51,6 +56,44 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
   
   // Set up message subscription
   useMessageSubscription(conversationId, connectionState);
+  
+  // Monitor presence events
+  useEffect(() => {
+    const setupPresence = async () => {
+      if (!conversationId || connectionState !== 'connected') return;
+      
+      try {
+        // Import and use enhanced presence monitoring
+        const { monitorEnhancedPresence } = await import('@/utils/ably/messaging');
+        
+        return monitorEnhancedPresence(
+          conversationId,
+          (participants) => {
+            setActiveParticipants(participants);
+          },
+          (event) => {
+            // We could show notifications for join/leave events here
+            if (event.type === 'enter') {
+              console.log(`${event.participantName} joined the conversation`);
+            } else if (event.type === 'leave') {
+              console.log(`${event.participantName} left the conversation`);
+            }
+          }
+        );
+      } catch (error) {
+        console.error('Error setting up presence monitoring:', error);
+      }
+    };
+    
+    const cleanup = setupPresence();
+    return () => {
+      if (cleanup) {
+        cleanup.then(unsubscribe => {
+          if (unsubscribe) unsubscribe();
+        });
+      }
+    };
+  }, [conversationId, connectionState]);
   
   // Handle sending a message
   const handleMessageSubmit = async (e: React.FormEvent) => {
@@ -72,7 +115,6 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
       setUploadingFiles(true);
       try {
         // This would be replaced with actual file upload logic
-        // For now, simulate file upload with a short delay
         await new Promise(resolve => setTimeout(resolve, 1000));
         
         // Create placeholder URLs for demo purposes
@@ -91,7 +133,7 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
       }
     }
     
-    // Otherwise send normally
+    // Send message
     await handleSendMessage(e, attachments);
   };
   
@@ -104,7 +146,11 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
   const handleReaction = (messageId: string, emoji: string) => {
     console.log(`React to message ${messageId} with ${emoji}`);
     // This would be implemented with actual reaction handling
-    // For now, it's just a placeholder
+  };
+  
+  // Handle search results
+  const handleSearchResults = (results: Message[]) => {
+    setSearchResults(results.length > 0 ? results : null);
   };
   
   // Get connection status for UI display
@@ -113,7 +159,7 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
     return connectionState === 'initializing' ? 'connecting' : connectionState;
   };
 
-  // Convert queued messages to the correct format expected by EnhancedMessageList
+  // Convert queued messages to the correct format
   const convertedQueuedMessages: Message[] = queuedMessages.map(msg => ({
     id: msg.id,
     text: msg.text,
@@ -128,37 +174,28 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
   return (
     <AnimatedContainer animation="fadeIn" className="flex flex-col h-full overflow-hidden">
       {/* Header */}
-      <div className="p-3 md:p-4 border-b border-gray-100 flex items-center shadow-sm">
-        <button 
-          onClick={onBack}
-          className="mr-2 p-1 rounded-full hover:bg-gray-100 transition-colors"
-          aria-label="Back"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </button>
-        <div>
-          <h3 className={`font-medium ${isMobile ? 'text-base' : 'text-lg'}`}>Conversation</h3>
-          <p className="text-xs text-gray-500 -mt-0.5">
-            {isOnline ? (
-              connectionState === 'connected' ? 'Connected' : 'Connecting...'
-            ) : (
-              'Offline mode'
-            )}
-          </p>
-        </div>
-      </div>
+      <EnhancedConversationHeader 
+        onBack={onBack}
+        title="Conversation"
+        messages={allMessages}
+        onSearchResults={handleSearchResults}
+        activeParticipants={activeParticipants}
+      />
       
       {/* Message list */}
-      <div className="flex-1 overflow-y-auto">
-        <EnhancedMessageList 
-          messages={allMessages}
-          loading={loading}
-          hasMore={false}
-          loadMore={loadMoreMessages}
-          currentUserId="user-id"
-          onReact={handleReaction}
-        />
-      </div>
+      <MessageErrorBoundary fallbackComponent={MessageFallback}>
+        <div className="flex-1 overflow-y-auto" role="log" aria-label="Conversation messages">
+          <GroupedMessageList 
+            messages={allMessages}
+            loading={loading}
+            searchResults={searchResults || undefined}
+            hasMore={false}
+            loadMore={loadMoreMessages}
+            currentUserId="user-id"
+            onReact={handleReaction}
+          />
+        </div>
+      </MessageErrorBoundary>
       
       {/* Connection status indicator */}
       <ConnectionStatus 
@@ -168,7 +205,7 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
       />
       
       {/* Message input */}
-      <OfflineAwareMessageInput
+      <EnhancedMessageInput
         onSendMessage={handleMessageSubmit}
         newMessage={newMessage}
         setNewMessage={setNewMessage}

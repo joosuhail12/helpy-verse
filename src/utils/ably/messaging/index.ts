@@ -11,3 +11,7 @@ export {
   clearQueuedMessages,
   convertQueuedMessageToChatMessage
 } from './offlineMessaging';
+export {
+  monitorEnhancedPresence,
+  updateParticipantPresence
+} from './presenceIndicators';

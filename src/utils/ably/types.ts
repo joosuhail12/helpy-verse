@@ -34,4 +34,29 @@ export interface ParticipantInfo {
   id: string;
   name: string;
   type: 'customer' | 'agent';
+  status?: 'online' | 'away' | 'offline';
+  lastActive?: string;
+  presence?: {
+    isTyping?: boolean;
+    currentViewingPage?: string;
+    deviceInfo?: {
+      browser: string;
+      os: string;
+      device: string;
+    };
+  };
+}
+
+export interface PresenceEvent {
+  type: 'enter' | 'leave' | 'update';
+  participantId: string;
+  participantName: string;
+  participantType: 'customer' | 'agent';
+  timestamp: string;
+  data?: {
+    status?: 'online' | 'away' | 'offline';
+    isTyping?: boolean;
+    lastActive?: string;
+    currentViewingPage?: string;
+  };
 }
