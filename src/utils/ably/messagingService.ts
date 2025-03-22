@@ -43,21 +43,19 @@ export const subscribeToConversation = (
           unsubscribe();
         }
         
-        // Then handle the channel cleanup - using a safer approach with proper typing
+        // Then handle the channel cleanup with proper typing
         try {
           if (channel) {
-            // Use type assertion to access channel methods - the issue is that TypeScript
-            // doesn't recognize the channel type from the Ably library properly
-            const channelInstance = channel as Ably.Types.RealtimeChannel;
+            // Using proper type casting to avoid TypeScript errors
+            const typedChannel = channel as any;
             
-            // Use more specific typing to make TypeScript understand the method is available
-            if (channelInstance && typeof channelInstance.unsubscribe === 'function') {
-              // Unsubscribe from all events on the channel without arguments
-              channelInstance.unsubscribe();
-            } 
-            // Fallback approach in case unsubscribe is not available
-            else if (channelInstance && typeof channelInstance.detach === 'function') {
-              channelInstance.detach();
+            // Check if unsubscribe method exists and call it
+            if (typedChannel && typeof typedChannel.unsubscribe === 'function') {
+              typedChannel.unsubscribe();
+            }
+            // Fallback to detach if unsubscribe is not available
+            else if (typedChannel && typeof typedChannel.detach === 'function') {
+              typedChannel.detach();
             }
           }
         } catch (error) {
