@@ -32,7 +32,8 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
   workspaceId
 }) => {
   const connectionState = useSelector(selectConnectionState);
-  const { isOnline, queuedMessages, queueMessage, syncMessages, retryFailedMessages } = 
+  // Fix property names to match what's returned from useOfflineMessaging
+  const { queuedMessages, hasFailedMessages, queueOfflineMessage, syncQueuedMessages, retryFailedMessages } = 
     useOfflineMessaging({
       isConnected: connectionState === 'connected',
       conversationId,
@@ -106,8 +107,10 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
     if (!newMessage.trim() && selectedFiles.length === 0) return;
     
     // If offline, queue the message
+    // Use the online status from Redux state
+    const isOnline = connectionState !== 'disconnected' && connectionState !== 'failed';
     if (!isOnline) {
-      queueMessage(newMessage, 'user-id', 'User');
+      queueOfflineMessage(newMessage);
       setNewMessage('');
       return;
     }
@@ -159,6 +162,7 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
   
   // Get connection status for UI display
   const getDisplayConnectionState = () => {
+    const isOnline = connectionState !== 'disconnected' && connectionState !== 'failed';
     if (!isOnline) return 'offline';
     return connectionState === 'initializing' ? 'connecting' : connectionState;
   };
@@ -205,7 +209,16 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
       <ConnectionStatus 
         connectionState={getDisplayConnectionState()}
         hasQueuedMessages={queuedMessages.length > 0}
-        onRetry={isOnline ? syncMessages : retryFailedMessages}
+        onRetry={(connectionState !== 'disconnected' && connectionState !== 'failed') 
+          ? () => syncQueuedMessages(async (convId, text, sender, msgId) => {
+              const { sendMessage } = await import('@/utils/ably');
+              return sendMessage(convId, text, sender, msgId);
+            }) 
+          : () => retryFailedMessages(async (convId, text, sender, msgId) => {
+              const { sendMessage } = await import('@/utils/ably');
+              return sendMessage(convId, text, sender, msgId);
+            })
+        }
       />
       
       {/* Message input */}
@@ -215,7 +228,7 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
         setNewMessage={setNewMessage}
         sending={sending || uploadingFiles}
         isConnected={connectionState === 'connected'}
-        isOnline={isOnline}
+        isOnline={connectionState !== 'disconnected' && connectionState !== 'failed'}
         queuedMessageCount={queuedMessages.length}
         onFileSelect={handleFileSelect}
       />

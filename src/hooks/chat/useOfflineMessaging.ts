@@ -197,7 +197,5 @@ export const useOfflineMessaging = ({
   };
 };
 
-// Fix the previous default export issue
-export default function useOfflineMessagingHook(props: UseOfflineMessagingProps) {
-  return useOfflineMessaging(props);
-}
+// This named export is needed for compatibility with the existing code
+export default useOfflineMessaging;
