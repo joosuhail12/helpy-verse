@@ -38,7 +38,7 @@ export const subscribeToConversation = (
       // Return a cleanup function that properly handles both the event subscription
       // and the channel cleanup
       return () => {
-        // First handle the event subscription
+        // First handle the event unsubscription if it's a function
         if (typeof unsubscribe === 'function') {
           unsubscribe();
         }
@@ -46,10 +46,10 @@ export const subscribeToConversation = (
         // Then handle the channel cleanup with proper typing
         try {
           if (channel) {
-            // Using proper type casting to avoid TypeScript errors
-            const typedChannel = channel as any;
+            // Properly type the channel with the correct Ably types
+            const typedChannel = channel as Ably.Types.RealtimeChannel;
             
-            // Check if unsubscribe method exists and call it
+            // Check if methods exist before calling them
             if (typedChannel && typeof typedChannel.unsubscribe === 'function') {
               typedChannel.unsubscribe();
             }
