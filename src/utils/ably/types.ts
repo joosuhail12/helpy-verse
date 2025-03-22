@@ -15,6 +15,10 @@ export interface ChatMessage {
     type: string;
     name: string;
   }>;
+  richContent?: {
+    type: 'form' | 'url' | 'product';
+    data: any;
+  };
 }
 
 export interface ConversationMetadata {
@@ -59,4 +63,8 @@ export interface PresenceEvent {
     lastActive?: string;
     currentViewingPage?: string;
   };
+}
+
+export interface QueuedMessage extends ChatMessage {
+  status: 'queued' | 'sending' | 'sent' | 'failed';
 }

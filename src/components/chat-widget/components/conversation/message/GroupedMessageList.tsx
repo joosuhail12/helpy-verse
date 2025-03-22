@@ -1,175 +1,201 @@
 
-import React, { useMemo } from 'react';
-import { Message } from '../types';
+import React, { useMemo, useRef, useEffect } from 'react';
+import { format, isToday, isYesterday, isSameDay, isSameWeek, parseISO } from 'date-fns';
+import { Loader2 } from 'lucide-react';
 import EnhancedMessageItem from './EnhancedMessageItem';
+import { useIsMobile } from '@/hooks/use-mobile';
 import ConversationDateHeader from '../ConversationDateHeader';
+import { Message } from '../types';
 
 interface GroupedMessageListProps {
   messages: Message[];
-  loading: boolean;
-  searchResults?: Message[];
+  loading?: boolean;
   hasMore?: boolean;
   loadMore?: () => void;
-  currentUserId?: string;
+  currentUserId: string;
   onReact?: (messageId: string, emoji: string) => void;
+  searchResults?: Message[];
 }
 
 /**
- * A message list component that groups messages by time periods for better readability
+ * Component to render messages grouped by date with infinite loading
  */
 const GroupedMessageList: React.FC<GroupedMessageListProps> = ({
   messages,
-  loading,
-  searchResults,
+  loading = false,
   hasMore = false,
   loadMore,
-  currentUserId = 'user',
-  onReact
+  currentUserId,
+  onReact,
+  searchResults
 }) => {
-  // Group messages by time period
-  const groupedMessages = useMemo(() => {
-    const groups: Record<string, {
-      title: string;
-      messages: Message[];
-    }> = {};
-    
-    // Use search results if available, otherwise use all messages
-    const messagesToGroup = searchResults || messages;
-    
-    messagesToGroup.forEach(message => {
-      const date = new Date(message.timestamp);
-      const now = new Date();
-      const yesterday = new Date(now);
-      yesterday.setDate(yesterday.getDate() - 1);
-      
-      // Determine group key based on date
-      let groupKey: string;
-      let groupTitle: string;
-      
-      if (date.toDateString() === now.toDateString()) {
-        groupKey = 'today';
-        groupTitle = 'Today';
-      } else if (date.toDateString() === yesterday.toDateString()) {
-        groupKey = 'yesterday';
-        groupTitle = 'Yesterday';
-      } else {
-        // If within this week
-        const daysDiff = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
-        if (daysDiff < 7) {
-          // Get day of week
-          const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-          groupKey = `day-${date.getDay()}`;
-          groupTitle = dayNames[date.getDay()];
-        } else if (date.getFullYear() === now.getFullYear()) {
-          // If within this year
-          const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
-                              'July', 'August', 'September', 'October', 'November', 'December'];
-          groupKey = `month-${date.getMonth()}`;
-          groupTitle = `${monthNames[date.getMonth()]} ${date.getDate()}`;
-        } else {
-          // Different year
-          groupKey = `year-${date.getFullYear()}`;
-          groupTitle = date.toLocaleDateString(undefined, { 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric'
-          });
-        }
-      }
-      
-      // Create group if it doesn't exist
-      if (!groups[groupKey]) {
-        groups[groupKey] = {
-          title: groupTitle,
-          messages: []
-        };
-      }
-      
-      groups[groupKey].messages.push(message);
-    });
-    
-    // Sort groups by date (newest to oldest)
-    // Convert groups object to array and sort
-    return Object.entries(groups).sort((a, b) => {
-      // Predefined order for today and yesterday
-      if (a[0] === 'today') return -1;
-      if (b[0] === 'today') return 1;
-      if (a[0] === 'yesterday') return -1;
-      if (b[0] === 'yesterday') return 1;
-      
-      // For other days, compare first message timestamp
-      const aTimestamp = a[1].messages[0]?.timestamp;
-      const bTimestamp = b[1].messages[0]?.timestamp;
-      
-      if (!aTimestamp) return 1;
-      if (!bTimestamp) return -1;
-      
-      return new Date(bTimestamp).getTime() - new Date(aTimestamp).getTime();
-    });
-  }, [messages, searchResults]);
+  const listRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const loadingRef = useRef<HTMLDivElement>(null);
   
+  // Get a set of highlighted message IDs
+  const highlightedMessageIds = useMemo(() => {
+    if (!searchResults || searchResults.length === 0) return new Set<string>();
+    return new Set(searchResults.map(m => m.id));
+  }, [searchResults]);
+  
+  // Group messages by date
+  const groupedMessages = useMemo(() => {
+    const groups: { [key: string]: Message[] } = {};
+    
+    messages.forEach(message => {
+      try {
+        const messageDate = parseISO(message.timestamp);
+        let dateLabel = '';
+        
+        if (isToday(messageDate)) {
+          dateLabel = 'Today';
+        } else if (isYesterday(messageDate)) {
+          dateLabel = 'Yesterday';
+        } else if (isSameWeek(messageDate, new Date())) {
+          dateLabel = format(messageDate, 'EEEE'); // e.g., "Monday"
+        } else {
+          dateLabel = format(messageDate, 'MMMM d, yyyy'); // e.g., "January 1, 2023"
+        }
+        
+        if (!groups[dateLabel]) {
+          groups[dateLabel] = [];
+        }
+        
+        groups[dateLabel].push(message);
+      } catch (error) {
+        // If date parsing fails, add message to "Other" group
+        if (!groups['Other']) {
+          groups['Other'] = [];
+        }
+        groups['Other'].push(message);
+      }
+    });
+    
+    return Object.entries(groups);
+  }, [messages]);
+  
+  // Setup observer for infinite loading
+  useEffect(() => {
+    if (hasMore && loadMore && loadingRef.current) {
+      observerRef.current = new IntersectionObserver(
+        entries => {
+          if (entries[0].isIntersecting && !loading) {
+            loadMore();
+          }
+        },
+        { threshold: 0.1 }
+      );
+      
+      observerRef.current.observe(loadingRef.current);
+    }
+    
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, [hasMore, loadMore, loading]);
+  
+  // Scroll to highlighted message if search results exist
+  useEffect(() => {
+    if (searchResults && searchResults.length > 0 && listRef.current) {
+      const firstHighlightedMessage = listRef.current.querySelector('[data-highlighted="true"]');
+      if (firstHighlightedMessage) {
+        firstHighlightedMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }, [searchResults]);
+  
+  // Render loading indicator
   if (loading && messages.length === 0) {
     return (
-      <div className="flex justify-center items-center h-full">
-        <div className="loader animate-pulse flex space-x-2" aria-label="Loading messages">
-          <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-          <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-          <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-        </div>
+      <div className="flex justify-center items-center h-40">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
       </div>
     );
   }
   
-  // Highlight when we're showing search results
-  const isSearchActive = searchResults && searchResults.length > 0;
-  
   return (
-    <div className="space-y-4">
-      {/* Search results indicator */}
-      {isSearchActive && (
-        <div className="bg-blue-50 text-blue-700 px-4 py-2 rounded-md text-sm">
-          Showing {searchResults.length} search results
+    <div ref={listRef} className="space-y-6 px-4 py-6">
+      {hasMore && (
+        <div 
+          ref={loadingRef} 
+          className="flex justify-center pb-4"
+        >
+          {loading && (
+            <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
+          )}
         </div>
       )}
       
-      {/* Load more button */}
-      {hasMore && !isSearchActive && (
-        <div className="flex justify-center">
-          <button
-            onClick={loadMore}
-            disabled={loading}
-            className="bg-white text-sm text-gray-500 px-4 py-2 rounded-full shadow-sm border border-gray-200 hover:bg-gray-50 transition-colors"
-            aria-label="Load earlier messages"
-          >
-            {loading ? 'Loading...' : 'Load earlier messages'}
-          </button>
-        </div>
-      )}
-      
-      {/* Grouped messages */}
-      {groupedMessages.map(([groupKey, group]) => (
-        <div key={groupKey} className="space-y-3">
-          <ConversationDateHeader date={group.title} />
+      {groupedMessages.map(([dateLabel, dateMessages]) => (
+        <div key={dateLabel} className="space-y-4">
+          <ConversationDateHeader date={dateLabel} />
           
-          <div className="space-y-3 px-4">
-            {group.messages.map((message, index) => (
-              <EnhancedMessageItem
-                key={message.id}
-                message={message}
-                isCurrentUser={message.sender === currentUserId}
-                previousMessage={index > 0 ? group.messages[index - 1] : undefined}
-                nextMessage={index < group.messages.length - 1 ? group.messages[index + 1] : undefined}
-                onReact={onReact}
-                isHighlighted={isSearchActive}
-              />
-            ))}
+          <div className="space-y-4">
+            {dateMessages.map((message, index) => {
+              const prevMessage = index > 0 ? dateMessages[index - 1] : undefined;
+              const nextMessage = index < dateMessages.length - 1 ? dateMessages[index + 1] : undefined;
+              
+              // Determine if messages are from same sender and close in time
+              const isGroupedWithPrev = prevMessage && 
+                prevMessage.sender === message.sender &&
+                isSameDay(parseISO(prevMessage.timestamp), parseISO(message.timestamp)) &&
+                parseISO(message.timestamp).getTime() - parseISO(prevMessage.timestamp).getTime() < 300000; // 5 min
+              
+              const isGroupedWithNext = nextMessage && 
+                nextMessage.sender === message.sender &&
+                isSameDay(parseISO(nextMessage.timestamp), parseISO(message.timestamp)) &&
+                parseISO(nextMessage.timestamp).getTime() - parseISO(message.timestamp).getTime() < 300000; // 5 min
+              
+              // Skip spacing if messages are from same sender and close in time
+              if (isGroupedWithPrev) {
+                return (
+                  <div 
+                    key={message.id} 
+                    className="mt-1" 
+                    data-highlighted={highlightedMessageIds.has(message.id) ? 'true' : 'false'}
+                  >
+                    <EnhancedMessageItem
+                      message={message}
+                      isCurrentUser={message.sender === 'user'}
+                      previousMessage={prevMessage}
+                      nextMessage={nextMessage}
+                      isMobile={isMobile}
+                      onReact={onReact}
+                      isHighlighted={highlightedMessageIds.has(message.id)}
+                    />
+                  </div>
+                );
+              }
+              
+              return (
+                <div 
+                  key={message.id}
+                  data-highlighted={highlightedMessageIds.has(message.id) ? 'true' : 'false'}
+                >
+                  <EnhancedMessageItem
+                    message={message}
+                    isCurrentUser={message.sender === 'user'}
+                    previousMessage={prevMessage}
+                    nextMessage={nextMessage}
+                    isMobile={isMobile}
+                    onReact={onReact}
+                    isHighlighted={highlightedMessageIds.has(message.id)}
+                  />
+                </div>
+              );
+            })}
           </div>
         </div>
       ))}
       
       {messages.length === 0 && !loading && (
-        <div className="flex justify-center items-center p-4 text-gray-500">
-          No messages to display
+        <div className="flex flex-col items-center justify-center py-10">
+          <p className="text-gray-500 text-sm">No messages yet</p>
+          <p className="text-gray-400 text-xs mt-1">Start a conversation</p>
         </div>
       )}
     </div>

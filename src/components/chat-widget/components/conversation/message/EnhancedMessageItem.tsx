@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { Check, CheckCheck, Clock, AlertCircle, Smile, FileIcon, Image } from 'lucide-react';
+import RichContentRenderer from './rich-content/RichContentRenderer';
 
 interface MessageItemProps {
   message: {
@@ -16,6 +17,10 @@ interface MessageItemProps {
       name: string;
       size?: number;
     }>;
+    richContent?: {
+      type: 'form' | 'url' | 'product';
+      data: any;
+    };
   };
   isCurrentUser: boolean;
   previousMessage?: {
@@ -28,6 +33,7 @@ interface MessageItemProps {
   };
   isMobile?: boolean;
   onReact?: (messageId: string, emoji: string) => void;
+  isHighlighted?: boolean; // Added to fix TypeScript error
 }
 
 /**
@@ -39,7 +45,8 @@ const EnhancedMessageItem: React.FC<MessageItemProps> = ({
   previousMessage,
   nextMessage,
   isMobile = false,
-  onReact
+  onReact,
+  isHighlighted = false, // Default value for the new prop
 }) => {
   const [showReactions, setShowReactions] = useState(false);
   
@@ -139,7 +146,7 @@ const EnhancedMessageItem: React.FC<MessageItemProps> = ({
       <div className={`max-w-[80%] ${isMobile ? 'max-w-[85%]' : ''}`}>
         {/* Message bubble */}
         <div
-          className={`p-2 md:p-3 rounded-lg ${isCurrentUser
+          className={`p-2 md:p-3 rounded-lg ${isHighlighted ? 'bg-yellow-50 border-2 border-yellow-200' : ''} ${isCurrentUser
             ? 'bg-primary text-white'
             : 'bg-gray-100 text-gray-900'
           } ${isFirstInGroup
@@ -158,9 +165,18 @@ const EnhancedMessageItem: React.FC<MessageItemProps> = ({
               : 'rounded-bl-lg'
           }`}
         >
-          <div className={`${isMobile ? 'text-sm' : 'text-base'}`}>
-            {message.text}
-          </div>
+          {message.text && (
+            <div className={`${isMobile ? 'text-sm' : 'text-base'}`}>
+              {message.text}
+            </div>
+          )}
+          
+          {/* Rich Content */}
+          {message.richContent && (
+            <div className="mt-2">
+              <RichContentRenderer content={message.richContent} />
+            </div>
+          )}
           
           {/* Attachments */}
           {renderAttachments()}

@@ -12,6 +12,10 @@ export interface Message {
     name: string;
     size?: number;
   }>;
+  richContent?: {
+    type: 'form' | 'url' | 'product';
+    data: any;
+  };
 }
 
 export interface ConversationViewProps {
