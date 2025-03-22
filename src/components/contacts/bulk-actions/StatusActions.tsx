@@ -30,10 +30,19 @@ export const StatusActions: React.FC<StatusActionsProps> = ({ selectedContactIds
         })).unwrap();
       }
 
+<<<<<<< HEAD
       toast({
         title: "Status updated",
         description: `Updated ${selectedContactIds.length} contacts to ${status}`,
       });
+=======
+    selectedContacts.forEach(contactId => {
+      dispatch(updateContact({
+        id: contactId,
+        data: { status: selectedStatus as 'active' | 'inactive' }
+      }));
+    });
+>>>>>>> 11f71f9 (Fix TypeScript errors and import issues)
 
       dispatch(clearSelection());
     } catch (error) {

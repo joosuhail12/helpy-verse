@@ -1,3 +1,18 @@
+<<<<<<< HEAD
+=======
+
+import { useState, useEffect, useRef } from 'react';
+import { Pencil } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
+import { CustomFieldType } from '@/types/customField';
+import { validateFieldValue } from '@/components/settings/customData/utils/fieldValidation';
+import { EditButtons } from './inline-edit/EditButtons';
+import { EditField } from './inline-edit/EditField';
+import { DisplayValue } from './inline-edit/DisplayValue';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { updateContact } from '@/store/slices/contacts/contactsSlice';
+>>>>>>> 11f71f9 (Fix TypeScript errors and import issues)
 
 import { useState, useRef, useEffect } from 'react';
 import { Pencil, Check, X } from 'lucide-react';
@@ -70,6 +85,7 @@ export const InlineEditField = ({
     }
 
     try {
+<<<<<<< HEAD
       // Create an update object dynamically based on field name
       const updateData: Record<string, string> = {};
       updateData[actualFieldName] = editValue;
@@ -82,6 +98,21 @@ export const InlineEditField = ({
       if (onSave) {
         onSave(editValue);
       }
+=======
+      const updateData: { [key: string]: any } = {};
+      updateData[field] = editValue;
+      
+      await dispatch(updateContact({ 
+        id: contactId, 
+        data: updateData 
+      }));
+      
+      setIsEditing(false);
+      toast({
+        title: 'Success',
+        description: `${label} has been updated.`,
+      });
+>>>>>>> 11f71f9 (Fix TypeScript errors and import issues)
     } catch (error) {
       console.error('Failed to update field:', error);
     } finally {
@@ -147,9 +178,17 @@ export const InlineEditField = ({
             ref={inputRef}
             type={type}
             value={editValue}
+<<<<<<< HEAD
             onChange={(e) => setEditValue(e.target.value)}
             onKeyDown={handleKeyDown}
             className="w-full"
+=======
+            onChange={(newValue) => setEditValue(newValue)}
+            options={options}
+            isSaving={isSaving}
+            inputRef={inputRef}
+            field={field}
+>>>>>>> 11f71f9 (Fix TypeScript errors and import issues)
           />
         );
     }

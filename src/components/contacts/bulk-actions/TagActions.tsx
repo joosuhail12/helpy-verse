@@ -35,6 +35,7 @@ export const TagActions: React.FC<TagActionsProps> = ({ selectedContactIds, cont
     )
   ).sort();
 
+<<<<<<< HEAD
   const handleAddTag = async (tag: string) => {
     try {
       for (const contactId of selectedContactIds) {
@@ -48,6 +49,18 @@ export const TagActions: React.FC<TagActionsProps> = ({ selectedContactIds, cont
             })).unwrap();
           }
         }
+=======
+    selectedContacts.forEach(contactId => {
+      const contact = contacts.find(c => c.id === contactId);
+      if (!contact) return;
+
+      const currentTags = Array.isArray(contact.tags) ? contact.tags : [];
+      if (!currentTags.includes(selectedTag)) {
+        dispatch(updateContact({
+          id: contactId,
+          data: { tags: [...currentTags, selectedTag] }
+        }));
+>>>>>>> 11f71f9 (Fix TypeScript errors and import issues)
       }
 
       toast({

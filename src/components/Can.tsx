@@ -1,17 +1,23 @@
 
 import { useAppSelector } from "@/hooks/useAppSelector";
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 11f71f9 (Fix TypeScript errors and import issues)
 import { createContext, createElement, useContext, useEffect, useState } from "react";
 import { AppAbility, defineAppAbility } from "@/utils/ability";
 
 // Create our own AbilityContext since @casl/react doesn't export it directly in the version we're using
 export const AbilityContext = createContext<AppAbility | undefined>(undefined);
+<<<<<<< HEAD
 =======
 import { createElement } from "react";
 import { AbilityContext } from "@casl/react";
 import { useEffect, useState } from "react";
 import { defineAppAbility, AppAbility } from "@/utils/ability";
 >>>>>>> c756439 (Update frontend code)
+=======
+>>>>>>> 11f71f9 (Fix TypeScript errors and import issues)
 
 export const Can = (props: any) => {
   const auth = useAppSelector((state) => state.auth);
@@ -29,6 +35,9 @@ export const Can = (props: any) => {
   }, [permissions]);
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 11f71f9 (Fix TypeScript errors and import issues)
   return createElement(AbilityContext.Provider, { value: ability }, props.do(ability));
 };
 
@@ -39,6 +48,7 @@ export const useAbility = () => {
     throw new Error('useAbility must be used within a Can provider');
   }
   return context;
+<<<<<<< HEAD
 =======
   return createElement(AbilityContext.Provider, { value: ability }, 
     createElement(AbilityContext.Consumer, null, (context) => 
@@ -46,4 +56,6 @@ export const useAbility = () => {
     )
   );
 >>>>>>> c756439 (Update frontend code)
+=======
+>>>>>>> 11f71f9 (Fix TypeScript errors and import issues)
 };

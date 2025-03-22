@@ -1,5 +1,9 @@
 
+<<<<<<< HEAD
 import { useEffect, useState } from 'react';
+=======
+import { useEffect } from 'react';
+>>>>>>> 11f71f9 (Fix TypeScript errors and import issues)
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { fetchCustomers } from '@/store/slices/contacts/contactsSlice';
@@ -19,11 +23,18 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 
 const AllContacts = () => {
   const dispatch = useAppDispatch();
+<<<<<<< HEAD
   const contacts = useAppSelector(selectContacts);
   const loading = useAppSelector(selectContactsLoading);
   const error = useAppSelector(selectContactsError);
   const [retryCount, setRetryCount] = useState(0);
 
+=======
+  const { contacts, loading, error, lastFetchTime } = useAppSelector((state) => state.contacts);
+  const workspace_id = useAppSelector((state) => state.auth.user?.data.defaultWorkspaceId);
+  console.log(contacts, loading, error, lastFetchTime, workspace_id);
+  
+>>>>>>> 11f71f9 (Fix TypeScript errors and import issues)
   useEffect(() => {
     console.log('AllContacts component mounted, fetching customers');
     dispatch(fetchCustomers())

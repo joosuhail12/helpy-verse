@@ -37,11 +37,17 @@ export const QuickNoteInput: React.FC<QuickNoteInputProps> = ({
     setIsSubmitting(true);
     try {
       await dispatch(updateContact({
+<<<<<<< HEAD
         contactId,
         data: { 
           notes: note // In a real app, you would append to existing notes
         }
       })).unwrap();
+=======
+        id: contactId,
+        data: { notes: note }
+      }));
+>>>>>>> 11f71f9 (Fix TypeScript errors and import issues)
       
       toast({
         title: "Note added",

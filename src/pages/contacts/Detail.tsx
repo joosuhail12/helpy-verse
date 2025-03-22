@@ -1,6 +1,11 @@
 
+<<<<<<< HEAD
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+=======
+import { useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+>>>>>>> 11f71f9 (Fix TypeScript errors and import issues)
 import { ContactDetailHeader } from '@/components/contacts/detail/ContactDetailHeader';
 import { ContactInformation } from '@/components/contacts/detail/ContactInformation';
 import { ContactTimeline } from '@/components/contacts/detail/ContactTimeline';
@@ -14,9 +19,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ContactTickets } from '@/components/contacts/detail/ContactTickets';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
+<<<<<<< HEAD
 import { fetchContactDetails } from '@/store/slices/contacts/thunks';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+=======
+import { fetchCustomerDetails } from '@/store/slices/contacts/contactsSlice';
+>>>>>>> 11f71f9 (Fix TypeScript errors and import issues)
 
 const ContactDetail = () => {
   const { id } = useParams();
@@ -27,8 +36,14 @@ const ContactDetail = () => {
   const [isRetrying, setIsRetrying] = useState(false);
 
   const { contactDetails, loading, error } = useAppSelector((state) => state.contacts);
+<<<<<<< HEAD
 
   const loadContactDetails = async () => {
+=======
+  console.log(contactDetails);
+  
+  useEffect(() => {
+>>>>>>> 11f71f9 (Fix TypeScript errors and import issues)
     if (id) {
       try {
         setIsRetrying(true);
@@ -85,9 +100,15 @@ const ContactDetail = () => {
   if (loading || isRetrying) {
     return (
       <div className="p-6">
+<<<<<<< HEAD
         <Card className="p-6 flex flex-col items-center justify-center space-y-4">
           <Loader className="h-8 w-8 text-primary animate-spin" />
           <p className="text-muted-foreground">Loading contact details...</p>
+=======
+        <Card className="p-4 text-center">
+          <Loader className="h-6 w-6 animate-spin mx-auto text-gray-500" />
+          <p className="mt-2 text-gray-500">Loading contact details...</p>
+>>>>>>> 11f71f9 (Fix TypeScript errors and import issues)
         </Card>
       </div>
     );
