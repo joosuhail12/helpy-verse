@@ -19,6 +19,8 @@ export interface ChatMessage {
     type: 'form' | 'url' | 'product';
     data: any;
   };
+  conversationId?: string; // Added to fix type error
+  userId?: string; // Added to fix type error
 }
 
 export interface ConversationMetadata {

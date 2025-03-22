@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { Check, CheckCheck, Clock, AlertCircle, Smile, FileIcon, Image } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import RichContentRenderer from './rich-content/RichContentRenderer';
 
 interface MessageItemProps {
@@ -21,6 +22,11 @@ interface MessageItemProps {
       type: 'form' | 'url' | 'product';
       data: any;
     };
+    avatar?: {
+      url?: string;
+      initials?: string;
+      color?: string;
+    };
   };
   isCurrentUser: boolean;
   previousMessage?: {
@@ -33,7 +39,7 @@ interface MessageItemProps {
   };
   isMobile?: boolean;
   onReact?: (messageId: string, emoji: string) => void;
-  isHighlighted?: boolean; // Added to fix TypeScript error
+  isHighlighted?: boolean;
 }
 
 /**
@@ -46,7 +52,7 @@ const EnhancedMessageItem: React.FC<MessageItemProps> = ({
   nextMessage,
   isMobile = false,
   onReact,
-  isHighlighted = false, // Default value for the new prop
+  isHighlighted = false,
 }) => {
   const [showReactions, setShowReactions] = useState(false);
   
@@ -140,10 +146,31 @@ const EnhancedMessageItem: React.FC<MessageItemProps> = ({
       </div>
     );
   };
+
+  // Get initials for avatar fallback
+  const getInitials = () => {
+    if (message.avatar?.initials) {
+      return message.avatar.initials;
+    }
+    return isCurrentUser ? 'ME' : 'AG';
+  };
   
   return (
-    <div className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}>
-      <div className={`max-w-[80%] ${isMobile ? 'max-w-[85%]' : ''}`}>
+    <div className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'} mb-4`}>
+      {/* Avatar for non-user messages */}
+      {!isCurrentUser && isFirstInGroup && (
+        <div className="mr-2 flex-shrink-0">
+          <Avatar className="h-8 w-8">
+            <AvatarImage src={message.avatar?.url} alt="Agent avatar" />
+            <AvatarFallback style={{ backgroundColor: message.avatar?.color || '#4f46e5' }}>
+              {getInitials()}
+            </AvatarFallback>
+          </Avatar>
+        </div>
+      )}
+
+      {/* Message content with positioning for avatar space */}
+      <div className={`max-w-[80%] ${isMobile ? 'max-w-[85%]' : ''} ${!isCurrentUser && !isFirstInGroup ? 'ml-10' : ''}`}>
         {/* Message bubble */}
         <div
           className={`p-2 md:p-3 rounded-lg ${isHighlighted ? 'bg-yellow-50 border-2 border-yellow-200' : ''} ${isCurrentUser
@@ -235,6 +262,18 @@ const EnhancedMessageItem: React.FC<MessageItemProps> = ({
           {isCurrentUser && getStatusIcon()}
         </div>
       </div>
+
+      {/* Avatar for user messages */}
+      {isCurrentUser && isFirstInGroup && (
+        <div className="ml-2 flex-shrink-0">
+          <Avatar className="h-8 w-8">
+            <AvatarImage src={message.avatar?.url} alt="User avatar" />
+            <AvatarFallback style={{ backgroundColor: message.avatar?.color || '#22c55e' }}>
+              {getInitials()}
+            </AvatarFallback>
+          </Avatar>
+        </div>
+      )}
     </div>
   );
 };

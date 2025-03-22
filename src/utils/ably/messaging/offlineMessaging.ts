@@ -1,128 +1,137 @@
-import { v4 as uuid } from 'uuid';
-import { ChatMessage, QueuedMessage } from '../types';
 
-// In-memory storage for queued messages
-let queuedMessages: QueuedMessage[] = [];
+import { ChatMessage, QueuedMessage } from '../types';
+import { localStorageKeys } from '@/config/constants';
 
 /**
- * Queue a message to be sent when online
+ * Save queued messages to local storage
+ */
+export const saveQueuedMessages = (messages: QueuedMessage[]) => {
+  try {
+    localStorage.setItem(localStorageKeys.QUEUED_MESSAGES, JSON.stringify(messages));
+  } catch (error) {
+    console.error('Failed to save queued messages to localStorage:', error);
+  }
+};
+
+/**
+ * Load queued messages from local storage
+ */
+export const loadQueuedMessages = (): QueuedMessage[] => {
+  try {
+    const savedMessages = localStorage.getItem(localStorageKeys.QUEUED_MESSAGES);
+    return savedMessages ? JSON.parse(savedMessages) : [];
+  } catch (error) {
+    console.error('Failed to load queued messages from localStorage:', error);
+    return [];
+  }
+};
+
+/**
+ * Queue a message for later sending when connection is restored
  */
 export const queueMessage = (
-  text: string, 
-  userId: string, 
-  userName: string,
-  conversationId?: string
+  message: ChatMessage, 
+  conversationId: string, 
+  userId: string
 ): QueuedMessage => {
-  const message: QueuedMessage = {
-    id: uuid(),
-    text,
-    sender: {
-      id: userId,
-      name: userName,
-      type: 'customer'
-    },
-    timestamp: new Date().toISOString(),
-    status: 'queued'
+  // Create a queued message with the required status
+  const queuedMessage: QueuedMessage = {
+    ...message,
+    status: 'queued',
+    conversationId, // Include conversationId
+    userId, // Include userId
   };
+
+  // Load existing queued messages
+  const queuedMessages = loadQueuedMessages();
   
-  // Add conversationId as an extra property if provided
-  if (conversationId) {
-    Object.assign(message, { conversationId });
-  }
+  // Add the new message to the queue
+  queuedMessages.push(queuedMessage);
   
-  queuedMessages.push(message);
+  // Save updated queue back to localStorage
+  saveQueuedMessages(queuedMessages);
   
-  // Persist to localStorage (could be improved with a proper offline storage solution)
-  try {
-    localStorage.setItem('queuedMessages', JSON.stringify(queuedMessages));
-  } catch (error) {
-    console.error('Error saving queued messages to localStorage:', error);
-  }
-  
-  return message;
+  return queuedMessage;
 };
 
 /**
- * Update the status of a queued message
+ * Update status of a queued message
  */
-export const updateQueuedMessageStatus = (
+export const updateMessageStatus = (
   messageId: string, 
   status: 'queued' | 'sending' | 'sent' | 'failed'
-): void => {
-  queuedMessages = queuedMessages.map(msg => 
-    msg.id === messageId ? { ...msg, status } : msg
-  );
+): QueuedMessage[] => {
+  const queuedMessages = loadQueuedMessages();
   
-  // Update localStorage
-  try {
-    localStorage.setItem('queuedMessages', JSON.stringify(queuedMessages));
-  } catch (error) {
-    console.error('Error updating queued messages in localStorage:', error);
-  }
+  const updatedMessages = queuedMessages.map(message => {
+    if (message.id === messageId) {
+      return { ...message, status };
+    }
+    return message;
+  });
+  
+  saveQueuedMessages(updatedMessages);
+  return updatedMessages;
 };
 
 /**
- * Get all queued messages
+ * Remove a message from the queue (e.g., after successful sending)
  */
-export const getQueuedMessages = (): QueuedMessage[] => {
-  // Try to load from localStorage on first access
-  if (queuedMessages.length === 0) {
+export const removeFromQueue = (messageId: string): QueuedMessage[] => {
+  const queuedMessages = loadQueuedMessages();
+  const filteredMessages = queuedMessages.filter(message => message.id !== messageId);
+  saveQueuedMessages(filteredMessages);
+  return filteredMessages;
+};
+
+/**
+ * Check if there are any failed messages in the queue
+ */
+export const checkForFailedMessages = (): boolean => {
+  const queuedMessages = loadQueuedMessages();
+  return queuedMessages.some(message => message.status === 'failed');
+};
+
+/**
+ * Attempt to resend failed messages
+ */
+export const resendFailedMessages = async (
+  sendFunction: (
+    conversationId: string, 
+    text: string, 
+    sender: any, 
+    messageId?: string
+  ) => Promise<any>
+): Promise<QueuedMessage[]> => {
+  const queuedMessages = loadQueuedMessages();
+  const failedMessages = queuedMessages.filter(message => message.status === 'failed');
+  
+  for (const message of failedMessages) {
     try {
-      const storedMessages = localStorage.getItem('queuedMessages');
-      if (storedMessages) {
-        queuedMessages = JSON.parse(storedMessages) as QueuedMessage[];
+      updateMessageStatus(message.id, 'sending');
+      
+      // Use the conversationId from the message
+      if (message.conversationId && message.text) {
+        await sendFunction(
+          message.conversationId,
+          message.text,
+          message.sender,
+          message.id
+        );
+        removeFromQueue(message.id);
       }
     } catch (error) {
-      console.error('Error loading queued messages from localStorage:', error);
+      console.error('Failed to resend message:', error);
+      updateMessageStatus(message.id, 'failed');
     }
   }
   
-  return queuedMessages;
-};
-
-/**
- * Get queued messages for a specific conversation
- */
-export const getQueuedMessagesForConversation = (conversationId: string): QueuedMessage[] => {
-  return getQueuedMessages().filter(msg => 
-    // Check both properties since we might have stored conversationId in different ways
-    (msg as any).conversationId === conversationId
-  );
-};
-
-/**
- * Remove a queued message (e.g. after successful sending)
- */
-export const removeQueuedMessage = (messageId: string): void => {
-  queuedMessages = queuedMessages.filter(msg => msg.id !== messageId);
-  
-  // Update localStorage
-  try {
-    localStorage.setItem('queuedMessages', JSON.stringify(queuedMessages));
-  } catch (error) {
-    console.error('Error updating queued messages in localStorage:', error);
-  }
+  return loadQueuedMessages();
 };
 
 /**
  * Clear all queued messages
  */
 export const clearQueuedMessages = (): void => {
-  queuedMessages = [];
-  
-  // Clear from localStorage
-  try {
-    localStorage.removeItem('queuedMessages');
-  } catch (error) {
-    console.error('Error clearing queued messages from localStorage:', error);
-  }
-};
-
-/**
- * Convert a queued message to a regular chat message
- */
-export const convertQueuedMessageToChatMessage = (queuedMessage: QueuedMessage): ChatMessage => {
-  // Extract status and keep the rest
-  const { status, ...chatMessage } = queuedMessage;
-  return chatMessage;
+  saveQueuedMessages([]);
 };

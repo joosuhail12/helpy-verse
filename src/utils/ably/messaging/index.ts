@@ -1,17 +1,12 @@
 
-// Export all messaging-related functionality
-export { subscribeToConversation } from './conversationMessages';
-export { monitorTypingIndicators, updateTypingStatus } from './typingIndicators';
+// Re-export messaging functions for easier imports
+export { sendMessage, subscribeToConversation } from './realTimeMessaging';
 export { 
-  queueMessage, 
-  updateQueuedMessageStatus, 
-  getQueuedMessages, 
-  getQueuedMessagesForConversation,
-  removeQueuedMessage,
-  clearQueuedMessages,
-  convertQueuedMessageToChatMessage
+  queueMessage,
+  updateMessageStatus,
+  loadQueuedMessages,
+  saveQueuedMessages,
+  removeFromQueue,
+  checkForFailedMessages as hasFailedMessages,
+  resendFailedMessages as retryFailedMessages
 } from './offlineMessaging';
-export {
-  monitorEnhancedPresence,
-  updateParticipantPresence
-} from './presenceIndicators';

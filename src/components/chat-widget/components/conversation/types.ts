@@ -16,6 +16,11 @@ export interface Message {
     type: 'form' | 'url' | 'product';
     data: any;
   };
+  avatar?: {
+    url?: string;
+    initials?: string;
+    color?: string;
+  };
 }
 
 export interface ConversationViewProps {
