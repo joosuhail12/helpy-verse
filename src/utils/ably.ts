@@ -17,7 +17,10 @@ export {
   // Messaging functions
   subscribeToConversation,
   monitorTypingIndicators,
-  updateTypingStatus
+  updateTypingStatus,
+  
+  // Channel management
+  getAblyChannel
 } from './ably/index';
 
 // Re-export types

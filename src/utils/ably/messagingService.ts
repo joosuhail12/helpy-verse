@@ -1,4 +1,3 @@
-
 import { initializeAbly, eventHandlers } from './ablyConnection';
 import { ChatMessage } from './types';
 import { throttle } from '@/utils/performance/performanceUtils';
@@ -46,16 +45,14 @@ export const subscribeToConversation = (
       return () => {};
     });
     
-    // Return unsubscribe function
+    // Return unsubscribe function that properly handles promises
     return () => {
-      initializeAbly().then(ably => {
-        const channel = ably.channels.get(`conversation:${conversationId}`);
-        channel.unsubscribe();
-        
-        // Clean up handlers
-        delete eventHandlers[`conversation:${conversationId}`];
+      subscriptionPromise.then(unsubscribeFn => {
+        if (typeof unsubscribeFn === 'function') {
+          unsubscribeFn();
+        }
       }).catch(err => {
-        console.error('Error unsubscribing from conversation:', err);
+        console.error('Error unsubscribing:', err);
       });
     };
   } catch (error) {

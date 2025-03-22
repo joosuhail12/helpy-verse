@@ -20,6 +20,10 @@ import {
   updateTypingStatus
 } from './ably/messagingService';
 
+import {
+  getAblyChannel
+} from './ably/channelService';
+
 // Using 'export type' for TypeScript interfaces when isolatedModules is enabled
 import type {
   ChatMessage,
@@ -41,6 +45,9 @@ export {
   subscribeToConversation,
   monitorTypingIndicators,
   updateTypingStatus,
+  
+  // Channel
+  getAblyChannel
 };
 
 // Re-export types with the correct syntax for isolatedModules
