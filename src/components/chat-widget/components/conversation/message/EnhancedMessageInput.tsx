@@ -1,6 +1,7 @@
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { Send } from 'lucide-react';
+import FileUploadInput from './FileUploadInput';
 
 interface EnhancedMessageInputProps {
   onSendMessage: (e: React.FormEvent) => void;
@@ -9,10 +10,11 @@ interface EnhancedMessageInputProps {
   sending: boolean;
   onTyping?: () => void;
   isConnected?: boolean;
+  onFileSelect?: (files: File[]) => void;
 }
 
 /**
- * Enhanced message input component with typing detection
+ * Enhanced message input component with typing detection and file upload
  */
 const EnhancedMessageInput: React.FC<EnhancedMessageInputProps> = ({
   onSendMessage,
@@ -20,9 +22,11 @@ const EnhancedMessageInput: React.FC<EnhancedMessageInputProps> = ({
   setNewMessage,
   sending,
   onTyping,
-  isConnected = true
+  isConnected = true,
+  onFileSelect
 }) => {
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   
   // Auto-focus input on mount
   useEffect(() => {
@@ -55,6 +59,14 @@ const EnhancedMessageInput: React.FC<EnhancedMessageInputProps> = ({
     }
   };
   
+  // Handle file selection
+  const handleFileSelect = (files: File[]) => {
+    setSelectedFiles(prev => [...prev, ...files]);
+    if (onFileSelect) {
+      onFileSelect(files);
+    }
+  };
+  
   return (
     <form 
       onSubmit={onSendMessage} 
@@ -70,6 +82,14 @@ const EnhancedMessageInput: React.FC<EnhancedMessageInputProps> = ({
       )}
       
       <div className="flex items-end gap-2">
+        {/* File upload */}
+        {onFileSelect && (
+          <FileUploadInput
+            onFileSelect={handleFileSelect}
+            disabled={sending || !isConnected}
+          />
+        )}
+        
         <div className="relative flex-grow border rounded-lg focus-within:ring-1 focus-within:ring-primary">
           <textarea 
             ref={inputRef}
@@ -87,7 +107,7 @@ const EnhancedMessageInput: React.FC<EnhancedMessageInputProps> = ({
         <button 
           type="submit" 
           className="bg-primary text-white p-3 rounded-full hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
-          disabled={!newMessage.trim() || sending || !isConnected}
+          disabled={(!newMessage.trim() && selectedFiles.length === 0) || sending || !isConnected}
         >
           {sending ? (
             <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin" />

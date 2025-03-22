@@ -2,6 +2,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Send, WifiOff } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import FileUploadInput from './FileUploadInput';
 
 interface OfflineAwareMessageInputProps {
   onSendMessage: (e: React.FormEvent) => void;
@@ -12,6 +13,7 @@ interface OfflineAwareMessageInputProps {
   isConnected?: boolean;
   isOnline: boolean;
   queuedMessageCount: number;
+  onFileSelect?: (files: File[]) => void;
 }
 
 /**
@@ -25,10 +27,12 @@ const OfflineAwareMessageInput: React.FC<OfflineAwareMessageInputProps> = ({
   onTyping,
   isConnected = true,
   isOnline = true,
-  queuedMessageCount = 0
+  queuedMessageCount = 0,
+  onFileSelect
 }) => {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const isMobile = useIsMobile();
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   
   // Auto-focus input on mount (but not on mobile)
   useEffect(() => {
@@ -63,6 +67,14 @@ const OfflineAwareMessageInput: React.FC<OfflineAwareMessageInputProps> = ({
     }
   };
   
+  // Handle file selection
+  const handleFileSelect = (files: File[]) => {
+    setSelectedFiles(prev => [...prev, ...files]);
+    if (onFileSelect) {
+      onFileSelect(files);
+    }
+  };
+  
   return (
     <form 
       onSubmit={onSendMessage} 
@@ -85,6 +97,15 @@ const OfflineAwareMessageInput: React.FC<OfflineAwareMessageInputProps> = ({
       )}
       
       <div className="flex items-end gap-2">
+        {/* File upload */}
+        {onFileSelect && (
+          <FileUploadInput
+            onFileSelect={handleFileSelect}
+            disabled={sending}
+            maxFileSize={10}
+          />
+        )}
+        
         <div className="relative flex-grow border rounded-lg focus-within:ring-1 focus-within:ring-primary">
           <textarea 
             ref={inputRef}
@@ -102,7 +123,7 @@ const OfflineAwareMessageInput: React.FC<OfflineAwareMessageInputProps> = ({
         <button 
           type="submit" 
           className="bg-primary text-white p-2 md:p-3 rounded-full hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
-          disabled={!newMessage.trim() || sending}
+          disabled={(!newMessage.trim() && selectedFiles.length === 0) || sending}
         >
           {sending ? (
             <div className="h-4 w-4 md:h-5 md:w-5 border-2 border-white border-t-transparent rounded-full animate-spin" />

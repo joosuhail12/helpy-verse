@@ -51,12 +51,15 @@ export const useMessages = (conversationId: string | null) => {
   }, [dispatch, conversationId, hasMoreMessages, loading, messages.length]);
 
   // Handle sending a new message
-  const handleSendMessage = useCallback(async (e?: React.FormEvent) => {
+  const handleSendMessage = useCallback(async (
+    e?: React.FormEvent, 
+    attachments?: Array<{url: string, type: string, name: string, size?: number}>
+  ) => {
     if (e) {
       e.preventDefault();
     }
     
-    if (!conversationId || !newMessage.trim()) return;
+    if (!conversationId || (!newMessage.trim() && (!attachments || attachments.length === 0))) return;
     
     const messageToSend = newMessage;
     setNewMessage('');
@@ -66,7 +69,8 @@ export const useMessages = (conversationId: string | null) => {
       await dispatch(sendChatMessage({
         conversationId,
         text: messageToSend,
-        userId: 'userId' // This will be passed from the parent component
+        userId: 'userId', // This will be passed from the parent component
+        attachments
       })).unwrap();
     } catch (error) {
       console.error('Error sending message:', error);

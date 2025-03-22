@@ -4,6 +4,14 @@ export interface Message {
   text: string;
   sender: 'user' | 'agent';
   timestamp: string;
+  status?: 'sent' | 'delivered' | 'read' | 'failed' | 'sending' | 'queued';
+  reactions?: Record<string, string[]>;
+  attachments?: Array<{
+    url: string;
+    type: string;
+    name: string;
+    size?: number;
+  }>;
 }
 
 export interface ConversationViewProps {

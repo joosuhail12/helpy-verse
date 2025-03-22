@@ -32,7 +32,7 @@ export const useOfflineMessaging = (conversationId: string | null) => {
     
     const handleOffline = () => {
       setIsOnline(false);
-      dispatch(setConnectionState('offline'));
+      dispatch(setConnectionState('disconnected'));
     };
     
     window.addEventListener('online', handleOnline);
@@ -101,7 +101,8 @@ export const useOfflineMessaging = (conversationId: string | null) => {
   const queueMessage = useCallback((
     text: string,
     userId: string,
-    userName: string
+    userName: string,
+    attachments?: Array<{url: string, type: string, name: string, size?: number}>
   ) => {
     if (!conversationId) return null;
     
@@ -111,8 +112,9 @@ export const useOfflineMessaging = (conversationId: string | null) => {
       {
         id: userId,
         name: userName,
-        type: 'customer'
-      }
+        type: 'customer' as 'customer' | 'agent' | 'system'
+      },
+      attachments
     );
     
     // Update local state

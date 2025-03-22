@@ -1,101 +1,111 @@
 
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
+import { Message } from '../types';
 import EnhancedMessageItem from './EnhancedMessageItem';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 interface EnhancedMessageListProps {
-  messages: {
-    id: string;
-    text?: string;
-    sender: string;
-    timestamp: string;
-    status?: string;
-  }[];
-  loading?: boolean;
+  messages: Message[];
+  loading: boolean;
   hasMore?: boolean;
   loadMore?: () => void;
   currentUserId?: string;
+  onReact?: (messageId: string, emoji: string) => void;
 }
 
 /**
- * Enhanced and responsive message list component
+ * Component to render a list of messages with enhanced features
  */
 const EnhancedMessageList: React.FC<EnhancedMessageListProps> = ({
   messages,
-  loading = false,
+  loading,
   hasMore = false,
   loadMore,
-  currentUserId = 'user'
+  currentUserId = 'user',
+  onReact
 }) => {
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const prevMessageLength = useRef<number>(0);
-  const isMobile = useIsMobile();
-  
-  // Auto-scroll to bottom on new messages
-  useEffect(() => {
-    // Only auto-scroll if messages were added (not on initial load or infinite scroll)
-    if (messages.length > prevMessageLength.current) {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }
+  // Group messages by date
+  const groupMessagesByDate = (msgs: Message[]) => {
+    const groups: { [date: string]: Message[] } = {};
     
-    prevMessageLength.current = messages.length;
-  }, [messages.length]);
-  
-  // Handle scroll for loading more messages
-  useEffect(() => {
-    const handleScroll = () => {
-      const container = containerRef.current;
-      if (container && hasMore && !loading) {
-        // Load more when scrolled near the top
-        if (container.scrollTop < 50) {
-          loadMore?.();
-        }
+    msgs.forEach(message => {
+      const date = new Date(message.timestamp).toLocaleDateString();
+      if (!groups[date]) {
+        groups[date] = [];
       }
-    };
+      groups[date].push(message);
+    });
     
-    const container = containerRef.current;
-    if (container) {
-      container.addEventListener('scroll', handleScroll);
-      return () => container.removeEventListener('scroll', handleScroll);
+    return groups;
+  };
+  
+  const messageGroups = groupMessagesByDate(messages);
+  
+  // Formatter for timestamps
+  const formatTimestamp = (timestamp: string) => {
+    try {
+      const date = new Date(timestamp);
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } catch (e) {
+      return timestamp;
     }
-  }, [hasMore, loading, loadMore]);
+  };
+  
+  if (loading && messages.length === 0) {
+    return (
+      <div className="flex justify-center items-center h-full">
+        <div className="loader animate-pulse flex space-x-2">
+          <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+          <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+          <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+        </div>
+      </div>
+    );
+  }
   
   return (
-    <div 
-      className="flex flex-col p-2 md:p-4 space-y-4 overflow-y-auto" 
-      style={{ maxHeight: '100%' }}
-      ref={containerRef}
-    >
-      {/* Loading indicator */}
-      {loading && (
-        <div className="flex justify-center py-2">
-          <div className="animate-spin h-5 w-5 border-2 border-primary border-t-transparent rounded-full"></div>
+    <div className="space-y-6">
+      {/* Load more button */}
+      {hasMore && (
+        <div className="flex justify-center">
+          <button
+            onClick={loadMore}
+            disabled={loading}
+            className="bg-white text-sm text-gray-500 px-4 py-2 rounded-full shadow-sm border border-gray-200 hover:bg-gray-50 transition-colors"
+          >
+            {loading ? 'Loading...' : 'Load earlier messages'}
+          </button>
         </div>
       )}
       
-      {/* Empty state */}
-      {!loading && messages.length === 0 && (
-        <div className="flex flex-col items-center justify-center h-full py-8 px-4 text-center text-gray-500">
-          <p className={isMobile ? "text-sm" : "text-base"}>No messages yet.</p>
-          <p className="text-xs mt-1">Start the conversation by sending a message below.</p>
+      {/* Messages grouped by date */}
+      {Object.entries(messageGroups).map(([date, dateMessages]) => (
+        <div key={date} className="space-y-4">
+          {/* Date header */}
+          <div className="flex justify-center">
+            <div className="bg-gray-200 text-gray-600 text-xs px-3 py-1 rounded-full">
+              {new Date(date).toLocaleDateString(undefined, { 
+                weekday: 'long', 
+                month: 'short', 
+                day: 'numeric' 
+              })}
+            </div>
+          </div>
+          
+          {/* Messages for this date */}
+          <div className="space-y-3">
+            {dateMessages.map((message, index) => (
+              <EnhancedMessageItem
+                key={message.id}
+                message={message}
+                isCurrentUser={message.sender === 'user'}
+                previousMessage={index > 0 ? dateMessages[index - 1] : undefined}
+                nextMessage={index < dateMessages.length - 1 ? dateMessages[index + 1] : undefined}
+                onReact={onReact}
+              />
+            ))}
+          </div>
         </div>
-      )}
-      
-      {/* Messages */}
-      {messages.map((message, index) => (
-        <EnhancedMessageItem
-          key={message.id}
-          message={message}
-          isCurrentUser={message.sender === currentUserId || message.sender === 'user'}
-          previousMessage={index > 0 ? messages[index - 1] : undefined}
-          nextMessage={index < messages.length - 1 ? messages[index + 1] : undefined}
-          isMobile={isMobile}
-        />
       ))}
-      
-      {/* Invisible element to scroll to */}
-      <div ref={messagesEndRef} />
     </div>
   );
 };

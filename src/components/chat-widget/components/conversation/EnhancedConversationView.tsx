@@ -30,6 +30,8 @@ const EnhancedConversationView: React.FC<EnhancedConversationViewProps> = ({
     return userId;
   };
   
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  
   const {
     messages,
     newMessage,
@@ -53,6 +55,18 @@ const EnhancedConversationView: React.FC<EnhancedConversationViewProps> = ({
   useEffect(() => {
     console.log(`Chat connection status: ${connectionState}`);
   }, [connectionState]);
+  
+  // Handle file selection
+  const handleFileSelect = (files: File[]) => {
+    setSelectedFiles(prev => [...prev, ...files]);
+    // TODO: Implement file upload and send with message
+  };
+  
+  // Handle message reactions
+  const handleReaction = (messageId: string, emoji: string) => {
+    console.log(`React to message ${messageId} with ${emoji}`);
+    // TODO: Implement reaction handling
+  };
   
   return (
     <div className="flex flex-col h-full">
@@ -87,8 +101,11 @@ const EnhancedConversationView: React.FC<EnhancedConversationViewProps> = ({
         
         <EnhancedMessageList 
           messages={messages} 
-          loading={loading} 
-          formatTimestamp={formatTimestamp} 
+          loading={loading}
+          hasMore={hasMoreMessages}
+          loadMore={loadMoreMessages}
+          currentUserId="user-id"
+          onReact={handleReaction}
         />
         
         {typingUsers.length > 0 && (
@@ -104,6 +121,7 @@ const EnhancedConversationView: React.FC<EnhancedConversationViewProps> = ({
         sending={sending}
         onTyping={handleTyping}
         isConnected={connectionState === 'connected'}
+        onFileSelect={handleFileSelect}
       />
     </div>
   );

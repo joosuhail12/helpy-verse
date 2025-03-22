@@ -29,6 +29,8 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
   const { isOnline, queuedMessages, queueMessage, syncMessages, retryFailedMessages } = 
     useOfflineMessaging(conversationId);
   const isMobile = useIsMobile();
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [uploadingFiles, setUploadingFiles] = useState(false);
   
   // Initialize connection
   useConnectionState(conversationId);
@@ -51,7 +53,7 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
   const handleMessageSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!newMessage.trim()) return;
+    if (!newMessage.trim() && selectedFiles.length === 0) return;
     
     // If offline, queue the message
     if (!isOnline) {
@@ -60,14 +62,52 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
       return;
     }
     
+    // Handle file uploads if any
+    let attachments: Array<{url: string, type: string, name: string, size?: number}> = [];
+    
+    if (selectedFiles.length > 0) {
+      setUploadingFiles(true);
+      try {
+        // This would be replaced with actual file upload logic
+        // For now, simulate file upload with a short delay
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Create placeholder URLs for demo purposes
+        attachments = selectedFiles.map(file => ({
+          url: URL.createObjectURL(file),
+          type: file.type,
+          name: file.name,
+          size: file.size
+        }));
+        
+        setSelectedFiles([]);
+      } catch (error) {
+        console.error('Error uploading files:', error);
+      } finally {
+        setUploadingFiles(false);
+      }
+    }
+    
     // Otherwise send normally
-    await handleSendMessage(e);
+    await handleSendMessage(e, attachments);
+  };
+  
+  // Handle file selection
+  const handleFileSelect = (files: File[]) => {
+    setSelectedFiles(prev => [...prev, ...files]);
+  };
+  
+  // Handle message reactions
+  const handleReaction = (messageId: string, emoji: string) => {
+    console.log(`React to message ${messageId} with ${emoji}`);
+    // This would be implemented with actual reaction handling
+    // For now, it's just a placeholder
   };
   
   // Get connection status for UI display
   const getDisplayConnectionState = () => {
     if (!isOnline) return 'offline';
-    return connectionState;
+    return connectionState === 'initializing' ? 'connecting' : connectionState;
   };
   
   return (
@@ -107,6 +147,7 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
           hasMore={false}
           loadMore={loadMoreMessages}
           currentUserId="user-id"
+          onReact={handleReaction}
         />
       </div>
       
@@ -122,10 +163,11 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
         onSendMessage={handleMessageSubmit}
         newMessage={newMessage}
         setNewMessage={setNewMessage}
-        sending={sending}
+        sending={sending || uploadingFiles}
         isConnected={connectionState === 'connected'}
         isOnline={isOnline}
         queuedMessageCount={queuedMessages.length}
+        onFileSelect={handleFileSelect}
       />
     </div>
   );
