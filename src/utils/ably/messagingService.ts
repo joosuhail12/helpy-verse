@@ -46,10 +46,12 @@ export const subscribeToConversation = (
         // Then handle the channel cleanup - using a safer approach with proper typing
         try {
           if (channel) {
-            // Cast to Ably.Types.RealtimeChannel which has the proper methods
-            const typedChannel = channel as Ably.Types.RealtimeChannel;
-            // Use the properly typed channel to unsubscribe
-            typedChannel.unsubscribe();
+            // Cast to any since the types don't match perfectly
+            const typedChannel = channel as any;
+            // Check if unsubscribe exists as a method
+            if (typeof typedChannel.unsubscribe === 'function') {
+              typedChannel.unsubscribe();
+            }
           }
         } catch (error) {
           console.error('Error during channel cleanup:', error);
