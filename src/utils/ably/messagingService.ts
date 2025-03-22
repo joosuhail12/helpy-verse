@@ -1,6 +1,8 @@
+
 import { initializeAbly, eventHandlers } from './ablyConnection';
 import { ChatMessage } from './types';
 import { throttle } from '@/utils/performance/performanceUtils';
+import * as Ably from 'ably';
 
 /**
  * Subscribe to messages in a conversation with optimized handling
@@ -41,15 +43,13 @@ export const subscribeToConversation = (
           unsubscribe();
         }
         
-        // Then handle the channel cleanup - using a safer approach
+        // Then handle the channel cleanup - using a safer approach with proper typing
         try {
-          // Only attempt to unsubscribe if the channel exists and has appropriate methods
           if (channel) {
-            // Use a type guard to check if unsubscribe is available as a method
-            const channelWithMethods = channel as any;
-            if (channelWithMethods && typeof channelWithMethods.unsubscribe === 'function') {
-              channelWithMethods.unsubscribe('message');
-            }
+            // Cast to Ably.Types.RealtimeChannel which has the proper methods
+            const typedChannel = channel as Ably.Types.RealtimeChannel;
+            // Use the properly typed channel to unsubscribe
+            typedChannel.unsubscribe();
           }
         } catch (error) {
           console.error('Error during channel cleanup:', error);
