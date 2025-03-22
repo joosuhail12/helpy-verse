@@ -46,11 +46,18 @@ export const subscribeToConversation = (
         // Then handle the channel cleanup - using a safer approach with proper typing
         try {
           if (channel) {
-            // Cast to any since the types don't match perfectly
-            const typedChannel = channel as any;
-            // Check if unsubscribe exists as a method
-            if (typeof typedChannel.unsubscribe === 'function') {
-              typedChannel.unsubscribe();
+            // Safely casting to handle type issues
+            const channelAsAny = channel as any;
+            
+            // First check if the channel has an unsubscribe method
+            if (channelAsAny && typeof channelAsAny.unsubscribe === 'function') {
+              // Unsubscribe from all events on the channel
+              channelAsAny.unsubscribe();
+            }
+            
+            // Alternative approach - try to use the detach method if available
+            else if (channelAsAny && typeof channelAsAny.detach === 'function') {
+              channelAsAny.detach();
             }
           }
         } catch (error) {
