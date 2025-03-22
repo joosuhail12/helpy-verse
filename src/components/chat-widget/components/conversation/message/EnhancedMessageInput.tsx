@@ -1,10 +1,11 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, Paperclip, Smile, AlertCircle, WifiOff } from 'lucide-react';
+import { Send, Paperclip, AlertCircle, WifiOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useIsMobile } from '@/hooks/use-mobile';
 import EmojiPickerButton from '../../conversation/emoji/EmojiPickerButton';
+import { FILE_UPLOAD, UI } from '@/config/constants';
 
 export interface EnhancedMessageInputProps {
   onSendMessage: (e: React.FormEvent) => void;
@@ -32,11 +33,11 @@ const EnhancedMessageInput: React.FC<EnhancedMessageInputProps> = ({
   queuedMessageCount = 0,
   isOnline = true
 }) => {
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isMobile = useIsMobile();
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   
   // Reset typing indicator when component unmounts
   useEffect(() => {
@@ -51,7 +52,7 @@ const EnhancedMessageInput: React.FC<EnhancedMessageInputProps> = ({
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 120)}px`;
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, UI.MAX_TEXTAREA_HEIGHT)}px`;
     }
   }, [newMessage]);
   
@@ -70,14 +71,13 @@ const EnhancedMessageInput: React.FC<EnhancedMessageInputProps> = ({
       // Set new timeout - will be cleared if user types again
       typingTimeoutRef.current = setTimeout(() => {
         // This would typically send a "stopped typing" event
-      }, 3000);
+      }, UI.TYPING_TIMEOUT);
     }
   };
   
   // Handle emoji selection
   const handleEmojiSelect = (emoji: any) => {
     setNewMessage(prev => prev + emoji.native);
-    setShowEmojiPicker(false);
     
     // Focus textarea after emoji selection
     if (textareaRef.current) {
@@ -166,6 +166,7 @@ const EnhancedMessageInput: React.FC<EnhancedMessageInputProps> = ({
                 className="hidden"
                 onChange={handleFileChange}
                 multiple
+                accept={FILE_UPLOAD.ALLOWED_FILE_TYPES.join(',')}
               />
               <Button
                 type="button"
@@ -185,7 +186,7 @@ const EnhancedMessageInput: React.FC<EnhancedMessageInputProps> = ({
           <EmojiPickerButton
             onEmojiSelect={handleEmojiSelect}
             disabled={sending}
-            position={isMobile ? 'top' : 'top'}
+            position="top"
           />
           
           {/* Send button */}

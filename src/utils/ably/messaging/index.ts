@@ -11,3 +11,4 @@ export {
   resendFailedMessages as retryFailedMessages
 } from './offlineMessaging';
 export { monitorTypingIndicators, updateTypingStatus } from './typingIndicators';
+export { uploadFile, uploadFiles } from './fileUploadService';

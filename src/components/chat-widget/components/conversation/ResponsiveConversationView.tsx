@@ -16,6 +16,8 @@ import EnhancedConversationHeader from './EnhancedConversationHeader';
 import MessageErrorBoundary from '../../error-handling/MessageErrorBoundary';
 import MessageFallback from '../../error-handling/MessageFallback';
 import { ParticipantInfo } from '@/utils/ably/types';
+import { uploadFiles } from '@/utils/ably/messaging/fileUploadService';
+import { useToast } from '@/hooks/use-toast';
 
 interface ResponsiveConversationViewProps {
   conversationId: string;
@@ -44,6 +46,7 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
   const [uploadingFiles, setUploadingFiles] = useState(false);
   const [searchResults, setSearchResults] = useState<Message[] | null>(null);
   const [activeParticipants, setActiveParticipants] = useState<ParticipantInfo[]>([]);
+  const { toast } = useToast();
   
   // Initialize connection
   useConnectionState(conversationId);
@@ -121,20 +124,27 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
     if (selectedFiles.length > 0) {
       setUploadingFiles(true);
       try {
-        // This would be replaced with actual file upload logic
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Upload files
+        toast({
+          title: 'Uploading files',
+          description: `Uploading ${selectedFiles.length} file(s)...`
+        });
         
-        // Create placeholder URLs for demo purposes
-        attachments = selectedFiles.map(file => ({
-          url: URL.createObjectURL(file),
-          type: file.type,
-          name: file.name,
-          size: file.size
-        }));
+        attachments = await uploadFiles(selectedFiles, conversationId);
+        
+        toast({
+          title: 'Files uploaded',
+          description: `Successfully uploaded ${selectedFiles.length} file(s)`
+        });
         
         setSelectedFiles([]);
       } catch (error) {
         console.error('Error uploading files:', error);
+        toast({
+          title: 'Upload failed',
+          description: 'Failed to upload one or more files',
+          variant: 'destructive'
+        });
       } finally {
         setUploadingFiles(false);
       }
@@ -146,12 +156,22 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
   
   // Handle file selection
   const handleFileSelect = (files: File[]) => {
-    setSelectedFiles(prev => [...prev, ...files]);
+    if (files.length > 0) {
+      setSelectedFiles(prev => [...prev, ...files]);
+      toast({
+        title: 'Files selected',
+        description: `Added ${files.length} file(s) to your message`
+      });
+    }
   };
   
   // Handle message reactions
   const handleReaction = (messageId: string, emoji: string) => {
     console.log(`React to message ${messageId} with ${emoji}`);
+    toast({
+      title: 'Reaction added',
+      description: `Added reaction ${emoji} to message`
+    });
     // This would be implemented with actual reaction handling
   };
   

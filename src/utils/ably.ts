@@ -1,28 +1,32 @@
 
 /**
- * Utility functions for working with Ably real-time messaging
+ * Re-export Ably utilities for easier imports
  */
 
-// Re-export all functions from our refactored modules
-export {
-  // Connection functions
-  initializeAbly,
-  cleanupAblyConnection,
-  
-  // Conversation management functions
-  createConversation,
-  sendChatMessage as sendMessage,
-  getUserConversations,
-  
-  // Messaging functions
-  subscribeToConversation,
-  monitorTypingIndicators,
-  updateTypingStatus,
-  monitorEnhancedPresence,
-  
-  // Channel management
-  getAblyChannel
-} from './ably/index';
+// Re-export Ably functionality
+export * from './ably/ablyConnection';
+export * from './ably/conversationService';
+export * from './ably/channelService';
+export * from './ably/types';
 
-// Re-export types
-export type { ChatMessage, ConversationMetadata } from './ably/types';
+// Import from messaging index
+import { 
+  sendMessage, 
+  subscribeToConversation, 
+  monitorEnhancedPresence 
+} from './ably/messaging/index';
+
+// Import typing indicators from their dedicated file
+import { 
+  monitorTypingIndicators, 
+  updateTypingStatus 
+} from './ably/messaging/typingIndicators';
+
+// Re-export everything
+export { 
+  sendMessage, 
+  subscribeToConversation, 
+  monitorEnhancedPresence,
+  monitorTypingIndicators, 
+  updateTypingStatus 
+};

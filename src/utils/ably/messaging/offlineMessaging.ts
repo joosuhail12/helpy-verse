@@ -1,87 +1,81 @@
 
-import { ChatMessage, QueuedMessage } from '../types';
-import { localStorageKeys } from '@/config/constants';
-
 /**
- * Save queued messages to local storage
+ * Offline messaging functionality
  */
-export const saveQueuedMessages = (messages: QueuedMessage[]) => {
-  try {
-    localStorage.setItem(localStorageKeys.QUEUED_MESSAGES, JSON.stringify(messages));
-  } catch (error) {
-    console.error('Failed to save queued messages to localStorage:', error);
-  }
-};
+import { ChatMessage, QueuedMessage } from '../types';
+import { v4 as uuidv4 } from 'uuid';
+import { MESSAGE_STATUS } from '@/config/constants';
+
+// Local storage key for queued messages
+const QUEUE_STORAGE_KEY = 'chat_queued_messages';
 
 /**
- * Load queued messages from local storage
+ * Load queued messages from localStorage
  */
 export const loadQueuedMessages = (): QueuedMessage[] => {
   try {
-    const savedMessages = localStorage.getItem(localStorageKeys.QUEUED_MESSAGES);
-    return savedMessages ? JSON.parse(savedMessages) : [];
+    const storedMessages = localStorage.getItem(QUEUE_STORAGE_KEY);
+    return storedMessages ? JSON.parse(storedMessages) : [];
   } catch (error) {
-    console.error('Failed to load queued messages from localStorage:', error);
+    console.error('Failed to load queued messages from storage:', error);
     return [];
   }
 };
 
 /**
- * Queue a message for later sending when connection is restored
+ * Save queued messages to localStorage
+ */
+export const saveQueuedMessages = (messages: QueuedMessage[]): void => {
+  try {
+    localStorage.setItem(QUEUE_STORAGE_KEY, JSON.stringify(messages));
+  } catch (error) {
+    console.error('Failed to save queued messages to storage:', error);
+  }
+};
+
+/**
+ * Queue a message for later sending
  */
 export const queueMessage = (
-  message: ChatMessage, 
-  conversationId: string, 
+  message: ChatMessage,
+  conversationId: string,
   userId: string
 ): QueuedMessage => {
-  // Create a queued message with the required status
   const queuedMessage: QueuedMessage = {
     ...message,
-    status: 'queued',
-    conversationId, // Include conversationId
-    userId, // Include userId
+    conversationId,
+    userId,
+    status: MESSAGE_STATUS.QUEUED
   };
-
-  // Load existing queued messages
+  
   const queuedMessages = loadQueuedMessages();
-  
-  // Add the new message to the queue
   queuedMessages.push(queuedMessage);
-  
-  // Save updated queue back to localStorage
   saveQueuedMessages(queuedMessages);
   
   return queuedMessage;
 };
 
 /**
- * Update status of a queued message
+ * Update the status of a queued message
  */
 export const updateMessageStatus = (
-  messageId: string, 
+  messageId: string,
   status: 'queued' | 'sending' | 'sent' | 'failed'
-): QueuedMessage[] => {
+): void => {
   const queuedMessages = loadQueuedMessages();
-  
-  const updatedMessages = queuedMessages.map(message => {
-    if (message.id === messageId) {
-      return { ...message, status };
-    }
-    return message;
-  });
-  
+  const updatedMessages = queuedMessages.map(msg => 
+    msg.id === messageId ? { ...msg, status } : msg
+  );
   saveQueuedMessages(updatedMessages);
-  return updatedMessages;
 };
 
 /**
- * Remove a message from the queue (e.g., after successful sending)
+ * Remove a message from the queue
  */
-export const removeFromQueue = (messageId: string): QueuedMessage[] => {
+export const removeFromQueue = (messageId: string): void => {
   const queuedMessages = loadQueuedMessages();
-  const filteredMessages = queuedMessages.filter(message => message.id !== messageId);
-  saveQueuedMessages(filteredMessages);
-  return filteredMessages;
+  const updatedMessages = queuedMessages.filter(msg => msg.id !== messageId);
+  saveQueuedMessages(updatedMessages);
 };
 
 /**
@@ -89,11 +83,11 @@ export const removeFromQueue = (messageId: string): QueuedMessage[] => {
  */
 export const checkForFailedMessages = (): boolean => {
   const queuedMessages = loadQueuedMessages();
-  return queuedMessages.some(message => message.status === 'failed');
+  return queuedMessages.some(msg => msg.status === MESSAGE_STATUS.FAILED);
 };
 
 /**
- * Attempt to resend failed messages
+ * Retry sending failed messages
  */
 export const resendFailedMessages = async (
   sendFunction: (
@@ -104,34 +98,28 @@ export const resendFailedMessages = async (
   ) => Promise<any>
 ): Promise<QueuedMessage[]> => {
   const queuedMessages = loadQueuedMessages();
-  const failedMessages = queuedMessages.filter(message => message.status === 'failed');
+  const failedMessages = queuedMessages.filter(msg => 
+    msg.status === MESSAGE_STATUS.FAILED
+  );
   
   for (const message of failedMessages) {
     try {
-      updateMessageStatus(message.id, 'sending');
+      updateMessageStatus(message.id, MESSAGE_STATUS.SENDING);
       
-      // Use the conversationId from the message
-      if (message.conversationId && message.text) {
-        await sendFunction(
-          message.conversationId,
-          message.text,
-          message.sender,
-          message.id
-        );
-        removeFromQueue(message.id);
-      }
+      await sendFunction(
+        message.conversationId,
+        message.text,
+        message.sender,
+        message.id
+      );
+      
+      // Remove from queue after successful send
+      removeFromQueue(message.id);
     } catch (error) {
-      console.error('Failed to resend message:', error);
-      updateMessageStatus(message.id, 'failed');
+      console.error(`Failed to resend message ${message.id}:`, error);
+      updateMessageStatus(message.id, MESSAGE_STATUS.FAILED);
     }
   }
   
   return loadQueuedMessages();
-};
-
-/**
- * Clear all queued messages
- */
-export const clearQueuedMessages = (): void => {
-  saveQueuedMessages([]);
 };
