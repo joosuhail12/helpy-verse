@@ -3,10 +3,11 @@
 export { subscribeToConversation } from './conversationMessages';
 export { monitorTypingIndicators, updateTypingStatus } from './typingIndicators';
 export { 
-  queueOfflineMessage, 
-  syncQueuedMessages, 
+  queueMessage, 
+  updateQueuedMessageStatus, 
   getQueuedMessages, 
   getQueuedMessagesForConversation,
-  hasFailedMessages,
-  retryFailedMessages 
+  removeQueuedMessage,
+  clearQueuedMessages,
+  convertQueuedMessageToChatMessage
 } from './offlineMessaging';

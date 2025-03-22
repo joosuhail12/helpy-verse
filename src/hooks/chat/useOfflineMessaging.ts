@@ -5,7 +5,11 @@ import { selectConnectionState } from '@/store/slices/chat/selectors';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { sendChatMessage } from '@/store/slices/chat/chatSlice';
 import * as offlineUtils from '@/utils/ably/messaging/offlineMessaging';
+import { ChatMessage } from '@/utils/ably/types';
 
+/**
+ * Define a QueuedMessage type that matches the structure in offlineMessaging.ts
+ */
 interface QueuedMessage {
   id: string;
   text: string;
@@ -50,7 +54,21 @@ const useOfflineMessaging = (conversationId: string) => {
       const converted = messages.map(msg => 
         offlineUtils.convertQueuedMessageToChatMessage(msg)
       );
-      setQueuedMessages(converted);
+      
+      // Explicitly convert ChatMessage[] to QueuedMessage[]
+      const queuedMsgs: QueuedMessage[] = converted.map(msg => ({
+        id: msg.id,
+        text: msg.text,
+        timestamp: msg.timestamp,
+        status: msg.status as 'queued' | 'sending' | 'sent' | 'failed',
+        sender: {
+          id: msg.sender.id,
+          name: msg.sender.name,
+          type: msg.sender.type === 'agent' ? 'agent' : 'customer'
+        }
+      }));
+      
+      setQueuedMessages(queuedMsgs);
     };
     
     loadQueuedMessages();
@@ -75,7 +93,21 @@ const useOfflineMessaging = (conversationId: string) => {
     
     // Convert and add to local state immediately for UI
     const convertedMsg = offlineUtils.convertQueuedMessageToChatMessage(queuedMsg);
-    setQueuedMessages(prev => [...prev, convertedMsg]);
+    
+    // Create properly typed QueuedMessage
+    const newQueuedMsg: QueuedMessage = {
+      id: convertedMsg.id,
+      text: convertedMsg.text,
+      timestamp: convertedMsg.timestamp,
+      status: queuedMsg.status,
+      sender: {
+        id: convertedMsg.sender.id,
+        name: convertedMsg.sender.name,
+        type: convertedMsg.sender.type === 'agent' ? 'agent' : 'customer'
+      }
+    };
+    
+    setQueuedMessages(prev => [...prev, newQueuedMsg]);
     
     return queuedMsg.id;
   }, [conversationId]);
@@ -115,9 +147,25 @@ const useOfflineMessaging = (conversationId: string) => {
     }
     
     // Refresh the queued messages list
-    const updatedMessages = offlineUtils.getQueuedMessagesForConversation(conversationId)
-      .map(msg => offlineUtils.convertQueuedMessageToChatMessage(msg));
-    setQueuedMessages(updatedMessages);
+    const updatedMessages = offlineUtils.getQueuedMessagesForConversation(conversationId);
+    const converted = updatedMessages.map(msg => 
+      offlineUtils.convertQueuedMessageToChatMessage(msg)
+    );
+    
+    // Convert to properly typed QueuedMessages
+    const queuedMsgs: QueuedMessage[] = converted.map(msg => ({
+      id: msg.id,
+      text: msg.text,
+      timestamp: msg.timestamp,
+      status: (msg.status as 'queued' | 'sending' | 'sent' | 'failed') || 'sent',
+      sender: {
+        id: msg.sender.id,
+        name: msg.sender.name,
+        type: msg.sender.type === 'agent' ? 'agent' : 'customer'
+      }
+    }));
+    
+    setQueuedMessages(queuedMsgs);
     
   }, [isOnline, connectionState, conversationId, dispatch]);
   

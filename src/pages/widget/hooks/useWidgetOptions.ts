@@ -26,7 +26,7 @@ export const useWidgetOptions = () => {
     companyName: 'Support Chat'
   });
 
-  // Create theme config from options
+  // Create theme config from options with all required color properties
   const [themeConfig, setThemeConfig] = useState<Partial<ThemeConfig>>({
     colors: {
       primary: options.primaryColor,
@@ -37,7 +37,15 @@ export const useWidgetOptions = () => {
       headerBackground: options.primaryColor,
       headerText: '#ffffff',
       launcherBackground: options.primaryColor,
-      launcherText: '#ffffff'
+      launcherText: '#ffffff',
+      messageUserBackground: '#f3f4f6',
+      messageUserText: '#1f2937',
+      messageAgentBackground: '#1f2937',
+      messageAgentText: '#ffffff',
+      errorBackground: '#fee2e2',
+      errorText: '#ef4444',
+      warningBackground: '#fef3c7',
+      warningText: '#f59e0b'
     },
     companyName: options.companyName
   });
@@ -55,7 +63,7 @@ export const useWidgetOptions = () => {
         
         setOptions(newOptions);
         
-        // Update theme configuration
+        // Update theme configuration with all required color properties
         setThemeConfig({
           colors: {
             primary: newOptions.primaryColor,
@@ -66,7 +74,15 @@ export const useWidgetOptions = () => {
             headerBackground: newOptions.primaryColor,
             headerText: '#ffffff',
             launcherBackground: newOptions.primaryColor,
-            launcherText: '#ffffff'
+            launcherText: '#ffffff',
+            messageUserBackground: '#f3f4f6',
+            messageUserText: '#1f2937',
+            messageAgentBackground: newOptions.primaryColor,
+            messageAgentText: '#ffffff',
+            errorBackground: '#fee2e2',
+            errorText: '#ef4444',
+            warningBackground: '#fef3c7',
+            warningText: '#f59e0b'
           },
           companyName: newOptions.companyName,
           logoUrl: newOptions.logoUrl
@@ -97,29 +113,38 @@ export const useWidgetOptions = () => {
     const logoUrl = searchParams.get('logoUrl');
     
     if (primaryColor || companyName || logoUrl) {
+      // Get current colors or use defaults with all required properties
+      const currentColors = themeConfig.colors || {
+        primary: '#1f2937',
+        secondary: '#4b5563',
+        accent: '#9b87f5',
+        background: '#ffffff',
+        text: '#374151',
+        headerBackground: '#1f2937',
+        headerText: '#ffffff',
+        launcherBackground: '#1f2937',
+        launcherText: '#ffffff',
+        messageUserBackground: '#f3f4f6',
+        messageUserText: '#1f2937',
+        messageAgentBackground: '#1f2937',
+        messageAgentText: '#ffffff',
+        errorBackground: '#fee2e2',
+        errorText: '#ef4444',
+        warningBackground: '#fef3c7',
+        warningText: '#f59e0b'
+      };
+      
       const newTheme: Partial<ThemeConfig> = { 
         ...themeConfig,
-        colors: {
-          ...(themeConfig.colors || {
-            primary: '#1f2937',
-            secondary: '#4b5563',
-            accent: '#9b87f5',
-            background: '#ffffff',
-            text: '#374151',
-            headerBackground: '#1f2937',
-            headerText: '#ffffff',
-            launcherBackground: '#1f2937',
-            launcherText: '#ffffff',
-          })
-        }
+        colors: { ...currentColors }
       };
       
       if (primaryColor) {
-        if (!newTheme.colors) newTheme.colors = { ...themeConfig.colors } as any;
-        newTheme.colors.primary = primaryColor;
-        newTheme.colors.accent = primaryColor;
-        newTheme.colors.headerBackground = primaryColor;
-        newTheme.colors.launcherBackground = primaryColor;
+        newTheme.colors!.primary = primaryColor;
+        newTheme.colors!.accent = primaryColor;
+        newTheme.colors!.headerBackground = primaryColor;
+        newTheme.colors!.launcherBackground = primaryColor;
+        newTheme.colors!.messageAgentBackground = primaryColor;
       }
       
       if (companyName) {

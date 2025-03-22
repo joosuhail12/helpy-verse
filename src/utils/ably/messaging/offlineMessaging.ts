@@ -55,7 +55,6 @@ export const convertQueuedMessageToChatMessage = (
 ): ChatMessage => {
   return {
     id: queuedMessage.id,
-    conversationId: queuedMessage.conversationId,
     text: queuedMessage.text,
     sender: {
       id: queuedMessage.userId,

@@ -9,6 +9,7 @@ export interface ChatMessage {
     type: 'customer' | 'agent' | 'system';
   };
   timestamp: string;
+  status?: 'queued' | 'sending' | 'sent' | 'failed';
   attachments?: Array<{
     url: string;
     type: string;

@@ -38,7 +38,11 @@ const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({
           <div className={`fixed bottom-4 ${position === 'right' ? 'right-4' : 'left-4'} z-50`}>
             {showLauncher && !isOpen && (
               <AnimatedContainer animation="scaleIn">
-                <WidgetLauncher toggleWidget={toggleWidget} position={position} />
+                <WidgetLauncher 
+                  toggleWidget={toggleWidget} 
+                  isOpen={false}
+                  position={position} 
+                />
               </AnimatedContainer>
             )}
             
