@@ -1,6 +1,6 @@
 
 import React, { useRef, useEffect } from 'react';
-import { PaperAirplaneIcon } from 'lucide-react';
+import { Send } from 'lucide-react';
 
 interface EnhancedMessageInputProps {
   onSendMessage: (e: React.FormEvent) => void;
@@ -92,7 +92,7 @@ const EnhancedMessageInput: React.FC<EnhancedMessageInputProps> = ({
           {sending ? (
             <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
           ) : (
-            <PaperAirplaneIcon className="h-5 w-5" />
+            <Send className="h-5 w-5" />
           )}
         </button>
       </div>

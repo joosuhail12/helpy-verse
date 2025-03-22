@@ -39,7 +39,7 @@ let connectionInitPromise: Promise<Ably.Realtime> | null = null;
 
 // Connection options
 const connectionOptions: Ably.Types.ClientOptions = {
-  transports: ['websocket'], // Prioritize WebSockets for lowest latency
+  transports: ['web_socket'], // Correct transport name
   autoConnect: false,        // We'll manually connect for better control
   idempotentRestPublishing: true, // Ensures no duplicate messages
   closeOnUnload: true,       // Clean connection on tab close
@@ -169,6 +169,7 @@ export const initializeAbly = async (): Promise<Ably.Realtime> => {
               }
               eventHandlers[`${channelName}:${eventName}`].push(callback);
               
+              // Return an unsubscribe function
               return () => {
                 console.log(`Unsubscribed from ${eventName} on channel ${channelName}`);
               };
@@ -270,11 +271,11 @@ export const subscribeToConversation = (
 ): () => void => {
   try {
     // Optimize by not awaiting connection - this speeds up subscription
-    initializeAbly().then(ably => {
+    const subscriptionPromise = initializeAbly().then(ably => {
       const channel = ably.channels.get(`conversation:${conversationId}`);
       
       // Subscribe with optimized message handling
-      const subscription = channel.subscribe('message', (message) => {
+      const unsubscribeFunc = channel.subscribe('message', (message) => {
         // Use requestAnimationFrame to handle messages in animation frame
         // for better UI performance when receiving rapid messages
         window.requestAnimationFrame(() => {
@@ -286,9 +287,17 @@ export const subscribeToConversation = (
       if (!eventHandlers[`conversation:${conversationId}`]) {
         eventHandlers[`conversation:${conversationId}`] = [];
       }
-      eventHandlers[`conversation:${conversationId}`].push(subscription);
+      
+      // Store the function returned by channel.subscribe instead of void
+      if (typeof unsubscribeFunc === 'function') {
+        eventHandlers[`conversation:${conversationId}`].push(unsubscribeFunc);
+      }
+      
+      return unsubscribeFunc;
     }).catch(err => {
       console.error('Error subscribing to conversation:', err);
+      // Return a no-op function in case of error
+      return () => {};
     });
     
     // Return unsubscribe function
@@ -319,11 +328,11 @@ export const getUserConversations = async (
     
     // In a real implementation, this would fetch from your backend
     // with optimizations like caching and pagination
-    const conversations = [
+    const conversations: ConversationMetadata[] = [
       {
         id: 'conv-1',
         title: 'Support Request',
-        status: 'active',
+        status: 'active', // Using a valid status from the enum
         createdAt: new Date(Date.now() - 3600000).toISOString(),
         updatedAt: new Date().toISOString(),
         participants: [
