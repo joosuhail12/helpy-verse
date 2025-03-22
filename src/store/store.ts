@@ -1,4 +1,3 @@
-
 import { configureStore } from '@reduxjs/toolkit';
 import authReducer from './slices/auth/authSlice';
 import { actionsReducer } from './slices/actions/actionsSlice';
@@ -14,8 +13,8 @@ import { emailChannelsReducer } from './slices/emailChannels/emailChannelsSlice'
 import { cannedResponsesReducer } from './slices/cannedResponses/cannedResponsesSlice';
 import { chatbotsReducer } from './slices/chatbots/chatbotsSlice';
 import userReducer from './slices/user/userSlice';
+import chatReducer from './slices/chat/chatSlice';
 
-// Define the root reducer with all slices
 const rootReducer = {
   auth: authReducer,
   actions: actionsReducer,
@@ -31,6 +30,7 @@ const rootReducer = {
   cannedResponses: cannedResponsesReducer,
   chatbots: chatbotsReducer,
   user: userReducer,
+  chat: chatReducer,
 };
 
 export const store = configureStore({
