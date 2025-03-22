@@ -66,11 +66,14 @@ export const useMessages = (conversationId: string | null) => {
     setSending(true);
     
     try {
+      // We need to adapt this call to work with our API structure
+      // Use a modified structure that works with our backend
       await dispatch(sendChatMessage({
         conversationId,
         text: messageToSend,
-        userId: 'userId', // This will be passed from the parent component
-        attachments
+        userId: 'userId',
+        // Only include attachments if present
+        ...(attachments && attachments.length > 0 ? { attachments } : {})
       })).unwrap();
     } catch (error) {
       console.error('Error sending message:', error);

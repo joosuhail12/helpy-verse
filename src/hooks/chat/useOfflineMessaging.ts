@@ -1,135 +1,146 @@
 
 import { useState, useEffect, useCallback } from 'react';
-import { useDispatch } from 'react-redux';
-import { setConnectionState } from '@/store/slices/chat/chatSlice';
-import { 
-  queueOfflineMessage, 
-  getQueuedMessagesForConversation,
-  syncQueuedMessages,
-  retryFailedMessages
-} from '@/utils/ably/messaging/offlineMessaging';
+import { useSelector } from 'react-redux';
+import { selectConnectionState } from '@/store/slices/chat/selectors'; 
 import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { sendChatMessage } from '@/store/slices/chat/chatSlice';
+import * as offlineUtils from '@/utils/ably/messaging/offlineMessaging';
+
+interface QueuedMessage {
+  id: string;
+  text: string;
+  timestamp: string;
+  status: 'queued' | 'sending' | 'sent' | 'failed';
+  sender: {
+    id: string;
+    name: string;
+    type: 'agent' | 'customer';
+  };
+}
 
 /**
- * Hook for handling offline messaging functionality
+ * Hook for handling offline message queuing and synchronization
  */
-export const useOfflineMessaging = (conversationId: string | null) => {
+const useOfflineMessaging = (conversationId: string) => {
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [queuedMessages, setQueuedMessages] = useState<QueuedMessage[]>([]);
+  const connectionState = useSelector(selectConnectionState);
   const dispatch = useAppDispatch();
-  const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
-  const [queuedMessages, setQueuedMessages] = useState<any[]>([]);
-  const [syncInProgress, setSyncInProgress] = useState<boolean>(false);
   
-  // Monitor online status
+  // Set up online/offline event listeners
   useEffect(() => {
-    const handleOnline = () => {
-      setIsOnline(true);
-      
-      // When coming back online, try to sync messages
-      if (queuedMessages.length > 0) {
-        handleSyncMessages();
-      }
-    };
-    
-    const handleOffline = () => {
-      setIsOnline(false);
-      dispatch(setConnectionState('disconnected'));
-    };
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
     
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
-    
-    // Set initial online status
-    setIsOnline(navigator.onLine);
     
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, [dispatch, queuedMessages.length]);
+  }, []);
   
-  // Load queued messages for current conversation
+  // Load queued messages for this conversation on mount
   useEffect(() => {
-    if (conversationId) {
-      const messages = getQueuedMessagesForConversation(conversationId);
-      setQueuedMessages(messages);
-    } else {
-      setQueuedMessages([]);
-    }
+    if (!conversationId) return;
+    
+    const loadQueuedMessages = () => {
+      const messages = offlineUtils.getQueuedMessagesForConversation(conversationId);
+      const converted = messages.map(msg => 
+        offlineUtils.convertQueuedMessageToChatMessage(msg)
+      );
+      setQueuedMessages(converted);
+    };
+    
+    loadQueuedMessages();
+    
+    // Refresh queued messages every 5 seconds
+    const intervalId = setInterval(loadQueuedMessages, 5000);
+    
+    return () => clearInterval(intervalId);
   }, [conversationId]);
-  
-  // Sync messages when connection is restored
-  const handleSyncMessages = useCallback(async () => {
-    if (syncInProgress) return;
-    
-    setSyncInProgress(true);
-    try {
-      await syncQueuedMessages();
-      
-      // Refresh queued messages list
-      if (conversationId) {
-        const updatedMessages = getQueuedMessagesForConversation(conversationId);
-        setQueuedMessages(updatedMessages);
-      }
-    } catch (error) {
-      console.error('Failed to sync messages:', error);
-    } finally {
-      setSyncInProgress(false);
-    }
-  }, [conversationId, syncInProgress]);
-  
-  // Retry failed messages
-  const handleRetryFailedMessages = useCallback(async () => {
-    if (!isOnline || syncInProgress) return;
-    
-    setSyncInProgress(true);
-    try {
-      await retryFailedMessages();
-      
-      // Refresh queued messages list
-      if (conversationId) {
-        const updatedMessages = getQueuedMessagesForConversation(conversationId);
-        setQueuedMessages(updatedMessages);
-      }
-    } catch (error) {
-      console.error('Failed to retry messages:', error);
-    } finally {
-      setSyncInProgress(false);
-    }
-  }, [conversationId, isOnline, syncInProgress]);
   
   // Queue a message when offline
-  const queueMessage = useCallback((
-    text: string,
-    userId: string,
-    userName: string,
-    attachments?: Array<{url: string, type: string, name: string, size?: number}>
-  ) => {
-    if (!conversationId) return null;
+  const queueMessage = useCallback((text: string, userId: string, userName: string) => {
+    if (!conversationId) return;
     
-    const message = queueOfflineMessage(
+    const queuedMsg = offlineUtils.queueMessage(
       conversationId,
       text,
-      {
-        id: userId,
-        name: userName,
-        type: 'customer' as 'customer' | 'agent' | 'system'
-      },
-      attachments
+      userId,
+      'user',
+      userName
     );
     
-    // Update local state
-    setQueuedMessages(prev => [...prev, message]);
+    // Convert and add to local state immediately for UI
+    const convertedMsg = offlineUtils.convertQueuedMessageToChatMessage(queuedMsg);
+    setQueuedMessages(prev => [...prev, convertedMsg]);
     
-    return message;
+    return queuedMsg.id;
   }, [conversationId]);
+  
+  // Sync all queued messages when coming back online
+  const syncMessages = useCallback(async () => {
+    if (!isOnline || connectionState !== 'connected' || !conversationId) return;
+    
+    // Get all queued messages for this conversation
+    const messages = offlineUtils.getQueuedMessagesForConversation(conversationId);
+    
+    // Only attempt to send queued or failed messages
+    const sendableMessages = messages.filter(
+      msg => msg.status === 'queued' || msg.status === 'failed'
+    );
+    
+    // Loop through and attempt to send each message
+    for (const msg of sendableMessages) {
+      try {
+        // Mark as sending
+        offlineUtils.updateQueuedMessageStatus(msg.id, 'sending');
+        
+        // Try to send the message
+        await dispatch(sendChatMessage({
+          conversationId,
+          text: msg.text,
+          userId: msg.userId
+        })).unwrap();
+        
+        // Mark as sent and remove from queue
+        offlineUtils.updateQueuedMessageStatus(msg.id, 'sent');
+        setTimeout(() => offlineUtils.removeQueuedMessage(msg.id), 1000);
+      } catch (error) {
+        console.error('Failed to sync queued message:', error);
+        offlineUtils.updateQueuedMessageStatus(msg.id, 'failed');
+      }
+    }
+    
+    // Refresh the queued messages list
+    const updatedMessages = offlineUtils.getQueuedMessagesForConversation(conversationId)
+      .map(msg => offlineUtils.convertQueuedMessageToChatMessage(msg));
+    setQueuedMessages(updatedMessages);
+    
+  }, [isOnline, connectionState, conversationId, dispatch]);
+  
+  // Retry sending failed messages
+  const retryFailedMessages = useCallback(() => {
+    if (isOnline && connectionState === 'connected') {
+      syncMessages();
+    }
+  }, [isOnline, connectionState, syncMessages]);
+  
+  // Try to sync messages when we come back online
+  useEffect(() => {
+    if (isOnline && connectionState === 'connected') {
+      syncMessages();
+    }
+  }, [isOnline, connectionState, syncMessages]);
   
   return {
     isOnline,
     queuedMessages,
     queueMessage,
-    syncMessages: handleSyncMessages,
-    retryFailedMessages: handleRetryFailedMessages,
-    syncInProgress
+    syncMessages,
+    retryFailedMessages
   };
 };
 

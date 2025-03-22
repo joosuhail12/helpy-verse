@@ -1,150 +1,125 @@
 
-import { ChatMessage, ParticipantInfo } from '../types';
+import { v4 as uuidv4 } from 'uuid';
+import { ChatMessage } from '../types';
 
-// Queue for storing messages that couldn't be sent while offline
-let messageQueue: Array<{
+interface QueuedMessage {
+  id: string;
   conversationId: string;
-  message: ChatMessage;
-  status: 'queued' | 'failed';
+  text: string;
+  userId: string;
+  userType: 'agent' | 'user';
+  userName: string;
+  timestamp: string;
+  status: 'queued' | 'sending' | 'sent' | 'failed';
   retryCount: number;
-}> = [];
+}
 
-// Load queue from localStorage on startup
-const initializeQueue = () => {
-  try {
-    const savedQueue = localStorage.getItem('message_queue');
-    if (savedQueue) {
-      messageQueue = JSON.parse(savedQueue);
-    }
-  } catch (error) {
-    console.error('Failed to load message queue from localStorage:', error);
-  }
-};
-
-// Save queue to localStorage
-const saveQueue = () => {
-  try {
-    localStorage.setItem('message_queue', JSON.stringify(messageQueue));
-  } catch (error) {
-    console.error('Failed to save message queue to localStorage:', error);
-  }
-};
-
-// Initialize queue on module load
-initializeQueue();
+const STORAGE_KEY = 'pullse-offline-messages';
+const MAX_RETRIES = 3;
 
 /**
- * Queue a message for sending when connection is restored
+ * Save a queued message to localStorage
  */
-export const queueOfflineMessage = (
+export const queueMessage = (
   conversationId: string,
   text: string,
-  sender: ParticipantInfo,
-  attachments?: Array<{url: string, type: string, name: string, size?: number}>
-): ChatMessage => {
-  const message: ChatMessage = {
-    id: `offline-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+  userId: string,
+  userType: 'agent' | 'user',
+  userName: string
+): QueuedMessage => {
+  const queuedMessages = getQueuedMessages();
+  
+  const newMessage: QueuedMessage = {
+    id: uuidv4(),
+    conversationId,
     text,
-    sender,
+    userId,
+    userType,
+    userName,
     timestamp: new Date().toISOString(),
     status: 'queued',
-    attachments
+    retryCount: 0
   };
   
-  messageQueue.push({
-    conversationId,
-    message,
-    status: 'queued',
-    retryCount: 0
-  });
+  const updatedQueue = [...queuedMessages, newMessage];
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedQueue));
   
-  saveQueue();
-  return message;
+  return newMessage;
 };
 
 /**
- * Get all queued messages
+ * Convert a queued message to a chat message format
  */
-export const getQueuedMessages = (): Array<{
-  conversationId: string;
-  message: ChatMessage;
-  status: 'queued' | 'failed';
-}> => {
-  return messageQueue.map(({ conversationId, message, status }) => ({
-    conversationId,
-    message,
-    status
-  }));
+export const convertQueuedMessageToChatMessage = (
+  queuedMessage: QueuedMessage
+): ChatMessage => {
+  return {
+    id: queuedMessage.id,
+    conversationId: queuedMessage.conversationId,
+    text: queuedMessage.text,
+    sender: {
+      id: queuedMessage.userId,
+      name: queuedMessage.userName,
+      type: queuedMessage.userType === 'agent' ? 'agent' : 'customer'
+    },
+    timestamp: queuedMessage.timestamp,
+    status: queuedMessage.status
+  };
+};
+
+/**
+ * Get all queued messages from localStorage
+ */
+export const getQueuedMessages = (): QueuedMessage[] => {
+  const storedMessages = localStorage.getItem(STORAGE_KEY);
+  if (!storedMessages) return [];
+  
+  try {
+    return JSON.parse(storedMessages);
+  } catch (e) {
+    console.error('Error parsing queued messages', e);
+    return [];
+  }
 };
 
 /**
  * Get queued messages for a specific conversation
  */
-export const getQueuedMessagesForConversation = (conversationId: string): ChatMessage[] => {
-  return messageQueue
-    .filter(item => item.conversationId === conversationId)
-    .map(item => item.message);
+export const getQueuedMessagesForConversation = (
+  conversationId: string
+): QueuedMessage[] => {
+  const allMessages = getQueuedMessages();
+  return allMessages.filter(msg => msg.conversationId === conversationId);
 };
 
 /**
- * Check if there are any failed messages that need retry
+ * Update the status of a queued message
  */
-export const hasFailedMessages = (): boolean => {
-  return messageQueue.some(item => item.status === 'failed');
-};
-
-/**
- * Retry sending failed messages
- */
-export const retryFailedMessages = async (): Promise<void> => {
-  const failedMessages = messageQueue.filter(item => item.status === 'failed');
-  if (failedMessages.length === 0) return;
-  
-  // For now, just mark them as queued again
-  messageQueue = messageQueue.map(item => 
-    item.status === 'failed' 
-      ? { ...item, status: 'queued', retryCount: item.retryCount + 1 }
-      : item
+export const updateQueuedMessageStatus = (
+  messageId: string,
+  status: 'queued' | 'sending' | 'sent' | 'failed'
+): void => {
+  const messages = getQueuedMessages();
+  const updatedMessages = messages.map(msg => 
+    msg.id === messageId ? { ...msg, status } : msg
   );
   
-  saveQueue();
-  
-  // Actual implementation would try to send them again
-  await syncQueuedMessages();
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedMessages));
 };
 
 /**
- * Sync queued messages with the server
+ * Remove a message from the queue
  */
-export const syncQueuedMessages = async (): Promise<void> => {
-  if (messageQueue.length === 0) return;
+export const removeQueuedMessage = (messageId: string): void => {
+  const messages = getQueuedMessages();
+  const updatedMessages = messages.filter(msg => msg.id !== messageId);
   
-  const currentQueue = [...messageQueue];
-  
-  // Process queued messages one by one
-  for (const item of currentQueue) {
-    if (item.status !== 'queued') continue;
-    
-    try {
-      // This would be replaced with actual message sending logic
-      // For now, just simulate with a delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Remove from queue on success
-      messageQueue = messageQueue.filter(qItem => qItem.message.id !== item.message.id);
-    } catch (error) {
-      console.error('Failed to send queued message:', error);
-      
-      // Mark as failed if retry count is too high
-      if (item.retryCount >= 3) {
-        messageQueue = messageQueue.map(qItem => 
-          qItem.message.id === item.message.id 
-            ? { ...qItem, status: 'failed' } 
-            : qItem
-        );
-      }
-    }
-  }
-  
-  saveQueue();
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedMessages));
+};
+
+/**
+ * Clear all queued messages
+ */
+export const clearQueuedMessages = (): void => {
+  localStorage.removeItem(STORAGE_KEY);
 };

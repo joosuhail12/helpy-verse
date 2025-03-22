@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useSelector } from 'react-redux';
@@ -10,6 +11,8 @@ import OfflineAwareMessageInput from './message/OfflineAwareMessageInput';
 import ConnectionStatus from '../ConnectionStatus';
 import { selectConnectionState } from '@/store/slices/chat/selectors';
 import { useIsMobile } from '@/hooks/use-mobile';
+import AnimatedContainer from '../../animations/AnimatedContainer';
+import { Message } from './types';
 
 interface ResponsiveConversationViewProps {
   conversationId: string;
@@ -109,9 +112,21 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
     if (!isOnline) return 'offline';
     return connectionState === 'initializing' ? 'connecting' : connectionState;
   };
+
+  // Convert queued messages to the correct format expected by EnhancedMessageList
+  const convertedQueuedMessages: Message[] = queuedMessages.map(msg => ({
+    id: msg.id,
+    text: msg.text,
+    sender: msg.sender.type === 'agent' ? 'agent' : 'user',
+    timestamp: msg.timestamp,
+    status: msg.status
+  }));
+  
+  // Combine regular messages with queued messages
+  const allMessages = [...messages, ...convertedQueuedMessages];
   
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <AnimatedContainer animation="fadeIn" className="flex flex-col h-full overflow-hidden">
       {/* Header */}
       <div className="p-3 md:p-4 border-b border-gray-100 flex items-center shadow-sm">
         <button 
@@ -136,13 +151,7 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
       {/* Message list */}
       <div className="flex-1 overflow-y-auto">
         <EnhancedMessageList 
-          messages={[...messages, ...queuedMessages.map(msg => ({
-            id: msg.id,
-            text: msg.text,
-            sender: msg.sender.type === 'agent' ? 'agent' : 'user',
-            timestamp: msg.timestamp,
-            status: msg.status
-          }))]}
+          messages={allMessages}
           loading={loading}
           hasMore={false}
           loadMore={loadMoreMessages}
@@ -169,7 +178,7 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
         queuedMessageCount={queuedMessages.length}
         onFileSelect={handleFileSelect}
       />
-    </div>
+    </AnimatedContainer>
   );
 };
 

@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { WifiOff, AlertCircle, Loader2 } from 'lucide-react';
+import AnimatedContainer from '../animations/AnimatedContainer';
 
 interface ConnectionStatusProps {
   connectionState: 'connected' | 'connecting' | 'disconnected' | 'failed' | 'offline';
@@ -19,7 +20,7 @@ const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
   if (connectionState === 'connected') return null;
   
   return (
-    <div className="p-2 border-t border-gray-200 flex items-center justify-between text-sm">
+    <AnimatedContainer animation="fadeIn" className="p-2 border-t border-gray-200 flex items-center justify-between text-sm">
       {connectionState === 'connecting' && (
         <div className="flex items-center text-amber-500 w-full justify-center py-1">
           <Loader2 className="h-3.5 w-3.5 mr-2 animate-spin" />
@@ -44,7 +45,7 @@ const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
           </div>
           <button 
             onClick={onRetry}
-            className="text-xs px-2 py-1 bg-red-50 text-red-600 rounded hover:bg-red-100 transition-colors"
+            className="text-xs px-2 py-1 bg-red-50 text-red-600 rounded hover:bg-red-100 transition-colors transform hover:scale-105 transition-transform duration-200"
           >
             Retry
           </button>
@@ -59,13 +60,13 @@ const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
           </div>
           <button 
             onClick={onRetry}
-            className="text-xs px-2 py-1 bg-gray-50 text-gray-600 rounded hover:bg-gray-100 transition-colors"
+            className="text-xs px-2 py-1 bg-gray-50 text-gray-600 rounded hover:bg-gray-100 transition-colors transform hover:scale-105 transition-transform duration-200"
           >
             Retry
           </button>
         </div>
       )}
-    </div>
+    </AnimatedContainer>
   );
 };
 
