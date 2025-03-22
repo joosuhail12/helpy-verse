@@ -11,13 +11,14 @@ export {
   
   // Conversation management functions
   createConversation,
-  sendMessage,
+  sendChatMessage as sendMessage,
   getUserConversations,
   
   // Messaging functions
   subscribeToConversation,
   monitorTypingIndicators,
   updateTypingStatus,
+  monitorEnhancedPresence,
   
   // Channel management
   getAblyChannel

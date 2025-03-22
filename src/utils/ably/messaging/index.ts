@@ -1,6 +1,6 @@
 
 // Re-export messaging functions for easier imports
-export { sendMessage, subscribeToConversation } from './realTimeMessaging';
+export { sendMessage, subscribeToConversation, monitorEnhancedPresence } from './realTimeMessaging';
 export { 
   queueMessage,
   updateMessageStatus,
@@ -10,3 +10,4 @@ export {
   checkForFailedMessages as hasFailedMessages,
   resendFailedMessages as retryFailedMessages
 } from './offlineMessaging';
+export { monitorTypingIndicators, updateTypingStatus } from './typingIndicators';

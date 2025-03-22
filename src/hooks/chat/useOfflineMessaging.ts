@@ -196,3 +196,8 @@ export const useOfflineMessaging = ({
     retryFailedMessages: retryFailedMessagesHandler
   };
 };
+
+// Fix the previous default export issue
+export default function useOfflineMessagingHook(props: UseOfflineMessagingProps) {
+  return useOfflineMessaging(props);
+}

@@ -185,7 +185,7 @@ const EnhancedMessageInput: React.FC<EnhancedMessageInputProps> = ({
           <EmojiPickerButton
             onEmojiSelect={handleEmojiSelect}
             disabled={sending}
-            position={isMobile ? 'top' : 'top-start'}
+            position={isMobile ? 'top' : 'top'}
           />
           
           {/* Send button */}

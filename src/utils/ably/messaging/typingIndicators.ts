@@ -1,46 +1,69 @@
 
 import { initializeAbly } from '../connection/connectionManager';
-import { throttle } from '@/utils/performance/performanceUtils';
 
 /**
- * Monitor typing indicators with performance optimization
+ * Monitor typing indicators for a conversation
  */
 export const monitorTypingIndicators = (
-  conversationId: string,
-  onTypingStatusChange: (users: string[]) => void
+  conversationId: string, 
+  onTypingUsersChange: (typingUsers: string[]) => void
 ): (() => void) => {
   try {
-    initializeAbly().then(ably => {
-      const channel = ably.channels.get(`conversation:${conversationId}`);
+    // Create subscription promise
+    const subscriptionPromise = initializeAbly().then(ably => {
+      const channel = ably.channels.get(`typing:${conversationId}`);
+      const typingUsers: Record<string, { name: string; timestamp: number }> = {};
       
-      channel.presence.subscribe('update', (member) => {
-        if (member.data?.isTyping !== undefined) {
-          // Get all current presence data to determine who's typing
-          channel.presence.get((err, members) => {
-            if (err) {
-              console.error('Error getting presence data:', err);
-              return;
-            }
-            
-            // Extract typing users
-            const typingUsers = members
-              .filter(m => m.data?.isTyping)
-              .map(m => m.data.name || 'Unknown');
-            
-            onTypingStatusChange(typingUsers);
-          });
+      // Function to update typing users list
+      const updateTypingUsersList = () => {
+        const now = Date.now();
+        const activeUsers = Object.entries(typingUsers)
+          .filter(([_, data]) => now - data.timestamp < 5000) // Consider typing expired after 5 seconds
+          .map(([_, data]) => data.name);
+        
+        onTypingUsersChange(activeUsers);
+      };
+      
+      // Set up interval to clean up expired typing indicators
+      const cleanupInterval = setInterval(() => {
+        updateTypingUsersList();
+      }, 1000);
+      
+      // Subscribe to typing events
+      const typingHandler = (message: any) => {
+        const { userId, userName, isTyping } = message.data;
+        
+        if (!userId || !userName) return;
+        
+        if (isTyping) {
+          typingUsers[userId] = { name: userName, timestamp: Date.now() };
+        } else {
+          delete typingUsers[userId];
         }
-      });
+        
+        updateTypingUsersList();
+      };
+      
+      channel.subscribe('typing', typingHandler);
+      
+      // Return cleanup function
+      return () => {
+        try {
+          clearInterval(cleanupInterval);
+          channel.unsubscribe('typing', typingHandler);
+        } catch (error) {
+          console.error('Error unsubscribing from typing indicators:', error);
+        }
+      };
     }).catch(err => {
-      console.error('Error monitoring typing indicators:', err);
+      console.error('Error setting up typing indicators:', err);
+      return () => {}; // Return no-op cleanup function on error
     });
     
+    // Return a function that will call the cleanup when invoked
     return () => {
-      initializeAbly().then(ably => {
-        const channel = ably.channels.get(`conversation:${conversationId}`);
-        channel.presence.unsubscribe();
-      }).catch(err => {
-        console.error('Error cleaning up typing indicators:', err);
+      subscriptionPromise.then(cleanup => cleanup()).catch(err => {
+        console.error('Error cleaning up typing subscription:', err);
       });
     };
   } catch (error) {
@@ -50,9 +73,9 @@ export const monitorTypingIndicators = (
 };
 
 /**
- * Update typing status with throttling
+ * Update typing status for a user
  */
-export const updateTypingStatus = throttle(async (
+export const updateTypingStatus = async (
   conversationId: string,
   userId: string,
   userName: string,
@@ -60,15 +83,15 @@ export const updateTypingStatus = throttle(async (
 ): Promise<void> => {
   try {
     const ably = await initializeAbly();
-    const channel = ably.channels.get(`conversation:${conversationId}`);
+    const channel = ably.channels.get(`typing:${conversationId}`);
     
-    await channel.presence.enter({
+    await channel.publish('typing', {
       userId,
-      name: userName,
+      userName,
       isTyping,
-      lastActive: new Date().toISOString()
+      timestamp: Date.now()
     });
   } catch (error) {
     console.error('Failed to update typing status:', error);
   }
-}, 500); // Throttle to 2 updates per second
+};

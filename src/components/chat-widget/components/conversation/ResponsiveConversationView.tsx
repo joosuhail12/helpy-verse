@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 import useConnectionState from '@/hooks/chat/useConnectionState';
 import useMessages from '@/hooks/chat/useMessages';
 import useMessageSubscription from '@/hooks/chat/useMessageSubscription';
-import useOfflineMessaging from '@/hooks/chat/useOfflineMessaging';
+import { useOfflineMessaging } from '@/hooks/chat/useOfflineMessaging';
 import EnhancedMessageInput from './message/EnhancedMessageInput';
 import ConnectionStatus from '../ConnectionStatus';
 import { selectConnectionState } from '@/store/slices/chat/selectors';
@@ -33,7 +33,11 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
 }) => {
   const connectionState = useSelector(selectConnectionState);
   const { isOnline, queuedMessages, queueMessage, syncMessages, retryFailedMessages } = 
-    useOfflineMessaging(conversationId);
+    useOfflineMessaging({
+      isConnected: connectionState === 'connected',
+      conversationId,
+      userId: 'user-id'
+    });
   const isMobile = useIsMobile();
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [uploadingFiles, setUploadingFiles] = useState(false);
@@ -63,10 +67,10 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
       if (!conversationId || connectionState !== 'connected') return;
       
       try {
-        // Import and use enhanced presence monitoring
-        const { monitorEnhancedPresence } = await import('@/utils/ably/messaging');
+        // Import the enhanced presence monitoring function
+        const ablyMessaging = await import('@/utils/ably');
         
-        return monitorEnhancedPresence(
+        return ablyMessaging.monitorEnhancedPresence(
           conversationId,
           (participants) => {
             setActiveParticipants(participants);
