@@ -1,110 +1,89 @@
-
 import * as Ably from 'ably';
-import { HttpClient } from '@/api/services/http';
+import { v4 as uuidv4 } from 'uuid';
 
-// Connection options
+// Store the Ably instance
+let ablyInstance: Ably.Realtime | null = null;
+
+// Connection options with sensible defaults
 export const connectionOptions: Ably.Types.ClientOptions = {
-  transports: ['web_socket'], // Correct transport name
-  autoConnect: false,        // We'll manually connect for better control
-  idempotentRestPublishing: true, // Ensures no duplicate messages
-  closeOnUnload: true,       // Clean connection on tab close
-  defaultTokenParams: {
-    ttl: 3600 * 1000 // 1 hour token lifespan
-  },
-  transportParams: {
-    maxRetryCount: 10,          // Number of reconnection attempts
-    initialRetryTimeout: 300,   // Start with 300ms delay before first retry
-    maxRetryTimeout: 10000      // Cap at 10 seconds between retries
-  }
+  authUrl: '/api/get-ably-token',
+  clientId: `user-${uuidv4()}`,
+  echoMessages: false,
+  recoveryKey: null,
+  autoConnect: true,
+  logLevel: 3 // Warning level for production
 };
 
-// Singleton instance with connection management
-let ablyInstance: Ably.Realtime | null = null;
-let connectionInitPromise: Promise<Ably.Realtime> | null = null;
-
 /**
- * Initialize Ably client with token auth
- * Uses a promise-based singleton pattern to prevent multiple connection attempts
+ * Initialize Ably client with proper error handling
+ * @returns Promise that resolves to the Ably client
  */
 export const initializeAbly = async (): Promise<Ably.Realtime> => {
   if (ablyInstance && ablyInstance.connection.state === 'connected') {
     console.log('Reusing existing Ably connection');
     return ablyInstance;
   }
-  
-  if (connectionInitPromise) {
-    console.log('Connection already initializing, waiting for completion');
-    return connectionInitPromise;
-  }
-  
-  connectionInitPromise = (async () => {
-    try {
-      console.log('Initializing Ably client');
-      
-      // Fetch token from backend
-      const response = await HttpClient.apiClient.get('/api/ably-token');
-      const tokenDetails = response.data.token;
-      
-      // Initialize Ably with token auth and connection options
-      ablyInstance = new Ably.Realtime({
-        ...connectionOptions,
-        token: tokenDetails
-      });
-      
-      // Create connection promise
-      const connectionPromise = new Promise<Ably.Realtime>((resolve, reject) => {
-        if (!ablyInstance) {
-          reject(new Error('Ably instance not initialized'));
-          return;
-        }
-        
-        // Connect explicitly
-        ablyInstance.connect();
-        
-        // Listen for connection state changes
-        ablyInstance.connection.on('connected', () => {
-          console.log('Ably connection established');
-          resolve(ablyInstance as Ably.Realtime);
-        });
-        
-        ablyInstance.connection.on('failed', (error) => {
-          console.error('Ably connection failed:', error);
-          reject(error);
-        });
-        
-        // Add timeout for connection attempt
-        setTimeout(() => {
-          if (ablyInstance?.connection.state !== 'connected') {
-            reject(new Error('Connection timeout after 10 seconds'));
-          }
-        }, 10000);
-      });
-      
-      return await connectionPromise;
-    } catch (error) {
-      console.error('Failed to initialize Ably client:', error);
-      
-      // Fallback to mock implementation for development
-      console.warn('Using mock Ably implementation for development');
-      
-      const { createMockAbly } = await import('../mocks/mockAbly');
-      const mockAbly = createMockAbly();
-      
-      ablyInstance = mockAbly;
-      return mockAbly;
-    } finally {
-      // Reset connection promise once complete
-      setTimeout(() => {
-        connectionInitPromise = null;
-      }, 0);
+
+  try {
+    // Create a new Ably instance
+    console.log('Creating new Ably connection');
+    
+    // If we have a custom auth endpoint from the backend, use it
+    const authEndpoint = import.meta.env.VITE_ABLY_AUTH_ENDPOINT || '/api/get-ably-token';
+    const clientId = localStorage.getItem('user-id') || `user-${uuidv4()}`;
+    
+    // Store the client ID for consistent identification
+    if (!localStorage.getItem('user-id')) {
+      localStorage.setItem('user-id', clientId);
     }
-  })();
-  
-  return connectionInitPromise;
+    
+    const ably = new Ably.Realtime({
+      ...connectionOptions,
+      authUrl: authEndpoint,
+      clientId
+    });
+
+    // Return a promise that resolves when connected or rejects on failure
+    return new Promise((resolve, reject) => {
+      const onStateChange = (stateChange: Ably.Types.ConnectionStateChange) => {
+        console.log(`Ably connection state changed to: ${stateChange.current}`);
+        
+        if (stateChange.current === 'connected') {
+          ably.connection.off(onStateChange);
+          ablyInstance = ably;
+          resolve(ably);
+        } else if (stateChange.current === 'failed' || stateChange.current === 'suspended') {
+          ably.connection.off(onStateChange);
+          reject(new Error(`Ably connection ${stateChange.current}: ${stateChange.reason}`));
+        }
+      };
+
+      // If already connected, resolve immediately
+      if (ably.connection.state === 'connected') {
+        ablyInstance = ably;
+        resolve(ably);
+        return;
+      }
+
+      // Otherwise wait for connection
+      ably.connection.on(onStateChange);
+      
+      // Set a timeout to prevent hanging indefinitely
+      setTimeout(() => {
+        if (ably.connection.state !== 'connected') {
+          ably.connection.off(onStateChange);
+          reject(new Error('Ably connection timeout after 10 seconds'));
+        }
+      }, 10000);
+    });
+  } catch (error) {
+    console.error('Error initializing Ably:', error);
+    throw error;
+  }
 };
 
 /**
- * Get the current Ably instance
+ * Get the existing Ably instance or create a new one
  */
 export const getAblyInstance = (): Ably.Realtime | null => {
   return ablyInstance;

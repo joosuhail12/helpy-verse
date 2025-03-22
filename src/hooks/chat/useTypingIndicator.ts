@@ -31,19 +31,36 @@ export const useTypingIndicator = (conversationId: string | null, connectionStat
     
     // Set up new monitor with proper async handling
     const setupMonitor = async () => {
-      const cleanup = await monitorTypingIndicators(conversationId, (users) => {
-        setTypingUsers(users);
-      });
-      
-      typingMonitorRef.current = cleanup;
+      try {
+        const unsubscribe = await monitorTypingIndicators(conversationId, (users) => {
+          setTypingUsers(users);
+        });
+        
+        typingMonitorRef.current = unsubscribe;
+        return unsubscribe;
+      } catch (error) {
+        console.error(`Error monitoring typing indicators for conversation ${conversationId}:`, error);
+        return () => {};
+      }
     };
     
-    setupMonitor();
+    // Setup the monitor and store the promise
+    const monitorPromise = setupMonitor();
     
     return () => {
+      // Handle cleanup when component unmounts
       if (typingMonitorRef.current) {
         typingMonitorRef.current();
         typingMonitorRef.current = null;
+      } else {
+        // Handle the case where the monitor promise hasn't resolved yet
+        monitorPromise.then(unsubscribe => {
+          if (unsubscribe) {
+            unsubscribe();
+          }
+        }).catch(err => {
+          console.error('Error during unsubscribe:', err);
+        });
       }
     };
   }, [conversationId, connectionState]);

@@ -3,30 +3,69 @@
  * Re-export Ably utilities for easier imports
  */
 
-// Re-export Ably functionality
-export * from './ably/ablyConnection';
-export * from './ably/conversationService';
-export * from './ably/channelService';
-export * from './ably/types';
+// Re-export Ably connection functionality
+export { 
+  initializeAbly, 
+  getAblyInstance, 
+  setAblyInstance, 
+  connectionOptions 
+} from './ably/connection/connectionManager';
 
-// Import from messaging index
-import { 
+// Re-export channel services
+export {
+  getAblyChannel,
+  subscribeToChannel,
+  publishToChannel,
+  enterChannelPresence,
+  subscribeToPresence,
+  cleanupChannel
+} from './ably/channelService';
+
+// Re-export messaging functionality
+export { 
   sendMessage, 
-  subscribeToConversation, 
+  subscribeToConversation,
+  subscribeToTicket,
   monitorEnhancedPresence 
-} from './ably/messaging/index';
+} from './ably/messaging/realTimeMessaging';
 
-// Import typing indicators from their dedicated file
-import { 
+// Re-export typing indicators
+export { 
   monitorTypingIndicators, 
   updateTypingStatus 
 } from './ably/messaging/typingIndicators';
 
-// Re-export everything
+// Re-export offline messaging
 export { 
-  sendMessage, 
-  subscribeToConversation, 
-  monitorEnhancedPresence,
-  monitorTypingIndicators, 
-  updateTypingStatus 
-};
+  queueMessage,
+  updateMessageStatus,
+  loadQueuedMessages,
+  saveQueuedMessages,
+  removeFromQueue,
+  checkForFailedMessages as hasFailedMessages,
+  resendFailedMessages as retryFailedMessages
+} from './ably/messaging/offlineMessaging';
+
+// Re-export file upload
+export { 
+  uploadFile, 
+  uploadFiles 
+} from './ably/messaging/fileUploadService';
+
+// Re-export cleanup function
+export { 
+  cleanupAblyConnection 
+} from './ably/connection/cleanup';
+
+// Re-export event handlers registry
+export { 
+  eventHandlers 
+} from './ably/events/eventRegistry';
+
+// Re-export types
+export type { 
+  ChatMessage, 
+  ParticipantInfo,
+  ConversationMetadata,
+  QueuedMessage
+} from './ably/types';

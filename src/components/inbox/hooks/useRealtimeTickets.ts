@@ -1,37 +1,52 @@
 
 import { useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
-import { getAblyChannel } from '@/utils/ably';
+import { subscribeToChannel } from '@/utils/ably';
 import type { Ticket } from '@/types/ticket';
 
 export const useRealtimeTickets = (updateTicket: (ticket: Ticket) => void) => {
   const { toast } = useToast();
 
   useEffect(() => {
-    let channel: any;
+    let unsubscribe: () => void;
 
     const setupRealtime = async () => {
       try {
-        channel = await getAblyChannel('tickets');
-        
-        channel.subscribe('ticket:update', (message: any) => {
-          const updatedTicket = message.data;
-          updateTicket(updatedTicket);
-          
-          toast({
-            title: "Ticket Updated",
-            description: `Ticket ${updatedTicket.id} has been updated.`,
-          });
-        });
+        // Subscribe to ticket updates
+        unsubscribe = await subscribeToChannel(
+          'tickets', // Main channel for all tickets
+          'ticket:update',
+          (message) => {
+            const updatedTicket = message.data;
+            updateTicket(updatedTicket);
+            
+            toast({
+              title: "Ticket Updated",
+              description: `Ticket ${updatedTicket.id} has been updated.`,
+            });
+          }
+        );
 
-        channel.subscribe('ticket:new', (message: any) => {
-          const newTicket = message.data;
-          toast({
-            title: "New Ticket",
-            description: `New ticket created: ${newTicket.subject}`,
-          });
-        });
+        // Also subscribe to new tickets
+        const newTicketUnsub = await subscribeToChannel(
+          'tickets',
+          'ticket:new',
+          (message) => {
+            const newTicket = message.data;
+            
+            toast({
+              title: "New Ticket",
+              description: `New ticket created: ${newTicket.subject}`,
+            });
+          }
+        );
 
+        // Return combined cleanup function
+        const originalUnsubscribe = unsubscribe;
+        unsubscribe = () => {
+          originalUnsubscribe();
+          newTicketUnsub();
+        };
       } catch (error) {
         console.error('Error setting up realtime:', error);
         toast({
@@ -45,9 +60,11 @@ export const useRealtimeTickets = (updateTicket: (ticket: Ticket) => void) => {
     setupRealtime();
 
     return () => {
-      if (channel) {
-        channel.unsubscribe();
+      if (unsubscribe) {
+        unsubscribe();
       }
     };
   }, [toast, updateTicket]);
 };
+
+export default useRealtimeTickets;

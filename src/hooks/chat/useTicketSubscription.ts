@@ -1,43 +1,44 @@
 
 import { useEffect, useRef } from 'react';
-import { subscribeToConversation } from '@/utils/ably';
-import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { addMessage } from '@/store/slices/chat/chatSlice';
+import { subscribeToTicket } from '@/utils/ably/messaging/realTimeMessaging';
+import { useToast } from '@/hooks/use-toast';
 
 /**
- * Hook for subscribing to real-time message updates
+ * Hook for subscribing to ticket updates
  */
-export const useMessageSubscription = (
-  conversationId: string | null, 
-  connectionState: string
+export const useTicketSubscription = (
+  ticketId: string | null, 
+  connectionState: string,
+  onTicketUpdate?: (ticket: any) => void
 ) => {
-  const dispatch = useAppDispatch();
+  const { toast } = useToast();
   const subscriptionRef = useRef<(() => void) | null>(null);
   
-  // Subscribe to real-time messages
+  // Subscribe to ticket updates
   useEffect(() => {
-    if (!conversationId || connectionState !== 'connected') return;
+    if (!ticketId || connectionState !== 'connected') return;
     
     // Clean up previous subscription if any
     if (subscriptionRef.current) {
       subscriptionRef.current();
     }
     
-    console.log(`Subscribing to messages in conversation: ${conversationId}`);
+    console.log(`Subscribing to ticket updates: ${ticketId}`);
     
     // Set up new subscription
     const setupSubscription = async () => {
       try {
-        const unsubscribe = await subscribeToConversation(conversationId, (chatMessage) => {
-          dispatch(addMessage({
-            conversationId,
-            message: {
-              id: chatMessage.id,
-              text: chatMessage.text,
-              sender: chatMessage.sender.type === 'agent' ? 'agent' : 'user',
-              timestamp: chatMessage.timestamp
-            }
-          }));
+        const unsubscribe = await subscribeToTicket(ticketId, (data) => {
+          // Show toast notification
+          toast({
+            title: "Ticket Updated",
+            description: `Ticket ${ticketId} has been updated`,
+          });
+          
+          // Call callback if provided
+          if (onTicketUpdate) {
+            onTicketUpdate(data);
+          }
         });
         
         // Store unsubscribe function
@@ -45,7 +46,7 @@ export const useMessageSubscription = (
         
         return unsubscribe;
       } catch (error) {
-        console.error(`Error subscribing to conversation ${conversationId}:`, error);
+        console.error(`Error subscribing to ticket ${ticketId}:`, error);
         return () => {};
       }
     };
@@ -69,7 +70,7 @@ export const useMessageSubscription = (
         });
       }
     };
-  }, [dispatch, conversationId, connectionState]);
+  }, [ticketId, connectionState, onTicketUpdate, toast]);
 };
 
-export default useMessageSubscription;
+export default useTicketSubscription;

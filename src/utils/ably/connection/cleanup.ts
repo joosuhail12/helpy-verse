@@ -1,24 +1,43 @@
 
 import { getAblyInstance, setAblyInstance } from './connectionManager';
-import { clearAllEventHandlers } from '../events/eventRegistry';
+import { cleanupAllHandlers } from '../events/eventRegistry';
 
 /**
- * Clean up Ably connection and event handlers
+ * Clean up Ably connection and all subscribers
  */
-export const cleanupAblyConnection = (): void => {
-  const ablyInstance = getAblyInstance();
-  
-  if (ablyInstance) {
-    try {
-      ablyInstance.close();
+export const cleanupAblyConnection = async (): Promise<void> => {
+  try {
+    // Get the current Ably instance
+    const ably = getAblyInstance();
+    
+    if (ably) {
+      // Clean up all event handlers
+      cleanupAllHandlers();
+      
+      // Close all channels
+      ably.channels.all().forEach(channel => {
+        try {
+          channel.detach();
+        } catch (error) {
+          console.error(`Error detaching channel ${channel.name}:`, error);
+        }
+      });
+      
+      // Close the connection
+      await new Promise<void>((resolve) => {
+        ably.connection.once('closed', () => {
+          resolve();
+        });
+        
+        ably.close();
+      });
+      
+      // Clear the instance
       setAblyInstance(null);
       
-      // Clean up all event handlers
-      clearAllEventHandlers();
-      
-      console.log('Ably connection and event handlers cleaned up');
-    } catch (error) {
-      console.error('Error during Ably cleanup:', error);
+      console.log('Ably connection cleaned up successfully');
     }
+  } catch (error) {
+    console.error('Error cleaning up Ably connection:', error);
   }
 };

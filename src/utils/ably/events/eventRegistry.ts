@@ -1,49 +1,44 @@
 
-// Event listeners storage for cleanup
-export const eventHandlers: Record<string, Function[]> = {};
+/**
+ * Registry for event handlers to manage cleanup
+ */
+
+// Store cleanup functions by channel name
+export const eventHandlers: Record<string, (() => void)[]> = {};
 
 /**
- * Register an event handler
+ * Register a cleanup function for a channel
  */
-export const registerEventHandler = (
-  eventKey: string, 
-  handler: Function
-): void => {
-  if (!eventHandlers[eventKey]) {
-    eventHandlers[eventKey] = [];
+export const registerCleanup = (channelName: string, cleanup: () => void): void => {
+  if (!eventHandlers[channelName]) {
+    eventHandlers[channelName] = [];
   }
-  eventHandlers[eventKey].push(handler);
+  
+  eventHandlers[channelName].push(cleanup);
 };
 
 /**
- * Remove an event handler
+ * Clean up all handlers for a channel
  */
-export const removeEventHandler = (
-  eventKey: string, 
-  handler: Function
-): void => {
-  if (eventHandlers[eventKey]) {
-    const index = eventHandlers[eventKey].indexOf(handler);
-    if (index !== -1) {
-      eventHandlers[eventKey].splice(index, 1);
-    }
-  }
-};
-
-/**
- * Clear all event handlers for a key
- */
-export const clearEventHandlers = (eventKey: string): void => {
-  if (eventHandlers[eventKey]) {
-    delete eventHandlers[eventKey];
+export const cleanupChannel = (channelName: string): void => {
+  if (eventHandlers[channelName]) {
+    eventHandlers[channelName].forEach(cleanup => {
+      try {
+        cleanup();
+      } catch (error) {
+        console.error(`Error during channel cleanup for ${channelName}:`, error);
+      }
+    });
+    
+    delete eventHandlers[channelName];
   }
 };
 
 /**
- * Clear all event handlers
+ * Clean up all handlers
  */
-export const clearAllEventHandlers = (): void => {
-  Object.keys(eventHandlers).forEach(key => {
-    delete eventHandlers[key];
+export const cleanupAllHandlers = (): void => {
+  Object.keys(eventHandlers).forEach(channelName => {
+    cleanupChannel(channelName);
   });
 };
