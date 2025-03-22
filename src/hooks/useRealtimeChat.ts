@@ -1,3 +1,4 @@
+
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { 
@@ -20,7 +21,7 @@ import {
   subscribeToConversation, 
   monitorTypingIndicators, 
   updateTypingStatus 
-} from '@/utils/ablyChat';
+} from '@/utils/ably';
 import { Message } from '@/components/chat-widget/components/conversation/types';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { formatTimestamp } from '@/utils/dateUtils';

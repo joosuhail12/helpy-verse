@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { Message } from '@/components/chat-widget/components/conversation/types';
-import { initializeAbly, sendMessage, subscribeToConversation } from '@/utils/ablyChat';
+import { initializeAbly, sendMessage, subscribeToConversation } from '@/utils/ably';
 
 // Chat widget state interface
 interface ChatState {
