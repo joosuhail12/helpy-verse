@@ -43,10 +43,13 @@ const connectionOptions: Ably.Types.ClientOptions = {
   autoConnect: false,        // We'll manually connect for better control
   idempotentRestPublishing: true, // Ensures no duplicate messages
   closeOnUnload: true,       // Clean connection on tab close
-  reconnectionStrategy: {
-    retryCount: 10,          // Number of reconnection attempts
-    initialBackoffMs: 300,   // Start with 300ms delay before first retry
-    maxBackoffMs: 10000,     // Cap at 10 seconds between retries
+  defaultTokenParams: {
+    ttl: 3600 * 1000 // 1 hour token lifespan
+  },
+  transportParams: {
+    maxRetryCount: 10,          // Number of reconnection attempts
+    initialRetryTimeout: 300,   // Start with 300ms delay before first retry
+    maxRetryTimeout: 10000      // Cap at 10 seconds between retries
   }
 };
 
