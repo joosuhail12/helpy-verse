@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Avatar } from "@/components/ui/avatar";
 import { Check, CheckCheck, Clock, Smile } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { getAblyChannel } from '@/utils/ably';
+import { getAblyChannel, publishToChannel, subscribeToChannel } from '@/utils/ably';
 import {
   Popover,
   PopoverContent,
@@ -26,41 +26,59 @@ const MessageItem = ({ message, ticket }: MessageItemProps) => {
 
   useEffect(() => {
     const setupReactions = async () => {
-      const channel = await getAblyChannel(`ticket:${ticket.id}:reactions`);
-      
-      channel.subscribe(`message:${message.id}:reaction`, (msg: any) => {
-        setReactions(msg.data);
-      });
+      try {
+        // Subscribe to reaction updates
+        const cleanup = await subscribeToChannel(
+          `ticket:${ticket.id}:reactions`, 
+          `message:${message.id}:reaction`, 
+          (msg: any) => {
+            setReactions(msg.data);
+          }
+        );
 
-      return () => {
-        channel.unsubscribe();
-      };
+        return cleanup;
+      } catch (error) {
+        console.error('Error setting up reaction subscription:', error);
+        return () => {};
+      }
     };
 
-    setupReactions();
+    const cleanupPromise = setupReactions();
+    
+    return () => {
+      cleanupPromise.then(cleanup => cleanup());
+    };
   }, [message.id, ticket.id]);
 
   const handleReaction = async (emoji: string) => {
-    const channel = await getAblyChannel(`ticket:${ticket.id}:reactions`);
-    const userId = 'Agent'; // In a real app, this would be the actual user ID
-    
-    const newReactions = { ...reactions };
-    if (!newReactions[emoji]) {
-      newReactions[emoji] = [];
-    }
-    
-    const hasReacted = newReactions[emoji].includes(userId);
-    if (hasReacted) {
-      newReactions[emoji] = newReactions[emoji].filter(id => id !== userId);
-      if (newReactions[emoji].length === 0) {
-        delete newReactions[emoji];
+    try {
+      const userId = 'Agent'; // In a real app, this would be the actual user ID
+      
+      const newReactions = { ...reactions };
+      if (!newReactions[emoji]) {
+        newReactions[emoji] = [];
       }
-    } else {
-      newReactions[emoji].push(userId);
+      
+      const hasReacted = newReactions[emoji].includes(userId);
+      if (hasReacted) {
+        newReactions[emoji] = newReactions[emoji].filter(id => id !== userId);
+        if (newReactions[emoji].length === 0) {
+          delete newReactions[emoji];
+        }
+      } else {
+        newReactions[emoji].push(userId);
+      }
+      
+      await publishToChannel(
+        `ticket:${ticket.id}:reactions`, 
+        `message:${message.id}:reaction`, 
+        newReactions
+      );
+      
+      setReactions(newReactions);
+    } catch (error) {
+      console.error('Error publishing reaction:', error);
     }
-    
-    await channel.publish(`message:${message.id}:reaction`, newReactions);
-    setReactions(newReactions);
   };
 
   const createMarkup = () => {

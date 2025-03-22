@@ -74,32 +74,25 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
         // Import the enhanced presence monitoring function
         const ablyMessaging = await import('@/utils/ably');
         
-        return ablyMessaging.monitorEnhancedPresence(
+        const monitorUnsubscribe = await ablyMessaging.monitorEnhancedPresence(
           conversationId,
           (participants) => {
             setActiveParticipants(participants);
-          },
-          (event) => {
-            // We could show notifications for join/leave events here
-            if (event.type === 'enter') {
-              console.log(`${event.participantName} joined the conversation`);
-            } else if (event.type === 'leave') {
-              console.log(`${event.participantName} left the conversation`);
-            }
           }
         );
+        
+        return monitorUnsubscribe;
       } catch (error) {
         console.error('Error setting up presence monitoring:', error);
+        return () => {};
       }
     };
     
     const cleanup = setupPresence();
     return () => {
-      if (cleanup) {
-        cleanup.then(unsubscribe => {
-          if (unsubscribe) unsubscribe();
-        });
-      }
+      cleanup.then(unsubscribe => {
+        if (typeof unsubscribe === 'function') unsubscribe();
+      });
     };
   }, [conversationId, connectionState]);
   
@@ -229,16 +222,7 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
       <ConnectionStatus 
         connectionState={getDisplayConnectionState()}
         hasQueuedMessages={queuedMessages.length > 0}
-        onRetry={(connectionState !== 'disconnected' && connectionState !== 'failed') 
-          ? () => syncQueuedMessages(async (convId, text, sender, msgId) => {
-              const { sendMessage } = await import('@/utils/ably');
-              return sendMessage(convId, text, sender, msgId);
-            }) 
-          : () => retryFailedMessages(async (convId, text, sender, msgId) => {
-              const { sendMessage } = await import('@/utils/ably');
-              return sendMessage(convId, text, sender, msgId);
-            })
-        }
+        onRetry={retryMessages}
       />
       
       {/* Message input */}
@@ -254,6 +238,24 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
       />
     </AnimatedContainer>
   );
+  
+  // Helper function for retrying failed messages
+  async function retryMessages() {
+    const isOnline = connectionState !== 'disconnected' && connectionState !== 'failed';
+    
+    // Use either sync or retry depending on the connection state
+    if (isOnline) {
+      await syncQueuedMessages(async (convId, text, sender, msgId) => {
+        const { sendMessage } = await import('@/utils/ably');
+        return sendMessage(convId, text, sender);
+      });
+    } else {
+      await retryFailedMessages(async (convId, text, sender, msgId) => {
+        const { sendMessage } = await import('@/utils/ably');
+        return sendMessage(convId, text, sender);
+      });
+    }
+  }
 };
 
 export default ResponsiveConversationView;

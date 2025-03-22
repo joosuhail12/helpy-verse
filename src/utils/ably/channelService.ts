@@ -3,7 +3,7 @@ import { initializeAbly } from './connection/connectionManager';
 import * as Ably from 'ably';
 
 // Cache to store channel references
-const channelCache: Record<string, Ably.Types.RealtimeChannelBase> = {};
+const channelCache: Record<string, Ably.Types.RealtimeChannelPromise> = {};
 
 /**
  * Get or create an Ably channel with proper channel name formatting
@@ -14,7 +14,7 @@ const channelCache: Record<string, Ably.Types.RealtimeChannelBase> = {};
 export const getAblyChannel = async (
   channelName: string,
   options?: Ably.Types.ChannelOptions
-): Promise<Ably.Types.RealtimeChannelBase> => {
+): Promise<Ably.Types.RealtimeChannelPromise> => {
   try {
     // Format channel name according to Ably best practices
     // Prefix public channels for clarity
@@ -56,6 +56,7 @@ export const subscribeToChannel = async (
 ): Promise<() => void> => {
   const channel = await getAblyChannel(channelName);
   
+  // Use correct method to subscribe
   channel.subscribe(eventName, callback);
   
   // Return unsubscribe function

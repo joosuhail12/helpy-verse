@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
-import { getAblyChannel } from '@/utils/ably';
+import { getAblyChannel, publishToChannel } from '@/utils/ably';
 import type { Message } from '../types';
 import type { Ticket } from '@/types/ticket';
 
@@ -28,7 +28,6 @@ export const useMessages = (ticket: Ticket) => {
 
     setIsSending(true);
     try {
-      const channel = await getAblyChannel(`ticket:${ticket.id}`);
       const newMsg: Message = {
         id: crypto.randomUUID(),
         content: newMessage,
@@ -39,7 +38,7 @@ export const useMessages = (ticket: Ticket) => {
         readBy: ['Agent']
       };
 
-      await channel.publish('new-message', newMsg);
+      await publishToChannel(`ticket:${ticket.id}`, 'new-message', newMsg);
       setMessages(prev => [...prev, newMsg]);
       setNewMessage('');
       setIsInternalNote(false);

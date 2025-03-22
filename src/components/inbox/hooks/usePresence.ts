@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
-import { getAblyChannel } from '@/utils/ably';
+import { getAblyChannel, subscribeToPresence, enterChannelPresence } from '@/utils/ably';
 import type { UserPresence, Message } from '../types';
 import type { Ticket } from '@/types/ticket';
 import type * as Ably from 'ably';
@@ -19,9 +19,8 @@ export const usePresence = (ticket: Ticket, setMessages: (updater: (prev: Messag
       setError(null);
       
       try {
-        const channel = await getAblyChannel(`ticket:${ticket.id}`);
-        
-        await channel.presence.enter({
+        // Enter the presence channel
+        await enterChannelPresence(`ticket:${ticket.id}`, {
           userId: 'Agent',
           name: 'Agent',
           lastActive: new Date().toISOString(),
@@ -31,45 +30,54 @@ export const usePresence = (ticket: Ticket, setMessages: (updater: (prev: Messag
           }
         });
 
-        channel.presence.subscribe('enter', (member) => {
-          toast({
-            description: `${member.data.name} joined the conversation`,
+        // Set up presence subscriptions
+        const presenceSubscription = await subscribeToPresence(`ticket:${ticket.id}`, (member) => {
+          const presenceAction = member.action;
+          
+          if (presenceAction === 'enter') {
+            toast({
+              description: `${member.data?.name || 'Someone'} joined the conversation`,
+            });
+            setActiveUsers(prev => [...prev, member.data as UserPresence]);
+          } 
+          else if (presenceAction === 'leave') {
+            toast({
+              description: `${member.data?.name || 'Someone'} left the conversation`,
+            });
+            setActiveUsers(prev => prev.filter(user => user.userId !== member.data?.userId));
+          }
+          else if (presenceAction === 'update') {
+            if (member.data?.isTyping) {
+              setTypingUsers(prev => [...new Set([...prev, member.data.name])]);
+            } else {
+              setTypingUsers(prev => prev.filter(user => user !== member.data.name));
+            }
+
+            if (member.data?.lastRead) {
+              setMessages(prev => prev.map(msg => ({
+                ...msg,
+                readBy: [...(msg.readBy || []), member.data.userId]
+              })));
+            }
+
+            if (member.data?.location) {
+              setActiveUsers(prev => prev.map(user => 
+                user.userId === member.data.userId 
+                  ? { ...user, location: member.data.location }
+                  : user
+              ));
+            }
+          }
+        });
+
+        // Get current presence data
+        const channel = await getAblyChannel(`ticket:${ticket.id}`);
+        const presenceData = await new Promise<Ably.Types.PresenceMessage[]>((resolve, reject) => {
+          channel.presence.get((err, members) => {
+            if (err) reject(err);
+            else resolve(members || []);
           });
-          setActiveUsers(prev => [...prev, member.data as UserPresence]);
         });
-
-        channel.presence.subscribe('leave', (member) => {
-          toast({
-            description: `${member.data.name} left the conversation`,
-          });
-          setActiveUsers(prev => prev.filter(user => user.userId !== member.data.userId));
-        });
-
-        channel.presence.subscribe('update', (member) => {
-          if (member.data?.isTyping) {
-            setTypingUsers(prev => [...new Set([...prev, member.data.name])]);
-          } else {
-            setTypingUsers(prev => prev.filter(user => user !== member.data.name));
-          }
-
-          if (member.data?.lastRead) {
-            setMessages(prev => prev.map(msg => ({
-              ...msg,
-              readBy: [...(msg.readBy || []), member.data.userId]
-            })));
-          }
-
-          if (member.data?.location) {
-            setActiveUsers(prev => prev.map(user => 
-              user.userId === member.data.userId 
-                ? { ...user, location: member.data.location }
-                : user
-            ));
-          }
-        });
-
-        const presencePromise = channel.presence.get();
-        const presenceData = await Promise.resolve(presencePromise) as unknown as Ably.Types.PresenceMessage[];
         
         if (presenceData && Array.isArray(presenceData)) {
           const presentMembers = presenceData.map(member => ({
@@ -84,17 +92,31 @@ export const usePresence = (ticket: Ticket, setMessages: (updater: (prev: Messag
         setIsLoading(false);
 
         return () => {
-          channel.presence.leave();
-          channel.presence.unsubscribe();
+          // Leave presence and clean up
+          const leavePresence = async () => {
+            const channel = await getAblyChannel(`ticket:${ticket.id}`);
+            channel.presence.leave((err) => {
+              if (err) console.error('Error leaving presence:', err);
+            });
+          };
+          
+          leavePresence();
+          presenceSubscription();
         };
       } catch (error) {
         console.error('Error setting up presence:', error);
         setError('Failed to connect to the conversation. Please try again.');
         setIsLoading(false);
+        return () => {};
       }
     };
 
-    setupPresence();
+    const cleanup = setupPresence();
+    return () => {
+      Promise.resolve(cleanup).then(cleanupFn => {
+        if (typeof cleanupFn === 'function') cleanupFn();
+      });
+    };
   }, [ticket.id, toast, setMessages]);
 
   return { typingUsers, activeUsers, isLoading, error };

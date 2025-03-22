@@ -14,16 +14,19 @@ export const cleanupAblyConnection = async (): Promise<void> => {
       // Clean up all event handlers
       cleanupAllHandlers();
       
-      // Close all channels - using forEach instead of all()
-      const channelKeys = Object.keys(ably.channels.all);
-      channelKeys.forEach(key => {
-        try {
-          const channel = ably.channels.get(key);
-          channel.detach();
-        } catch (error) {
-          console.error(`Error detaching channel ${key}:`, error);
+      // Close all channels
+      const channels = ably.channels;
+      // Get all channel names through iterating
+      for (const channelName in channels.all) {
+        if (Object.prototype.hasOwnProperty.call(channels.all, channelName)) {
+          try {
+            const channel = channels.get(channelName);
+            channel.detach();
+          } catch (error) {
+            console.error(`Error detaching channel ${channelName}:`, error);
+          }
         }
-      });
+      }
       
       // Close the connection
       await new Promise<void>((resolve) => {

@@ -21,18 +21,12 @@ export {
   cleanupChannel
 } from './ably/channelService';
 
-// Re-export conversation service
-export {
-  createConversation,
-  sendMessage,
-  getUserConversations
-} from './ably/conversationService';
-
 // Re-export messaging functionality
 export { 
   subscribeToConversation,
   subscribeToTicket,
-  monitorEnhancedPresence 
+  monitorEnhancedPresence,
+  sendMessage 
 } from './ably/messaging/realTimeMessaging';
 
 // Re-export typing indicators

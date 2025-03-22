@@ -61,7 +61,7 @@ export const useOfflineMessaging = ({
     };
     
     // Queue the message and get back the queue-enhanced version
-    const queuedMessage = queueMessage(newMessage, conversationId, userId);
+    const queuedMessage = queueMessage(newMessage);
     
     // Update state with the new queued message
     setQueuedMessages(prev => [...prev, queuedMessage]);
@@ -162,20 +162,38 @@ export const useOfflineMessaging = ({
     });
     
     try {
-      const remainingMessages = await retryFailedMessages(sendFunction);
+      // Create a wrapper function that adapts the signature
+      const wrappedSendFunction = async (message: ChatMessage): Promise<void> => {
+        if (message.conversationId && message.text && message.sender) {
+          await sendFunction(
+            message.conversationId,
+            message.text,
+            message.sender,
+            message.id
+          );
+        }
+      };
+      
+      const result = await retryFailedMessages(wrappedSendFunction);
+      
+      // Update the UI with the result
+      const remainingMessages = queuedMessages.filter(msg => {
+        return !result.success.includes(msg.id);
+      });
+      
       setQueuedMessages(remainingMessages);
       setHasFailedMsgs(remainingMessages.some(msg => msg.status === 'failed'));
       
-      if (!remainingMessages.some(msg => msg.status === 'failed')) {
-        toast({
-          title: 'Success',
-          description: 'All messages sent successfully.',
-        });
-      } else {
+      if (remainingMessages.some(msg => msg.status === 'failed')) {
         toast({
           title: 'Some messages failed',
           description: 'Some messages could not be sent. Please try again later.',
           variant: 'destructive'
+        });
+      } else {
+        toast({
+          title: 'Success',
+          description: 'All messages sent successfully.',
         });
       }
     } catch (error) {
