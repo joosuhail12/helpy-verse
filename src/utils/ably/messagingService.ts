@@ -39,8 +39,12 @@ export const subscribeToConversation = (
         if (typeof unsubscribe === 'function') {
           unsubscribe();
         }
+        
         // Also clean up the channel subscription
-        channel.unsubscribe('message');
+        // We need to check if the channel object has the unsubscribe method
+        if (channel && typeof channel.unsubscribe === 'function') {
+          channel.unsubscribe('message');
+        }
       };
     }).catch(err => {
       console.error('Error subscribing to conversation:', err);
