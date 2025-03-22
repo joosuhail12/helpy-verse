@@ -1,113 +1,74 @@
 
-import { getAblyChannel, publishToChannel, subscribeToChannel } from '../channelService';
-import * as Ably from 'ably';
-
-// Cache for typing status to avoid redundant updates
-const typingStatusCache: Record<string, boolean> = {};
+import { getAblyChannel } from '../channelService';
 
 /**
- * Update typing status in a conversation
+ * Update the typing status of a user
  */
 export const updateTypingStatus = async (
-  conversationId: string,
+  channelName: string,
   userId: string,
   isTyping: boolean
 ): Promise<void> => {
-  // Check cache to avoid redundant updates
-  const cacheKey = `${conversationId}-${userId}`;
-  if (typingStatusCache[cacheKey] === isTyping) {
-    return;
-  }
+  const channel = await getAblyChannel(channelName);
   
-  // Update cache
-  typingStatusCache[cacheKey] = isTyping;
-  
-  try {
-    // Publish typing status
-    await publishToChannel(
-      `conversation:${conversationId}`,
-      'typing',
-      {
-        userId,
-        isTyping,
-        timestamp: new Date().toISOString()
-      }
-    );
-  } catch (error) {
-    console.error(`Error updating typing status for conversation ${conversationId}:`, error);
-    
-    // Reset cache on error
-    typingStatusCache[cacheKey] = !isTyping;
-    throw error;
-  }
+  await channel.presence.update({
+    userId,
+    isTyping,
+    timestamp: Date.now()
+  });
 };
 
 /**
- * Monitor typing indicators in a conversation
+ * Monitor typing indicators from users in a channel
  */
 export const monitorTypingIndicators = async (
-  conversationId: string,
-  onTypingUpdated: (typingUsers: string[]) => void
+  channelName: string,
+  callback: (typingUsers: string[]) => void
 ): Promise<() => void> => {
-  // Store active typing users with expiration timestamps
-  const typingUsers: Record<string, { name: string; expiresAt: number }> = {};
+  const channel = await getAblyChannel(channelName);
   
-  // Interval to clean up expired typing indicators
+  // Track who is currently typing
+  const typingUsers = new Map<string, { name: string, timestamp: number }>();
+  
+  // Cleanup timeout for stale typing indicators
   const cleanupInterval = setInterval(() => {
     const now = Date.now();
-    let updated = false;
+    let changed = false;
     
-    // Remove expired typing statuses
-    Object.keys(typingUsers).forEach(userId => {
-      if (typingUsers[userId].expiresAt <= now) {
-        delete typingUsers[userId];
-        updated = true;
+    // Remove typing indicators older than 3 seconds
+    typingUsers.forEach((data, userId) => {
+      if (now - data.timestamp > 3000) {
+        typingUsers.delete(userId);
+        changed = true;
       }
     });
     
-    if (updated) {
-      // Return only the names of users who are typing
-      onTypingUpdated(Object.values(typingUsers).map(user => user.name));
+    if (changed) {
+      callback(Array.from(typingUsers.values()).map(data => data.name));
     }
   }, 1000);
   
-  try {
-    // Subscribe to typing events
-    const unsubscribe = await subscribeToChannel(
-      `conversation:${conversationId}`,
-      'typing',
-      (message: Ably.Types.Message) => {
-        const data = message.data;
-        const userId = data.userId;
-        const userName = data.userName || userId;
-        
-        if (data.isTyping) {
-          // Add or update typing user with 3 second expiration
-          typingUsers[userId] = {
-            name: userName,
-            expiresAt: Date.now() + 3000
-          };
-        } else {
-          // Remove typing user
-          delete typingUsers[userId];
-        }
-        
-        // Return only the names of users who are typing
-        onTypingUpdated(Object.values(typingUsers).map(user => user.name));
-      }
-    );
+  // Handle presence updates
+  const handlePresence = (presenceMessage: any) => {
+    const { clientId, data } = presenceMessage;
     
-    // Return cleanup function
-    return () => {
-      clearInterval(cleanupInterval);
-      unsubscribe();
-    };
-  } catch (error) {
-    console.error(`Error monitoring typing indicators for conversation ${conversationId}:`, error);
+    if (data?.isTyping) {
+      typingUsers.set(clientId, {
+        name: data.name || clientId,
+        timestamp: Date.now()
+      });
+    } else {
+      typingUsers.delete(clientId);
+    }
     
-    // Clean up interval on error
+    callback(Array.from(typingUsers.values()).map(data => data.name));
+  };
+  
+  channel.presence.subscribe(handlePresence);
+  
+  // Return cleanup function
+  return () => {
     clearInterval(cleanupInterval);
-    
-    return () => {};
-  }
+    channel.presence.unsubscribe(handlePresence);
+  };
 };

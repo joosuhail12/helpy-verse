@@ -21,9 +21,15 @@ export {
   cleanupChannel
 } from './ably/channelService';
 
+// Re-export conversation service
+export {
+  createConversation,
+  sendMessage,
+  getUserConversations
+} from './ably/conversationService';
+
 // Re-export messaging functionality
 export { 
-  sendMessage, 
   subscribeToConversation,
   subscribeToTicket,
   monitorEnhancedPresence 

@@ -1,12 +1,15 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { 
   initializeAbly, 
-  createConversation, 
-  sendMessage,
   subscribeToConversation,
-  getUserConversations,
+  sendMessage,
   cleanupAblyConnection
 } from '@/utils/ably';
+import { 
+  createConversation,
+  getUserConversations 
+} from '@/utils/ably/conversationService';
 
 // Chat widget state interface
 interface ChatWidgetState {

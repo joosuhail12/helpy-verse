@@ -9,7 +9,6 @@ export const connectionOptions: Ably.Types.ClientOptions = {
   authUrl: '/api/get-ably-token',
   clientId: `user-${uuidv4()}`,
   echoMessages: false,
-  recoveryKey: null,
   autoConnect: true,
   logLevel: 3 // Warning level for production
 };

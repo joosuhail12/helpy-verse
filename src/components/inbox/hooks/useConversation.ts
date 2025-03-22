@@ -8,7 +8,7 @@ import {
   monitorTypingIndicators,
   updateTypingStatus
 } from '@/utils/ably';
-import type { Message } from '../types';
+import type { Message, UserPresence } from '../types';
 import type { Ticket } from '@/types/ticket';
 
 export const useConversation = (ticket: Ticket) => {
@@ -19,7 +19,7 @@ export const useConversation = (ticket: Ticket) => {
   const [isInternalNote, setIsInternalNote] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
-  const [activeUsers, setActiveUsers] = useState<string[]>([]);
+  const [activeUsers, setActiveUsers] = useState<UserPresence[]>([]);
   const { toast } = useToast();
 
   // Load initial messages and set up real-time subscriptions

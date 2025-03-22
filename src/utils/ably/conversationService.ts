@@ -1,7 +1,7 @@
 
-import { initializeAbly } from './ablyConnection';
+import { initializeAbly } from './connection/connectionManager';
 import { ChatMessage, ConversationMetadata, ParticipantInfo } from './types';
-import { throttle } from '@/utils/performance/performanceUtils';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * Create a new conversation
@@ -16,7 +16,7 @@ export const createConversation = async (
     const ably = await initializeAbly();
     const channel = ably.channels.get('new-conversations');
     
-    const conversationId = `conv-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const conversationId = `conv-${Date.now()}-${uuidv4().slice(0, 8)}`;
     
     await channel.publish('create', {
       conversationId,
@@ -35,9 +35,9 @@ export const createConversation = async (
 };
 
 /**
- * Send a message in a conversation - throttled to prevent flooding
+ * Send a message in a conversation
  */
-export const sendMessage = throttle(async (
+export const sendMessage = async (
   conversationId: string,
   text: string,
   sender: ParticipantInfo
@@ -47,7 +47,7 @@ export const sendMessage = throttle(async (
     const channel = ably.channels.get(`conversation:${conversationId}`);
     
     await channel.publish('message', {
-      id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      id: `msg-${Date.now()}-${uuidv4().slice(0, 8)}`,
       text,
       sender,
       timestamp: new Date().toISOString()
@@ -56,20 +56,16 @@ export const sendMessage = throttle(async (
     console.error('Failed to send message:', error);
     throw error;
   }
-}, 300); // Throttle to max 3 messages per second
+};
 
 /**
- * Get user's conversations - low latency implementation
+ * Get user's conversations
  */
 export const getUserConversations = async (
   userId: string
 ): Promise<ConversationMetadata[]> => {
   try {
-    // Simulate rapid response
-    const startTime = performance.now();
-    
     // In a real implementation, this would fetch from your backend
-    // with optimizations like caching and pagination
     const conversations: ConversationMetadata[] = [
       {
         id: 'conv-1',
@@ -83,9 +79,6 @@ export const getUserConversations = async (
         ]
       }
     ];
-    
-    const endTime = performance.now();
-    console.log(`Fetched conversations in ${endTime - startTime}ms`);
     
     return conversations;
   } catch (error) {

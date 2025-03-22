@@ -14,12 +14,14 @@ export const cleanupAblyConnection = async (): Promise<void> => {
       // Clean up all event handlers
       cleanupAllHandlers();
       
-      // Close all channels
-      ably.channels.all().forEach(channel => {
+      // Close all channels - using forEach instead of all()
+      const channelKeys = Object.keys(ably.channels.all);
+      channelKeys.forEach(key => {
         try {
+          const channel = ably.channels.get(key);
           channel.detach();
         } catch (error) {
-          console.error(`Error detaching channel ${channel.name}:`, error);
+          console.error(`Error detaching channel ${key}:`, error);
         }
       });
       
