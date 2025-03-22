@@ -1,3 +1,4 @@
+
 import { initializeAbly, eventHandlers } from './ablyConnection';
 import { ChatMessage } from './types';
 import { throttle } from '@/utils/performance/performanceUtils';
@@ -38,6 +39,8 @@ export const subscribeToConversation = (
         if (typeof unsubscribe === 'function') {
           unsubscribe();
         }
+        // Also clean up the channel subscription
+        channel.unsubscribe('message');
       };
     }).catch(err => {
       console.error('Error subscribing to conversation:', err);
