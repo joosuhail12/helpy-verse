@@ -1,45 +1,62 @@
 
-import React, { KeyboardEvent } from 'react';
-import { SendHorizonal } from 'lucide-react';
+import React, { KeyboardEvent, ChangeEvent } from 'react';
+import { Send } from 'lucide-react';
 
 export interface MessageInputProps {
+  value: string;
+  onChange: (e: ChangeEvent<HTMLTextAreaElement>) => void;
   onSendMessage: () => Promise<void>;
-  messageText: string;
-  setMessageText: React.Dispatch<React.SetStateAction<string>>;
-  isSending: boolean;
+  placeholder?: string;
+  disabled?: boolean;
+  onKeyDown?: (e: KeyboardEvent<HTMLTextAreaElement>) => void;
 }
 
 const MessageInput: React.FC<MessageInputProps> = ({
+  value,
+  onChange,
   onSendMessage,
-  messageText,
-  setMessageText,
-  isSending
+  placeholder = 'Type a message...',
+  disabled = false,
+  onKeyDown,
 }) => {
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      onSendMessage();
+      if (value.trim()) {
+        onSendMessage();
+      }
+    }
+    
+    if (onKeyDown) {
+      onKeyDown(e);
     }
   };
 
   return (
-    <div className="flex items-end gap-2">
-      <textarea
-        className="flex-1 min-h-10 max-h-32 resize-none border rounded-md p-2 focus:outline-none focus:ring-1 focus:ring-primary"
-        placeholder="Type your message here..."
-        value={messageText}
-        onChange={(e) => setMessageText(e.target.value)}
-        onKeyDown={handleKeyDown}
-        rows={1}
-        disabled={isSending}
-      />
-      <button
-        className="bg-primary text-white p-2 rounded-md disabled:opacity-50"
-        onClick={() => onSendMessage()}
-        disabled={!messageText.trim() || isSending}
-      >
-        <SendHorizonal className="h-5 w-5" />
-      </button>
+    <div className="border-t p-3 bg-white">
+      <div className="flex items-end space-x-2">
+        <textarea
+          value={value}
+          onChange={onChange}
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder}
+          disabled={disabled}
+          className="flex-1 resize-none border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-primary min-h-[80px] max-h-32"
+          style={{ overflow: 'auto' }}
+        />
+        <button
+          onClick={() => value.trim() && onSendMessage()}
+          disabled={!value.trim() || disabled}
+          className={`p-2 rounded-full ${
+            value.trim() && !disabled
+              ? 'bg-primary text-white hover:bg-primary/90'
+              : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+          }`}
+          aria-label="Send message"
+        >
+          <Send size={20} />
+        </button>
+      </div>
     </div>
   );
 };

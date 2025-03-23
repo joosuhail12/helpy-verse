@@ -1,130 +1,150 @@
 
 /**
- * Typing indicator functionality for real-time chat
+ * Typing indicator functionality using Ably presence
  */
-import { getAblyChannel } from '../index';
+import * as Ably from 'ably';
+import { getAblyChannel, getWorkspaceChannelName } from '../../ably';
 
-// Event names
-const TYPING_START = 'typing:start';
-const TYPING_STOP = 'typing:stop';
-
-// Debounce duration for typing events (ms)
-const TYPING_DEBOUNCE = 1000;
-
-interface TypingIndicatorOptions {
-  throttleInterval?: number;
-  typingTimeout?: number;
+interface TypingUser {
+  clientId: string;
+  name?: string;
+  timestamp: number;
 }
 
+interface TypingData {
+  [clientId: string]: TypingUser;
+}
+
+// Timeout for typing indicator in milliseconds
+const TYPING_TIMEOUT = 5000;
+
 /**
- * Manages typing indicators in a conversation
+ * Get users who are currently typing
  */
-export const setupTypingIndicator = async (
-  channelName: string,
-  clientId: string,
-  options: TypingIndicatorOptions = {},
-  callbacks: {
-    onTypingStarted?: (clientId: string, data?: any) => void;
-    onTypingStopped?: (clientId: string, data?: any) => void;
-  }
-) => {
-  // Default options
-  const throttleMs = options.throttleInterval || TYPING_DEBOUNCE;
-  const typingTimeoutMs = options.typingTimeout || (TYPING_DEBOUNCE * 2);
+export const getTypingUsers = async (
+  workspaceId: string,
+  conversationId: string
+): Promise<TypingUser[]> => {
+  const channelName = getWorkspaceChannelName(workspaceId, `conversations:${conversationId}`);
+  const channel = await getAblyChannel(channelName);
   
-  let typingTimeout: ReturnType<typeof setTimeout> | null = null;
-  let lastTypingEvent = 0;
+  const typingData: TypingData = {};
+  
+  // Get from channel metadata
+  const metadata = await channel.metadata();
+  const typingKey = 'typing';
+  
+  if (metadata && metadata.data && metadata.data[typingKey]) {
+    const storedData = metadata.data[typingKey] as TypingData;
+    
+    // Filter out expired typing indicators
+    const now = Date.now();
+    Object.entries(storedData).forEach(([clientId, user]) => {
+      if (now - user.timestamp < TYPING_TIMEOUT) {
+        typingData[clientId] = user;
+      }
+    });
+  }
+  
+  return Object.values(typingData);
+};
+
+/**
+ * Start typing indicator for the current user
+ */
+export const startTyping = async (
+  workspaceId: string,
+  conversationId: string,
+  clientId: string,
+  userName?: string
+): Promise<void> => {
+  const channelName = getWorkspaceChannelName(workspaceId, `conversations:${conversationId}`);
+  const channel = await getAblyChannel(channelName);
   
   try {
+    await channel.publish('typing:start', {
+      clientId,
+      name: userName,
+      timestamp: Date.now()
+    });
+  } catch (error) {
+    console.error('Error publishing typing start event:', error);
+  }
+};
+
+/**
+ * Stop typing indicator for the current user
+ */
+export const stopTyping = async (
+  workspaceId: string,
+  conversationId: string,
+  clientId: string
+): Promise<void> => {
+  const channelName = getWorkspaceChannelName(workspaceId, `conversations:${conversationId}`);
+  const channel = await getAblyChannel(channelName);
+  
+  try {
+    await channel.publish('typing:stop', {
+      clientId,
+      timestamp: Date.now()
+    });
+  } catch (error) {
+    console.error('Error publishing typing stop event:', error);
+  }
+};
+
+/**
+ * Subscribe to typing indicators in a conversation
+ */
+export const subscribeToTypingIndicators = (
+  workspaceId: string,
+  conversationId: string,
+  onTypingStart: (user: TypingUser) => void,
+  onTypingStop: (clientId: string) => void
+): (() => void) => {
+  const channelName = getWorkspaceChannelName(workspaceId, `conversations:${conversationId}`);
+  
+  let typingStartSubscription: Ably.Types.MessageListener | null = null;
+  let typingStopSubscription: Ably.Types.MessageListener | null = null;
+  
+  // Handle subscriptions async
+  const setup = async () => {
     const channel = await getAblyChannel(channelName);
     
-    // Subscribe to typing events
-    const startSubscription = channel.subscribe(TYPING_START, (message) => {
-      // Ignore own typing events
-      if (message.clientId === clientId) return;
-      
-      if (callbacks.onTypingStarted) {
-        callbacks.onTypingStarted(message.clientId, message.data);
-      }
-    });
-    
-    const stopSubscription = channel.subscribe(TYPING_STOP, (message) => {
-      // Ignore own typing events
-      if (message.clientId === clientId) return;
-      
-      if (callbacks.onTypingStopped) {
-        callbacks.onTypingStopped(message.clientId, message.data);
-      }
-    });
-    
-    // Method to signal typing start
-    const signalTypingStart = () => {
-      const now = Date.now();
-      
-      // Check if we should throttle
-      if ((now - lastTypingEvent) < throttleMs) {
-        return;
-      }
-      
-      // Update last event time
-      lastTypingEvent = now;
-      
-      // Send typing start event
-      channel.publish(TYPING_START, {
-        clientId,
-        timestamp: now
-      });
-      
-      // Clear any existing timeout
-      if (typingTimeout) {
-        clearTimeout(typingTimeout);
-      }
-      
-      // Set timeout to automatically stop typing
-      typingTimeout = setTimeout(() => {
-        signalTypingStop();
-      }, typingTimeoutMs);
+    // Subscribe to typing:start events
+    typingStartSubscription = (message: Ably.Types.Message) => {
+      const user = message.data as TypingUser;
+      onTypingStart(user);
     };
     
-    // Method to signal typing stop
-    const signalTypingStop = () => {
-      // Clear any existing timeout
-      if (typingTimeout) {
-        clearTimeout(typingTimeout);
-        typingTimeout = null;
-      }
-      
-      // Send typing stop event
-      channel.publish(TYPING_STOP, {
-        clientId,
-        timestamp: Date.now()
-      });
+    // Subscribe to typing:stop events
+    typingStopSubscription = (message: Ably.Types.Message) => {
+      const { clientId } = message.data;
+      onTypingStop(clientId);
     };
     
-    // Return methods and cleanup function
-    return {
-      signalTypingStart,
-      signalTypingStop,
-      cleanup: () => {
-        if (startSubscription && typeof startSubscription.unsubscribe === 'function') {
-          startSubscription.unsubscribe();
+    channel.subscribe('typing:start', typingStartSubscription);
+    channel.subscribe('typing:stop', typingStopSubscription);
+  };
+  
+  setup();
+  
+  // Return cleanup function
+  return () => {
+    const cleanup = async () => {
+      try {
+        const channel = await getAblyChannel(channelName);
+        if (typingStartSubscription) {
+          channel.unsubscribe('typing:start', typingStartSubscription);
         }
-        if (stopSubscription && typeof stopSubscription.unsubscribe === 'function') {
-          stopSubscription.unsubscribe();
+        if (typingStopSubscription) {
+          channel.unsubscribe('typing:stop', typingStopSubscription);
         }
-        if (typingTimeout) {
-          clearTimeout(typingTimeout);
-        }
+      } catch (error) {
+        console.error('Error cleaning up typing indicator subscriptions:', error);
       }
     };
-  } catch (error) {
-    console.error('Error setting up typing indicator:', error);
     
-    // Return dummy methods if setup fails
-    return {
-      signalTypingStart: () => {},
-      signalTypingStop: () => {},
-      cleanup: () => {}
-    };
-  }
+    cleanup();
+  };
 };
