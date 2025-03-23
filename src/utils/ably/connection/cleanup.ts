@@ -16,15 +16,28 @@ export const cleanupAblyConnection = async (): Promise<void> => {
       
       // Close all channels
       const channels = ably.channels;
-      // Get all channel names through iterating
-      for (const channelName in channels.all) {
-        if (Object.prototype.hasOwnProperty.call(channels.all, channelName)) {
+      // We need to manually iterate through channels since 'all' is not a property
+      // but a method in the current Ably SDK version
+      const channelNames: string[] = [];
+      
+      // Get all channel instances
+      for (const channelName in channels) {
+        if (Object.prototype.hasOwnProperty.call(channels, channelName)) {
           try {
-            const channel = channels.get(channelName);
-            channel.detach();
+            channelNames.push(channelName);
           } catch (error) {
-            console.error(`Error detaching channel ${channelName}:`, error);
+            console.error(`Error accessing channel ${channelName}:`, error);
           }
+        }
+      }
+      
+      // Detach each channel
+      for (const channelName of channelNames) {
+        try {
+          const channel = channels.get(channelName);
+          channel.detach();
+        } catch (error) {
+          console.error(`Error detaching channel ${channelName}:`, error);
         }
       }
       

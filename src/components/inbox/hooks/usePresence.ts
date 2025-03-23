@@ -72,21 +72,25 @@ export const usePresence = (ticket: Ticket, setMessages: (updater: (prev: Messag
 
         // Get current presence data
         const channel = await getAblyChannel(`ticket:${ticket.id}`);
-        const presenceData = await new Promise<Ably.Types.PresenceMessage[]>((resolve, reject) => {
+        try {
           channel.presence.get((err, members) => {
-            if (err) reject(err);
-            else resolve(members || []);
+            if (err) {
+              console.error('Error getting presence data:', err);
+              return;
+            }
+            
+            if (members && Array.isArray(members)) {
+              const presentMembers = members.map(member => ({
+                userId: member.clientId,
+                name: member.data?.name || 'Unknown',
+                lastActive: member.data?.lastActive || new Date().toISOString(),
+                location: member.data?.location
+              } as UserPresence));
+              setActiveUsers(presentMembers);
+            }
           });
-        });
-        
-        if (presenceData && Array.isArray(presenceData)) {
-          const presentMembers = presenceData.map(member => ({
-            userId: member.clientId,
-            name: member.data?.name || 'Unknown',
-            lastActive: member.data?.lastActive || new Date().toISOString(),
-            location: member.data?.location
-          } as UserPresence));
-          setActiveUsers(presentMembers);
+        } catch (error) {
+          console.error('Error fetching presence data:', error);
         }
 
         setIsLoading(false);
@@ -94,10 +98,12 @@ export const usePresence = (ticket: Ticket, setMessages: (updater: (prev: Messag
         return () => {
           // Leave presence and clean up
           const leavePresence = async () => {
-            const channel = await getAblyChannel(`ticket:${ticket.id}`);
-            channel.presence.leave((err) => {
-              if (err) console.error('Error leaving presence:', err);
-            });
+            try {
+              const channel = await getAblyChannel(`ticket:${ticket.id}`);
+              channel.presence.leave();
+            } catch (err) {
+              console.error('Error leaving presence:', err);
+            }
           };
           
           leavePresence();
