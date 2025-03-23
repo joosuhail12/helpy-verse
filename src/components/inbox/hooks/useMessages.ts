@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
-import { getAblyChannel, publishToChannel } from '@/utils/ably';
+import { publishToChannel } from '@/utils/ably';
 import type { Message } from '../types';
 import type { Ticket } from '@/types/ticket';
 
@@ -16,7 +16,11 @@ export const useMessages = (ticket: Ticket) => {
     setMessages([{
       id: ticket.id,
       content: ticket.lastMessage,
-      sender: ticket.customer,
+      sender: {
+        id: 'customer',
+        name: ticket.customer,
+        type: 'customer'
+      },
       timestamp: ticket.createdAt,
       isCustomer: true,
       readBy: []
@@ -31,7 +35,11 @@ export const useMessages = (ticket: Ticket) => {
       const newMsg: Message = {
         id: crypto.randomUUID(),
         content: newMessage,
-        sender: 'Agent',
+        sender: {
+          id: 'agent',
+          name: 'Agent',
+          type: 'agent'
+        },
         timestamp: new Date().toISOString(),
         isCustomer: false,
         type: isInternalNote ? 'internal_note' : 'message',

@@ -31,7 +31,11 @@ export const useConversation = (ticket: Ticket) => {
         setMessages([{
           id: `initial-${ticket.id}`,
           content: ticket.lastMessage,
-          sender: ticket.customer,
+          sender: {
+            id: 'customer',
+            name: ticket.customer,
+            type: 'customer'
+          },
           timestamp: ticket.createdAt,
           isCustomer: true,
           readBy: []
@@ -94,7 +98,11 @@ export const useConversation = (ticket: Ticket) => {
       const messageData: Message = {
         id: crypto.randomUUID(),
         content: newMessage,
-        sender: 'Agent',
+        sender: {
+          id: 'agent-id',
+          name: 'Agent',
+          type: 'agent'
+        },
         timestamp: new Date().toISOString(),
         isCustomer: false,
         type: isInternalNote ? 'internal_note' : 'message',

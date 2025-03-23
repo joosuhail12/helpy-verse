@@ -2,12 +2,18 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import MessageList from '../components/MessageList';
+import type { Message } from '../types';
+import type { Ticket } from '@/types/ticket';
 
-const mockMessages = [
+const mockMessages: Message[] = [
   {
     id: 'msg1',
     content: 'Having issues with the latest update',
-    sender: 'Alice Chen',
+    sender: {
+      id: 'customer1',
+      name: 'Alice Chen',
+      type: 'customer'
+    },
     timestamp: '2024-03-15T10:30:00Z',
     isCustomer: true,
     readBy: []
@@ -15,7 +21,11 @@ const mockMessages = [
   {
     id: 'msg2',
     content: 'Let me look into that for you right away',
-    sender: 'Support Agent',
+    sender: {
+      id: 'agent1',
+      name: 'Support Agent',
+      type: 'agent'
+    },
     timestamp: '2024-03-15T10:32:00Z',
     isCustomer: false,
     readBy: ['agent1']
@@ -23,15 +33,19 @@ const mockMessages = [
   {
     id: 'msg3',
     content: 'Customer mentioned previous incidents - need to check history',
-    sender: 'Support Agent',
+    sender: {
+      id: 'agent1',
+      name: 'Support Agent',
+      type: 'agent'
+    },
     timestamp: '2024-03-15T10:33:00Z',
     isCustomer: false,
-    type: 'internal_note' as const,
+    type: 'internal_note',
     readBy: ['agent1']
   }
 ];
 
-const mockTicket = {
+const mockTicket: Ticket = {
   id: 'ticket123',
   subject: 'Issue with Latest Update',
   customer: 'Alice Chen',
@@ -39,13 +53,10 @@ const mockTicket = {
   assignee: 'agent1',
   company: 'TechCorp Ltd',
   tags: ['bug', 'high-priority'],
-  status: 'open' as const,
-  priority: 'high' as const,
+  status: 'open',
+  priority: 'high',
   createdAt: '2024-03-15T10:30:00Z',
-  updatedAt: '2024-03-15T10:33:00Z',
-  isUnread: true,
-  categories: ['technical', 'software'],
-  recipients: ['alice.chen@example.com'] // Added recipients array
+  recipients: ['alice.chen@example.com']
 };
 
 describe('MessageList', () => {

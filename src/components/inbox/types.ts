@@ -14,13 +14,16 @@ export interface UserPresence {
 
 export interface Message {
   id: string;
-  text: string;
+  text?: string;
+  content?: string;
   sender: {
     id: string;
     name: string;
     type: 'agent' | 'customer' | 'system';
-  };
+  } | string;
   timestamp: string;
+  isCustomer?: boolean;
+  type?: 'message' | 'internal_note';
   attachments?: Array<{
     id: string;
     url: string;
@@ -30,4 +33,10 @@ export interface Message {
   }>;
   status?: 'sent' | 'delivered' | 'read' | 'failed' | 'pending';
   readBy?: string[];
+  reactions?: Record<string, string[]>;
+}
+
+export interface ConversationPanelProps {
+  ticket: Ticket;
+  onClose: () => void;
 }

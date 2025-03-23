@@ -19,7 +19,7 @@ const MessageList = ({ messages, typingUsers, ticket, onReply, isLoading }: Mess
   if (isLoading) {
     return (
       <div className="flex-1 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" role="progressbar" />
       </div>
     );
   }

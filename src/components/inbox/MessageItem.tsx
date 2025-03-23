@@ -82,20 +82,30 @@ const MessageItem = ({ message, ticket }: MessageItemProps) => {
   };
 
   const createMarkup = () => {
-    return { __html: message.content };
+    return { __html: message.content || (message.text || '') };
   };
+
+  const getSenderName = () => {
+    if (typeof message.sender === 'string') {
+      return message.isCustomer ? ticket.customer : message.sender;
+    }
+    return message.sender.name;
+  };
+
+  const isCustomer = message.isCustomer || 
+    (typeof message.sender !== 'string' && message.sender.type === 'customer');
 
   return (
     <div className="flex gap-3">
       <Avatar className="h-8 w-8">
         <span className="text-xs">
-          {message.isCustomer ? ticket.customer[0] : 'A'}
+          {isCustomer ? ticket.customer[0] : 'A'}
         </span>
       </Avatar>
       <div className="flex-1">
         <div className="flex items-center gap-2">
           <span className="font-medium text-sm">
-            {message.isCustomer ? ticket.customer : 'Agent'}
+            {getSenderName()}
           </span>
           <span className="text-xs text-muted-foreground flex items-center gap-1">
             <Clock className="h-3 w-3" />
@@ -142,7 +152,7 @@ const MessageItem = ({ message, ticket }: MessageItemProps) => {
               </div>
             </PopoverContent>
           </Popover>
-          {!message.isCustomer && (
+          {!isCustomer && (
             <span className="text-xs text-muted-foreground">
               {message.readBy && message.readBy.length > 1 ? (
                 <CheckCheck className="h-3 w-3 inline" />

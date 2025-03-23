@@ -1,5 +1,5 @@
 
-import { UseFormReturn } from 'react-hook-form';
+import { useFormContext } from 'react-hook-form';
 import { 
   FormControl, 
   FormDescription, 
@@ -19,13 +19,10 @@ import {
 } from '@/components/ui/select';
 import TagInput from './TagInput';
 import RecipientInput from './RecipientInput';
-import { TicketFormValues } from './index';
 
-interface CreateTicketFormProps {
-  form: UseFormReturn<TicketFormValues>;
-}
+const CreateTicketForm = () => {
+  const form = useFormContext();
 
-const CreateTicketForm = ({ form }: CreateTicketFormProps) => {
   return (
     <>
       <FormField
@@ -43,52 +40,34 @@ const CreateTicketForm = ({ form }: CreateTicketFormProps) => {
       />
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FormField
-          control={form.control}
-          name="customer"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Customer Name</FormLabel>
-              <FormControl>
-                <Input placeholder="Customer name" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <FormItem>
+          <FormLabel>Customer Name</FormLabel>
+          <Input 
+            placeholder="Customer name" 
+            {...form.register("customerName")} 
+          />
+          <FormMessage>{form.formState.errors.customerName?.message}</FormMessage>
+        </FormItem>
         
-        <FormField
-          control={form.control}
-          name="company"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Company</FormLabel>
-              <FormControl>
-                <Input placeholder="Company name" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <FormItem>
+          <FormLabel>Company</FormLabel>
+          <Input 
+            placeholder="Company name" 
+            {...form.register("companyName")} 
+          />
+          <FormMessage>{form.formState.errors.companyName?.message}</FormMessage>
+        </FormItem>
       </div>
       
-      <FormField
-        control={form.control}
-        name="description"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Description</FormLabel>
-            <FormControl>
-              <Textarea 
-                placeholder="Ticket description" 
-                className="min-h-[120px]" 
-                {...field} 
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+      <FormItem>
+        <FormLabel>Description</FormLabel>
+        <Textarea 
+          placeholder="Ticket description" 
+          className="min-h-[120px]" 
+          {...form.register("messageContent")}
+        />
+        <FormMessage>{form.formState.errors.messageContent?.message}</FormMessage>
+      </FormItem>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormField
@@ -122,7 +101,7 @@ const CreateTicketForm = ({ form }: CreateTicketFormProps) => {
               <FormLabel>Assignee (Optional)</FormLabel>
               <Select 
                 onValueChange={field.onChange} 
-                defaultValue={field.value || undefined}
+                defaultValue={field.value || ""}
               >
                 <FormControl>
                   <SelectTrigger>
@@ -144,7 +123,7 @@ const CreateTicketForm = ({ form }: CreateTicketFormProps) => {
       
       <FormField
         control={form.control}
-        name="tags"
+        name="ticketTags"
         render={({ field }) => (
           <FormItem>
             <FormLabel>Tags</FormLabel>
