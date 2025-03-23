@@ -5,13 +5,7 @@ import EmailChannelSelect from "../EmailChannelSelect";
 import AssigneeSelect from "../AssigneeSelect";
 import type { EmailChannel } from "@/types/emailChannel";
 import { Dispatch, SetStateAction } from "react";
-
-interface AssigneeOption {
-  id: string | null;
-  name: string;
-  email?: string;
-  avatar?: string;
-}
+import type { AssigneeOption } from "../types";
 
 interface ChannelAssigneeSectionProps {
   selectedChannel: EmailChannel | null;
@@ -34,17 +28,20 @@ export default function ChannelAssigneeSection({
         <div className="space-y-2">
           <Label htmlFor="channel">Channel</Label>
           <EmailChannelSelect
+            value={selectedChannel}
+            onChange={setSelectedChannel}
             selectedChannel={selectedChannel}
-            onChannelChange={setSelectedChannel}
+            onSelectChannel={setSelectedChannel}
           />
         </div>
         
         <div className="space-y-2">
           <Label htmlFor="assignee">Assignee</Label>
           <AssigneeSelect
+            value={selectedAssignee}
+            onChange={setSelectedAssignee}
             selectedAssignee={selectedAssignee}
             onSelectAssignee={setSelectedAssignee}
-            onChange={setSelectedAssignee} // Add the onChange prop to match the required interface
           />
         </div>
       </CardContent>

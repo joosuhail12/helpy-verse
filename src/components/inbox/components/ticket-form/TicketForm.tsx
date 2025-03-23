@@ -104,10 +104,10 @@ const TicketForm = ({ onSubmit, initialValues = {}, isSubmitting = false }: Tick
             />
             
             <ChannelAssigneeSection 
-              emailChannel={values.emailChannel}
-              assignee={values.assignee}
-              onEmailChannelChange={handleEmailChannelChange}
-              onAssigneeChange={handleAssigneeChange}
+              selectedChannel={values.emailChannel}
+              setSelectedChannel={handleEmailChannelChange}
+              selectedAssignee={values.assignee || { id: '', name: 'Unassigned', type: 'self' }}
+              setSelectedAssignee={handleAssigneeChange}
             />
             
             <PriorityStatusSection 
