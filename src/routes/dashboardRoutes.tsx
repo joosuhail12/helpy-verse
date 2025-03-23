@@ -18,7 +18,7 @@ const Companies = lazy(() => import('../pages/contacts/Companies'));
 const CompanyDetail = lazy(() => import('../pages/contacts/CompanyDetail'));
 const ContactDetail = lazy(() => import('../pages/contacts/Detail'));
 
-// Helper function to wrap a component with Suspense and RouteErrorBoundary
+// Helper function that correctly passes children to RouteErrorBoundary
 const withSuspenseAndErrorHandling = (Component) => (
   <RouteErrorBoundary>
     <Suspense fallback={<LoadingSpinner />}>
@@ -31,36 +31,36 @@ export const dashboardRoutes = [
   {
     path: '',
     element: <Navigate to="/home/inbox/all" replace />,
-    errorElement: <RouteErrorBoundary />,
+    errorElement: <RouteErrorBoundary><LoadingSpinner /></RouteErrorBoundary>,
   },
   {
     path: 'home',
     element: withSuspenseAndErrorHandling(Dashboard),
-    errorElement: <RouteErrorBoundary />,
+    errorElement: <RouteErrorBoundary><LoadingSpinner /></RouteErrorBoundary>,
   },
   {
     path: 'contacts',
     element: <Navigate to="/home/contacts/all" replace />,
-    errorElement: <RouteErrorBoundary />,
+    errorElement: <RouteErrorBoundary><LoadingSpinner /></RouteErrorBoundary>,
   },
   {
     path: 'contacts/all',
     element: withSuspenseAndErrorHandling(AllContacts),
-    errorElement: <RouteErrorBoundary />,
+    errorElement: <RouteErrorBoundary><LoadingSpinner /></RouteErrorBoundary>,
   },
   {
     path: 'contacts/companies',
     element: withSuspenseAndErrorHandling(Companies),
-    errorElement: <RouteErrorBoundary />,
+    errorElement: <RouteErrorBoundary><LoadingSpinner /></RouteErrorBoundary>,
   },
   {
     path: 'contacts/companies/:id',
     element: withSuspenseAndErrorHandling(CompanyDetail),
-    errorElement: <RouteErrorBoundary />,
+    errorElement: <RouteErrorBoundary><LoadingSpinner /></RouteErrorBoundary>,
   },
   {
     path: 'contacts/:id',
     element: withSuspenseAndErrorHandling(ContactDetail),
-    errorElement: <RouteErrorBoundary />,
+    errorElement: <RouteErrorBoundary><LoadingSpinner /></RouteErrorBoundary>,
   },
 ];

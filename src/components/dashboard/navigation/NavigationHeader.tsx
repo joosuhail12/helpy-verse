@@ -9,7 +9,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { mainNavItems } from '../navigationConfig';
-import { MainNavItem } from '../types/navigation';
+import { NavigationItem } from '../types/navigation';
 
 interface NavigationHeaderProps {
   activeMainNav: string;
@@ -59,4 +59,3 @@ const NavigationHeader = ({
 };
 
 export default NavigationHeader;
-

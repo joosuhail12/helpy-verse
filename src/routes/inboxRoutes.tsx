@@ -17,7 +17,7 @@ export const inboxRoutes: RouteObject[] = [
     element: (
       <Navigate to="/home/inbox/all" replace />
     ),
-    errorElement: <RouteErrorBoundary />,
+    errorElement: <RouteErrorBoundary><LoadingSpinner /></RouteErrorBoundary>,
   },
   {
     path: 'inbox/all',
@@ -28,7 +28,7 @@ export const inboxRoutes: RouteObject[] = [
         </Suspense>
       </RouteErrorBoundary>
     ),
-    errorElement: <RouteErrorBoundary />,
+    errorElement: <RouteErrorBoundary><LoadingSpinner /></RouteErrorBoundary>,
   },
   {
     path: 'inbox/your-inbox',
@@ -39,7 +39,7 @@ export const inboxRoutes: RouteObject[] = [
         </Suspense>
       </RouteErrorBoundary>
     ),
-    errorElement: <RouteErrorBoundary />,
+    errorElement: <RouteErrorBoundary><LoadingSpinner /></RouteErrorBoundary>,
   },
   {
     path: 'inbox/unassigned',
@@ -50,7 +50,7 @@ export const inboxRoutes: RouteObject[] = [
         </Suspense>
       </RouteErrorBoundary>
     ),
-    errorElement: <RouteErrorBoundary />,
+    errorElement: <RouteErrorBoundary><LoadingSpinner /></RouteErrorBoundary>,
   },
   {
     path: 'inbox/mentions',
@@ -61,7 +61,7 @@ export const inboxRoutes: RouteObject[] = [
         </Suspense>
       </RouteErrorBoundary>
     ),
-    errorElement: <RouteErrorBoundary />,
+    errorElement: <RouteErrorBoundary><LoadingSpinner /></RouteErrorBoundary>,
   },
   {
     path: 'inbox/channel/:channelId',
@@ -72,6 +72,6 @@ export const inboxRoutes: RouteObject[] = [
         </Suspense>
       </RouteErrorBoundary>
     ),
-    errorElement: <RouteErrorBoundary />,
+    errorElement: <RouteErrorBoundary><LoadingSpinner /></RouteErrorBoundary>,
   },
 ];

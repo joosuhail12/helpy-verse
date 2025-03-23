@@ -2,7 +2,7 @@
 import { ChevronLeft, ChevronRight, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, NavigateFunction } from 'react-router-dom';
 import MainNavigation from './MainNavigation';
 import SubNavigation from './SubNavigation';
 import { mainNavItems, subNavItems } from './navigationConfig';
@@ -66,12 +66,6 @@ const Sidebar = () => {
   // Show secondary nav only for non-home items that have sub-items
   const shouldShowSecondaryNav = activeMainNav !== 'home' && subNavItems[activeMainNav as keyof typeof subNavItems];
 
-  // Function to handle navigation from main navigation
-  const handleMainNavigation = (path: string) => {
-    console.log(`MainNav: Navigating to ${path}`);
-    navigate(path);
-  };
-
   return (
     <>
       <div className="w-16 min-h-screen bg-white/80 backdrop-blur-xl border-r border-purple-100/50 shadow-lg flex flex-col items-center justify-between py-6 relative z-10">
@@ -91,7 +85,7 @@ const Sidebar = () => {
           <MainNavigation 
             activeMainNav={activeMainNav}
             setActiveMainNav={setActiveMainNav}
-            navigate={handleMainNavigation}
+            navigate={navigate}
           />
         </div>
 
