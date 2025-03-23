@@ -11,7 +11,7 @@ interface ConversationViewProps {
 }
 
 const ConversationView: React.FC<ConversationViewProps> = ({ conversationId, workspaceId }) => {
-  const { sendMessage, getMessages, loadingMessages } = useChat();
+  const { sendMessage, getMessages, loadingMessages, messages } = useChat();
   const [messageText, setMessageText] = useState('');
   const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -22,7 +22,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({ conversationId, wor
 
   useEffect(() => {
     scrollToBottom();
-  }, [loadingMessages]);
+  }, [loadingMessages, messages]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -52,7 +52,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({ conversationId, wor
           </div>
         ) : (
           <>
-            <MessageList conversationId={conversationId} />
+            <MessageList messages={messages} isLoading={loadingMessages} />
             <div ref={messagesEndRef} />
           </>
         )}

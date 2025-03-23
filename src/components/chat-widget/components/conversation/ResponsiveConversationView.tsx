@@ -17,7 +17,7 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
   workspaceId,
   onBack
 }) => {
-  const { sendMessage, getMessages, loadingMessages, conversations } = useChat();
+  const { sendMessage, getMessages, loadingMessages, conversations, messages } = useChat();
   const [messageText, setMessageText] = useState('');
   const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -30,7 +30,7 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
 
   useEffect(() => {
     scrollToBottom();
-  }, [loadingMessages]);
+  }, [loadingMessages, messages]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -72,7 +72,7 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
           </div>
         ) : (
           <>
-            <MessageList conversationId={conversationId} />
+            <MessageList messages={messages} isLoading={loadingMessages} />
             <div ref={messagesEndRef} />
           </>
         )}

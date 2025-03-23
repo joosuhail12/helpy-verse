@@ -4,15 +4,17 @@ import { ChatMessage } from './types';
 import MessageItem from './MessageItem';
 
 export interface MessageListProps {
-  messages: ChatMessage[];
+  messages?: ChatMessage[];
   isLoading?: boolean;
   error?: Error | null;
+  conversationId?: string; // Add conversationId as an optional prop
 }
 
 const MessageList: React.FC<MessageListProps> = ({ 
-  messages, 
+  messages = [], 
   isLoading = false,
-  error = null 
+  error = null,
+  conversationId 
 }) => {
   if (error) {
     return (

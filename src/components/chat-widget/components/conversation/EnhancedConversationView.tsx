@@ -82,7 +82,7 @@ const EnhancedConversationView: React.FC<EnhancedConversationViewProps> = ({
         
         {isTyping && typingUser && (
           <div className="mt-2 ml-2">
-            <TypingIndicator agentName={typingUser} />
+            <TypingIndicator typingUsers={[typingUser]} />
           </div>
         )}
         
