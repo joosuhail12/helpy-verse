@@ -13,6 +13,8 @@ export interface PresenceData {
   metadata?: Record<string, any>;
 }
 
+type PresenceCallback = (member: Ably.Types.PresenceMessage) => void;
+
 /**
  * Enter presence on a channel
  */
@@ -51,31 +53,31 @@ export const subscribeToPresence = (
 ): (() => void) => {
   const channelName = getWorkspaceChannelName(workspaceId, `conversations:${conversationId}`);
   
-  // Using Function type since PresenceListener isn't exported by Ably
-  let enterSubscription: Function | null = null;
-  let leaveSubscription: Function | null = null;
-  let updateSubscription: Function | null = null;
+  // Create properly typed callbacks
+  let enterCallback: PresenceCallback | null = null;
+  let leaveCallback: PresenceCallback | null = null;
+  let updateCallback: PresenceCallback | null = null;
   
   // Set up subscriptions asynchronously
   const setup = async () => {
     try {
       const channel = await getAblyChannel(channelName);
       
-      enterSubscription = (member: Ably.Types.PresenceMessage) => {
+      enterCallback = (member: Ably.Types.PresenceMessage) => {
         onEnter(member.data as PresenceData);
       };
       
-      leaveSubscription = (member: Ably.Types.PresenceMessage) => {
+      leaveCallback = (member: Ably.Types.PresenceMessage) => {
         onLeave(member.data as PresenceData);
       };
       
-      updateSubscription = (member: Ably.Types.PresenceMessage) => {
+      updateCallback = (member: Ably.Types.PresenceMessage) => {
         onUpdate(member.data as PresenceData);
       };
       
-      channel.presence.subscribe('enter', enterSubscription);
-      channel.presence.subscribe('leave', leaveSubscription);
-      channel.presence.subscribe('update', updateSubscription);
+      channel.presence.subscribe('enter', enterCallback);
+      channel.presence.subscribe('leave', leaveCallback);
+      channel.presence.subscribe('update', updateCallback);
       
       // Get current members
       channel.presence.get((err, members) => {
@@ -103,16 +105,16 @@ export const subscribeToPresence = (
       try {
         const channel = await getAblyChannel(channelName);
         
-        if (enterSubscription) {
-          channel.presence.unsubscribe('enter', enterSubscription);
+        if (enterCallback) {
+          channel.presence.unsubscribe('enter', enterCallback);
         }
         
-        if (leaveSubscription) {
-          channel.presence.unsubscribe('leave', leaveSubscription);
+        if (leaveCallback) {
+          channel.presence.unsubscribe('leave', leaveCallback);
         }
         
-        if (updateSubscription) {
-          channel.presence.unsubscribe('update', updateSubscription);
+        if (updateCallback) {
+          channel.presence.unsubscribe('update', updateCallback);
         }
       } catch (error) {
         console.error('Error cleaning up presence subscriptions:', error);

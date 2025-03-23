@@ -87,6 +87,9 @@ export const stopTyping = async (
   }
 };
 
+// Type for message callback
+type MessageCallback = (message: Ably.Types.Message) => void;
+
 /**
  * Subscribe to typing indicators in a conversation
  */
@@ -98,28 +101,28 @@ export const subscribeToTypingIndicators = (
 ): (() => void) => {
   const channelName = getWorkspaceChannelName(workspaceId, `conversations:${conversationId}`);
   
-  // Using Function type since MessageListener isn't exported by Ably types
-  let typingStartSubscription: Function | null = null;
-  let typingStopSubscription: Function | null = null;
+  // Properly typed callbacks
+  let typingStartCallback: MessageCallback | null = null;
+  let typingStopCallback: MessageCallback | null = null;
   
   // Handle subscriptions async
   const setup = async () => {
     const channel = await getAblyChannel(channelName);
     
     // Subscribe to typing:start events
-    typingStartSubscription = (message: Ably.Types.Message) => {
+    typingStartCallback = (message: Ably.Types.Message) => {
       const user = message.data as TypingUser;
       onTypingStart(user);
     };
     
     // Subscribe to typing:stop events
-    typingStopSubscription = (message: Ably.Types.Message) => {
+    typingStopCallback = (message: Ably.Types.Message) => {
       const { clientId } = message.data;
       onTypingStop(clientId);
     };
     
-    channel.subscribe('typing:start', typingStartSubscription);
-    channel.subscribe('typing:stop', typingStopSubscription);
+    channel.subscribe('typing:start', typingStartCallback);
+    channel.subscribe('typing:stop', typingStopCallback);
   };
   
   setup();
@@ -129,11 +132,11 @@ export const subscribeToTypingIndicators = (
     const cleanup = async () => {
       try {
         const channel = await getAblyChannel(channelName);
-        if (typingStartSubscription) {
-          channel.unsubscribe('typing:start', typingStartSubscription);
+        if (typingStartCallback) {
+          channel.unsubscribe('typing:start', typingStartCallback);
         }
-        if (typingStopSubscription) {
-          channel.unsubscribe('typing:stop', typingStopSubscription);
+        if (typingStopCallback) {
+          channel.unsubscribe('typing:stop', typingStopCallback);
         }
       } catch (error) {
         console.error('Error cleaning up typing indicator subscriptions:', error);

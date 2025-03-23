@@ -10,12 +10,12 @@ export * from './ably/conversationService';
 export * from './ably/messageService';
 
 // Re-export presence service with namespace to avoid conflicts
-import * as presenceService from './ably/presenceService';
-export { presenceService };
+import * as presenceServiceModule from './ably/presenceService';
+export { presenceServiceModule as presenceService };
 
 // Re-export messaging utilities with namespace to avoid conflicts
-import * as messaging from './ably/messaging/index';
-export { messaging };
+import * as messagingModule from './ably/messaging/index';
+export { messagingModule as messaging };
 
 // Ably API key - this is a client key which is safe to expose
 const ABLY_API_KEY = "X4jpaA.kKXoZg:oEr5R_kjKk06Wk0iilgK_rGAE9hbFjQMU8wYoE_BnEc";
