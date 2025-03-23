@@ -16,7 +16,7 @@ interface UseTypingIndicatorOptions {
  */
 export const useTypingIndicator = (conversationId: string | null, connectionState: string, options: UseTypingIndicatorOptions) => {
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
-  const typingMonitorRef = useRef<(() => void) | null>(null);
+  const typingMonitorRef = useRef<() => void | null>(() => null);
   
   // Monitor typing indicators
   useEffect(() => {
@@ -29,38 +29,14 @@ export const useTypingIndicator = (conversationId: string | null, connectionStat
     
     console.log(`Monitoring typing indicators in conversation: ${conversationId}`);
     
-    // Set up new monitor with proper async handling
-    const setupMonitor = async () => {
-      try {
-        const unsubscribe = await monitorTypingIndicators(conversationId, (users) => {
-          setTypingUsers(users);
-        });
-        
-        typingMonitorRef.current = unsubscribe;
-        return unsubscribe;
-      } catch (error) {
-        console.error(`Error monitoring typing indicators for conversation ${conversationId}:`, error);
-        return () => {};
-      }
-    };
-    
-    // Setup the monitor and store the promise
-    const monitorPromise = setupMonitor();
+    // Set up new monitor
+    typingMonitorRef.current = monitorTypingIndicators(conversationId, (users) => {
+      setTypingUsers(users);
+    });
     
     return () => {
-      // Handle cleanup when component unmounts
       if (typingMonitorRef.current) {
         typingMonitorRef.current();
-        typingMonitorRef.current = null;
-      } else {
-        // Handle the case where the monitor promise hasn't resolved yet
-        monitorPromise.then(unsubscribe => {
-          if (unsubscribe) {
-            unsubscribe();
-          }
-        }).catch(err => {
-          console.error('Error during unsubscribe:', err);
-        });
       }
     };
   }, [conversationId, connectionState]);
@@ -71,16 +47,16 @@ export const useTypingIndicator = (conversationId: string | null, connectionStat
       // This runs after debounce period - typing stopped
       async () => {
         if (!conversationId || connectionState !== 'connected') return;
-        await updateTypingStatus(conversationId, options.userId, false);
+        await updateTypingStatus(conversationId, options.userId, options.userName, false);
       },
       // This runs immediately - typing started
       async () => {
         if (!conversationId || connectionState !== 'connected') return;
-        await updateTypingStatus(conversationId, options.userId, true);
+        await updateTypingStatus(conversationId, options.userId, options.userName, true);
       },
       1000 // 1 second debounce
     ),
-    [conversationId, connectionState, options.userId]
+    [conversationId, connectionState, options.userId, options.userName]
   );
   
   // Handle typing indicator

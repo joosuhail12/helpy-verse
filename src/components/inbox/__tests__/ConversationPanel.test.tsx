@@ -1,10 +1,9 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import ConversationPanel from '../ConversationPanel';
 import { useConversation } from '../hooks/useConversation';
-import { stringToCustomer, stringToCompany, stringToTeamMember } from '@/types/ticket';
 
 // Mock the useConversation hook
 vi.mock('../hooks/useConversation', () => ({
@@ -21,17 +20,18 @@ vi.mock('@/hooks/use-toast', () => ({
 const mockTicket = {
   id: 'ticket123',
   subject: 'Performance Optimization Request',
-  customer: stringToCustomer('Michael Chang'),
+  customer: 'Michael Chang',
   lastMessage: 'System is running slow after latest deployment',
-  assignee: stringToTeamMember('agent3'),
-  company: stringToCompany('OptimizeTech Inc'),
+  assignee: 'agent3',
+  company: 'OptimizeTech Inc',
   tags: ['performance', 'urgent'],
   status: 'open' as const,
   priority: 'high' as const,
   createdAt: '2024-03-15T12:00:00Z',
   updatedAt: '2024-03-15T12:05:00Z',
   isUnread: true,
-  recipients: ['michael.chang@example.com']
+  categories: ['technical', 'performance'],
+  recipients: ['michael.chang@example.com'] // Added recipients array
 };
 
 describe('ConversationPanel', () => {

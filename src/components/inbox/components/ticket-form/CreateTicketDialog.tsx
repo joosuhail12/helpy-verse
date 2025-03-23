@@ -1,92 +1,37 @@
 
-import { useState } from 'react';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogHeader, 
-  DialogTitle 
-} from '@/components/ui/dialog';
-import CreateTicketForm from './CreateTicketForm';
-import type { Ticket } from '@/types/ticket';
-import { useToast } from '@/hooks/use-toast';
-import { stringToCustomer, stringToCompany, stringToTeamMember } from '@/types/ticket';
+import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
+import TicketFormContainer from './TicketFormContainer';
+import type { CreateTicketDialogProps } from './types';
+import { X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-interface CreateTicketDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onTicketCreated?: (ticket: Ticket) => void;
-}
-
-const CreateTicketDialog = ({ 
-  isOpen, 
-  onClose, 
-  onTicketCreated 
-}: CreateTicketDialogProps) => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toast } = useToast();
-
-  const handleSubmit = async (values: any) => {
-    setIsSubmitting(true);
-    
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Create new ticket with generated ID
-      const newTicket: Ticket = {
-        id: Math.random().toString(36).substring(2, 10),
-        subject: values.subject,
-        customer: stringToCustomer(values.customer || 'Anonymous'),
-        company: stringToCompany(values.company || 'Unknown Company'),
-        assignee: values.assignee ? stringToTeamMember(values.assignee) : null,
-        status: 'open',
-        priority: values.priority || 'medium',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        tags: values.tags || [],
-        lastMessage: values.description || '',
-        isUnread: true,
-        recipients: values.recipients || []
-      };
-      
-      if (onTicketCreated) {
-        onTicketCreated(newTicket);
-      }
-      
-      toast({
-        title: "Ticket created",
-        description: `Ticket #${newTicket.id} has been created successfully.`,
-      });
-
-      onClose();
-    } catch (error) {
-      console.error('Error creating ticket:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to create ticket. Please try again.",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
+const CreateTicketDialog = ({ open, onOpenChange, onTicketCreated }: CreateTicketDialogProps) => {
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Create New Ticket</DialogTitle>
-          <DialogDescription>
-            Create a new support ticket for customer inquiry or issue.
-          </DialogDescription>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-4xl p-0 overflow-hidden rounded-xl border-none shadow-lg max-h-[85vh] flex flex-col">
+        <DialogHeader className="px-6 pt-6 pb-0 flex-shrink-0">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <span className="w-1.5 h-6 bg-primary rounded-full"></span>
+              <h2 className="text-xl font-semibold tracking-tight">Create New Ticket</h2>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 rounded-full hover:bg-gray-100 transition-colors"
+              onClick={() => onOpenChange(false)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
         </DialogHeader>
         
-        <CreateTicketForm 
-          onSubmit={handleSubmit}
-          isSubmitting={isSubmitting}
-          onCancel={onClose}
-        />
+        <div className="p-6 pt-4 overflow-y-auto">
+          <TicketFormContainer 
+            onClose={() => onOpenChange(false)}
+            onTicketCreated={onTicketCreated}
+          />
+        </div>
       </DialogContent>
     </Dialog>
   );

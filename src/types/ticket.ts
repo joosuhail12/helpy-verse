@@ -1,93 +1,37 @@
 
-export type TicketPriority = 'low' | 'medium' | 'high' | 'urgent';
-export type TicketStatus = 'open' | 'pending' | 'closed' | 'resolved';
-export type SortField = 'subject' | 'customer' | 'company' | 'priority' | 'status' | 'createdAt' | 'updatedAt' | 'assignee';
-export type ViewMode = 'detailed' | 'compact';
-export type NotificationType = 'mention' | 'assignment' | 'update';
-
-export interface Customer {
-  id?: string;
-  name: string;
-  email?: string;
-  avatar?: string;
-}
-
-export interface Company {
-  id?: string;
-  name: string;
-  logo?: string;
-}
-
-export interface TeamMember {
-  id?: string;
-  name: string;
-  email?: string;
-  avatar?: string;
-  teamId?: string;
-  teamName?: string;
-}
-
 export interface Ticket {
   id: string;
   subject: string;
-  customer: Customer | string;
+  customer: string;
   lastMessage: string;
-  assignee: TeamMember | string | null;
-  company: Company | string;
+  assignee: string | null;
   tags: string[];
-  status: TicketStatus;
-  priority: TicketPriority;
+  status: 'open' | 'pending' | 'closed';
+  priority: 'low' | 'medium' | 'high';
   createdAt: string;
-  updatedAt: string;
+  updatedAt?: string;
   isUnread: boolean;
-  hasNotification?: boolean;
-  notificationType?: NotificationType;
   recipients: string[];
   channel?: string;
+  
+  // Additional properties needed by components
+  company?: string;
+  hasNotification?: boolean;
+  notificationType?: 'mention' | 'assignment';
+  categories?: string[];
 }
 
-export interface Message {
-  id: string;
-  ticketId: string;
-  content: string;
-  sender: TeamMember | Customer | string;
-  timestamp: string;
-  isInternalNote?: boolean;
-  attachments?: Attachment[];
-}
+// Add types referenced in the code but not defined
+export type SortField = 'createdAt' | 'priority' | 'status' | 'customer';
+export type SortDirection = 'asc' | 'desc';
+export type ViewMode = 'list' | 'card' | 'compact';
 
-export interface Attachment {
+// Adding TeamMember interface to fix the error
+export interface TeamMember {
   id: string;
   name: string;
-  url: string;
-  type: string;
-  size: number;
+  email: string;
+  avatar: string;
+  teamId: string;
+  teamName: string;
 }
-
-export interface ConversationPanelProps {
-  ticket: Ticket;
-  onClose: () => void;
-}
-
-export const stringToCustomer = (name: string): Customer => {
-  return {
-    id: name.toLowerCase().replace(' ', '-'),
-    name,
-    email: name.toLowerCase().replace(' ', '.') + '@example.com'
-  };
-};
-
-export const stringToCompany = (name: string): Company => {
-  return {
-    id: name.toLowerCase().replace(' ', '-'),
-    name
-  };
-};
-
-export const stringToTeamMember = (name: string): TeamMember => {
-  return {
-    id: name.toLowerCase().replace(' ', '-'),
-    name,
-    email: name.toLowerCase().replace(' ', '.') + '@company.com'
-  };
-};

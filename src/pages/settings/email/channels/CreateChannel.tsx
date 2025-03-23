@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
@@ -43,7 +44,6 @@ const CreateChannel = () => {
           // Add these fields to make it compatible with the expected type
           name: channel.channelName,
           domainStatus: 'pending' as const, // use correct literal type
-          isVerified: false,
         };
         
         const result = await dispatch(createChannel(completeChannel)).unwrap();

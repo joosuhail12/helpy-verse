@@ -4,13 +4,7 @@ import { useState } from 'react';
 import type { EmailChannel } from '@/types/emailChannel';
 
 interface EmailChannelFormData
-  extends Omit<EmailChannel, 'id' | 'createdAt' | 'updatedAt' | 'isVerified'> {
-    // Add the missing properties explicitly to match how they're used
-    autoBccEmail: string;
-    noReplyEmail: string;
-    teamId: string;
-    icon: string;
-}
+  extends Omit<EmailChannel, 'id' | 'createdAt' | 'updatedAt' | 'isVerified'> {}
 
 interface UseChannelFormProps {
   onAddChannel?: (data: EmailChannelFormData) => Promise<void>;
@@ -38,8 +32,6 @@ export const useChannelForm = (props?: UseChannelFormProps) => {
       allowAgentConversations: false,
       useAgentNames: false,
       useOriginalSender: false,
-      isActive: true,
-      name: ''
     },
   });
 

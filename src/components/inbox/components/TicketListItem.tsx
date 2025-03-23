@@ -1,176 +1,199 @@
 
 import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { AtSign, Clock, Copy, Tag } from "lucide-react";
-import type { Ticket, ViewMode } from "@/types/ticket";
 import { formatDistanceToNow } from "date-fns";
+import { Copy, Mail, User, ZapIcon } from "lucide-react";
+import TicketPriorityBadge from "../TicketPriorityBadge";
+import TicketStatusBadge from "../TicketStatusBadge";
+import type { Ticket, ViewMode } from "@/types/ticket";
 
 interface TicketListItemProps {
   ticket: Ticket;
-  isSelected: boolean;
-  onSelect: (e: React.MouseEvent) => void;
-  viewMode: ViewMode;
-  isActive?: boolean;
+  isSelected?: boolean;
+  onSelect?: (e: React.MouseEvent) => void;
+  viewMode?: ViewMode;
   isLoading?: boolean;
   onCopyId?: (id: string, e: React.MouseEvent) => void;
+  isActive?: boolean;
 }
 
 const TicketListItem = ({
   ticket,
-  isSelected,
+  isSelected = false,
   onSelect,
-  viewMode,
-  isActive = false,
+  viewMode = "list",
   isLoading = false,
   onCopyId,
+  isActive = false,
 }: TicketListItemProps) => {
-  const formattedDate = formatDistanceToNow(new Date(ticket.createdAt), {
-    addSuffix: true,
-  });
-
-  const statusColors = {
-    open: "bg-green-100 text-green-800 border-green-200",
-    pending: "bg-yellow-100 text-yellow-800 border-yellow-200",
-    closed: "bg-gray-100 text-gray-800 border-gray-200",
-    resolved: "bg-blue-100 text-blue-800 border-blue-200",
+  const handleSelect = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onSelect?.(e);
   };
 
-  const priorityColors = {
-    high: "bg-red-100 text-red-800 border-red-200",
-    medium: "bg-blue-100 text-blue-800 border-blue-200",
-    low: "bg-purple-100 text-purple-800 border-purple-200",
-    urgent: "bg-red-100 text-red-800 border-red-200",
+  const handleCopyId = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onCopyId?.(ticket.id, e);
   };
 
-  // Get customer and company names safely
-  const customerName = typeof ticket.customer === 'string' 
-    ? ticket.customer 
-    : ticket.customer.name;
+  const getActiveStateClasses = () => {
+    if (isActive) {
+      return "border-l-4 border-[#8B5CF6] bg-primary-50/80 shadow-[0_0_20px_rgba(139,92,246,0.4)] transform transition-all duration-300";
+    }
+    return "";
+  };
 
-  const companyName = typeof ticket.company === 'string'
-    ? ticket.company
-    : ticket.company.name;
-
-  const assigneeName = ticket.assignee 
-    ? (typeof ticket.assignee === 'string' 
-      ? ticket.assignee 
-      : ticket.assignee.name) 
-    : '';
-
-  return (
-    <div
-      className={`border rounded-lg overflow-hidden transition-all duration-200 ${
-        isActive
-          ? "border-primary/50 bg-primary/5 shadow-md"
-          : "border-gray-200 bg-white hover:border-gray-300"
-      } ${isLoading ? "opacity-70 pointer-events-none" : ""} ${
-        ticket.isUnread ? "border-l-4 border-l-primary" : ""
-      }`}
-    >
-      <div className="p-4">
-        <div className="flex items-start gap-3">
-          <div className="pt-0.5" onClick={onSelect}>
-            <Checkbox checked={isSelected} />
+  if (viewMode === "compact") {
+    return (
+      <Card className={`mb-2 overflow-hidden relative ${isSelected ? "border-primary" : ""} ${isLoading ? "opacity-60" : ""} ${getActiveStateClasses()}`}>
+        {isActive && (
+          <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#8B5CF6] animate-pulse"></div>
+        )}
+        <div className="flex items-center p-3">
+          {onSelect && (
+            <div className="mr-3" onClick={handleSelect}>
+              <Checkbox checked={isSelected} />
+            </div>
+          )}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center space-x-2">
+              {isActive && <ZapIcon className="h-4 w-4 text-[#8B5CF6] animate-pulse" />}
+              <h3 className={`text-sm font-medium truncate ${isActive ? "text-[#8B5CF6] font-semibold" : ""}`}>{ticket.subject}</h3>
+              {ticket.isUnread && <Badge className="bg-blue-500">New</Badge>}
+            </div>
+            <p className="text-xs text-gray-500 truncate">
+              {ticket.customer} • {formatDistanceToNow(new Date(ticket.createdAt), { addSuffix: true })}
+            </p>
           </div>
-          <div className="flex-1 space-y-2 min-w-0">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <div className="flex items-center gap-2 min-w-0">
-                {ticket.hasNotification && (
-                  <div className="flex-none">
-                    {ticket.notificationType === "mention" ? (
-                      <Badge
-                        variant="secondary"
-                        className="flex items-center bg-blue-100 hover:bg-blue-200 text-blue-700"
-                      >
-                        <AtSign className="mr-1 h-3 w-3" />
-                        Mention
-                      </Badge>
-                    ) : (
-                      <Badge
-                        variant="secondary"
-                        className="flex items-center bg-purple-100 hover:bg-purple-200 text-purple-700"
-                      >
-                        Assignment
-                      </Badge>
-                    )}
-                  </div>
-                )}
-                <h3 className="text-sm font-medium text-gray-900 truncate">
-                  {ticket.subject}
-                </h3>
-              </div>
-              <div className="flex items-center gap-2 ml-auto">
-                <Badge className={statusColors[ticket.status]}>
-                  {ticket.status.charAt(0).toUpperCase() + ticket.status.slice(1)}
-                </Badge>
-                <Badge className={priorityColors[ticket.priority]}>
-                  {ticket.priority.charAt(0).toUpperCase() + ticket.priority.slice(1)}
-                </Badge>
-              </div>
-            </div>
-
-            <div
-              className={`flex ${
-                viewMode === "detailed" ? "flex-col" : "flex-row items-center justify-between"
-              } gap-2`}
-            >
-              <p
-                className={`text-gray-700 ${
-                  viewMode === "detailed" ? "line-clamp-2" : "line-clamp-1"
-                } text-sm`}
-              >
-                {ticket.lastMessage}
-              </p>
-              <div className="flex items-center gap-2 text-xs text-gray-500">
-                <Clock className="h-3 w-3" />
-                <span>{formattedDate}</span>
-              </div>
-            </div>
-
-            {viewMode === "detailed" && (
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2 justify-between">
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <p>{customerName}</p>
-                  <span className="text-gray-400">•</span>
-                  <p>{companyName}</p>
-                </div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  {ticket.tags?.map((tag) => (
-                    <Badge
-                      key={tag}
-                      variant="outline"
-                      className="text-xs bg-gray-50 hover:bg-gray-100"
-                    >
-                      <Tag className="mr-1 h-2.5 w-2.5" />
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {viewMode === "detailed" && (
-              <div className="flex items-center justify-between">
-                <div className="text-sm text-gray-500">
-                  {ticket.assignee ? (
-                    <p>Assigned to: {assigneeName}</p>
-                  ) : (
-                    <p className="text-amber-600">Unassigned</p>
-                  )}
-                </div>
-                <div
-                  className="text-xs text-gray-500 flex items-center cursor-pointer hover:text-gray-700"
-                  onClick={(e) => onCopyId && onCopyId(ticket.id, e)}
-                >
-                  <span className="mr-1">ID: {ticket.id}</span>
-                  <Copy className="h-3 w-3" />
-                </div>
-              </div>
-            )}
+          <div className="flex items-center space-x-2 ml-2">
+            <TicketStatusBadge status={ticket.status} size="sm" />
+            <TicketPriorityBadge priority={ticket.priority} size="sm" />
           </div>
         </div>
+      </Card>
+    );
+  }
+
+  if (viewMode === "card") {
+    return (
+      <Card className={`overflow-hidden relative ${isSelected ? "border-primary" : ""} ${isLoading ? "opacity-60" : ""} ${getActiveStateClasses()}`}>
+        {isActive && (
+          <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#8B5CF6] animate-pulse"></div>
+        )}
+        <div className="p-4">
+          <div className="flex items-start justify-between mb-2">
+            <div className="flex items-center">
+              {onSelect && (
+                <div className="mr-3" onClick={handleSelect}>
+                  <Checkbox checked={isSelected} />
+                </div>
+              )}
+              <div className="flex items-center">
+                {isActive && <ZapIcon className="h-4 w-4 text-[#8B5CF6] mr-1 animate-pulse" />}
+                <h3 className={`text-base font-medium ${isActive ? "text-[#8B5CF6] font-semibold" : ""}`}>{ticket.subject}</h3>
+              </div>
+              {ticket.isUnread && <Badge className="ml-2 bg-blue-500">New</Badge>}
+            </div>
+            <div className="flex space-x-1">
+              <TicketStatusBadge status={ticket.status} />
+              <TicketPriorityBadge priority={ticket.priority} />
+            </div>
+          </div>
+          <p className="text-sm text-gray-700 mb-3">{ticket.lastMessage}</p>
+          <div className="flex items-center justify-between text-xs text-gray-500">
+            <div className="flex items-center">
+              <User className="w-3 h-3 mr-1" />
+              <span>{ticket.customer}</span>
+              {ticket.company && (
+                <>
+                  <span className="mx-1">•</span>
+                  <span>{ticket.company}</span>
+                </>
+              )}
+            </div>
+            <div className="flex items-center">
+              <span>{formatDistanceToNow(new Date(ticket.createdAt), { addSuffix: true })}</span>
+              {onCopyId && (
+                <button 
+                  onClick={handleCopyId}
+                  className="ml-2 text-gray-400 hover:text-gray-600"
+                >
+                  <Copy className="w-3 h-3" />
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className={`mb-2 overflow-hidden relative ${isSelected ? "border-primary" : ""} ${isLoading ? "opacity-60" : ""} ${getActiveStateClasses()} transition-all duration-300`}>
+      {isActive && (
+        <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#8B5CF6] animate-pulse"></div>
+      )}
+      <div className={`flex items-center p-4 ${isActive ? "bg-primary-50/80" : ""}`}>
+        {onSelect && (
+          <div className="mr-4" onClick={handleSelect}>
+            <Checkbox checked={isSelected} />
+          </div>
+        )}
+        <div className="mr-4 flex-shrink-0">
+          <div className={`${isActive ? "bg-[#8B5CF6]/20" : "bg-gray-100"} rounded-full p-2 ${isActive ? "ring-2 ring-[#8B5CF6]/40 animate-pulse" : ""}`}>
+            <Mail className={`h-5 w-5 ${isActive ? "text-[#8B5CF6]" : "text-gray-500"}`} />
+          </div>
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center">
+            {isActive && <ZapIcon className="h-4 w-4 text-[#8B5CF6] mr-1 animate-pulse" />}
+            <h3 className={`text-sm font-medium ${isActive ? "text-[#8B5CF6] font-semibold" : ""}`}>{ticket.subject}</h3>
+            {ticket.isUnread && <Badge className="ml-2 bg-blue-500">New</Badge>}
+            {ticket.hasNotification && (
+              <Badge className="ml-2 bg-amber-500">
+                {ticket.notificationType === "mention" ? "Mention" : "Assignment"}
+              </Badge>
+            )}
+          </div>
+          <p className="text-xs text-gray-500 mb-1">
+            From: {ticket.customer} {ticket.company && `(${ticket.company})`}
+          </p>
+          <p className={`text-sm ${isActive ? "text-gray-800" : "text-gray-700"} truncate`}>{ticket.lastMessage}</p>
+        </div>
+        <div className="ml-4 flex-shrink-0 flex flex-col items-end space-y-2">
+          <div className="flex space-x-2">
+            <TicketStatusBadge status={ticket.status} />
+            <TicketPriorityBadge priority={ticket.priority} />
+          </div>
+          <div className="flex items-center text-xs text-gray-500">
+            <span>{formatDistanceToNow(new Date(ticket.createdAt), { addSuffix: true })}</span>
+            {onCopyId && (
+              <button 
+                onClick={handleCopyId}
+                className="ml-2 text-gray-400 hover:text-gray-600"
+              >
+                <Copy className="w-3 h-3" />
+              </button>
+            )}
+          </div>
+          {ticket.tags.length > 0 && (
+            <div className="flex gap-1 flex-wrap justify-end mt-2">
+              {ticket.tags.slice(0, 2).map((tag) => (
+                <Badge key={tag} variant="outline" className="text-xs">
+                  {tag}
+                </Badge>
+              ))}
+              {ticket.tags.length > 2 && (
+                <Badge variant="outline" className="text-xs">
+                  +{ticket.tags.length - 2}
+                </Badge>
+              )}
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </Card>
   );
 };
 

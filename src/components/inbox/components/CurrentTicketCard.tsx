@@ -25,10 +25,6 @@ const CurrentTicketCard = ({ ticket, isOpen, onToggle }: CurrentTicketCardProps)
     });
   };
 
-  const assigneeName = ticket.assignee ? 
-    (typeof ticket.assignee === 'string' ? ticket.assignee : ticket.assignee.name) 
-    : '';
-
   return (
     <Collapsible open={isOpen} onOpenChange={onToggle} className="group">
       <Card className="border shadow-sm hover:shadow-md transition-all duration-200">
@@ -113,7 +109,7 @@ const CurrentTicketCard = ({ ticket, isOpen, onToggle }: CurrentTicketCardProps)
             <div className="flex items-center justify-between py-2">
               <span className="text-gray-500 font-medium">Assigned To</span>
               <InlineEditField
-                value={assigneeName}
+                value={ticket.assignee || ''}
                 contactId={ticket.id}
                 field="assignee"
                 label="Assigned To"

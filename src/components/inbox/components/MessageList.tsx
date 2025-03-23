@@ -19,7 +19,7 @@ const MessageList = ({ messages, typingUsers, ticket, onReply, isLoading }: Mess
   if (isLoading) {
     return (
       <div className="flex-1 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" role="progressbar" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -32,11 +32,10 @@ const MessageList = ({ messages, typingUsers, ticket, onReply, isLoading }: Mess
             key={message.id}
             className={cn(
               "relative",
-              (message.type === 'internal_note' || message.isInternalNote) && 
-              "pl-8 border-l-2 border-yellow-400 bg-yellow-50/50 rounded-lg",
+              message.type === 'internal_note' && "pl-8 border-l-2 border-yellow-400 bg-yellow-50/50 rounded-lg",
             )}
           >
-            {(message.type === 'internal_note' || message.isInternalNote) && (
+            {message.type === 'internal_note' && (
               <div className="absolute left-2 top-3">
                 <StickyNote className="h-4 w-4 text-yellow-600" />
               </div>

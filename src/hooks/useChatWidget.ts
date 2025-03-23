@@ -1,28 +1,12 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { 
   initializeAbly, 
-  subscribeToConversation,
+  createConversation, 
   sendMessage,
+  subscribeToConversation,
+  getUserConversations,
   cleanupAblyConnection
 } from '@/utils/ably';
-import { v4 as uuidv4 } from 'uuid';
-
-/**
- * Custom type for user conversation metadata
- */
-interface ConversationMetadata {
-  id: string;
-  title: string;
-  status: 'active' | 'pending' | 'resolved';
-  createdAt: string;
-  updatedAt: string;
-  participants: Array<{
-    id: string;
-    name: string;
-    type: 'customer' | 'agent';
-  }>;
-}
 
 // Chat widget state interface
 interface ChatWidgetState {
@@ -119,21 +103,12 @@ export const useChatWidget = () => {
     initialMessage: string
   ) => {
     try {
-      // Generate a new conversation ID
-      const conversationId = `conv-${Date.now()}-${uuidv4().slice(0, 8)}`;
-      
-      // Create the conversation channel
-      const { publishToChannel } = await import('@/utils/ably/channelService');
-      
-      // Publish the initial conversation data
-      await publishToChannel('new-conversations', 'create', {
-        conversationId,
-        customerName: name,
-        customerEmail: email,
+      const conversationId = await createConversation(
+        name,
+        email,
         topic,
-        initialMessage,
-        timestamp: new Date().toISOString()
-      });
+        initialMessage
+      );
       
       setState(prev => ({ 
         ...prev, 
@@ -147,33 +122,6 @@ export const useChatWidget = () => {
       throw error;
     }
   }, []);
-
-  const getUserConversations = useCallback(async (): Promise<ConversationMetadata[]> => {
-    try {
-      if (!state.userId) return [];
-      
-      // This would be replaced with an actual API call in production
-      // Mock data for demo purposes
-      const conversations: ConversationMetadata[] = [
-        {
-          id: 'conv-1',
-          title: 'Support Request',
-          status: 'active', 
-          createdAt: new Date(Date.now() - 3600000).toISOString(),
-          updatedAt: new Date().toISOString(),
-          participants: [
-            { id: state.userId, name: 'Customer', type: 'customer' },
-            { id: 'agent-1', name: 'Support Agent', type: 'agent' }
-          ]
-        }
-      ];
-      
-      return conversations;
-    } catch (error) {
-      console.error('Failed to get user conversations:', error);
-      return [];
-    }
-  }, [state.userId]);
 
   const sendChatMessage = useCallback(async (text: string) => {
     if (!state.currentConversationId || !state.userId) {
@@ -213,8 +161,7 @@ export const useChatWidget = () => {
     
     // Conversation Actions
     startConversation,
-    sendChatMessage,
-    getUserConversations
+    sendChatMessage
   };
 };
 

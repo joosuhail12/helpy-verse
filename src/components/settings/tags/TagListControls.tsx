@@ -1,52 +1,51 @@
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Plus } from "lucide-react";
-import { SortingControls } from "@/components/inbox/SortingControls";
-import { SortField, FilterEntity } from "@/types/tag";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import type { SortField, FilterEntity } from '@/types/tag';
+import SortingControls from '@/components/inbox/SortingControls';
 
 interface TagListControlsProps {
-  onCreateTag: () => void;
-  searchQuery: string;
-  onSearchChange: (value: string) => void;
-  totalTags?: number;
-  filterEntity?: FilterEntity;
-  onFilterChange?: (entity: FilterEntity) => void;
-  sortField?: SortField;
-  sortDirection?: 'asc' | 'desc';
-  onSort?: (field: SortField) => void;
+  totalTags: number;
+  filterEntity: FilterEntity;
+  onFilterChange: (value: FilterEntity) => void;
+  sortField: SortField;
+  sortDirection: 'asc' | 'desc';
+  onSort: (field: SortField) => void;
 }
 
-const TagListControls = ({ 
-  onCreateTag, 
-  searchQuery, 
-  onSearchChange,
+const TagListControls = ({
   totalTags,
   filterEntity,
   onFilterChange,
   sortField,
   sortDirection,
-  onSort
+  onSort,
 }: TagListControlsProps) => {
   return (
-    <div className="flex flex-col sm:flex-row gap-3 justify-between">
-      <div className="flex flex-1 items-center">
-        <Input 
-          placeholder="Search tags..." 
-          value={searchQuery}
-          onChange={(e) => onSearchChange(e.target.value)}
-          className="max-w-sm"
-        />
+    <div className="mb-4 flex items-center justify-between">
+      <div className="text-sm text-gray-500">
+        {totalTags} {totalTags === 1 ? 'tag' : 'tags'} total
       </div>
-      
-      <div className="flex gap-2">
-        {sortField && sortDirection && onSort && (
-          <SortingControls />
-        )}
-        <Button onClick={onCreateTag}>
-          <Plus className="h-4 w-4 mr-2" />
-          Create Tag
-        </Button>
+      <div className="flex items-center gap-4">
+        <Select
+          value={filterEntity}
+          onValueChange={onFilterChange}
+        >
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Filter by entity" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All tags</SelectItem>
+            <SelectItem value="tickets">Used in tickets</SelectItem>
+            <SelectItem value="contacts">Used in contacts</SelectItem>
+            <SelectItem value="companies">Used in companies</SelectItem>
+          </SelectContent>
+        </Select>
+        <SortingControls
+          sortField={sortField as any}
+          sortDirection={sortDirection}
+          onSort={onSort as any}
+          compact
+        />
       </div>
     </div>
   );

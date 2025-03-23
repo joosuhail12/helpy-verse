@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import type { ConversationPanelProps } from './types';
@@ -10,7 +10,6 @@ import CustomerContextPanel from './CustomerContextPanel';
 import { useConversation } from './hooks/useConversation';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from "@/lib/utils";
-import { adaptMessage, adaptActiveUsers } from './types';
 import { 
   ResizablePanelGroup, 
   ResizablePanel, 
@@ -19,11 +18,11 @@ import {
 
 const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
   const {
-    messages: rawMessages,
+    messages,
     newMessage,
     setNewMessage,
     typingUsers,
-    activeUsers: rawActiveUsers,
+    activeUsers,
     handleSendMessage,
     handleTyping,
     isLoading,
@@ -33,15 +32,9 @@ const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
     setIsInternalNote
   } = useConversation(ticket);
   
-  // Convert activeUsers from string[] to UserPresence[]
-  const activeUsers = adaptActiveUsers(rawActiveUsers || []);
-  
-  // Adapt messages to ensure they match the expected Message type
-  const messages = rawMessages.map(message => adaptMessage(message));
-  
   const isMobile = useIsMobile();
 
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLDivElement>) => {
+  const handleKeyPress = async (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
@@ -56,7 +49,7 @@ const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
         <ConversationHeader 
           ticket={ticket} 
           onClose={onClose} 
-          activeUsers={activeUsers || []}
+          activeUsers={activeUsers}
         />
       </div>
       
@@ -65,7 +58,7 @@ const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
           <div className="flex-1 overflow-auto">
             <MessageList
               messages={messages}
-              typingUsers={typingUsers || []}
+              typingUsers={typingUsers}
               ticket={ticket}
               onReply={setNewMessage}
               isLoading={isLoading}
@@ -101,7 +94,7 @@ const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
               <div className="flex-1 overflow-auto">
                 <MessageList
                   messages={messages}
-                  typingUsers={typingUsers || []}
+                  typingUsers={typingUsers}
                   ticket={ticket}
                   onReply={setNewMessage}
                   isLoading={isLoading}

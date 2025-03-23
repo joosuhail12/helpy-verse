@@ -9,7 +9,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { mainNavItems } from '../navigationConfig';
-import { NavigationItem } from '../types/navigation';
+import { MainNavItem } from '../types/navigation';
 
 interface NavigationHeaderProps {
   activeMainNav: string;
@@ -22,14 +22,11 @@ const NavigationHeader = ({
   isSecondPanelCollapsed, 
   toggleSecondPanel 
 }: NavigationHeaderProps) => {
-  // Get the active navigation item's title
-  const activeNavTitle = mainNavItems.find(item => item.key === activeMainNav)?.title;
-  
   return (
     <div className="flex items-center justify-between mb-6">
       {!isSecondPanelCollapsed && (
         <h2 className="text-lg font-semibold text-gray-800 ml-2">
-          {activeNavTitle || 'Navigation'}
+          {mainNavItems.find(item => item.id === activeMainNav)?.title}
         </h2>
       )}
       <TooltipProvider delayDuration={0}>
@@ -62,3 +59,4 @@ const NavigationHeader = ({
 };
 
 export default NavigationHeader;
+

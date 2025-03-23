@@ -31,14 +31,6 @@ const NavigationItem = ({
   navigate,
   filterMenuItems,
 }: NavigationItemProps) => {
-  // Function to handle navigation
-  const handleNavigate = (path: string | undefined) => {
-    if (path) {
-      console.log(`NavigationItem: Navigating to: ${path}`);
-      navigate(path);
-    }
-  };
-
   // Parent items with children should toggle expansion instead of navigating
   if (item.children) {
     return (
@@ -53,13 +45,7 @@ const NavigationItem = ({
                 } ${hasActiveChild?.(item.children) 
                     ? 'bg-primary/5 text-primary shadow-sm hover:shadow-md' 
                     : 'hover:bg-primary/5'}`}
-                onClick={() => {
-                  toggleExpanded(item.title);
-                  // If there's a path, navigate to it
-                  if (item.path) {
-                    handleNavigate(item.path);
-                  }
-                }}
+                onClick={() => toggleExpanded(item.title)}
               >
                 <div className={`flex items-center ${isSecondPanelCollapsed ? 'justify-center' : 'gap-3'}`}>
                   {item.icon && (
@@ -101,10 +87,10 @@ const NavigationItem = ({
                     <Button
                       variant="ghost"
                       className={`w-full flex items-center justify-start text-sm px-4 py-2 rounded-lg transition-all duration-300 group
-                        ${isItemActive(child.path || '') 
+                        ${isItemActive(child.path) 
                           ? 'bg-primary/5 text-primary shadow-sm hover:shadow-md' 
                           : 'hover:bg-primary/5'}`}
-                      onClick={() => handleNavigate(child.path)}
+                      onClick={() => navigate(child.path)}
                     >
                       <span className="transition-colors group-hover:text-primary">
                         {child.title}
@@ -137,10 +123,10 @@ const NavigationItem = ({
             variant="ghost"
             className={`w-full flex items-center rounded-lg transition-all duration-300 group ${
               isSecondPanelCollapsed ? 'justify-center p-2' : 'justify-start px-4 py-2'
-            } ${isItemActive(item.path || '') 
+            } ${isItemActive(item.path) 
                 ? 'bg-primary/5 text-primary shadow-sm hover:shadow-md' 
                 : 'hover:bg-primary/5'}`}
-            onClick={() => handleNavigate(item.path)}
+            onClick={() => navigate(item.path)}
           >
             <div className={`flex items-center ${isSecondPanelCollapsed ? 'justify-center' : 'gap-3'}`}>
               {item.icon && (

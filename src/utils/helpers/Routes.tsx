@@ -1,3 +1,4 @@
+
 import { ReactNode } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { isAuthenticated } from "@/utils/auth/tokenManager";
@@ -13,7 +14,7 @@ export const PrivateRoute = ({ children }: RouteProps): JSX.Element => {
     console.log("PrivateRoute: Checking authentication status for path:", location.pathname);
     
     const isAuth = isAuthenticated();
-    console.log(`PrivateRoute: Authentication status: ${isAuth ? 'Authenticated' : 'Not authenticated'}`);
+    console.log(`PrivateRoute: Token exists: ${isAuth ? 'true' : 'false'} ${isAuth ? 'Token value found' : 'No token found'}`);
     
     if (isAuth) {
         console.log("PrivateRoute: Token exists, rendering protected content for path:", location.pathname);
@@ -21,7 +22,7 @@ export const PrivateRoute = ({ children }: RouteProps): JSX.Element => {
     }
     
     console.log("PrivateRoute: No token, redirecting to login from path:", location.pathname);
-    return <Navigate to="/sign-in" state={{ from: location.pathname }} replace />;
+    return <Navigate to="/sign-in" state={{ from: location.pathname }} />;
 };
 
 // Public Route Component
@@ -41,7 +42,7 @@ export const PublicRoute = ({ children }: RouteProps): JSX.Element => {
     // If user is authenticated and trying to access a non-public page, redirect to inbox
     if (isAuthenticated()) {
         console.log("PublicRoute: User is authenticated, redirecting to inbox");
-        return <Navigate to="/home/inbox/all" replace />;
+        return <Navigate to="/home/inbox/all" />;
     }
     
     // Otherwise allow access

@@ -1,61 +1,71 @@
 
-import { Button } from '@/components/ui/button';
-import { AlertCircle, CheckCircle, Tag, User } from 'lucide-react';
+import { Archive, Ban, CheckCircle2, Clock, Trash2, UserCheck2, UserX2 } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 
 interface TicketActionsProps {
   selectedTickets: string[];
-  markAsRead: (ids: string[]) => void;
-  markAsUnread: (ids: string[]) => void;
+  markAsRead: (ticketIds: string[]) => void;
+  markAsUnread: (ticketIds: string[]) => void;
 }
 
-const TicketActions = ({
-  selectedTickets,
-  markAsRead,
-  markAsUnread
-}: TicketActionsProps) => {
+const TicketActions = ({ selectedTickets, markAsRead, markAsUnread }: TicketActionsProps) => {
   if (selectedTickets.length === 0) return null;
 
   return (
-    <div className="flex gap-1">
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => markAsRead(selectedTickets)}
-        className="flex items-center"
-      >
-        <CheckCircle className="h-4 w-4 mr-1" />
-        <span className="sr-only sm:not-sr-only">Mark Read</span>
-      </Button>
-      
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => markAsUnread(selectedTickets)}
-        className="flex items-center"
-      >
-        <AlertCircle className="h-4 w-4 mr-1" />
-        <span className="sr-only sm:not-sr-only">Mark Unread</span>
-      </Button>
-      
-      <Button
-        variant="ghost"
-        size="sm"
-        className="flex items-center"
-      >
-        <Tag className="h-4 w-4 mr-1" />
-        <span className="sr-only sm:not-sr-only">Add Tag</span>
-      </Button>
-      
-      <Button
-        variant="ghost"
-        size="sm"
-        className="flex items-center"
-      >
-        <User className="h-4 w-4 mr-1" />
-        <span className="sr-only sm:not-sr-only">Assign</span>
-      </Button>
-    </div>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" className="flex items-center gap-2">
+          Actions
+          <span className="px-1.5 py-0.5 text-xs bg-primary/10 text-primary rounded-md">
+            {selectedTickets.length}
+          </span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuGroup>
+          <DropdownMenuItem onClick={() => markAsRead(selectedTickets)}>
+            <CheckCircle2 className="mr-2 h-4 w-4" />
+            <span>Mark as Read</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => markAsUnread(selectedTickets)}>
+            <Clock className="mr-2 h-4 w-4" />
+            <span>Mark as Unread</span>
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+        <DropdownMenuSeparator />
+        <DropdownMenuGroup>
+          <DropdownMenuItem>
+            <UserCheck2 className="mr-2 h-4 w-4" />
+            <span>Assign to...</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem>
+            <UserX2 className="mr-2 h-4 w-4" />
+            <span>Unassign</span>
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+        <DropdownMenuSeparator />
+        <DropdownMenuGroup>
+          <DropdownMenuItem>
+            <Archive className="mr-2 h-4 w-4" />
+            <span>Archive Tickets</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem className="text-destructive">
+            <Trash2 className="mr-2 h-4 w-4" />
+            <span>Delete Tickets</span>
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };
 
 export default TicketActions;
+

@@ -1,7 +1,6 @@
 
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { Ticket as TicketType } from "@/types/ticket";
-import type { Company } from "@/types/company";
 import { useState } from "react";
 import CustomerHeader from './components/CustomerHeader';
 import CurrentTicketCard from './components/CurrentTicketCard';
@@ -23,7 +22,7 @@ const CustomerContextPanel = ({ ticket }: CustomerContextPanelProps) => {
     contact: true,
     company: true,
     timeline: false,
-    customObject: true
+    customObject: true // Set to true by default to show the custom object data
   });
 
   const toggleSection = (section: keyof typeof openSections) => {
@@ -55,17 +54,9 @@ const CustomerContextPanel = ({ ticket }: CustomerContextPanelProps) => {
     }
   ];
 
-  // Extract customerId safely
-  const customerId = typeof ticket.customer === 'string' 
-    ? ticket.customer 
-    : ticket.customer.id;
-
   return (
     <div className="h-full flex flex-col bg-white border-l transition-all duration-300 ease-in-out">
-      <CustomerHeader 
-        customer={ticket.customer} 
-        company={ticket.company as (string | Company | undefined)} 
-      />
+      <CustomerHeader customer={ticket.customer} company={ticket.company || ''} />
       
       <ScrollArea className={`flex-1 ${isMobile ? 'px-3 py-4' : 'p-4'}`}>
         <div className={`space-y-${isMobile ? '3' : '4'}`}>
@@ -77,19 +68,19 @@ const CustomerContextPanel = ({ ticket }: CustomerContextPanelProps) => {
           
           <ContactInfoCard
             customer={ticket.customer}
-            company={ticket.company as (string | Company | undefined)}
+            company={ticket.company || ''}
             isOpen={openSections.contact}
             onToggle={() => toggleSection('contact')}
           />
           
           <CompanyInfoCard
-            company={ticket.company as (string | Company | undefined)}
+            company={ticket.company || ''}
             isOpen={openSections.company}
             onToggle={() => toggleSection('company')}
           />
           
           <CustomObjectCard
-            customerId={customerId}
+            customerId={ticket.customer}
             ticketId={ticket.id}
             isOpen={openSections.customObject}
             onToggle={() => toggleSection('customObject')}

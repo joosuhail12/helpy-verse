@@ -1,8 +1,7 @@
 
-import React from 'react';
-import { Button } from '@/components/ui/button';
 import { LayoutList, LayoutGrid } from 'lucide-react';
-import type { ViewMode } from '@/types/ticket';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { ViewMode } from '@/types/ticket';
 
 interface ViewToggleProps {
   viewMode: ViewMode;
@@ -11,26 +10,16 @@ interface ViewToggleProps {
 
 const ViewToggle = ({ viewMode, onChangeViewMode }: ViewToggleProps) => {
   return (
-    <div className="flex border rounded-md overflow-hidden">
-      <Button
-        variant={viewMode === 'compact' ? "default" : "ghost"}
-        size="sm"
-        className="rounded-none px-2"
-        onClick={() => onChangeViewMode('compact')}
-        title="Compact view"
-      >
+    <ToggleGroup type="single" value={viewMode} onValueChange={(value) => {
+      if (value) onChangeViewMode(value as ViewMode);
+    }}>
+      <ToggleGroupItem value="list" aria-label="List view">
         <LayoutList className="h-4 w-4" />
-      </Button>
-      <Button
-        variant={viewMode === 'detailed' ? "default" : "ghost"}
-        size="sm"
-        className="rounded-none px-2"
-        onClick={() => onChangeViewMode('detailed')}
-        title="Detailed view"
-      >
+      </ToggleGroupItem>
+      <ToggleGroupItem value="card" aria-label="Card view">
         <LayoutGrid className="h-4 w-4" />
-      </Button>
-    </div>
+      </ToggleGroupItem>
+    </ToggleGroup>
   );
 };
 

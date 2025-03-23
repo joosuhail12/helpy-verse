@@ -1,3 +1,4 @@
+
 import { MessageSquare, Building, Tag, Clock, User, UserX, Copy, CheckCircle, Circle, ZapIcon } from 'lucide-react';
 import { formatDistanceToNow, format } from 'date-fns';
 import {
@@ -43,7 +44,7 @@ interface TicketCardProps {
 }
 
 const TicketCard = ({ ticket, viewMode, onCopyId, isActive = false }: TicketCardProps) => {
-  const isCompact = viewMode === 'compact';
+  const isCompact = viewMode === 'list';
 
   const getActiveStateClasses = () => {
     if (isActive) {

@@ -1,89 +1,77 @@
 
-import { getAblyChannel } from '../channelService';
-import { ChatMessage } from '../types';
+/**
+ * Real-time messaging functionality using Ably
+ */
+import { v4 as uuidv4 } from 'uuid';
+import { ChatMessage, ParticipantInfo } from '../types';
 
 /**
- * Subscribe to a ticket channel for updates
+ * Send a message to a conversation
  */
-export const subscribeToTicket = async (
-  ticketId: string,
-  onUpdate: (data: any) => void
-): Promise<() => void> => {
-  const channel = await getAblyChannel(`ticket:${ticketId}`);
+export const sendMessage = async (
+  conversationId: string,
+  text: string,
+  sender: any,
+  messageId?: string
+): Promise<{ id: string }> => {
+  // In a real implementation, this would send via Ably SDK
+  console.log(`Sending message to conversation ${conversationId}:`, { text, sender });
   
-  const handleTicketUpdate = (message: any) => {
-    onUpdate(message.data);
-  };
-  
-  channel.subscribe('update', handleTicketUpdate);
-  
-  return () => {
-    channel.unsubscribe('update', handleTicketUpdate);
-  };
+  // Return message ID
+  return { id: messageId || uuidv4() };
 };
 
 /**
- * Subscribe to a conversation for real-time messages
+ * Subscribe to messages in a conversation
  */
 export const subscribeToConversation = async (
   conversationId: string,
   onMessage: (message: ChatMessage) => void
 ): Promise<() => void> => {
-  const channel = await getAblyChannel(`conversation:${conversationId}`);
-  
-  const handleMessage = (message: any) => {
-    onMessage(message.data);
-  };
-  
-  channel.subscribe('message', handleMessage);
+  // In a real implementation, this would use Ably subscription
+  console.log(`Subscribed to conversation ${conversationId}`);
   
   return () => {
-    channel.unsubscribe('message', handleMessage);
+    console.log(`Unsubscribed from conversation ${conversationId}`);
   };
 };
 
 /**
- * Send a message to a specific conversation
- */
-export const sendMessage = async (
-  conversationId: string,
-  messageText: string,
-  sender: any
-): Promise<void> => {
-  const channel = await getAblyChannel(`conversation:${conversationId}`);
-  
-  const message: ChatMessage = {
-    id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-    text: messageText,
-    sender,
-    timestamp: new Date().toISOString(),
-    conversationId,
-    userId: sender.id
-  };
-  
-  await channel.publish('message', message);
-};
-
-/**
- * Monitor enhanced presence information like typing, online status, etc.
+ * Monitor presence of participants in a conversation
  */
 export const monitorEnhancedPresence = async (
   conversationId: string,
-  onPresenceUpdate: (presence: any) => void
+  onParticipantsUpdate: (participants: ParticipantInfo[]) => void,
+  onPresenceEvent?: (event: { 
+    type: 'enter' | 'leave' | 'update'; 
+    participantId: string;
+    participantName: string; 
+  }) => void
 ): Promise<() => void> => {
-  const channel = await getAblyChannel(`conversation:${conversationId}`);
+  // In a real implementation, this would use Ably presence
+  console.log(`Monitoring presence for conversation ${conversationId}`);
   
-  const handlePresenceUpdate = (presenceMessage: any) => {
-    onPresenceUpdate({
-      clientId: presenceMessage.clientId,
-      data: presenceMessage.data,
-      action: presenceMessage.action
-    });
-  };
-  
-  channel.presence.subscribe(handlePresenceUpdate);
+  // Send initial mock participants
+  setTimeout(() => {
+    onParticipantsUpdate([
+      {
+        id: 'agent-1',
+        name: 'Support Agent',
+        type: 'agent',
+        status: 'online'
+      }
+    ]);
+    
+    if (onPresenceEvent) {
+      onPresenceEvent({
+        type: 'enter',
+        participantId: 'agent-1',
+        participantName: 'Support Agent'
+      });
+    }
+  }, 1000);
   
   return () => {
-    channel.presence.unsubscribe(handlePresenceUpdate);
+    console.log(`Stopped monitoring presence for conversation ${conversationId}`);
   };
 };

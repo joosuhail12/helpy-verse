@@ -1,6 +1,6 @@
 
-import React, { Suspense, useEffect } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import React, { Suspense } from 'react';
+import { Outlet } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import Sidebar from '@/components/dashboard/Sidebar';
 import RouteErrorBoundary from '@/components/app/RouteErrorBoundary';
@@ -16,23 +16,13 @@ const LoadingSpinner = () => (
  * Wraps content in route-level error boundary and suspense fallback
  */
 const DashboardLayout = () => {
-  const location = useLocation();
-  
-  useEffect(() => {
-    console.log('DashboardLayout: Rendering for path:', location.pathname);
-  }, [location]);
-  
   return (
     <div className="h-screen flex overflow-hidden bg-background">
       <Sidebar />
       <main className="flex-1 overflow-auto relative">
         <RouteErrorBoundary>
           <Suspense fallback={<LoadingSpinner />}>
-            <div className="h-full p-6">
-              <div className="h-full bg-white/80 backdrop-blur-md rounded-xl shadow-sm p-6 overflow-auto">
-                <Outlet />
-              </div>
-            </div>
+            <Outlet />
           </Suspense>
         </RouteErrorBoundary>
       </main>

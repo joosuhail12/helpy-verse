@@ -1,36 +1,25 @@
 
-import React from 'react';
+import { Inbox, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, InboxIcon } from 'lucide-react';
-import type { Ticket } from '@/types/ticket';
 
 interface EmptyTicketStateProps {
-  onCreateTicket?: (ticket: Ticket) => void;
+  onCreateTicket: () => void;
 }
 
 const EmptyTicketState = ({ onCreateTicket }: EmptyTicketStateProps) => {
-  const handleCreateTicket = () => {
-    if (onCreateTicket) {
-      // This would typically open a modal or form
-      console.log('Create ticket button clicked');
-    }
-  };
-
   return (
-    <div className="h-full flex flex-col items-center justify-center p-8 text-center">
-      <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mb-6">
-        <InboxIcon className="h-10 w-10 text-muted-foreground" />
+    <div className="flex flex-col items-center justify-center p-8 text-center h-full">
+      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+        <Inbox className="h-8 w-8 text-gray-400" />
       </div>
-      <h3 className="text-2xl font-semibold mb-2">No tickets found</h3>
-      <p className="text-muted-foreground max-w-md mb-6">
-        There are currently no tickets in this inbox. Create a new ticket to get started.
+      <h3 className="text-lg font-medium mb-2">No tickets yet</h3>
+      <p className="text-gray-500 max-w-md mb-6">
+        When customers contact you, their tickets will appear here. You can also create tickets manually.
       </p>
-      {onCreateTicket && (
-        <Button onClick={handleCreateTicket}>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Create New Ticket
-        </Button>
-      )}
+      <Button onClick={onCreateTicket}>
+        <Plus className="h-4 w-4 mr-2" />
+        Create Ticket
+      </Button>
     </div>
   );
 };

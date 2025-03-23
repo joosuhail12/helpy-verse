@@ -5,12 +5,12 @@
 
 // Message statuses
 export const MESSAGE_STATUS = {
-  QUEUED: 'queued' as const,
-  SENDING: 'sending' as const,
-  SENT: 'sent' as const,
-  DELIVERED: 'delivered' as const,
-  READ: 'read' as const,
-  FAILED: 'failed' as const
+  QUEUED: 'queued',
+  SENDING: 'sending',
+  SENT: 'sent',
+  DELIVERED: 'delivered',
+  READ: 'read',
+  FAILED: 'failed'
 };
 
 // File upload limits

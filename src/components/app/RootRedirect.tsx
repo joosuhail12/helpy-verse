@@ -1,31 +1,30 @@
 
 import { useEffect } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
-import { isAuthenticated } from '@/utils/auth/tokenManager';
+import { Navigate, useLocation } from 'react-router-dom';
+import { initializeApp } from './AppInitializer';
+import { getCookie } from '@/utils/helpers/helpers';
 
-/**
- * Handles redirection for root and /home paths to the appropriate dashboard page
- */
-const RootRedirect = () => {
-  const navigate = useNavigate();
-  const isAuth = isAuthenticated();
-  
-  console.log('RootRedirect: Checking auth status:', isAuth);
+const RootRedirect: React.FC = () => {
+  const location = useLocation();
   
   useEffect(() => {
-    // Add logging to track navigation
-    console.log('RootRedirect: Redirecting authenticated user to inbox');
+    console.log('Initializing app from RootRedirect');
+    initializeApp();
   }, []);
+
+  const token = getCookie("customerToken") || localStorage.getItem("token");
+  console.log('RootRedirect - token exists:', !!token, 'Current path:', location.pathname);
   
-  // If authenticated, redirect to inbox as the default landing page
-  if (isAuth) {
-    console.log('RootRedirect: User is authenticated, redirecting to /home/inbox/all');
-    return <Navigate to="/home/inbox/all" replace />;
+  // If we're already on a specific path, don't redirect
+  if (location.pathname !== '/home' && location.pathname !== '/home/') {
+    console.log('Already on a specific path, not redirecting');
+    return null;
   }
   
-  // If not authenticated, redirect to sign-in
-  console.log('RootRedirect: User is not authenticated, redirecting to /sign-in');
-  return <Navigate to="/sign-in" replace />;
+  // If authenticated, go to inbox, otherwise go to landing page
+  return token ? 
+    <Navigate to="/home/inbox/all" replace /> : 
+    <Navigate to="/" replace />;
 };
 
 export default RootRedirect;

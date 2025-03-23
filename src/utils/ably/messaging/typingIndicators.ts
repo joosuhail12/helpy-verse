@@ -1,74 +1,31 @@
 
-import { getAblyChannel } from '../channelService';
+/**
+ * Typing indicator functionality using Ably
+ */
 
 /**
- * Update the typing status of a user
+ * Monitor typing indicators in a conversation
  */
-export const updateTypingStatus = async (
-  channelName: string,
-  userId: string,
-  isTyping: boolean
-): Promise<void> => {
-  const channel = await getAblyChannel(channelName);
+export const monitorTypingIndicators = async (
+  conversationId: string,
+  onTypingUpdate: (typingUsers: string[]) => void
+): Promise<() => void> => {
+  // In a real implementation, this would use Ably presence for typing
+  console.log(`Monitoring typing indicators for conversation ${conversationId}`);
   
-  await channel.presence.update({
-    userId,
-    isTyping,
-    timestamp: Date.now()
-  });
+  return () => {
+    console.log(`Stopped monitoring typing for conversation ${conversationId}`);
+  };
 };
 
 /**
- * Monitor typing indicators from users in a channel
+ * Update typing status in a conversation
  */
-export const monitorTypingIndicators = async (
-  channelName: string,
-  callback: (typingUsers: string[]) => void
-): Promise<() => void> => {
-  const channel = await getAblyChannel(channelName);
-  
-  // Track who is currently typing
-  const typingUsers = new Map<string, { name: string, timestamp: number }>();
-  
-  // Cleanup timeout for stale typing indicators
-  const cleanupInterval = setInterval(() => {
-    const now = Date.now();
-    let changed = false;
-    
-    // Remove typing indicators older than 3 seconds
-    typingUsers.forEach((data, userId) => {
-      if (now - data.timestamp > 3000) {
-        typingUsers.delete(userId);
-        changed = true;
-      }
-    });
-    
-    if (changed) {
-      callback(Array.from(typingUsers.values()).map(data => data.name));
-    }
-  }, 1000);
-  
-  // Handle presence updates
-  const handlePresence = (presenceMessage: any) => {
-    const { clientId, data } = presenceMessage;
-    
-    if (data?.isTyping) {
-      typingUsers.set(clientId, {
-        name: data.name || clientId,
-        timestamp: Date.now()
-      });
-    } else {
-      typingUsers.delete(clientId);
-    }
-    
-    callback(Array.from(typingUsers.values()).map(data => data.name));
-  };
-  
-  channel.presence.subscribe(handlePresence);
-  
-  // Return cleanup function
-  return () => {
-    clearInterval(cleanupInterval);
-    channel.presence.unsubscribe(handlePresence);
-  };
+export const updateTypingStatus = async (
+  conversationId: string,
+  userId: string,
+  isTyping: boolean
+): Promise<void> => {
+  // In a real implementation, this would update Ably presence with typing status
+  console.log(`User ${userId} ${isTyping ? 'is typing' : 'stopped typing'} in conversation ${conversationId}`);
 };

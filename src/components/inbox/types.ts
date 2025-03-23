@@ -1,5 +1,6 @@
 
-// Define types for inbox components
+import type { Ticket } from '@/types/ticket';
+
 export interface UserPresence {
   userId: string;
   name: string;
@@ -8,106 +9,20 @@ export interface UserPresence {
     ticketId: string;
     area: string;
   };
-  isTyping?: boolean;
-  lastRead?: string;
 }
 
 export interface Message {
   id: string;
-  text?: string;
-  content?: string;
-  sender: {
-    id: string;
-    name: string;
-    type: 'agent' | 'customer' | 'system';
-  } | string;
+  content: string;
+  sender: string;
   timestamp: string;
-  isCustomer?: boolean;
-  type?: 'message' | 'internal_note';
-  isInternalNote?: boolean;
-  attachments?: Array<{
-    id: string;
-    url: string;
-    type: string;
-    name: string;
-    size?: number;
-  }>;
-  status?: 'sent' | 'delivered' | 'read' | 'failed' | 'pending';
+  isCustomer: boolean;
   readBy?: string[];
   reactions?: Record<string, string[]>;
-  ticketId?: string;
+  type?: 'message' | 'internal_note';
 }
 
 export interface ConversationPanelProps {
-  ticket: import('@/types/ticket').Ticket;
+  ticket: Ticket;
   onClose: () => void;
 }
-
-// Add a type adapter function to convert different message formats
-export const adaptMessage = (message: any): Message => {
-  // If it's already in the correct format
-  if ('id' in message && (
-    (typeof message.sender === 'object' && 'type' in message.sender) || 
-    typeof message.sender === 'string'
-  )) {
-    return message as Message;
-  }
-
-  // Need to adapt the message
-  const adaptedMessage: Message = {
-    id: message.id || `msg-${Date.now()}`,
-    content: message.content || message.text || '',
-    sender: adaptSender(message.sender),
-    timestamp: message.timestamp || new Date().toISOString(),
-    isInternalNote: message.isInternalNote || false,
-    attachments: message.attachments || []
-  };
-
-  return adaptedMessage;
-};
-
-// Helper to adapt sender to the correct format
-export const adaptSender = (sender: any): Message['sender'] => {
-  if (typeof sender === 'string') {
-    return sender;
-  }
-  
-  // If it's a Customer without type
-  if ('name' in sender && !('type' in sender)) {
-    return {
-      id: sender.id || 'unknown',
-      name: sender.name,
-      type: 'customer'
-    };
-  }
-  
-  // If it's a TeamMember without type
-  if ('email' in sender && !('type' in sender)) {
-    return {
-      id: sender.id || 'unknown',
-      name: sender.name || sender.email,
-      type: 'agent'
-    };
-  }
-  
-  // If it already has the right structure
-  if ('type' in sender) {
-    return sender;
-  }
-  
-  // Default fallback
-  return {
-    id: sender.id || 'unknown',
-    name: sender.name || 'Unknown',
-    type: 'system'
-  };
-};
-
-// Convert string array to UserPresence array
-export const adaptActiveUsers = (users: string[]): UserPresence[] => {
-  return users.map(user => ({
-    userId: user,
-    name: user,
-    lastActive: new Date().toISOString()
-  }));
-};

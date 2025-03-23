@@ -1,6 +1,7 @@
 
 import { lazy, Suspense } from 'react';
 import { Navigate } from 'react-router-dom';
+import { ProtectedRoute } from '../components/auth/ProtectedRoute';
 import { Loader2 } from 'lucide-react';
 import RouteErrorBoundary from '@/components/app/RouteErrorBoundary';
 
@@ -18,49 +19,36 @@ const Companies = lazy(() => import('../pages/contacts/Companies'));
 const CompanyDetail = lazy(() => import('../pages/contacts/CompanyDetail'));
 const ContactDetail = lazy(() => import('../pages/contacts/Detail'));
 
-// Helper function that correctly passes children to RouteErrorBoundary
-const withSuspenseAndErrorHandling = (Component) => (
-  <RouteErrorBoundary>
-    <Suspense fallback={<LoadingSpinner />}>
-      <Component />
-    </Suspense>
-  </RouteErrorBoundary>
+// Helper function to wrap a component with Suspense, ProtectedRoute and RouteErrorBoundary
+const withSuspenseAndProtection = (Component) => (
+  <ProtectedRoute>
+    <RouteErrorBoundary>
+      <Suspense fallback={<LoadingSpinner />}>
+        <Component />
+      </Suspense>
+    </RouteErrorBoundary>
+  </ProtectedRoute>
 );
 
 export const dashboardRoutes = [
   {
     path: '',
-    element: <Navigate to="/home/inbox/all" replace />,
-    errorElement: <RouteErrorBoundary><LoadingSpinner /></RouteErrorBoundary>,
-  },
-  {
-    path: 'home',
-    element: withSuspenseAndErrorHandling(Dashboard),
-    errorElement: <RouteErrorBoundary><LoadingSpinner /></RouteErrorBoundary>,
-  },
-  {
-    path: 'contacts',
-    element: <Navigate to="/home/contacts/all" replace />,
-    errorElement: <RouteErrorBoundary><LoadingSpinner /></RouteErrorBoundary>,
+    element: withSuspenseAndProtection(Dashboard),
   },
   {
     path: 'contacts/all',
-    element: withSuspenseAndErrorHandling(AllContacts),
-    errorElement: <RouteErrorBoundary><LoadingSpinner /></RouteErrorBoundary>,
+    element: withSuspenseAndProtection(AllContacts),
   },
   {
     path: 'contacts/companies',
-    element: withSuspenseAndErrorHandling(Companies),
-    errorElement: <RouteErrorBoundary><LoadingSpinner /></RouteErrorBoundary>,
+    element: withSuspenseAndProtection(Companies),
   },
   {
     path: 'contacts/companies/:id',
-    element: withSuspenseAndErrorHandling(CompanyDetail),
-    errorElement: <RouteErrorBoundary><LoadingSpinner /></RouteErrorBoundary>,
+    element: withSuspenseAndProtection(CompanyDetail),
   },
   {
     path: 'contacts/:id',
-    element: withSuspenseAndErrorHandling(ContactDetail),
-    errorElement: <RouteErrorBoundary><LoadingSpinner /></RouteErrorBoundary>,
+    element: withSuspenseAndProtection(ContactDetail),
   },
 ];

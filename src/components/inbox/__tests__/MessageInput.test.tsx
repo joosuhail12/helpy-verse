@@ -1,24 +1,24 @@
 
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import MessageInput from '../MessageInput';
-import { stringToCustomer, stringToCompany, stringToTeamMember } from '@/types/ticket';
 
 const mockTicket = {
   id: 'ticket123',
   subject: 'API Integration Help',
-  customer: stringToCustomer('David Lee'),
+  customer: 'David Lee',
   lastMessage: 'Need help with API integration',
-  assignee: stringToTeamMember('agent2'),
-  company: stringToCompany('DevTech Solutions'),
+  assignee: 'agent2',
+  company: 'DevTech Solutions',
   tags: ['api', 'integration'],
   status: 'open' as const,
   priority: 'high' as const,
   createdAt: '2024-03-15T11:00:00Z',
   updatedAt: '2024-03-15T11:05:00Z',
   isUnread: true,
-  recipients: ['david.lee@example.com']
+  categories: ['technical', 'api'],
+  recipients: ['david.lee@example.com'] // Added recipients array
 };
 
 describe('MessageInput', () => {

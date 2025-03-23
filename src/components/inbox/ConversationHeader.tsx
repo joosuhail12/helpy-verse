@@ -15,16 +15,6 @@ interface ConversationHeaderProps {
 }
 
 const ConversationHeader = ({ ticket, onClose, activeUsers }: ConversationHeaderProps) => {
-  const customerName = typeof ticket.customer === 'string' 
-    ? ticket.customer 
-    : ticket.customer.name;
-
-  const customerInitial = customerName[0];
-
-  const companyName = typeof ticket.company === 'string'
-    ? ticket.company
-    : ticket.company.name;
-
   return (
     <div className="border-b p-4 flex items-center justify-between bg-white">
       <div className="flex-1">
@@ -36,10 +26,10 @@ const ConversationHeader = ({ ticket, onClose, activeUsers }: ConversationHeader
         </div>
         <div className="flex items-center gap-2 mt-1">
           <Avatar className="h-5 w-5">
-            <span className="text-xs">{customerInitial}</span>
+            <span className="text-xs">{ticket.customer[0]}</span>
           </Avatar>
           <p className="text-sm text-muted-foreground">
-            {customerName} • {companyName}
+            {ticket.customer} • {ticket.company}
           </p>
         </div>
       </div>

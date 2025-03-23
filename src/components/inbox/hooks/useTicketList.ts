@@ -1,102 +1,129 @@
+import { useState, useCallback, useMemo } from 'react';
+import type { Ticket, SortField, SortDirection, ViewMode } from '@/types/ticket';
 
-import { useState, useMemo } from 'react';
-import type { Ticket, SortField, ViewMode } from '@/types/ticket';
-
-export const useTicketList = (initialTickets: Ticket[]) => {
+// This is a custom hook to manage ticket list state
+export const useTicketList = (initialTickets: Ticket[] = []) => {
   const [tickets, setTickets] = useState<Ticket[]>(initialTickets);
   const [selectedTickets, setSelectedTickets] = useState<string[]>([]);
   const [sortField, setSortField] = useState<SortField>('createdAt');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
-  const [viewMode, setViewMode] = useState<ViewMode>('detailed');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterStatus, setFilterStatus] = useState<string[]>([]);
+  const [filterPriority, setFilterPriority] = useState<string[]>([]);
+  const [filterAssignee, setFilterAssignee] = useState<string[]>([]);
+  
+  const handleSort = useCallback((field: SortField) => {
+    if (field === sortField) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  }, [sortField, sortDirection]);
 
-  const handleSelectTicket = (ticketId: string) => {
-    setSelectedTickets(prevSelected => {
-      if (prevSelected.includes(ticketId)) {
-        return prevSelected.filter(id => id !== ticketId);
-      } else {
-        return [...prevSelected, ticketId];
-      }
-    });
-  };
+  const handleSelectTicket = useCallback((ticketId: string) => {
+    setSelectedTickets((prev) =>
+      prev.includes(ticketId)
+        ? prev.filter((id) => id !== ticketId)
+        : [...prev, ticketId]
+    );
+  }, []);
 
-  const handleSelectAll = (select: boolean) => {
-    if (select) {
-      setSelectedTickets(tickets.map(ticket => ticket.id));
+  const handleSelectAll = useCallback((checked: boolean) => {
+    if (checked) {
+      setSelectedTickets(tickets.map((ticket) => ticket.id));
     } else {
       setSelectedTickets([]);
     }
-  };
+  }, [tickets]);
 
-  const handleSort = (field: SortField) => {
-    if (field === sortField) {
-      setSortDirection(prevDirection => prevDirection === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortField(field);
-      setSortDirection('desc');
-    }
-  };
+  const allSelected = useMemo(() => {
+    return tickets.length > 0 && selectedTickets.length === tickets.length;
+  }, [selectedTickets.length, tickets.length]);
 
+  const indeterminate = useMemo(() => {
+    return selectedTickets.length > 0 && selectedTickets.length < tickets.length;
+  }, [selectedTickets.length, tickets.length]);
+
+  // Sort tickets based on current sort field and direction
   const sortedTickets = useMemo(() => {
-    return [...tickets].sort((ticketA, ticketB) => {
-      let comparison = 0;
-      
-      switch (sortField) {
-        case 'subject':
-          comparison = ticketA.subject.localeCompare(ticketB.subject);
-          break;
-        case 'customer':
-          const customerA = typeof ticketA.customer === 'string' ? ticketA.customer : ticketA.customer.name;
-          const customerB = typeof ticketB.customer === 'string' ? ticketB.customer : ticketB.customer.name;
-          comparison = customerA.localeCompare(customerB);
-          break;
-        case 'company':
-          const companyA = typeof ticketA.company === 'string' ? ticketA.company : (ticketA.company?.name || '');
-          const companyB = typeof ticketB.company === 'string' ? ticketB.company : (ticketB.company?.name || '');
-          comparison = companyA.localeCompare(companyB);
-          break;
-        case 'priority':
-          const priorityOrder = { high: 3, medium: 2, low: 1 };
-          comparison = priorityOrder[ticketA.priority] - priorityOrder[ticketB.priority];
-          break;
-        case 'status':
-          const statusOrder = { open: 3, pending: 2, closed: 1 };
-          comparison = statusOrder[ticketA.status] - statusOrder[ticketB.status];
-          break;
-        case 'createdAt':
-          comparison = new Date(ticketA.createdAt).getTime() - new Date(ticketB.createdAt).getTime();
-          break;
-        case 'assignee':
-          const assigneeA = ticketA.assignee ? (typeof ticketA.assignee === 'string' ? ticketA.assignee : ticketA.assignee.name) : '';
-          const assigneeB = ticketB.assignee ? (typeof ticketB.assignee === 'string' ? ticketB.assignee : ticketB.assignee.name) : '';
-          comparison = assigneeA.localeCompare(assigneeB);
-          break;
-        default:
-          comparison = 0;
+    if (!tickets.length) return [];
+    
+    return [...tickets].sort((a, b) => {
+      if (sortField === 'createdAt') {
+        const dateA = new Date(a.createdAt).getTime();
+        const dateB = new Date(b.createdAt).getTime();
+        return sortDirection === 'asc' ? dateA - dateB : dateB - dateA;
       }
       
-      return sortDirection === 'asc' ? comparison : -comparison;
+      if (sortField === 'priority') {
+        const priorityValues = { high: 3, medium: 2, low: 1 };
+        const priorityA = priorityValues[a.priority as keyof typeof priorityValues];
+        const priorityB = priorityValues[b.priority as keyof typeof priorityValues];
+        return sortDirection === 'asc' ? priorityA - priorityB : priorityB - priorityA;
+      }
+      
+      // For string comparisons
+      const valueA = String(a[sortField]).toLowerCase();
+      const valueB = String(b[sortField]).toLowerCase();
+      
+      if (sortDirection === 'asc') {
+        return valueA.localeCompare(valueB);
+      } else {
+        return valueB.localeCompare(valueA);
+      }
     });
   }, [tickets, sortField, sortDirection]);
+  
+  const filteredTickets = useMemo(() => {
+    let filtered = sortedTickets;
 
-  // Calculate the ticket data for the SelectionControls component
-  const allSelected = tickets.length > 0 && selectedTickets.length === tickets.length;
-  const indeterminate = selectedTickets.length > 0 && selectedTickets.length < tickets.length;
+    if (searchQuery) {
+      const lowerCaseQuery = searchQuery.toLowerCase();
+      filtered = filtered.filter(ticket =>
+        ticket.subject.toLowerCase().includes(lowerCaseQuery) ||
+        ticket.customer.toLowerCase().includes(lowerCaseQuery)
+      );
+    }
+
+    if (filterStatus.length > 0) {
+      filtered = filtered.filter(ticket => filterStatus.includes(ticket.status));
+    }
+
+    if (filterPriority.length > 0) {
+      filtered = filtered.filter(ticket => filterPriority.includes(ticket.priority));
+    }
+
+    if (filterAssignee.length > 0) {
+      filtered = filtered.filter(ticket => filterAssignee.includes(ticket.assignee || 'unassigned'));
+    }
+
+    return filtered;
+  }, [sortedTickets, searchQuery, filterStatus, filterPriority, filterAssignee]);
 
   return {
     tickets,
     setTickets,
     selectedTickets,
+    setSelectedTickets,
     sortField,
     sortDirection,
     handleSort,
-    viewMode,
+    viewMode, 
     setViewMode,
     handleSelectTicket,
     handleSelectAll,
-    sortedTickets,
     allSelected,
     indeterminate,
+    searchQuery,
+    setSearchQuery,
+    filterStatus,
+    setFilterStatus,
+    filterPriority,
+    setFilterPriority,
+    filterAssignee,
+    setFilterAssignee,
+    filteredTickets,
   };
 };
-
-export default useTicketList;

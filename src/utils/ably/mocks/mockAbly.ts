@@ -8,7 +8,7 @@ import { eventHandlers } from '../events/eventRegistry';
 export function createMockAbly(): Ably.Realtime {
   return {
     connection: {
-      on: (event: string, callback: () => void) => {
+      on: (event: string, callback: Function) => {
         console.log(`Registered connection event handler: ${event}`);
         if (!eventHandlers['connection:' + event]) {
           eventHandlers['connection:' + event] = [];
@@ -35,7 +35,7 @@ export function createMockAbly(): Ably.Realtime {
             console.log(`Left ${channelName}`);
             return Promise.resolve();
           },
-          subscribe: (event: string, callback: () => void) => {
+          subscribe: (event: string, callback: Function) => {
             console.log(`Subscribed to presence ${event} on ${channelName}`);
             if (!eventHandlers[`presence:${channelName}:${event}`]) {
               eventHandlers[`presence:${channelName}:${event}`] = [];
@@ -53,7 +53,7 @@ export function createMockAbly(): Ably.Realtime {
             console.log(`Unsubscribed from presence on ${channelName}`);
           }
         },
-        subscribe: (eventName: string, callback: () => void) => {
+        subscribe: (eventName: string, callback: Function) => {
           console.log(`Subscribed to ${eventName} on channel ${channelName}`);
           if (!eventHandlers[`${channelName}:${eventName}`]) {
             eventHandlers[`${channelName}:${eventName}`] = [];
@@ -71,7 +71,7 @@ export function createMockAbly(): Ably.Realtime {
           // Simulate message delivery with low latency
           setTimeout(() => {
             (eventHandlers[`${channelName}:${eventName}`] || []).forEach(handler => {
-              handler();
+              handler({ data });
             });
           }, 100);
           
@@ -84,8 +84,7 @@ export function createMockAbly(): Ably.Realtime {
           console.log(`Detached from channel ${channelName}`);
           return Promise.resolve();
         }
-      }),
-      all: {} // Add this property for channels.all
+      })
     },
     close: () => {
       console.log('Mock Ably connection closed');

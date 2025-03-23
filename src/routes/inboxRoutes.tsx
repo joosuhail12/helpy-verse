@@ -1,53 +1,53 @@
 
 import { lazy, Suspense } from 'react';
-import { RouteObject, Navigate } from 'react-router-dom';
-import { LoadingSpinner } from './index';
+import { Navigate } from 'react-router-dom';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+import { Loader2 } from 'lucide-react';
 import RouteErrorBoundary from '@/components/app/RouteErrorBoundary';
 
-// Lazy load inbox pages
-const Inbox = lazy(() => import('../pages/Inbox'));
-const YourInbox = lazy(() => import('../pages/inbox/YourInbox'));
-const Unassigned = lazy(() => import('../pages/inbox/Unassigned'));
-const Mentions = lazy(() => import('../pages/inbox/Mentions'));
-const Channels = lazy(() => import('../pages/inbox/Channels'));
-const AllTickets = lazy(() => import('../pages/inbox/All'));
+// Define LoadingSpinner component at the top of the file to avoid reference errors
+const LoadingSpinner = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+  </div>
+);
 
-// Helper for creating consistent route objects with error handling
-const createInboxRoute = (path: string, Component: React.ComponentType) => ({
-  path,
-  element: (
+// Lazy load inbox pages
+const YourInbox = lazy(() => import('../pages/inbox/YourInbox'));
+const AllInbox = lazy(() => import('../pages/inbox/All'));
+const UnassignedInbox = lazy(() => import('../pages/inbox/Unassigned'));
+const MentionsInbox = lazy(() => import('../pages/inbox/Mentions'));
+
+// Helper function to wrap a component with Suspense, ProtectedRoute and RouteErrorBoundary
+const withSuspenseAndProtection = (Component) => (
+  <ProtectedRoute>
     <RouteErrorBoundary>
       <Suspense fallback={<LoadingSpinner />}>
         <Component />
       </Suspense>
     </RouteErrorBoundary>
-  )
-});
+  </ProtectedRoute>
+);
 
-export const inboxRoutes: RouteObject[] = [
+export const inboxRoutes = [
   {
     path: 'inbox',
-    element: (
-      <Suspense fallback={<LoadingSpinner />}>
-        <Navigate to="/home/inbox/all" replace />
-      </Suspense>
-    ),
+    element: <Navigate to="all" replace />,
   },
-  createInboxRoute('inbox/all', AllTickets),
-  createInboxRoute('inbox/your-inbox', YourInbox),
-  createInboxRoute('inbox/unassigned', Unassigned),
-  createInboxRoute('inbox/mentions', Mentions),
   {
-    path: 'inbox/channel/:channelId',
-    element: (
-      <RouteErrorBoundary>
-        <Suspense fallback={<LoadingSpinner />}>
-          <Channels />
-        </Suspense>
-      </RouteErrorBoundary>
-    ),
+    path: 'inbox/your-inbox',
+    element: withSuspenseAndProtection(YourInbox),
+  },
+  {
+    path: 'inbox/all',
+    element: withSuspenseAndProtection(AllInbox),
+  },
+  {
+    path: 'inbox/unassigned',
+    element: withSuspenseAndProtection(UnassignedInbox),
+  },
+  {
+    path: 'inbox/mentions',
+    element: withSuspenseAndProtection(MentionsInbox),
   },
 ];
-
-// Add debug logs for all routes
-console.log('Inbox routes initialized:', inboxRoutes.map(route => route.path));

@@ -3,69 +3,30 @@
  * Re-export Ably utilities for easier imports
  */
 
-// Re-export Ably connection functionality
-export { 
-  initializeAbly, 
-  getAblyInstance, 
-  setAblyInstance, 
-  connectionOptions 
-} from './ably/connection/connectionManager';
+// Re-export Ably functionality
+export * from './ably/ablyConnection';
+export * from './ably/conversationService';
+export * from './ably/channelService';
+export * from './ably/types';
 
-// Re-export channel services
-export {
-  getAblyChannel,
-  subscribeToChannel,
-  publishToChannel,
-  enterChannelPresence,
-  subscribeToPresence,
-  cleanupChannel
-} from './ably/channelService';
+// Import from messaging index
+import { 
+  sendMessage, 
+  subscribeToConversation, 
+  monitorEnhancedPresence 
+} from './ably/messaging/index';
 
-// Re-export messaging functionality
-export { 
-  subscribeToConversation,
-  subscribeToTicket,
-  monitorEnhancedPresence,
-  sendMessage 
-} from './ably/messaging/realTimeMessaging';
-
-// Re-export typing indicators
-export { 
+// Import typing indicators from their dedicated file
+import { 
   monitorTypingIndicators, 
   updateTypingStatus 
 } from './ably/messaging/typingIndicators';
 
-// Re-export offline messaging
+// Re-export everything
 export { 
-  queueMessage,
-  updateMessageStatus,
-  loadQueuedMessages,
-  saveQueuedMessages,
-  removeFromQueue,
-  checkForFailedMessages as hasFailedMessages,
-  resendFailedMessages as retryFailedMessages
-} from './ably/messaging/offlineMessaging';
-
-// Re-export file upload
-export { 
-  uploadFile, 
-  uploadFiles 
-} from './ably/messaging/fileUploadService';
-
-// Re-export cleanup function
-export { 
-  cleanupAblyConnection 
-} from './ably/connection/cleanup';
-
-// Re-export event handlers registry
-export { 
-  eventHandlers 
-} from './ably/events/eventRegistry';
-
-// Re-export types
-export type { 
-  ChatMessage, 
-  ParticipantInfo,
-  ConversationMetadata,
-  QueuedMessage
-} from './ably/types';
+  sendMessage, 
+  subscribeToConversation, 
+  monitorEnhancedPresence,
+  monitorTypingIndicators, 
+  updateTypingStatus 
+};

@@ -2,7 +2,7 @@
 import { ChevronLeft, ChevronRight, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation, NavigateFunction } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import MainNavigation from './MainNavigation';
 import SubNavigation from './SubNavigation';
 import { mainNavItems, subNavItems } from './navigationConfig';
@@ -16,26 +16,22 @@ const Sidebar = () => {
   const dispatch = useAppDispatch();
   
   // Get the current route segment to determine active nav
-  const currentPathParts = location.pathname.split('/');
-  const initialMainNav = 
-    currentPathParts[1] === 'home' && currentPathParts[2] 
-      ? currentPathParts[2] 
-      : 'home';
+  const currentRoute = location.pathname.split('/');
+  const initialMainNav = currentRoute[1] === 'inbox' ? 'inbox' : 
+                        (currentRoute[1] === 'home' && currentRoute[2] ? currentRoute[2] : 'home');
   
   const [activeMainNav, setActiveMainNav] = useState(initialMainNav);
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const [isSecondPanelCollapsed, setIsSecondPanelCollapsed] = useState(false);
 
-  console.log('Sidebar - Current path:', location.pathname);
-  console.log('Sidebar - activeMainNav:', activeMainNav);
-
   // Update activeMainNav when route changes
   useEffect(() => {
-    const pathParts = location.pathname.split('/');
-    if (pathParts[1] === 'home' && pathParts[2]) {
-      console.log('Updating activeMainNav to:', pathParts[2]);
-      setActiveMainNav(pathParts[2]);
-    } else if (pathParts[1] === 'home') {
+    const currentRoute = location.pathname.split('/');
+    if (currentRoute[1] === 'inbox') {
+      setActiveMainNav('inbox');
+    } else if (currentRoute[1] === 'home' && currentRoute[2]) {
+      setActiveMainNav(currentRoute[2]);
+    } else if (currentRoute[1] === 'home') {
       setActiveMainNav('home');
     }
   }, [location]);
@@ -49,14 +45,6 @@ const Sidebar = () => {
       title: "Logged out",
       description: "You have been logged out successfully"
     });
-    
-    // Force navigation to sign-in page
-    navigate('/sign-in');
-  };
-
-  const handleNavigate = (path: string) => {
-    console.log(`Sidebar: Navigating to ${path}`);
-    navigate(path);
   };
 
   const toggleExpanded = (itemTitle: string) => {
@@ -78,10 +66,7 @@ const Sidebar = () => {
     <>
       <div className="w-16 min-h-screen bg-white/80 backdrop-blur-xl border-r border-purple-100/50 shadow-lg flex flex-col items-center justify-between py-6 relative z-10">
         <div className="flex flex-col items-center gap-8">
-          <div 
-            className="relative group cursor-pointer" 
-            onClick={() => navigate('/home')}
-          >
+          <div className="relative group">
             <div className="absolute inset-0 bg-gradient-to-tr from-purple-500/20 to-blue-500/20 rounded-full blur-xl group-hover:blur-2xl transition-all duration-300 opacity-0 group-hover:opacity-100" />
             <img 
               src="https://framerusercontent.com/images/9N8Z1vTRbJsHlrIuTjm6Ajga4dI.png" 
@@ -93,7 +78,7 @@ const Sidebar = () => {
           <MainNavigation 
             activeMainNav={activeMainNav}
             setActiveMainNav={setActiveMainNav}
-            navigate={handleNavigate}
+            navigate={navigate}
           />
         </div>
 
@@ -116,7 +101,7 @@ const Sidebar = () => {
           toggleSecondPanel={toggleSecondPanel}
           expandedItems={expandedItems}
           toggleExpanded={toggleExpanded}
-          navigate={handleNavigate}
+          navigate={navigate}
         />
       )}
     </>

@@ -2,20 +2,12 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import MessageList from '../components/MessageList';
-import type { Message } from '../types';
-import type { Ticket } from '@/types/ticket';
-import { stringToCustomer, stringToCompany, stringToTeamMember } from '@/types/ticket';
 
-const mockMessages: Message[] = [
+const mockMessages = [
   {
     id: 'msg1',
     content: 'Having issues with the latest update',
-    sender: {
-      id: 'customer1',
-      name: 'Alice Chen',
-      type: 'customer'
-    },
-    text: 'Having issues with the latest update',
+    sender: 'Alice Chen',
     timestamp: '2024-03-15T10:30:00Z',
     isCustomer: true,
     readBy: []
@@ -23,12 +15,7 @@ const mockMessages: Message[] = [
   {
     id: 'msg2',
     content: 'Let me look into that for you right away',
-    sender: {
-      id: 'agent1',
-      name: 'Support Agent',
-      type: 'agent'
-    },
-    text: 'Let me look into that for you right away',
+    sender: 'Support Agent',
     timestamp: '2024-03-15T10:32:00Z',
     isCustomer: false,
     readBy: ['agent1']
@@ -36,33 +23,29 @@ const mockMessages: Message[] = [
   {
     id: 'msg3',
     content: 'Customer mentioned previous incidents - need to check history',
-    sender: {
-      id: 'agent1',
-      name: 'Support Agent',
-      type: 'agent'
-    },
-    text: 'Customer mentioned previous incidents - need to check history',
+    sender: 'Support Agent',
     timestamp: '2024-03-15T10:33:00Z',
     isCustomer: false,
-    type: 'internal_note',
+    type: 'internal_note' as const,
     readBy: ['agent1']
   }
 ];
 
-const mockTicket: Ticket = {
+const mockTicket = {
   id: 'ticket123',
   subject: 'Issue with Latest Update',
-  customer: stringToCustomer('Alice Chen'),
+  customer: 'Alice Chen',
   lastMessage: 'Having issues with the latest update',
-  assignee: stringToTeamMember('agent1'),
-  company: stringToCompany('TechCorp Ltd'),
+  assignee: 'agent1',
+  company: 'TechCorp Ltd',
   tags: ['bug', 'high-priority'],
-  status: 'open',
-  priority: 'high',
+  status: 'open' as const,
+  priority: 'high' as const,
   createdAt: '2024-03-15T10:30:00Z',
-  updatedAt: '2024-03-15T10:30:00Z',
+  updatedAt: '2024-03-15T10:33:00Z',
   isUnread: true,
-  recipients: ['alice.chen@example.com']
+  categories: ['technical', 'software'],
+  recipients: ['alice.chen@example.com'] // Added recipients array
 };
 
 describe('MessageList', () => {

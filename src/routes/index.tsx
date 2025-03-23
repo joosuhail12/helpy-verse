@@ -84,42 +84,26 @@ export const router = createBrowserRouter([
   },
   {
     path: '/sign-in',
-    element: (
-      <PublicRoute>
-        {withSuspenseAndErrorHandling(SignIn)}
-      </PublicRoute>
-    ),
+    element: withSuspenseAndErrorHandling(SignIn),
   },
   {
     path: '/forgot-password',
-    element: (
-      <PublicRoute>
-        {withSuspenseAndErrorHandling(ForgotPassword)}
-      </PublicRoute>
-    ),
+    element: withSuspenseAndErrorHandling(ForgotPassword),
   },
   {
     path: '/reset-password',
-    element: (
-      <PublicRoute>
-        {withSuspenseAndErrorHandling(ResetPassword)}
-      </PublicRoute>
-    ),
+    element: withSuspenseAndErrorHandling(ResetPassword),
   },
   {
     path: '/sign-up',
-    element: (
-      <PublicRoute>
-        {withSuspenseAndErrorHandling(SignUp)}
-      </PublicRoute>
-    ),
+    element: withSuspenseAndErrorHandling(SignUp),
   },
   {
     path: '/widget/chat',
     element: withSuspenseAndErrorHandling(ChatWidgetStandalonePage),
   },
   {
-    path: '/home/*',
+    path: '/home',
     element: (
       <PrivateRoute>
         <Suspense fallback={<LoadingSpinner />}>

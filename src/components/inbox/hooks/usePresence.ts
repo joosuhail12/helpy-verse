@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
-import { getAblyChannel, subscribeToPresence, enterChannelPresence } from '@/utils/ably';
+import { getAblyChannel } from '@/utils/ably';
 import type { UserPresence, Message } from '../types';
 import type { Ticket } from '@/types/ticket';
 import type * as Ably from 'ably';
@@ -19,8 +19,9 @@ export const usePresence = (ticket: Ticket, setMessages: (updater: (prev: Messag
       setError(null);
       
       try {
-        // Enter the presence channel
-        await enterChannelPresence(`ticket:${ticket.id}`, {
+        const channel = await getAblyChannel(`ticket:${ticket.id}`);
+        
+        await channel.presence.enter({
           userId: 'Agent',
           name: 'Agent',
           lastActive: new Date().toISOString(),
@@ -30,99 +31,70 @@ export const usePresence = (ticket: Ticket, setMessages: (updater: (prev: Messag
           }
         });
 
-        // Set up presence subscriptions
-        const presenceSubscription = await subscribeToPresence(`ticket:${ticket.id}`, (member) => {
-          const presenceAction = member.action;
-          
-          if (presenceAction === 'enter') {
-            toast({
-              description: `${member.data?.name || 'Someone'} joined the conversation`,
-            });
-            setActiveUsers(prev => [...prev, member.data as UserPresence]);
-          } 
-          else if (presenceAction === 'leave') {
-            toast({
-              description: `${member.data?.name || 'Someone'} left the conversation`,
-            });
-            setActiveUsers(prev => prev.filter(user => user.userId !== member.data?.userId));
+        channel.presence.subscribe('enter', (member) => {
+          toast({
+            description: `${member.data.name} joined the conversation`,
+          });
+          setActiveUsers(prev => [...prev, member.data as UserPresence]);
+        });
+
+        channel.presence.subscribe('leave', (member) => {
+          toast({
+            description: `${member.data.name} left the conversation`,
+          });
+          setActiveUsers(prev => prev.filter(user => user.userId !== member.data.userId));
+        });
+
+        channel.presence.subscribe('update', (member) => {
+          if (member.data?.isTyping) {
+            setTypingUsers(prev => [...new Set([...prev, member.data.name])]);
+          } else {
+            setTypingUsers(prev => prev.filter(user => user !== member.data.name));
           }
-          else if (presenceAction === 'update') {
-            if (member.data?.isTyping) {
-              setTypingUsers(prev => [...new Set([...prev, member.data.name])]);
-            } else {
-              setTypingUsers(prev => prev.filter(user => user !== member.data.name));
-            }
 
-            if (member.data?.lastRead) {
-              setMessages(prev => prev.map(msg => ({
-                ...msg,
-                readBy: [...(msg.readBy || []), member.data.userId]
-              })));
-            }
+          if (member.data?.lastRead) {
+            setMessages(prev => prev.map(msg => ({
+              ...msg,
+              readBy: [...(msg.readBy || []), member.data.userId]
+            })));
+          }
 
-            if (member.data?.location) {
-              setActiveUsers(prev => prev.map(user => 
-                user.userId === member.data.userId 
-                  ? { ...user, location: member.data.location }
-                  : user
-              ));
-            }
+          if (member.data?.location) {
+            setActiveUsers(prev => prev.map(user => 
+              user.userId === member.data.userId 
+                ? { ...user, location: member.data.location }
+                : user
+            ));
           }
         });
 
-        // Get current presence data
-        const channel = await getAblyChannel(`ticket:${ticket.id}`);
-        try {
-          channel.presence.get((err, members) => {
-            if (err) {
-              console.error('Error getting presence data:', err);
-              return;
-            }
-            
-            if (members && Array.isArray(members)) {
-              const presentMembers = members.map(member => ({
-                userId: member.clientId,
-                name: member.data?.name || 'Unknown',
-                lastActive: member.data?.lastActive || new Date().toISOString(),
-                location: member.data?.location
-              } as UserPresence));
-              setActiveUsers(presentMembers);
-            }
-          });
-        } catch (error) {
-          console.error('Error fetching presence data:', error);
+        const presencePromise = channel.presence.get();
+        const presenceData = await Promise.resolve(presencePromise) as unknown as Ably.Types.PresenceMessage[];
+        
+        if (presenceData && Array.isArray(presenceData)) {
+          const presentMembers = presenceData.map(member => ({
+            userId: member.clientId,
+            name: member.data?.name || 'Unknown',
+            lastActive: member.data?.lastActive || new Date().toISOString(),
+            location: member.data?.location
+          } as UserPresence));
+          setActiveUsers(presentMembers);
         }
 
         setIsLoading(false);
 
         return () => {
-          // Leave presence and clean up
-          const leavePresence = async () => {
-            try {
-              const channel = await getAblyChannel(`ticket:${ticket.id}`);
-              channel.presence.leave();
-            } catch (err) {
-              console.error('Error leaving presence:', err);
-            }
-          };
-          
-          leavePresence();
-          presenceSubscription();
+          channel.presence.leave();
+          channel.presence.unsubscribe();
         };
       } catch (error) {
         console.error('Error setting up presence:', error);
         setError('Failed to connect to the conversation. Please try again.');
         setIsLoading(false);
-        return () => {};
       }
     };
 
-    const cleanup = setupPresence();
-    return () => {
-      Promise.resolve(cleanup).then(cleanupFn => {
-        if (typeof cleanupFn === 'function') cleanupFn();
-      });
-    };
+    setupPresence();
   }, [ticket.id, toast, setMessages]);
 
   return { typingUsers, activeUsers, isLoading, error };

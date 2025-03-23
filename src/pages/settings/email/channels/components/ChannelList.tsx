@@ -41,9 +41,9 @@ export function ChannelList({
   
   const getTypeLabel = (type: EmailChannel['type']) => {
     switch (type) {
-      case 'outgoing':
+      case 'sending':
         return 'Sending Only';
-      case 'incoming':
+      case 'receiving':
         return 'Receiving Only';
       case 'both':
         return 'Sending & Receiving';
@@ -52,8 +52,8 @@ export function ChannelList({
 
   const getTypeIcon = (type: EmailChannel['type']) => {
     switch (type) {
-      case 'outgoing':
-      case 'incoming':
+      case 'sending':
+      case 'receiving':
         return <MessageCircle className="h-5 w-5" />;
       case 'both':
         return <Mail className="h-5 w-5" />;

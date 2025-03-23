@@ -9,17 +9,9 @@ import MentionList from '../components/MentionList';
  */
 const suggestion = (ticket: Ticket) => ({
   items: ({ query }: { query: string }) => {
-    const companyName = typeof ticket.company === 'string' 
-      ? ticket.company 
-      : (ticket.company?.name || '');
-    
-    const customerName = typeof ticket.customer === 'string'
-      ? ticket.customer
-      : ticket.customer.name;
-      
     const items = [
-      { label: customerName, value: 'customer' },
-      { label: companyName, value: 'company' },
+      { label: ticket.customer, value: 'customer' },
+      { label: ticket.company || 'Company', value: 'company' },
       { label: `Ticket #${ticket.id}`, value: 'ticket' },
     ];
     

@@ -129,9 +129,6 @@ const TagList = ({ searchQuery, currentPage, itemsPerPage, onPageChange }: TagLi
   return (
     <div>
       <TagListControls
-        onCreateTag={() => {}} // Pass an empty function since it's handled at page level
-        searchQuery={searchQuery}
-        onSearchChange={(value) => {/* No-op, handled at page level */}}
         totalTags={total}
         filterEntity={filterEntity}
         onFilterChange={setFilterEntity}

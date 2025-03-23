@@ -1,44 +1,49 @@
 
-/**
- * Registry for event handlers to manage cleanup
- */
-
-// Store cleanup functions by channel name
-export const eventHandlers: Record<string, (() => void)[]> = {};
+// Event listeners storage for cleanup
+export const eventHandlers: Record<string, Function[]> = {};
 
 /**
- * Register a cleanup function for a channel
+ * Register an event handler
  */
-export const registerCleanup = (channelName: string, cleanup: () => void): void => {
-  if (!eventHandlers[channelName]) {
-    eventHandlers[channelName] = [];
+export const registerEventHandler = (
+  eventKey: string, 
+  handler: Function
+): void => {
+  if (!eventHandlers[eventKey]) {
+    eventHandlers[eventKey] = [];
   }
-  
-  eventHandlers[channelName].push(cleanup);
+  eventHandlers[eventKey].push(handler);
 };
 
 /**
- * Clean up all handlers for a channel
+ * Remove an event handler
  */
-export const cleanupChannel = (channelName: string): void => {
-  if (eventHandlers[channelName]) {
-    eventHandlers[channelName].forEach(cleanup => {
-      try {
-        cleanup();
-      } catch (error) {
-        console.error(`Error during channel cleanup for ${channelName}:`, error);
-      }
-    });
-    
-    delete eventHandlers[channelName];
+export const removeEventHandler = (
+  eventKey: string, 
+  handler: Function
+): void => {
+  if (eventHandlers[eventKey]) {
+    const index = eventHandlers[eventKey].indexOf(handler);
+    if (index !== -1) {
+      eventHandlers[eventKey].splice(index, 1);
+    }
   }
 };
 
 /**
- * Clean up all handlers
+ * Clear all event handlers for a key
  */
-export const cleanupAllHandlers = (): void => {
-  Object.keys(eventHandlers).forEach(channelName => {
-    cleanupChannel(channelName);
+export const clearEventHandlers = (eventKey: string): void => {
+  if (eventHandlers[eventKey]) {
+    delete eventHandlers[eventKey];
+  }
+};
+
+/**
+ * Clear all event handlers
+ */
+export const clearAllEventHandlers = (): void => {
+  Object.keys(eventHandlers).forEach(key => {
+    delete eventHandlers[key];
   });
 };

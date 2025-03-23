@@ -3,22 +3,22 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import MessageToolbar from '../components/MessageToolbar';
-import { stringToCustomer, stringToCompany, stringToTeamMember } from '@/types/ticket';
 
 const mockTicket = {
   id: 'ticket123',
   subject: 'Feature Request: Mobile App',
-  customer: stringToCustomer('Sarah Johnson'),
+  customer: 'Sarah Johnson',
   lastMessage: 'Would love to see this in the mobile app',
-  assignee: stringToTeamMember('agent1'),
-  company: stringToCompany('MobileFirst Solutions'),
+  assignee: 'agent1',
+  company: 'MobileFirst Solutions',
   tags: ['feature-request', 'mobile'],
   status: 'open' as const,
   priority: 'medium' as const,
   createdAt: '2024-03-15T09:00:00Z',
   updatedAt: '2024-03-15T09:05:00Z',
   isUnread: false,
-  recipients: ['sarah.johnson@example.com']
+  categories: ['product', 'mobile'],
+  recipients: ['sarah.johnson@example.com'] // Added recipients array
 };
 
 describe('MessageToolbar', () => {

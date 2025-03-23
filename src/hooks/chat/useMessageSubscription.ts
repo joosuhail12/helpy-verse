@@ -1,8 +1,9 @@
 
 import { useEffect, useRef } from 'react';
+import { useDispatch } from 'react-redux';
+import { addMessage } from '@/store/slices/chat/chatSlice';
 import { subscribeToConversation } from '@/utils/ably';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { addMessage } from '@/store/slices/chat/chatSlice';
 
 /**
  * Hook for subscribing to real-time message updates
@@ -12,7 +13,7 @@ export const useMessageSubscription = (
   connectionState: string
 ) => {
   const dispatch = useAppDispatch();
-  const subscriptionRef = useRef<(() => void) | null>(null);
+  const subscriptionRef = useRef<() => void | null>(() => null);
   
   // Subscribe to real-time messages
   useEffect(() => {
@@ -26,47 +27,21 @@ export const useMessageSubscription = (
     console.log(`Subscribing to messages in conversation: ${conversationId}`);
     
     // Set up new subscription
-    const setupSubscription = async () => {
-      try {
-        const unsubscribe = await subscribeToConversation(conversationId, (chatMessage) => {
-          dispatch(addMessage({
-            conversationId,
-            message: {
-              id: chatMessage.id,
-              text: chatMessage.text,
-              sender: chatMessage.sender.type === 'agent' ? 'agent' : 'user',
-              timestamp: chatMessage.timestamp
-            }
-          }));
-        });
-        
-        // Store unsubscribe function
-        subscriptionRef.current = unsubscribe;
-        
-        return unsubscribe;
-      } catch (error) {
-        console.error(`Error subscribing to conversation ${conversationId}:`, error);
-        return () => {};
-      }
-    };
-    
-    // Setup the subscription and store the promise
-    const subscriptionPromise = setupSubscription();
+    subscriptionRef.current = subscribeToConversation(conversationId, (chatMessage) => {
+      dispatch(addMessage({
+        conversationId,
+        message: {
+          id: chatMessage.id,
+          text: chatMessage.text,
+          sender: chatMessage.sender.type === 'agent' ? 'agent' : 'user',
+          timestamp: chatMessage.timestamp
+        }
+      }));
+    });
     
     return () => {
-      // Handle cleanup when component unmounts
       if (subscriptionRef.current) {
         subscriptionRef.current();
-        subscriptionRef.current = null;
-      } else {
-        // Handle the case where the subscription promise hasn't resolved yet
-        subscriptionPromise.then(unsubscribe => {
-          if (unsubscribe) {
-            unsubscribe();
-          }
-        }).catch(err => {
-          console.error('Error during unsubscribe:', err);
-        });
       }
     };
   }, [dispatch, conversationId, connectionState]);
