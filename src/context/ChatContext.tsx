@@ -54,6 +54,8 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children, workspaceI
     const newConversation: Conversation = {
       id: uuidv4(),
       title: title || `Conversation ${new Date().toLocaleString()}`,
+      lastMessageTimestamp: new Date().toISOString(),
+      unreadCount: 0
     };
     
     setConversations(prev => [...prev, newConversation]);

@@ -6,3 +6,17 @@ export interface ChatMessage {
   timestamp: Date;
   conversationId: string;
 }
+
+export interface Conversation {
+  id: string;
+  title?: string;
+  lastMessage?: string;
+  lastMessageTimestamp?: string;
+  unreadCount?: number;
+}
+
+export interface TypingStatus {
+  userId: string;
+  username: string;
+  isTyping: boolean;
+}

@@ -3,6 +3,7 @@ import React, { useEffect, useRef } from 'react';
 import { useChat } from '@/hooks/chat/useChat';
 import MessageItem from './MessageItem';
 import { useThemeContext } from '@/context/ThemeContext';
+import { ChatMessage } from './types';
 
 interface MessageListProps {
   conversationId?: string;
@@ -10,8 +11,23 @@ interface MessageListProps {
 
 const MessageList: React.FC<MessageListProps> = ({ conversationId }) => {
   const { colors } = useThemeContext();
-  const { messages } = useChat();
+  const { getMessages } = useChat();
   const endOfMessagesRef = useRef<HTMLDivElement>(null);
+  const [messages, setMessages] = React.useState<ChatMessage[]>([]);
+
+  // Fetch messages for this conversation
+  useEffect(() => {
+    const fetchMessages = async () => {
+      if (conversationId) {
+        const fetchedMessages = await getMessages(conversationId);
+        if (fetchedMessages && Array.isArray(fetchedMessages)) {
+          setMessages(fetchedMessages);
+        }
+      }
+    };
+    
+    fetchMessages();
+  }, [conversationId, getMessages]);
 
   // Scroll to bottom on new messages
   useEffect(() => {
@@ -20,14 +36,9 @@ const MessageList: React.FC<MessageListProps> = ({ conversationId }) => {
     }
   }, [messages]);
 
-  // Filter messages by conversation ID if provided
-  const filteredMessages = conversationId
-    ? messages.filter(msg => msg.conversationId === conversationId)
-    : messages;
-
   return (
     <div className="space-y-4">
-      {filteredMessages.length === 0 ? (
+      {messages.length === 0 ? (
         <div 
           className="text-center py-6 text-gray-500"
           style={{ color: `${colors.foreground}88` }}
@@ -35,7 +46,7 @@ const MessageList: React.FC<MessageListProps> = ({ conversationId }) => {
           No messages yet. Start a conversation!
         </div>
       ) : (
-        filteredMessages.map((message) => (
+        messages.map((message) => (
           <MessageItem key={message.id} message={message} />
         ))
       )}
