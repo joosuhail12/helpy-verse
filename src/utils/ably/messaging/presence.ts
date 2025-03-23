@@ -1,143 +1,160 @@
 
 /**
- * Extended presence functionality for Ably
+ * Presence functionality for real-time chat
  */
-import { getAblyChannel, getWorkspaceChannelName } from '../../ably';
+import { getAblyChannel } from '../index';
 
-export interface ExtendedPresenceData {
-  clientId: string;
-  username?: string;
-  status: 'online' | 'away' | 'offline' | 'typing';
-  lastSeen: string;
-  metadata?: Record<string, any>;
-}
-
-// Enter chat with extended presence data
-export const enterChat = async (
-  workspaceId: string,
-  conversationId: string,
-  username?: string,
-  metadata: Record<string, any> = {}
-): Promise<void> => {
-  const channelName = getWorkspaceChannelName(workspaceId, `conversations:${conversationId}`);
-  
-  // Get client ID from localStorage or generate if needed
-  const clientId = localStorage.getItem('ably_client_id') || 'anonymous-user';
-  
-  const presenceData: ExtendedPresenceData = {
-    clientId,
-    username,
-    status: 'online',
-    lastSeen: new Date().toISOString(),
-    metadata
-  };
-  
-  // Enter presence
-  const channel = await getAblyChannel(channelName);
-  await channel.presence.enter(presenceData);
-};
-
-// Update status in presence
-export const updateStatus = async (
-  workspaceId: string,
-  conversationId: string,
-  status: 'online' | 'away' | 'offline' | 'typing'
-): Promise<void> => {
-  const channelName = getWorkspaceChannelName(workspaceId, `conversations:${conversationId}`);
-  
-  // Get channel
-  const channel = await getAblyChannel(channelName);
-  
-  // Get current presence data
-  const presence = await new Promise<any>((resolve) => {
-    channel.presence.get((err, members) => {
-      if (err) {
-        resolve(null);
-        return;
-      }
-      
-      // Find own presence
-      const clientId = localStorage.getItem('ably_client_id') || 'anonymous-user';
-      const ownPresence = members.find(member => member.clientId === clientId);
-      resolve(ownPresence);
-    });
-  });
-  
-  if (presence) {
-    const updatedData: ExtendedPresenceData = {
-      ...presence.data,
-      status,
-      lastSeen: new Date().toISOString()
-    };
+/**
+ * Enters channel presence and monitors other clients
+ */
+export const monitorPresence = async (
+  channelName: string,
+  clientId: string,
+  callbacks: {
+    onEnter?: (clientId: string, data?: any) => void;
+    onLeave?: (clientId: string, data?: any) => void;
+    onUpdate?: (clientId: string, data?: any) => void;
+  }
+) => {
+  try {
+    const channel = await getAblyChannel(channelName);
     
-    // Update presence
-    await channel.presence.update(updatedData);
+    // Enter presence on the channel
+    await channel.presence.enter({ clientId, status: 'active' });
+    
+    // Subscribe to presence events
+    const onEnterSubscription = channel.presence.subscribe('enter', (member) => {
+      if (member.clientId !== clientId && callbacks.onEnter) {
+        callbacks.onEnter(member.clientId, member.data);
+      }
+    });
+    
+    const onLeaveSubscription = channel.presence.subscribe('leave', (member) => {
+      if (member.clientId !== clientId && callbacks.onLeave) {
+        callbacks.onLeave(member.clientId, member.data);
+      }
+    });
+    
+    const onUpdateSubscription = channel.presence.subscribe('update', (member) => {
+      if (member.clientId !== clientId && callbacks.onUpdate) {
+        callbacks.onUpdate(member.clientId, member.data);
+      }
+    });
+    
+    // Return cleanup function
+    return () => {
+      if (onEnterSubscription && typeof onEnterSubscription.unsubscribe === 'function') {
+        onEnterSubscription.unsubscribe();
+      }
+      if (onLeaveSubscription && typeof onLeaveSubscription.unsubscribe === 'function') {
+        onLeaveSubscription.unsubscribe();
+      }
+      if (onUpdateSubscription && typeof onUpdateSubscription.unsubscribe === 'function') {
+        onUpdateSubscription.unsubscribe();
+      }
+      channel.presence.leave();
+    };
+  } catch (error) {
+    console.error('Error setting up presence:', error);
+    return () => {}; // Return empty cleanup function
   }
 };
 
-// Leave chat
-export const leaveChat = async (
-  workspaceId: string,
-  conversationId: string
-): Promise<void> => {
-  const channelName = getWorkspaceChannelName(workspaceId, `conversations:${conversationId}`);
-  
-  // Leave presence
-  const channel = await getAblyChannel(channelName);
-  await channel.presence.leave();
-};
-
-// Get all present users
-export const getPresentUsers = async (
-  workspaceId: string,
-  conversationId: string
-): Promise<ExtendedPresenceData[]> => {
-  const channelName = getWorkspaceChannelName(workspaceId, `conversations:${conversationId}`);
-  
-  // Get channel
-  const channel = await getAblyChannel(channelName);
-  
-  // Get present users
-  return new Promise((resolve, reject) => {
+/**
+ * Monitors enhanced presence with additional metadata
+ */
+export const monitorEnhancedPresence = async (
+  channelName: string,
+  clientId: string,
+  callbacks: {
+    onEnter?: (clientId: string, data?: any) => void;
+    onLeave?: (clientId: string, data?: any) => void;
+    onUpdate?: (clientId: string, data?: any) => void;
+    onPresenceData?: (members: any[]) => void;
+  }
+) => {
+  try {
+    const channel = await getAblyChannel(channelName);
+    
+    // Enter presence with metadata
+    await channel.presence.enter({
+      clientId,
+      status: 'active',
+      lastActive: new Date().toISOString(),
+      metadata: {
+        agent: navigator.userAgent,
+        device: detectDeviceType(),
+      }
+    });
+    
+    // Get and process initial members
     channel.presence.get((err, members) => {
-      if (err) {
-        reject(err);
-        return;
+      if (!err && members && callbacks.onPresenceData) {
+        callbacks.onPresenceData(members);
+      }
+    });
+    
+    // Subscribe to presence events
+    const onEnterSubscription = channel.presence.subscribe('enter', (member) => {
+      if (callbacks.onEnter) {
+        callbacks.onEnter(member.clientId, member.data);
       }
       
-      resolve(members.map(member => member.data as ExtendedPresenceData));
+      // Update the full presence list
+      if (callbacks.onPresenceData) {
+        channel.presence.get((err, members) => {
+          if (!err && members) {
+            callbacks.onPresenceData(members);
+          }
+        });
+      }
     });
-  });
+    
+    const onLeaveSubscription = channel.presence.subscribe('leave', (member) => {
+      if (callbacks.onLeave) {
+        callbacks.onLeave(member.clientId, member.data);
+      }
+      
+      // Update the full presence list
+      if (callbacks.onPresenceData) {
+        channel.presence.get((err, members) => {
+          if (!err && members) {
+            callbacks.onPresenceData(members);
+          }
+        });
+      }
+    });
+    
+    const onUpdateSubscription = channel.presence.subscribe('update', (member) => {
+      if (callbacks.onUpdate) {
+        callbacks.onUpdate(member.clientId, member.data);
+      }
+    });
+    
+    // Return cleanup function
+    return () => {
+      if (onEnterSubscription && typeof onEnterSubscription.unsubscribe === 'function') {
+        onEnterSubscription.unsubscribe();
+      }
+      if (onLeaveSubscription && typeof onLeaveSubscription.unsubscribe === 'function') {
+        onLeaveSubscription.unsubscribe();
+      }
+      if (onUpdateSubscription && typeof onUpdateSubscription.unsubscribe === 'function') {
+        onUpdateSubscription.unsubscribe();
+      }
+      channel.presence.leave();
+    };
+  } catch (error) {
+    console.error('Error setting up enhanced presence:', error);
+    return () => {}; // Return empty cleanup function
+  }
 };
 
-// Subscribe to presence changes
-export const subscribeToPresence = async (
-  workspaceId: string,
-  conversationId: string,
-  callback: (action: string, presenceData: ExtendedPresenceData) => void
-): Promise<() => void> => {
-  const channelName = getWorkspaceChannelName(workspaceId, `conversations:${conversationId}`);
-  
-  // Get channel
-  const channel = await getAblyChannel(channelName);
-  
-  // Subscribe to presence
-  const enterSubscription = channel.presence.subscribe('enter', (member) => {
-    callback('enter', member.data as ExtendedPresenceData);
-  });
-  
-  const updateSubscription = channel.presence.subscribe('update', (member) => {
-    callback('update', member.data as ExtendedPresenceData);
-  });
-  
-  const leaveSubscription = channel.presence.subscribe('leave', (member) => {
-    callback('leave', member.data as ExtendedPresenceData);
-  });
-  
-  // Return unsubscribe function
-  return () => {
-    enterSubscription.unsubscribe();
-    updateSubscription.unsubscribe();
-    leaveSubscription.unsubscribe();
-  };
+// Helper function to detect device type
+const detectDeviceType = () => {
+  const userAgent = navigator.userAgent;
+  if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent)) {
+    return 'mobile';
+  }
+  return 'desktop';
 };

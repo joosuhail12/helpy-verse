@@ -1,57 +1,45 @@
 
 import React, { KeyboardEvent } from 'react';
-import { Send } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
+import { SendHorizonal } from 'lucide-react';
 
-interface MessageInputProps {
+export interface MessageInputProps {
   onSendMessage: () => Promise<void>;
-  value?: string;
-  onChange?: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
-  onKeyDown?: (e: KeyboardEvent<HTMLTextAreaElement>) => void;
-  disabled?: boolean;
-  placeholder?: string;
+  messageText: string;
+  setMessageText: React.Dispatch<React.SetStateAction<string>>;
+  isSending: boolean;
 }
 
 const MessageInput: React.FC<MessageInputProps> = ({
   onSendMessage,
-  value = '',
-  onChange,
-  onKeyDown,
-  disabled = false,
-  placeholder = 'Type a message...'
+  messageText,
+  setMessageText,
+  isSending
 }) => {
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       onSendMessage();
     }
-    
-    if (onKeyDown) {
-      onKeyDown(e);
-    }
   };
 
   return (
     <div className="flex items-end gap-2">
-      <Textarea
-        value={value}
-        onChange={onChange}
+      <textarea
+        className="flex-1 min-h-10 max-h-32 resize-none border rounded-md p-2 focus:outline-none focus:ring-1 focus:ring-primary"
+        placeholder="Type your message here..."
+        value={messageText}
+        onChange={(e) => setMessageText(e.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder={placeholder}
-        disabled={disabled}
-        className="min-h-10 max-h-32 resize-none"
         rows={1}
+        disabled={isSending}
       />
-      
-      <Button
-        size="icon"
-        disabled={disabled || !value.trim()}
+      <button
+        className="bg-primary text-white p-2 rounded-md disabled:opacity-50"
         onClick={() => onSendMessage()}
-        className="flex-shrink-0"
+        disabled={!messageText.trim() || isSending}
       >
-        <Send className="h-4 w-4" />
-      </Button>
+        <SendHorizonal className="h-5 w-5" />
+      </button>
     </div>
   );
 };

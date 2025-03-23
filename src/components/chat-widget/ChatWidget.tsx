@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ChatBubble, X, MessageSquare } from 'lucide-react';
+import { X, MessageSquare } from 'lucide-react';
 import { ChatProvider } from '@/context/ChatContext';
 import { AblyProvider } from '@/context/AblyContext';
 import ChatWidgetContainer from './container/ChatWidgetContainer';

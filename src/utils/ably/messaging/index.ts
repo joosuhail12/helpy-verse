@@ -1,33 +1,17 @@
 
 /**
- * Entry point for Ably messaging features
+ * Entry point for all messaging-related functionality
  */
 
-// Export all messaging functionality
+// Re-export functionality from other files
+export * from './presence';
 export * from './typingIndicator';
 export * from './offlineQueue';
-export * from './presence';
 
-// Queue for offline messages
-export const conversationMessages = {};
-
-// Placeholder for message subscription setup
-export const setupMessageSubscription = () => {
-  // This will be implemented fully with backend integration
-  console.log('Message subscription setup');
-  return true;
-};
-
-// Placeholder for presence monitoring setup
-export const setupPresenceMonitoring = () => {
-  // This will be implemented fully with backend integration
-  console.log('Presence monitoring setup');
-  return true;
-};
-
-// Placeholder for enhanced presence monitoring
-export const monitorEnhancedPresence = () => {
-  // This will be implemented fully with backend integration
-  console.log('Enhanced presence monitoring setup');
-  return true;
+// Export a chat message utility for monitoring presence
+export const monitorEnhancedPresence = (channelName: string, clientId: string, callbacks: any) => {
+  // This will be implemented in the presence.ts file and re-exported
+  console.log('Monitoring enhanced presence for', channelName, clientId);
+  // This is a placeholder that will be replaced by the actual implementation
+  return () => {}; // Cleanup function
 };

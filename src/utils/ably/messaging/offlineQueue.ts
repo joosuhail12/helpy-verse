@@ -1,120 +1,85 @@
 
 /**
- * Offline message queue functionality using localStorage
+ * Offline message queuing functionality
  */
 import { v4 as uuidv4 } from 'uuid';
+import { ChatMessage } from '@/components/chat-widget/components/conversation/types';
 
-export interface QueuedMessage {
-  id: string;
-  conversationId: string;
-  content: string;
-  sender: string;
-  timestamp: string;
-  metadata?: Record<string, any>;
-  attempts?: number;
-}
+const QUEUE_STORAGE_KEY = 'ably_message_queue';
 
-// Queue key prefix
-const QUEUE_KEY_PREFIX = 'ably_message_queue_';
-
-// Get queue key for a conversation
-const getQueueKey = (conversationId: string): string => {
-  return `${QUEUE_KEY_PREFIX}${conversationId}`;
-};
-
-// Add a message to the offline queue
-export const queueMessage = async (
-  conversationId: string,
-  content: string,
-  sender: string,
-  metadata: Record<string, any> = {}
-): Promise<QueuedMessage> => {
-  const queueKey = getQueueKey(conversationId);
-  
-  // Create message
-  const message: QueuedMessage = {
-    id: uuidv4(),
-    conversationId,
-    content,
-    sender,
-    timestamp: new Date().toISOString(),
-    metadata,
-    attempts: 0
-  };
-  
-  // Get current queue
-  const currentQueueJson = localStorage.getItem(queueKey);
-  const currentQueue: QueuedMessage[] = currentQueueJson ? JSON.parse(currentQueueJson) : [];
-  
-  // Add message to queue
-  currentQueue.push(message);
-  
-  // Save queue
-  localStorage.setItem(queueKey, JSON.stringify(currentQueue));
-  
-  return message;
-};
-
-// Get all queued messages for a conversation
-export const getQueuedMessages = (conversationId: string): QueuedMessage[] => {
-  const queueKey = getQueueKey(conversationId);
-  
-  // Get current queue
-  const currentQueueJson = localStorage.getItem(queueKey);
-  return currentQueueJson ? JSON.parse(currentQueueJson) : [];
-};
-
-// Remove a message from the queue
-export const removeQueuedMessage = (conversationId: string, messageId: string): boolean => {
-  const queueKey = getQueueKey(conversationId);
-  
-  // Get current queue
-  const currentQueueJson = localStorage.getItem(queueKey);
-  if (!currentQueueJson) return false;
-  
-  const currentQueue: QueuedMessage[] = JSON.parse(currentQueueJson);
-  
-  // Filter out the message
-  const newQueue = currentQueue.filter(msg => msg.id !== messageId);
-  
-  // Save queue
-  localStorage.setItem(queueKey, JSON.stringify(newQueue));
-  
-  return true;
-};
-
-// Clear all queued messages for a conversation
-export const clearQueuedMessages = (conversationId: string): boolean => {
-  const queueKey = getQueueKey(conversationId);
-  localStorage.removeItem(queueKey);
-  return true;
-};
-
-// Process queued messages with a callback
-export const processQueuedMessages = async (
-  conversationId: string,
-  processCallback: (message: QueuedMessage) => Promise<boolean>
-): Promise<number> => {
-  const queuedMessages = getQueuedMessages(conversationId);
-  let processedCount = 0;
-  
-  for (const message of queuedMessages) {
-    try {
-      const success = await processCallback(message);
-      
-      if (success) {
-        removeQueuedMessage(conversationId, message.id);
-        processedCount++;
-      } else {
-        // Increment attempts
-        message.attempts = (message.attempts || 0) + 1;
-      }
-    } catch (error) {
-      console.error('Error processing queued message:', error);
-      // Increment attempts
-      message.attempts = (message.attempts || 0) + 1;
-    }
+/**
+ * Saves a message to the offline queue
+ */
+export const queueMessage = async (message: ChatMessage): Promise<void> => {
+  try {
+    // Get current queue
+    const queue = await getQueuedMessages(message.id.split(':')[0]);
+    
+    // Add message to queue
+    queue.push(message);
+    
+    // Save updated queue
+    localStorage.setItem(QUEUE_STORAGE_KEY, JSON.stringify(queue));
+  } catch (error) {
+    console.error('Failed to queue message:', error);
   }
-  
-  return processedCount;
+};
+
+/**
+ * Gets all queued messages for a conversation
+ */
+export const getQueuedMessages = async (conversationId?: string): Promise<ChatMessage[]> => {
+  try {
+    const queueJson = localStorage.getItem(QUEUE_STORAGE_KEY);
+    
+    if (!queueJson) {
+      return [];
+    }
+    
+    const queue = JSON.parse(queueJson) as ChatMessage[];
+    
+    // Filter by conversation if ID provided
+    if (conversationId) {
+      return queue.filter(msg => {
+        const msgConvId = msg.id.split(':')[0];
+        return msgConvId === conversationId;
+      });
+    }
+    
+    return queue;
+  } catch (error) {
+    console.error('Failed to get queued messages:', error);
+    return [];
+  }
+};
+
+/**
+ * Clears all queued messages or just for a specific conversation
+ */
+export const clearQueuedMessages = async (conversationId?: string): Promise<void> => {
+  try {
+    if (!conversationId) {
+      // Clear entire queue
+      localStorage.removeItem(QUEUE_STORAGE_KEY);
+      return;
+    }
+    
+    // Get current queue
+    const allMessages = await getQueuedMessages();
+    
+    // Filter out messages for the specified conversation
+    const remainingMessages = allMessages.filter(msg => {
+      const msgConvId = msg.id.split(':')[0];
+      return msgConvId !== conversationId;
+    });
+    
+    // Save updated queue or remove if empty
+    if (remainingMessages.length > 0) {
+      localStorage.setItem(QUEUE_STORAGE_KEY, JSON.stringify(remainingMessages));
+    } else {
+      localStorage.removeItem(QUEUE_STORAGE_KEY);
+    }
+  } catch (error) {
+    console.error('Failed to clear queued messages:', error);
+  }
 };
