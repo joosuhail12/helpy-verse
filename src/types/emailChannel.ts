@@ -4,7 +4,7 @@ export interface EmailChannel {
   channelName: string;
   senderName: string;
   email: string;
-  type: 'incoming' | 'outgoing' | 'both';
+  type: 'incoming' | 'outgoing' | 'both' | 'inbound' | 'outbound';
   createdAt: string;
   allowAgentConversations: boolean;
   useAgentNames: boolean;
@@ -12,7 +12,7 @@ export interface EmailChannel {
   isActive: boolean;
   isVerified: boolean;
   name: string;
-  // Add the missing properties
+  // Add the previously missing properties
   autoBccEmail?: string;
   noReplyEmail?: string;
   icon?: string;

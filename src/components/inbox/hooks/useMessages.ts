@@ -9,6 +9,9 @@ export const useMessages = (ticket: Ticket) => {
 
   // Helper function to ensure we're working with proper Customer object
   const getCustomer = (): Customer => {
+    if (!ticket.customer) {
+      return { id: 'unknown', name: 'Unknown Customer', email: '', phone: '', createdAt: new Date().toISOString() };
+    }
     if (typeof ticket.customer === 'string') {
       return stringToCustomer(ticket.customer);
     }
@@ -28,6 +31,8 @@ export const useMessages = (ticket: Ticket) => {
     
     setIsSending(true);
     try {
+      const customer = getCustomer();
+      
       // Create a message object
       const newMessage: Message = {
         id: `msg-${Date.now()}`,

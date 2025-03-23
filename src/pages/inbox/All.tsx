@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import TicketList from '@/components/inbox/TicketList';
 import { Ticket } from '@/types/ticket';
 import { stringToCustomer, stringToCompany, stringToTeamMember } from '@/types/ticket';
+import { FilterBar } from '@/components/inbox/FilterBar';
 
 const initialTickets: Ticket[] = [
   {
@@ -89,6 +90,9 @@ const initialTickets: Ticket[] = [
 const AllTickets = () => {
   const [tickets, setTickets] = useState<Ticket[]>(initialTickets);
   const [isLoading, setIsLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [priorityFilter, setPriorityFilter] = useState('all');
   
   useEffect(() => {
     console.log('AllTickets page loaded with', tickets.length, 'tickets');
@@ -98,6 +102,22 @@ const AllTickets = () => {
     setTickets(prevTickets => [newTicket, ...prevTickets]);
   };
 
+  const filteredTickets = tickets.filter(ticket => {
+    // Apply search filter
+    const matchesSearch = searchQuery === '' ||
+      ticket.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (typeof ticket.customer === 'object' && ticket.customer.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (typeof ticket.company === 'object' && ticket.company.name.toLowerCase().includes(searchQuery.toLowerCase()));
+    
+    // Apply status filter
+    const matchesStatus = statusFilter === 'all' || ticket.status === statusFilter;
+    
+    // Apply priority filter
+    const matchesPriority = priorityFilter === 'all' || ticket.priority === priorityFilter;
+    
+    return matchesSearch && matchesStatus && matchesPriority;
+  });
+
   return (
     <div className="h-full w-full flex flex-col overflow-hidden bg-background">
       <div className="flex-none p-4 border-b bg-white">
@@ -105,9 +125,20 @@ const AllTickets = () => {
         <p className="text-sm text-gray-500">View and manage all support tickets</p>
       </div>
       
+      <div className="p-4 mb-4">
+        <FilterBar 
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          statusFilter={statusFilter}
+          setStatusFilter={setStatusFilter}
+          priorityFilter={priorityFilter}
+          setPriorityFilter={setPriorityFilter}
+        />
+      </div>
+      
       <div className="flex-1 overflow-hidden">
         <TicketList 
-          tickets={tickets} 
+          tickets={filteredTickets} 
           isLoading={isLoading}
           onTicketCreated={handleTicketCreated}
         />

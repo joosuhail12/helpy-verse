@@ -13,6 +13,11 @@ const Inbox = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isCreateTicketOpen, setIsCreateTicketOpen] = useState(false);
   
+  // Add state for FilterBar props
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [priorityFilter, setPriorityFilter] = useState('all');
+  
   // Simulate loading for demo
   React.useEffect(() => {
     setIsLoading(true);
@@ -35,7 +40,14 @@ const Inbox = () => {
       
       <div className="p-4 space-y-4">
         <div className="flex flex-col sm:flex-row gap-3 justify-between">
-          <FilterBar />
+          <FilterBar 
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            statusFilter={statusFilter}
+            setStatusFilter={setStatusFilter}
+            priorityFilter={priorityFilter}
+            setPriorityFilter={setPriorityFilter}
+          />
           <div className="flex gap-2">
             <SortingControls />
             <SelectionControls />

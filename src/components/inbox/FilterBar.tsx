@@ -19,12 +19,12 @@ export interface FilterBarProps {
 }
 
 export const FilterBar = ({
-  searchQuery,
-  setSearchQuery,
-  statusFilter,
-  setStatusFilter,
-  priorityFilter,
-  setPriorityFilter
+  searchQuery = '',
+  setSearchQuery = () => {},
+  statusFilter = 'all',
+  setStatusFilter = () => {},
+  priorityFilter = 'all',
+  setPriorityFilter = () => {}
 }: FilterBarProps) => {
   return (
     <div className="flex flex-col md:flex-row gap-3">
