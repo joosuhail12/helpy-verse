@@ -19,7 +19,7 @@ export const useLogin = (redirectPath: string = '/home/inbox/all') => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const auth = useAppSelector((state) => state.auth);
-  const loading = auth?.loading || isSubmitting;
+  const loading = auth?.loading ?? false;
   
   // Listen for online/offline status changes
   useEffect(() => {
@@ -66,16 +66,7 @@ export const useLogin = (redirectPath: string = '/home/inbox/all') => {
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isSubmitting || loading) return;
-    
-    if (!email || !password) {
-      toast({
-        title: 'Error',
-        description: 'Please enter both email and password',
-        variant: 'destructive',
-      });
-      return;
-    }
+    if (isSubmitting || !email || !password) return;
     
     // Check if offline first
     if (isOffline || HttpClient.isOffline()) {
@@ -96,7 +87,7 @@ export const useLogin = (redirectPath: string = '/home/inbox/all') => {
       
       // Handle successful login
       if (result && result.data && result.data.accessToken) {
-        console.log('Login successful', result);
+        console.log('Login successful');
         
         toast({
           title: 'Success',
@@ -141,8 +132,10 @@ export const useLogin = (redirectPath: string = '/home/inbox/all') => {
     setEmail,
     password,
     setPassword,
-    loading,
+    loading: loading || isSubmitting,
     isOffline,
     handleLoginSubmit
   };
 };
+
+export default useLogin;

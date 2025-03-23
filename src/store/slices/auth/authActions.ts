@@ -1,6 +1,11 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { HttpClient } from "@/api/services/http";
-import { getAuthToken, handleSetToken } from '@/utils/auth/tokenManager';
+import { 
+  encryptBase64,
+  setCookie,
+  setWorkspaceId,
+  handleSetToken
+} from '@/utils/helpers/helpers';
 import { get } from "lodash";
 import { Credentials, PasswordResetConfirmation, PasswordResetRequest, RegistrationCredentials } from './types';
 import { AUTH_ENDPOINTS } from '@/api/services/http/config';
@@ -29,10 +34,15 @@ export const loginUser = createAsyncThunk(
         recaptchaId: "",
       });
 
-      console.log("Login response received:", response.status, response.data);
+      console.log("Login response received:", response.status);
       
       const loginData = response.data?.data;
       if (loginData) {
+        const email = loginData?.username || credentials.email;
+        const encryptedEmail = encryptBase64(email);
+        setCookie("agent_email", encryptedEmail);
+
+        // Set the token in the cookie and Axios headers
         const token = loginData?.accessToken?.token || "";
         if (token) {
           console.log("Setting token from login response");
@@ -52,17 +62,14 @@ export const loginUser = createAsyncThunk(
           return rejectWithValue("Authentication server did not provide a valid token. Please try again.");
         }
 
-        // Set workspace ID if available - only in localStorage
+        // Set workspace ID if available - only in cookie
         const workspaceId = get(response.data, "data.defaultWorkspaceId", "");
         if (workspaceId) {
-          localStorage.setItem("workspaceId", workspaceId);
-          console.log("Workspace ID set:", workspaceId);
+          setWorkspaceId(workspaceId);
         }
 
         // Configure Axios with the new token
-        if (token) {
-          HttpClient.setAxiosDefaultConfig(token);
-        }
+        HttpClient.setAxiosDefaultConfig();
       } else {
         console.error("Login response missing data structure:", response.data);
         return rejectWithValue("Invalid server response format");
@@ -96,8 +103,13 @@ export const loginUser = createAsyncThunk(
         });
       }
       
-      // Check response for more detailed error message
-      const errorMessage = error.response?.data?.message || "Login failed. Please check your credentials and try again.";
+      // Provide more specific error messages based on the error type
+      if (error.code === 'ERR_NETWORK') {
+        return rejectWithValue({
+          message: "Cannot connect to the authentication server. Please check your network connection or try again later.",
+          isOfflineError: true
+        });
+      }
       
       // Log detailed error information for debugging
       console.error("Error details:", {
@@ -106,7 +118,7 @@ export const loginUser = createAsyncThunk(
         message: error.message
       });
       
-      return rejectWithValue(errorMessage);
+      return rejectWithValue(error.response?.data?.message || "Login failed. Please check your credentials and try again.");
     }
   }
 );

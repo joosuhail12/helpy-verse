@@ -1,28 +1,60 @@
 
 /**
- * Re-export Ably utilities for easier imports
+ * Utility functions for working with Ably real-time messaging
  */
 
-// Re-export Ably functionality
-export * from './ably/ablyConnection';
-export * from './ably/conversationService';
-export * from './ably/channelService';
-export * from './ably/types';
+// Mock implementation for development
+let channels: Record<string, any> = {};
 
-// Import from messaging index
-import { 
-  conversationMessages,
-  presenceIndicators,
-  typingIndicators,
-  monitorEnhancedPresence as getPresence
-} from './ably/messaging';
-
-// Re-export everything
-export const sendMessage = conversationMessages.sendMessage;
-export const subscribeToConversation = (channelId: string, callback: Function) => {
-  console.log(`Subscribing to messages on channel ${channelId}`);
-  return () => console.log(`Unsubscribing from messages on channel ${channelId}`);
+export const getAblyChannel = async (channelName: string) => {
+  // In a real implementation, this would connect to Ably
+  if (!channels[channelName]) {
+    channels[channelName] = {
+      subscribe: (eventName: string, callback: Function) => {
+        console.log(`Subscribed to ${eventName} on channel ${channelName}`);
+        // Mock implementation
+        return () => {
+          console.log(`Unsubscribed from ${eventName} on channel ${channelName}`);
+        };
+      },
+      unsubscribe: () => {
+        console.log(`Unsubscribed from channel ${channelName}`);
+      },
+      publish: async (eventName: string, data: any) => {
+        console.log(`Published ${eventName} to channel ${channelName}`, data);
+        return Promise.resolve();
+      },
+      presence: {
+        enter: (data: any) => {
+          console.log(`Entered presence on channel ${channelName}`, data);
+          return Promise.resolve();
+        },
+        leave: () => {
+          console.log(`Left presence on channel ${channelName}`);
+          return Promise.resolve();
+        },
+        subscribe: (event: string, callback: Function) => {
+          console.log(`Subscribed to presence ${event} on channel ${channelName}`);
+          return () => {
+            console.log(`Unsubscribed from presence ${event} on channel ${channelName}`);
+          };
+        },
+        unsubscribe: () => {
+          console.log(`Unsubscribed from presence on channel ${channelName}`);
+        },
+        get: () => {
+          return Promise.resolve([]);
+        }
+      }
+    };
+  }
+  return channels[channelName];
 };
-export const monitorEnhancedPresence = getPresence;
-export const monitorTypingIndicators = typingIndicators.enterChannel;
-export const updateTypingStatus = typingIndicators.enterChannel;
+
+export const cleanupAblyChannels = () => {
+  // In a real implementation, this would clean up Ably connections
+  Object.keys(channels).forEach(channelName => {
+    console.log(`Cleaning up channel ${channelName}`);
+  });
+  channels = {};
+};

@@ -7,7 +7,7 @@ import {
   subscribeToConversation,
   getUserConversations,
   cleanupAblyConnection
-} from '@/utils/ably';
+} from '@/utils/ablyChat';
 
 // Chat widget state interface
 interface ChatWidgetState {
@@ -104,13 +104,12 @@ export const useChatWidget = () => {
     initialMessage: string
   ) => {
     try {
-      // Adjust to match the correct function signature
-      const conversationId = await createConversation({
+      const conversationId = await createConversation(
         name,
         email,
         topic,
-        message: initialMessage
-      });
+        initialMessage
+      );
       
       setState(prev => ({ 
         ...prev, 
@@ -134,7 +133,12 @@ export const useChatWidget = () => {
     try {
       await sendMessage(
         state.currentConversationId,
-        text
+        text,
+        {
+          id: state.userId,
+          name: 'Customer', // This would be the actual user name in production
+          type: 'customer'
+        }
       );
     } catch (error) {
       console.error('Failed to send message:', error);

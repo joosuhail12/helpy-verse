@@ -11,14 +11,6 @@ export interface ThemeColors {
   headerText: string;
   launcherBackground: string;
   launcherText: string;
-  messageUserBackground: string;
-  messageUserText: string;
-  messageAgentBackground: string;
-  messageAgentText: string;
-  errorBackground: string;
-  errorText: string;
-  warningBackground: string;
-  warningText: string;
 }
 
 export interface ThemeConfig {
@@ -27,15 +19,6 @@ export interface ThemeConfig {
   fontFamily?: string;
   logoUrl?: string;
   companyName?: string;
-  animation?: {
-    enabled: boolean;
-    duration: string;
-  };
-  shadows?: {
-    widget: string;
-    launcher: string;
-    message: string;
-  };
 }
 
 // Default theme inspired by Intercom
@@ -50,27 +33,10 @@ const defaultTheme: ThemeConfig = {
     headerText: '#ffffff',
     launcherBackground: '#1f2937',
     launcherText: '#ffffff',
-    messageUserBackground: '#f3f4f6',
-    messageUserText: '#1f2937',
-    messageAgentBackground: '#1f2937',
-    messageAgentText: '#ffffff',
-    errorBackground: '#fee2e2',
-    errorText: '#ef4444',
-    warningBackground: '#fef3c7',
-    warningText: '#f59e0b',
   },
   borderRadius: '1rem',
   fontFamily: 'Inter, system-ui, sans-serif',
-  companyName: 'Support Chat',
-  animation: {
-    enabled: true,
-    duration: '300ms',
-  },
-  shadows: {
-    widget: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-    launcher: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-    message: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
-  }
+  companyName: 'Support Chat'
 };
 
 interface ThemeContextType {
@@ -100,14 +66,6 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
     colors: {
       ...defaultTheme.colors,
       ...(initialTheme.colors || {}),
-    },
-    animation: {
-      ...defaultTheme.animation,
-      ...(initialTheme.animation || {}),
-    },
-    shadows: {
-      ...defaultTheme.shadows,
-      ...(initialTheme.shadows || {}),
     }
   });
 
@@ -118,14 +76,6 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
       colors: {
         ...prevTheme.colors,
         ...(newTheme.colors || {}),
-      },
-      animation: {
-        ...prevTheme.animation,
-        ...(newTheme.animation || {}),
-      },
-      shadows: {
-        ...prevTheme.shadows,
-        ...(newTheme.shadows || {}),
       }
     }));
   };

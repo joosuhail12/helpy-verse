@@ -1,45 +1,39 @@
 
 import React from 'react';
-import { cn } from '@/lib/utils';
-import { Message } from '../ResponsiveConversationView';
+import { Message } from '../types';
+import { useTheme } from '../../../theme/ThemeContext';
 
 interface MessageItemProps {
   message: Message;
-  isCurrentUser: boolean;
+  formatTimestamp: (timestamp: string) => string;
 }
 
-const MessageItem: React.FC<MessageItemProps> = ({ message, isCurrentUser }) => {
-  const formattedTime = new Date(message.timestamp).toLocaleTimeString([], { 
-    hour: '2-digit', 
-    minute: '2-digit' 
-  });
-
+/**
+ * Component to render an individual message in the conversation
+ */
+const MessageItem: React.FC<MessageItemProps> = ({ message, formatTimestamp }) => {
+  const isUserMessage = message.sender === 'user';
+  const { theme } = useTheme();
+  
   return (
-    <div
-      className={cn(
-        "flex",
-        isCurrentUser ? "justify-end" : "justify-start"
-      )}
-    >
-      <div
-        className={cn(
-          "max-w-[70%] rounded-lg px-4 py-2 text-sm",
-          isCurrentUser 
-            ? "bg-primary text-primary-foreground" 
-            : "bg-muted"
-        )}
+    <div className={`flex ${isUserMessage ? 'justify-end' : 'justify-start'} mb-3`}>
+      <div 
+        className={`max-w-[80%] p-3 rounded-lg ${
+          isUserMessage 
+            ? 'text-white rounded-br-none' 
+            : 'text-gray-800 border border-gray-100 rounded-bl-none shadow-sm'
+        }`}
+        style={{
+          backgroundColor: isUserMessage ? theme.colors.primary : theme.colors.background,
+          color: isUserMessage ? theme.colors.headerText : theme.colors.text,
+        }}
       >
-        <div className="break-words">{message.content}</div>
-        <div 
-          className={cn(
-            "text-xs mt-1",
-            isCurrentUser 
-              ? "text-primary-foreground/70" 
-              : "text-muted-foreground"
-          )}
-        >
-          {formattedTime}
-        </div>
+        <p className="text-sm">{message.text}</p>
+        <span className={`text-xs mt-1 block text-right ${
+          isUserMessage ? 'text-gray-300' : 'text-gray-400'
+        }`}>
+          {formatTimestamp(message.timestamp)}
+        </span>
       </div>
     </div>
   );

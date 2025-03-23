@@ -17,8 +17,8 @@ import { Button } from '../ui/button';
 export const LoginForm = memo(() => {
   const location = useLocation();
   
-  // Get redirect path from location state or default to /home/inbox/all
-  const from = location.state?.from || '/home/inbox/all';
+  // Get redirect path from location state or default to /home
+  const from = location.state?.from || '/home';
   
   // Use the login hook to handle login functionality
   const {

@@ -3,8 +3,11 @@
  * Token and authentication management utility functions
  * Using localStorage only (no cookies)
  */
-import { HttpClient } from "@/api/services/http";
+import { HttpClient, cookieFunctions } from "@/api/services/http";
 import { jwtDecode } from "jwt-decode";
+
+// Get storage helpers from HttpClient to avoid circular dependencies
+const { getCookie, setCookie } = cookieFunctions;
 
 // 🟢 Logout User
 export const handleLogout = async (): Promise<void> => {
@@ -75,13 +78,8 @@ export const isAuthenticated = (): boolean => {
 
 // 🟢 Get auth token - from localStorage only
 export const getAuthToken = (): string => {
-  try {
-    const storageToken = localStorage.getItem("token");
-    return storageToken || "";
-  } catch (error) {
-    console.error("Error getting auth token:", error);
-    return "";
-  }
+  const storageToken = localStorage.getItem("token");
+  return storageToken || "";
 };
 
 // Check if token is expired - safer version that handles invalid tokens

@@ -1,7 +1,7 @@
 
 import { AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import { get } from 'lodash';
-import { handleLogout } from '@/utils/auth/tokenManager';
+import { handleLogout } from './cookieManager';
 import { getAuthToken } from '@/utils/auth/tokenManager';
 import { store } from '@/store/store';
 
@@ -33,7 +33,7 @@ export const requestInterceptor = async (config: InternalAxiosRequestConfig): Pr
     // Get workspace_id from localStorage
     const workspaceId = localStorage.getItem("workspaceId");
     
-    // Always add workspace_id to all requests if it exists
+    // Always add workspace_id to all requests
     if (workspaceId) {
         // Add workspace_id to params if they exist, otherwise create params
         if (!config.params) {
@@ -43,10 +43,6 @@ export const requestInterceptor = async (config: InternalAxiosRequestConfig): Pr
         if (!config.params.workspace_id) {
             config.params.workspace_id = workspaceId;
         }
-        
-        // Also add to headers for systems that accept it there
-        config.headers.set("workspace_id", workspaceId);
-        
         console.log(`Request to ${config.url} with workspace_id: ${workspaceId}`);
     } else {
         console.warn(`Making API request without workspace_id to: ${config.url}`);
