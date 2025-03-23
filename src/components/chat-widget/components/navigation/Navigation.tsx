@@ -1,6 +1,7 @@
 
 import React from 'react';
-import { Home, MessageSquare, HelpCircle, Newspaper } from 'lucide-react';
+import { Home, MessageSquare } from 'lucide-react';
+import { useThemeContext } from '@/context/ThemeContext';
 
 interface NavigationProps {
   activeView: 'home' | 'messages';
@@ -8,34 +9,34 @@ interface NavigationProps {
 }
 
 const Navigation: React.FC<NavigationProps> = ({ activeView, setActiveView }) => {
+  const { colors } = useThemeContext();
+  
   return (
-    <div className="px-1 py-2 bg-black border-t border-gray-800 flex justify-around">
+    <div className="flex justify-between border-t border-gray-200" 
+      style={{ borderColor: colors.border }}>
       <button
-        onClick={() => setActiveView('home')}
-        className={`flex flex-col items-center w-1/2 py-2 relative ${
-          activeView === 'home' ? 'text-white' : 'text-gray-500'
+        className={`flex flex-col items-center justify-center py-3 flex-1 ${
+          activeView === 'home' ? 'text-primary' : 'text-gray-500'
         }`}
+        onClick={() => setActiveView('home')}
+        style={{ 
+          color: activeView === 'home' ? colors.primary : `${colors.foreground}88`
+        }}
       >
-        <div className="relative">
-          <Home size={20} />
-        </div>
+        <Home size={20} />
         <span className="text-xs mt-1">Home</span>
       </button>
       
       <button
-        onClick={() => setActiveView('messages')}
-        className={`flex flex-col items-center w-1/2 py-2 relative ${
-          activeView === 'messages' ? 'text-white' : 'text-gray-500'
+        className={`flex flex-col items-center justify-center py-3 flex-1 ${
+          activeView === 'messages' ? 'text-primary' : 'text-gray-500'
         }`}
+        onClick={() => setActiveView('messages')}
+        style={{ 
+          color: activeView === 'messages' ? colors.primary : `${colors.foreground}88`
+        }}
       >
-        <div className="relative">
-          <MessageSquare size={20} />
-          {activeView !== 'messages' && (
-            <span className="absolute -top-1 -right-1 bg-red-500 rounded-full w-4 h-4 flex items-center justify-center text-white text-[10px]">
-              1
-            </span>
-          )}
-        </div>
+        <MessageSquare size={20} />
         <span className="text-xs mt-1">Messages</span>
       </button>
     </div>

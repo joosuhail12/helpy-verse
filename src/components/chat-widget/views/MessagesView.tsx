@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft } from 'lucide-react';
 import { useChat } from '@/hooks/chat/useChat';
+import { useThemeContext } from '@/context/ThemeContext';
 import ConversationView from '../components/conversation/ConversationView';
 
 interface MessagesViewProps {
@@ -11,6 +12,7 @@ interface MessagesViewProps {
 
 const MessagesView: React.FC<MessagesViewProps> = ({ workspaceId, onClose }) => {
   const { conversations, currentConversation, setCurrentConversation } = useChat();
+  const { colors } = useThemeContext();
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
 
   useEffect(() => {
@@ -37,7 +39,7 @@ const MessagesView: React.FC<MessagesViewProps> = ({ workspaceId, onClose }) => 
       {!selectedConversation ? (
         <>
           {/* Header */}
-          <div className="border-b border-gray-800 p-4">
+          <div className="border-b p-4" style={{ borderColor: colors.border }}>
             <h2 className="text-xl font-semibold">Messages</h2>
           </div>
 
@@ -46,29 +48,35 @@ const MessagesView: React.FC<MessagesViewProps> = ({ workspaceId, onClose }) => 
             {conversations.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full p-4 text-center">
                 <p className="text-gray-400">No messages yet</p>
-                <button className="mt-4 bg-white text-black px-4 py-2 rounded-md">
+                <button 
+                  className="mt-4 bg-primary text-white px-4 py-2 rounded-md"
+                  style={{ backgroundColor: colors.primary, color: colors.primaryForeground }}
+                >
                   Start a conversation
                 </button>
               </div>
             ) : (
-              <div className="divide-y divide-gray-800">
+              <div className="divide-y" style={{ borderColor: colors.border }}>
                 {conversations.map((conversation) => (
                   <button
                     key={conversation.id}
-                    className="w-full px-4 py-3 flex items-start hover:bg-gray-900 transition-colors"
+                    className="w-full px-4 py-3 flex items-start hover:bg-gray-50 transition-colors"
                     onClick={() => handleSelectConversation(conversation.id)}
                   >
-                    <div className="bg-gray-700 rounded-full w-10 h-10 flex items-center justify-center mr-3 flex-shrink-0">
-                      <svg viewBox="0 0 24 24" width="20" height="20" fill="white">
+                    <div 
+                      className="bg-gray-100 rounded-full w-10 h-10 flex items-center justify-center mr-3 flex-shrink-0"
+                      style={{ backgroundColor: colors.border }}
+                    >
+                      <svg viewBox="0 0 24 24" width="20" height="20" fill={colors.foreground}>
                         <rect x="3" y="3" width="18" height="18" rx="2" />
-                        <line x1="8" y1="7" x2="16" y2="7" stroke="black" strokeWidth="2" />
-                        <line x1="8" y1="12" x2="16" y2="12" stroke="black" strokeWidth="2" />
-                        <line x1="8" y1="17" x2="16" y2="17" stroke="black" strokeWidth="2" />
+                        <line x1="8" y1="7" x2="16" y2="7" stroke="currentColor" strokeWidth="2" />
+                        <line x1="8" y1="12" x2="16" y2="12" stroke="currentColor" strokeWidth="2" />
+                        <line x1="8" y1="17" x2="16" y2="17" stroke="currentColor" strokeWidth="2" />
                       </svg>
                     </div>
                     <div className="text-left">
-                      <h3 className="font-medium text-white">{conversation.title || "New conversation"}</h3>
-                      <p className="text-gray-400 text-sm truncate">
+                      <h3 className="font-medium">{conversation.title || "New conversation"}</h3>
+                      <p className="text-gray-500 text-sm truncate">
                         {conversation.lastMessage || "No messages yet"}
                       </p>
                     </div>
@@ -81,10 +89,11 @@ const MessagesView: React.FC<MessagesViewProps> = ({ workspaceId, onClose }) => 
       ) : (
         <div className="flex flex-col h-full">
           {/* Conversation header */}
-          <div className="border-b border-gray-800 p-3 flex items-center">
+          <div className="border-b p-3 flex items-center" style={{ borderColor: colors.border }}>
             <button 
               onClick={handleBackToList}
-              className="p-1 mr-2 rounded-full hover:bg-gray-800 transition-colors"
+              className="p-1 mr-2 rounded-full hover:bg-gray-100 transition-colors"
+              style={{ backgroundColor: 'transparent' }}
             >
               <ChevronLeft size={20} />
             </button>

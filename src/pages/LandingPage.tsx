@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
@@ -10,10 +11,23 @@ import { ChatWidget } from '@/components/chat-widget/ChatWidget';
 const LandingPage = () => {
   const navigate = useNavigate();
 
+  // Example of white-labeled theme
+  const chatTheme = {
+    primary: '#9b87f5',
+    primaryForeground: '#ffffff',
+    background: '#ffffff',
+    userMessage: '#9b87f5',
+    agentMessage: '#f1f1f1',
+    border: '#eaeaea'
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-purple-50">
-      {/* Direct inclusion of the ChatWidget component */}
-      <ChatWidget workspaceId="6c22b22f-7bdf-43db-b7c1-9c5884125c63" />
+      {/* Direct inclusion of the ChatWidget component with custom theme */}
+      <ChatWidget 
+        workspaceId="6c22b22f-7bdf-43db-b7c1-9c5884125c63" 
+        theme={chatTheme}
+      />
       
       {/* Hero Section */}
       <div className="container mx-auto px-4 py-20">
