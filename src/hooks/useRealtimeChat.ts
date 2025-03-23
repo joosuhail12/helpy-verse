@@ -7,7 +7,7 @@ import {
   markMessageAsSent, 
   markMessageAsFailed,
   hasOfflineMessages
-} from '@/utils/ably/messaging/offlineMessaging';
+} from '@/utils/ably/messaging';
 
 // Define types for messages
 interface Message {
@@ -31,20 +31,31 @@ interface QueuedMessage {
   retryCount: number;
 }
 
+interface UserInfo {
+  userId: string;
+  userName: string;
+}
+
 // Create a hook for real-time chat
-export const useRealtimeChat = (conversationId: string, currentUserId: string, userName: string) => {
+export const useRealtimeChat = (conversationId: string, userInfo: UserInfo) => {
   const [messages, setMessages] = useState<Message[]>([]);
+  const [newMessage, setNewMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [typingUsers, setTypingUsers] = useState<string[]>([]);
   const [connectionState, setConnectionState] = useState({ connectionState: 'initializing' });
   const [queuedMessages, setQueuedMessages] = useState<QueuedMessage[]>([]);
   const [hasFailedMessages, setHasFailedMessages] = useState(false);
+  const [hasMoreMessages, setHasMoreMessages] = useState(false);
+  const [totalMessages, setTotalMessages] = useState(0);
   
   // Use the Ably channel
-  const { channelInstance, status } = useChannel(conversationId, (message) => {
+  const { channel } = useChannel(conversationId, (message) => {
     if (message.name === 'chat') {
       const newMessage = message.data;
       
       // Don't add our own messages that are received back from Ably
-      if (newMessage.sender?.id === currentUserId && !newMessage.isOffline) {
+      if (newMessage.sender?.id === userInfo.userId && !newMessage.isOffline) {
         return;
       }
       
@@ -61,8 +72,22 @@ export const useRealtimeChat = (conversationId: string, currentUserId: string, u
   
   // Update connection state
   useEffect(() => {
-    setConnectionState({ connectionState: status });
-  }, [status]);
+    if (channel) {
+      setConnectionState({ connectionState: channel.state });
+      
+      const handleStateChange = () => {
+        setConnectionState({ connectionState: channel.state });
+      };
+      
+      channel.on('attached', handleStateChange);
+      channel.on('detached', handleStateChange);
+      
+      return () => {
+        channel.off('attached', handleStateChange);
+        channel.off('detached', handleStateChange);
+      };
+    }
+  }, [channel]);
   
   // Queue a message for offline sending
   const queueOfflineMessage = useCallback((text: string) => {
@@ -74,8 +99,8 @@ export const useRealtimeChat = (conversationId: string, currentUserId: string, u
       id: messageId,
       content: text,
       sender: {
-        id: currentUserId,
-        name: userName || 'User'
+        id: userInfo.userId,
+        name: userInfo.userName || 'User'
       },
       timestamp,
       status: 'sending',
@@ -98,7 +123,7 @@ export const useRealtimeChat = (conversationId: string, currentUserId: string, u
     setQueuedMessages(prev => [...prev, queuedMessage]);
     
     return queuedMessage;
-  }, [conversationId, currentUserId, userName]);
+  }, [conversationId, userInfo.userId, userInfo.userName]);
   
   // Send a message
   const sendMessage = useCallback(async (text: string) => {
@@ -110,8 +135,8 @@ export const useRealtimeChat = (conversationId: string, currentUserId: string, u
       id: messageId,
       content: text,
       sender: {
-        id: currentUserId,
-        name: userName || 'User'
+        id: userInfo.userId,
+        name: userInfo.userName || 'User'
       },
       timestamp,
       status: 'sending'
@@ -119,16 +144,20 @@ export const useRealtimeChat = (conversationId: string, currentUserId: string, u
     
     // Add message to local state immediately
     setMessages(prev => [...prev, message]);
+    setSending(true);
     
     // If offline, queue the message
-    if (connectionState.connectionState !== 'connected') {
+    if (connectionState.connectionState !== 'attached') {
       queueOfflineMessage(text);
+      setSending(false);
       return message;
     }
     
     try {
       // Send the message via Ably
-      await channelInstance?.publish('chat', message);
+      if (channel) {
+        await channel.publish('chat', message);
+      }
       
       // Update message status to sent
       setMessages(prev => 
@@ -137,6 +166,7 @@ export const useRealtimeChat = (conversationId: string, currentUserId: string, u
         )
       );
       
+      setSending(false);
       return message;
     } catch (error) {
       console.error('Error sending message:', error);
@@ -151,86 +181,72 @@ export const useRealtimeChat = (conversationId: string, currentUserId: string, u
       // Queue for later retry
       queueOfflineMessage(text);
       
+      setSending(false);
       return message;
     }
-  }, [channelInstance, connectionState.connectionState, currentUserId, queueOfflineMessage, userName]);
+  }, [channel, connectionState.connectionState, userInfo.userId, queueOfflineMessage, userInfo.userName]);
   
-  // Sync queued messages when connection is restored
-  const syncQueuedMessages = useCallback(async (sendFunction) => {
-    if (connectionState.connectionState !== 'connected') return;
+  // Handle sending a message from the UI
+  const handleSendMessage = useCallback((e?: React.FormEvent) => {
+    if (e) {
+      e.preventDefault();
+    }
     
-    const promises = queuedMessages.map(async (msg) => {
+    if (!newMessage.trim()) return;
+    
+    sendMessage(newMessage);
+    setNewMessage('');
+  }, [newMessage, sendMessage]);
+  
+  // Handle typing indicator
+  const handleTyping = useCallback(() => {
+    if (channel && connectionState.connectionState === 'attached') {
       try {
-        await sendFunction(conversationId, msg.content, {
-          id: currentUserId,
-          name: userName
-        }, msg.id);
-        
-        // Update message status
-        setMessages(prev => 
-          prev.map(m => 
-            m.id === msg.id ? { ...m, status: 'sent', isOffline: false } : m
-          )
-        );
-        
-        return { id: msg.id, success: true };
-      } catch (err) {
-        console.error('Failed to sync message:', msg.id, err);
-        return { id: msg.id, success: false };
+        channel.publish('typing', {
+          userId: userInfo.userId,
+          userName: userInfo.userName,
+          isTyping: true
+        });
+      } catch (error) {
+        console.error('Error sending typing indicator:', error);
       }
-    });
-    
-    const results = await Promise.all(promises);
-    
-    // Remove successful messages from queue
-    const successfulIds = results
-      .filter(r => r.success)
-      .map(r => r.id);
-    
-    setQueuedMessages(prev => 
-      prev.filter(msg => !successfulIds.includes(msg.id))
-    );
-    
-    // Update failed messages flag
-    setHasFailedMessages(queuedMessages.some(msg => msg.status === 'failed'));
-    
-    return results;
-  }, [connectionState.connectionState, conversationId, currentUserId, queuedMessages, userName]);
+    }
+  }, [channel, connectionState.connectionState, userInfo.userId, userInfo.userName]);
   
-  // Retry failed messages
-  const retryFailedMessages = useCallback(async (sendFunction) => {
-    const failedMessages = queuedMessages.filter(msg => msg.status === 'failed');
+  // Mock function to load more messages
+  const loadMoreMessages = useCallback(() => {
+    setLoading(true);
     
-    if (failedMessages.length === 0) return [];
-    
-    // Mark messages as sending
-    setQueuedMessages(prev => 
-      prev.map(msg => 
-        msg.status === 'failed' ? { ...msg, status: 'sending' } : msg
-      )
-    );
-    
-    // Update UI
-    setMessages(prev => 
-      prev.map(m => 
-        failedMessages.some(fm => fm.id === m.id) 
-          ? { ...m, status: 'sending' } 
-          : m
-      )
-    );
-    
-    return syncQueuedMessages(sendFunction);
-  }, [queuedMessages, syncQueuedMessages]);
+    // Simulate loading older messages
+    setTimeout(() => {
+      setLoading(false);
+      setHasMoreMessages(false);
+    }, 1000);
+  }, []);
+  
+  // Format timestamp helper
+  const formatTimestamp = useCallback((timestamp: number) => {
+    return new Date(timestamp).toLocaleString();
+  }, []);
   
   return {
     messages,
+    newMessage,
+    setNewMessage,
+    loading,
+    sending,
+    typingUsers,
     connectionState,
+    handleSendMessage,
+    handleTyping,
+    loadMoreMessages,
+    hasMoreMessages,
+    totalMessages,
+    formatTimestamp,
     sendMessage,
     queuedMessages,
     hasFailedMessages,
-    queueOfflineMessage,
-    syncQueuedMessages,
-    retryFailedMessages
+    queueOfflineMessage
   };
 };
 

@@ -1,52 +1,62 @@
 
-import { useEffect, useState } from 'react';
-import { Types } from 'ably';
+import { useState, useEffect, useCallback } from 'react';
 import { useChannel } from '@ably-labs/react-hooks';
 
 export const useTypingIndicator = (channelId: string, userId: string) => {
-  const [typingUsers, setTypingUsers] = useState<Record<string, { name: string; timestamp: number }>>({});
-  const { channelInstance } = useChannel(channelId);
-
-  useEffect(() => {
-    if (!channelInstance) return;
-
-    const handleTypingEvent = (message: Types.Message) => {
-      const { data } = message;
-      if (!data || !data.userId || data.userId === userId) return;
-
-      setTypingUsers(prev => ({
-        ...prev,
-        [data.userId]: { 
-          name: data.userName || 'Someone', 
-          timestamp: Date.now() 
-        }
-      }));
-
-      // Auto-remove typing indicator after 3 seconds
-      setTimeout(() => {
-        setTypingUsers(prev => {
-          const newState = { ...prev };
-          delete newState[data.userId];
-          return newState;
-        });
-      }, 3000);
-    };
-
-    // Subscribe to typing events
-    channelInstance.subscribe('typing', handleTypingEvent);
-
-    return () => {
-      channelInstance.unsubscribe('typing', handleTypingEvent);
-    };
-  }, [channelInstance, userId]);
-
-  const sendTypingEvent = (userName: string) => {
-    if (!channelInstance) return;
-    channelInstance.publish('typing', { userId, userName });
-  };
-
+  const [typingUsers, setTypingUsers] = useState<string[]>([]);
+  
+  // Subscribe to typing indicators on the channel
+  const { channel } = useChannel(`${channelId}:typing`, (message) => {
+    if (message.name === 'typing') {
+      const { userName, isTyping, userId: typingUserId } = message.data;
+      
+      // Ignore our own typing indicators
+      if (typingUserId === userId) return;
+      
+      if (isTyping) {
+        // Add user to typing list if not already there
+        setTypingUsers(prev => 
+          prev.includes(userName) ? prev : [...prev, userName]
+        );
+        
+        // Auto-remove typing indicator after 3 seconds
+        setTimeout(() => {
+          setTypingUsers(prev => prev.filter(name => name !== userName));
+        }, 3000);
+      } else {
+        // Remove user from typing list
+        setTypingUsers(prev => prev.filter(name => name !== userName));
+      }
+    }
+  });
+  
+  // Send typing indicator
+  const sendTypingIndicator = useCallback(() => {
+    if (channel) {
+      channel.publish('typing', {
+        userId,
+        userName: 'You',
+        isTyping: true
+      });
+    }
+  }, [channel, userId]);
+  
+  // Send stopped typing indicator
+  const sendStoppedTypingIndicator = useCallback(() => {
+    if (channel) {
+      channel.publish('typing', {
+        userId,
+        userName: 'You',
+        isTyping: false
+      });
+    }
+  }, [channel, userId]);
+  
   return {
-    typingUsers: Object.values(typingUsers),
-    sendTypingEvent
+    typingUsers,
+    sendTypingIndicator,
+    sendStoppedTypingIndicator
   };
 };
+
+export default useTypingIndicator;

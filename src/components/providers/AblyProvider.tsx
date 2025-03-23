@@ -1,47 +1,58 @@
 
-import React, { useEffect, useState } from 'react';
-import { configureAbly } from '@ably-labs/react-hooks';
-import { AblyProvider as AblyReactHooksProvider } from '@ably-labs/react-hooks';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import Ably from 'ably';
+
+interface AblyContextType {
+  client: Ably.Realtime | null;
+  isConnected: boolean;
+}
+
+const AblyContext = createContext<AblyContextType>({
+  client: null,
+  isConnected: false
+});
+
+export const useAbly = () => useContext(AblyContext);
 
 interface AblyProviderProps {
   children: React.ReactNode;
+  apiKey?: string;
 }
 
-const AblyProvider: React.FC<AblyProviderProps> = ({ children }) => {
-  const [isConfigured, setIsConfigured] = useState(false);
-  const [ablyClient, setAblyClient] = useState<any>(null);
-  
-  useEffect(() => {
-    try {
-      // Get the Ably API key from environment variables
-      const ablyApiKey = import.meta.env.VITE_ABLY_API_KEY || '';
-      
-      if (ablyApiKey) {
-        // Configure Ably with the API key
-        const client = configureAbly({ key: ablyApiKey });
-        setAblyClient(client);
-        console.log('Ably configured successfully');
-        setIsConfigured(true);
-      } else {
-        console.warn('Ably API key not found. Real-time functionality will be limited.');
-        // Still set as configured to avoid blocking rendering
-        setIsConfigured(true);
-      }
-    } catch (error) {
-      console.error('Error configuring Ably:', error);
-      // Still set as configured to avoid blocking rendering
-      setIsConfigured(true);
-    }
-  }, []);
+const AblyProvider: React.FC<AblyProviderProps> = ({ children, apiKey }) => {
+  const [client, setClient] = useState<Ably.Realtime | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
 
-  if (!isConfigured || !ablyClient) {
-    return <>{children}</>; // Render children without Ably context if not configured
-  }
+  useEffect(() => {
+    const key = apiKey || import.meta.env.VITE_ABLY_API_KEY || 'demo:key';
+    const ably = new Ably.Realtime({ key });
+
+    const handleConnected = () => {
+      console.log('Ably connected');
+      setIsConnected(true);
+    };
+
+    const handleDisconnected = () => {
+      console.log('Ably disconnected');
+      setIsConnected(false);
+    };
+
+    ably.connection.on('connected', handleConnected);
+    ably.connection.on('disconnected', handleDisconnected);
+
+    setClient(ably);
+
+    return () => {
+      ably.connection.off('connected', handleConnected);
+      ably.connection.off('disconnected', handleDisconnected);
+      ably.close();
+    };
+  }, [apiKey]);
 
   return (
-    <AblyReactHooksProvider client={ablyClient}>
+    <AblyContext.Provider value={{ client, isConnected }}>
       {children}
-    </AblyReactHooksProvider>
+    </AblyContext.Provider>
   );
 };
 

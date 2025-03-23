@@ -1,43 +1,33 @@
 
 import { useEffect, useState } from 'react';
-import { Types } from 'ably';
 import { useChannel } from '@ably-labs/react-hooks';
+import { Message } from '@/components/chat-widget/components/conversation/types';
 
-export const useMessageSubscription = (
-  channelId: string,
-  eventName: string,
-  callback: (msg: Types.Message) => void,
-  options = { history: false }
-) => {
-  const [channel, setChannel] = useState<any | null>(null);
-  const { channelInstance } = useChannel(channelId, (message) => {
-    if (message.name === eventName) {
-      callback(message);
-    }
-  });
-
-  useEffect(() => {
-    if (!channelInstance) return;
-    
-    setChannel(channelInstance);
-    
-    // If history option is enabled, request message history
-    if (options.history) {
-      channelInstance.history((err, resultPage) => {
-        if (err) {
-          console.error('Error retrieving message history:', err);
-          return;
+/**
+ * Hook to subscribe to messages on an Ably channel
+ */
+export const useMessageSubscription = (channelId: string) => {
+  const [messages, setMessages] = useState<Message[]>([]);
+  
+  const { channel } = useChannel(channelId, (message) => {
+    if (message.name === 'message') {
+      const newMessage = message.data as Message;
+      
+      setMessages(prev => {
+        // Check if message already exists
+        if (prev.some(m => m.id === newMessage.id)) {
+          return prev;
         }
         
-        resultPage?.items?.forEach((message) => {
-          if (message.name === eventName) {
-            callback(message);
-          }
-        });
+        // Add the new message and sort by timestamp
+        return [...prev, newMessage].sort((a, b) => 
+          new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+        );
       });
     }
-    
-  }, [channelId, eventName, callback, channelInstance, options.history]);
-
-  return channel;
+  });
+  
+  return { messages, channel };
 };
+
+export default useMessageSubscription;

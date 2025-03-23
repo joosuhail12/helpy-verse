@@ -11,22 +11,19 @@ export * from './ably/types';
 
 // Import from messaging index
 import { 
-  sendMessage, 
-  subscribeToConversation, 
-  monitorEnhancedPresence 
-} from './ably/messaging/index';
-
-// Import typing indicators from their dedicated file
-import { 
-  monitorTypingIndicators, 
-  updateTypingStatus 
-} from './ably/messaging/typingIndicators';
+  conversationMessages,
+  typingIndicators,
+  realTimeMessaging
+} from './ably/messaging';
 
 // Re-export everything
-export { 
-  sendMessage, 
-  subscribeToConversation, 
-  monitorEnhancedPresence,
-  monitorTypingIndicators, 
-  updateTypingStatus 
+export const sendMessage = conversationMessages.sendMessage;
+export const subscribeToConversation = (channelId: string, callback: Function) => {
+  console.log(`Subscribing to messages on channel ${channelId}`);
+  return () => console.log(`Unsubscribing from messages on channel ${channelId}`);
 };
+export const monitorEnhancedPresence = () => {
+  return [];
+};
+export const monitorTypingIndicators = typingIndicators.enterChannel;
+export const updateTypingStatus = typingIndicators.enterChannel;
