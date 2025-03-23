@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { ChevronDown, ChevronUp, Globe, Building, Users } from "lucide-react";
 import type { Company } from "@/types/company";
@@ -13,7 +14,13 @@ const CompanyInfoCard = ({ company, isOpen, onToggle }: CompanyInfoCardProps) =>
   
   // Convert string company to object if needed
   const companyObj = typeof company === 'string' 
-    ? { id: company, name: company, website: `https://${company.toLowerCase().replace(/\s+/g, '')}.com` } 
+    ? { 
+        id: company, 
+        name: company, 
+        website: `https://${company.toLowerCase().replace(/\s+/g, '')}.com`,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      } 
     : company;
 
   return (
@@ -45,7 +52,7 @@ const CompanyInfoCard = ({ company, isOpen, onToggle }: CompanyInfoCardProps) =>
             </div>
           )}
           
-          {companyObj.industry && (
+          {'industry' in companyObj && companyObj.industry && (
             <div className="space-y-2">
               <div className="text-sm text-gray-500">Industry</div>
               <div className="flex items-center">
@@ -55,7 +62,7 @@ const CompanyInfoCard = ({ company, isOpen, onToggle }: CompanyInfoCardProps) =>
             </div>
           )}
           
-          {companyObj.numberOfEmployees && (
+          {'numberOfEmployees' in companyObj && companyObj.numberOfEmployees && (
             <div className="space-y-2">
               <div className="text-sm text-gray-500">Size</div>
               <div className="flex items-center">

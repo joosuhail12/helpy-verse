@@ -20,6 +20,13 @@ const CustomerHeader = ({ customer, company }: CustomerHeaderProps) => {
     ? { id: company, name: company }
     : company;
 
+  // Determine company name
+  const companyName = companyObj 
+    ? (typeof companyObj === 'string' 
+        ? companyObj 
+        : companyObj.name)
+    : undefined;
+
   return (
     <div className="flex items-center space-x-4 p-4 border-b bg-white">
       <Avatar className="h-10 w-10">
@@ -31,9 +38,9 @@ const CustomerHeader = ({ customer, company }: CustomerHeaderProps) => {
       <div className="flex-1 min-w-0">
         <h2 className="text-lg font-semibold truncate">{customerObj.name}</h2>
         <div className="flex items-center text-sm text-gray-500">
-          {companyObj && (
+          {companyName && (
             <>
-              <span className="truncate">{companyObj.name}</span>
+              <span className="truncate">{companyName}</span>
               <span className="mx-2">•</span>
             </>
           )}

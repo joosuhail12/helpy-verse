@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { ChevronDown, ChevronUp, Phone, Mail, MapPin } from "lucide-react";
 import type { Customer } from "@/types/ticket";
@@ -13,7 +14,12 @@ interface ContactInfoCardProps {
 const ContactInfoCard = ({ customer, company, isOpen, onToggle }: ContactInfoCardProps) => {
   // Convert string customer to object if needed
   const customerObj = typeof customer === 'string' 
-    ? { id: customer, name: customer, email: `${customer.toLowerCase().replace(/\s+/g, '.')}@example.com` } 
+    ? { 
+        id: customer, 
+        name: customer, 
+        email: `${customer.toLowerCase().replace(/\s+/g, '.')}@example.com`,
+        toString: () => customer
+      } 
     : customer;
 
   return (
@@ -43,7 +49,7 @@ const ContactInfoCard = ({ customer, company, isOpen, onToggle }: ContactInfoCar
             </div>
           </div>
           
-          {customerObj.phone && (
+          {'phone' in customerObj && customerObj.phone && (
             <div className="space-y-2">
               <div className="text-sm text-gray-500">Phone</div>
               <div className="flex items-center">

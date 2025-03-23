@@ -1,6 +1,6 @@
 
 import { ScrollArea } from "@/components/ui/scroll-area";
-import type { Ticket as TicketType } from "@/types/ticket";
+import type { Ticket as TicketType, Company as CompanyType } from "@/types/ticket";
 import { useState } from "react";
 import CustomerHeader from './components/CustomerHeader';
 import CurrentTicketCard from './components/CurrentTicketCard';
