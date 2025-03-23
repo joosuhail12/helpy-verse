@@ -1,11 +1,6 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { HttpClient } from "@/api/services/http";
-import { 
-  encryptBase64,
-  setCookie,
-  setWorkspaceId,
-  handleSetToken
-} from '@/utils/helpers/helpers';
+import { getAuthToken, handleSetToken } from '@/utils/auth/tokenManager';
 import { get } from "lodash";
 import { Credentials, PasswordResetConfirmation, PasswordResetRequest, RegistrationCredentials } from './types';
 import { AUTH_ENDPOINTS } from '@/api/services/http/config';
@@ -34,15 +29,10 @@ export const loginUser = createAsyncThunk(
         recaptchaId: "",
       });
 
-      console.log("Login response received:", response.status);
+      console.log("Login response received:", response.status, response.data);
       
       const loginData = response.data?.data;
       if (loginData) {
-        const email = loginData?.username || credentials.email;
-        const encryptedEmail = encryptBase64(email);
-        setCookie("agent_email", encryptedEmail);
-
-        // Set the token in the cookie and Axios headers
         const token = loginData?.accessToken?.token || "";
         if (token) {
           console.log("Setting token from login response");
@@ -62,14 +52,15 @@ export const loginUser = createAsyncThunk(
           return rejectWithValue("Authentication server did not provide a valid token. Please try again.");
         }
 
-        // Set workspace ID if available - only in cookie
+        // Set workspace ID if available - only in localStorage
         const workspaceId = get(response.data, "data.defaultWorkspaceId", "");
         if (workspaceId) {
-          setWorkspaceId(workspaceId);
+          localStorage.setItem("workspaceId", workspaceId);
+          console.log("Workspace ID set:", workspaceId);
         }
 
         // Configure Axios with the new token
-        HttpClient.setAxiosDefaultConfig();
+        HttpClient.setAxiosDefaultConfig(token);
       } else {
         console.error("Login response missing data structure:", response.data);
         return rejectWithValue("Invalid server response format");

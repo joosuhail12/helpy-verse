@@ -17,8 +17,8 @@ export const SignIn = memo(() => {
   const location = useLocation();
   const auth = useAppSelector((state) => state.auth);
   
-  // Get redirect path from location state or default to /home
-  const from = location.state?.from || '/home';
+  // Get redirect path from location state or default to /home/inbox/all
+  const from = location.state?.from || '/home/inbox/all';
   
   const methods = useForm({
     defaultValues: {
@@ -31,7 +31,6 @@ export const SignIn = memo(() => {
   useEffect(() => {
     if (isAuthenticated()) {
       console.log('User is authenticated, redirecting to:', from); // Debug log
-      
       // Navigate to target location
       navigate(from, { replace: true });
     } else {

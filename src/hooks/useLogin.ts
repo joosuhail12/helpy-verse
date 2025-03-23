@@ -19,7 +19,7 @@ export const useLogin = (redirectPath: string = '/home/inbox/all') => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const auth = useAppSelector((state) => state.auth);
-  const loading = auth?.loading ?? false;
+  const loading = auth?.loading || isSubmitting;
   
   // Listen for online/offline status changes
   useEffect(() => {
@@ -87,7 +87,7 @@ export const useLogin = (redirectPath: string = '/home/inbox/all') => {
       
       // Handle successful login
       if (result && result.data && result.data.accessToken) {
-        console.log('Login successful');
+        console.log('Login successful', result);
         
         toast({
           title: 'Success',
@@ -132,7 +132,7 @@ export const useLogin = (redirectPath: string = '/home/inbox/all') => {
     setEmail,
     password,
     setPassword,
-    loading: loading || isSubmitting,
+    loading,
     isOffline,
     handleLoginSubmit
   };
