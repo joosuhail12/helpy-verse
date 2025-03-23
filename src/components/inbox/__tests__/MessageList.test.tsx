@@ -61,6 +61,7 @@ const mockTicket: Ticket = {
   priority: 'high',
   createdAt: '2024-03-15T10:30:00Z',
   updatedAt: '2024-03-15T10:30:00Z',
+  isUnread: true,
   recipients: ['alice.chen@example.com']
 };
 

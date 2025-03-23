@@ -11,25 +11,19 @@ const mockTeamMembers: TeamMember[] = [
     id: '1',
     name: 'Sarah Wilson',
     email: 'sarah@example.com',
-    avatar: '',
-    teamId: 'team1',
-    teamName: 'Support Team'
+    avatar: ''
   },
   {
     id: '2',
     name: 'Mike Thompson',
     email: 'mike@example.com',
-    avatar: '',
-    teamId: 'team1',
-    teamName: 'Support Team'
+    avatar: ''
   },
   {
     id: '3',
     name: 'Tom Wilson',
     email: 'tom@example.com',
-    avatar: '',
-    teamId: 'team2',
-    teamName: 'Technical Team'
+    avatar: ''
   },
 ];
 

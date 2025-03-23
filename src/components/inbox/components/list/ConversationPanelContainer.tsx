@@ -17,6 +17,17 @@ const ConversationPanelContainer = ({ selectedTicket, onClose }: ConversationPan
     setIsLoading(false);
   }, 800);
 
+  // Get customer and company names safely
+  const customerName = typeof selectedTicket.customer === 'string' 
+    ? selectedTicket.customer 
+    : selectedTicket.customer.name;
+
+  const companyName = selectedTicket.company
+    ? (typeof selectedTicket.company === 'string'
+      ? selectedTicket.company
+      : selectedTicket.company.name)
+    : 'No Company';
+
   return (
     <div className="flex flex-col h-full">
       <div className="flex-none p-4 border-b bg-white">
@@ -28,7 +39,7 @@ const ConversationPanelContainer = ({ selectedTicket, onClose }: ConversationPan
           <div>
             <h2 className="text-lg font-semibold">{selectedTicket.subject}</h2>
             <p className="text-sm text-gray-500">
-              {selectedTicket.customer.name} • {selectedTicket.company ? selectedTicket.company.name : 'No Company'}
+              {customerName} • {companyName}
             </p>
           </div>
         </div>
@@ -46,7 +57,7 @@ const ConversationPanelContainer = ({ selectedTicket, onClose }: ConversationPan
           <div className="space-y-4">
             <div className="bg-white p-4 rounded-lg shadow-sm">
               <div className="flex justify-between mb-2">
-                <span className="text-sm font-medium">{selectedTicket.customer.name}</span>
+                <span className="text-sm font-medium">{customerName}</span>
                 <span className="text-xs text-gray-500">{new Date(selectedTicket.createdAt).toLocaleString()}</span>
               </div>
               <p className="text-sm">{selectedTicket.lastMessage || ''}</p>

@@ -1,3 +1,4 @@
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -23,6 +24,10 @@ const CurrentTicketCard = ({ ticket, isOpen, onToggle }: CurrentTicketCardProps)
       description: `${field} has been successfully updated.`,
     });
   };
+
+  const assigneeName = ticket.assignee ? 
+    (typeof ticket.assignee === 'string' ? ticket.assignee : ticket.assignee.name) 
+    : '';
 
   return (
     <Collapsible open={isOpen} onOpenChange={onToggle} className="group">
@@ -108,7 +113,7 @@ const CurrentTicketCard = ({ ticket, isOpen, onToggle }: CurrentTicketCardProps)
             <div className="flex items-center justify-between py-2">
               <span className="text-gray-500 font-medium">Assigned To</span>
               <InlineEditField
-                value={ticket.assignee ? ticket.assignee.name : ''}
+                value={assigneeName}
                 contactId={ticket.id}
                 field="assignee"
                 label="Assigned To"

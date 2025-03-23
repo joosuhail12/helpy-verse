@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { LayoutList, LayoutGrid, List } from 'lucide-react';
+import { LayoutList, LayoutGrid } from 'lucide-react';
 import type { ViewMode } from '@/types/ticket';
 
 interface ViewToggleProps {
@@ -29,15 +29,6 @@ const ViewToggle = ({ viewMode, onChangeViewMode }: ViewToggleProps) => {
         title="Detailed view"
       >
         <LayoutGrid className="h-4 w-4" />
-      </Button>
-      <Button
-        variant={viewMode === 'list' ? "default" : "ghost"}
-        size="sm"
-        className="rounded-none px-2"
-        onClick={() => onChangeViewMode('list')}
-        title="List view"
-      >
-        <List className="h-4 w-4" />
       </Button>
     </div>
   );

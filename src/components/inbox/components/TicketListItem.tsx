@@ -42,6 +42,21 @@ const TicketListItem = ({
     urgent: "bg-red-100 text-red-800 border-red-200",
   };
 
+  // Get customer and company names safely
+  const customerName = typeof ticket.customer === 'string' 
+    ? ticket.customer 
+    : ticket.customer.name;
+
+  const companyName = typeof ticket.company === 'string'
+    ? ticket.company
+    : ticket.company.name;
+
+  const assigneeName = ticket.assignee 
+    ? (typeof ticket.assignee === 'string' 
+      ? ticket.assignee 
+      : ticket.assignee.name) 
+    : '';
+
   return (
     <div
       className={`border rounded-lg overflow-hidden transition-all duration-200 ${
@@ -115,9 +130,9 @@ const TicketListItem = ({
             {viewMode === "detailed" && (
               <div className="flex flex-col sm:flex-row sm:items-center gap-2 justify-between">
                 <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <p>{ticket.customer.name}</p>
+                  <p>{customerName}</p>
                   <span className="text-gray-400">•</span>
-                  <p>{ticket.company?.name}</p>
+                  <p>{companyName}</p>
                 </div>
                 <div className="flex items-center gap-2 flex-wrap">
                   {ticket.tags?.map((tag) => (
@@ -138,7 +153,7 @@ const TicketListItem = ({
               <div className="flex items-center justify-between">
                 <div className="text-sm text-gray-500">
                   {ticket.assignee ? (
-                    <p>Assigned to: {ticket.assignee.name}</p>
+                    <p>Assigned to: {assigneeName}</p>
                   ) : (
                     <p className="text-amber-600">Unassigned</p>
                   )}

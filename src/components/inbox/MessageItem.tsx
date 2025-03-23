@@ -3,20 +3,19 @@ import React, { useState, useEffect } from 'react';
 import { Avatar } from "@/components/ui/avatar";
 import { Check, CheckCheck, Clock, Smile } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { getAblyChannel, publishToChannel, subscribeToChannel } from '@/utils/ably';
+import { publishToChannel, subscribeToChannel } from '@/utils/ably';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import EmojiPicker from 'emoji-picker-react';
 import type { Message } from './types';
 import type { Ticket } from '@/types/ticket';
 
 interface MessageItemProps {
   message: Message;
   ticket: Ticket;
-  onReply: (content: string) => void;
+  onReply?: (content: string) => void;
 }
 
 const COMMON_REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
@@ -87,7 +86,9 @@ const MessageItem = ({ message, ticket }: MessageItemProps) => {
 
   const getSenderName = () => {
     if (typeof message.sender === 'string') {
-      return message.isCustomer ? ticket.customer.name : message.sender;
+      return message.isCustomer ? 
+        (typeof ticket.customer === 'string' ? ticket.customer : ticket.customer.name) 
+        : message.sender;
     }
     return message.sender.name;
   };
@@ -95,11 +96,16 @@ const MessageItem = ({ message, ticket }: MessageItemProps) => {
   const isCustomer = message.isCustomer || 
     (typeof message.sender !== 'string' && message.sender.type === 'customer');
 
+  // Get customer name safely
+  const customerName = typeof ticket.customer === 'string' 
+    ? ticket.customer 
+    : ticket.customer.name;
+
   return (
     <div className="flex gap-3">
       <Avatar className="h-8 w-8">
         <span className="text-xs">
-          {isCustomer ? ticket.customer.name[0] : 'A'}
+          {isCustomer ? customerName[0] : 'A'}
         </span>
       </Avatar>
       <div className="flex-1">

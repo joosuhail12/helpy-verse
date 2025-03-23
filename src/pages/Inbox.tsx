@@ -46,8 +46,6 @@ const Inbox = () => {
           <LoadingState />
         ) : (
           <EmptyTicketState 
-            title="No tickets found" 
-            description="There are no tickets matching your current filters." 
             onCreateTicket={() => setIsCreateTicketOpen(true)}
           />
         )}

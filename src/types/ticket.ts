@@ -1,7 +1,7 @@
 
-export type TicketPriority = 'low' | 'medium' | 'high';
-export type TicketStatus = 'open' | 'pending' | 'closed';
-export type SortField = 'subject' | 'customer' | 'company' | 'priority' | 'status' | 'createdAt' | 'assignee';
+export type TicketPriority = 'low' | 'medium' | 'high' | 'urgent';
+export type TicketStatus = 'open' | 'pending' | 'closed' | 'resolved';
+export type SortField = 'subject' | 'customer' | 'company' | 'priority' | 'status' | 'createdAt' | 'updatedAt' | 'assignee';
 export type ViewMode = 'detailed' | 'compact';
 export type NotificationType = 'mention' | 'assignment' | 'update';
 
@@ -23,6 +23,8 @@ export interface TeamMember {
   name: string;
   email?: string;
   avatar?: string;
+  teamId?: string;
+  teamName?: string;
 }
 
 export interface Ticket {
@@ -41,6 +43,7 @@ export interface Ticket {
   hasNotification?: boolean;
   notificationType?: NotificationType;
   recipients: string[];
+  channel?: string;
 }
 
 export interface Message {
@@ -68,6 +71,7 @@ export interface ConversationPanelProps {
 
 export const stringToCustomer = (name: string): Customer => {
   return {
+    id: name.toLowerCase().replace(' ', '-'),
     name,
     email: name.toLowerCase().replace(' ', '.') + '@example.com'
   };
@@ -75,12 +79,14 @@ export const stringToCustomer = (name: string): Customer => {
 
 export const stringToCompany = (name: string): Company => {
   return {
+    id: name.toLowerCase().replace(' ', '-'),
     name
   };
 };
 
 export const stringToTeamMember = (name: string): TeamMember => {
   return {
+    id: name.toLowerCase().replace(' ', '-'),
     name,
     email: name.toLowerCase().replace(' ', '.') + '@company.com'
   };
