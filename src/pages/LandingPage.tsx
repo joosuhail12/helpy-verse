@@ -1,8 +1,7 @@
-
 import React, { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import ChatWidgetStandalone from '@/components/chat-widget/ChatWidgetStandalone';
+import { ChatWidget } from '@/components/chat-widget/ChatWidget';
 
 /**
  * Landing page that is accessible without authentication
@@ -11,35 +10,11 @@ import ChatWidgetStandalone from '@/components/chat-widget/ChatWidgetStandalone'
 const LandingPage = () => {
   const navigate = useNavigate();
 
-  // Add chat widget script dynamically
-  useEffect(() => {
-    // Skip if already loaded
-    if (document.getElementById('pullse-chat-widget-script')) return;
-    
-    // Set global config
-    window.PULLSE_WORKSPACE_ID = '6c22b22f-7bdf-43db-b7c1-9c5884125c63';
-    
-    // Create the script element
-    const script = document.createElement('script');
-    script.id = 'pullse-chat-widget-script';
-    script.src = '/chat-widget.js';
-    script.async = true;
-    
-    // Append to document
-    document.body.appendChild(script);
-    
-    // Cleanup on unmount
-    return () => {
-      const scriptElement = document.getElementById('pullse-chat-widget-script');
-      if (scriptElement) scriptElement.remove();
-      
-      const widgetElement = document.getElementById('pullse-chat-widget');
-      if (widgetElement) widgetElement.remove();
-    };
-  }, []);
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-purple-50">
+      {/* Direct inclusion of the ChatWidget component */}
+      <ChatWidget workspaceId="6c22b22f-7bdf-43db-b7c1-9c5884125c63" />
+      
       {/* Hero Section */}
       <div className="container mx-auto px-4 py-20">
         <div className="flex flex-col items-center text-center max-w-4xl mx-auto">
