@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, KeyboardEvent } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useChat } from '@/hooks/chat/useChat';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
@@ -28,7 +28,9 @@ const EnhancedConversationView: React.FC<EnhancedConversationViewProps> = ({
     const fetchMessages = async () => {
       if (conversationId) {
         const conversationMessages = await getMessages(conversationId);
-        setMessages(conversationMessages);
+        if (conversationMessages) {
+          setMessages(conversationMessages);
+        }
       }
     };
 

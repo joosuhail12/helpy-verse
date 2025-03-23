@@ -3,8 +3,9 @@ export interface ChatMessage {
   id: string;
   sender: 'user' | 'agent' | 'system';
   content: string;
-  timestamp: Date;
+  timestamp: Date | string;
   conversationId: string;
+  metadata?: Record<string, any>;
 }
 
 export interface Conversation {

@@ -26,7 +26,9 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
     const fetchMessages = async () => {
       if (conversationId) {
         const conversationMessages = await getMessages(conversationId);
-        setMessages(conversationMessages);
+        if (conversationMessages) {
+          setMessages(conversationMessages);
+        }
       }
     };
 
