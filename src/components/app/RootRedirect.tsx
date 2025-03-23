@@ -2,7 +2,7 @@
 import { useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { initializeApp } from './AppInitializer';
-import { getCookie } from '@/utils/helpers/helpers';
+import { isAuthenticated } from '@/utils/auth/tokenManager';
 
 const RootRedirect: React.FC = () => {
   const location = useLocation();
@@ -12,8 +12,9 @@ const RootRedirect: React.FC = () => {
     initializeApp();
   }, []);
 
-  const token = getCookie("customerToken") || localStorage.getItem("token");
-  console.log('RootRedirect - token exists:', !!token, 'Current path:', location.pathname);
+  // Check if authenticated using the tokenManager
+  const isAuth = isAuthenticated();
+  console.log('RootRedirect - Authentication status:', isAuth, 'Current path:', location.pathname);
   
   // If we're already on a specific path, don't redirect
   if (location.pathname !== '/home' && location.pathname !== '/home/') {
@@ -22,7 +23,7 @@ const RootRedirect: React.FC = () => {
   }
   
   // If authenticated, go to inbox, otherwise go to landing page
-  return token ? 
+  return isAuth ? 
     <Navigate to="/home/inbox/all" replace /> : 
     <Navigate to="/" replace />;
 };

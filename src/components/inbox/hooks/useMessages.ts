@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Ticket, Message as TicketMessage, Customer, stringToCustomer, TeamMember, stringToTeamMember } from '@/types/ticket';
+import { Ticket, Message as TicketMessage } from '@/types/ticket';
 import { publishToChannel } from '@/utils/ably';
 import { Message } from '../types';
 
@@ -9,26 +9,47 @@ export const useMessages = (ticket: Ticket) => {
   const [attachments, setAttachments] = useState<File[]>([]);
 
   // Helper function to ensure we're working with proper Customer object
-  const getCustomer = (): Customer => {
+  const getCustomer = () => {
     if (!ticket.customer) {
       return { 
         id: 'unknown', 
         name: 'Unknown Customer', 
         email: '', 
+        type: 'customer' as const
       };
     }
+    
     if (typeof ticket.customer === 'string') {
-      return stringToCustomer(ticket.customer);
+      return { 
+        id: 'unknown', 
+        name: ticket.customer, 
+        email: '', 
+        type: 'customer' as const 
+      };
     }
-    return ticket.customer;
+    
+    return {
+      ...ticket.customer,
+      type: 'customer' as const
+    };
   };
 
-  const getAssignee = (): TeamMember | null => {
+  const getAssignee = () => {
     if (!ticket.assignee) return null;
+    
     if (typeof ticket.assignee === 'string') {
-      return stringToTeamMember(ticket.assignee);
+      return {
+        id: 'unknown',
+        name: ticket.assignee,
+        email: '',
+        type: 'agent' as const
+      };
     }
-    return ticket.assignee;
+    
+    return {
+      ...ticket.assignee,
+      type: 'agent' as const
+    };
   };
 
   const sendMessage = async (content: string, isInternalNote: boolean = false): Promise<Message | null> => {
@@ -47,11 +68,11 @@ export const useMessages = (ticket: Ticket) => {
         sender: assignee ? {
           id: assignee.id || 'agent',
           name: assignee.name,
-          type: 'agent' as const
+          type: 'agent'
         } : {
           id: 'agent',
           name: 'Support Agent',
-          type: 'agent' as const
+          type: 'agent'
         },
         timestamp: new Date().toISOString(),
         isInternalNote,

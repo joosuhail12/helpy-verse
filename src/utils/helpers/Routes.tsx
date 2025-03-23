@@ -14,7 +14,7 @@ export const PrivateRoute = ({ children }: RouteProps): JSX.Element => {
     console.log("PrivateRoute: Checking authentication status for path:", location.pathname);
     
     const isAuth = isAuthenticated();
-    console.log(`PrivateRoute: Token exists: ${isAuth ? 'true' : 'false'} ${isAuth ? 'Token value found' : 'No token found'}`);
+    console.log(`PrivateRoute: Authentication status: ${isAuth ? 'Authenticated' : 'Not authenticated'}`);
     
     if (isAuth) {
         console.log("PrivateRoute: Token exists, rendering protected content for path:", location.pathname);

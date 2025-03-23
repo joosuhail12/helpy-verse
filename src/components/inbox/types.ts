@@ -20,7 +20,7 @@ export interface Message {
     id: string;
     name: string;
     type: 'agent' | 'customer' | 'system';
-  } | string | import('@/types/ticket').Customer | import('@/types/ticket').TeamMember;
+  } | string;
   timestamp: string;
   isCustomer?: boolean;
   type?: 'message' | 'internal_note';
@@ -44,7 +44,7 @@ export interface ConversationPanelProps {
 }
 
 // Add a type adapter function to convert different message formats
-export const adaptMessage = (message: Message | import('@/types/ticket').Message): Message => {
+export const adaptMessage = (message: any): Message => {
   // If it's already in the correct format
   if ('id' in message && (
     (typeof message.sender === 'object' && 'type' in message.sender) || 
@@ -55,8 +55,12 @@ export const adaptMessage = (message: Message | import('@/types/ticket').Message
 
   // Need to adapt the message
   const adaptedMessage: Message = {
-    ...message,
-    sender: adaptSender(message.sender)
+    id: message.id || `msg-${Date.now()}`,
+    content: message.content || message.text || '',
+    sender: adaptSender(message.sender),
+    timestamp: message.timestamp || new Date().toISOString(),
+    isInternalNote: message.isInternalNote || false,
+    attachments: message.attachments || []
   };
 
   return adaptedMessage;
@@ -81,7 +85,7 @@ export const adaptSender = (sender: any): Message['sender'] => {
   if ('email' in sender && !('type' in sender)) {
     return {
       id: sender.id || 'unknown',
-      name: sender.name,
+      name: sender.name || sender.email,
       type: 'agent'
     };
   }

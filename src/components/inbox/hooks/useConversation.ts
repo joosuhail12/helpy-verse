@@ -1,8 +1,8 @@
 
 import { useState, useEffect } from 'react';
-import { Ticket, Message as TicketMessage, Customer, stringToCustomer, TeamMember } from '@/types/ticket';
+import { Ticket, Message as TicketMessage } from '@/types/ticket';
 import { subscribeToChannel, publishToChannel } from '@/utils/ably';
-import { Message, adaptMessage, adaptActiveUsers } from '../types';
+import { Message, adaptMessage } from '../types';
 
 // Define the initial empty state
 const initialMessages: Message[] = [];
@@ -51,10 +51,10 @@ export const useConversation = (ticket: Ticket | null) => {
           id: `msg-${Date.now()}-2`,
           ticketId: ticket.id,
           content: "Thank you for reaching out. I'll look into this for you right away.",
-          sender: ticket.assignee || { 
-            id: 'system', 
-            name: 'Support Agent', 
-            type: 'agent' as const 
+          sender: {
+            id: ticket.assignee?.id || 'system',
+            name: ticket.assignee?.name || 'Support Agent',
+            type: 'agent' as const
           },
           timestamp: new Date(new Date(ticket.createdAt).getTime() + 30000).toISOString(),
           isInternalNote: false
@@ -65,34 +65,47 @@ export const useConversation = (ticket: Ticket | null) => {
     }, 1000);
 
     // Set up real-time updates
-    let cleanup: (() => void) | undefined;
+    let cleanupFunction: () => void;
     
     const setupRealtimeUpdates = async () => {
-      cleanup = await subscribeToChannel(`ticket:${ticket.id}`, 'message', (message) => {
-        if (message.name === 'message') {
-          setMessages(prev => [...prev, adaptMessage(message.data)]);
-        } else if (message.name === 'typing') {
-          handleTypingEvent(message.data);
-        }
-      });
+      try {
+        const cleanup = await subscribeToChannel(`ticket:${ticket.id}`, 'message', (message) => {
+          if (message.name === 'message') {
+            setMessages(prev => [...prev, adaptMessage(message.data)]);
+          } else if (message.name === 'typing') {
+            handleTypingEvent(message.data);
+          }
+        });
+        
+        cleanupFunction = cleanup;
+      } catch (error) {
+        console.error("Error setting up realtime updates:", error);
+        setError("Could not connect to real-time updates. Please refresh the page.");
+      }
     };
     
     setupRealtimeUpdates();
     
     return () => {
       clearTimeout(timer);
-      if (cleanup) {
-        cleanup();
+      if (cleanupFunction) {
+        cleanupFunction();
       }
     };
   }, [ticket]);
 
   // Helper to get customer info in a standardized way
   function getCustomerInfo(): CustomerInfo {
-    if (!ticket) return { id: 'unknown', name: 'Unknown Customer', type: 'customer' };
+    if (!ticket?.customer) {
+      return { 
+        id: 'unknown', 
+        name: 'Unknown Customer', 
+        type: 'customer' 
+      };
+    }
     
     const customer = typeof ticket.customer === 'string' 
-      ? stringToCustomer(ticket.customer) 
+      ? { id: 'unknown', name: ticket.customer }
       : ticket.customer;
       
     const company = typeof ticket.company === 'string'
@@ -108,7 +121,7 @@ export const useConversation = (ticket: Ticket | null) => {
   }
 
   // Handler for typing indicators
-  const handleTyping = (user: string = 'You') => {
+  const handleTyping = async (user: string = 'You') => {
     if (!ticket) return;
     
     // Publish the typing event to the channel
@@ -117,11 +130,17 @@ export const useConversation = (ticket: Ticket | null) => {
       timestamp: new Date().toISOString()
     };
     
-    publishToChannel(`ticket:${ticket.id}`, 'typing', event);
+    try {
+      await publishToChannel(`ticket:${ticket.id}`, 'typing', event);
+    } catch (error) {
+      console.error("Error publishing typing event:", error);
+    }
   };
 
   // Process incoming typing events
   const handleTypingEvent = (data: any) => {
+    if (!data || !data.user) return;
+    
     setIsTyping(true);
     setTypingUser(data.user);
     setTypingUsers(prev => {
@@ -150,10 +169,10 @@ export const useConversation = (ticket: Ticket | null) => {
         id: `msg-${Date.now()}`,
         ticketId: ticket?.id || '',
         content: newMessage,
-        sender: ticket?.assignee || { 
-          id: 'agent', 
-          name: 'Support Agent', 
-          type: 'agent' as const 
+        sender: {
+          id: 'agent',
+          name: 'Support Agent',
+          type: 'agent'
         },
         timestamp: new Date().toISOString(),
         isInternalNote,

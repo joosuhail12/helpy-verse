@@ -16,7 +16,6 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const [authError, setAuthError] = useState<string | null>(null);
   const { loading } = useAppSelector((state) => state.auth);
-  const [hasValidToken, setHasValidToken] = useState(false);
   
   // Listen for online/offline status changes
   useEffect(() => {
@@ -46,42 +45,39 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
       
       // Get token directly from tokenManager
       const token = getAuthToken();
-      const isTokenPresent = !!token;
-      console.log('ProtectedRoute: Token exists:', isTokenPresent, isTokenPresent ? 'Token value found' : 'No token value', 'Current path:', location.pathname);
+      console.log('ProtectedRoute: Token exists:', !!token, 'Current path:', location.pathname);
       
       // Check token validity
-      if (isTokenPresent) {
-        // Token exists, consider it valid for this session
-        setHasValidToken(true);
+      if (token) {
+        // Token exists, configure HTTP client
         console.log('ProtectedRoute: Found token, configuring axios');
         HttpClient.setAxiosDefaultConfig(token);
         
         try {
           // Try to fetch user data
-          await dispatch(fetchUserData());
+          await dispatch(fetchUserData()).unwrap();
           console.log('ProtectedRoute: Successfully fetched user data');
         } catch (error: any) {
           console.error("Error fetching user data:", error);
           
-          // If it's a 401, the token is probably invalid
+          // For 401 errors, redirect to login
           if (error?.response?.status === 401) {
             console.log('Token appears to be invalid');
-            setHasValidToken(false);
             setAuthError('Your session has expired. Please sign in again.');
           } else if (error?.isOfflineError) {
             setAuthError('Cannot connect to the server. Please check your internet connection.');
+          } else {
+            // For other errors, we still continue since we have a token
+            console.warn("Non-fatal error fetching user data:", error?.message);
           }
-          // For other errors, we still continue since we have a token
         }
       } else {
-        console.log('ProtectedRoute: No token found');
-        setHasValidToken(false);
+        console.log('ProtectedRoute: No token found, redirecting to login');
+        setIsChecking(false);
+        return;
       }
       
-      // Short delay to ensure state is settled
-      setTimeout(() => {
-        setIsChecking(false);
-      }, 500);
+      setIsChecking(false);
     };
     
     checkAuth();
@@ -142,13 +138,15 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  // Simple but reliable check based on token existence
-  if (hasValidToken && isAuthenticated()) {
-    console.log('ProtectedRoute: Token exists, rendering protected content', location.pathname);
+  // Final auth check before rendering children
+  if (isAuthenticated()) {
+    console.log('ProtectedRoute: Authentication confirmed, rendering protected content');
     return <>{children}</>;
   }
 
   // No token, redirect to login
-  console.log('ProtectedRoute: No token found, redirecting to login');
+  console.log('ProtectedRoute: Not authenticated, redirecting to login');
   return <Navigate to="/sign-in" state={{ from: location.pathname }} replace />;
 };
+
+export default ProtectedRoute;
