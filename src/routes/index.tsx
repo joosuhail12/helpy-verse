@@ -4,7 +4,7 @@ import { createBrowserRouter } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import RootRedirect from '../components/app/RootRedirect';
 import RouteErrorBoundary from '@/components/app/RouteErrorBoundary';
-import { PrivateRoute, PublicRoute } from '@/utils/helpers/Routes';
+import { PrivateRoute } from '@/utils/helpers/Routes';
 
 // Define LoadingSpinner first to avoid reference errors
 export const LoadingSpinner = () => (
@@ -29,9 +29,6 @@ const LandingPage = lazy(() => import('../pages/LandingPage'));
 
 // Lazy load dashboard layout
 const DashboardLayoutComponent = lazy(() => import('../layouts/DashboardLayout'));
-
-// Lazy load the chat widget for standalone use
-const ChatWidgetStandalonePage = lazy(() => import('../pages/widget/ChatWidgetStandalone'));
 
 // Helper to wrap components with Suspense and RouteErrorBoundary
 const withSuspenseAndErrorHandling = (Component) => (
@@ -64,19 +61,7 @@ const logRoutes = (routes) => {
 export const router = createBrowserRouter([
   {
     path: '/',
-    element: (
-      <PublicRoute>
-        {withSuspenseAndErrorHandling(LandingPage)}
-      </PublicRoute>
-    ),
-  },
-  {
-    path: '/index',
-    element: (
-      <PublicRoute>
-        {withSuspenseAndErrorHandling(LandingPage)}
-      </PublicRoute>
-    ),
+    element: withSuspenseAndErrorHandling(LandingPage),
   },
   {
     path: '/home',
@@ -97,10 +82,6 @@ export const router = createBrowserRouter([
   {
     path: '/sign-up',
     element: withSuspenseAndErrorHandling(SignUp),
-  },
-  {
-    path: '/widget/chat',
-    element: withSuspenseAndErrorHandling(ChatWidgetStandalonePage),
   },
   {
     path: '/home',

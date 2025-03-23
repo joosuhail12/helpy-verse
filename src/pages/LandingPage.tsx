@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 
@@ -9,24 +9,6 @@ import { useNavigate } from 'react-router-dom';
  */
 const LandingPage = () => {
   const navigate = useNavigate();
-
-  useEffect(() => {
-    console.log('Landing page mounted - initializing chat widget');
-    
-    // Load the chat widget embed script
-    const script = document.createElement('script');
-    script.src = '/pullse-embed.js';
-    script.async = true;
-    script.setAttribute('data-workspace-id', '6c22b22f-7bdf-43db-b7c1-9c5884125c63');
-    document.body.appendChild(script);
-
-    return () => {
-      // Clean up script on unmount
-      if (document.body.contains(script)) {
-        document.body.removeChild(script);
-      }
-    };
-  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-purple-50">

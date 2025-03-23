@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from './useAppDispatch';
@@ -137,5 +136,3 @@ export const useLogin = (redirectPath: string = '/home/inbox/all') => {
     handleLoginSubmit
   };
 };
-
-export default useLogin;

@@ -85,5 +85,3 @@ export const LoginForm = memo(() => {
 });
 
 LoginForm.displayName = 'LoginForm';
-
-export default LoginForm;
