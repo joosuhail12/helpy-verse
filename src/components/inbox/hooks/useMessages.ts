@@ -10,7 +10,12 @@ export const useMessages = (ticket: Ticket) => {
   // Helper function to ensure we're working with proper Customer object
   const getCustomer = (): Customer => {
     if (!ticket.customer) {
-      return { id: 'unknown', name: 'Unknown Customer', email: '', phone: '', createdAt: new Date().toISOString() };
+      return { 
+        id: 'unknown', 
+        name: 'Unknown Customer', 
+        email: '', 
+        createdAt: new Date().toISOString() 
+      };
     }
     if (typeof ticket.customer === 'string') {
       return stringToCustomer(ticket.customer);

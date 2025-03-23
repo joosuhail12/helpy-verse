@@ -1,3 +1,4 @@
+
 // Define types for inbox components
 export interface UserPresence {
   userId: string;
@@ -23,6 +24,7 @@ export interface Message {
   timestamp: string;
   isCustomer?: boolean;
   type?: 'message' | 'internal_note';
+  isInternalNote?: boolean;
   attachments?: Array<{
     id: string;
     url: string;
@@ -33,6 +35,7 @@ export interface Message {
   status?: 'sent' | 'delivered' | 'read' | 'failed' | 'pending';
   readBy?: string[];
   reactions?: Record<string, string[]>;
+  ticketId?: string;
 }
 
 export interface ConversationPanelProps {

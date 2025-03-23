@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import type { ConversationPanelProps } from './types';
@@ -33,7 +34,7 @@ const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
   
   const isMobile = useIsMobile();
 
-  const handleKeyPress = async (e: React.KeyboardEvent<HTMLDivElement>) => {
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
@@ -48,7 +49,7 @@ const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
         <ConversationHeader 
           ticket={ticket} 
           onClose={onClose} 
-          activeUsers={activeUsers}
+          activeUsers={activeUsers || []}
         />
       </div>
       
@@ -57,7 +58,7 @@ const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
           <div className="flex-1 overflow-auto">
             <MessageList
               messages={messages}
-              typingUsers={typingUsers}
+              typingUsers={typingUsers || []}
               ticket={ticket}
               onReply={setNewMessage}
               isLoading={isLoading}
@@ -93,7 +94,7 @@ const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
               <div className="flex-1 overflow-auto">
                 <MessageList
                   messages={messages}
-                  typingUsers={typingUsers}
+                  typingUsers={typingUsers || []}
                   ticket={ticket}
                   onReply={setNewMessage}
                   isLoading={isLoading}
