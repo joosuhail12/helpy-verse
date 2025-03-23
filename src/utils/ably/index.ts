@@ -1,15 +1,15 @@
 
 /**
- * Utility functions for working with Ably real-time messaging
+ * Entry point for Ably services
  */
 import * as Ably from 'ably';
 import { v4 as uuidv4 } from 'uuid';
 
-// Re-export from conversationService
-export * from './ably/conversationService';
-export * from './ably/messageService';
-export * from './ably/presenceService';
-export * from './ably/messaging/index';
+// Re-export from services
+export * from './conversationService';
+export * from './messageService';
+export * from './presenceService';
+export * from './messaging/index';
 
 // Ably API key - this is a client key which is safe to expose
 const ABLY_API_KEY = "X4jpaA.kKXoZg:oEr5R_kjKk06Wk0iilgK_rGAE9hbFjQMU8wYoE_BnEc";
@@ -39,6 +39,18 @@ export const initializeAbly = (): Ably.Realtime => {
   ablyClient = new Ably.Realtime({
     key: ABLY_API_KEY,
     clientId: getClientId(),
+  });
+  
+  ablyClient.connection.on('connected', () => {
+    console.log('Ably connected successfully');
+  });
+  
+  ablyClient.connection.on('disconnected', () => {
+    console.log('Ably disconnected');
+  });
+  
+  ablyClient.connection.on('failed', (err) => {
+    console.error('Ably connection failed:', err);
   });
   
   return ablyClient;

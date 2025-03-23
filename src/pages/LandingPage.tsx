@@ -1,7 +1,8 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import ChatWidgetStandalone from '@/components/chat-widget/ChatWidgetStandalone';
 
 /**
  * Landing page that is accessible without authentication
@@ -83,6 +84,9 @@ const LandingPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Chat widget embedded on the landing page */}
+      <ChatWidgetStandalone />
 
       {/* CTA Section */}
       <div className="container mx-auto px-4 py-16 text-center">
