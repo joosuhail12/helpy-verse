@@ -3,7 +3,7 @@
 // New code should import directly from the specific modules
 
 import { 
-  conversationMessages, 
+  conversationMessages,
   typingIndicators,
   presenceIndicators 
 } from './messaging';

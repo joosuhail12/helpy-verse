@@ -1,244 +1,98 @@
 
-import { useState, useEffect } from 'react';
-import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { addMessage } from '@/store/slices/chat/chatSlice';
-import { v4 as uuidv4 } from 'uuid';
-import { useToast } from '@/hooks/use-toast';
+import { useState, useEffect, useCallback } from 'react';
 import { 
-  loadQueuedMessages, 
-  saveQueuedMessages, 
-  queueMessage as queueOfflineMsg,
-  updateMessageStatus,
-  removeFromQueue,
-  checkForFailedMessages as hasFailedMessages,
-  retryFailedMessages
+  hasOfflineMessages, 
+  getOfflineMessages,
+  addOfflineMessage,
+  markMessageAsSent,
+  markMessageAsFailed,
+  resendFailedMessages
 } from '@/utils/ably/messaging';
 
-// Define QueuedMessage type to align with what's used in the component
-interface QueuedMessage {
+export interface OfflineMessage {
   id: string;
-  text: string;
-  conversationId: string;
-  timestamp: string;
+  content: string;
+  channelId: string;
+  timestamp: number;
   status: 'queued' | 'sending' | 'sent' | 'failed';
   retryCount: number;
-  sender: {
-    id: string;
-    name: string;
-    type: string;
-  };
 }
 
-interface ChatMessage {
-  id: string;
-  text: string;
-  sender: {
-    id: string;
-    name: string;
-    type: string;
-  };
-  timestamp: string;
-}
-
-interface UseOfflineMessagingProps {
-  isConnected: boolean;
-  conversationId: string | null;
-  userId: string;
-}
-
-/**
- * Hook for handling offline messaging functionality
- */
-export const useOfflineMessaging = ({ 
-  isConnected, 
-  conversationId, 
-  userId 
-}: UseOfflineMessagingProps) => {
-  const [queuedMessages, setQueuedMessages] = useState<QueuedMessage[]>([]);
-  const [hasFailedMsgs, setHasFailedMsgs] = useState(false);
-  const { toast } = useToast();
-  const dispatch = useAppDispatch();
-
-  // Load queued messages from localStorage on mount
+export const useOfflineMessaging = (channelId: string) => {
+  const [offlineMessages, setOfflineMessages] = useState<OfflineMessage[]>([]);
+  const [hasFailedMessages, setHasFailedMessages] = useState(false);
+  
+  // Initialize - check for existing offline messages
   useEffect(() => {
-    const loadedMessages = loadQueuedMessages() as unknown as QueuedMessage[];
-    setQueuedMessages(loadedMessages || []);
-    setHasFailedMsgs(hasFailedMessages() || false);
-  }, []);
-
-  // Queue a message for later sending (when offline)
-  const queueOfflineMessage = (text: string): QueuedMessage | null => {
-    if (!conversationId) return null;
-    
-    const newMessageId = uuidv4();
-    const timestamp = new Date().toISOString();
-    
-    // Create the message object
-    const newMessage: ChatMessage = {
-      id: newMessageId,
-      text: text,
-      sender: {
-        id: userId,
-        name: 'You',
-        type: 'customer'
-      },
-      timestamp: timestamp
-    };
-    
-    // Queue the message
-    const queuedMessage = {
-      id: newMessageId,
-      text,
-      conversationId,
-      timestamp,
-      status: 'queued' as const,
-      retryCount: 0,
-      sender: {
-        id: userId,
-        name: 'You',
-        type: 'customer'
+    const checkOfflineMessages = async () => {
+      const hasMessages = await hasOfflineMessages();
+      if (hasMessages) {
+        const messages = await getOfflineMessages();
+        setOfflineMessages(messages.filter((msg: OfflineMessage) => msg.channelId === channelId));
+        
+        // Check if there are any failed messages
+        const failedMessages = messages.filter((msg: OfflineMessage) => 
+          msg.status === 'failed' && msg.channelId === channelId
+        );
+        
+        setHasFailedMessages(failedMessages.length > 0);
       }
     };
     
-    // Add to our offline storage system
-    queueOfflineMsg(conversationId, 'message', newMessage, newMessageId);
+    checkOfflineMessages();
+  }, [channelId]);
+  
+  // Add a message to the offline queue
+  const addMessageToQueue = useCallback(async (content: string) => {
+    const newMessage: OfflineMessage = {
+      id: `offline-${Date.now()}`,
+      content,
+      channelId,
+      timestamp: Date.now(),
+      status: 'queued',
+      retryCount: 0
+    };
     
-    // Update state with the new queued message
-    setQueuedMessages(prev => [...prev, queuedMessage]);
+    // Add to local state
+    setOfflineMessages(prev => [...prev, newMessage]);
     
-    // Add message to Redux store for immediate display
-    if (conversationId) {
-      dispatch(addMessage({
-        conversationId,
-        message: {
-          id: newMessageId,
-          text: text,
-          sender: 'user',
-          timestamp: timestamp,
-          status: 'queued'
-        }
-      }));
-    }
+    // Save to storage
+    await addOfflineMessage(newMessage);
     
-    return queuedMessage;
-  };
-
-  // Try to send queued messages when connection is restored
-  const syncQueuedMessages = async (
-    sendFunction: (
-      conversationId: string, 
-      text: string, 
-      sender: any, 
-      messageId?: string
-    ) => Promise<any>
-  ) => {
-    if (!isConnected || queuedMessages.length === 0) return;
-    
-    // Show toast notification
-    if (queuedMessages.length > 0) {
-      toast({
-        title: 'Connection restored',
-        description: `Sending ${queuedMessages.length} queued message${queuedMessages.length > 1 ? 's' : ''}...`,
-      });
-    }
-    
-    // Process each queued message
-    for (const message of queuedMessages) {
-      try {
-        // Update status to sending
-        updateMessageStatus(message.id, 'sending');
-        setQueuedMessages(prev => prev.map(msg => 
-          msg.id === message.id ? { ...msg, status: 'sending' } : msg
-        ));
-        
-        // Send the message
-        if (message.conversationId && message.text) {
-          await sendFunction(
-            message.conversationId,
-            message.text,
-            message.sender,
-            message.id
-          );
-          
-          // Remove from queue after successful send
-          removeFromQueue(message.id);
-          setQueuedMessages(prev => prev.filter(msg => msg.id !== message.id));
-        }
-      } catch (error) {
-        console.error('Failed to send queued message:', error);
-        
-        // Update status to failed
-        updateMessageStatus(message.id, 'failed');
-        setQueuedMessages(prev => prev.map(msg => 
-          msg.id === message.id ? { ...msg, status: 'failed' } : msg
-        ));
-        
-        setHasFailedMsgs(true);
-      }
-    }
-  };
-
-  // Try to resend failed messages
-  const retryFailedMessagesHandler = async (
-    sendFunction: (
-      conversationId: string, 
-      text: string, 
-      sender: any, 
-      messageId?: string
-    ) => Promise<any>
-  ) => {
-    if (!isConnected) {
-      toast({
-        title: 'No connection',
-        description: 'Cannot retry sending messages while offline.',
-        variant: 'destructive'
-      });
-      return;
-    }
-    
-    toast({
-      title: 'Retrying failed messages',
-      description: 'Attempting to resend failed messages...',
-    });
-    
+    return newMessage;
+  }, [channelId]);
+  
+  // Process the queue when connection is restored
+  const processQueue = useCallback(async () => {
     try {
-      await retryFailedMessages();
-      
-      // Update UI directly - in a real app we would get this from the retry result
-      const updatedMessages = queuedMessages.filter(msg => msg.status !== 'failed');
-      setQueuedMessages(updatedMessages);
-      setHasFailedMsgs(updatedMessages.some(msg => msg.status === 'failed'));
-      
-      if (!updatedMessages.some(msg => msg.status === 'failed')) {
-        toast({
-          title: 'Success',
-          description: 'All messages sent successfully.',
-        });
-      } else {
-        toast({
-          title: 'Some messages failed',
-          description: 'Some messages could not be sent. Please try again later.',
-          variant: 'destructive'
-        });
-      }
+      await resendFailedMessages();
+      setHasFailedMessages(false);
     } catch (error) {
-      console.error('Error retrying failed messages:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to retry sending messages.',
-        variant: 'destructive'
-      });
+      console.error('Error processing offline message queue:', error);
     }
-  };
-
+  }, []);
+  
+  // Update a message's status
+  const updateMessageStatus = useCallback(async (messageId: string, status: 'sending' | 'sent' | 'failed') => {
+    if (status === 'sent') {
+      await markMessageAsSent(messageId);
+    } else if (status === 'failed') {
+      await markMessageAsFailed(messageId);
+      setHasFailedMessages(true);
+    }
+    
+    setOfflineMessages(prev => 
+      prev.map(msg => msg.id === messageId ? { ...msg, status } : msg)
+    );
+  }, []);
+  
   return {
-    queuedMessages,
-    hasFailedMessages: hasFailedMsgs,
-    queueOfflineMessage,
-    syncQueuedMessages,
-    retryFailedMessages: retryFailedMessagesHandler
+    offlineMessages,
+    addMessageToQueue,
+    updateMessageStatus,
+    processQueue,
+    hasFailedMessages
   };
 };
 
-// This named export is needed for compatibility with the existing code
 export default useOfflineMessaging;

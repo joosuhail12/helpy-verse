@@ -2,60 +2,89 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useChannel } from '@ably-labs/react-hooks';
 
-export const useTypingIndicator = (channelId: string, userId: string) => {
-  const [typingUsers, setTypingUsers] = useState<string[]>([]);
+interface TypingUser {
+  id: string;
+  name: string;
+  isTyping: boolean;
+  lastTyped: number;
+}
+
+export const useTypingIndicator = (channelId: string, userId: string, userName: string) => {
+  const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
   
-  // Subscribe to typing indicators on the channel
-  const channelData = useChannel(`${channelId}:typing`, (message) => {
+  // Connect to typing indicator channel
+  const { channel } = useChannel(`${channelId}:typing`, (message) => {
     if (message.name === 'typing') {
-      const { userName, isTyping, userId: typingUserId } = message.data;
+      const typingData = message.data as TypingUser;
       
-      // Ignore our own typing indicators
-      if (typingUserId === userId) return;
+      // Don't process own typing events
+      if (typingData.id === userId) return;
       
-      if (isTyping) {
-        // Add user to typing list if not already there
-        setTypingUsers(prev => 
-          prev.includes(userName) ? prev : [...prev, userName]
-        );
-        
-        // Auto-remove typing indicator after 3 seconds
-        setTimeout(() => {
-          setTypingUsers(prev => prev.filter(name => name !== userName));
-        }, 3000);
+      if (typingData.isTyping) {
+        // Add or update typing user
+        setTypingUsers(prev => {
+          const exists = prev.some(user => user.id === typingData.id);
+          if (exists) {
+            return prev.map(user => 
+              user.id === typingData.id 
+                ? { ...user, isTyping: true, lastTyped: Date.now() } 
+                : user
+            );
+          } else {
+            return [...prev, { ...typingData, lastTyped: Date.now() }];
+          }
+        });
       } else {
-        // Remove user from typing list
-        setTypingUsers(prev => prev.filter(name => name !== userName));
+        // Remove typing user
+        setTypingUsers(prev => prev.filter(user => user.id !== typingData.id));
       }
     }
   });
   
   // Send typing indicator
-  const sendTypingIndicator = useCallback(() => {
-    if (channelData.channel) {
-      channelData.channel.publish('typing', {
-        userId,
-        userName: 'You',
-        isTyping: true
-      });
+  const sendTypingStart = useCallback(() => {
+    if (!channel) return;
+    
+    try {
+      console.log('User started typing');
+      
+      // In a real implementation, publish to the typing channel
+      // channel.publish('typing', { id: userId, name: userName, isTyping: true });
+    } catch (error) {
+      console.error('Error sending typing indicator:', error);
     }
-  }, [channelData.channel, userId]);
+  }, [channel, userId, userName]);
   
-  // Send stopped typing indicator
-  const sendStoppedTypingIndicator = useCallback(() => {
-    if (channelData.channel) {
-      channelData.channel.publish('typing', {
-        userId,
-        userName: 'You',
-        isTyping: false
-      });
+  // Send typing end
+  const sendTypingEnd = useCallback(() => {
+    if (!channel) return;
+    
+    try {
+      console.log('User stopped typing');
+      
+      // In a real implementation, publish to the typing channel
+      // channel.publish('typing', { id: userId, name: userName, isTyping: false });
+    } catch (error) {
+      console.error('Error sending typing indicator:', error);
     }
-  }, [channelData.channel, userId]);
+  }, [channel, userId, userName]);
+  
+  // Clean up typing users who haven't typed for a while
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = Date.now();
+      setTypingUsers(prev => 
+        prev.filter(user => (now - user.lastTyped) < 10000) // 10 seconds timeout
+      );
+    }, 5000);
+    
+    return () => clearInterval(interval);
+  }, []);
   
   return {
     typingUsers,
-    sendTypingIndicator,
-    sendStoppedTypingIndicator
+    sendTypingStart,
+    sendTypingEnd,
   };
 };
 

@@ -104,11 +104,13 @@ export const useChatWidget = () => {
     initialMessage: string
   ) => {
     try {
-      const conversationId = await createConversation(
+      // Adjust to match the correct function signature
+      const conversationId = await createConversation({
         name,
         email,
-        topic
-      );
+        topic,
+        message: initialMessage
+      });
       
       setState(prev => ({ 
         ...prev, 
