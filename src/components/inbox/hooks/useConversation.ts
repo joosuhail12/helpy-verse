@@ -52,8 +52,8 @@ export const useConversation = (ticket: Ticket | null) => {
           ticketId: ticket.id,
           content: "Thank you for reaching out. I'll look into this for you right away.",
           sender: {
-            id: ticket.assignee?.id || 'system',
-            name: ticket.assignee?.name || 'Support Agent',
+            id: typeof ticket.assignee === 'string' ? 'system' : (ticket.assignee?.id || 'system'),
+            name: typeof ticket.assignee === 'string' ? ticket.assignee : (ticket.assignee?.name || 'Support Agent'),
             type: 'agent' as const
           },
           timestamp: new Date(new Date(ticket.createdAt).getTime() + 30000).toISOString(),
