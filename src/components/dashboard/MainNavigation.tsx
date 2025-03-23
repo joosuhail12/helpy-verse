@@ -1,7 +1,7 @@
 
 import { Button } from '@/components/ui/button';
 import { mainNavItems } from './navigationConfig';
-import { NavigateFunction, useLocation } from 'react-router-dom';
+import { NavigateFunction, useLocation, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import {
   Tooltip,
@@ -25,11 +25,8 @@ const MainNavigation = ({ activeMainNav, setActiveMainNav, navigate }: MainNavig
         mainNavItems.forEach((item, index) => {
           if (event.key === `${index + 1}`) {
             setActiveMainNav(item.id);
-            // Only navigate if it's a direct route without children
-            const hasSubNav = item.id !== 'home';
-            if (!hasSubNav) {
-              navigate(item.path);
-            }
+            // Navigate to the appropriate path
+            navigate(item.path);
           }
         });
       }
@@ -38,6 +35,11 @@ const MainNavigation = ({ activeMainNav, setActiveMainNav, navigate }: MainNavig
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [navigate, setActiveMainNav]);
+
+  const handleNavItemClick = (itemId: string, itemPath: string) => {
+    setActiveMainNav(itemId);
+    navigate(itemPath);
+  };
 
   return (
     <div className="flex flex-col items-center justify-center gap-3">
@@ -56,14 +58,7 @@ const MainNavigation = ({ activeMainNav, setActiveMainNav, navigate }: MainNavig
                       ? 'text-primary bg-primary/5 shadow-sm hover:shadow-md hover:bg-primary/10' 
                       : 'text-gray-500 hover:text-primary hover:bg-primary/5'
                   }`}
-                  onClick={() => {
-                    setActiveMainNav(item.id);
-                    // Only navigate if it's a direct route without children
-                    const hasSubNav = item.id !== 'home';
-                    if (!hasSubNav) {
-                      navigate(item.path);
-                    }
-                  }}
+                  onClick={() => handleNavItemClick(item.id, item.path)}
                 >
                   {isActive && (
                     <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 to-primary/5 animate-pulse" />

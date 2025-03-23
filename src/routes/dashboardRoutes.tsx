@@ -1,7 +1,6 @@
 
 import { lazy, Suspense } from 'react';
 import { Navigate } from 'react-router-dom';
-import { ProtectedRoute } from '../components/auth/ProtectedRoute';
 import { Loader2 } from 'lucide-react';
 import RouteErrorBoundary from '@/components/app/RouteErrorBoundary';
 
@@ -19,36 +18,38 @@ const Companies = lazy(() => import('../pages/contacts/Companies'));
 const CompanyDetail = lazy(() => import('../pages/contacts/CompanyDetail'));
 const ContactDetail = lazy(() => import('../pages/contacts/Detail'));
 
-// Helper function to wrap a component with Suspense, ProtectedRoute and RouteErrorBoundary
-const withSuspenseAndProtection = (Component) => (
-  <ProtectedRoute>
-    <RouteErrorBoundary>
-      <Suspense fallback={<LoadingSpinner />}>
-        <Component />
-      </Suspense>
-    </RouteErrorBoundary>
-  </ProtectedRoute>
+// Helper function to wrap a component with Suspense and RouteErrorBoundary
+const withSuspenseAndErrorHandling = (Component) => (
+  <RouteErrorBoundary>
+    <Suspense fallback={<LoadingSpinner />}>
+      <Component />
+    </Suspense>
+  </RouteErrorBoundary>
 );
 
 export const dashboardRoutes = [
   {
     path: '',
-    element: withSuspenseAndProtection(Dashboard),
+    element: withSuspenseAndErrorHandling(Dashboard),
+  },
+  {
+    path: 'contacts',
+    element: <Navigate to="/home/contacts/all" replace />,
   },
   {
     path: 'contacts/all',
-    element: withSuspenseAndProtection(AllContacts),
+    element: withSuspenseAndErrorHandling(AllContacts),
   },
   {
     path: 'contacts/companies',
-    element: withSuspenseAndProtection(Companies),
+    element: withSuspenseAndErrorHandling(Companies),
   },
   {
     path: 'contacts/companies/:id',
-    element: withSuspenseAndProtection(CompanyDetail),
+    element: withSuspenseAndErrorHandling(CompanyDetail),
   },
   {
     path: 'contacts/:id',
-    element: withSuspenseAndProtection(ContactDetail),
+    element: withSuspenseAndErrorHandling(ContactDetail),
   },
 ];

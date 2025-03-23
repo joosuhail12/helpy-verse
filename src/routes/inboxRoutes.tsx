@@ -1,6 +1,6 @@
 
 import { lazy, Suspense } from 'react';
-import { RouteObject } from 'react-router-dom';
+import { RouteObject, Navigate } from 'react-router-dom';
 import { LoadingSpinner } from './index';
 import RouteErrorBoundary from '@/components/app/RouteErrorBoundary';
 
@@ -15,11 +15,7 @@ export const inboxRoutes: RouteObject[] = [
   {
     path: 'inbox',
     element: (
-      <RouteErrorBoundary>
-        <Suspense fallback={<LoadingSpinner />}>
-          <Inbox />
-        </Suspense>
-      </RouteErrorBoundary>
+      <Navigate to="/home/inbox/all" replace />
     ),
   },
   {
@@ -33,7 +29,7 @@ export const inboxRoutes: RouteObject[] = [
     ),
   },
   {
-    path: 'inbox/mine',
+    path: 'inbox/your-inbox',
     element: (
       <RouteErrorBoundary>
         <Suspense fallback={<LoadingSpinner />}>

@@ -16,9 +16,11 @@ const Sidebar = () => {
   const dispatch = useAppDispatch();
   
   // Get the current route segment to determine active nav
-  const currentRoute = location.pathname.split('/');
-  const initialMainNav = currentRoute[1] === 'inbox' ? 'inbox' : 
-                        (currentRoute[1] === 'home' && currentRoute[2] ? currentRoute[2] : 'home');
+  const currentPathParts = location.pathname.split('/');
+  const initialMainNav = 
+    currentPathParts[1] === 'home' && currentPathParts[2] 
+      ? currentPathParts[2] 
+      : 'home';
   
   const [activeMainNav, setActiveMainNav] = useState(initialMainNav);
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
@@ -26,12 +28,10 @@ const Sidebar = () => {
 
   // Update activeMainNav when route changes
   useEffect(() => {
-    const currentRoute = location.pathname.split('/');
-    if (currentRoute[1] === 'inbox') {
-      setActiveMainNav('inbox');
-    } else if (currentRoute[1] === 'home' && currentRoute[2]) {
-      setActiveMainNav(currentRoute[2]);
-    } else if (currentRoute[1] === 'home') {
+    const pathParts = location.pathname.split('/');
+    if (pathParts[1] === 'home' && pathParts[2]) {
+      setActiveMainNav(pathParts[2]);
+    } else if (pathParts[1] === 'home') {
       setActiveMainNav('home');
     }
   }, [location]);
@@ -66,7 +66,10 @@ const Sidebar = () => {
     <>
       <div className="w-16 min-h-screen bg-white/80 backdrop-blur-xl border-r border-purple-100/50 shadow-lg flex flex-col items-center justify-between py-6 relative z-10">
         <div className="flex flex-col items-center gap-8">
-          <div className="relative group">
+          <div 
+            className="relative group cursor-pointer" 
+            onClick={() => navigate('/home')}
+          >
             <div className="absolute inset-0 bg-gradient-to-tr from-purple-500/20 to-blue-500/20 rounded-full blur-xl group-hover:blur-2xl transition-all duration-300 opacity-0 group-hover:opacity-100" />
             <img 
               src="https://framerusercontent.com/images/9N8Z1vTRbJsHlrIuTjm6Ajga4dI.png" 
