@@ -28,7 +28,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ workspaceId }) => {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 20, scale: 0.95 }}
                 transition={{ duration: 0.2 }}
-                className="mb-3 w-80 sm:w-96 h-[500px] bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-200"
+                className="mb-3 w-80 sm:w-96 h-[600px] bg-black rounded-xl shadow-2xl overflow-hidden border border-gray-800"
               >
                 <ChatWidgetContainer onClose={() => setIsOpen(false)} workspaceId={workspaceId} />
               </motion.div>

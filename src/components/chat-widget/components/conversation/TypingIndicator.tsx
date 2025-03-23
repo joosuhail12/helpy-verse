@@ -1,29 +1,24 @@
 
 import React from 'react';
 
-export interface TypingIndicatorProps {
-  isTyping?: boolean;
-  agentName?: string;
+interface TypingIndicatorProps {
+  typingUsers?: string[];
   className?: string;
 }
 
-const TypingIndicator: React.FC<TypingIndicatorProps> = ({ 
-  isTyping = false, 
-  agentName = 'Agent',
-  className = '' 
-}) => {
-  if (!isTyping) {
-    return null;
-  }
+const TypingIndicator: React.FC<TypingIndicatorProps> = ({ typingUsers = [], className = '' }) => {
+  if (typingUsers.length === 0) return null;
 
   return (
-    <div className={`flex items-center space-x-2 text-gray-500 text-sm p-2 ${className}`}>
-      <div className="flex space-x-1">
-        <div className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '0ms' }}></div>
-        <div className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '150ms' }}></div>
-        <div className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '300ms' }}></div>
-      </div>
-      <span>{agentName} is typing...</span>
+    <div className={className}>
+      {typingUsers.length === 1 
+        ? `${typingUsers[0]} is typing...` 
+        : `${typingUsers.length} people are typing...`}
+      <span className="inline-block">
+        <span className="animate-pulse">.</span>
+        <span className="animate-pulse animation-delay-200">.</span>
+        <span className="animate-pulse animation-delay-400">.</span>
+      </span>
     </div>
   );
 };

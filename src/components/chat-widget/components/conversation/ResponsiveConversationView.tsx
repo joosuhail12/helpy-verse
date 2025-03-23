@@ -1,85 +1,91 @@
 
-import React, { useState, useRef, useEffect } from 'react';
-import { useRealtimeChat } from '@/hooks/chat/useRealtimeChat';
+import React, { useState, useEffect, useRef } from 'react';
+import { ChevronLeft } from 'lucide-react';
+import { useChat } from '@/hooks/chat/useChat';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import TypingIndicator from './TypingIndicator';
-import { ChevronLeft } from 'lucide-react';
 
-export interface ResponsiveConversationViewProps {
+interface ResponsiveConversationViewProps {
+  conversationId: string;
   workspaceId: string;
   onBack: () => void;
 }
 
-const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps & { conversationId: string }> = ({
+const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({ 
+  conversationId, 
   workspaceId,
-  conversationId,
   onBack
 }) => {
-  const { messages, sendMessage, isLoading, error } = useRealtimeChat(conversationId, workspaceId);
-  const [newMessage, setNewMessage] = useState('');
-  const [sending, setSending] = useState(false);
+  const { sendMessage, getMessages, loadingMessages, conversations } = useChat();
+  const [messageText, setMessageText] = useState('');
+  const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
-  // Scroll to bottom when messages change
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  const conversation = conversations.find(c => c.id === conversationId);
 
-  // Handle sending a message
+  useEffect(() => {
+    getMessages(conversationId);
+  }, [conversationId, getMessages]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [loadingMessages]);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   const handleSendMessage = async () => {
-    if (!newMessage.trim() || sending) return;
+    if (!messageText.trim() || isSending) return;
     
-    setSending(true);
+    setIsSending(true);
     try {
-      await sendMessage(newMessage);
-      setNewMessage('');
-    } catch (err) {
-      console.error('Failed to send message:', err);
+      await sendMessage(conversationId, messageText);
+      setMessageText('');
+      setTimeout(scrollToBottom, 100);
+    } catch (error) {
+      console.error('Error sending message:', error);
     } finally {
-      setSending(false);
+      setIsSending(false);
     }
   };
 
   return (
-    <div className="flex flex-col h-full bg-gray-50">
-      <div className="p-2 border-b flex items-center">
+    <div className="flex flex-col h-full bg-black">
+      <div className="border-b border-gray-800 p-3 flex items-center">
         <button 
           onClick={onBack}
-          className="p-1 mr-2 rounded-full hover:bg-gray-200"
+          className="p-1 mr-2 rounded-full hover:bg-gray-800 transition-colors"
         >
-          <ChevronLeft className="h-5 w-5" />
+          <ChevronLeft size={20} />
         </button>
-        <h3 className="font-medium">Conversation</h3>
+        <h2 className="font-medium truncate">
+          {conversation?.title || "Conversation"}
+        </h2>
       </div>
-      
-      <div className="flex-1 overflow-y-auto p-4">
-        {isLoading ? (
-          <div className="flex items-center justify-center h-full">
-            <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
-          </div>
-        ) : error ? (
-          <div className="flex items-center justify-center h-full text-red-500">
-            Error connecting to chat. Please try again.
+
+      <div className="flex-1 overflow-y-auto px-4 py-3">
+        {loadingMessages ? (
+          <div className="flex justify-center items-center h-full">
+            <div className="animate-spin h-6 w-6 border-4 border-primary border-t-transparent rounded-full"></div>
           </div>
         ) : (
           <>
-            <MessageList messages={messages} />
+            <MessageList conversationId={conversationId} />
             <div ref={messagesEndRef} />
           </>
         )}
       </div>
       
-      <TypingIndicator isTyping={false} agentName="Agent" className="px-4 h-6 text-xs text-gray-500 italic" />
+      <TypingIndicator className="px-4 py-1 text-sm text-gray-400 italic" />
       
-      <div className="border-t p-4 bg-white">
-        <MessageInput 
-          onSendMessage={handleSendMessage}
-          messageText={newMessage}
-          setMessageText={setNewMessage}
-          isSending={sending}
-        />
-      </div>
+      <MessageInput
+        onSendMessage={handleSendMessage}
+        messageText={messageText}
+        setMessageText={setMessageText}
+        isSending={isSending}
+      />
     </div>
   );
 };

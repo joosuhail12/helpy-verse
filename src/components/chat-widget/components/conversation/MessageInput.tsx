@@ -60,7 +60,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
   };
 
   return (
-    <div className="border-t p-3 bg-white">
+    <div className="border-t border-gray-800 p-3 bg-black">
       <div className="flex items-end space-x-2">
         <textarea
           value={inputValue || ''}
@@ -68,7 +68,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           disabled={isInputDisabled}
-          className="flex-1 resize-none border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-primary min-h-[80px] max-h-32"
+          className="flex-1 resize-none border border-gray-700 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-primary min-h-[40px] max-h-32 bg-gray-900 text-white"
           style={{ overflow: 'auto' }}
         />
         <button
@@ -77,11 +77,11 @@ const MessageInput: React.FC<MessageInputProps> = ({
           className={`p-2 rounded-full ${
             inputValue?.trim() && !isInputDisabled
               ? 'bg-primary text-white hover:bg-primary/90'
-              : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+              : 'bg-gray-700 text-gray-500 cursor-not-allowed'
           }`}
           aria-label="Send message"
         >
-          <Send size={20} />
+          <Send size={18} />
         </button>
       </div>
     </div>

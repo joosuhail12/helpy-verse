@@ -1,0 +1,109 @@
+
+import React, { useState, useEffect } from 'react';
+import { ChevronLeft } from 'lucide-react';
+import { useChat } from '@/hooks/chat/useChat';
+import ConversationView from '../components/conversation/ConversationView';
+
+interface MessagesViewProps {
+  workspaceId: string;
+  onClose: () => void;
+}
+
+const MessagesView: React.FC<MessagesViewProps> = ({ workspaceId, onClose }) => {
+  const { conversations, currentConversation, setCurrentConversation } = useChat();
+  const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
+
+  useEffect(() => {
+    // If there's a current conversation, select it initially
+    if (currentConversation && !selectedConversation) {
+      setSelectedConversation(currentConversation.id);
+    }
+  }, [currentConversation, selectedConversation]);
+
+  const handleSelectConversation = (conversationId: string) => {
+    setSelectedConversation(conversationId);
+    const conversation = conversations.find(conv => conv.id === conversationId);
+    if (conversation) {
+      setCurrentConversation(conversation);
+    }
+  };
+
+  const handleBackToList = () => {
+    setSelectedConversation(null);
+  };
+
+  return (
+    <div className="flex flex-col flex-1 overflow-hidden">
+      {!selectedConversation ? (
+        <>
+          {/* Header */}
+          <div className="border-b border-gray-800 p-4">
+            <h2 className="text-xl font-semibold">Messages</h2>
+          </div>
+
+          {/* Conversation list */}
+          <div className="flex-1 overflow-y-auto">
+            {conversations.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full p-4 text-center">
+                <p className="text-gray-400">No messages yet</p>
+                <button className="mt-4 bg-white text-black px-4 py-2 rounded-md">
+                  Start a conversation
+                </button>
+              </div>
+            ) : (
+              <div className="divide-y divide-gray-800">
+                {conversations.map((conversation) => (
+                  <button
+                    key={conversation.id}
+                    className="w-full px-4 py-3 flex items-start hover:bg-gray-900 transition-colors"
+                    onClick={() => handleSelectConversation(conversation.id)}
+                  >
+                    <div className="bg-gray-700 rounded-full w-10 h-10 flex items-center justify-center mr-3 flex-shrink-0">
+                      <svg viewBox="0 0 24 24" width="20" height="20" fill="white">
+                        <rect x="3" y="3" width="18" height="18" rx="2" />
+                        <line x1="8" y1="7" x2="16" y2="7" stroke="black" strokeWidth="2" />
+                        <line x1="8" y1="12" x2="16" y2="12" stroke="black" strokeWidth="2" />
+                        <line x1="8" y1="17" x2="16" y2="17" stroke="black" strokeWidth="2" />
+                      </svg>
+                    </div>
+                    <div className="text-left">
+                      <h3 className="font-medium text-white">{conversation.title || "New conversation"}</h3>
+                      <p className="text-gray-400 text-sm truncate">
+                        {conversation.lastMessage || "No messages yet"}
+                      </p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </>
+      ) : (
+        <div className="flex flex-col h-full">
+          {/* Conversation header */}
+          <div className="border-b border-gray-800 p-3 flex items-center">
+            <button 
+              onClick={handleBackToList}
+              className="p-1 mr-2 rounded-full hover:bg-gray-800 transition-colors"
+            >
+              <ChevronLeft size={20} />
+            </button>
+            <h2 className="font-medium truncate">
+              {conversations.find(c => c.id === selectedConversation)?.title || "Conversation"}
+            </h2>
+          </div>
+          
+          {/* Conversation content */}
+          <div className="flex-1 overflow-hidden">
+            <ConversationView 
+              conversationId={selectedConversation} 
+              workspaceId={workspaceId} 
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default MessagesView;
