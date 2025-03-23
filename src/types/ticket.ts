@@ -1,81 +1,87 @@
 
-export interface Ticket {
-  id: string;
-  subject: string;
-  status: 'open' | 'closed' | 'pending' | 'resolved';
-  priority: 'low' | 'medium' | 'high' | 'urgent';
-  assignee?: TeamMember | null;
-  customer: Customer;
-  company?: Company;
-  createdAt: string;
-  updatedAt: string;
-  lastActivity?: string;
-  tags?: string[];
-  channel?: string;
-  firstResponseTime?: number;
-  responseCount?: number;
-  messageCount?: number;
-  // Additional properties used in UI components
-  lastMessage?: string;
-  isUnread?: boolean;
-  hasNotification?: boolean;
-  notificationType?: 'mention' | 'assignment';
-  recipients?: string[];
-}
-
-export interface TeamMember {
-  id: string;
-  name: string;
-  email: string;
-  avatar?: string;
-  teamId?: string;
-  teamName?: string;
-  // Add toString method for comparison operations
-  toString(): string;
-}
+export type TicketPriority = 'low' | 'medium' | 'high';
+export type TicketStatus = 'open' | 'pending' | 'closed';
+export type SortField = 'subject' | 'customer' | 'company' | 'priority' | 'status' | 'createdAt' | 'assignee';
+export type ViewMode = 'detailed' | 'compact';
+export type NotificationType = 'mention' | 'assignment' | 'update';
 
 export interface Customer {
-  id: string;
+  id?: string;
   name: string;
-  email: string;
+  email?: string;
   avatar?: string;
-  toString(): string;
 }
 
 export interface Company {
-  id: string;
+  id?: string;
   name: string;
-  toString(): string;
+  logo?: string;
 }
 
-export type ViewMode = 'compact' | 'detailed' | 'list';
-export type SortField = 'createdAt' | 'updatedAt' | 'priority' | 'status' | 'subject' | 'customer' | 'company' | 'assignee';
+export interface TeamMember {
+  id?: string;
+  name: string;
+  email?: string;
+  avatar?: string;
+}
 
-// Helper function to convert simple string to Customer object
-export const stringToCustomer = (str: string): Customer => {
+export interface Ticket {
+  id: string;
+  subject: string;
+  customer: Customer | string;
+  lastMessage: string;
+  assignee: TeamMember | string | null;
+  company: Company | string;
+  tags: string[];
+  status: TicketStatus;
+  priority: TicketPriority;
+  createdAt: string;
+  updatedAt: string;
+  isUnread: boolean;
+  hasNotification?: boolean;
+  notificationType?: NotificationType;
+  recipients: string[];
+}
+
+export interface Message {
+  id: string;
+  ticketId: string;
+  content: string;
+  sender: TeamMember | Customer | string;
+  timestamp: string;
+  isInternalNote?: boolean;
+  attachments?: Attachment[];
+}
+
+export interface Attachment {
+  id: string;
+  name: string;
+  url: string;
+  type: string;
+  size: number;
+}
+
+export interface ConversationPanelProps {
+  ticket: Ticket;
+  onClose: () => void;
+}
+
+export const stringToCustomer = (name: string): Customer => {
   return {
-    id: str,
-    name: str,
-    email: `${str.toLowerCase().replace(/\s+/g, '.')}@example.com`,
-    toString() { return this.name; }
+    name,
+    email: name.toLowerCase().replace(' ', '.') + '@example.com'
   };
 };
 
-// Helper function to convert simple string to Company object
-export const stringToCompany = (str: string): Company => {
+export const stringToCompany = (name: string): Company => {
   return {
-    id: str,
-    name: str,
-    toString() { return this.name; }
+    name
   };
 };
 
-// Helper function to convert simple string to TeamMember object
-export const stringToTeamMember = (str: string): TeamMember => {
+export const stringToTeamMember = (name: string): TeamMember => {
   return {
-    id: str,
-    name: str,
-    email: `${str.toLowerCase().replace(/\s+/g, '.')}@company.com`,
-    toString() { return this.name; }
+    name,
+    email: name.toLowerCase().replace(' ', '.') + '@company.com'
   };
 };

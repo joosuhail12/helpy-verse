@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import TicketList from '@/components/inbox/TicketList';
 import { Ticket } from '@/types/ticket';
 import { stringToCustomer, stringToCompany, stringToTeamMember } from '@/types/ticket';
@@ -89,13 +89,17 @@ const initialTickets: Ticket[] = [
 const AllTickets = () => {
   const [tickets, setTickets] = useState<Ticket[]>(initialTickets);
   const [isLoading, setIsLoading] = useState(false);
+  
+  useEffect(() => {
+    console.log('AllTickets page loaded with', tickets.length, 'tickets');
+  }, [tickets]);
 
   const handleTicketCreated = (newTicket: Ticket) => {
     setTickets(prevTickets => [newTicket, ...prevTickets]);
   };
 
   return (
-    <div className="h-full w-full flex flex-col overflow-hidden">
+    <div className="h-full w-full flex flex-col overflow-hidden bg-background">
       <div className="flex-none p-4 border-b bg-white">
         <h1 className="text-xl font-semibold">All Tickets</h1>
         <p className="text-sm text-gray-500">View and manage all support tickets</p>
