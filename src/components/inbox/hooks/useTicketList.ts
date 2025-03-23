@@ -1,129 +1,94 @@
-import { useState, useCallback, useMemo } from 'react';
-import type { Ticket, SortField, SortDirection, ViewMode } from '@/types/ticket';
 
-// This is a custom hook to manage ticket list state
-export const useTicketList = (initialTickets: Ticket[] = []) => {
+import { useState, useMemo } from 'react';
+import type { Ticket, SortField, ViewMode } from '@/types/ticket';
+
+export const useTicketList = (initialTickets: Ticket[]) => {
   const [tickets, setTickets] = useState<Ticket[]>(initialTickets);
   const [selectedTickets, setSelectedTickets] = useState<string[]>([]);
   const [sortField, setSortField] = useState<SortField>('createdAt');
-  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
-  const [viewMode, setViewMode] = useState<ViewMode>('list');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterStatus, setFilterStatus] = useState<string[]>([]);
-  const [filterPriority, setFilterPriority] = useState<string[]>([]);
-  const [filterAssignee, setFilterAssignee] = useState<string[]>([]);
-  
-  const handleSort = useCallback((field: SortField) => {
-    if (field === sortField) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortField(field);
-      setSortDirection('asc');
-    }
-  }, [sortField, sortDirection]);
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  const [viewMode, setViewMode] = useState<ViewMode>('detailed');
 
-  const handleSelectTicket = useCallback((ticketId: string) => {
-    setSelectedTickets((prev) =>
-      prev.includes(ticketId)
-        ? prev.filter((id) => id !== ticketId)
-        : [...prev, ticketId]
-    );
-  }, []);
+  const handleSelectTicket = (ticketId: string) => {
+    setSelectedTickets(prevSelected => {
+      if (prevSelected.includes(ticketId)) {
+        return prevSelected.filter(id => id !== ticketId);
+      } else {
+        return [...prevSelected, ticketId];
+      }
+    });
+  };
 
-  const handleSelectAll = useCallback((checked: boolean) => {
-    if (checked) {
-      setSelectedTickets(tickets.map((ticket) => ticket.id));
+  const handleSelectAll = (select: boolean) => {
+    if (select) {
+      setSelectedTickets(tickets.map(ticket => ticket.id));
     } else {
       setSelectedTickets([]);
     }
-  }, [tickets]);
+  };
 
-  const allSelected = useMemo(() => {
-    return tickets.length > 0 && selectedTickets.length === tickets.length;
-  }, [selectedTickets.length, tickets.length]);
+  const handleSort = (field: SortField) => {
+    if (field === sortField) {
+      setSortDirection(prevDirection => prevDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('desc');
+    }
+  };
 
-  const indeterminate = useMemo(() => {
-    return selectedTickets.length > 0 && selectedTickets.length < tickets.length;
-  }, [selectedTickets.length, tickets.length]);
-
-  // Sort tickets based on current sort field and direction
   const sortedTickets = useMemo(() => {
-    if (!tickets.length) return [];
-    
     return [...tickets].sort((a, b) => {
-      if (sortField === 'createdAt') {
-        const dateA = new Date(a.createdAt).getTime();
-        const dateB = new Date(b.createdAt).getTime();
-        return sortDirection === 'asc' ? dateA - dateB : dateB - dateA;
+      let comparison = 0;
+      
+      switch (sortField) {
+        case 'subject':
+        case 'customer':
+        case 'company':
+          comparison = (a[sortField] || '').localeCompare(b[sortField] || '');
+          break;
+        case 'priority':
+          const priorityOrder = { high: 3, medium: 2, low: 1 };
+          comparison = priorityOrder[a.priority] - priorityOrder[b.priority];
+          break;
+        case 'status':
+          const statusOrder = { open: 3, pending: 2, closed: 1 };
+          comparison = statusOrder[a.status] - statusOrder[b.status];
+          break;
+        case 'createdAt':
+          comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+          break;
+        case 'assignee':
+          const aAssignee = a.assignee || '';
+          const bAssignee = b.assignee || '';
+          comparison = aAssignee.localeCompare(bAssignee);
+          break;
+        default:
+          comparison = 0;
       }
       
-      if (sortField === 'priority') {
-        const priorityValues = { high: 3, medium: 2, low: 1 };
-        const priorityA = priorityValues[a.priority as keyof typeof priorityValues];
-        const priorityB = priorityValues[b.priority as keyof typeof priorityValues];
-        return sortDirection === 'asc' ? priorityA - priorityB : priorityB - priorityA;
-      }
-      
-      // For string comparisons
-      const valueA = String(a[sortField]).toLowerCase();
-      const valueB = String(b[sortField]).toLowerCase();
-      
-      if (sortDirection === 'asc') {
-        return valueA.localeCompare(valueB);
-      } else {
-        return valueB.localeCompare(valueA);
-      }
+      return sortDirection === 'asc' ? comparison : -comparison;
     });
   }, [tickets, sortField, sortDirection]);
-  
-  const filteredTickets = useMemo(() => {
-    let filtered = sortedTickets;
 
-    if (searchQuery) {
-      const lowerCaseQuery = searchQuery.toLowerCase();
-      filtered = filtered.filter(ticket =>
-        ticket.subject.toLowerCase().includes(lowerCaseQuery) ||
-        ticket.customer.toLowerCase().includes(lowerCaseQuery)
-      );
-    }
-
-    if (filterStatus.length > 0) {
-      filtered = filtered.filter(ticket => filterStatus.includes(ticket.status));
-    }
-
-    if (filterPriority.length > 0) {
-      filtered = filtered.filter(ticket => filterPriority.includes(ticket.priority));
-    }
-
-    if (filterAssignee.length > 0) {
-      filtered = filtered.filter(ticket => filterAssignee.includes(ticket.assignee || 'unassigned'));
-    }
-
-    return filtered;
-  }, [sortedTickets, searchQuery, filterStatus, filterPriority, filterAssignee]);
+  // Calculate the ticket data for the SelectionControls component
+  const allSelected = tickets.length > 0 && selectedTickets.length === tickets.length;
+  const indeterminate = selectedTickets.length > 0 && selectedTickets.length < tickets.length;
 
   return {
     tickets,
     setTickets,
     selectedTickets,
-    setSelectedTickets,
     sortField,
     sortDirection,
     handleSort,
-    viewMode, 
+    viewMode,
     setViewMode,
     handleSelectTicket,
     handleSelectAll,
+    sortedTickets,
     allSelected,
     indeterminate,
-    searchQuery,
-    setSearchQuery,
-    filterStatus,
-    setFilterStatus,
-    filterPriority,
-    setFilterPriority,
-    filterAssignee,
-    setFilterAssignee,
-    filteredTickets,
   };
 };
+
+export default useTicketList;

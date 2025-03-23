@@ -1,7 +1,13 @@
 
-import { ChevronUp, ChevronDown, ArrowUpDown } from 'lucide-react';
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
+import {
+  ArrowDownAZ,
+  ArrowUpAZ,
+  Clock,
+  MessageSquare,
+  AlertCircle,
+  User
+} from 'lucide-react';
 import type { SortField } from '@/types/ticket';
 
 interface SortingControlsProps {
@@ -15,76 +21,62 @@ const SortingControls = ({
   sortField,
   sortDirection,
   onSort,
-  compact = false,
+  compact = false
 }: SortingControlsProps) => {
-  if (compact) {
-    return (
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button variant="outline" size="icon" className="h-10 w-10 border-gray-200">
-            <ArrowUpDown className="h-4 w-4" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-48" align="end">
-          <div className="space-y-1">
-            <Button
-              variant="ghost"
-              onClick={() => onSort('createdAt')}
-              className={`w-full justify-between ${sortField === 'createdAt' ? 'text-primary' : ''}`}
-            >
-              Date {sortField === 'createdAt' && (sortDirection === 'asc' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />)}
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => onSort('priority')}
-              className={`w-full justify-between ${sortField === 'priority' ? 'text-primary' : ''}`}
-            >
-              Priority {sortField === 'priority' && (sortDirection === 'asc' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />)}
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => onSort('status')}
-              className={`w-full justify-between ${sortField === 'status' ? 'text-primary' : ''}`}
-            >
-              Status {sortField === 'status' && (sortDirection === 'asc' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />)}
-            </Button>
-          </div>
-        </PopoverContent>
-      </Popover>
-    );
-  }
+  const getSortIcon = (field: SortField) => {
+    if (sortField !== field) return null;
+    return sortDirection === 'asc' ? <ArrowUpAZ className="h-4 w-4" /> : <ArrowDownAZ className="h-4 w-4" />;
+  };
+
+  const getButtonVariant = (field: SortField) => {
+    return sortField === field ? 'secondary' : 'ghost';
+  };
 
   return (
-    <div className="flex items-center gap-4">
-      <div className="flex items-center gap-2" role="group" aria-label="Sort options">
-        <button
-          onClick={() => onSort('createdAt')}
-          className={`px-3 py-1.5 text-sm font-medium rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary/50 ${
-            sortField === 'createdAt' ? 'text-primary' : 'text-gray-600'
-          }`}
-          aria-pressed={sortField === 'createdAt'}
-        >
-          Date {sortField === 'createdAt' && (sortDirection === 'asc' ? <ChevronUp className="inline w-4 h-4" /> : <ChevronDown className="inline w-4 h-4" />)}
-        </button>
-        <button
-          onClick={() => onSort('priority')}
-          className={`px-3 py-1.5 text-sm font-medium rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary/50 ${
-            sortField === 'priority' ? 'text-primary' : 'text-gray-600'
-          }`}
-          aria-pressed={sortField === 'priority'}
-        >
-          Priority {sortField === 'priority' && (sortDirection === 'asc' ? <ChevronUp className="inline w-4 h-4" /> : <ChevronDown className="inline w-4 h-4" />)}
-        </button>
-        <button
-          onClick={() => onSort('status')}
-          className={`px-3 py-1.5 text-sm font-medium rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary/50 ${
-            sortField === 'status' ? 'text-primary' : 'text-gray-600'
-          }`}
-          aria-pressed={sortField === 'status'}
-        >
-          Status {sortField === 'status' && (sortDirection === 'asc' ? <ChevronUp className="inline w-4 h-4" /> : <ChevronDown className="inline w-4 h-4" />)}
-        </button>
-      </div>
+    <div className="flex gap-1">
+      <Button
+        variant={getButtonVariant('createdAt')}
+        size="sm"
+        onClick={() => onSort('createdAt')}
+        className="flex items-center"
+      >
+        <Clock className="h-4 w-4 mr-1" />
+        {!compact && <span>Date</span>}
+        {getSortIcon('createdAt')}
+      </Button>
+      
+      <Button
+        variant={getButtonVariant('subject')}
+        size="sm"
+        onClick={() => onSort('subject')}
+        className="flex items-center"
+      >
+        <MessageSquare className="h-4 w-4 mr-1" />
+        {!compact && <span>Subject</span>}
+        {getSortIcon('subject')}
+      </Button>
+      
+      <Button
+        variant={getButtonVariant('priority')}
+        size="sm"
+        onClick={() => onSort('priority')}
+        className="flex items-center"
+      >
+        <AlertCircle className="h-4 w-4 mr-1" />
+        {!compact && <span>Priority</span>}
+        {getSortIcon('priority')}
+      </Button>
+      
+      <Button
+        variant={getButtonVariant('assignee')}
+        size="sm"
+        onClick={() => onSort('assignee')}
+        className="flex items-center"
+      >
+        <User className="h-4 w-4 mr-1" />
+        {!compact && <span>Assignee</span>}
+        {getSortIcon('assignee')}
+      </Button>
     </div>
   );
 };

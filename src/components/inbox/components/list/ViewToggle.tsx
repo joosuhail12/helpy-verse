@@ -1,7 +1,7 @@
 
-import { LayoutList, LayoutGrid } from 'lucide-react';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { ViewMode } from '@/types/ticket';
+import { Button } from '@/components/ui/button';
+import { LayoutList, MenuSquare } from 'lucide-react';
+import type { ViewMode } from '@/types/ticket';
 
 interface ViewToggleProps {
   viewMode: ViewMode;
@@ -10,16 +10,35 @@ interface ViewToggleProps {
 
 const ViewToggle = ({ viewMode, onChangeViewMode }: ViewToggleProps) => {
   return (
-    <ToggleGroup type="single" value={viewMode} onValueChange={(value) => {
-      if (value) onChangeViewMode(value as ViewMode);
-    }}>
-      <ToggleGroupItem value="list" aria-label="List view">
-        <LayoutList className="h-4 w-4" />
-      </ToggleGroupItem>
-      <ToggleGroupItem value="card" aria-label="Card view">
-        <LayoutGrid className="h-4 w-4" />
-      </ToggleGroupItem>
-    </ToggleGroup>
+    <div className="flex border rounded-md overflow-hidden">
+      <Button
+        variant="ghost"
+        size="sm"
+        className={`rounded-none ${
+          viewMode === 'detailed'
+            ? 'bg-primary/10 text-primary hover:bg-primary/20'
+            : ''
+        }`}
+        onClick={() => onChangeViewMode('detailed')}
+      >
+        <LayoutList className="h-4 w-4 mr-1" />
+        <span className="sr-only sm:not-sr-only">Detailed</span>
+      </Button>
+      
+      <Button
+        variant="ghost"
+        size="sm"
+        className={`rounded-none ${
+          viewMode === 'compact'
+            ? 'bg-primary/10 text-primary hover:bg-primary/20'
+            : ''
+        }`}
+        onClick={() => onChangeViewMode('compact')}
+      >
+        <MenuSquare className="h-4 w-4 mr-1" />
+        <span className="sr-only sm:not-sr-only">Compact</span>
+      </Button>
+    </div>
   );
 };
 
