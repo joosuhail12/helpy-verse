@@ -1,6 +1,6 @@
 
 import { useCallback } from 'react';
-import { getAblyChannel, updateTypingStatus } from '@/utils/ably';
+import { updateTypingStatus } from '@/utils/ably';
 import type { Ticket } from '@/types/ticket';
 
 export const useTypingIndicator = (ticket: Ticket) => {

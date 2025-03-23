@@ -16,8 +16,7 @@ export const cleanupAblyConnection = async (): Promise<void> => {
       
       // Close all channels
       const channels = ably.channels;
-      // We need to manually iterate through channels since 'all' is not a property
-      // but a method in the current Ably SDK version
+      // We need to manually iterate through channels
       const channelNames: string[] = [];
       
       // Get all channel instances
