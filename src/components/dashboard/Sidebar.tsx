@@ -26,10 +26,14 @@ const Sidebar = () => {
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const [isSecondPanelCollapsed, setIsSecondPanelCollapsed] = useState(false);
 
+  console.log('Current path:', location.pathname);
+  console.log('activeMainNav:', activeMainNav);
+
   // Update activeMainNav when route changes
   useEffect(() => {
     const pathParts = location.pathname.split('/');
     if (pathParts[1] === 'home' && pathParts[2]) {
+      console.log('Updating activeMainNav to:', pathParts[2]);
       setActiveMainNav(pathParts[2]);
     } else if (pathParts[1] === 'home') {
       setActiveMainNav('home');
@@ -62,6 +66,12 @@ const Sidebar = () => {
   // Show secondary nav only for non-home items that have sub-items
   const shouldShowSecondaryNav = activeMainNav !== 'home' && subNavItems[activeMainNav as keyof typeof subNavItems];
 
+  // Function to handle navigation from main navigation
+  const handleMainNavigation = (path: string) => {
+    console.log(`MainNav: Navigating to ${path}`);
+    navigate(path);
+  };
+
   return (
     <>
       <div className="w-16 min-h-screen bg-white/80 backdrop-blur-xl border-r border-purple-100/50 shadow-lg flex flex-col items-center justify-between py-6 relative z-10">
@@ -81,7 +91,7 @@ const Sidebar = () => {
           <MainNavigation 
             activeMainNav={activeMainNav}
             setActiveMainNav={setActiveMainNav}
-            navigate={navigate}
+            navigate={handleMainNavigation}
           />
         </div>
 

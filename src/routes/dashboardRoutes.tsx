@@ -30,26 +30,37 @@ const withSuspenseAndErrorHandling = (Component) => (
 export const dashboardRoutes = [
   {
     path: '',
+    element: <Navigate to="/home/inbox/all" replace />,
+    errorElement: <RouteErrorBoundary />,
+  },
+  {
+    path: 'home',
     element: withSuspenseAndErrorHandling(Dashboard),
+    errorElement: <RouteErrorBoundary />,
   },
   {
     path: 'contacts',
     element: <Navigate to="/home/contacts/all" replace />,
+    errorElement: <RouteErrorBoundary />,
   },
   {
     path: 'contacts/all',
     element: withSuspenseAndErrorHandling(AllContacts),
+    errorElement: <RouteErrorBoundary />,
   },
   {
     path: 'contacts/companies',
     element: withSuspenseAndErrorHandling(Companies),
+    errorElement: <RouteErrorBoundary />,
   },
   {
     path: 'contacts/companies/:id',
     element: withSuspenseAndErrorHandling(CompanyDetail),
+    errorElement: <RouteErrorBoundary />,
   },
   {
     path: 'contacts/:id',
     element: withSuspenseAndErrorHandling(ContactDetail),
+    errorElement: <RouteErrorBoundary />,
   },
 ];

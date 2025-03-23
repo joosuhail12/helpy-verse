@@ -37,6 +37,7 @@ const MainNavigation = ({ activeMainNav, setActiveMainNav, navigate }: MainNavig
   }, [navigate, setActiveMainNav]);
 
   const handleNavItemClick = (itemId: string, itemPath: string) => {
+    console.log(`Navigating to ${itemPath}`);
     setActiveMainNav(itemId);
     navigate(itemPath);
   };

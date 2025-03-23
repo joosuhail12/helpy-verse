@@ -27,6 +27,9 @@ const SubNavigation = ({
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
 
+  console.log("SubNavigation - location:", location.pathname);
+  console.log("SubNavigation - activeMainNav:", activeMainNav);
+
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
       if (event.ctrlKey && event.key === '/') {
@@ -45,11 +48,15 @@ const SubNavigation = ({
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [toggleSecondPanel]);
 
-  const isItemActive = (path: string) => location.pathname === path;
+  const isItemActive = (path: string) => {
+    if (!path) return false;
+    console.log(`Checking if ${path} matches ${location.pathname}`);
+    return location.pathname === path || location.pathname.startsWith(path);
+  };
   
   const hasActiveChild = (children: any[]) => {
     return children.some(child => 
-      isItemActive(child.path) || 
+      isItemActive(child.path || '') || 
       (child.children && hasActiveChild(child.children))
     );
   };
@@ -69,6 +76,12 @@ const SubNavigation = ({
 
   const currentNavItems = subNavItems[activeMainNav as keyof typeof subNavItems] || [];
   const filteredNavItems = searchQuery ? filterMenuItems(currentNavItems) : currentNavItems;
+
+  // Function to handle navigation from sub navigation
+  const handleNavigation = (path: string) => {
+    console.log(`SubNav: Navigating to ${path}`);
+    navigate(path);
+  };
 
   return (
     <div 
@@ -100,7 +113,7 @@ const SubNavigation = ({
               toggleExpanded={toggleExpanded}
               hasActiveChild={hasActiveChild}
               isItemActive={isItemActive}
-              navigate={navigate}
+              navigate={handleNavigation}
               filterMenuItems={filterMenuItems}
             />
           ))}

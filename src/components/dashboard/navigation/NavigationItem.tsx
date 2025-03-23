@@ -31,6 +31,14 @@ const NavigationItem = ({
   navigate,
   filterMenuItems,
 }: NavigationItemProps) => {
+  // Function to handle navigation
+  const handleNavigate = (path: string | undefined) => {
+    if (path) {
+      console.log(`Navigating to: ${path}`);
+      navigate(path);
+    }
+  };
+
   // Parent items with children should toggle expansion instead of navigating
   if (item.children) {
     return (
@@ -49,7 +57,7 @@ const NavigationItem = ({
                   toggleExpanded(item.title);
                   // If there's a path, navigate to it
                   if (item.path) {
-                    navigate(item.path);
+                    handleNavigate(item.path);
                   }
                 }}
               >
@@ -96,7 +104,7 @@ const NavigationItem = ({
                         ${isItemActive(child.path || '') 
                           ? 'bg-primary/5 text-primary shadow-sm hover:shadow-md' 
                           : 'hover:bg-primary/5'}`}
-                      onClick={() => child.path && navigate(child.path)}
+                      onClick={() => handleNavigate(child.path)}
                     >
                       <span className="transition-colors group-hover:text-primary">
                         {child.title}
@@ -132,7 +140,7 @@ const NavigationItem = ({
             } ${isItemActive(item.path || '') 
                 ? 'bg-primary/5 text-primary shadow-sm hover:shadow-md' 
                 : 'hover:bg-primary/5'}`}
-            onClick={() => item.path && navigate(item.path)}
+            onClick={() => handleNavigate(item.path)}
           >
             <div className={`flex items-center ${isSecondPanelCollapsed ? 'justify-center' : 'gap-3'}`}>
               {item.icon && (
