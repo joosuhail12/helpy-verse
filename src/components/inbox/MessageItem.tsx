@@ -87,7 +87,7 @@ const MessageItem = ({ message, ticket }: MessageItemProps) => {
 
   const getSenderName = () => {
     if (typeof message.sender === 'string') {
-      return message.isCustomer ? ticket.customer : message.sender;
+      return message.isCustomer ? ticket.customer.name : message.sender;
     }
     return message.sender.name;
   };
@@ -99,7 +99,7 @@ const MessageItem = ({ message, ticket }: MessageItemProps) => {
     <div className="flex gap-3">
       <Avatar className="h-8 w-8">
         <span className="text-xs">
-          {isCustomer ? ticket.customer[0] : 'A'}
+          {isCustomer ? ticket.customer.name[0] : 'A'}
         </span>
       </Avatar>
       <div className="flex-1">

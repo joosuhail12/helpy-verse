@@ -28,7 +28,7 @@ const ConversationPanelContainer = ({ selectedTicket, onClose }: ConversationPan
           <div>
             <h2 className="text-lg font-semibold">{selectedTicket.subject}</h2>
             <p className="text-sm text-gray-500">
-              {selectedTicket.customer} • {selectedTicket.company}
+              {selectedTicket.customer.name} • {selectedTicket.company ? selectedTicket.company.name : 'No Company'}
             </p>
           </div>
         </div>
@@ -46,10 +46,10 @@ const ConversationPanelContainer = ({ selectedTicket, onClose }: ConversationPan
           <div className="space-y-4">
             <div className="bg-white p-4 rounded-lg shadow-sm">
               <div className="flex justify-between mb-2">
-                <span className="text-sm font-medium">{selectedTicket.customer}</span>
+                <span className="text-sm font-medium">{selectedTicket.customer.name}</span>
                 <span className="text-xs text-gray-500">{new Date(selectedTicket.createdAt).toLocaleString()}</span>
               </div>
-              <p className="text-sm">{selectedTicket.lastMessage}</p>
+              <p className="text-sm">{selectedTicket.lastMessage || ''}</p>
             </div>
             
             <div className="bg-primary/5 p-4 rounded-lg shadow-sm ml-auto max-w-3xl">

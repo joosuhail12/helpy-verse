@@ -7,7 +7,6 @@ import {
   DialogHeader, 
   DialogTitle 
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import CreateTicketForm from './CreateTicketForm';
 import type { Ticket } from '@/types/ticket';
 import { useToast } from '@/hooks/use-toast';

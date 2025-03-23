@@ -1,7 +1,8 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchTeams, resetTeamDetails } from '@/store/slices/teams/teamsSlice';
+import { fetchTeams } from '@/store/slices/teams/teamsSlice';
 import { selectTeamDetails, selectTeamsLoading, selectTeamsError } from '@/store/slices/teams/selectors';
 import { Button } from '@/components/ui/button';
 import { Pencil, Trash2 } from 'lucide-react';
@@ -23,10 +24,6 @@ const TeamDetail = () => {
   useEffect(() => {
     if (teamId) {
       dispatch(fetchTeams());
-
-      return () => {
-        dispatch(resetTeamDetails());
-      };
     }
   }, [teamId, dispatch]);
 

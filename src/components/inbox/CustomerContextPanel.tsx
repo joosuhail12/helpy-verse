@@ -22,7 +22,7 @@ const CustomerContextPanel = ({ ticket }: CustomerContextPanelProps) => {
     contact: true,
     company: true,
     timeline: false,
-    customObject: true // Set to true by default to show the custom object data
+    customObject: true
   });
 
   const toggleSection = (section: keyof typeof openSections) => {
@@ -56,7 +56,10 @@ const CustomerContextPanel = ({ ticket }: CustomerContextPanelProps) => {
 
   return (
     <div className="h-full flex flex-col bg-white border-l transition-all duration-300 ease-in-out">
-      <CustomerHeader customer={ticket.customer} company={ticket.company || ''} />
+      <CustomerHeader 
+        customer={ticket.customer} 
+        company={ticket.company || undefined} 
+      />
       
       <ScrollArea className={`flex-1 ${isMobile ? 'px-3 py-4' : 'p-4'}`}>
         <div className={`space-y-${isMobile ? '3' : '4'}`}>
@@ -68,19 +71,19 @@ const CustomerContextPanel = ({ ticket }: CustomerContextPanelProps) => {
           
           <ContactInfoCard
             customer={ticket.customer}
-            company={ticket.company || ''}
+            company={ticket.company}
             isOpen={openSections.contact}
             onToggle={() => toggleSection('contact')}
           />
           
           <CompanyInfoCard
-            company={ticket.company || ''}
+            company={ticket.company}
             isOpen={openSections.company}
             onToggle={() => toggleSection('company')}
           />
           
           <CustomObjectCard
-            customerId={ticket.customer}
+            customerId={ticket.customer.id}
             ticketId={ticket.id}
             isOpen={openSections.customObject}
             onToggle={() => toggleSection('customObject')}

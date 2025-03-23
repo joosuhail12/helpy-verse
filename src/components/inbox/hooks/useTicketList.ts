@@ -37,30 +37,38 @@ export const useTicketList = (initialTickets: Ticket[]) => {
   };
 
   const sortedTickets = useMemo(() => {
-    return [...tickets].sort((a, b) => {
+    return [...tickets].sort((ticketA, ticketB) => {
       let comparison = 0;
       
       switch (sortField) {
         case 'subject':
+          comparison = ticketA.subject.localeCompare(ticketB.subject);
+          break;
         case 'customer':
+          const customerA = typeof ticketA.customer === 'string' ? ticketA.customer : ticketA.customer.name;
+          const customerB = typeof ticketB.customer === 'string' ? ticketB.customer : ticketB.customer.name;
+          comparison = customerA.localeCompare(customerB);
+          break;
         case 'company':
-          comparison = (a[sortField] || '').localeCompare(b[sortField] || '');
+          const companyA = typeof ticketA.company === 'string' ? ticketA.company : (ticketA.company?.name || '');
+          const companyB = typeof ticketB.company === 'string' ? ticketB.company : (ticketB.company?.name || '');
+          comparison = companyA.localeCompare(companyB);
           break;
         case 'priority':
           const priorityOrder = { high: 3, medium: 2, low: 1 };
-          comparison = priorityOrder[a.priority] - priorityOrder[b.priority];
+          comparison = priorityOrder[ticketA.priority] - priorityOrder[ticketB.priority];
           break;
         case 'status':
           const statusOrder = { open: 3, pending: 2, closed: 1 };
-          comparison = statusOrder[a.status] - statusOrder[b.status];
+          comparison = statusOrder[ticketA.status] - statusOrder[ticketB.status];
           break;
         case 'createdAt':
-          comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+          comparison = new Date(ticketA.createdAt).getTime() - new Date(ticketB.createdAt).getTime();
           break;
         case 'assignee':
-          const aAssignee = a.assignee || '';
-          const bAssignee = b.assignee || '';
-          comparison = aAssignee.localeCompare(bAssignee);
+          const assigneeA = ticketA.assignee ? (typeof ticketA.assignee === 'string' ? ticketA.assignee : ticketA.assignee.name) : '';
+          const assigneeB = ticketB.assignee ? (typeof ticketB.assignee === 'string' ? ticketB.assignee : ticketB.assignee.name) : '';
+          comparison = assigneeA.localeCompare(assigneeB);
           break;
         default:
           comparison = 0;

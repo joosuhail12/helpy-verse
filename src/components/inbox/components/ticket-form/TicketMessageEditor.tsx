@@ -5,6 +5,7 @@ import type { Ticket } from '@/types/ticket';
 import { createEditorConfig } from '../../utils/editorConfig';
 import MessageToolbar from '../MessageToolbar';
 import { cn } from "@/lib/utils";
+import { stringToCustomer, stringToCompany } from '@/types/ticket';
 
 interface TicketMessageEditorProps {
   content: string;
@@ -16,16 +17,17 @@ const TicketMessageEditor = ({ content, onChange }: TicketMessageEditorProps) =>
   const dummyTicket: Ticket = {
     id: 'new-ticket',
     subject: '',
-    customer: '',
-    lastMessage: '',
+    customer: stringToCustomer('New Customer'),
+    company: stringToCompany('New Company'),
     assignee: null,
     tags: [],
     status: 'open',
     priority: 'medium',
     createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
     isUnread: false,
-    recipients: [],
-    company: '',
+    lastMessage: '',
+    recipients: []
   };
 
   const editor = useEditor(

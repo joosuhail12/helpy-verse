@@ -1,55 +1,76 @@
+
 import { useDispatch } from 'react-redux';
 import { fetchTeams } from '@/store/slices/teams/teamsSlice';
 
-interface UpdateTeamParams {
-  teamId: string;
+export interface UpdateTeamParams {
   name: string;
-  description: string;
-  logo: string | null;
-  removeLogo: boolean;
+  icon?: string;
+  description?: string;
+  members?: string[];
+  settings?: {
+    channels?: {
+      chat?: string;
+      email?: string[];
+    };
+    routing?: {
+      type: 'round-robin' | 'load-based' | 'skills-based';
+      limits?: {
+        maxTickets?: number;
+        maxChats?: number;
+      };
+    };
+    availability?: {
+      officeHours?: {
+        monday?: { start: string; end: string };
+        tuesday?: { start: string; end: string };
+        wednesday?: { start: string; end: string };
+        thursday?: { start: string; end: string };
+        friday?: { start: string; end: string };
+        saturday?: { start: string; end: string };
+        sunday?: { start: string; end: string };
+      };
+      holidays?: { date: string; name: string }[];
+    };
+  };
 }
 
-export const updateTeamUtils = () => {
-  const dispatch = useDispatch();
+export const updateTeamAction = async (teamId: string, params: UpdateTeamParams) => {
+  try {
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    console.log(`Updated team ${teamId} with data:`, params);
 
-  const handleUpdateTeam = async ({
-    teamId,
-    name,
-    description,
-    logo,
-    removeLogo,
-  }: UpdateTeamParams) => {
-    try {
-      const formData = new FormData();
-      formData.append('name', name);
-      formData.append('description', description);
-
-      if (logo) {
-        formData.append('logo', logo);
+    // In a real app, you would make an API request to update the team
+    // const response = await teamService.updateTeam(teamId, params);
+    
+    return {
+      success: true,
+      data: {
+        id: teamId,
+        ...params,
+        updatedAt: new Date().toISOString(),
       }
+    };
+  } catch (error) {
+    console.error('Failed to update team:', error);
+    return {
+      success: false,
+      error: 'Failed to update team'
+    };
+  }
+};
 
-      formData.append('removeLogo', String(removeLogo));
-
-      const response = await fetch(`/api/teams/${teamId}`, {
-        method: 'PUT',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Failed to update team:', errorData);
-        throw new Error(errorData.message || 'Failed to update team');
-      }
-
-      // Optimistically update the team in the Redux store
-      dispatch(fetchTeams());
-
-      return { success: true, message: 'Team updated successfully' };
-    } catch (error: any) {
-      console.error('Error updating team:', error);
-      return { success: false, message: error.message || 'Failed to update team' };
-    }
-  };
-
-  return { handleUpdateTeam };
+export const updateTeam = async (teamId: string, params: UpdateTeamParams, dispatch: any) => {
+  try {
+    await updateTeamAction(teamId, params);
+    
+    // Refresh teams data
+    dispatch(fetchTeams());
+    
+    return { success: true };
+  } catch (error) {
+    console.error('Error updating team:', error);
+    return { success: false, error };
+  }
 };
