@@ -1,50 +1,45 @@
 
-import { useEffect, useRef } from 'react';
-import { useDispatch } from 'react-redux';
-import { addMessage } from '@/store/slices/chat/chatSlice';
-import { subscribeToConversation } from '@/utils/ably';
-import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { useEffect, useState } from 'react';
+import { Channel, Types } from 'ably';
+import { useAbly } from '@ably-labs/react-hooks';
 
-/**
- * Hook for subscribing to real-time message updates
- */
 export const useMessageSubscription = (
-  conversationId: string | null, 
-  connectionState: string
+  channelId: string,
+  eventName: string,
+  callback: (msg: Types.Message) => void,
+  options = { history: false }
 ) => {
-  const dispatch = useAppDispatch();
-  const subscriptionRef = useRef<() => void | null>(() => null);
-  
-  // Subscribe to real-time messages
+  const [channel, setChannel] = useState<Channel | null>(null);
+  const ably = useAbly();
+
   useEffect(() => {
-    if (!conversationId || connectionState !== 'connected') return;
+    if (!channelId || !eventName || !ably) return;
     
-    // Clean up previous subscription if any
-    if (subscriptionRef.current) {
-      subscriptionRef.current();
+    // Create and subscribe to the channel
+    const channelInstance = ably.channels.get(channelId);
+    setChannel(channelInstance);
+    
+    // Subscribe to messages
+    const subscription = channelInstance.subscribe(eventName, callback);
+    
+    // If history option is enabled, request message history
+    if (options.history) {
+      channelInstance.history((err, resultPage) => {
+        if (err) {
+          console.error('Error retrieving message history:', err);
+          return;
+        }
+        
+        resultPage?.items?.forEach(callback);
+      });
     }
     
-    console.log(`Subscribing to messages in conversation: ${conversationId}`);
-    
-    // Set up new subscription
-    subscriptionRef.current = subscribeToConversation(conversationId, (chatMessage) => {
-      dispatch(addMessage({
-        conversationId,
-        message: {
-          id: chatMessage.id,
-          text: chatMessage.text,
-          sender: chatMessage.sender.type === 'agent' ? 'agent' : 'user',
-          timestamp: chatMessage.timestamp
-        }
-      }));
-    });
-    
+    // Cleanup function - unsubscribe when component unmounts
     return () => {
-      if (subscriptionRef.current) {
-        subscriptionRef.current();
-      }
+      subscription.unsubscribe();
+      channelInstance.detach();
     };
-  }, [dispatch, conversationId, connectionState]);
-};
+  }, [channelId, eventName, callback, ably, options.history]);
 
-export default useMessageSubscription;
+  return channel;
+};

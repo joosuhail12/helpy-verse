@@ -66,7 +66,16 @@ export const useLogin = (redirectPath: string = '/home/inbox/all') => {
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isSubmitting || !email || !password) return;
+    if (isSubmitting || loading) return;
+    
+    if (!email || !password) {
+      toast({
+        title: 'Error',
+        description: 'Please enter both email and password',
+        variant: 'destructive',
+      });
+      return;
+    }
     
     // Check if offline first
     if (isOffline || HttpClient.isOffline()) {
@@ -137,5 +146,3 @@ export const useLogin = (redirectPath: string = '/home/inbox/all') => {
     handleLoginSubmit
   };
 };
-
-export default useLogin;

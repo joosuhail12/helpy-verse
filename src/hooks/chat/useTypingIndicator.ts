@@ -1,73 +1,55 @@
 
-import { useState, useCallback, useEffect, useRef } from 'react';
-import { 
-  monitorTypingIndicators, 
-  updateTypingStatus 
-} from '@/utils/ably';
-import { debounceWithImmediate } from '@/utils/performance/performanceUtils';
+import { useEffect, useState } from 'react';
+import { useAbly } from '@ably-labs/react-hooks';
+import { Types } from 'ably';
 
-interface UseTypingIndicatorOptions {
-  userId: string;
-  userName: string;
-}
-
-/**
- * Hook for handling typing indicators in real-time chat
- */
-export const useTypingIndicator = (conversationId: string | null, connectionState: string, options: UseTypingIndicatorOptions) => {
+export const useTypingIndicator = (
+  channelId: string,
+  userId: string
+) => {
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
-  const typingMonitorRef = useRef<() => void | null>(() => null);
-  
-  // Monitor typing indicators
+  const ably = useAbly();
+
   useEffect(() => {
-    if (!conversationId || connectionState !== 'connected') return;
+    if (!channelId || !ably) return;
     
-    // Clean up previous monitor if any
-    if (typingMonitorRef.current) {
-      typingMonitorRef.current();
-    }
+    const channel = ably.channels.get(`typing:${channelId}`);
     
-    console.log(`Monitoring typing indicators in conversation: ${conversationId}`);
-    
-    // Set up new monitor
-    typingMonitorRef.current = monitorTypingIndicators(conversationId, (users) => {
-      setTypingUsers(users);
+    // Subscribe to typing events
+    const subscription = channel.subscribe('typing', (message: Types.Message) => {
+      const { clientId, data } = message;
+      
+      if (clientId && clientId !== userId) {
+        if (data.isTyping) {
+          setTypingUsers(prev => 
+            prev.includes(clientId) ? prev : [...prev, clientId]
+          );
+        } else {
+          setTypingUsers(prev => 
+            prev.filter(id => id !== clientId)
+          );
+        }
+      }
     });
     
+    // Cleanup function
     return () => {
-      if (typingMonitorRef.current) {
-        typingMonitorRef.current();
-      }
+      subscription.unsubscribe();
+      channel.detach();
     };
-  }, [conversationId, connectionState]);
-  
-  // Create optimized typing status updater
-  const updateTypingStatusOptimized = useCallback(
-    debounceWithImmediate(
-      // This runs after debounce period - typing stopped
-      async () => {
-        if (!conversationId || connectionState !== 'connected') return;
-        await updateTypingStatus(conversationId, options.userId, options.userName, false);
-      },
-      // This runs immediately - typing started
-      async () => {
-        if (!conversationId || connectionState !== 'connected') return;
-        await updateTypingStatus(conversationId, options.userId, options.userName, true);
-      },
-      1000 // 1 second debounce
-    ),
-    [conversationId, connectionState, options.userId, options.userName]
-  );
-  
-  // Handle typing indicator
-  const handleTyping = useCallback(() => {
-    updateTypingStatusOptimized({});
-  }, [updateTypingStatusOptimized]);
-  
+  }, [channelId, userId, ably]);
+
+  // Function to publish typing status
+  const publishTypingStatus = (isTyping: boolean) => {
+    if (!channelId || !ably) return;
+    
+    const channel = ably.channels.get(`typing:${channelId}`);
+    channel.publish('typing', { isTyping, userId });
+  };
+
   return {
     typingUsers,
-    handleTyping
+    isTyping: typingUsers.length > 0,
+    publishTypingStatus
   };
 };
-
-export default useTypingIndicator;

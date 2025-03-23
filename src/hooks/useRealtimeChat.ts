@@ -1,80 +1,75 @@
 
-import { useState } from 'react';
-import useConnectionState from './chat/useConnectionState';
-import useMessages from './chat/useMessages';
-import useTypingIndicator from './chat/useTypingIndicator';
-import useMessageSubscription from './chat/useMessageSubscription';
-import useRealtimeMessages from './chat/useRealtimeMessages';
-import { formatTimestamp } from '@/utils/dateUtils';
+import { useEffect, useState } from 'react';
+import { useAbly } from '@ably-labs/react-hooks';
+import { Types } from 'ably';
 
-interface UseRealtimeChatOptions {
-  userId: string;
-  userName: string;
-}
+export const useRealtimeChat = (
+  channelId: string,
+  userId: string
+) => {
+  const [messages, setMessages] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+  const ably = useAbly();
 
-/**
- * Hook for real-time chat functionality with optimized performance
- */
-export const useRealtimeChat = (conversationId: string | null, options: UseRealtimeChatOptions) => {
-  // Get connection state
-  const { connectionState } = useConnectionState(conversationId);
-  
-  // Subscribe to messages
-  useMessageSubscription(conversationId, connectionState);
-  
-  // Fetch initial messages
-  useRealtimeMessages(conversationId, connectionState);
-  
-  // Typing indicator state and handlers
-  const { typingUsers, handleTyping } = useTypingIndicator(
-    conversationId, 
-    connectionState, 
-    options
-  );
-  
-  // Message state and handlers
-  const { 
-    messages,
-    newMessage,
-    setNewMessage,
-    loading,
-    sending,
-    handleSendMessage,
-    loadMoreMessages,
-    hasMoreMessages,
-    totalMessages
-  } = useMessages(conversationId);
-  
-  // Prepare send message handler with user ID
-  const sendMessageWithUser = async (e?: React.FormEvent) => {
-    // Clear typing status after sending
-    const sendResult = await handleSendMessage(e);
-    if (conversationId && connectionState === 'connected') {
-      try {
-        const { updateTypingStatus } = await import('@/utils/ably');
-        await updateTypingStatus(conversationId, options.userId, options.userName, false);
-      } catch (error) {
-        console.error('Error updating typing status:', error);
-      }
+  useEffect(() => {
+    if (!channelId || !ably) {
+      setIsLoading(false);
+      return;
     }
-    return sendResult;
+
+    setIsLoading(true);
+    
+    try {
+      const channel = ably.channels.get(`chat:${channelId}`);
+      
+      // Load message history
+      channel.history((err, resultPage) => {
+        if (err) {
+          setError(new Error('Failed to load message history'));
+          setIsLoading(false);
+          return;
+        }
+        
+        const historyMessages = resultPage?.items || [];
+        setMessages(historyMessages.map(msg => msg.data).reverse());
+        setIsLoading(false);
+      });
+      
+      // Subscribe to new messages
+      const subscription = channel.subscribe('message', (message: Types.Message) => {
+        setMessages(prev => [...prev, message.data]);
+      });
+      
+      // Cleanup
+      return () => {
+        subscription.unsubscribe();
+        channel.detach();
+      };
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error('Unknown error'));
+      setIsLoading(false);
+    }
+  }, [channelId, ably]);
+
+  // Send message function
+  const sendMessage = (content: string) => {
+    if (!channelId || !ably) {
+      return Promise.reject(new Error('Cannot send message - not connected'));
+    }
+    
+    const channel = ably.channels.get(`chat:${channelId}`);
+    return channel.publish('message', { 
+      content, 
+      userId, 
+      timestamp: new Date().toISOString() 
+    });
   };
-  
+
   return {
     messages,
-    newMessage,
-    setNewMessage,
-    loading,
-    sending,
-    typingUsers,
-    connectionState,
-    handleSendMessage: sendMessageWithUser,
-    handleTyping,
-    loadMoreMessages,
-    hasMoreMessages,
-    totalMessages,
-    formatTimestamp
+    isLoading,
+    error,
+    sendMessage
   };
 };
-
-export default useRealtimeChat;

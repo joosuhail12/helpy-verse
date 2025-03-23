@@ -60,7 +60,9 @@ export const loginUser = createAsyncThunk(
         }
 
         // Configure Axios with the new token
-        HttpClient.setAxiosDefaultConfig(token);
+        if (token) {
+          HttpClient.setAxiosDefaultConfig(token);
+        }
       } else {
         console.error("Login response missing data structure:", response.data);
         return rejectWithValue("Invalid server response format");
@@ -94,13 +96,8 @@ export const loginUser = createAsyncThunk(
         });
       }
       
-      // Provide more specific error messages based on the error type
-      if (error.code === 'ERR_NETWORK') {
-        return rejectWithValue({
-          message: "Cannot connect to the authentication server. Please check your network connection or try again later.",
-          isOfflineError: true
-        });
-      }
+      // Check response for more detailed error message
+      const errorMessage = error.response?.data?.message || "Login failed. Please check your credentials and try again.";
       
       // Log detailed error information for debugging
       console.error("Error details:", {
@@ -109,7 +106,7 @@ export const loginUser = createAsyncThunk(
         message: error.message
       });
       
-      return rejectWithValue(error.response?.data?.message || "Login failed. Please check your credentials and try again.");
+      return rejectWithValue(errorMessage);
     }
   }
 );

@@ -75,8 +75,13 @@ export const isAuthenticated = (): boolean => {
 
 // 🟢 Get auth token - from localStorage only
 export const getAuthToken = (): string => {
-  const storageToken = localStorage.getItem("token");
-  return storageToken || "";
+  try {
+    const storageToken = localStorage.getItem("token");
+    return storageToken || "";
+  } catch (error) {
+    console.error("Error getting auth token:", error);
+    return "";
+  }
 };
 
 // Check if token is expired - safer version that handles invalid tokens
