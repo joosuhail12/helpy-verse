@@ -1,4 +1,3 @@
-
 import { ReactNode } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { isAuthenticated } from "@/utils/auth/tokenManager";
@@ -22,7 +21,7 @@ export const PrivateRoute = ({ children }: RouteProps): JSX.Element => {
     }
     
     console.log("PrivateRoute: No token, redirecting to login from path:", location.pathname);
-    return <Navigate to="/sign-in" state={{ from: location.pathname }} />;
+    return <Navigate to="/sign-in" state={{ from: location.pathname }} replace />;
 };
 
 // Public Route Component
@@ -42,7 +41,7 @@ export const PublicRoute = ({ children }: RouteProps): JSX.Element => {
     // If user is authenticated and trying to access a non-public page, redirect to inbox
     if (isAuthenticated()) {
         console.log("PublicRoute: User is authenticated, redirecting to inbox");
-        return <Navigate to="/home/inbox/all" />;
+        return <Navigate to="/home/inbox/all" replace />;
     }
     
     // Otherwise allow access

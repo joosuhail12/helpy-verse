@@ -26,8 +26,8 @@ const Sidebar = () => {
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const [isSecondPanelCollapsed, setIsSecondPanelCollapsed] = useState(false);
 
-  console.log('Current path:', location.pathname);
-  console.log('activeMainNav:', activeMainNav);
+  console.log('Sidebar - Current path:', location.pathname);
+  console.log('Sidebar - activeMainNav:', activeMainNav);
 
   // Update activeMainNav when route changes
   useEffect(() => {
@@ -49,6 +49,14 @@ const Sidebar = () => {
       title: "Logged out",
       description: "You have been logged out successfully"
     });
+    
+    // Force navigation to sign-in page
+    navigate('/sign-in');
+  };
+
+  const handleNavigate = (path: string) => {
+    console.log(`Sidebar: Navigating to ${path}`);
+    navigate(path);
   };
 
   const toggleExpanded = (itemTitle: string) => {
@@ -85,7 +93,7 @@ const Sidebar = () => {
           <MainNavigation 
             activeMainNav={activeMainNav}
             setActiveMainNav={setActiveMainNav}
-            navigate={navigate}
+            navigate={handleNavigate}
           />
         </div>
 
@@ -108,7 +116,7 @@ const Sidebar = () => {
           toggleSecondPanel={toggleSecondPanel}
           expandedItems={expandedItems}
           toggleExpanded={toggleExpanded}
-          navigate={navigate}
+          navigate={handleNavigate}
         />
       )}
     </>

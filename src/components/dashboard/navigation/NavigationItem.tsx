@@ -34,7 +34,7 @@ const NavigationItem = ({
   // Function to handle navigation
   const handleNavigate = (path: string | undefined) => {
     if (path) {
-      console.log(`Navigating to: ${path}`);
+      console.log(`NavigationItem: Navigating to: ${path}`);
       navigate(path);
     }
   };

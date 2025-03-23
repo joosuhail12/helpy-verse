@@ -16,7 +16,9 @@ export const inboxRoutes: RouteObject[] = [
   {
     path: 'inbox',
     element: (
-      <Navigate to="/home/inbox/all" replace />
+      <Suspense fallback={<LoadingSpinner />}>
+        <Navigate to="/home/inbox/all" replace />
+      </Suspense>
     ),
     errorElement: <RouteErrorBoundary><LoadingSpinner /></RouteErrorBoundary>,
   },
