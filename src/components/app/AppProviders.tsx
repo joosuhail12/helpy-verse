@@ -1,40 +1,32 @@
 
-import React from 'react';
 import { Provider } from 'react-redux';
 import { store } from '@/store/store';
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import AppQueryProvider from './AppQueryProvider';
-import AppErrorBoundary from './AppErrorBoundary';
-import CaslProvider from "@/components/CaslProvider";
+import { ThemeProvider } from '@/components/ui/theme-provider';
 import AppInitializer from './AppInitializer';
+import AppQueryProvider from './AppQueryProvider';
+import CaslProvider from '@/components/CaslProvider';
+import ErrorBoundary from '@/components/common/ErrorBoundary';
+import AblyProvider from '@/components/providers/AblyProvider';
 
 interface AppProvidersProps {
   children: React.ReactNode;
 }
 
-/**
- * Top-level providers component that wraps the entire application
- * with necessary providers and error boundaries.
- */
-const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
+const AppProviders = ({ children }: AppProvidersProps) => {
   return (
-    <AppErrorBoundary>
-      <Provider store={store}>
+    <Provider store={store}>
+      <ThemeProvider defaultTheme="light" storageKey="pullse-theme-preference">
         <AppQueryProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <CaslProvider>
+          <ErrorBoundary>
+            <AblyProvider>
               <AppInitializer>
-                {children}
+                <CaslProvider>{children}</CaslProvider>
               </AppInitializer>
-            </CaslProvider>
-          </TooltipProvider>
+            </AblyProvider>
+          </ErrorBoundary>
         </AppQueryProvider>
-      </Provider>
-    </AppErrorBoundary>
+      </ThemeProvider>
+    </Provider>
   );
 };
 

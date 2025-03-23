@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from 'react';
-import { Channel, Types } from 'ably';
+import { Types } from 'ably';
 import { useAbly } from '@ably-labs/react-hooks';
 
 export const useMessageSubscription = (
@@ -9,7 +9,7 @@ export const useMessageSubscription = (
   callback: (msg: Types.Message) => void,
   options = { history: false }
 ) => {
-  const [channel, setChannel] = useState<Channel | null>(null);
+  const [channel, setChannel] = useState<any | null>(null);
   const ably = useAbly();
 
   useEffect(() => {

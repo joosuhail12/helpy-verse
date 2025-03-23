@@ -1,11 +1,9 @@
 
 import { lazy, Suspense } from 'react';
-import { Navigate } from 'react-router-dom';
-import { ProtectedRoute } from '../components/auth/ProtectedRoute';
-import { Loader2 } from 'lucide-react';
 import RouteErrorBoundary from '@/components/app/RouteErrorBoundary';
+import { Loader2 } from 'lucide-react';
 
-// Create the loading spinner component
+// Define LoadingSpinner component
 const LoadingSpinner = () => (
   <div className="min-h-screen flex items-center justify-center">
     <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -14,41 +12,24 @@ const LoadingSpinner = () => (
 
 // Lazy load dashboard pages
 const Dashboard = lazy(() => import('../pages/Dashboard'));
-const AllContacts = lazy(() => import('../pages/contacts/All'));
-const Companies = lazy(() => import('../pages/contacts/Companies'));
-const CompanyDetail = lazy(() => import('../pages/contacts/CompanyDetail'));
-const ContactDetail = lazy(() => import('../pages/contacts/Detail'));
+const EmptyDashboard = lazy(() => import('../components/dashboard/EmptyDashboard'));
 
-// Helper function to wrap a component with Suspense, ProtectedRoute and RouteErrorBoundary
-const withSuspenseAndProtection = (Component) => (
-  <ProtectedRoute>
-    <RouteErrorBoundary>
-      <Suspense fallback={<LoadingSpinner />}>
-        <Component />
-      </Suspense>
-    </RouteErrorBoundary>
-  </ProtectedRoute>
+// Helper to wrap components with Suspense and ErrorBoundary
+const withSuspenseAndErrorHandling = (Component) => (
+  <RouteErrorBoundary>
+    <Suspense fallback={<LoadingSpinner />}>
+      <Component />
+    </Suspense>
+  </RouteErrorBoundary>
 );
 
 export const dashboardRoutes = [
   {
+    path: 'dashboard',
+    element: withSuspenseAndErrorHandling(Dashboard),
+  },
+  {
     path: '',
-    element: withSuspenseAndProtection(Dashboard),
-  },
-  {
-    path: 'contacts/all',
-    element: withSuspenseAndProtection(AllContacts),
-  },
-  {
-    path: 'contacts/companies',
-    element: withSuspenseAndProtection(Companies),
-  },
-  {
-    path: 'contacts/companies/:id',
-    element: withSuspenseAndProtection(CompanyDetail),
-  },
-  {
-    path: 'contacts/:id',
-    element: withSuspenseAndProtection(ContactDetail),
-  },
+    element: withSuspenseAndErrorHandling(EmptyDashboard),
+  }
 ];
