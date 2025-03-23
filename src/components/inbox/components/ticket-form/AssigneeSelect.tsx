@@ -1,176 +1,109 @@
 
-import React, { useState, useEffect } from 'react';
-import { Check, User, Users, Loader2 } from 'lucide-react';
-import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import { Label } from "@/components/ui/label";
-import type { AssigneeOption, AssigneeType } from "./types";
-import { useAppSelector } from '@/hooks/useAppSelector';
-import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { selectAllTeammates, selectTeammatesLoading } from '@/store/slices/teammates/selectors';
-import { selectAllTeams, selectTeamsLoading } from '@/store/slices/teams/selectors';
-import { fetchTeammates } from '@/store/slices/teammates/actions';
-
-// Current user for self-assign option
-const CURRENT_USER: AssigneeOption = { id: 'self', name: 'Myself', type: 'self' as AssigneeType };
+import { useState } from 'react';
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import type { AssigneeOption } from './types';
 
 interface AssigneeSelectProps {
-  value: AssigneeOption | null;
+  value?: AssigneeOption | null;
   onChange: (value: AssigneeOption | null) => void;
+  selectedAssignee?: AssigneeOption | null;
+  onSelectAssignee?: (value: AssigneeOption | null) => void;
 }
 
-const AssigneeSelect = ({ value, onChange }: AssigneeSelectProps) => {
-  const [open, setOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const dispatch = useAppDispatch();
-  
-  // Fetch teammates and teams from Redux store
-  const teammates = useAppSelector(selectAllTeammates);
-  const teams = useAppSelector(selectAllTeams);
-  const teamsLoading = useAppSelector(selectTeamsLoading);
-  const teammatesLoading = useAppSelector(selectTeammatesLoading);
-  
-  const isLoading = teamsLoading || teammatesLoading;
+const AssigneeSelect = ({ value, onChange, selectedAssignee, onSelectAssignee }: AssigneeSelectProps) => {
+  // Handle both prop patterns
+  const actualValue = value || selectedAssignee;
+  const handleChange = (valueId: string) => {
+    if (valueId === 'none') {
+      const action = onChange || onSelectAssignee;
+      if (action) action(null);
+      return;
+    }
 
-  // Fetch teammates on component mount
-  useEffect(() => {
-    dispatch(fetchTeammates());
-    // Note: We're not dispatching a team fetch action because it should be handled
-    // elsewhere in the application, for example in a parent component or app initialization
-  }, [dispatch]);
+    // In a real app, we'd fetch this from the API
+    const newAssignee: AssigneeOption = {
+      id: valueId,
+      name: valueId === 'self' ? 'Me (Current User)' : 
+           valueId === 'team-support' ? 'Support Team' : 
+           valueId === 'team-sales' ? 'Sales Team' : 'Agent ' + valueId,
+      type: valueId === 'self' ? 'self' : 
+           valueId.startsWith('team') ? 'team' : 'teammate',
+    };
 
-  // Map teammates to AssigneeOption format
-  const teammateOptions: AssigneeOption[] = teammates.map(teammate => ({
-    id: teammate.id,
-    name: teammate.name,
-    type: 'teammate' as AssigneeType
-  }));
-
-  // Map teams to AssigneeOption format
-  const teamOptions: AssigneeOption[] = teams.map(team => ({
-    id: team.id,
-    name: team.name,
-    type: 'team' as AssigneeType
-  }));
-
-  const handleSelect = (option: AssigneeOption) => {
-    onChange(option);
-    setOpen(false);
+    if (onChange) onChange(newAssignee);
+    if (onSelectAssignee) onSelectAssignee(newAssignee);
   };
 
-  // Filter options based on search query
-  const filteredTeamOptions = teamOptions.filter(team => 
-    team.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-  
-  const filteredTeammateOptions = teammateOptions.filter(teammate => 
-    teammate.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
   return (
-    <div className="space-y-2">
-      <Label htmlFor="assignee">Assign to</Label>
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            role="combobox"
-            aria-expanded={open}
-            className="w-full justify-between"
-            onClick={() => setOpen(!open)}
-          >
-            {value ? value.name : "Select assignee..."}
-            <User className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-[240px] p-0" align="start">
-          <Command shouldFilter={false}>
-            <CommandInput 
-              placeholder="Search assignee..." 
-              value={searchQuery}
-              onValueChange={setSearchQuery}
-              autoFocus
-            />
-            <CommandList>
-              <CommandEmpty>No assignee found.</CommandEmpty>
-              
-              {isLoading ? (
-                <div className="flex items-center justify-center p-4">
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  <span>Loading...</span>
-                </div>
-              ) : (
-                <>
-                  <CommandGroup heading="Assign to">
-                    <CommandItem 
-                      value="self"
-                      onSelect={() => handleSelect(CURRENT_USER)}
-                      className="cursor-pointer"
-                    >
-                      <User className="mr-2 h-4 w-4" />
-                      {CURRENT_USER.name}
-                      {value?.id === CURRENT_USER.id && (
-                        <Check className="ml-auto h-4 w-4" />
-                      )}
-                    </CommandItem>
-                  </CommandGroup>
-                  
-                  {filteredTeamOptions.length > 0 && (
-                    <CommandGroup heading="Teams">
-                      {filteredTeamOptions.map((team) => (
-                        <CommandItem
-                          key={team.id}
-                          value={team.id}
-                          onSelect={() => handleSelect(team)}
-                          className="cursor-pointer"
-                        >
-                          <Users className="mr-2 h-4 w-4" />
-                          {team.name}
-                          {value?.id === team.id && (
-                            <Check className="ml-auto h-4 w-4" />
-                          )}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  )}
-                  
-                  {filteredTeammateOptions.length > 0 && (
-                    <CommandGroup heading="Teammates">
-                      {filteredTeammateOptions.map((teammate) => (
-                        <CommandItem
-                          key={teammate.id}
-                          value={teammate.id}
-                          onSelect={() => handleSelect(teammate)}
-                          className="cursor-pointer"
-                        >
-                          <User className="mr-2 h-4 w-4" />
-                          {teammate.name}
-                          {value?.id === teammate.id && (
-                            <Check className="ml-auto h-4 w-4" />
-                          )}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  )}
-                </>
-              )}
-            </CommandList>
-          </Command>
-        </PopoverContent>
-      </Popover>
-    </div>
+    <Select 
+      value={actualValue?.id || 'none'} 
+      onValueChange={handleChange}
+    >
+      <SelectTrigger className="w-full">
+        <SelectValue placeholder="Select assignee">
+          {actualValue ? (
+            <div className="flex items-center">
+              <Avatar className="h-5 w-5 mr-2">
+                <AvatarFallback>{actualValue.name.charAt(0)}</AvatarFallback>
+              </Avatar>
+              <span>{actualValue.name}</span>
+            </div>
+          ) : (
+            "Unassigned"
+          )}
+        </SelectValue>
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="none">Unassigned</SelectItem>
+        <SelectItem value="self">
+          <div className="flex items-center">
+            <Avatar className="h-5 w-5 mr-2">
+              <AvatarFallback>M</AvatarFallback>
+            </Avatar>
+            <span>Me (Current User)</span>
+          </div>
+        </SelectItem>
+        <SelectItem value="team-support">
+          <div className="flex items-center">
+            <Avatar className="h-5 w-5 mr-2">
+              <AvatarFallback>S</AvatarFallback>
+            </Avatar>
+            <span>Support Team</span>
+          </div>
+        </SelectItem>
+        <SelectItem value="team-sales">
+          <div className="flex items-center">
+            <Avatar className="h-5 w-5 mr-2">
+              <AvatarFallback>S</AvatarFallback>
+            </Avatar>
+            <span>Sales Team</span>
+          </div>
+        </SelectItem>
+        <SelectItem value="user1">
+          <div className="flex items-center">
+            <Avatar className="h-5 w-5 mr-2">
+              <AvatarFallback>J</AvatarFallback>
+            </Avatar>
+            <span>John Smith</span>
+          </div>
+        </SelectItem>
+        <SelectItem value="user2">
+          <div className="flex items-center">
+            <Avatar className="h-5 w-5 mr-2">
+              <AvatarFallback>S</AvatarFallback>
+            </Avatar>
+            <span>Sarah Johnson</span>
+          </div>
+        </SelectItem>
+      </SelectContent>
+    </Select>
   );
 };
 

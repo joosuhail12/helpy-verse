@@ -66,7 +66,7 @@ export const updateTeam = async (teamId: string, params: UpdateTeamParams, dispa
     await updateTeamAction(teamId, params);
     
     // Refresh teams data
-    dispatch(fetchTeams());
+    dispatch(fetchTeams({}));
     
     return { success: true };
   } catch (error) {

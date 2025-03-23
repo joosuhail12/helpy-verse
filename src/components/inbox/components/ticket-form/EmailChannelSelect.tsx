@@ -1,101 +1,126 @@
 
-import { useState } from 'react';
-import { Check, ChevronsUpDown, Mail } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-} from '@/components/ui/command';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { cn } from '@/lib/utils';
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select';
+import { Check, MailX, Mail, MailQuestion } from 'lucide-react';
 import type { EmailChannel } from '@/types/emailChannel';
 
-interface EmailChannelSelectProps {
-  channels: EmailChannel[];
-  selectedChannel: EmailChannel | null;
-  onSelectChannel: (channel: EmailChannel | null) => void;
+export interface EmailChannelSelectProps {
+  channels?: EmailChannel[];
+  selectedChannel?: EmailChannel | null;
+  onSelectChannel?: (channel: EmailChannel | null) => void;
+  value?: EmailChannel | null;
+  onChange?: (channel: EmailChannel | null) => void;
 }
 
-const EmailChannelSelect = ({ channels, selectedChannel, onSelectChannel }: EmailChannelSelectProps) => {
-  const [open, setOpen] = useState(false);
+const EmailChannelSelect = ({ 
+  channels = [], 
+  selectedChannel, 
+  onSelectChannel,
+  value,
+  onChange
+}: EmailChannelSelectProps) => {
+  // Combine both prop patterns
+  const actualValue = value || selectedChannel;
+  const handleChange = onChange || onSelectChannel;
+  
+  // If channels array is provided, use it, otherwise use a mock list
+  const emailChannels = channels.length > 0 ? channels : [
+    {
+      id: '1',
+      channelName: 'Support',
+      senderName: 'Support Team',
+      email: 'support@example.com',
+      type: 'both',
+      createdAt: new Date().toISOString(),
+      isActive: true,
+      isVerified: true,
+      name: 'Support',
+      allowAgentConversations: true,
+      useAgentNames: true,
+      useOriginalSender: false
+    },
+    {
+      id: '2',
+      channelName: 'Sales',
+      senderName: 'Sales Team',
+      email: 'sales@example.com',
+      type: 'both',
+      createdAt: new Date().toISOString(),
+      isActive: true,
+      isVerified: true,
+      name: 'Sales',
+      allowAgentConversations: true,
+      useAgentNames: true,
+      useOriginalSender: false
+    },
+    {
+      id: '3',
+      channelName: 'No-Reply',
+      senderName: 'Notifications',
+      email: 'no-reply@example.com',
+      type: 'outbound',
+      createdAt: new Date().toISOString(),
+      isActive: true,
+      isVerified: true,
+      name: 'No-Reply',
+      allowAgentConversations: false,
+      useAgentNames: false,
+      useOriginalSender: false
+    }
+  ];
+
+  const getChannelIcon = (channel: EmailChannel) => {
+    if (!channel.isVerified) return <MailX className="h-4 w-4 text-destructive" />;
+    
+    if (channel.type === 'inbound') return <Mail className="h-4 w-4 text-blue-500" />;
+    if (channel.type === 'outbound') return <Mail className="h-4 w-4 text-green-500" />;
+    return <Mail className="h-4 w-4 text-purple-500" />;
+  };
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className="w-full justify-between"
-        >
-          {selectedChannel ? (
-            <div className="flex items-center gap-2 text-left">
-              <Mail className="h-4 w-4 text-muted-foreground" />
-              <div>
-                <p className="font-medium">{selectedChannel.name}</p>
-                <p className="text-xs text-muted-foreground">{selectedChannel.email}</p>
-              </div>
+    <Select 
+      value={actualValue?.id || ''} 
+      onValueChange={(id) => {
+        if (handleChange) {
+          const channel = emailChannels.find(c => c.id === id) || null;
+          handleChange(channel);
+        }
+      }}
+    >
+      <SelectTrigger className="w-full">
+        <SelectValue placeholder="Select a channel">
+          {actualValue ? (
+            <div className="flex items-center">
+              {getChannelIcon(actualValue)}
+              <span className="ml-2">{actualValue.channelName} ({actualValue.email})</span>
             </div>
           ) : (
-            <span className="text-muted-foreground">Select email channel</span>
+            <div className="flex items-center text-muted-foreground">
+              <MailQuestion className="h-4 w-4 mr-2" />
+              <span>Select a channel</span>
+            </div>
           )}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-[300px] p-0">
-        <Command>
-          <CommandInput placeholder="Search email channels..." />
-          <CommandEmpty>No email channel found.</CommandEmpty>
-          <CommandGroup>
-            {channels.map((channel) => (
-              <CommandItem
-                key={channel.id}
-                value={channel.name}
-                onSelect={() => {
-                  onSelectChannel(channel);
-                  setOpen(false);
-                }}
-              >
-                <Check
-                  className={cn(
-                    "mr-2 h-4 w-4",
-                    selectedChannel?.id === channel.id ? "opacity-100" : "opacity-0"
-                  )}
-                />
-                <div className="flex flex-col">
-                  <span>{channel.name}</span>
-                  <span className="text-xs text-muted-foreground">{channel.email}</span>
-                </div>
-                <div className="ml-auto flex items-center gap-1">
-                  {channel.type === 'inbound' && (
-                    <span className="text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded">
-                      Receiving
-                    </span>
-                  )}
-                  {channel.type === 'outbound' && (
-                    <span className="text-xs bg-green-100 text-green-800 px-1.5 py-0.5 rounded">
-                      Sending
-                    </span>
-                  )}
-                  {channel.type === 'both' && (
-                    <span className="text-xs bg-purple-100 text-purple-800 px-1.5 py-0.5 rounded">
-                      Both
-                    </span>
-                  )}
-                </div>
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        </Command>
-      </PopoverContent>
-    </Popover>
+        </SelectValue>
+      </SelectTrigger>
+      <SelectContent>
+        {emailChannels.map(channel => (
+          <SelectItem key={channel.id} value={channel.id}>
+            <div className="flex items-center">
+              {getChannelIcon(channel)}
+              <span className="ml-2">{channel.channelName} ({channel.email})</span>
+              {!channel.isActive && (
+                <span className="ml-2 text-xs text-muted-foreground">(Inactive)</span>
+              )}
+            </div>
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 };
 

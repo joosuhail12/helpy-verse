@@ -58,7 +58,7 @@ const CustomerContextPanel = ({ ticket }: CustomerContextPanelProps) => {
     <div className="h-full flex flex-col bg-white border-l transition-all duration-300 ease-in-out">
       <CustomerHeader 
         customer={ticket.customer} 
-        company={ticket.company || undefined} 
+        company={ticket.company} 
       />
       
       <ScrollArea className={`flex-1 ${isMobile ? 'px-3 py-4' : 'p-4'}`}>
@@ -83,7 +83,7 @@ const CustomerContextPanel = ({ ticket }: CustomerContextPanelProps) => {
           />
           
           <CustomObjectCard
-            customerId={ticket.customer.id}
+            customerId={typeof ticket.customer === 'string' ? ticket.customer : ticket.customer.id}
             ticketId={ticket.id}
             isOpen={openSections.customObject}
             onToggle={() => toggleSection('customObject')}

@@ -23,7 +23,7 @@ const TeamDetail = () => {
 
   useEffect(() => {
     if (teamId) {
-      dispatch(fetchTeams());
+      dispatch(fetchTeams({}));
     }
   }, [teamId, dispatch]);
 

@@ -1,15 +1,13 @@
 
 import { useState, useMemo } from 'react';
-import type { Ticket } from '@/types/ticket';
-
-export type SortField = 'createdAt' | 'updatedAt' | 'priority' | 'status' | 'subject' | 'customer' | 'company' | 'assignee';
+import type { Ticket, SortField, ViewMode } from '@/types/ticket';
 
 export const useTicketList = (initialTickets: Ticket[]) => {
   const [tickets, setTickets] = useState<Ticket[]>(initialTickets);
   const [selectedTickets, setSelectedTickets] = useState<string[]>([]);
   const [sortField, setSortField] = useState<SortField>('createdAt');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
-  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [viewMode, setViewMode] = useState<ViewMode>('detailed');
 
   const handleSelectTicket = (ticketId: string) => {
     setSelectedTickets(prevSelected => {
@@ -38,74 +36,54 @@ export const useTicketList = (initialTickets: Ticket[]) => {
     }
   };
 
-  const filteredTickets = useMemo(() => {
-    if (!searchQuery.trim()) return tickets;
-    
-    return tickets.filter(ticket => {
-      const lowerCaseQuery = searchQuery.toLowerCase();
-      
-      const customerSearch = typeof ticket.customer === 'string' 
-        ? ticket.customer.toLowerCase().includes(lowerCaseQuery)
-        : ticket.customer.name.toLowerCase().includes(lowerCaseQuery);
-        
-      const messageSearch = ticket.lastMessage ? 
-        ticket.lastMessage.toLowerCase().includes(lowerCaseQuery) : false;
-        
-      const companySearch = typeof ticket.company === 'string'
-        ? ticket.company.toLowerCase().includes(lowerCaseQuery)
-        : ticket.company?.name.toLowerCase().includes(lowerCaseQuery);
-        
-      const assigneeSearch = ticket.assignee 
-        ? (typeof ticket.assignee === 'string'
-            ? ticket.assignee.toLowerCase().includes(lowerCaseQuery)
-            : ticket.assignee.name.toLowerCase().includes(lowerCaseQuery))
-        : false;
-      
-      return (
-        ticket.subject.toLowerCase().includes(lowerCaseQuery) ||
-        customerSearch ||
-        messageSearch ||
-        companySearch ||
-        assigneeSearch
-      );
-    });
-  }, [tickets, searchQuery]);
-
   const sortedTickets = useMemo(() => {
-    return [...filteredTickets].sort((a, b) => {
+    return [...tickets].sort((ticketA, ticketB) => {
       let comparison = 0;
       
       switch (sortField) {
         case 'subject':
-          comparison = a.subject.localeCompare(b.subject);
+          comparison = ticketA.subject.localeCompare(ticketB.subject);
           break;
         case 'customer':
-          const customerA = typeof a.customer === 'string' ? a.customer : a.customer.name;
-          const customerB = typeof b.customer === 'string' ? b.customer : b.customer.name;
+          const customerA = typeof ticketA.customer === 'string' 
+            ? ticketA.customer 
+            : ticketA.customer.name;
+          const customerB = typeof ticketB.customer === 'string' 
+            ? ticketB.customer 
+            : ticketB.customer.name;
           comparison = customerA.localeCompare(customerB);
           break;
         case 'company':
-          const companyA = typeof a.company === 'string' ? a.company : (a.company?.name || '');
-          const companyB = typeof b.company === 'string' ? b.company : (b.company?.name || '');
+          const companyA = typeof ticketA.company === 'string' 
+            ? ticketA.company 
+            : (ticketA.company?.name || '');
+          const companyB = typeof ticketB.company === 'string' 
+            ? ticketB.company 
+            : (ticketB.company?.name || '');
           comparison = companyA.localeCompare(companyB);
           break;
         case 'priority':
-          const priorityOrder = { high: 3, medium: 2, low: 1 };
-          comparison = priorityOrder[a.priority] - priorityOrder[b.priority];
+          const priorityOrder = { high: 3, medium: 2, low: 1, urgent: 4 };
+          comparison = priorityOrder[ticketA.priority] - priorityOrder[ticketB.priority];
           break;
         case 'status':
-          const statusOrder = { open: 3, pending: 2, closed: 1 };
-          comparison = statusOrder[a.status] - statusOrder[b.status];
+          const statusOrder = { open: 3, pending: 2, closed: 1, resolved: 0 };
+          comparison = statusOrder[ticketA.status] - statusOrder[ticketB.status];
           break;
         case 'createdAt':
-          comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-          break;
-        case 'updatedAt':
-          comparison = new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime();
+          comparison = new Date(ticketA.createdAt).getTime() - new Date(ticketB.createdAt).getTime();
           break;
         case 'assignee':
-          const assigneeA = a.assignee ? (typeof a.assignee === 'string' ? a.assignee : a.assignee.name) : '';
-          const assigneeB = b.assignee ? (typeof b.assignee === 'string' ? b.assignee : b.assignee.name) : '';
+          const assigneeA = ticketA.assignee 
+            ? (typeof ticketA.assignee === 'string' 
+                ? ticketA.assignee 
+                : ticketA.assignee.name) 
+            : '';
+          const assigneeB = ticketB.assignee 
+            ? (typeof ticketB.assignee === 'string' 
+                ? ticketB.assignee 
+                : ticketB.assignee.name) 
+            : '';
           comparison = assigneeA.localeCompare(assigneeB);
           break;
         default:
@@ -114,7 +92,11 @@ export const useTicketList = (initialTickets: Ticket[]) => {
       
       return sortDirection === 'asc' ? comparison : -comparison;
     });
-  }, [filteredTickets, sortField, sortDirection]);
+  }, [tickets, sortField, sortDirection]);
+
+  // Calculate the ticket data for the SelectionControls component
+  const allSelected = tickets.length > 0 && selectedTickets.length === tickets.length;
+  const indeterminate = selectedTickets.length > 0 && selectedTickets.length < tickets.length;
 
   return {
     tickets,
@@ -123,14 +105,13 @@ export const useTicketList = (initialTickets: Ticket[]) => {
     sortField,
     sortDirection,
     handleSort,
-    searchQuery,
-    setSearchQuery,
+    viewMode,
+    setViewMode,
     handleSelectTicket,
     handleSelectAll,
     sortedTickets,
-    filteredTickets,
-    allSelected: tickets.length > 0 && selectedTickets.length === tickets.length,
-    indeterminate: selectedTickets.length > 0 && selectedTickets.length < tickets.length,
+    allSelected,
+    indeterminate,
   };
 };
 

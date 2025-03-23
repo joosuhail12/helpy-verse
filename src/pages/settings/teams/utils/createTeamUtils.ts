@@ -11,7 +11,7 @@ export const handleCreateTeam = async (teamName: string, teamDescription: string
     // to create a new team. For now, we'll just refresh the teams list
 
     // After "API call", fetch teams to update the state
-    await dispatch(fetchTeams());
+    await dispatch(fetchTeams({}));
 
     // Close the dialog
     onClose();
