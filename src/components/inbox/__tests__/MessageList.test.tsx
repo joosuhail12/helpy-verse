@@ -4,6 +4,7 @@ import { render, screen } from '@testing-library/react';
 import MessageList from '../components/MessageList';
 import type { Message } from '../types';
 import type { Ticket } from '@/types/ticket';
+import { stringToCustomer, stringToCompany, stringToTeamMember } from '@/types/ticket';
 
 const mockMessages: Message[] = [
   {
@@ -14,6 +15,7 @@ const mockMessages: Message[] = [
       name: 'Alice Chen',
       type: 'customer'
     },
+    text: 'Having issues with the latest update',
     timestamp: '2024-03-15T10:30:00Z',
     isCustomer: true,
     readBy: []
@@ -26,6 +28,7 @@ const mockMessages: Message[] = [
       name: 'Support Agent',
       type: 'agent'
     },
+    text: 'Let me look into that for you right away',
     timestamp: '2024-03-15T10:32:00Z',
     isCustomer: false,
     readBy: ['agent1']
@@ -38,6 +41,7 @@ const mockMessages: Message[] = [
       name: 'Support Agent',
       type: 'agent'
     },
+    text: 'Customer mentioned previous incidents - need to check history',
     timestamp: '2024-03-15T10:33:00Z',
     isCustomer: false,
     type: 'internal_note',
@@ -48,14 +52,15 @@ const mockMessages: Message[] = [
 const mockTicket: Ticket = {
   id: 'ticket123',
   subject: 'Issue with Latest Update',
-  customer: 'Alice Chen',
+  customer: stringToCustomer('Alice Chen'),
   lastMessage: 'Having issues with the latest update',
-  assignee: 'agent1',
-  company: 'TechCorp Ltd',
+  assignee: stringToTeamMember('agent1'),
+  company: stringToCompany('TechCorp Ltd'),
   tags: ['bug', 'high-priority'],
   status: 'open',
   priority: 'high',
   createdAt: '2024-03-15T10:30:00Z',
+  updatedAt: '2024-03-15T10:30:00Z',
   recipients: ['alice.chen@example.com']
 };
 

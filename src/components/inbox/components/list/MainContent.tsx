@@ -1,11 +1,11 @@
 import { useToast } from "@/hooks/use-toast";
-import FilterBar from '../../FilterBar';
-import SortingControls from '../../SortingControls';
-import SelectionControls from '../../SelectionControls';
+import { FilterBar } from '@/components/inbox/FilterBar';
+import { SortingControls } from '@/components/inbox/SortingControls';
+import { SelectionControls } from '@/components/inbox/SelectionControls';
 import LoadingState from '../LoadingState';
 import TicketActions from '../TicketActions';
 import TicketListItem from '../TicketListItem';
-import type { Ticket, SortField, ViewMode } from '@/types/ticket';
+import type { Ticket } from '@/types/ticket';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { 
   ResizablePanelGroup, 
@@ -13,6 +13,7 @@ import {
   ResizableHandle 
 } from '@/components/ui/resizable';
 import ConversationPanelContainer from './ConversationPanelContainer';
+import type { SortField, ViewMode } from '@/types/ticket';
 
 interface MainContentProps {
   isLoading: boolean;

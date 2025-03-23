@@ -15,10 +15,11 @@ export const useMessages = (ticket: Ticket) => {
   const initializeMessages = () => {
     setMessages([{
       id: ticket.id,
-      content: ticket.lastMessage,
+      content: ticket.lastMessage || '',
+      text: ticket.lastMessage || '',
       sender: {
-        id: 'customer',
-        name: ticket.customer,
+        id: ticket.customer.id,
+        name: ticket.customer.name,
         type: 'customer'
       },
       timestamp: ticket.createdAt,
@@ -35,6 +36,7 @@ export const useMessages = (ticket: Ticket) => {
       const newMsg: Message = {
         id: crypto.randomUUID(),
         content: newMessage,
+        text: newMessage,
         sender: {
           id: 'agent',
           name: 'Agent',

@@ -1,4 +1,3 @@
-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -109,7 +108,7 @@ const CurrentTicketCard = ({ ticket, isOpen, onToggle }: CurrentTicketCardProps)
             <div className="flex items-center justify-between py-2">
               <span className="text-gray-500 font-medium">Assigned To</span>
               <InlineEditField
-                value={ticket.assignee || ''}
+                value={ticket.assignee ? ticket.assignee.name : ''}
                 contactId={ticket.id}
                 field="assignee"
                 label="Assigned To"

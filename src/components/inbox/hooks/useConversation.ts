@@ -30,10 +30,11 @@ export const useConversation = (ticket: Ticket) => {
         // Initialize with the ticket's last message
         setMessages([{
           id: `initial-${ticket.id}`,
-          content: ticket.lastMessage,
+          content: ticket.lastMessage || '',
+          text: ticket.lastMessage || '',
           sender: {
-            id: 'customer',
-            name: ticket.customer,
+            id: ticket.customer.id,
+            name: ticket.customer.name,
             type: 'customer'
           },
           timestamp: ticket.createdAt,
@@ -98,6 +99,7 @@ export const useConversation = (ticket: Ticket) => {
       const messageData: Message = {
         id: crypto.randomUUID(),
         content: newMessage,
+        text: newMessage,
         sender: {
           id: 'agent-id',
           name: 'Agent',

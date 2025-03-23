@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
@@ -44,6 +43,7 @@ export function AddChannelDialog({ isOpen, onClose }: AddChannelDialogProps) {
           ...channel,
           name: channel.channelName,
           domainStatus: 'pending' as const, // Use proper type
+          isVerified: false,
         };
 
         await dispatch(createChannel(completeChannel)).unwrap();

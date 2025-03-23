@@ -1,4 +1,3 @@
-
 import { ReactRenderer } from '@tiptap/react';
 import tippy from 'tippy.js';
 import type { Ticket } from '@/types/ticket';
@@ -9,9 +8,13 @@ import MentionList from '../components/MentionList';
  */
 const suggestion = (ticket: Ticket) => ({
   items: ({ query }: { query: string }) => {
+    const companyName = typeof ticket.company === 'string' 
+      ? ticket.company.toLowerCase() 
+      : ticket.company?.name?.toLowerCase() || '';
+    
     const items = [
       { label: ticket.customer, value: 'customer' },
-      { label: ticket.company || 'Company', value: 'company' },
+      { label: companyName, value: 'company' },
       { label: `Ticket #${ticket.id}`, value: 'ticket' },
     ];
     

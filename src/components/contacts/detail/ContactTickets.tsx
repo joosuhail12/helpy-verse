@@ -3,6 +3,7 @@ import { Contact } from '@/types/contact';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import TicketList from '@/components/inbox/TicketList';
 import { Ticket } from '@/types/ticket';
+import { stringToCustomer, stringToCompany, stringToTeamMember } from '@/types/ticket';
 
 interface ContactTicketsProps {
   contact: Contact;
@@ -15,34 +16,36 @@ export const ContactTickets = ({ contact }: ContactTicketsProps) => {
     {
       id: '1',
       subject: 'Account Access Issue',
-      customer: `${contact.firstname} ${contact.lastname}`,
+      customer: stringToCustomer(`${contact.firstname} ${contact.lastname}`),
       lastMessage: 'Having trouble logging in to my account',
-      assignee: 'Sarah Wilson',
-      company: contact.company || '',
+      assignee: stringToTeamMember('Sarah Wilson'),
+      company: stringToCompany(contact.company || 'Unknown'),
       tags: ['account', 'urgent'],
       status: 'open' as const,
       priority: 'high' as const,
       createdAt: '2024-03-15T10:00:00Z',
+      updatedAt: '2024-03-15T10:00:00Z',
       isUnread: true,
       hasNotification: true,
       notificationType: 'mention' as const,
-      recipients: [contact.email] // Added recipients array
+      recipients: [contact.email]
     },
     {
       id: '2',
       subject: 'Feature Request',
-      customer: `${contact.firstname} ${contact.lastname}`,
+      customer: stringToCustomer(`${contact.firstname} ${contact.lastname}`),
       lastMessage: 'Would like to discuss new feature possibilities',
       assignee: null,
-      company: contact.company || '',
+      company: stringToCompany(contact.company || 'Unknown'),
       tags: ['feature-request'],
       status: 'pending' as const,
       priority: 'medium' as const,
       createdAt: '2024-03-14T15:30:00Z',
+      updatedAt: '2024-03-14T15:30:00Z',
       isUnread: false,
-      recipients: [contact.email] // Added recipients array
+      recipients: [contact.email]
     },
-  ].filter(ticket => ticket.customer === `${contact.firstname} ${contact.lastname}`);
+  ].filter(ticket => ticket.customer.name === `${contact.firstname} ${contact.lastname}`);
 
   return (
     <Card className="bg-white/60 backdrop-blur-sm border-purple-100/50 shadow-lg shadow-purple-500/5">

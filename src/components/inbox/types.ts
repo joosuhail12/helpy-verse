@@ -1,4 +1,3 @@
-
 // Define types for inbox components
 export interface UserPresence {
   userId: string;

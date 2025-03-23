@@ -1,22 +1,26 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Inbox, Plus } from 'lucide-react';
+import { Plus, SearchX } from 'lucide-react';
 
-interface EmptyTicketStateProps {
+export interface EmptyTicketStateProps {
   title: string;
   description: string;
   onCreateTicket: () => void;
 }
 
-const EmptyTicketState = ({ title, description, onCreateTicket }: EmptyTicketStateProps) => {
+const EmptyTicketState = ({ 
+  title = "No tickets found", 
+  description = "There are no tickets matching your current filters.",
+  onCreateTicket 
+}: EmptyTicketStateProps) => {
   return (
-    <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-      <div className="bg-gray-100 p-4 rounded-full mb-4">
-        <Inbox className="h-10 w-10 text-gray-400" />
+    <div className="flex flex-col items-center justify-center h-full p-8 text-center">
+      <div className="bg-muted rounded-full p-3 mb-4">
+        <SearchX className="h-6 w-6 text-muted-foreground" />
       </div>
-      <h3 className="text-xl font-medium mb-2">{title}</h3>
-      <p className="text-gray-500 mb-6 max-w-md">{description}</p>
+      <h3 className="text-lg font-medium mb-2">{title}</h3>
+      <p className="text-muted-foreground mb-6 max-w-md">{description}</p>
       <Button onClick={onCreateTicket}>
         <Plus className="h-4 w-4 mr-2" />
         Create New Ticket

@@ -1,145 +1,116 @@
-
 import { useState, useEffect } from 'react';
-import { Check, Mail } from "lucide-react";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { useAppSelector } from '@/hooks/useAppSelector';
-import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { fetchChannels } from '@/store/slices/emailChannels/emailChannelsSlice';
-import { selectEmailChannels, selectEmailChannelsLoading } from '@/store/slices/emailChannels/selectors';
-import { cn } from "@/lib/utils";
-import type { EmailChannel } from '@/types/emailChannel';
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Verified, Mail, AlertCircle } from 'lucide-react';
 import { mockEmailChannels } from '@/mock/emailChannels';
+import type { EmailChannel } from '@/types/emailChannel';
 
 interface EmailChannelSelectProps {
-  value: EmailChannel | null;
-  onChange: (value: EmailChannel | null) => void;
+  emailChannel: EmailChannel | null;
+  onEmailChannelChange: (emailChannel: EmailChannel | null) => void;
 }
 
-const EmailChannelSelect = ({ value, onChange }: EmailChannelSelectProps) => {
-  const [open, setOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  
-  const dispatch = useAppDispatch();
-  
-  // Fetch email channels from Redux store
-  const channels = useAppSelector(selectEmailChannels);
-  const isLoading = useAppSelector(selectEmailChannelsLoading);
-  
-  // Filter only 'sending' and 'both' type channels for outbound messages
-  const outboundChannels = channels.filter(
-    channel => channel.type === 'sending' || channel.type === 'both'
-  );
-  
+const EmailChannelSelect = ({ emailChannel, onEmailChannelChange }: EmailChannelSelectProps) => {
+  const [channels, setChannels] = useState<EmailChannel[]>([]);
+
   useEffect(() => {
-    // Try to fetch channels from API
-    dispatch(fetchChannels());
-    
-    // If we have no channels, use mock data (this is temporary until the API works)
-    if (channels.length === 0 && !isLoading) {
-      console.log('Using mock email channels data');
-    }
-  }, [dispatch]);
-  
-  // If we have no real data, use the mock data
-  const availableChannels = outboundChannels.length > 0 
-    ? outboundChannels 
-    : mockEmailChannels.filter(
-        channel => channel.type === 'sending' || channel.type === 'both'
-      );
-  
-  const handleSelect = (channelId: string) => {
-    const selectedChannel = availableChannels.find(c => c.id === channelId);
-    onChange(selectedChannel || null);
-    setOpen(false);
+    // Simulate fetching email channels from an API
+    // In a real application, you would replace this with an actual API call
+    const fetchChannels = async () => {
+      // Simulate loading delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      setChannels(mockEmailChannels);
+    };
+
+    fetchChannels();
+  }, []);
+
+  const handleChannelChange = (value: string) => {
+    const selectedChannel = channels.find(channel => channel.id === value) || null;
+    onEmailChannelChange(selectedChannel);
   };
-  
-  // Filter channels based on search query
-  const filteredChannels = availableChannels.filter(channel =>
-    channel.channelName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    channel.email.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+
+  const getChannelDescription = (channel: EmailChannel) => {
+    if (channel.type === 'outbound') {
+      return `Sending from ${channel.email}`;
+    } else if (channel.type === 'inbound') {
+      return `Receiving at ${channel.email}`;
+    } else {
+      return `Sending & Receiving at ${channel.email}`;
+    }
+  };
+
+  const getChannelTypeLabel = (channel: EmailChannel) => {
+    if (channel.type === 'outbound') {
+      return <span className="text-blue-500">Sending Only</span>;
+    } else if (channel.type === 'inbound') {
+      return <span className="text-green-500">Receiving Only</span>;
+    } else {
+      return <span className="text-purple-500">Sending & Receiving</span>;
+    }
+  };
 
   return (
-    <div className="space-y-2">
+    <div className="grid gap-2">
       <Label htmlFor="emailChannel">Email Channel</Label>
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            role="combobox"
-            aria-expanded={open}
-            className="w-full justify-between"
-            onClick={() => setOpen(!open)}
-          >
-            {value ? (
-              <span className="flex items-center">
-                <Mail className="mr-2 h-4 w-4" />
-                {value.channelName} ({value.email})
-              </span>
-            ) : (
-              "Select email channel..."
-            )}
-            <Mail className="ml-auto h-4 w-4 shrink-0 opacity-50" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-[300px] p-0" align="start">
-          <Command shouldFilter={false}>
-            <CommandInput 
-              placeholder="Search channels..." 
-              value={searchQuery}
-              onValueChange={setSearchQuery}
-              autoFocus
-            />
-            <CommandList>
-              <CommandEmpty>No email channels found</CommandEmpty>
-              
-              {isLoading ? (
-                <div className="flex items-center justify-center py-6">
-                  Loading channels...
+      <Select onValueChange={handleChannelChange} defaultValue={emailChannel?.id}>
+        <SelectTrigger id="emailChannel">
+          <SelectValue placeholder="Select an email channel" />
+        </SelectTrigger>
+        <SelectContent>
+          {channels.map((channel) => (
+            <SelectItem key={channel.id} value={channel.id}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="flex items-center justify-center w-5 h-5 mr-2 text-xl">
+                          {channel.icon || <Mail />}
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent className="text-left">
+                        <p>{channel.channelName}</p>
+                        <p className="text-xs text-muted-foreground">{getChannelDescription(channel)}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  <span>{channel.channelName}</span>
                 </div>
-              ) : (
-                <CommandGroup heading="Email Channels">
-                  {filteredChannels.map((channel) => (
-                    <CommandItem
-                      key={channel.id}
-                      value={channel.id}
-                      onSelect={() => handleSelect(channel.id)}
-                      className="flex justify-between cursor-pointer"
-                    >
-                      <div className="flex flex-col">
-                        <span className="font-medium">{channel.channelName}</span>
-                        <span className="text-xs text-muted-foreground">{channel.email}</span>
-                      </div>
-                      {value?.id === channel.id && (
-                        <Check className="ml-auto h-4 w-4" />
-                      )}
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              )}
-            </CommandList>
-          </Command>
-        </PopoverContent>
-      </Popover>
-      {value?.type === 'receiving' && (
-        <p className="text-sm text-destructive">
-          This channel is set for receiving only. Outbound messages will not be sent.
-        </p>
-      )}
+                <div className="flex items-center">
+                  {channel.isVerified ? (
+                    <Verified className="w-4 h-4 text-green-500 mr-1" />
+                  ) : (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <AlertCircle className="w-4 h-4 text-red-500 mr-1" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          This channel is not verified. Please verify to ensure proper functionality.
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                  {getChannelTypeLabel(channel)}
+                </div>
+              </div>
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   );
 };

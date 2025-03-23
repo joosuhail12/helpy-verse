@@ -1,15 +1,15 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { useTicketList } from '../../hooks/useTicketList';
-import SortingControls from '../../SortingControls';
+import { SortingControls } from '../../SortingControls';
 import ViewToggle from './ViewToggle';
-import { Ticket, ViewMode } from '@/types/ticket';
+import { Ticket } from '@/types/ticket';
+import type { ViewMode } from '@/types/ticket';
 import TicketListItem from '../TicketListItem';
 import EmptyTicketState from '../../EmptyTicketState';
-import SelectionControls from '../../SelectionControls';
-import { CreateTicketDialog } from '../../components/ticket-form';
+import { SelectionControls } from '../../SelectionControls';
+import CreateTicketDialog from '../../components/ticket-form/CreateTicketDialog';
 import ConversationPanelContainer from './ConversationPanelContainer';
 import LoadingState from '../LoadingState';
 import { 
@@ -65,7 +65,11 @@ const TicketList = ({ tickets: initialTickets, isLoading = false, onTicketCreate
 
   if (tickets.length === 0 && !isLoading) {
     return (
-      <EmptyTicketState onCreateTicket={() => setCreateDialogOpen(true)} />
+      <EmptyTicketState 
+        title="No tickets found" 
+        description="There are no tickets matching your current filters."
+        onCreateTicket={() => setCreateDialogOpen(true)}
+      />
     );
   }
 
@@ -201,8 +205,8 @@ const TicketList = ({ tickets: initialTickets, isLoading = false, onTicketCreate
       )}
 
       <CreateTicketDialog
-        open={createDialogOpen}
-        onOpenChange={setCreateDialogOpen}
+        isOpen={createDialogOpen}
+        onClose={() => setCreateDialogOpen(false)}
         onTicketCreated={handleTicketCreated}
       />
     </div>

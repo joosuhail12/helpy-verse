@@ -1,6 +1,7 @@
 
+import React from 'react';
 import { Button } from '@/components/ui/button';
-import { LayoutList, MenuSquare } from 'lucide-react';
+import { LayoutList, LayoutGrid, List } from 'lucide-react';
 import type { ViewMode } from '@/types/ticket';
 
 interface ViewToggleProps {
@@ -12,31 +13,31 @@ const ViewToggle = ({ viewMode, onChangeViewMode }: ViewToggleProps) => {
   return (
     <div className="flex border rounded-md overflow-hidden">
       <Button
-        variant="ghost"
+        variant={viewMode === 'compact' ? "default" : "ghost"}
         size="sm"
-        className={`rounded-none ${
-          viewMode === 'detailed'
-            ? 'bg-primary/10 text-primary hover:bg-primary/20'
-            : ''
-        }`}
-        onClick={() => onChangeViewMode('detailed')}
-      >
-        <LayoutList className="h-4 w-4 mr-1" />
-        <span className="sr-only sm:not-sr-only">Detailed</span>
-      </Button>
-      
-      <Button
-        variant="ghost"
-        size="sm"
-        className={`rounded-none ${
-          viewMode === 'compact'
-            ? 'bg-primary/10 text-primary hover:bg-primary/20'
-            : ''
-        }`}
+        className="rounded-none px-2"
         onClick={() => onChangeViewMode('compact')}
+        title="Compact view"
       >
-        <MenuSquare className="h-4 w-4 mr-1" />
-        <span className="sr-only sm:not-sr-only">Compact</span>
+        <LayoutList className="h-4 w-4" />
+      </Button>
+      <Button
+        variant={viewMode === 'detailed' ? "default" : "ghost"}
+        size="sm"
+        className="rounded-none px-2"
+        onClick={() => onChangeViewMode('detailed')}
+        title="Detailed view"
+      >
+        <LayoutGrid className="h-4 w-4" />
+      </Button>
+      <Button
+        variant={viewMode === 'list' ? "default" : "ghost"}
+        size="sm"
+        className="rounded-none px-2"
+        onClick={() => onChangeViewMode('list')}
+        title="List view"
+      >
+        <List className="h-4 w-4" />
       </Button>
     </div>
   );

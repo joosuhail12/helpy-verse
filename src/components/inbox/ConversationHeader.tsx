@@ -26,10 +26,10 @@ const ConversationHeader = ({ ticket, onClose, activeUsers }: ConversationHeader
         </div>
         <div className="flex items-center gap-2 mt-1">
           <Avatar className="h-5 w-5">
-            <span className="text-xs">{ticket.customer[0]}</span>
+            <span className="text-xs">{ticket.customer.name[0]}</span>
           </Avatar>
           <p className="text-sm text-muted-foreground">
-            {ticket.customer} • {ticket.company}
+            {ticket.customer.name} • {ticket.company?.name}
           </p>
         </div>
       </div>
