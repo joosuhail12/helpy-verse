@@ -1,53 +1,75 @@
 
 import { lazy, Suspense } from 'react';
-import { Navigate } from 'react-router-dom';
-import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
-import { Loader2 } from 'lucide-react';
+import { RouteObject } from 'react-router-dom';
+import { LoadingSpinner } from './index';
 import RouteErrorBoundary from '@/components/app/RouteErrorBoundary';
 
-// Define LoadingSpinner component at the top of the file to avoid reference errors
-const LoadingSpinner = () => (
-  <div className="min-h-screen flex items-center justify-center">
-    <Loader2 className="h-8 w-8 animate-spin text-primary" />
-  </div>
-);
-
 // Lazy load inbox pages
+const Inbox = lazy(() => import('../pages/Inbox'));
 const YourInbox = lazy(() => import('../pages/inbox/YourInbox'));
-const AllInbox = lazy(() => import('../pages/inbox/All'));
-const UnassignedInbox = lazy(() => import('../pages/inbox/Unassigned'));
-const MentionsInbox = lazy(() => import('../pages/inbox/Mentions'));
+const Unassigned = lazy(() => import('../pages/inbox/Unassigned'));
+const Mentions = lazy(() => import('../pages/inbox/Mentions'));
+const Channels = lazy(() => import('../pages/inbox/Channels'));
 
-// Helper function to wrap a component with Suspense, ProtectedRoute and RouteErrorBoundary
-const withSuspenseAndProtection = (Component) => (
-  <ProtectedRoute>
-    <RouteErrorBoundary>
-      <Suspense fallback={<LoadingSpinner />}>
-        <Component />
-      </Suspense>
-    </RouteErrorBoundary>
-  </ProtectedRoute>
-);
-
-export const inboxRoutes = [
+export const inboxRoutes: RouteObject[] = [
   {
     path: 'inbox',
-    element: <Navigate to="all" replace />,
-  },
-  {
-    path: 'inbox/your-inbox',
-    element: withSuspenseAndProtection(YourInbox),
+    element: (
+      <RouteErrorBoundary>
+        <Suspense fallback={<LoadingSpinner />}>
+          <Inbox />
+        </Suspense>
+      </RouteErrorBoundary>
+    ),
   },
   {
     path: 'inbox/all',
-    element: withSuspenseAndProtection(AllInbox),
+    element: (
+      <RouteErrorBoundary>
+        <Suspense fallback={<LoadingSpinner />}>
+          <Inbox />
+        </Suspense>
+      </RouteErrorBoundary>
+    ),
+  },
+  {
+    path: 'inbox/mine',
+    element: (
+      <RouteErrorBoundary>
+        <Suspense fallback={<LoadingSpinner />}>
+          <YourInbox />
+        </Suspense>
+      </RouteErrorBoundary>
+    ),
   },
   {
     path: 'inbox/unassigned',
-    element: withSuspenseAndProtection(UnassignedInbox),
+    element: (
+      <RouteErrorBoundary>
+        <Suspense fallback={<LoadingSpinner />}>
+          <Unassigned />
+        </Suspense>
+      </RouteErrorBoundary>
+    ),
   },
   {
     path: 'inbox/mentions',
-    element: withSuspenseAndProtection(MentionsInbox),
+    element: (
+      <RouteErrorBoundary>
+        <Suspense fallback={<LoadingSpinner />}>
+          <Mentions />
+        </Suspense>
+      </RouteErrorBoundary>
+    ),
+  },
+  {
+    path: 'inbox/channel/:channelId',
+    element: (
+      <RouteErrorBoundary>
+        <Suspense fallback={<LoadingSpinner />}>
+          <Channels />
+        </Suspense>
+      </RouteErrorBoundary>
+    ),
   },
 ];
