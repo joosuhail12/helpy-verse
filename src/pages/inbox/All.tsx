@@ -83,51 +83,6 @@ const initialTickets: Ticket[] = [
     updatedAt: '2024-03-15T08:15:00Z',
     isUnread: true,
     recipients: ['david.lee@devtech.com']
-  },
-  {
-    id: '6',
-    subject: 'Export functionality not working',
-    customer: stringToCustomer('Maria Garcia'),
-    lastMessage: 'When trying to export reports to CSV, nothing happens. This worked yesterday.',
-    assignee: stringToTeamMember('Tom Wilson'),
-    company: stringToCompany('DataAnalytics Pro'),
-    tags: ['bug', 'export', 'reports'],
-    status: 'pending',
-    priority: 'high',
-    createdAt: '2024-03-15T09:30:00Z',
-    updatedAt: '2024-03-15T09:30:00Z',
-    isUnread: true,
-    recipients: ['maria.garcia@dataanalytics.com']
-  },
-  {
-    id: '7',
-    subject: 'Thank you for the quick response',
-    customer: stringToCustomer('Alex Kim'),
-    lastMessage: 'Just wanted to say thanks for resolving my issue so quickly. Great service!',
-    assignee: stringToTeamMember('Sarah Wilson'),
-    company: stringToCompany('StartupHub'),
-    tags: ['feedback', 'positive'],
-    status: 'closed',
-    priority: 'low',
-    createdAt: '2024-03-14T16:45:00Z',
-    updatedAt: '2024-03-14T16:45:00Z',
-    isUnread: false,
-    recipients: ['alex.kim@startuphub.com']
-  },
-  {
-    id: '8',
-    subject: 'Mobile app crashes on startup',
-    customer: stringToCustomer('Chris Taylor'),
-    lastMessage: 'After the latest update, the mobile app crashes immediately when opened. Using iPhone 14 Pro.',
-    assignee: null,
-    company: stringToCompany('MobileFirst Ltd'),
-    tags: ['mobile', 'crash', 'urgent'],
-    status: 'open',
-    priority: 'high',
-    createdAt: '2024-03-15T11:20:00Z',
-    updatedAt: '2024-03-15T11:20:00Z',
-    isUnread: true,
-    recipients: ['chris.taylor@mobilefirst.com']
   }
 ];
 

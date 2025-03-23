@@ -2,7 +2,7 @@
 import { ChevronLeft, ChevronRight, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation, NavigateFunction } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import MainNavigation from './MainNavigation';
 import SubNavigation from './SubNavigation';
 import { mainNavItems, subNavItems } from './navigationConfig';

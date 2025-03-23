@@ -10,6 +10,7 @@ const YourInbox = lazy(() => import('../pages/inbox/YourInbox'));
 const Unassigned = lazy(() => import('../pages/inbox/Unassigned'));
 const Mentions = lazy(() => import('../pages/inbox/Mentions'));
 const Channels = lazy(() => import('../pages/inbox/Channels'));
+const AllTickets = lazy(() => import('../pages/inbox/All'));
 
 export const inboxRoutes: RouteObject[] = [
   {
@@ -24,7 +25,7 @@ export const inboxRoutes: RouteObject[] = [
     element: (
       <RouteErrorBoundary>
         <Suspense fallback={<LoadingSpinner />}>
-          <Inbox />
+          <AllTickets />
         </Suspense>
       </RouteErrorBoundary>
     ),
