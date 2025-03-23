@@ -22,11 +22,14 @@ const NavigationHeader = ({
   isSecondPanelCollapsed, 
   toggleSecondPanel 
 }: NavigationHeaderProps) => {
+  // Get the active navigation item's title
+  const activeNavTitle = mainNavItems.find(item => item.key === activeMainNav)?.title;
+  
   return (
     <div className="flex items-center justify-between mb-6">
       {!isSecondPanelCollapsed && (
         <h2 className="text-lg font-semibold text-gray-800 ml-2">
-          {mainNavItems.find(item => item.id === activeMainNav)?.title}
+          {activeNavTitle || 'Navigation'}
         </h2>
       )}
       <TooltipProvider delayDuration={0}>
