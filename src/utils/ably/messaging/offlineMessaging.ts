@@ -1,125 +1,138 @@
 
-/**
- * Offline messaging functionality
- */
-import { ChatMessage, QueuedMessage } from '../types';
-import { v4 as uuidv4 } from 'uuid';
-import { MESSAGE_STATUS } from '@/config/constants';
+import { Types } from 'ably';
 
-// Local storage key for queued messages
-const QUEUE_STORAGE_KEY = 'chat_queued_messages';
+type MessageStatus = 'queued' | 'failed' | 'sent' | 'sending';
 
-/**
- * Load queued messages from localStorage
- */
-export const loadQueuedMessages = (): QueuedMessage[] => {
+interface OfflineMessage {
+  channelId: string;
+  eventName: string;
+  data: any;
+  id: string;
+  status: MessageStatus;
+  timestamp: number;
+  retryCount: number;
+}
+
+// Get offline messages from localStorage
+const getOfflineMessages = (): OfflineMessage[] => {
   try {
-    const storedMessages = localStorage.getItem(QUEUE_STORAGE_KEY);
-    return storedMessages ? JSON.parse(storedMessages) : [];
-  } catch (error) {
-    console.error('Failed to load queued messages from storage:', error);
+    const stored = localStorage.getItem('offlineMessages');
+    return stored ? JSON.parse(stored) : [];
+  } catch (e) {
+    console.error('Error retrieving offline messages:', e);
     return [];
   }
 };
 
-/**
- * Save queued messages to localStorage
- */
-export const saveQueuedMessages = (messages: QueuedMessage[]): void => {
+// Save offline messages to localStorage
+const saveOfflineMessages = (messages: OfflineMessage[]) => {
   try {
-    localStorage.setItem(QUEUE_STORAGE_KEY, JSON.stringify(messages));
-  } catch (error) {
-    console.error('Failed to save queued messages to storage:', error);
+    localStorage.setItem('offlineMessages', JSON.stringify(messages));
+  } catch (e) {
+    console.error('Error saving offline messages:', e);
   }
 };
 
-/**
- * Queue a message for later sending
- */
-export const queueMessage = (
-  message: ChatMessage,
-  conversationId: string,
-  userId: string
-): QueuedMessage => {
-  const queuedMessage: QueuedMessage = {
-    ...message,
-    conversationId,
-    userId,
-    status: MESSAGE_STATUS.QUEUED
+// Add a message to the offline queue
+export const addOfflineMessage = (channelId: string, eventName: string, data: any, id: string) => {
+  const messages = getOfflineMessages();
+  const newMessage: OfflineMessage = {
+    channelId,
+    eventName,
+    data,
+    id,
+    status: 'queued' as MessageStatus,
+    timestamp: Date.now(),
+    retryCount: 0
   };
   
-  const queuedMessages = loadQueuedMessages();
-  queuedMessages.push(queuedMessage);
-  saveQueuedMessages(queuedMessages);
+  messages.push(newMessage);
+  saveOfflineMessages(messages);
   
-  return queuedMessage;
+  return newMessage;
 };
 
-/**
- * Update the status of a queued message
- */
-export const updateMessageStatus = (
-  messageId: string,
-  status: 'queued' | 'sending' | 'sent' | 'failed'
-): void => {
-  const queuedMessages = loadQueuedMessages();
-  const updatedMessages = queuedMessages.map(msg => 
-    msg.id === messageId ? { ...msg, status } : msg
+// Update message status
+export const updateMessageStatus = (id: string, status: MessageStatus) => {
+  const messages = getOfflineMessages();
+  const updatedMessages = messages.map(msg => 
+    msg.id === id ? { ...msg, status } : msg
   );
-  saveQueuedMessages(updatedMessages);
+  saveOfflineMessages(updatedMessages);
 };
 
-/**
- * Remove a message from the queue
- */
-export const removeFromQueue = (messageId: string): void => {
-  const queuedMessages = loadQueuedMessages();
-  const updatedMessages = queuedMessages.filter(msg => msg.id !== messageId);
-  saveQueuedMessages(updatedMessages);
+// Remove a message from the offline queue
+export const removeOfflineMessage = (id: string) => {
+  const messages = getOfflineMessages();
+  const updatedMessages = messages.filter(msg => msg.id !== id);
+  saveOfflineMessages(updatedMessages);
 };
 
-/**
- * Check if there are any failed messages in the queue
- */
-export const checkForFailedMessages = (): boolean => {
-  const queuedMessages = loadQueuedMessages();
-  return queuedMessages.some(msg => msg.status === MESSAGE_STATUS.FAILED);
+// Process offline messages when coming back online
+export const processOfflineMessages = (ably?: Types.RealtimeClient) => {
+  if (!ably) return;
+  
+  const messages = getOfflineMessages();
+  const queuedMessages = messages.filter(msg => msg.status === 'queued');
+  
+  queuedMessages.forEach(msg => {
+    const channel = ably.channels.get(msg.channelId);
+    
+    updateMessageStatus(msg.id, 'sending' as MessageStatus);
+    
+    channel.publish(msg.eventName, msg.data)
+      .then(() => {
+        console.log(`Offline message ${msg.id} sent successfully`);
+        updateMessageStatus(msg.id, 'sent' as MessageStatus);
+        setTimeout(() => removeOfflineMessage(msg.id), 5000); // Remove after a delay
+      })
+      .catch(err => {
+        console.error(`Failed to send offline message ${msg.id}:`, err);
+        updateMessageStatus(msg.id, 'failed' as MessageStatus);
+      });
+  });
 };
 
-/**
- * Retry sending failed messages
- */
-export const resendFailedMessages = async (
-  sendFunction: (
-    conversationId: string, 
-    text: string, 
-    sender: any, 
-    messageId?: string
-  ) => Promise<any>
-): Promise<QueuedMessage[]> => {
-  const queuedMessages = loadQueuedMessages();
-  const failedMessages = queuedMessages.filter(msg => 
-    msg.status === MESSAGE_STATUS.FAILED
+// Get all offline messages
+export const getOfflineMessagesById = (channelId: string) => {
+  const messages = getOfflineMessages();
+  return messages.filter(msg => msg.channelId === channelId);
+};
+
+// Check if there are any offline messages
+export const hasOfflineMessages = () => {
+  return getOfflineMessages().length > 0;
+};
+
+// Update retry count for a message
+export const incrementRetryCount = (id: string) => {
+  const messages = getOfflineMessages();
+  const updatedMessages = messages.map(msg => 
+    msg.id === id ? { ...msg, retryCount: msg.retryCount + 1 } : msg
   );
+  saveOfflineMessages(updatedMessages);
+};
+
+// Mark a message as sent
+export const markMessageAsSent = (id: string) => {
+  updateMessageStatus(id, 'sent' as MessageStatus);
+  setTimeout(() => removeOfflineMessage(id), 5000); // Remove after a delay
+};
+
+// Mark a message as failed
+export const markMessageAsFailed = (id: string) => {
+  updateMessageStatus(id, 'failed' as MessageStatus);
+};
+
+// Hooks for React components
+export const useOfflineMessaging = () => {
+  const offlineMessages = getOfflineMessages();
   
-  for (const message of failedMessages) {
-    try {
-      updateMessageStatus(message.id, MESSAGE_STATUS.SENDING);
-      
-      await sendFunction(
-        message.conversationId,
-        message.text,
-        message.sender,
-        message.id
-      );
-      
-      // Remove from queue after successful send
-      removeFromQueue(message.id);
-    } catch (error) {
-      console.error(`Failed to resend message ${message.id}:`, error);
-      updateMessageStatus(message.id, MESSAGE_STATUS.FAILED);
-    }
-  }
-  
-  return loadQueuedMessages();
+  return {
+    offlineMessages,
+    addOfflineMessage,
+    markMessageAsSent,
+    markMessageAsFailed,
+    hasOfflineMessages: hasOfflineMessages()
+  };
 };

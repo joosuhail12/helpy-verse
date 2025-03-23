@@ -1,55 +1,52 @@
 
 import { useEffect, useState } from 'react';
-import { useAbly } from '@ably-labs/react-hooks';
 import { Types } from 'ably';
+import { useChannel } from '@ably-labs/react-hooks';
 
-export const useTypingIndicator = (
-  channelId: string,
-  userId: string
-) => {
-  const [typingUsers, setTypingUsers] = useState<string[]>([]);
-  const ably = useAbly();
+export const useTypingIndicator = (channelId: string, userId: string) => {
+  const [typingUsers, setTypingUsers] = useState<Record<string, { name: string; timestamp: number }>>({});
+  const { channel } = useChannel(channelId);
 
   useEffect(() => {
-    if (!channelId || !ably) return;
-    
-    const channel = ably.channels.get(`typing:${channelId}`);
-    
-    // Subscribe to typing events
-    const subscription = channel.subscribe('typing', (message: Types.Message) => {
-      const { clientId, data } = message;
-      
-      if (clientId && clientId !== userId) {
-        if (data.isTyping) {
-          setTypingUsers(prev => 
-            prev.includes(clientId) ? prev : [...prev, clientId]
-          );
-        } else {
-          setTypingUsers(prev => 
-            prev.filter(id => id !== clientId)
-          );
-        }
-      }
-    });
-    
-    // Cleanup function
-    return () => {
-      subscription.unsubscribe();
-      channel.detach();
-    };
-  }, [channelId, userId, ably]);
+    if (!channel) return;
 
-  // Function to publish typing status
-  const publishTypingStatus = (isTyping: boolean) => {
-    if (!channelId || !ably) return;
-    
-    const channel = ably.channels.get(`typing:${channelId}`);
-    channel.publish('typing', { isTyping, userId });
+    const handleTypingEvent = (message: Types.Message) => {
+      const { data } = message;
+      if (!data || !data.userId || data.userId === userId) return;
+
+      setTypingUsers(prev => ({
+        ...prev,
+        [data.userId]: { 
+          name: data.userName || 'Someone', 
+          timestamp: Date.now() 
+        }
+      }));
+
+      // Auto-remove typing indicator after 3 seconds
+      setTimeout(() => {
+        setTypingUsers(prev => {
+          const newState = { ...prev };
+          delete newState[data.userId];
+          return newState;
+        });
+      }, 3000);
+    };
+
+    // Subscribe to typing events
+    channel.subscribe('typing', handleTypingEvent);
+
+    return () => {
+      channel.unsubscribe('typing', handleTypingEvent);
+    };
+  }, [channel, userId]);
+
+  const sendTypingEvent = (userName: string) => {
+    if (!channel) return;
+    channel.publish('typing', { userId, userName });
   };
 
   return {
-    typingUsers,
-    isTyping: typingUsers.length > 0,
-    publishTypingStatus
+    typingUsers: Object.values(typingUsers),
+    sendTypingEvent
   };
 };

@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { configureAbly } from '@ably-labs/react-hooks';
-import { Realtime } from 'ably';
+import { AblyProvider as AblyReactHooksProvider } from '@ably-labs/react-hooks';
 
 interface AblyProviderProps {
   children: React.ReactNode;
@@ -9,6 +9,7 @@ interface AblyProviderProps {
 
 const AblyProvider: React.FC<AblyProviderProps> = ({ children }) => {
   const [isConfigured, setIsConfigured] = useState(false);
+  const [ablyClient, setAblyClient] = useState<any>(null);
   
   useEffect(() => {
     try {
@@ -17,7 +18,8 @@ const AblyProvider: React.FC<AblyProviderProps> = ({ children }) => {
       
       if (ablyApiKey) {
         // Configure Ably with the API key
-        const ably = configureAbly({ key: ablyApiKey });
+        const client = configureAbly({ key: ablyApiKey });
+        setAblyClient(client);
         console.log('Ably configured successfully');
         setIsConfigured(true);
       } else {
@@ -32,11 +34,15 @@ const AblyProvider: React.FC<AblyProviderProps> = ({ children }) => {
     }
   }, []);
 
-  if (!isConfigured) {
-    return null; // Or a loading state
+  if (!isConfigured || !ablyClient) {
+    return <>{children}</>; // Render children without Ably context if not configured
   }
 
-  return <>{children}</>;
+  return (
+    <AblyReactHooksProvider client={ablyClient}>
+      {children}
+    </AblyReactHooksProvider>
+  );
 };
 
 export default AblyProvider;
