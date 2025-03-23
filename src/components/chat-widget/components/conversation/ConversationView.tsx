@@ -20,7 +20,9 @@ const ConversationView: React.FC<ConversationViewProps> = ({ conversationId, wor
     const fetchMessages = async () => {
       if (conversationId) {
         const conversationMessages = await getMessages(conversationId);
-        setMessages(conversationMessages);
+        if (conversationMessages) {
+          setMessages(conversationMessages);
+        }
       }
     };
 
@@ -38,7 +40,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({ conversationId, wor
       sender: 'user',
       content: messageText,
       timestamp: new Date(),
-      conversationId
+      conversationId: conversationId
     };
     
     setMessages(prev => [...prev, userMessage]);

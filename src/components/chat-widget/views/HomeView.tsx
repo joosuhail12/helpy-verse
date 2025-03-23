@@ -79,32 +79,6 @@ const HomeView: React.FC<HomeViewProps> = ({ workspaceId }) => {
             <ArrowRight className="text-gray-400" size={18} />
           </div>
         </button>
-
-        {/* Service report card */}
-        <div className="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm">
-          <div className="bg-primary text-white p-3" style={{ backgroundColor: colors.primary, color: colors.primaryForeground }}>
-            <div className="uppercase font-bold">
-              <div>THE 2025</div>
-              <div>CUSTOMER SERVICE</div>
-              <div>TRANSFORMATION</div>
-              <div>REPORT</div>
-            </div>
-            <div className="mt-8 text-xs text-gray-200 uppercase">
-              <div>CUSTOMER SERVICE TRENDS</div>
-              <div>AS WE DIVE INTO 2025</div>
-            </div>
-            
-            {/* Logo in corner */}
-            <div className="absolute top-3 right-3 bg-white/10 rounded-md p-1">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
-                <rect x="3" y="3" width="18" height="18" rx="2" />
-                <line x1="8" y1="7" x2="16" y2="7" stroke="black" strokeWidth="2" />
-                <line x1="8" y1="12" x2="16" y2="12" stroke="black" strokeWidth="2" />
-                <line x1="8" y1="17" x2="16" y2="17" stroke="black" strokeWidth="2" />
-              </svg>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
