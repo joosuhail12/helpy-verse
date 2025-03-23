@@ -1,147 +1,74 @@
-
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Building2, ChevronUp, ChevronDown, Globe, Users, DollarSign, Calendar } from "lucide-react";
-import { useToast } from '@/hooks/use-toast';
-import { InlineEditField } from "@/components/companies/detail/InlineEditField";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { ChevronDown, ChevronUp, Globe, Building, Users } from "lucide-react";
+import type { Company } from "@/types/company";
 
 interface CompanyInfoCardProps {
-  company: string;
+  company?: Company | string;
   isOpen: boolean;
   onToggle: () => void;
 }
 
 const CompanyInfoCard = ({ company, isOpen, onToggle }: CompanyInfoCardProps) => {
-  const { toast } = useToast();
-  const mockCompanyId = "mock-company-id";
-
-  // This would typically be fetched from the API or redux store
-  const companyData = {
-    id: mockCompanyId,
-    name: company,
-    website: `${company.toLowerCase().replace(/\s+/g, '')}.com`,
-    employees: '250-500',
-    revenue: '$50M - $100M',
-    founded: '2015',
-    customerSince: 'March 2024'
-  };
-
-  const handleFieldSave = (field: string, value: string) => {
-    toast({
-      title: "Field updated",
-      description: `${field} has been successfully updated.`,
-    });
-  };
+  if (!company) return null;
+  
+  // Convert string company to object if needed
+  const companyObj = typeof company === 'string' 
+    ? { id: company, name: company, website: `https://${company.toLowerCase().replace(/\s+/g, '')}.com` } 
+    : company;
 
   return (
-    <Collapsible open={isOpen} onOpenChange={onToggle} className="group">
-      <Card className="border shadow-sm hover:shadow-md transition-all duration-200">
-        <CollapsibleTrigger asChild>
-          <Button 
-            variant="ghost" 
-            className="w-full flex items-center justify-between p-4 hover:bg-gray-50 rounded-t-lg group-data-[state=closed]:rounded-lg"
-          >
-            <div className="flex items-center gap-2">
-              <Building2 className="h-4 w-4 text-primary" />
-              <span className="font-medium">Company Information</span>
-            </div>
-            {isOpen ? 
-              <ChevronUp className="h-4 w-4 opacity-70 group-hover:opacity-100 transition-opacity" /> : 
-              <ChevronDown className="h-4 w-4 opacity-70 group-hover:opacity-100 transition-opacity" />
-            }
-          </Button>
-        </CollapsibleTrigger>
-        <CollapsibleContent className="px-4 pb-4 data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up">
-          <div className="space-y-3 text-sm divide-y divide-gray-100">
-            <div className="flex items-center justify-between py-2">
-              <span className="text-gray-500 font-medium">Company Name</span>
-              <InlineEditField
-                value={companyData.name}
-                companyId={mockCompanyId}
-                field="name"
-                label="Company Name"
-                validation={[{ type: 'required', value: '', message: 'Company name is required' }]}
-              />
-            </div>
-            
-            <div className="flex items-center justify-between py-2">
-              <span className="text-gray-500 font-medium">Plan</span>
-              <Badge variant="secondary" className="text-xs transition-all hover:bg-secondary/80">Enterprise</Badge>
-            </div>
-            
-            <div className="flex items-center justify-between py-2">
-              <span className="text-gray-500 font-medium">Status</span>
-              <Badge variant="outline" className="bg-green-50 text-green-700 text-xs transition-colors">Active</Badge>
-            </div>
-            
-            <div className="flex items-center justify-between py-2">
-              <span className="text-gray-500 font-medium">Customer Since</span>
-              <InlineEditField
-                value={companyData.customerSince}
-                companyId={mockCompanyId}
-                field="customerSince"
-                label="Customer Since"
-              />
-            </div>
-            
-            <div className="flex items-center justify-between py-2">
-              <div className="flex items-center gap-1.5">
-                <Globe className="h-3.5 w-3.5 text-gray-400" />
-                <span className="text-gray-500 font-medium">Website</span>
-              </div>
-              <InlineEditField
-                value={companyData.website}
-                companyId={mockCompanyId}
-                field="website"
-                label="Website"
-                type="url"
-              />
-            </div>
-            
-            <div className="flex items-center justify-between py-2">
-              <div className="flex items-center gap-1.5">
-                <Users className="h-3.5 w-3.5 text-gray-400" />
-                <span className="text-gray-500 font-medium">Employees</span>
-              </div>
-              <InlineEditField
-                value={companyData.employees}
-                companyId={mockCompanyId}
-                field="employees"
-                label="Employees"
-              />
-            </div>
-            
-            <div className="flex items-center justify-between py-2">
-              <div className="flex items-center gap-1.5">
-                <DollarSign className="h-3.5 w-3.5 text-gray-400" />
-                <span className="text-gray-500 font-medium">Revenue</span>
-              </div>
-              <InlineEditField
-                value={companyData.revenue}
-                companyId={mockCompanyId}
-                field="revenue"
-                label="Revenue"
-              />
-            </div>
-            
-            <div className="flex items-center justify-between py-2">
-              <div className="flex items-center gap-1.5">
-                <Calendar className="h-3.5 w-3.5 text-gray-400" />
-                <span className="text-gray-500 font-medium">Founded</span>
-              </div>
-              <InlineEditField
-                value={companyData.founded}
-                companyId={mockCompanyId}
-                field="founded"
-                label="Founded"
-              />
-            </div>
+    <Card className="overflow-hidden">
+      <CardHeader 
+        className="flex flex-row items-center justify-between cursor-pointer p-4 bg-gray-50"
+        onClick={onToggle}
+      >
+        <div className="font-medium">Company Information</div>
+        <div>{isOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}</div>
+      </CardHeader>
+      
+      {isOpen && (
+        <CardContent className="p-4 pt-2 space-y-4">
+          <div className="space-y-2">
+            <div className="text-sm text-gray-500">Name</div>
+            <div className="font-medium">{companyObj.name}</div>
           </div>
-        </CollapsibleContent>
-      </Card>
-    </Collapsible>
+          
+          {companyObj.website && (
+            <div className="space-y-2">
+              <div className="text-sm text-gray-500">Website</div>
+              <div className="flex items-center">
+                <Globe size={14} className="mr-2 text-gray-500" />
+                <a href={companyObj.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                  {companyObj.website.replace(/^https?:\/\//, '')}
+                </a>
+              </div>
+            </div>
+          )}
+          
+          {companyObj.industry && (
+            <div className="space-y-2">
+              <div className="text-sm text-gray-500">Industry</div>
+              <div className="flex items-center">
+                <Building size={14} className="mr-2 text-gray-500" />
+                <span>{companyObj.industry}</span>
+              </div>
+            </div>
+          )}
+          
+          {companyObj.numberOfEmployees && (
+            <div className="space-y-2">
+              <div className="text-sm text-gray-500">Size</div>
+              <div className="flex items-center">
+                <Users size={14} className="mr-2 text-gray-500" />
+                <span>{companyObj.numberOfEmployees} employees</span>
+              </div>
+            </div>
+          )}
+          
+          {/* Additional company info could be rendered here */}
+        </CardContent>
+      )}
+    </Card>
   );
 };
 

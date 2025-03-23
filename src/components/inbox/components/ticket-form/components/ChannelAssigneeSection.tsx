@@ -35,8 +35,8 @@ const ChannelAssigneeSection = ({
           Assignee
         </Label>
         <AssigneeSelect 
-          selectedAssignee={assignee}
-          onSelectAssignee={onAssigneeChange}
+          value={assignee}
+          onChange={onAssigneeChange}
         />
       </div>
     </div>

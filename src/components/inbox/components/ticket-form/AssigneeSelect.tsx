@@ -22,8 +22,8 @@ const AssigneeSelect = ({ value, onChange, selectedAssignee, onSelectAssignee }:
   const actualValue = value || selectedAssignee;
   const handleChange = (valueId: string) => {
     if (valueId === 'none') {
-      const action = onChange || onSelectAssignee;
-      if (action) action(null);
+      if (onChange) onChange(null);
+      if (onSelectAssignee) onSelectAssignee(null);
       return;
     }
 
