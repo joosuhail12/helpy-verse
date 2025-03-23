@@ -1,5 +1,5 @@
 
-import React, { Suspense } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import Sidebar from '@/components/dashboard/Sidebar';
@@ -17,7 +17,10 @@ const LoadingSpinner = () => (
  */
 const DashboardLayout = () => {
   const location = useLocation();
-  console.log('DashboardLayout rendering for path:', location.pathname);
+  
+  useEffect(() => {
+    console.log('DashboardLayout: Rendering for path:', location.pathname);
+  }, [location]);
   
   return (
     <div className="h-screen flex overflow-hidden bg-background">
@@ -25,7 +28,11 @@ const DashboardLayout = () => {
       <main className="flex-1 overflow-auto relative">
         <RouteErrorBoundary>
           <Suspense fallback={<LoadingSpinner />}>
-            <Outlet />
+            <div className="h-full p-6">
+              <div className="h-full bg-white/80 backdrop-blur-md rounded-xl shadow-sm p-6 overflow-auto">
+                <Outlet />
+              </div>
+            </div>
           </Suspense>
         </RouteErrorBoundary>
       </main>

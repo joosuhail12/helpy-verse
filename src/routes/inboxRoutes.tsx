@@ -12,6 +12,18 @@ const Mentions = lazy(() => import('../pages/inbox/Mentions'));
 const Channels = lazy(() => import('../pages/inbox/Channels'));
 const AllTickets = lazy(() => import('../pages/inbox/All'));
 
+// Helper for creating consistent route objects with error handling
+const createInboxRoute = (path: string, Component: React.ComponentType) => ({
+  path,
+  element: (
+    <RouteErrorBoundary>
+      <Suspense fallback={<LoadingSpinner />}>
+        <Component />
+      </Suspense>
+    </RouteErrorBoundary>
+  )
+});
+
 export const inboxRoutes: RouteObject[] = [
   {
     path: 'inbox',
@@ -20,52 +32,11 @@ export const inboxRoutes: RouteObject[] = [
         <Navigate to="/home/inbox/all" replace />
       </Suspense>
     ),
-    errorElement: <RouteErrorBoundary><LoadingSpinner /></RouteErrorBoundary>,
   },
-  {
-    path: 'inbox/all',
-    element: (
-      <RouteErrorBoundary>
-        <Suspense fallback={<LoadingSpinner />}>
-          <AllTickets />
-        </Suspense>
-      </RouteErrorBoundary>
-    ),
-    errorElement: <RouteErrorBoundary><LoadingSpinner /></RouteErrorBoundary>,
-  },
-  {
-    path: 'inbox/your-inbox',
-    element: (
-      <RouteErrorBoundary>
-        <Suspense fallback={<LoadingSpinner />}>
-          <YourInbox />
-        </Suspense>
-      </RouteErrorBoundary>
-    ),
-    errorElement: <RouteErrorBoundary><LoadingSpinner /></RouteErrorBoundary>,
-  },
-  {
-    path: 'inbox/unassigned',
-    element: (
-      <RouteErrorBoundary>
-        <Suspense fallback={<LoadingSpinner />}>
-          <Unassigned />
-        </Suspense>
-      </RouteErrorBoundary>
-    ),
-    errorElement: <RouteErrorBoundary><LoadingSpinner /></RouteErrorBoundary>,
-  },
-  {
-    path: 'inbox/mentions',
-    element: (
-      <RouteErrorBoundary>
-        <Suspense fallback={<LoadingSpinner />}>
-          <Mentions />
-        </Suspense>
-      </RouteErrorBoundary>
-    ),
-    errorElement: <RouteErrorBoundary><LoadingSpinner /></RouteErrorBoundary>,
-  },
+  createInboxRoute('inbox/all', AllTickets),
+  createInboxRoute('inbox/your-inbox', YourInbox),
+  createInboxRoute('inbox/unassigned', Unassigned),
+  createInboxRoute('inbox/mentions', Mentions),
   {
     path: 'inbox/channel/:channelId',
     element: (
@@ -75,6 +46,8 @@ export const inboxRoutes: RouteObject[] = [
         </Suspense>
       </RouteErrorBoundary>
     ),
-    errorElement: <RouteErrorBoundary><LoadingSpinner /></RouteErrorBoundary>,
   },
 ];
+
+// Add debug logs for all routes
+console.log('Inbox routes initialized:', inboxRoutes.map(route => route.path));

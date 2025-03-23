@@ -1,142 +1,179 @@
 
 import { 
   Home, 
-  Inbox, 
+  MessageSquare, 
+  Settings, 
   Users, 
+  Building, 
   Bot, 
-  BarChart, 
-  Settings,
-  AtSign,
-  ListFilter,
-  InboxIcon,
-  UsersRound,
-  User,
-  Building2,
-  BrainCircuit,
-  ScrollText,
-  FileSpreadsheet,
-  UserCog,
-  MessagesSquare,
+  FileText,
+  Tag,
+  GitBranch,
   Mail,
-  Database,
-  Tags,
   MessageCircle,
-  Reply,
-  Brain,
-  Activity,
-  MessageSquare,
-  Globe
+  BellRing,
+  Hash,
+  Workflow,
+  PenTool,
+  Archive,
+  Database,
+  Bot as BotIcon
 } from 'lucide-react';
 
 export const mainNavItems = [
-  { id: 'home', title: 'Home', icon: Home, path: '/home' },
-  { id: 'inbox', title: 'Inbox', icon: Inbox, path: '/home/inbox' },
-  { id: 'contacts', title: 'Contacts', icon: Users, path: '/home/contacts/all' },
-  { id: 'automation', title: 'AI & Automation', icon: Bot, path: '/home/automation' },
-  { id: 'reporting', title: 'Reporting', icon: BarChart, path: '/home/reporting' },
-  { id: 'settings', title: 'Settings', icon: Settings, path: '/home/settings' }
+  {
+    title: 'Home',
+    icon: Home,
+    path: '/home',
+    key: 'home'
+  },
+  {
+    title: 'Inbox',
+    icon: MessageSquare,
+    path: '/home/inbox/all',
+    key: 'inbox'
+  },
+  {
+    title: 'Contacts',
+    icon: Users,
+    path: '/home/contacts',
+    key: 'contacts'
+  },
+  {
+    title: 'Companies',
+    icon: Building,
+    path: '/home/companies',
+    key: 'companies'
+  },
+  {
+    title: 'Automation',
+    icon: Bot,
+    path: '/home/automation',
+    key: 'automation'
+  },
+  {
+    title: 'Settings',
+    icon: Settings,
+    path: '/home/settings',
+    key: 'settings'
+  }
 ];
 
 export const subNavItems = {
   inbox: [
-    { title: 'Your Inbox', icon: InboxIcon, path: '/home/inbox/your-inbox' },
-    { title: 'Mentions', icon: AtSign, path: '/home/inbox/mentions' },
-    { title: 'All', icon: ListFilter, path: '/home/inbox/all' },
-    { title: 'Unassigned', icon: MessageSquare, path: '/home/inbox/unassigned' },
     {
-      title: 'Teams',
-      icon: UsersRound,
-      children: [
-        { title: 'All Teams', path: '/home/inbox/teams' },
-        { title: 'Team 1 View', path: '/home/inbox/teams/1' },
-        { title: 'Team 2 View', path: '/home/inbox/teams/2' },
-        { title: 'Team 3 View', path: '/home/inbox/teams/3' },
-      ]
-    },
-    {
-      title: 'Teammates',
-      icon: User,
-      children: [
-        { title: 'Teammate 1 View', path: '/home/inbox/teammates/1' },
-        { title: 'Teammate 2 View', path: '/home/inbox/teammates/2' },
-        { title: 'Teammate 3 View', path: '/home/inbox/teammates/3' },
-      ]
-    }
-  ],
-  contacts: [
-    {
-      title: 'Contacts',
-      icon: Users,
-      children: [
-        { title: 'All Contacts', path: '/home/contacts/all' },
-        { title: 'Visitors', path: '/home/contacts/visitors' },
-        { title: 'Customers', path: '/home/contacts/customers' }
-      ]
-    },
-    { title: 'Companies', icon: Building2, path: '/home/contacts/companies' }
-  ],
-  automation: [
-    {
-      title: 'AI',
-      icon: BrainCircuit,
-      children: [
-        { title: 'Content Center', path: '/home/automation/ai/content-center' },
-        { title: 'Chatbot Profiles', path: '/home/automation/ai/chatbot-profiles' },
-        { title: 'Action Center', path: '/home/automation/ai/action-center' },
+      title: 'Channels',
+      subItems: [
         {
-          title: 'Bot Inboxes',
-          children: [
-            { title: 'Bot 1 Inbox', path: '/home/automation/ai/bot-inboxes/1' },
-            { title: 'Bot 2 Inbox', path: '/home/automation/ai/bot-inboxes/2' },
-            { title: 'Bot 3 Inbox', path: '/home/automation/ai/bot-inboxes/3' }
-          ]
+          title: 'All Tickets',
+          path: '/home/inbox/all',
+          key: 'all'
         },
-        { title: 'Copilot', path: '/home/automation/ai/copilot' }
+        {
+          title: 'Your Inbox',
+          path: '/home/inbox/your-inbox',
+          key: 'your-inbox'
+        },
+        {
+          title: 'Unassigned',
+          path: '/home/inbox/unassigned',
+          key: 'unassigned'
+        },
+        {
+          title: 'Mentions',
+          path: '/home/inbox/mentions',
+          key: 'mentions'
+        }
       ]
     },
-    { title: 'Workflows', icon: Activity, path: '/home/automation/workflows' },
-    { title: 'Workflow Templates', icon: ScrollText, path: '/home/automation/workflow-templates' }
-  ],
-  reporting: [
-    { title: 'Dashboard', icon: BarChart, path: '/home/reporting/dashboard' },
     {
-      title: 'Reports',
-      icon: FileSpreadsheet,
-      children: [
-        { title: 'Report 1', path: '/home/reporting/reports/1' },
-        { title: 'Report 2', path: '/home/reporting/reports/2' },
-        { title: 'Report 3', path: '/home/reporting/reports/3' }
-      ]
-    },
-    {
-      title: 'Custom Reports',
-      icon: FileSpreadsheet,
-      children: [
-        { title: 'Custom Report 1', path: '/home/reporting/custom/1' },
-        { title: 'Custom Report 2', path: '/home/reporting/custom/2' },
-        { title: 'Custom Report 3', path: '/home/reporting/custom/3' }
+      title: 'Channels',
+      subItems: [
+        {
+          title: 'Email',
+          path: '/home/inbox/channel/email',
+          key: 'email'
+        },
+        {
+          title: 'Chat',
+          path: '/home/inbox/channel/chat',
+          key: 'chat'
+        }
       ]
     }
   ],
   settings: [
-    { title: 'Teammates', icon: UserCog, path: '/home/settings/teammates' },
-    { title: 'Teams', icon: Users, path: '/home/settings/teams' },
-    { title: 'Chat', icon: MessagesSquare, path: '/home/settings/chat' },
     {
-      title: 'Email',
-      icon: Mail,
-      children: [
-        { title: 'Domains', path: '/home/settings/email/domains' },
-        { title: 'Manage Channels', path: '/home/settings/email/channels' }
+      title: 'Team',
+      subItems: [
+        {
+          title: 'Teammates',
+          path: '/home/settings/teammates',
+          key: 'teammates'
+        },
+        {
+          title: 'Teams',
+          path: '/home/settings/teams',
+          key: 'teams'
+        }
       ]
     },
-    { title: 'Custom Objects', icon: Database, path: '/home/settings/custom-objects' },
-    { title: 'Custom Data', icon: Database, path: '/home/settings/custom-data' },
-    { title: 'Tags', icon: Tags, path: '/home/settings/tags' },
-    { title: 'Topics', icon: MessageCircle, path: '/home/settings/topics' },
-    { title: 'Canned Responses', icon: Reply, path: '/home/settings/canned-responses' },
-    { title: 'Sentiment', icon: Activity, path: '/home/settings/sentiment' },
-    { title: 'AutoQA', icon: Brain, path: '/home/settings/autoqa' },
-    { title: 'Auto Reply', icon: Reply, path: '/home/settings/auto-reply' }
+    {
+      title: 'Workspace',
+      subItems: [
+        {
+          title: 'Tags',
+          path: '/home/settings/tags',
+          key: 'tags'
+        },
+        {
+          title: 'Custom Data',
+          path: '/home/settings/custom-data',
+          key: 'custom-data'
+        },
+        {
+          title: 'Canned Responses',
+          path: '/home/settings/canned-responses',
+          key: 'canned-responses'
+        }
+      ]
+    }
+  ],
+  automation: [
+    {
+      title: 'AI',
+      subItems: [
+        {
+          title: 'Content',
+          path: '/home/automation/ai/content',
+          key: 'content'
+        },
+        {
+          title: 'Chatbot Profiles',
+          path: '/home/automation/ai/chatbot-profiles',
+          key: 'chatbot-profiles'
+        },
+        {
+          title: 'Actions',
+          path: '/home/automation/ai/actions',
+          key: 'actions'
+        }
+      ]
+    },
+    {
+      title: 'Workflow',
+      subItems: [
+        {
+          title: 'Rules',
+          path: '/home/automation/workflow/rules',
+          key: 'rules'
+        },
+        {
+          title: 'Triggers',
+          path: '/home/automation/workflow/triggers',
+          key: 'triggers'
+        }
+      ]
+    }
   ]
 };
