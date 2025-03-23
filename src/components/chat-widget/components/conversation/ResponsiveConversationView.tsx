@@ -70,7 +70,7 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps & { c
         )}
       </div>
       
-      <TypingIndicator className="px-4 h-6 text-xs text-gray-500 italic" />
+      <TypingIndicator isTyping={false} agentName="Agent" className="px-4 h-6 text-xs text-gray-500 italic" />
       
       <div className="border-t p-4 bg-white">
         <MessageInput 

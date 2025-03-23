@@ -51,9 +51,10 @@ export const subscribeToPresence = (
 ): (() => void) => {
   const channelName = getWorkspaceChannelName(workspaceId, `conversations:${conversationId}`);
   
-  let enterSubscription: Ably.Types.PresenceListener | null = null;
-  let leaveSubscription: Ably.Types.PresenceListener | null = null;
-  let updateSubscription: Ably.Types.PresenceListener | null = null;
+  // Using Function type since PresenceListener isn't exported by Ably
+  let enterSubscription: Function | null = null;
+  let leaveSubscription: Function | null = null;
+  let updateSubscription: Function | null = null;
   
   // Set up subscriptions asynchronously
   const setup = async () => {

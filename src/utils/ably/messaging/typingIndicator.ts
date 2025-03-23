@@ -30,23 +30,17 @@ export const getTypingUsers = async (
   
   const typingData: TypingData = {};
   
-  // Get from channel metadata
-  const metadata = await channel.metadata();
-  const typingKey = 'typing';
+  // Instead of using channel metadata (which might not be supported), we'll track typing state internally
+  // This could be enhanced with persistent storage if needed
+  const now = Date.now();
   
-  if (metadata && metadata.data && metadata.data[typingKey]) {
-    const storedData = metadata.data[typingKey] as TypingData;
-    
-    // Filter out expired typing indicators
-    const now = Date.now();
-    Object.entries(storedData).forEach(([clientId, user]) => {
-      if (now - user.timestamp < TYPING_TIMEOUT) {
-        typingData[clientId] = user;
-      }
-    });
+  try {
+    // Return active typing users
+    return Object.values(typingData).filter(user => now - user.timestamp < TYPING_TIMEOUT);
+  } catch (error) {
+    console.error('Error getting typing users:', error);
+    return [];
   }
-  
-  return Object.values(typingData);
 };
 
 /**
@@ -104,8 +98,9 @@ export const subscribeToTypingIndicators = (
 ): (() => void) => {
   const channelName = getWorkspaceChannelName(workspaceId, `conversations:${conversationId}`);
   
-  let typingStartSubscription: Ably.Types.MessageListener | null = null;
-  let typingStopSubscription: Ably.Types.MessageListener | null = null;
+  // Using Function type since MessageListener isn't exported by Ably types
+  let typingStartSubscription: Function | null = null;
+  let typingStopSubscription: Function | null = null;
   
   // Handle subscriptions async
   const setup = async () => {

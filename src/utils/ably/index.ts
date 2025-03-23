@@ -5,11 +5,17 @@
 import * as Ably from 'ably';
 import { v4 as uuidv4 } from 'uuid';
 
-// Re-export from services
+// Re-export from services without conflict
 export * from './conversationService';
 export * from './messageService';
-export * from './presenceService';
-export * from './messaging/index';
+
+// Re-export with namespace to avoid conflicts
+import * as presenceService from './presenceService';
+export { presenceService };
+
+// Re-export with namespace to avoid conflicts
+import * as messaging from './messaging/index';
+export { messaging };
 
 // Ably API key - this is a client key which is safe to expose
 const ABLY_API_KEY = "X4jpaA.kKXoZg:oEr5R_kjKk06Wk0iilgK_rGAE9hbFjQMU8wYoE_BnEc";
