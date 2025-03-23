@@ -1,7 +1,8 @@
 
 import { useState, useEffect } from 'react';
-import { Ticket, Message, Customer, stringToCustomer } from '@/types/ticket';
-import { subscribeToChannel } from '@/utils/ably';
+import { Ticket, Message as TicketMessage, Customer, stringToCustomer, TeamMember } from '@/types/ticket';
+import { subscribeToChannel, publishToChannel } from '@/utils/ably';
+import { Message, adaptMessage, adaptActiveUsers } from '../types';
 
 // Define the initial empty state
 const initialMessages: Message[] = [];
@@ -10,6 +11,7 @@ interface CustomerInfo {
   id: string;
   name: string;
   company?: string;
+  type: 'customer';
 }
 
 export const useConversation = (ticket: Ticket | null) => {
@@ -36,37 +38,46 @@ export const useConversation = (ticket: Ticket | null) => {
     // Simulate loading message history
     const timer = setTimeout(() => {
       // In a real app, you'd fetch messages from an API
-      setMessages([
+      const initialMsgs: Message[] = [
         {
           id: `msg-${Date.now()}-1`,
           ticketId: ticket.id,
           content: ticket.lastMessage,
           sender: getCustomerInfo(),
           timestamp: ticket.createdAt,
-          isInternalNote: false,
-          attachments: []
+          isInternalNote: false
         },
         {
           id: `msg-${Date.now()}-2`,
           ticketId: ticket.id,
           content: "Thank you for reaching out. I'll look into this for you right away.",
-          sender: ticket.assignee || { id: 'system', name: 'Support Agent', type: 'agent' },
+          sender: ticket.assignee || { 
+            id: 'system', 
+            name: 'Support Agent', 
+            type: 'agent' as const 
+          },
           timestamp: new Date(new Date(ticket.createdAt).getTime() + 30000).toISOString(),
-          isInternalNote: false,
-          attachments: []
+          isInternalNote: false
         }
-      ]);
+      ];
+      setMessages(initialMsgs);
       setIsLoading(false);
     }, 1000);
 
     // Set up real-time updates
-    const cleanup = subscribeToChannel(`ticket:${ticket.id}`, 'message', (message) => {
-      if (message.name === 'message') {
-        setMessages(prev => [...prev, message.data]);
-      } else if (message.name === 'typing') {
-        handleTypingEvent(message.data);
-      }
-    });
+    let cleanup: (() => void) | undefined;
+    
+    const setupRealtimeUpdates = async () => {
+      cleanup = await subscribeToChannel(`ticket:${ticket.id}`, 'message', (message) => {
+        if (message.name === 'message') {
+          setMessages(prev => [...prev, adaptMessage(message.data)]);
+        } else if (message.name === 'typing') {
+          handleTypingEvent(message.data);
+        }
+      });
+    };
+    
+    setupRealtimeUpdates();
     
     return () => {
       clearTimeout(timer);
@@ -77,7 +88,7 @@ export const useConversation = (ticket: Ticket | null) => {
   }, [ticket]);
 
   // Helper to get customer info in a standardized way
-  function getCustomerInfo(): any {
+  function getCustomerInfo(): CustomerInfo {
     if (!ticket) return { id: 'unknown', name: 'Unknown Customer', type: 'customer' };
     
     const customer = typeof ticket.customer === 'string' 
@@ -106,7 +117,7 @@ export const useConversation = (ticket: Ticket | null) => {
       timestamp: new Date().toISOString()
     };
     
-    subscribeToChannel(`ticket:${ticket.id}`, 'typing', event);
+    publishToChannel(`ticket:${ticket.id}`, 'typing', event);
   };
 
   // Process incoming typing events
@@ -139,7 +150,11 @@ export const useConversation = (ticket: Ticket | null) => {
         id: `msg-${Date.now()}`,
         ticketId: ticket?.id || '',
         content: newMessage,
-        sender: ticket?.assignee || { id: 'agent', name: 'Support Agent', type: 'agent' },
+        sender: ticket?.assignee || { 
+          id: 'agent', 
+          name: 'Support Agent', 
+          type: 'agent' as const 
+        },
         timestamp: new Date().toISOString(),
         isInternalNote,
         attachments: []

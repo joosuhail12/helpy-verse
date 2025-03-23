@@ -1,7 +1,8 @@
 
 import { useState } from 'react';
-import { Ticket, Message, Customer, stringToCustomer, TeamMember, stringToTeamMember } from '@/types/ticket';
+import { Ticket, Message as TicketMessage, Customer, stringToCustomer, TeamMember, stringToTeamMember } from '@/types/ticket';
 import { publishToChannel } from '@/utils/ably';
+import { Message } from '../types';
 
 export const useMessages = (ticket: Ticket) => {
   const [isSending, setIsSending] = useState(false);
@@ -14,7 +15,6 @@ export const useMessages = (ticket: Ticket) => {
         id: 'unknown', 
         name: 'Unknown Customer', 
         email: '', 
-        createdAt: new Date().toISOString() 
       };
     }
     if (typeof ticket.customer === 'string') {
@@ -37,13 +37,22 @@ export const useMessages = (ticket: Ticket) => {
     setIsSending(true);
     try {
       const customer = getCustomer();
+      const assignee = getAssignee();
       
       // Create a message object
       const newMessage: Message = {
         id: `msg-${Date.now()}`,
         ticketId: ticket.id,
         content,
-        sender: getAssignee() || stringToTeamMember('Support Agent'),
+        sender: assignee ? {
+          id: assignee.id || 'agent',
+          name: assignee.name,
+          type: 'agent' as const
+        } : {
+          id: 'agent',
+          name: 'Support Agent',
+          type: 'agent' as const
+        },
         timestamp: new Date().toISOString(),
         isInternalNote,
         attachments: attachments.map(file => ({

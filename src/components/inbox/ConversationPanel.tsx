@@ -10,6 +10,7 @@ import CustomerContextPanel from './CustomerContextPanel';
 import { useConversation } from './hooks/useConversation';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from "@/lib/utils";
+import { adaptMessage, adaptActiveUsers } from './types';
 import { 
   ResizablePanelGroup, 
   ResizablePanel, 
@@ -18,11 +19,11 @@ import {
 
 const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
   const {
-    messages,
+    messages: rawMessages,
     newMessage,
     setNewMessage,
     typingUsers,
-    activeUsers,
+    activeUsers: rawActiveUsers,
     handleSendMessage,
     handleTyping,
     isLoading,
@@ -31,6 +32,12 @@ const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
     isInternalNote,
     setIsInternalNote
   } = useConversation(ticket);
+  
+  // Convert activeUsers from string[] to UserPresence[]
+  const activeUsers = adaptActiveUsers(rawActiveUsers || []);
+  
+  // Adapt messages to ensure they match the expected Message type
+  const messages = rawMessages.map(message => adaptMessage(message));
   
   const isMobile = useIsMobile();
 
