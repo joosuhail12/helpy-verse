@@ -40,34 +40,52 @@ const CreateTicketForm = () => {
       />
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FormItem>
-          <FormLabel>Customer Name</FormLabel>
-          <Input 
-            placeholder="Customer name" 
-            {...form.register("customerName")} 
-          />
-          <FormMessage>{form.formState.errors.customerName?.message}</FormMessage>
-        </FormItem>
+        <FormField
+          control={form.control}
+          name="customer"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Customer Name</FormLabel>
+              <FormControl>
+                <Input placeholder="Customer name" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         
-        <FormItem>
-          <FormLabel>Company</FormLabel>
-          <Input 
-            placeholder="Company name" 
-            {...form.register("companyName")} 
-          />
-          <FormMessage>{form.formState.errors.companyName?.message}</FormMessage>
-        </FormItem>
+        <FormField
+          control={form.control}
+          name="company"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Company</FormLabel>
+              <FormControl>
+                <Input placeholder="Company name" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
       </div>
       
-      <FormItem>
-        <FormLabel>Description</FormLabel>
-        <Textarea 
-          placeholder="Ticket description" 
-          className="min-h-[120px]" 
-          {...form.register("messageContent")}
-        />
-        <FormMessage>{form.formState.errors.messageContent?.message}</FormMessage>
-      </FormItem>
+      <FormField
+        control={form.control}
+        name="description"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Description</FormLabel>
+            <FormControl>
+              <Textarea 
+                placeholder="Ticket description" 
+                className="min-h-[120px]" 
+                {...field}
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormField
@@ -123,7 +141,7 @@ const CreateTicketForm = () => {
       
       <FormField
         control={form.control}
-        name="ticketTags"
+        name="tags"
         render={({ field }) => (
           <FormItem>
             <FormLabel>Tags</FormLabel>

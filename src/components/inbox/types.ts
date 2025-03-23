@@ -37,6 +37,6 @@ export interface Message {
 }
 
 export interface ConversationPanelProps {
-  ticket: Ticket;
+  ticket: import('@/types/ticket').Ticket;
   onClose: () => void;
 }

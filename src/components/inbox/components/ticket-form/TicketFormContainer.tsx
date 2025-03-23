@@ -3,6 +3,7 @@ import { useState } from 'react';
 import TicketForm from './TicketForm';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import type { TeamMember } from '@/types/ticket';
+import type { EmailChannel } from '@/types/emailChannel';
 
 // Mock data until we have actual state
 const mockTeamMembers: TeamMember[] = [
@@ -32,18 +33,34 @@ const mockTeamMembers: TeamMember[] = [
   },
 ];
 
-const mockEmailChannels = [
+const mockEmailChannels: EmailChannel[] = [
   {
     id: '1',
-    name: 'Support',
+    channelName: 'Support',
+    senderName: 'Support Team',
     email: 'support@example.com',
-    isVerified: true
+    type: 'both',
+    createdAt: new Date().toISOString(),
+    allowAgentConversations: true,
+    useAgentNames: true,
+    useOriginalSender: false,
+    isActive: true,
+    isVerified: true,
+    name: 'Support'
   },
   {
     id: '2',
-    name: 'Sales',
+    channelName: 'Sales',
+    senderName: 'Sales Team',
     email: 'sales@example.com',
-    isVerified: true
+    type: 'both',
+    createdAt: new Date().toISOString(),
+    allowAgentConversations: true,
+    useAgentNames: true,
+    useOriginalSender: false,
+    isActive: true,
+    isVerified: true,
+    name: 'Sales'
   }
 ];
 
