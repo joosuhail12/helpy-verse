@@ -19,7 +19,8 @@ export const mockEmailChannels: EmailChannel[] = [
     noReplyEmail: 'no-reply@example.com',
     icon: '📧',
     isDefault: true,
-    updatedAt: '2024-03-15T14:30:00Z'
+    updatedAt: '2024-03-15T14:30:00Z',
+    domainStatus: 'verified'
   },
   {
     id: 'channel-2',
@@ -27,7 +28,7 @@ export const mockEmailChannels: EmailChannel[] = [
     channelName: 'Sales Inquiries',
     senderName: 'Sales Team',
     email: 'sales@example.com',
-    type: 'outbound',
+    type: 'outgoing',
     createdAt: '2024-03-05T09:15:00Z',
     isActive: true,
     isVerified: true,
@@ -41,7 +42,7 @@ export const mockEmailChannels: EmailChannel[] = [
     channelName: 'Technical Support',
     senderName: 'Tech Support',
     email: 'tech@example.com',
-    type: 'inbound',
+    type: 'incoming',
     createdAt: '2024-03-10T14:20:00Z',
     isActive: true,
     isVerified: true,

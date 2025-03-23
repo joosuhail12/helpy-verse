@@ -1,75 +1,74 @@
 
-import { Button } from "@/components/ui/button";
-import { Filter } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-export const FilterBar = () => {
+export interface FilterBarProps {
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+  statusFilter: string;
+  setStatusFilter: (status: string) => void;
+  priorityFilter: string;
+  setPriorityFilter: (priority: string) => void;
+}
+
+export const FilterBar = ({
+  searchQuery,
+  setSearchQuery,
+  statusFilter,
+  setStatusFilter,
+  priorityFilter,
+  setPriorityFilter
+}: FilterBarProps) => {
   return (
-    <div className="flex space-x-2 items-center">
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button variant="outline" size="sm" className="h-8">
-            <Filter className="h-4 w-4 mr-2" />
-            Filter
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-80">
-          <div className="space-y-4">
-            <div>
-              <h4 className="font-medium mb-2">Status</h4>
-              <div className="flex flex-wrap gap-2">
-                <Badge variant="outline" className="cursor-pointer">Open</Badge>
-                <Badge variant="outline" className="cursor-pointer">Pending</Badge>
-                <Badge variant="outline" className="cursor-pointer">Closed</Badge>
-                <Badge variant="outline" className="cursor-pointer">Resolved</Badge>
-              </div>
-            </div>
-            
-            <div>
-              <h4 className="font-medium mb-2">Priority</h4>
-              <div className="flex flex-wrap gap-2">
-                <Badge variant="outline" className="cursor-pointer">Low</Badge>
-                <Badge variant="outline" className="cursor-pointer">Medium</Badge>
-                <Badge variant="outline" className="cursor-pointer">High</Badge>
-                <Badge variant="outline" className="cursor-pointer">Urgent</Badge>
-              </div>
-            </div>
-            
-            <div>
-              <h4 className="font-medium mb-2">Assignee</h4>
-              <div className="flex flex-wrap gap-2">
-                <Badge variant="outline" className="cursor-pointer">Unassigned</Badge>
-                <Badge variant="outline" className="cursor-pointer">Me</Badge>
-                <Badge variant="outline" className="cursor-pointer">My Team</Badge>
-              </div>
-            </div>
-            
-            <div className="pt-2 flex justify-between">
-              <Button variant="outline" size="sm">
-                Clear All
-              </Button>
-              <Button size="sm">
-                Apply Filters
-              </Button>
-            </div>
-          </div>
-        </PopoverContent>
-      </Popover>
-      
-      <div className="hidden md:flex space-x-2">
-        <Badge variant="outline" className="cursor-pointer bg-blue-50">
-          Status: Open
-          <button className="ml-1 text-gray-500 hover:text-gray-700">×</button>
-        </Badge>
-        <Badge variant="outline" className="cursor-pointer bg-blue-50">
-          Priority: High
-          <button className="ml-1 text-gray-500 hover:text-gray-700">×</button>
-        </Badge>
+    <div className="flex flex-col md:flex-row gap-3">
+      <div className="flex-1 relative">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+        <Input
+          placeholder="Search by subject, customer or company..."
+          className="pl-10"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+      </div>
+      <div className="flex flex-wrap gap-3">
+        <Select 
+          value={statusFilter} 
+          onValueChange={setStatusFilter}
+        >
+          <SelectTrigger className="min-w-32">
+            <SelectValue placeholder="Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Status</SelectItem>
+            <SelectItem value="open">Open</SelectItem>
+            <SelectItem value="pending">Pending</SelectItem>
+            <SelectItem value="closed">Closed</SelectItem>
+            <SelectItem value="resolved">Resolved</SelectItem>
+          </SelectContent>
+        </Select>
+        
+        <Select 
+          value={priorityFilter} 
+          onValueChange={setPriorityFilter}
+        >
+          <SelectTrigger className="min-w-32">
+            <SelectValue placeholder="Priority" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Priorities</SelectItem>
+            <SelectItem value="urgent">Urgent</SelectItem>
+            <SelectItem value="high">High</SelectItem>
+            <SelectItem value="medium">Medium</SelectItem>
+            <SelectItem value="low">Low</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
     </div>
   );

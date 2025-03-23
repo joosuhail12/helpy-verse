@@ -63,7 +63,7 @@ const EmailChannelSelect = ({
       channelName: 'No-Reply',
       senderName: 'Notifications',
       email: 'no-reply@example.com',
-      type: 'outbound' as const,
+      type: 'outgoing' as const,
       createdAt: new Date().toISOString(),
       isActive: true,
       isVerified: true,
@@ -77,8 +77,8 @@ const EmailChannelSelect = ({
   const getChannelIcon = (channel: EmailChannel) => {
     if (!channel.isVerified) return <MailX className="h-4 w-4 text-destructive" />;
     
-    if (channel.type === 'inbound') return <Mail className="h-4 w-4 text-blue-500" />;
-    if (channel.type === 'outbound') return <Mail className="h-4 w-4 text-green-500" />;
+    if (channel.type === 'incoming') return <Mail className="h-4 w-4 text-blue-500" />;
+    if (channel.type === 'outgoing') return <Mail className="h-4 w-4 text-green-500" />;
     return <Mail className="h-4 w-4 text-purple-500" />;
   };
 

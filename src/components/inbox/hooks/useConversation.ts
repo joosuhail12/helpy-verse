@@ -1,161 +1,109 @@
-
-import { useState, useEffect, useCallback } from 'react';
-import { useToast } from "@/hooks/use-toast";
+import { useState, useEffect } from 'react';
 import { 
-  getAblyChannel, 
-  subscribeToChannel,
-  publishToChannel,
-  monitorTypingIndicators,
-  updateTypingStatus
-} from '@/utils/ably';
-import type { Message, UserPresence } from '../types';
-import type { Ticket } from '@/types/ticket';
+  Ticket, 
+  Message, 
+  stringToCustomer,
+  Customer,
+  TeamMember,
+  Company,
+  stringToCompany,
+  stringToTeamMember
+} from '@/types/ticket';
+import { getAblyChannel, subscribeToChannel, publishToChannel } from '@/utils/ably';
 
 export const useConversation = (ticket: Ticket) => {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [newMessage, setNewMessage] = useState('');
-  const [isSending, setIsSending] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [isInternalNote, setIsInternalNote] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [typingUsers, setTypingUsers] = useState<string[]>([]);
-  const [activeUsers, setActiveUsers] = useState<UserPresence[]>([]);
-  const { toast } = useToast();
+  const [isTyping, setIsTyping] = useState(false);
+  const [typingUser, setTypingUser] = useState<string | null>(null);
+  
+  // Helper functions to ensure we're working with Customer/Company/TeamMember objects, not strings
+  const getCustomer = (): Customer => {
+    if (typeof ticket.customer === 'string') {
+      return stringToCustomer(ticket.customer);
+    }
+    return ticket.customer;
+  };
 
-  // Load initial messages and set up real-time subscriptions
+  const getCompany = (): Company => {
+    if (typeof ticket.company === 'string') {
+      return stringToCompany(ticket.company);
+    }
+    return ticket.company;
+  };
+
+  const getAssignee = (): TeamMember | null => {
+    if (!ticket.assignee) return null;
+    if (typeof ticket.assignee === 'string') {
+      return stringToTeamMember(ticket.assignee);
+    }
+    return ticket.assignee;
+  };
+
   useEffect(() => {
+    // Load initial messages
     const loadMessages = async () => {
       setIsLoading(true);
       try {
-        // Initialize with the ticket's last message
-        setMessages([{
-          id: `initial-${ticket.id}`,
-          content: ticket.lastMessage || '',
-          text: ticket.lastMessage || '',
-          sender: {
-            id: ticket.customer.id,
-            name: ticket.customer.name,
-            type: 'customer'
+        // In a real app, we'd fetch messages from an API
+        // For now, generate a fake conversation
+        const customer = getCustomer();
+        const mockMessages: Message[] = [
+          {
+            id: '1',
+            ticketId: ticket.id,
+            content: ticket.lastMessage,
+            sender: customer,
+            timestamp: ticket.createdAt,
+            attachments: []
           },
-          timestamp: ticket.createdAt,
-          isCustomer: true,
-          readBy: []
-        }]);
-
-        // Get channel for this ticket
-        const channel = await getAblyChannel(`ticket:${ticket.id}`);
+          {
+            id: '2',
+            ticketId: ticket.id,
+            content: `Hello ${customer.name}, thanks for reaching out. I'll be helping you with this issue today.`,
+            sender: getAssignee() || stringToTeamMember('Support Agent'),
+            timestamp: new Date(new Date(ticket.createdAt).getTime() + 30 * 60000).toISOString(),
+            attachments: []
+          }
+        ];
         
-        // Subscribe to new messages
-        const messageUnsub = await subscribeToChannel(
-          `ticket:${ticket.id}`,
-          'new-message',
-          (msg) => {
-            setMessages(prev => [...prev, msg.data]);
-          }
-        );
-
-        // Subscribe to typing indicators
-        const typingUnsub = await monitorTypingIndicators(
-          `ticket:${ticket.id}`,
-          (users) => {
-            setTypingUsers(users);
-          }
-        );
-
-        // Subscribe to presence updates
-        const presenceUnsub = await subscribeToChannel(
-          `ticket:${ticket.id}`,
-          'presence',
-          (msg) => {
-            setActiveUsers(msg.data);
-          }
-        );
-
-        setIsLoading(false);
-        setError(null);
-
-        // Cleanup subscriptions when component unmounts
-        return () => {
-          messageUnsub();
-          typingUnsub();
-          presenceUnsub();
-        };
+        setMessages(mockMessages);
       } catch (error) {
-        console.error('Error loading messages:', error);
-        setError('Failed to load conversation. Please try again.');
+        console.error("Error loading messages:", error);
+      } finally {
         setIsLoading(false);
       }
     };
-
+    
     loadMessages();
-  }, [ticket.id, ticket.lastMessage, ticket.customer, ticket.createdAt]);
-
-  // Send a message
-  const handleSendMessage = useCallback(async () => {
-    if (!newMessage.trim()) return;
-
-    setIsSending(true);
-    try {
-      const messageData: Message = {
-        id: crypto.randomUUID(),
-        content: newMessage,
-        text: newMessage,
-        sender: {
-          id: 'agent-id',
-          name: 'Agent',
-          type: 'agent'
-        },
-        timestamp: new Date().toISOString(),
-        isCustomer: false,
-        type: isInternalNote ? 'internal_note' : 'message',
-        readBy: ['Agent']
-      };
-
-      // Publish the message to the ticket channel
-      await publishToChannel(`ticket:${ticket.id}`, 'new-message', messageData);
-      
-      // Optimistically add to local state
-      setMessages(prev => [...prev, messageData]);
-      setNewMessage('');
-      setIsInternalNote(false);
-      
-      toast({
-        description: isInternalNote ? "Internal note added" : "Message sent successfully",
-      });
-    } catch (error) {
-      console.error('Error sending message:', error);
-      toast({
-        variant: "destructive",
-        description: "Failed to send message. Please try again.",
-      });
-    } finally {
-      setIsSending(false);
-    }
-  }, [newMessage, isInternalNote, ticket.id, toast]);
-
-  // Handle typing indicator
-  const handleTyping = useCallback(async () => {
-    try {
-      await updateTypingStatus(`ticket:${ticket.id}`, 'agent-id', true);
-    } catch (error) {
-      console.error('Error updating typing status:', error);
-    }
+    
+    // Set up Ably real-time channel for this ticket
+    const channelName = `ticket:${ticket.id}`;
+    const cleanup = subscribeToChannel(channelName, 'message', (message: any) => {
+      setMessages(prev => [...prev, message.data]);
+    });
+    
+    return () => {
+      cleanup();
+    };
   }, [ticket.id]);
+
+  const handleTyping = (user: string) => {
+    setIsTyping(true);
+    setTypingUser(user);
+    
+    // Clear typing status after 3 seconds
+    setTimeout(() => {
+      setIsTyping(false);
+      setTypingUser(null);
+    }, 3000);
+  };
 
   return {
     messages,
-    newMessage,
-    setNewMessage,
-    typingUsers,
-    activeUsers,
-    handleSendMessage,
-    handleTyping,
     isLoading,
-    error,
-    isSending,
-    isInternalNote,
-    setIsInternalNote
+    isTyping,
+    typingUser,
+    handleTyping
   };
 };
-
-export default useConversation;

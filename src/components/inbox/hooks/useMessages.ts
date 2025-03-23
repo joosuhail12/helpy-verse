@@ -1,81 +1,79 @@
 
 import { useState } from 'react';
-import { useToast } from "@/hooks/use-toast";
+import { Ticket, Message, Customer, stringToCustomer, TeamMember, stringToTeamMember } from '@/types/ticket';
 import { publishToChannel } from '@/utils/ably';
-import type { Message } from '../types';
-import type { Ticket } from '@/types/ticket';
 
 export const useMessages = (ticket: Ticket) => {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [newMessage, setNewMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
-  const [isInternalNote, setIsInternalNote] = useState(false);
-  const { toast } = useToast();
+  const [attachments, setAttachments] = useState<File[]>([]);
 
-  const initializeMessages = () => {
-    setMessages([{
-      id: ticket.id,
-      content: ticket.lastMessage || '',
-      text: ticket.lastMessage || '',
-      sender: {
-        id: ticket.customer.id,
-        name: ticket.customer.name,
-        type: 'customer'
-      },
-      timestamp: ticket.createdAt,
-      isCustomer: true,
-      readBy: []
-    }]);
+  // Helper function to ensure we're working with proper Customer object
+  const getCustomer = (): Customer => {
+    if (typeof ticket.customer === 'string') {
+      return stringToCustomer(ticket.customer);
+    }
+    return ticket.customer;
   };
 
-  const handleSendMessage = async () => {
-    if (!newMessage.trim()) return;
+  const getAssignee = (): TeamMember | null => {
+    if (!ticket.assignee) return null;
+    if (typeof ticket.assignee === 'string') {
+      return stringToTeamMember(ticket.assignee);
+    }
+    return ticket.assignee;
+  };
 
+  const sendMessage = async (content: string, isInternalNote: boolean = false): Promise<Message | null> => {
+    if (!content.trim() && attachments.length === 0) return null;
+    
     setIsSending(true);
     try {
-      const newMsg: Message = {
-        id: crypto.randomUUID(),
-        content: newMessage,
-        text: newMessage,
-        sender: {
-          id: 'agent',
-          name: 'Agent',
-          type: 'agent'
-        },
+      // Create a message object
+      const newMessage: Message = {
+        id: `msg-${Date.now()}`,
+        ticketId: ticket.id,
+        content,
+        sender: getAssignee() || stringToTeamMember('Support Agent'),
         timestamp: new Date().toISOString(),
-        isCustomer: false,
-        type: isInternalNote ? 'internal_note' : 'message',
-        readBy: ['Agent']
+        isInternalNote,
+        attachments: attachments.map(file => ({
+          id: `att-${Date.now()}-${file.name}`,
+          name: file.name,
+          url: URL.createObjectURL(file),
+          type: file.type,
+          size: file.size
+        }))
       };
-
-      await publishToChannel(`ticket:${ticket.id}`, 'new-message', newMsg);
-      setMessages(prev => [...prev, newMsg]);
-      setNewMessage('');
-      setIsInternalNote(false);
       
-      toast({
-        description: isInternalNote ? "Internal note added" : "Message sent successfully",
-      });
+      // In a real app, we'd send this to an API
+      // For now, we'll simulate by publishing to the Ably channel
+      await publishToChannel(`ticket:${ticket.id}`, 'message', newMessage);
+      
+      // Clear attachments after sending
+      setAttachments([]);
+      
+      return newMessage;
     } catch (error) {
-      console.error('Error sending message:', error);
-      toast({
-        variant: "destructive",
-        description: "Failed to send message. Please try again.",
-      });
+      console.error("Error sending message:", error);
+      return null;
     } finally {
       setIsSending(false);
     }
   };
 
+  const addAttachment = (file: File) => {
+    setAttachments(prev => [...prev, file]);
+  };
+
+  const removeAttachment = (index: number) => {
+    setAttachments(prev => prev.filter((_, i) => i !== index));
+  };
+
   return {
-    messages,
-    setMessages,
-    newMessage,
-    setNewMessage,
+    sendMessage,
     isSending,
-    isInternalNote,
-    setIsInternalNote,
-    handleSendMessage,
-    initializeMessages
+    attachments,
+    addAttachment,
+    removeAttachment
   };
 };

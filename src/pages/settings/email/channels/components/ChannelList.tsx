@@ -1,3 +1,4 @@
+
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -40,9 +41,9 @@ export function ChannelList({
   
   const getTypeLabel = (type: EmailChannel['type']) => {
     switch (type) {
-      case 'outbound':
+      case 'outgoing':
         return 'Sending Only';
-      case 'inbound':
+      case 'incoming':
         return 'Receiving Only';
       case 'both':
         return 'Sending & Receiving';
@@ -51,8 +52,8 @@ export function ChannelList({
 
   const getTypeIcon = (type: EmailChannel['type']) => {
     switch (type) {
-      case 'outbound':
-      case 'inbound':
+      case 'outgoing':
+      case 'incoming':
         return <MessageCircle className="h-5 w-5" />;
       case 'both':
         return <Mail className="h-5 w-5" />;
