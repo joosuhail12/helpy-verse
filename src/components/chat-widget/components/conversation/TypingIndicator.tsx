@@ -1,43 +1,30 @@
+
 import React from 'react';
+import { useThemeContext } from '@/context/ThemeContext';
 
 interface TypingIndicatorProps {
-  typingUsers?: string[];
-  className?: string;
   agentName?: string;
 }
 
-const TypingIndicator: React.FC<TypingIndicatorProps> = ({ 
-  typingUsers = [], 
-  className = '',
-  agentName
-}) => {
-  // If we have an agentName, show that specific agent is typing
-  if (agentName) {
-    return (
-      <div className={className || "text-sm text-gray-400 italic"}>
-        {agentName} is typing
-        <span className="inline-block">
-          <span className="animate-pulse">.</span>
-          <span className="animate-pulse animation-delay-200">.</span>
-          <span className="animate-pulse animation-delay-400">.</span>
-        </span>
-      </div>
-    );
-  }
-
-  // Otherwise show standard typing indicator with multiple users support
-  if (typingUsers.length === 0) return null;
-
+const TypingIndicator: React.FC<TypingIndicatorProps> = ({ agentName = 'Agent' }) => {
+  const { colors } = useThemeContext();
+  
   return (
-    <div className={className || "text-sm text-gray-400 italic"}>
-      {typingUsers.length === 1 
-        ? `${typingUsers[0]} is typing...` 
-        : `${typingUsers.length} people are typing...`}
-      <span className="inline-block">
-        <span className="animate-pulse">.</span>
-        <span className="animate-pulse animation-delay-200">.</span>
-        <span className="animate-pulse animation-delay-400">.</span>
-      </span>
+    <div 
+      className="flex items-center mb-4"
+      style={{ color: colors.foreground }}
+    >
+      <div 
+        className="bg-gray-200 p-3 rounded-lg flex items-center"
+        style={{ backgroundColor: colors.agentMessage, color: colors.agentMessageText }}
+      >
+        <span className="text-sm mr-2">{agentName} is typing</span>
+        <div className="flex space-x-1">
+          <div className="w-2 h-2 rounded-full bg-current animate-pulse" style={{ animationDelay: '0ms' }}></div>
+          <div className="w-2 h-2 rounded-full bg-current animate-pulse" style={{ animationDelay: '200ms' }}></div>
+          <div className="w-2 h-2 rounded-full bg-current animate-pulse" style={{ animationDelay: '400ms' }}></div>
+        </div>
+      </div>
     </div>
   );
 };

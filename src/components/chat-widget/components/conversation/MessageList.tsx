@@ -1,51 +1,45 @@
 
-import React from 'react';
-import { ChatMessage } from './types';
+import React, { useEffect, useRef } from 'react';
+import { useChat } from '@/hooks/chat/useChat';
 import MessageItem from './MessageItem';
+import { useThemeContext } from '@/context/ThemeContext';
 
-export interface MessageListProps {
-  messages?: ChatMessage[];
-  isLoading?: boolean;
-  error?: Error | null;
-  conversationId?: string; // Add conversationId as an optional prop
+interface MessageListProps {
+  conversationId?: string;
 }
 
-const MessageList: React.FC<MessageListProps> = ({ 
-  messages = [], 
-  isLoading = false,
-  error = null,
-  conversationId 
-}) => {
-  if (error) {
-    return (
-      <div className="text-center text-red-500 py-8">
-        <p>Error loading messages: {error.message}</p>
-      </div>
-    );
-  }
+const MessageList: React.FC<MessageListProps> = ({ conversationId }) => {
+  const { colors } = useThemeContext();
+  const { messages } = useChat();
+  const endOfMessagesRef = useRef<HTMLDivElement>(null);
 
-  if (isLoading) {
-    return (
-      <div className="text-center text-gray-500 py-8">
-        <div className="animate-spin h-6 w-6 border-4 border-primary border-t-transparent rounded-full mx-auto mb-2"></div>
-        <p>Loading messages...</p>
-      </div>
-    );
-  }
+  // Scroll to bottom on new messages
+  useEffect(() => {
+    if (endOfMessagesRef.current) {
+      endOfMessagesRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
 
-  if (messages.length === 0) {
-    return (
-      <div className="text-center text-gray-500 py-8">
-        <p>No messages yet. Start a conversation!</p>
-      </div>
-    );
-  }
+  // Filter messages by conversation ID if provided
+  const filteredMessages = conversationId
+    ? messages.filter(msg => msg.conversationId === conversationId)
+    : messages;
 
   return (
-    <div className="space-y-3">
-      {messages.map((message) => (
-        <MessageItem key={message.id} message={message} />
-      ))}
+    <div className="space-y-4">
+      {filteredMessages.length === 0 ? (
+        <div 
+          className="text-center py-6 text-gray-500"
+          style={{ color: `${colors.foreground}88` }}
+        >
+          No messages yet. Start a conversation!
+        </div>
+      ) : (
+        filteredMessages.map((message) => (
+          <MessageItem key={message.id} message={message} />
+        ))
+      )}
+      <div ref={endOfMessagesRef} />
     </div>
   );
 };

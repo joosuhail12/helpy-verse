@@ -1,9 +1,9 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useChat } from '@/hooks/chat/useChat';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
-import TypingIndicator from './TypingIndicator';
+import { ChatMessage } from './types';
 
 interface ConversationViewProps {
   conversationId: string;
@@ -11,60 +11,56 @@ interface ConversationViewProps {
 }
 
 const ConversationView: React.FC<ConversationViewProps> = ({ conversationId, workspaceId }) => {
-  const { sendMessage, getMessages, loadingMessages, messages } = useChat();
-  const [messageText, setMessageText] = useState('');
+  const { sendMessage, getMessages, loadingMessages } = useChat();
   const [isSending, setIsSending] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
 
+  // Load messages for this conversation
   useEffect(() => {
-    getMessages(conversationId);
+    const fetchMessages = async () => {
+      if (conversationId) {
+        const conversationMessages = await getMessages(conversationId);
+        setMessages(conversationMessages);
+      }
+    };
+
+    fetchMessages();
   }, [conversationId, getMessages]);
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [loadingMessages, messages]);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  const handleSendMessage = async () => {
-    if (!messageText.trim() || isSending) return;
+  const handleSendMessage = async (messageText: string) => {
+    if (!messageText.trim()) return;
     
     setIsSending(true);
+    
+    // Add user message to UI immediately
+    const userMessage: ChatMessage = {
+      id: Date.now().toString(),
+      sender: 'user',
+      content: messageText,
+      timestamp: new Date(),
+      conversationId
+    };
+    
+    setMessages(prev => [...prev, userMessage]);
+    
     try {
       await sendMessage(conversationId, messageText);
-      setMessageText('');
-      setTimeout(scrollToBottom, 100);
     } catch (error) {
-      console.error('Error sending message:', error);
+      console.error('Failed to send message:', error);
     } finally {
       setIsSending(false);
     }
   };
 
   return (
-    <div className="flex flex-col h-full bg-black">
-      <div className="flex-1 overflow-y-auto px-4 py-3">
-        {loadingMessages ? (
-          <div className="flex justify-center items-center h-full">
-            <div className="animate-spin h-6 w-6 border-4 border-primary border-t-transparent rounded-full"></div>
-          </div>
-        ) : (
-          <>
-            <MessageList messages={messages} isLoading={loadingMessages} />
-            <div ref={messagesEndRef} />
-          </>
-        )}
+    <div className="flex flex-col h-full">
+      <div className="flex-1 overflow-y-auto p-4">
+        <MessageList conversationId={conversationId} />
       </div>
-      
-      <TypingIndicator className="px-4 py-1 text-sm text-gray-400 italic" />
       
       <MessageInput
         onSendMessage={handleSendMessage}
-        messageText={messageText}
-        setMessageText={setMessageText}
-        isSending={isSending}
+        isDisabled={isSending || loadingMessages}
       />
     </div>
   );

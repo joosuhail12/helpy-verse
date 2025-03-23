@@ -52,7 +52,6 @@ const MessageInput: React.FC<MessageInputProps> = ({
           backgroundColor: colors.inputBackground,
           borderColor: colors.border,
           color: colors.foreground,
-          focusBorderColor: colors.primary
         }}
         disabled={isDisabled}
       />

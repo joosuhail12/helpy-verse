@@ -1,10 +1,10 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChevronLeft } from 'lucide-react';
 import { useChat } from '@/hooks/chat/useChat';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
-import TypingIndicator from './TypingIndicator';
+import { ChatMessage } from './types';
 
 interface ResponsiveConversationViewProps {
   conversationId: string;
@@ -12,79 +12,74 @@ interface ResponsiveConversationViewProps {
   onBack: () => void;
 }
 
-const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({ 
-  conversationId, 
+const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
+  conversationId,
   workspaceId,
   onBack
 }) => {
-  const { sendMessage, getMessages, loadingMessages, conversations, messages } = useChat();
-  const [messageText, setMessageText] = useState('');
+  const { sendMessage, getMessages, loadingMessages } = useChat();
   const [isSending, setIsSending] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  
-  const conversation = conversations.find(c => c.id === conversationId);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
 
+  // Load messages for this conversation
   useEffect(() => {
-    getMessages(conversationId);
+    const fetchMessages = async () => {
+      if (conversationId) {
+        const conversationMessages = await getMessages(conversationId);
+        setMessages(conversationMessages);
+      }
+    };
+
+    fetchMessages();
   }, [conversationId, getMessages]);
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [loadingMessages, messages]);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  const handleSendMessage = async () => {
-    if (!messageText.trim() || isSending) return;
+  const handleSendMessage = async (messageText: string) => {
+    if (!messageText.trim()) return;
     
     setIsSending(true);
+    
+    // Add user message to UI immediately
+    const userMessage: ChatMessage = {
+      id: Date.now().toString(),
+      sender: 'user',
+      content: messageText,
+      timestamp: new Date(),
+      conversationId
+    };
+    
+    setMessages(prev => [...prev, userMessage]);
+    
     try {
       await sendMessage(conversationId, messageText);
-      setMessageText('');
-      setTimeout(scrollToBottom, 100);
     } catch (error) {
-      console.error('Error sending message:', error);
+      console.error('Failed to send message:', error);
     } finally {
       setIsSending(false);
     }
   };
 
   return (
-    <div className="flex flex-col h-full bg-black">
-      <div className="border-b border-gray-800 p-3 flex items-center">
+    <div className="flex flex-col h-full">
+      {/* Header */}
+      <div className="border-b p-3 flex items-center">
         <button 
           onClick={onBack}
-          className="p-1 mr-2 rounded-full hover:bg-gray-800 transition-colors"
+          className="p-1 mr-2 rounded-full hover:bg-gray-100 transition-colors"
         >
           <ChevronLeft size={20} />
         </button>
-        <h2 className="font-medium truncate">
-          {conversation?.title || "Conversation"}
-        </h2>
-      </div>
-
-      <div className="flex-1 overflow-y-auto px-4 py-3">
-        {loadingMessages ? (
-          <div className="flex justify-center items-center h-full">
-            <div className="animate-spin h-6 w-6 border-4 border-primary border-t-transparent rounded-full"></div>
-          </div>
-        ) : (
-          <>
-            <MessageList messages={messages} isLoading={loadingMessages} />
-            <div ref={messagesEndRef} />
-          </>
-        )}
+        <h2 className="font-medium">Conversation</h2>
       </div>
       
-      <TypingIndicator className="px-4 py-1 text-sm text-gray-400 italic" />
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto p-4">
+        <MessageList conversationId={conversationId} />
+      </div>
       
+      {/* Input */}
       <MessageInput
         onSendMessage={handleSendMessage}
-        messageText={messageText}
-        setMessageText={setMessageText}
-        isSending={isSending}
+        isDisabled={isSending || loadingMessages}
       />
     </div>
   );
