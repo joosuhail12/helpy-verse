@@ -20,7 +20,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({ conversationId, wor
     const fetchMessages = async () => {
       if (conversationId) {
         const conversationMessages = await getMessages(conversationId);
-        if (conversationMessages) {
+        if (conversationMessages && conversationMessages.length > 0) {
           setMessages(conversationMessages);
         }
       }

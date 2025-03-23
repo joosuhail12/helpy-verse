@@ -20,7 +20,7 @@ const MessageList: React.FC<MessageListProps> = ({ conversationId }) => {
     const fetchMessages = async () => {
       if (conversationId) {
         const fetchedMessages = await getMessages(conversationId);
-        if (fetchedMessages) {
+        if (fetchedMessages && fetchedMessages.length > 0) {
           setMessages(fetchedMessages);
         }
       }

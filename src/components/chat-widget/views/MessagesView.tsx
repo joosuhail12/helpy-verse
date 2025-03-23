@@ -15,12 +15,10 @@ const MessagesView: React.FC<MessagesViewProps> = ({ workspaceId, onClose }) => 
   const { colors } = useThemeContext();
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
 
+  // Reset selected conversation when viewing messages page
   useEffect(() => {
-    // If there's a current conversation, select it initially
-    if (currentConversation && !selectedConversation) {
-      setSelectedConversation(currentConversation.id);
-    }
-  }, [currentConversation, selectedConversation]);
+    setSelectedConversation(null);
+  }, []);
 
   const handleSelectConversation = (conversationId: string) => {
     setSelectedConversation(conversationId);

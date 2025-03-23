@@ -79,9 +79,6 @@ export const useChat = (): UseChatReturn => {
 
   // Send a message
   const sendMessage = useCallback(async (conversationId: string, message: string): Promise<void> => {
-    // In a real app, this would send to an API
-    console.log(`Sending message to conversation ${conversationId}: ${message}`);
-    
     // Create a new message
     const newMessage: ChatMessage = {
       id: uuidv4(),
@@ -121,8 +118,7 @@ export const useChat = (): UseChatReturn => {
   const getMessages = useCallback(async (conversationId: string): Promise<ChatMessage[]> => {
     setLoadingMessages(true);
     
-    // In a real app, this would fetch from an API
-    // For now, we'll just return the messages we have in state for this conversation
+    // Filter messages for this conversation
     const conversationMessages = messages.filter(m => m.conversationId === conversationId);
     
     // If there are no messages yet, add a welcome message
