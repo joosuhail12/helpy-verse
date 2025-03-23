@@ -9,7 +9,8 @@ import { Message } from '@/components/chat-widget/components/conversation/types'
 export const useMessageSubscription = (channelId: string) => {
   const [messages, setMessages] = useState<Message[]>([]);
   
-  const { channel } = useChannel(channelId, (message) => {
+  // Use the Ably useChannel hook with correct parameters
+  const channelData = useChannel(channelId, (message) => {
     if (message.name === 'message') {
       const newMessage = message.data as Message;
       
@@ -27,7 +28,7 @@ export const useMessageSubscription = (channelId: string) => {
     }
   });
   
-  return { messages, channel };
+  return { messages, channel: channelData.channel };
 };
 
 export default useMessageSubscription;

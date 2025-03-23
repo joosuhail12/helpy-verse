@@ -6,11 +6,12 @@ import {
   addOfflineMessage, 
   markMessageAsSent, 
   markMessageAsFailed,
-  hasOfflineMessages
+  hasOfflineMessages,
+  queueMessage
 } from '@/utils/ably/messaging';
 
 // Define types for messages
-interface Message {
+export interface Message {
   id: string;
   content: string;
   sender: {
@@ -22,7 +23,7 @@ interface Message {
   isOffline?: boolean;
 }
 
-interface QueuedMessage {
+export interface QueuedMessage {
   id: string;
   content: string;
   channelId: string;
@@ -31,7 +32,7 @@ interface QueuedMessage {
   retryCount: number;
 }
 
-interface UserInfo {
+export interface UserInfo {
   userId: string;
   userName: string;
 }
@@ -50,9 +51,9 @@ export const useRealtimeChat = (conversationId: string, userInfo: UserInfo) => {
   const [totalMessages, setTotalMessages] = useState(0);
   
   // Use the Ably channel
-  const { channel } = useChannel(conversationId, (message) => {
+  const channelData = useChannel(conversationId, (message) => {
     if (message.name === 'chat') {
-      const newMessage = message.data;
+      const newMessage = message.data as Message;
       
       // Don't add our own messages that are received back from Ably
       if (newMessage.sender?.id === userInfo.userId && !newMessage.isOffline) {
@@ -72,6 +73,7 @@ export const useRealtimeChat = (conversationId: string, userInfo: UserInfo) => {
   
   // Update connection state
   useEffect(() => {
+    const channel = channelData.channel;
     if (channel) {
       setConnectionState({ connectionState: channel.state });
       
@@ -87,7 +89,7 @@ export const useRealtimeChat = (conversationId: string, userInfo: UserInfo) => {
         channel.off('detached', handleStateChange);
       };
     }
-  }, [channel]);
+  }, [channelData.channel]);
   
   // Queue a message for offline sending
   const queueOfflineMessage = useCallback((text: string) => {
@@ -131,7 +133,7 @@ export const useRealtimeChat = (conversationId: string, userInfo: UserInfo) => {
     const messageId = uuidv4();
     const timestamp = Date.now();
     
-    const message = {
+    const message: Message = {
       id: messageId,
       content: text,
       sender: {
@@ -155,8 +157,8 @@ export const useRealtimeChat = (conversationId: string, userInfo: UserInfo) => {
     
     try {
       // Send the message via Ably
-      if (channel) {
-        await channel.publish('chat', message);
+      if (channelData.channel) {
+        await channelData.channel.publish('chat', message);
       }
       
       // Update message status to sent
@@ -184,7 +186,7 @@ export const useRealtimeChat = (conversationId: string, userInfo: UserInfo) => {
       setSending(false);
       return message;
     }
-  }, [channel, connectionState.connectionState, userInfo.userId, queueOfflineMessage, userInfo.userName]);
+  }, [channelData.channel, connectionState.connectionState, userInfo.userId, queueOfflineMessage, userInfo.userName]);
   
   // Handle sending a message from the UI
   const handleSendMessage = useCallback((e?: React.FormEvent) => {
@@ -200,9 +202,9 @@ export const useRealtimeChat = (conversationId: string, userInfo: UserInfo) => {
   
   // Handle typing indicator
   const handleTyping = useCallback(() => {
-    if (channel && connectionState.connectionState === 'attached') {
+    if (channelData.channel && connectionState.connectionState === 'attached') {
       try {
-        channel.publish('typing', {
+        channelData.channel.publish('typing', {
           userId: userInfo.userId,
           userName: userInfo.userName,
           isTyping: true
@@ -211,7 +213,7 @@ export const useRealtimeChat = (conversationId: string, userInfo: UserInfo) => {
         console.error('Error sending typing indicator:', error);
       }
     }
-  }, [channel, connectionState.connectionState, userInfo.userId, userInfo.userName]);
+  }, [channelData.channel, connectionState.connectionState, userInfo.userId, userInfo.userName]);
   
   // Mock function to load more messages
   const loadMoreMessages = useCallback(() => {

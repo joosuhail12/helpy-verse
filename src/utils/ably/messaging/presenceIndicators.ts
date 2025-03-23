@@ -10,6 +10,7 @@ export default {
     return true;
   },
   getPresence: async (channelId: string) => {
+    console.log('Getting presence for channel', channelId);
     return [];
   }
 };

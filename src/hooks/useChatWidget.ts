@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { 
   initializeAbly, 
@@ -106,8 +107,7 @@ export const useChatWidget = () => {
       const conversationId = await createConversation(
         name,
         email,
-        topic,
-        initialMessage
+        topic
       );
       
       setState(prev => ({ 
@@ -132,12 +132,7 @@ export const useChatWidget = () => {
     try {
       await sendMessage(
         state.currentConversationId,
-        text,
-        {
-          id: state.userId,
-          name: 'Customer', // This would be the actual user name in production
-          type: 'customer'
-        }
+        text
       );
     } catch (error) {
       console.error('Failed to send message:', error);

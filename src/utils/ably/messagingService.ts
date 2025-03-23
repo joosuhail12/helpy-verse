@@ -2,8 +2,11 @@
 // This file is now just a re-export to maintain backward compatibility
 // New code should import directly from the specific modules
 
-import conversationMessages from './messaging/conversationMessages';
-import typingIndicators from './messaging/typingIndicators';
+import { 
+  conversationMessages, 
+  typingIndicators,
+  presenceIndicators 
+} from './messaging';
 
 export const subscribeToConversation = (channelId: string, callback: Function) => {
   console.log(`Subscribing to messages on channel ${channelId}`);
@@ -12,3 +15,4 @@ export const subscribeToConversation = (channelId: string, callback: Function) =
 
 export const monitorTypingIndicators = typingIndicators.enterChannel;
 export const updateTypingStatus = typingIndicators.enterChannel;
+export const monitorEnhancedPresence = presenceIndicators.getPresence;

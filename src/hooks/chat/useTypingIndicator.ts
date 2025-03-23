@@ -6,7 +6,7 @@ export const useTypingIndicator = (channelId: string, userId: string) => {
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
   
   // Subscribe to typing indicators on the channel
-  const { channel } = useChannel(`${channelId}:typing`, (message) => {
+  const channelData = useChannel(`${channelId}:typing`, (message) => {
     if (message.name === 'typing') {
       const { userName, isTyping, userId: typingUserId } = message.data;
       
@@ -32,25 +32,25 @@ export const useTypingIndicator = (channelId: string, userId: string) => {
   
   // Send typing indicator
   const sendTypingIndicator = useCallback(() => {
-    if (channel) {
-      channel.publish('typing', {
+    if (channelData.channel) {
+      channelData.channel.publish('typing', {
         userId,
         userName: 'You',
         isTyping: true
       });
     }
-  }, [channel, userId]);
+  }, [channelData.channel, userId]);
   
   // Send stopped typing indicator
   const sendStoppedTypingIndicator = useCallback(() => {
-    if (channel) {
-      channel.publish('typing', {
+    if (channelData.channel) {
+      channelData.channel.publish('typing', {
         userId,
         userName: 'You',
         isTyping: false
       });
     }
-  }, [channel, userId]);
+  }, [channelData.channel, userId]);
   
   return {
     typingUsers,

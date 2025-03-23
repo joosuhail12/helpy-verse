@@ -1,72 +1,46 @@
 
 import React from 'react';
-import { Message } from '../types';
-import { useTheme } from '../../../theme/ThemeContext';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { cn } from '@/lib/utils';
+import { Message } from '../ResponsiveConversationView';
 
 interface MessageItemProps {
   message: Message;
-  formatTimestamp: (timestamp: string) => string;
+  isCurrentUser: boolean;
 }
 
-/**
- * Component to render an individual message in the conversation
- */
-const MessageItem: React.FC<MessageItemProps> = ({ message, formatTimestamp }) => {
-  const isUserMessage = message.sender === 'user';
-  const { theme } = useTheme();
-  
-  const getInitials = () => {
-    if (message.avatar?.initials) {
-      return message.avatar.initials;
-    }
-    return isUserMessage ? 'ME' : 'AG';
-  };
-  
+const MessageItem: React.FC<MessageItemProps> = ({ message, isCurrentUser }) => {
+  const formattedTime = new Date(message.timestamp).toLocaleTimeString([], { 
+    hour: '2-digit', 
+    minute: '2-digit' 
+  });
+
   return (
-    <div className={`flex ${isUserMessage ? 'justify-end' : 'justify-start'} mb-3`}>
-      {/* Avatar for agent messages */}
-      {!isUserMessage && (
-        <div className="mr-2 flex-shrink-0">
-          <Avatar className="h-6 w-6">
-            <AvatarImage src={message.avatar?.url} alt="Agent avatar" />
-            <AvatarFallback style={{ backgroundColor: message.avatar?.color || theme.colors.primary }}>
-              {getInitials()}
-            </AvatarFallback>
-          </Avatar>
-        </div>
+    <div
+      className={cn(
+        "flex",
+        isCurrentUser ? "justify-end" : "justify-start"
       )}
-      
-      <div 
-        className={`max-w-[80%] p-3 rounded-lg ${
-          isUserMessage 
-            ? 'text-white rounded-br-none' 
-            : 'text-gray-800 border border-gray-100 rounded-bl-none shadow-sm'
-        }`}
-        style={{
-          backgroundColor: isUserMessage ? theme.colors.primary : theme.colors.background,
-          color: isUserMessage ? theme.colors.headerText : theme.colors.text,
-        }}
+    >
+      <div
+        className={cn(
+          "max-w-[70%] rounded-lg px-4 py-2 text-sm",
+          isCurrentUser 
+            ? "bg-primary text-primary-foreground" 
+            : "bg-muted"
+        )}
       >
-        <p className="text-sm">{message.text}</p>
-        <span className={`text-xs mt-1 block text-right ${
-          isUserMessage ? 'text-gray-300' : 'text-gray-400'
-        }`}>
-          {formatTimestamp(message.timestamp)}
-        </span>
-      </div>
-      
-      {/* Avatar for user messages */}
-      {isUserMessage && (
-        <div className="ml-2 flex-shrink-0">
-          <Avatar className="h-6 w-6">
-            <AvatarImage src={message.avatar?.url} alt="User avatar" />
-            <AvatarFallback style={{ backgroundColor: message.avatar?.color || '#22c55e' }}>
-              {getInitials()}
-            </AvatarFallback>
-          </Avatar>
+        <div className="break-words">{message.content}</div>
+        <div 
+          className={cn(
+            "text-xs mt-1",
+            isCurrentUser 
+              ? "text-primary-foreground/70" 
+              : "text-muted-foreground"
+          )}
+        >
+          {formattedTime}
         </div>
-      )}
+      </div>
     </div>
   );
 };

@@ -1,52 +1,31 @@
 
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import MessageItem from './MessageItem';
-import { Message } from '../types';
+import { Message } from '../ResponsiveConversationView';
 
-interface MessageListProps {
+export interface MessageListProps {
   messages: Message[];
-  loading: boolean;
-  formatTimestamp: (timestamp: string) => string;
+  currentUserId: string;
 }
 
-/**
- * Component to display the list of messages in a conversation
- */
-const MessageList: React.FC<MessageListProps> = ({ 
-  messages, 
-  loading,
-  formatTimestamp 
-}) => {
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  // Auto-scroll to bottom when messages change
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
-  if (loading) {
+const MessageList: React.FC<MessageListProps> = ({ messages, currentUserId }) => {
+  if (messages.length === 0) {
     return (
-      <div className="flex justify-center items-center h-full">
-        <div className="animate-pulse space-y-4 w-full max-w-md">
-          <div className="h-10 bg-gray-200 rounded-md w-3/4"></div>
-          <div className="h-20 bg-gray-200 rounded-md w-full"></div>
-          <div className="h-16 bg-gray-200 rounded-md w-5/6 ml-auto"></div>
-          <div className="h-14 bg-gray-200 rounded-md w-4/5"></div>
-        </div>
+      <div className="flex items-center justify-center h-full py-8 text-gray-500 text-sm">
+        No messages yet. Start the conversation!
       </div>
     );
   }
 
   return (
-    <div className="space-y-2 px-1">
-      {messages.map((msg) => (
-        <MessageItem 
-          key={msg.id} 
-          message={msg} 
-          formatTimestamp={formatTimestamp} 
+    <div className="space-y-4">
+      {messages.map((message) => (
+        <MessageItem
+          key={message.id}
+          message={message}
+          isCurrentUser={message.userId === currentUserId}
         />
       ))}
-      <div ref={messagesEndRef} />
     </div>
   );
 };
