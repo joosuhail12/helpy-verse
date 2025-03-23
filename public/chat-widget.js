@@ -28,8 +28,12 @@
   // Add configuration
   window.PULLSE_CHAT_CONFIG = {
     workspaceId: window.PULLSE_WORKSPACE_ID || '6c22b22f-7bdf-43db-b7c1-9c5884125c63',
-    theme: window.PULLSE_THEME || 'light',
-    position: window.PULLSE_POSITION || 'right'
+    theme: {
+      colors: window.PULLSE_THEME_COLORS || {},
+      position: window.PULLSE_POSITION || 'right',
+      compact: window.PULLSE_COMPACT === true,
+      labels: window.PULLSE_LABELS || {}
+    }
   };
   
   document.body.appendChild(script);

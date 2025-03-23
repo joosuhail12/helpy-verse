@@ -7,15 +7,17 @@ import { useThemeContext } from '@/context/ThemeContext';
 interface HomeViewProps {
   workspaceId: string;
   onClose: () => void;
+  setActiveView: (view: string) => void;
 }
 
-const HomeView: React.FC<HomeViewProps> = ({ workspaceId }) => {
-  const { createNewConversation } = useChat();
+const HomeView: React.FC<HomeViewProps> = ({ workspaceId, setActiveView }) => {
+  const { createNewConversation, selectConversation } = useChat();
   const { colors } = useThemeContext();
 
   const handleAskQuestion = async () => {
     const conversationId = await createNewConversation("New question");
-    console.log("Created new conversation:", conversationId);
+    selectConversation(conversationId);
+    setActiveView('conversation');
   };
 
   return (

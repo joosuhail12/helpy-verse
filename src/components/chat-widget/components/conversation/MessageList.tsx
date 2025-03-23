@@ -10,7 +10,7 @@ interface MessageListProps {
 }
 
 const MessageList: React.FC<MessageListProps> = ({ conversationId }) => {
-  const { colors } = useThemeContext();
+  const { colors, labels } = useThemeContext();
   const { getMessages } = useChat();
   const endOfMessagesRef = useRef<HTMLDivElement>(null);
   const [messages, setMessages] = React.useState<ChatMessage[]>([]);
@@ -43,7 +43,7 @@ const MessageList: React.FC<MessageListProps> = ({ conversationId }) => {
           className="text-center py-6 text-gray-500"
           style={{ color: `${colors.foreground}88` }}
         >
-          No messages yet. Start a conversation!
+          {labels.noMessagesText}
         </div>
       ) : (
         messages.map((message) => (

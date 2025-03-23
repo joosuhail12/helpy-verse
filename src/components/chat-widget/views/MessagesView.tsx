@@ -8,9 +8,10 @@ import ConversationView from '../components/conversation/ConversationView';
 interface MessagesViewProps {
   workspaceId: string;
   onClose: () => void;
+  setActiveView: (view: string) => void;
 }
 
-const MessagesView: React.FC<MessagesViewProps> = ({ workspaceId, onClose }) => {
+const MessagesView: React.FC<MessagesViewProps> = ({ workspaceId, onClose, setActiveView }) => {
   const { conversations, currentConversation, selectConversation } = useChat();
   const { colors } = useThemeContext();
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
@@ -23,6 +24,7 @@ const MessagesView: React.FC<MessagesViewProps> = ({ workspaceId, onClose }) => 
   const handleSelectConversation = (conversationId: string) => {
     setSelectedConversation(conversationId);
     selectConversation(conversationId);
+    setActiveView('conversation');
   };
 
   const handleBackToList = () => {
@@ -65,6 +67,12 @@ const MessagesView: React.FC<MessagesViewProps> = ({ workspaceId, onClose }) => 
                 <button 
                   className="mt-4 px-4 py-2 rounded-md"
                   style={{ backgroundColor: colors.primary, color: colors.primaryForeground }}
+                  onClick={() => {
+                    createNewConversation().then(id => {
+                      selectConversation(id);
+                      setActiveView('conversation');
+                    });
+                  }}
                 >
                   Start a conversation
                 </button>
@@ -134,7 +142,8 @@ const MessagesView: React.FC<MessagesViewProps> = ({ workspaceId, onClose }) => 
           <div className="flex-1 overflow-hidden">
             <ConversationView 
               conversationId={selectedConversation} 
-              workspaceId={workspaceId} 
+              workspaceId={workspaceId}
+              onBack={handleBackToList}
             />
           </div>
         </div>

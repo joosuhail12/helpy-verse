@@ -12,7 +12,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
   onSendMessage, 
   isDisabled = false 
 }) => {
-  const { colors } = useThemeContext();
+  const { colors, labels } = useThemeContext();
   const [message, setMessage] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -45,7 +45,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
         value={message}
         onChange={(e) => setMessage(e.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder="Type a message..."
+        placeholder={labels.messagePlaceholder}
         rows={1}
         className="flex-1 resize-none border rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:border-primary min-h-[42px] max-h-[120px] overflow-y-auto"
         style={{ 

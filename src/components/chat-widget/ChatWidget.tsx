@@ -4,12 +4,12 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { X, MessageSquare } from 'lucide-react';
 import { ChatProvider } from '@/context/ChatContext';
 import { AblyProvider } from '@/context/AblyContext';
-import { ThemeProvider, ThemeColors } from '@/context/ThemeContext';
+import { ThemeProvider, ThemeConfig } from '@/context/ThemeContext';
 import ChatWidgetContainer from './container/ChatWidgetContainer';
 
 interface ChatWidgetProps {
   workspaceId: string;
-  theme?: Partial<ThemeColors>;
+  theme?: Partial<ThemeConfig>;
 }
 
 export const ChatWidget: React.FC<ChatWidgetProps> = ({ workspaceId, theme = {} }) => {
@@ -22,8 +22,13 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ workspaceId, theme = {} 
   return (
     <AblyProvider workspaceId={workspaceId}>
       <ChatProvider workspaceId={workspaceId}>
-        <ThemeProvider initialColors={theme}>
-          <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end">
+        <ThemeProvider initialTheme={theme}>
+          <div className={`fixed bottom-4 z-50 flex flex-col items-end`} 
+            style={{ 
+              [theme.position === 'left' ? 'left' : 'right']: '1rem',
+              alignItems: theme.position === 'left' ? 'flex-start' : 'flex-end' 
+            }}
+          >
             <AnimatePresence>
               {isOpen && (
                 <motion.div
@@ -31,9 +36,14 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ workspaceId, theme = {} 
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 20, scale: 0.95 }}
                   transition={{ duration: 0.2 }}
-                  className="mb-3 w-80 sm:w-96 h-[600px] bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-200"
+                  className={`mb-3 ${theme.compact ? 'w-72' : 'w-80 sm:w-96'} h-[600px] bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-200`}
                 >
-                  <ChatWidgetContainer onClose={() => setIsOpen(false)} workspaceId={workspaceId} />
+                  <ChatWidgetContainer 
+                    onClose={() => setIsOpen(false)} 
+                    workspaceId={workspaceId} 
+                    position={theme.position === 'left' ? 'left' : 'right'} 
+                    compact={Boolean(theme.compact)}
+                  />
                 </motion.div>
               )}
             </AnimatePresence>
@@ -44,6 +54,9 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ workspaceId, theme = {} 
                 isOpen ? 'bg-red-500 hover:bg-red-600' : 'bg-primary hover:bg-primary/90'
               } w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-colors`}
               aria-label={isOpen ? 'Close chat' : 'Open chat'}
+              style={{ 
+                backgroundColor: isOpen ? '#ef4444' : theme.colors?.primary 
+              }}
             >
               {isOpen ? (
                 <X className="h-6 w-6 text-white" />

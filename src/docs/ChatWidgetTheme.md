@@ -1,7 +1,7 @@
 
 # Chat Widget Theme Customization Guide
 
-The Chat Widget is fully customizable using the `theme` prop, allowing you to match it to your brand colors and design preferences.
+The Chat Widget is fully customizable using the `theme` prop, allowing you to match it to your brand colors, positioning, texts, and design preferences.
 
 ## Basic Usage
 
@@ -10,12 +10,20 @@ To customize your Chat Widget, simply pass a `theme` object to the `ChatWidget` 
 ```jsx
 import { ChatWidget } from '@/components/chat-widget/ChatWidget';
 
-// Custom theme colors
+// Custom theme colors and options
 const myTheme = {
-  primary: '#FF5733',
-  primaryForeground: '#FFFFFF',
-  background: '#F8F9FA',
-  foreground: '#333333'
+  colors: {
+    primary: '#FF5733',
+    primaryForeground: '#FFFFFF',
+    background: '#F8F9FA',
+    foreground: '#333333'
+  },
+  position: 'right',
+  compact: false,
+  labels: {
+    welcomeTitle: 'Hey there!',
+    welcomeSubtitle: 'Need any assistance today?'
+  }
 };
 
 // Apply the theme to the widget
@@ -27,7 +35,9 @@ const myTheme = {
 
 ## Available Theme Properties
 
-The theme object supports the following properties:
+### Color Configuration
+
+The theme object supports the following color properties:
 
 | Property           | Description                                    | Default Value |
 |--------------------|------------------------------------------------|---------------|
@@ -42,90 +52,76 @@ The theme object supports the following properties:
 | `agentMessageText` | Text color for agent messages                  | `#1A1F2C`     |
 | `inputBackground`  | Background color for the message input         | `#f9f9f9`     |
 
+### Layout Configuration
+
+| Property   | Description                                | Default | Options           |
+|------------|--------------------------------------------|---------|-------------------|
+| `position` | Widget position on the screen              | `right` | `right`, `left`   |
+| `compact`  | Reduced width mode for smaller screen area | `false` | `true`, `false`   |
+
+### Text Label Configuration
+
+You can customize all text labels in the widget:
+
+| Property                  | Description                         | Default Value                        |
+|---------------------------|-------------------------------------|--------------------------------------|
+| `welcomeTitle`            | Title on home screen                | `Hello there.`                       |
+| `welcomeSubtitle`         | Subtitle on home screen             | `How can we help?`                   |
+| `askQuestionButton`       | Text for ask question button        | `Ask a question`                     |
+| `recentMessagesTitle`     | Header for recent messages section  | `Recent message`                     |
+| `noMessagesText`          | Text shown when no messages exist   | `No messages yet. Start a conversation!` |
+| `startConversationButton` | Text for start conversation button  | `Start a conversation`               |
+| `messagePlaceholder`      | Placeholder for message input       | `Type a message...`                  |
+
 ## Theme Examples
 
 ### Corporate Blue
 
 ```jsx
 const corporateBlue = {
-  primary: '#0066CC',
-  primaryForeground: '#FFFFFF',
-  background: '#FFFFFF',
-  foreground: '#333333',
-  border: '#E5E5E5',
-  userMessage: '#0066CC',
-  userMessageText: '#FFFFFF',
-  agentMessage: '#F0F7FF',
-  agentMessageText: '#333333',
-  inputBackground: '#F5F5F5'
+  colors: {
+    primary: '#0066CC',
+    primaryForeground: '#FFFFFF',
+    background: '#FFFFFF',
+    foreground: '#333333',
+    border: '#E5E5E5',
+    userMessage: '#0066CC',
+    userMessageText: '#FFFFFF',
+    agentMessage: '#F0F7FF',
+    agentMessageText: '#333333',
+    inputBackground: '#F5F5F5'
+  },
+  position: 'right',
+  compact: false,
+  labels: {
+    welcomeTitle: 'Welcome to Support',
+    welcomeSubtitle: 'How can we assist you today?'
+  }
 };
 ```
 
-### Soft Green
-
-```jsx
-const softGreen = {
-  primary: '#4CAF50',
-  primaryForeground: '#FFFFFF',
-  background: '#FAFFF9',
-  foreground: '#3A3A3A',
-  border: '#E0E8E0',
-  userMessage: '#4CAF50',
-  userMessageText: '#FFFFFF',
-  agentMessage: '#F0F9F0',
-  agentMessageText: '#3A3A3A',
-  inputBackground: '#F5F8F5'
-};
-```
-
-### Warm Orange
-
-```jsx
-const warmOrange = {
-  primary: '#FF9800',
-  primaryForeground: '#FFFFFF',
-  background: '#FFFAF5',
-  foreground: '#4A4A4A',
-  border: '#EAEAEA',
-  userMessage: '#FF9800',
-  userMessageText: '#FFFFFF',
-  agentMessage: '#FFF5EA',
-  agentMessageText: '#4A4A4A',
-  inputBackground: '#FAFAFA'
-};
-```
-
-### Dark Theme
+### Dark Theme with Left Positioning
 
 ```jsx
 const darkTheme = {
-  primary: '#8B5CF6',
-  primaryForeground: '#FFFFFF',
-  background: '#1E1E2E',
-  foreground: '#E5E7EB',
-  border: '#383851',
-  userMessage: '#8B5CF6',
-  userMessageText: '#FFFFFF',
-  agentMessage: '#383851',
-  agentMessageText: '#E5E7EB',
-  inputBackground: '#2D2D44'
-};
-```
-
-### Minimalist Gray
-
-```jsx
-const minimalistGray = {
-  primary: '#6B7280',
-  primaryForeground: '#FFFFFF',
-  background: '#FFFFFF',
-  foreground: '#374151',
-  border: '#E5E7EB',
-  userMessage: '#6B7280',
-  userMessageText: '#FFFFFF',
-  agentMessage: '#F3F4F6',
-  agentMessageText: '#374151',
-  inputBackground: '#F9FAFB'
+  colors: {
+    primary: '#8B5CF6',
+    primaryForeground: '#FFFFFF',
+    background: '#1E1E2E',
+    foreground: '#E5E7EB',
+    border: '#383851',
+    userMessage: '#8B5CF6',
+    userMessageText: '#FFFFFF',
+    agentMessage: '#383851',
+    agentMessageText: '#E5E7EB',
+    inputBackground: '#2D2D44'
+  },
+  position: 'left',
+  compact: true,
+  labels: {
+    welcomeTitle: 'Support Chat',
+    welcomeSubtitle: 'Our team is here to help'
+  }
 };
 ```
 
@@ -140,16 +136,24 @@ If you're integrating the Chat Widget on your website, here's how to pass the th
     window.ChatWidget.init({
       workspaceId: 'your-workspace-id',
       theme: {
-        primary: '#9b87f5',
-        primaryForeground: '#FFFFFF',
-        background: '#FFFFFF',
-        foreground: '#1A1F2C',
-        border: '#E1E1E1',
-        userMessage: '#9b87f5',
-        userMessageText: '#FFFFFF',
-        agentMessage: '#F1F1F1',
-        agentMessageText: '#1A1F2C',
-        inputBackground: '#F9F9F9'
+        colors: {
+          primary: '#9b87f5',
+          primaryForeground: '#FFFFFF',
+          background: '#FFFFFF',
+          foreground: '#1A1F2C',
+          border: '#E1E1E1',
+          userMessage: '#9b87f5',
+          userMessageText: '#FFFFFF',
+          agentMessage: '#F1F1F1',
+          agentMessageText: '#1A1F2C',
+          inputBackground: '#F9F9F9'
+        },
+        position: 'right',
+        compact: false,
+        labels: {
+          welcomeTitle: 'Hello there',
+          welcomeSubtitle: 'How can we help you?'
+        }
       }
     });
   });
@@ -160,51 +164,18 @@ If you're integrating the Chat Widget on your website, here's how to pass the th
 
 1. **Maintain Contrast**: Ensure there's sufficient contrast between text and background colors for readability.
 2. **Test on Different Backgrounds**: If your website has sections with different background colors, ensure the widget looks good across all of them.
-3. **Brand Consistency**: Use colors that align with your brand's color palette.
+3. **Brand Consistency**: Use colors and terminology that align with your brand identity.
 4. **Accessibility**: Consider color-blind users when selecting colors. Avoid combinations that might be difficult to distinguish.
-
-## Additional Color Palette Examples
-
-### Pastel / Low Saturation Colors
-
-```jsx
-const pastelTheme = {
-  primary: '#D6BCFA',
-  primaryForeground: '#4A5568',
-  background: '#FFFFFF',
-  foreground: '#4A5568',
-  border: '#E2E8F0',
-  userMessage: '#D6BCFA',
-  userMessageText: '#4A5568',
-  agentMessage: '#F7FAFC',
-  agentMessageText: '#4A5568',
-  inputBackground: '#F7FAFC'
-};
-```
-
-### Vivid Colors
-
-```jsx
-const vividTheme = {
-  primary: '#8B5CF6',
-  primaryForeground: '#FFFFFF',
-  background: '#FFFFFF',
-  foreground: '#1A202C',
-  border: '#E2E8F0',
-  userMessage: '#8B5CF6',
-  userMessageText: '#FFFFFF',
-  agentMessage: '#EDF2F7',
-  agentMessageText: '#1A202C',
-  inputBackground: '#F7FAFC'
-};
-```
+5. **Responsive Considerations**: If your site serves many mobile users, consider using the `compact` mode.
+6. **Left vs Right Positioning**: Choose positioning based on your site layout - if you have important elements on the right side, consider using `position: 'left'`.
 
 ## Troubleshooting
 
 If your theme isn't being applied correctly:
 
-1. Ensure you're passing the theme object to the correct prop (`theme`).
+1. Ensure you're passing the theme object with the correct structure.
 2. Check for typos in property names.
 3. Verify that your color values are valid CSS colors (hex, rgb, rgba, etc.).
+4. Make sure you're not accidentally overriding your theme settings elsewhere.
 
 For any additional questions or support with theme customization, please reach out to our support team.
