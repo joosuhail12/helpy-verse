@@ -55,7 +55,7 @@ const ContactInfoCard = ({ customer, company, isOpen, onToggle }: ContactInfoCar
               <div className="flex items-center">
                 <Phone size={14} className="mr-2 text-gray-500" />
                 <a href={`tel:${customerObj.phone}`} className="text-blue-600 hover:underline">
-                  {customerObj.phone}
+                  {customerObj.phone.toString()}
                 </a>
               </div>
             </div>

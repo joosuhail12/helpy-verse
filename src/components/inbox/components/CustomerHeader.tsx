@@ -17,7 +17,12 @@ const CustomerHeader = ({ customer, company }: CustomerHeaderProps) => {
   
   // Convert string company to object if needed
   const companyObj = company && typeof company === 'string'
-    ? { id: company, name: company }
+    ? { 
+        id: company, 
+        name: company,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString() 
+      }
     : company;
 
   // Determine company name

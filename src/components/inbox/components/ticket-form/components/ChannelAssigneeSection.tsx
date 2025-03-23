@@ -1,46 +1,53 @@
 
 import { Label } from "@/components/ui/label";
-import EmailChannelSelect from '../EmailChannelSelect';
-import AssigneeSelect from '../AssigneeSelect';
-import type { EmailChannel } from '@/types/emailChannel';
-import type { AssigneeOption } from '../types';
+import { Card, CardContent } from "@/components/ui/card";
+import EmailChannelSelect from "../EmailChannelSelect";
+import AssigneeSelect from "../AssigneeSelect";
+import type { EmailChannel } from "@/types/emailChannel";
+import { Dispatch, SetStateAction } from "react";
 
-interface ChannelAssigneeSectionProps {
-  emailChannel: EmailChannel | null;
-  assignee: AssigneeOption | null;
-  onEmailChannelChange: (emailChannel: EmailChannel | null) => void;
-  onAssigneeChange: (assignee: AssigneeOption | null) => void;
+interface AssigneeOption {
+  id: string | null;
+  name: string;
+  email?: string;
+  avatar?: string;
 }
 
-const ChannelAssigneeSection = ({
-  emailChannel,
-  assignee,
-  onEmailChannelChange,
-  onAssigneeChange
-}: ChannelAssigneeSectionProps) => {
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-      <div className="space-y-2.5">
-        <Label htmlFor="emailChannel" className="text-sm font-medium text-gray-700">
-          Email Channel <span className="text-red-500">*</span>
-        </Label>
-        <EmailChannelSelect 
-          selectedChannel={emailChannel}
-          onSelectChannel={onEmailChannelChange}
-        />
-      </div>
-      
-      <div className="space-y-2.5">
-        <Label htmlFor="assignee" className="text-sm font-medium text-gray-700">
-          Assignee
-        </Label>
-        <AssigneeSelect 
-          value={assignee}
-          onChange={onAssigneeChange}
-        />
-      </div>
-    </div>
-  );
-};
+interface ChannelAssigneeSectionProps {
+  selectedChannel: EmailChannel | null;
+  setSelectedChannel: Dispatch<SetStateAction<EmailChannel | null>>;
+  selectedAssignee: AssigneeOption;
+  setSelectedAssignee: Dispatch<SetStateAction<AssigneeOption>>;
+  className?: string;
+}
 
-export default ChannelAssigneeSection;
+export default function ChannelAssigneeSection({
+  selectedChannel,
+  setSelectedChannel,
+  selectedAssignee,
+  setSelectedAssignee,
+  className = "",
+}: ChannelAssigneeSectionProps) {
+  return (
+    <Card className={className}>
+      <CardContent className="p-4 space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="channel">Channel</Label>
+          <EmailChannelSelect
+            selectedChannel={selectedChannel}
+            onChannelChange={setSelectedChannel}
+          />
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="assignee">Assignee</Label>
+          <AssigneeSelect
+            selectedAssignee={selectedAssignee}
+            onSelectAssignee={setSelectedAssignee}
+            onChange={setSelectedAssignee} // Add the onChange prop to match the required interface
+          />
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
