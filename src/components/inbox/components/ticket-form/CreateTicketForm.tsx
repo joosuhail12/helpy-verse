@@ -125,8 +125,8 @@ const CreateTicketForm = ({ onSubmit, isSubmitting, onCancel }: CreateTicketForm
             <FormLabel>Email Channel <span className="text-red-500">*</span></FormLabel>
             <EmailChannelSelect
               channels={mockEmailChannels}
-              selectedChannel={selectedEmailChannel}
-              onSelectChannel={setSelectedEmailChannel}
+              value={selectedEmailChannel}
+              onChange={setSelectedEmailChannel}
             />
             {form.formState.errors.emailChannel && (
               <p className="text-red-500 text-xs mt-1">{form.formState.errors.emailChannel.message}</p>
@@ -136,8 +136,8 @@ const CreateTicketForm = ({ onSubmit, isSubmitting, onCancel }: CreateTicketForm
           <div>
             <FormLabel>Assignee</FormLabel>
             <AssigneeSelect
-              selectedAssignee={selectedAssignee}
-              onSelectAssignee={setSelectedAssignee}
+              value={selectedAssignee}
+              onChange={setSelectedAssignee}
             />
           </div>
         </div>

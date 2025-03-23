@@ -54,6 +54,11 @@ const CustomerContextPanel = ({ ticket }: CustomerContextPanelProps) => {
     }
   ];
 
+  // Extract customerId safely
+  const customerId = typeof ticket.customer === 'string' 
+    ? ticket.customer 
+    : ticket.customer.id;
+
   return (
     <div className="h-full flex flex-col bg-white border-l transition-all duration-300 ease-in-out">
       <CustomerHeader 
@@ -83,7 +88,7 @@ const CustomerContextPanel = ({ ticket }: CustomerContextPanelProps) => {
           />
           
           <CustomObjectCard
-            customerId={typeof ticket.customer === 'string' ? ticket.customer : ticket.customer.id}
+            customerId={customerId}
             ticketId={ticket.id}
             isOpen={openSections.customObject}
             onToggle={() => toggleSection('customObject')}

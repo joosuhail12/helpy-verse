@@ -33,7 +33,7 @@ const CreateTeam = () => {
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       // Dispatch the fetchTeams action to refresh the list
-      await dispatch(fetchTeams({}));
+      await dispatch(fetchTeams({}) as any);
 
       toast({
         title: 'Success',

@@ -25,8 +25,8 @@ const ChannelAssigneeSection = ({
           Email Channel <span className="text-red-500">*</span>
         </Label>
         <EmailChannelSelect 
-          value={emailChannel}
-          onChange={onEmailChannelChange}
+          selectedChannel={emailChannel}
+          onSelectChannel={onEmailChannelChange}
         />
       </div>
       
@@ -35,8 +35,8 @@ const ChannelAssigneeSection = ({
           Assignee
         </Label>
         <AssigneeSelect 
-          value={assignee}
-          onChange={onAssigneeChange}
+          selectedAssignee={assignee}
+          onSelectAssignee={onAssigneeChange}
         />
       </div>
     </div>
