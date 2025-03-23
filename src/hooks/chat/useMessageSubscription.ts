@@ -10,20 +10,20 @@ export const useMessageSubscription = (
   options = { history: false }
 ) => {
   const [channel, setChannel] = useState<any | null>(null);
-  const { channel: ablyChannel } = useChannel(channelId, (message) => {
+  const { channelInstance } = useChannel(channelId, (message) => {
     if (message.name === eventName) {
       callback(message);
     }
   });
 
   useEffect(() => {
-    if (!ablyChannel) return;
+    if (!channelInstance) return;
     
-    setChannel(ablyChannel);
+    setChannel(channelInstance);
     
     // If history option is enabled, request message history
     if (options.history) {
-      ablyChannel.history((err, resultPage) => {
+      channelInstance.history((err, resultPage) => {
         if (err) {
           console.error('Error retrieving message history:', err);
           return;
@@ -37,7 +37,7 @@ export const useMessageSubscription = (
       });
     }
     
-  }, [channelId, eventName, callback, ablyChannel, options.history]);
+  }, [channelId, eventName, callback, channelInstance, options.history]);
 
   return channel;
 };

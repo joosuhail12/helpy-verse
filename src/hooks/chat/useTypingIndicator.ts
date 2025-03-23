@@ -5,10 +5,10 @@ import { useChannel } from '@ably-labs/react-hooks';
 
 export const useTypingIndicator = (channelId: string, userId: string) => {
   const [typingUsers, setTypingUsers] = useState<Record<string, { name: string; timestamp: number }>>({});
-  const { channel } = useChannel(channelId);
+  const { channelInstance } = useChannel(channelId);
 
   useEffect(() => {
-    if (!channel) return;
+    if (!channelInstance) return;
 
     const handleTypingEvent = (message: Types.Message) => {
       const { data } = message;
@@ -33,16 +33,16 @@ export const useTypingIndicator = (channelId: string, userId: string) => {
     };
 
     // Subscribe to typing events
-    channel.subscribe('typing', handleTypingEvent);
+    channelInstance.subscribe('typing', handleTypingEvent);
 
     return () => {
-      channel.unsubscribe('typing', handleTypingEvent);
+      channelInstance.unsubscribe('typing', handleTypingEvent);
     };
-  }, [channel, userId]);
+  }, [channelInstance, userId]);
 
   const sendTypingEvent = (userName: string) => {
-    if (!channel) return;
-    channel.publish('typing', { userId, userName });
+    if (!channelInstance) return;
+    channelInstance.publish('typing', { userId, userName });
   };
 
   return {

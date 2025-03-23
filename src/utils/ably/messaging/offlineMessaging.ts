@@ -14,7 +14,7 @@ interface OfflineMessage {
 }
 
 // Get offline messages from localStorage
-const getOfflineMessages = (): OfflineMessage[] => {
+export const getOfflineMessages = (): OfflineMessage[] => {
   try {
     const stored = localStorage.getItem('offlineMessages');
     return stored ? JSON.parse(stored) : [];
@@ -25,7 +25,7 @@ const getOfflineMessages = (): OfflineMessage[] => {
 };
 
 // Save offline messages to localStorage
-const saveOfflineMessages = (messages: OfflineMessage[]) => {
+export const saveOfflineMessages = (messages: OfflineMessage[]) => {
   try {
     localStorage.setItem('offlineMessages', JSON.stringify(messages));
   } catch (e) {
@@ -69,7 +69,7 @@ export const removeOfflineMessage = (id: string) => {
 };
 
 // Process offline messages when coming back online
-export const processOfflineMessages = (ably?: Types.RealtimeClient) => {
+export const processOfflineMessages = (ably?: any) => {
   if (!ably) return;
   
   const messages = getOfflineMessages();
@@ -86,7 +86,7 @@ export const processOfflineMessages = (ably?: Types.RealtimeClient) => {
         updateMessageStatus(msg.id, 'sent' as MessageStatus);
         setTimeout(() => removeOfflineMessage(msg.id), 5000); // Remove after a delay
       })
-      .catch(err => {
+      .catch((err: Error) => {
         console.error(`Failed to send offline message ${msg.id}:`, err);
         updateMessageStatus(msg.id, 'failed' as MessageStatus);
       });
@@ -122,6 +122,51 @@ export const markMessageAsSent = (id: string) => {
 // Mark a message as failed
 export const markMessageAsFailed = (id: string) => {
   updateMessageStatus(id, 'failed' as MessageStatus);
+};
+
+// Queue a message for offline sending
+export const queueMessage = (channelId: string, eventName: string, data: any, id: string) => {
+  return addOfflineMessage(channelId, eventName, data, id);
+};
+
+// Load queued messages from storage
+export const loadQueuedMessages = () => getOfflineMessages();
+
+// Save queued messages to storage
+export const saveQueuedMessages = (messages: OfflineMessage[]) => saveOfflineMessages(messages);
+
+// Remove a message from the queue
+export const removeFromQueue = (id: string) => removeOfflineMessage(id);
+
+// Check for failed messages
+export const checkForFailedMessages = () => {
+  const messages = getOfflineMessages();
+  return messages.some(msg => msg.status === 'failed');
+};
+
+// Resend failed messages
+export const resendFailedMessages = (ably?: any) => {
+  if (!ably) return;
+  
+  const messages = getOfflineMessages();
+  const failedMessages = messages.filter(msg => msg.status === 'failed');
+  
+  failedMessages.forEach(msg => {
+    const channel = ably.channels.get(msg.channelId);
+    
+    updateMessageStatus(msg.id, 'sending' as MessageStatus);
+    
+    channel.publish(msg.eventName, msg.data)
+      .then(() => {
+        console.log(`Failed message ${msg.id} resent successfully`);
+        updateMessageStatus(msg.id, 'sent' as MessageStatus);
+        setTimeout(() => removeOfflineMessage(msg.id), 5000);
+      })
+      .catch((err: Error) => {
+        console.error(`Failed to resend message ${msg.id}:`, err);
+        updateMessageStatus(msg.id, 'failed' as MessageStatus);
+      });
+  });
 };
 
 // Hooks for React components

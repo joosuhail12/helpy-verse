@@ -1,215 +1,237 @@
 
 import { useState, useEffect, useCallback } from 'react';
-import { Types } from 'ably';
+import { v4 as uuidv4 } from 'uuid';
 import { useChannel } from '@ably-labs/react-hooks';
-import { useConnectionState } from './chat/useConnectionState';
-import { useOfflineMessaging } from './chat/useOfflineMessaging';
+import { 
+  addOfflineMessage, 
+  markMessageAsSent, 
+  markMessageAsFailed,
+  hasOfflineMessages
+} from '@/utils/ably/messaging/offlineMessaging';
 
-export const useRealtimeChat = (channelId: string, userId: string, initialMessages = []) => {
-  const [messages, setMessages] = useState(initialMessages);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-  const [hasMoreMessages, setHasMoreMessages] = useState(false);
-  const [totalMessages, setTotalMessages] = useState(0);
-  const [newMessage, setNewMessage] = useState('');
-  const [sending, setSending] = useState(false);
+// Define types for messages
+interface Message {
+  id: string;
+  content: string;
+  sender: {
+    id: string;
+    name: string;
+  };
+  timestamp: number;
+  status?: 'sending' | 'sent' | 'failed';
+  isOffline?: boolean;
+}
+
+interface QueuedMessage {
+  id: string;
+  content: string;
+  channelId: string;
+  timestamp: number;
+  status: 'queued' | 'sending' | 'sent' | 'failed';
+  retryCount: number;
+}
+
+// Create a hook for real-time chat
+export const useRealtimeChat = (conversationId: string, currentUserId: string, userName: string) => {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [connectionState, setConnectionState] = useState({ connectionState: 'initializing' });
+  const [queuedMessages, setQueuedMessages] = useState<QueuedMessage[]>([]);
+  const [hasFailedMessages, setHasFailedMessages] = useState(false);
   
-  const connectionState = useConnectionState();
-  const { channel } = useChannel(channelId);
-  const { 
-    offlineMessages, 
-    addOfflineMessage, 
-    markMessageAsSent, 
-    markMessageAsFailed 
-  } = useOfflineMessaging();
-
-  // Load initial messages
-  useEffect(() => {
-    if (!channel) return;
-    
-    setIsLoading(true);
-    
-    channel.history((err, page) => {
-      if (err) {
-        console.error('Error fetching message history:', err);
-        setError(new Error('Failed to load message history'));
-        setIsLoading(false);
+  // Use the Ably channel
+  const { channelInstance, status } = useChannel(conversationId, (message) => {
+    if (message.name === 'chat') {
+      const newMessage = message.data;
+      
+      // Don't add our own messages that are received back from Ably
+      if (newMessage.sender?.id === currentUserId && !newMessage.isOffline) {
         return;
       }
       
-      if (page && page.items) {
-        const historyMessages = page.items
-          .filter(msg => msg.name === 'chat')
-          .map(msg => ({ 
-            id: msg.id, 
-            content: msg.data.content, 
-            sender: msg.data.sender, 
-            timestamp: msg.timestamp,
-            status: 'sent'
-          }))
-          .reverse();
-          
-        setMessages(historyMessages);
-        setHasMoreMessages(page.hasNext());
-        setTotalMessages(historyMessages.length);
-      }
-      
-      setIsLoading(false);
-    });
-  }, [channel, channelId]);
-
-  // Subscribe to new messages
+      setMessages((prev) => {
+        // Check if message already exists (to prevent duplicates)
+        if (prev.some(m => m.id === newMessage.id)) {
+          return prev;
+        }
+        
+        return [...prev, newMessage].sort((a, b) => a.timestamp - b.timestamp);
+      });
+    }
+  });
+  
+  // Update connection state
   useEffect(() => {
-    if (!channel) return;
+    setConnectionState({ connectionState: status });
+  }, [status]);
+  
+  // Queue a message for offline sending
+  const queueOfflineMessage = useCallback((text: string) => {
+    const messageId = uuidv4();
+    const timestamp = Date.now();
     
-    const handleMessage = (message: Types.Message) => {
-      if (message.name !== 'chat') return;
-      
-      const newMsg = {
-        id: message.id,
-        content: message.data.content,
-        sender: message.data.sender,
-        timestamp: message.timestamp,
-        status: 'sent'
-      };
-      
-      setMessages(prev => [...prev, newMsg]);
-      
-      // If this message was sent by the current user and was queued offline,
-      // mark it as sent now
-      if (message.data.sender.id === userId && message.data.offlineId) {
-        markMessageAsSent(message.data.offlineId);
-      }
+    // Create the message object
+    const message: Message = {
+      id: messageId,
+      content: text,
+      sender: {
+        id: currentUserId,
+        name: userName || 'User'
+      },
+      timestamp,
+      status: 'sending',
+      isOffline: true
     };
     
-    channel.subscribe('chat', handleMessage);
+    // Add to local messages immediately
+    setMessages(prev => [...prev, message]);
     
-    return () => {
-      channel.unsubscribe('chat', handleMessage);
-    };
-  }, [channel, userId, markMessageAsSent]);
-
-  // Handle sending messages
-  const sendMessage = useCallback((content: string) => {
-    if (!content.trim()) return null;
-    
-    const tempId = `temp-${Date.now()}`;
-    const messageData = {
-      content,
-      sender: { id: userId, name: 'You' }, // Customize sender info as needed
-      timestamp: Date.now(),
-      offlineId: tempId
+    // Queue the message for later sending
+    const queuedMessage: QueuedMessage = {
+      id: messageId,
+      content: text,
+      channelId: conversationId,
+      timestamp,
+      status: 'queued',
+      retryCount: 0
     };
     
-    // Add to UI immediately with 'sending' status
-    const newMsg = {
-      id: tempId,
-      content,
-      sender: messageData.sender,
-      timestamp: messageData.timestamp,
+    setQueuedMessages(prev => [...prev, queuedMessage]);
+    
+    return queuedMessage;
+  }, [conversationId, currentUserId, userName]);
+  
+  // Send a message
+  const sendMessage = useCallback(async (text: string) => {
+    // Create message object
+    const messageId = uuidv4();
+    const timestamp = Date.now();
+    
+    const message = {
+      id: messageId,
+      content: text,
+      sender: {
+        id: currentUserId,
+        name: userName || 'User'
+      },
+      timestamp,
       status: 'sending'
     };
     
-    setMessages(prev => [...prev, newMsg]);
-    setSending(true);
+    // Add message to local state immediately
+    setMessages(prev => [...prev, message]);
     
-    // If online, publish directly
-    if (connectionState === 'connected' && channel) {
-      channel.publish('chat', messageData)
-        .then(() => {
-          // Message sent successfully
-          setMessages(prev => 
-            prev.map(msg => 
-              msg.id === tempId ? { ...msg, status: 'sent' } : msg
-            )
-          );
-        })
-        .catch(err => {
-          console.error('Error sending message:', err);
-          // Message failed to send
-          setMessages(prev => 
-            prev.map(msg => 
-              msg.id === tempId ? { ...msg, status: 'failed' } : msg
-            )
-          );
-          // Add to offline queue
-          addOfflineMessage(channelId, 'chat', messageData, tempId);
-        })
-        .finally(() => {
-          setSending(false);
-        });
-    } else {
-      // Offline, add to queue
-      addOfflineMessage(channelId, 'chat', messageData, tempId);
-      setSending(false);
+    // If offline, queue the message
+    if (connectionState.connectionState !== 'connected') {
+      queueOfflineMessage(text);
+      return message;
     }
     
-    return messageData;
-  }, [channelId, userId, connectionState, channel, addOfflineMessage]);
-
-  // Load more messages from history
-  const loadMoreMessages = useCallback(() => {
-    if (!channel || !hasMoreMessages) return;
-    
-    setIsLoading(true);
-    
-    channel.history((err, page) => {
-      if (err || !page) {
-        console.error('Error loading more messages:', err);
-        setIsLoading(false);
-        return;
-      }
+    try {
+      // Send the message via Ably
+      await channelInstance?.publish('chat', message);
       
-      if (page.items) {
-        const olderMessages = page.items
-          .filter(msg => msg.name === 'chat')
-          .map(msg => ({ 
-            id: msg.id, 
-            content: msg.data.content, 
-            sender: msg.data.sender, 
-            timestamp: msg.timestamp,
-            status: 'sent'
-          }))
-          .reverse();
-          
-        setMessages(prev => [...olderMessages, ...prev]);
-        setHasMoreMessages(page.hasNext());
-      }
+      // Update message status to sent
+      setMessages(prev => 
+        prev.map(m => 
+          m.id === messageId ? { ...m, status: 'sent' } : m
+        )
+      );
       
-      setIsLoading(false);
+      return message;
+    } catch (error) {
+      console.error('Error sending message:', error);
+      
+      // Update message status to failed
+      setMessages(prev => 
+        prev.map(m => 
+          m.id === messageId ? { ...m, status: 'failed' } : m
+        )
+      );
+      
+      // Queue for later retry
+      queueOfflineMessage(text);
+      
+      return message;
+    }
+  }, [channelInstance, connectionState.connectionState, currentUserId, queueOfflineMessage, userName]);
+  
+  // Sync queued messages when connection is restored
+  const syncQueuedMessages = useCallback(async (sendFunction) => {
+    if (connectionState.connectionState !== 'connected') return;
+    
+    const promises = queuedMessages.map(async (msg) => {
+      try {
+        await sendFunction(conversationId, msg.content, {
+          id: currentUserId,
+          name: userName
+        }, msg.id);
+        
+        // Update message status
+        setMessages(prev => 
+          prev.map(m => 
+            m.id === msg.id ? { ...m, status: 'sent', isOffline: false } : m
+          )
+        );
+        
+        return { id: msg.id, success: true };
+      } catch (err) {
+        console.error('Failed to sync message:', msg.id, err);
+        return { id: msg.id, success: false };
+      }
     });
-  }, [channel, hasMoreMessages]);
-
-  // Format timestamp helper
-  const formatTimestamp = (timestamp: number) => {
-    return new Date(timestamp).toLocaleTimeString([], { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
-  };
-
-  // Handle typing
-  const handleTyping = (userName: string) => {
-    if (!channel) return;
-    channel.publish('typing', { userId, userName });
-  };
-
+    
+    const results = await Promise.all(promises);
+    
+    // Remove successful messages from queue
+    const successfulIds = results
+      .filter(r => r.success)
+      .map(r => r.id);
+    
+    setQueuedMessages(prev => 
+      prev.filter(msg => !successfulIds.includes(msg.id))
+    );
+    
+    // Update failed messages flag
+    setHasFailedMessages(queuedMessages.some(msg => msg.status === 'failed'));
+    
+    return results;
+  }, [connectionState.connectionState, conversationId, currentUserId, queuedMessages, userName]);
+  
+  // Retry failed messages
+  const retryFailedMessages = useCallback(async (sendFunction) => {
+    const failedMessages = queuedMessages.filter(msg => msg.status === 'failed');
+    
+    if (failedMessages.length === 0) return [];
+    
+    // Mark messages as sending
+    setQueuedMessages(prev => 
+      prev.map(msg => 
+        msg.status === 'failed' ? { ...msg, status: 'sending' } : msg
+      )
+    );
+    
+    // Update UI
+    setMessages(prev => 
+      prev.map(m => 
+        failedMessages.some(fm => fm.id === m.id) 
+          ? { ...m, status: 'sending' } 
+          : m
+      )
+    );
+    
+    return syncQueuedMessages(sendFunction);
+  }, [queuedMessages, syncQueuedMessages]);
+  
   return {
     messages,
-    isLoading,
-    error,
-    sendMessage,
-    newMessage,
-    setNewMessage,
-    loading: isLoading,
-    sending,
-    typingUsers: [], // This would be populated from useTypingIndicator
     connectionState,
-    handleSendMessage: sendMessage,
-    handleTyping,
-    loadMoreMessages,
-    hasMoreMessages,
-    totalMessages,
-    formatTimestamp
+    sendMessage,
+    queuedMessages,
+    hasFailedMessages,
+    queueOfflineMessage,
+    syncQueuedMessages,
+    retryFailedMessages
   };
 };
+
+export default useRealtimeChat;
