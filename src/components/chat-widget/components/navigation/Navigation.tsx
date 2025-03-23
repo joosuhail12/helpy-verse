@@ -2,39 +2,34 @@
 import React from 'react';
 import { Home, MessageSquare } from 'lucide-react';
 import { useThemeContext } from '@/context/ThemeContext';
+import { View } from '../../container/ChatWidgetContainer';
 
 interface NavigationProps {
-  activeView: 'home' | 'messages';
-  setActiveView: (view: 'home' | 'messages') => void;
+  activeView: View;
+  setActiveView: React.Dispatch<React.SetStateAction<View>>;
 }
 
 const Navigation: React.FC<NavigationProps> = ({ activeView, setActiveView }) => {
   const { colors } = useThemeContext();
-  
+
   return (
-    <div className="flex justify-between border-t border-gray-200" 
-      style={{ borderColor: colors.border }}>
+    <div className="bg-white border-t flex justify-around py-2" style={{ borderColor: colors.border }}>
       <button
-        className={`flex flex-col items-center justify-center py-3 flex-1 ${
+        onClick={() => setActiveView('home')}
+        className={`flex flex-col items-center p-2 rounded-md transition-colors ${
           activeView === 'home' ? 'text-primary' : 'text-gray-500'
         }`}
-        onClick={() => setActiveView('home')}
-        style={{ 
-          color: activeView === 'home' ? colors.primary : `${colors.foreground}88`
-        }}
+        style={{ color: activeView === 'home' ? colors.primary : undefined }}
       >
         <Home size={20} />
         <span className="text-xs mt-1">Home</span>
       </button>
-      
       <button
-        className={`flex flex-col items-center justify-center py-3 flex-1 ${
-          activeView === 'messages' ? 'text-primary' : 'text-gray-500'
-        }`}
         onClick={() => setActiveView('messages')}
-        style={{ 
-          color: activeView === 'messages' ? colors.primary : `${colors.foreground}88`
-        }}
+        className={`flex flex-col items-center p-2 rounded-md transition-colors ${
+          activeView === 'messages' || activeView === 'conversation' ? 'text-primary' : 'text-gray-500'
+        }`}
+        style={{ color: activeView === 'messages' || activeView === 'conversation' ? colors.primary : undefined }}
       >
         <MessageSquare size={20} />
         <span className="text-xs mt-1">Messages</span>

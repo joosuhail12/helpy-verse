@@ -4,15 +4,16 @@ import { ChevronLeft } from 'lucide-react';
 import { useChat } from '@/hooks/chat/useChat';
 import { useThemeContext } from '@/context/ThemeContext';
 import ConversationView from '../components/conversation/ConversationView';
+import { View } from '../container/ChatWidgetContainer';
 
 interface MessagesViewProps {
   workspaceId: string;
   onClose: () => void;
-  setActiveView: (view: string) => void;
+  setActiveView: (view: View) => void;
 }
 
 const MessagesView: React.FC<MessagesViewProps> = ({ workspaceId, onClose, setActiveView }) => {
-  const { conversations, currentConversation, selectConversation } = useChat();
+  const { conversations, currentConversation, selectConversation, createNewConversation } = useChat();
   const { colors } = useThemeContext();
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
 
@@ -68,7 +69,7 @@ const MessagesView: React.FC<MessagesViewProps> = ({ workspaceId, onClose, setAc
                   className="mt-4 px-4 py-2 rounded-md"
                   style={{ backgroundColor: colors.primary, color: colors.primaryForeground }}
                   onClick={() => {
-                    createNewConversation().then(id => {
+                    createNewConversation("New conversation").then(id => {
                       selectConversation(id);
                       setActiveView('conversation');
                     });

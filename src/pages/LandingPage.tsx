@@ -3,6 +3,7 @@ import React, { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { ChatWidget } from '@/components/chat-widget/ChatWidget';
+import { ThemeConfig } from '@/context/ThemeContext';
 
 /**
  * Landing page that is accessible without authentication
@@ -12,13 +13,30 @@ const LandingPage = () => {
   const navigate = useNavigate();
 
   // Example of white-labeled theme
-  const chatTheme = {
-    primary: '#9b87f5',
-    primaryForeground: '#ffffff',
-    background: '#ffffff',
-    userMessage: '#9b87f5',
-    agentMessage: '#f1f1f1',
-    border: '#eaeaea'
+  const chatTheme: Partial<ThemeConfig> = {
+    colors: {
+      primary: '#9b87f5',
+      primaryForeground: '#ffffff',
+      background: '#ffffff',
+      foreground: '#1A1F2C', 
+      border: '#eaeaea',
+      userMessage: '#9b87f5',
+      userMessageText: '#ffffff',
+      agentMessage: '#f1f1f1',
+      agentMessageText: '#1A1F2C',
+      inputBackground: '#f9f9f9'
+    },
+    position: 'right',
+    compact: false,
+    labels: {
+      welcomeTitle: 'Hello there.',
+      welcomeSubtitle: 'How can we help?',
+      askQuestionButton: 'Ask a question',
+      recentMessagesTitle: 'Recent message',
+      noMessagesText: 'No messages yet. Start a conversation!',
+      startConversationButton: 'Start a conversation',
+      messagePlaceholder: 'Type a message...'
+    }
   };
 
   return (

@@ -14,7 +14,7 @@ interface ChatWidgetContainerProps {
   compact?: boolean;
 }
 
-type View = 'home' | 'messages' | 'conversation';
+export type View = 'home' | 'messages' | 'conversation';
 
 const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({ 
   onClose, 
@@ -53,8 +53,8 @@ const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({
   return (
     <div className={`flex flex-col h-full text-gray-900 ${compact ? 'max-w-xs' : 'w-full'}`} 
       style={{ backgroundColor: colors.background, color: colors.foreground }}>
-      {activeView === 'home' && <HomeView workspaceId={workspaceId} onClose={onClose} setActiveView={setActiveView} />}
-      {activeView === 'messages' && <MessagesView workspaceId={workspaceId} onClose={onClose} setActiveView={setActiveView} />}
+      {activeView === 'home' && <HomeView workspaceId={workspaceId} onClose={onClose} setActiveView={(view: View) => setActiveView(view)} />}
+      {activeView === 'messages' && <MessagesView workspaceId={workspaceId} onClose={onClose} setActiveView={(view: View) => setActiveView(view)} />}
       {activeView === 'conversation' && currentConversation && 
         <ConversationView conversationId={currentConversation.id} workspaceId={workspaceId} onBack={() => setActiveView('messages')} />}
       
