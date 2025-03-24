@@ -3,9 +3,11 @@ import React, { useState, useEffect } from 'react';
 import { useChat } from '@/hooks/chat/useChat';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
-import { ChatMessage } from './types';
+import TypingIndicator from './TypingIndicator';
+import { ChatMessage, FileAttachment } from './types';
 import { ChevronLeft } from 'lucide-react';
 import { useThemeContext } from '@/context/ThemeContext';
+import { useTypingIndicator } from '@/hooks/chat/useTypingIndicator';
 
 interface ConversationViewProps {
   conversationId: string;
@@ -18,6 +20,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({ conversationId, wor
   const [isSending, setIsSending] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const { colors } = useThemeContext();
+  const { isTyping, typingUser } = useTypingIndicator(conversationId, workspaceId);
 
   // Load messages for this conversation
   useEffect(() => {
@@ -33,8 +36,8 @@ const ConversationView: React.FC<ConversationViewProps> = ({ conversationId, wor
     fetchMessages();
   }, [conversationId, getMessages]);
 
-  const handleSendMessage = async (messageText: string) => {
-    if (!messageText.trim()) return;
+  const handleSendMessage = async (messageText: string, attachments: FileAttachment[] = []) => {
+    if (!messageText.trim() && (!attachments || attachments.length === 0)) return;
     
     setIsSending(true);
     
@@ -44,13 +47,26 @@ const ConversationView: React.FC<ConversationViewProps> = ({ conversationId, wor
       sender: 'user',
       content: messageText,
       timestamp: new Date(),
-      conversationId: conversationId
+      conversationId: conversationId,
+      attachments,
+      readBy: []
     };
     
     setMessages(prev => [...prev, userMessage]);
     
     try {
+      // For simplicity, we're just passing the message text to sendMessage
+      // In a real implementation, you would also need to handle file uploads
       await sendMessage(conversationId, messageText);
+      
+      // Mark message as read by the system in a few seconds (simulating agent reading)
+      setTimeout(() => {
+        setMessages(prev => prev.map(msg => 
+          msg.id === userMessage.id 
+            ? { ...msg, readBy: [...(msg.readBy || []), 'system'] } 
+            : msg
+        ));
+      }, 2000);
     } catch (error) {
       console.error('Failed to send message:', error);
     } finally {
@@ -74,11 +90,14 @@ const ConversationView: React.FC<ConversationViewProps> = ({ conversationId, wor
       
       <div className="flex-1 overflow-y-auto p-4">
         <MessageList conversationId={conversationId} />
+        {isTyping && <TypingIndicator agentName={typingUser || undefined} />}
       </div>
       
       <MessageInput
         onSendMessage={handleSendMessage}
         isDisabled={isSending || loadingMessages}
+        conversationId={conversationId}
+        workspaceId={workspaceId}
       />
     </div>
   );

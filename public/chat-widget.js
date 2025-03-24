@@ -32,7 +32,13 @@
       colors: window.PULLSE_THEME_COLORS || {},
       position: window.PULLSE_POSITION || 'right',
       compact: window.PULLSE_COMPACT === true,
-      labels: window.PULLSE_LABELS || {}
+      labels: window.PULLSE_LABELS || {},
+      features: {
+        typingIndicator: window.PULLSE_FEATURES?.typingIndicator !== false,
+        reactions: window.PULLSE_FEATURES?.reactions !== false,
+        fileAttachments: window.PULLSE_FEATURES?.fileAttachments !== false,
+        readReceipts: window.PULLSE_FEATURES?.readReceipts !== false
+      }
     }
   };
   

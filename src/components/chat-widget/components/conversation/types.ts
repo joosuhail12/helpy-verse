@@ -6,6 +6,9 @@ export interface ChatMessage {
   timestamp: Date | string;
   conversationId: string;
   metadata?: Record<string, any>;
+  attachments?: FileAttachment[];
+  reactions?: Record<string, string[]>;
+  readBy?: string[];
 }
 
 export interface Conversation {
@@ -20,4 +23,12 @@ export interface TypingStatus {
   userId: string;
   username: string;
   isTyping: boolean;
+}
+
+export interface FileAttachment {
+  id: string;
+  name: string;
+  type: string;
+  url: string;
+  size: number;
 }
