@@ -2,28 +2,41 @@
 import React from 'react';
 import { useThemeContext } from '@/context/ThemeContext';
 
-interface TypingIndicatorProps {
-  agentName?: string;
+interface TypingUser {
+  clientId: string;
+  name?: string;
 }
 
-const TypingIndicator: React.FC<TypingIndicatorProps> = ({ agentName = 'Agent' }) => {
+interface TypingIndicatorProps {
+  users: TypingUser[];
+}
+
+const TypingIndicator: React.FC<TypingIndicatorProps> = ({ users }) => {
   const { colors } = useThemeContext();
   
+  if (users.length === 0) return null;
+  
+  // Create a readable string of who's typing
+  const getTypingText = () => {
+    if (users.length === 1) {
+      return `${users[0].name || 'Someone'} is typing...`;
+    } else if (users.length === 2) {
+      return `${users[0].name || 'Someone'} and ${users[1].name || 'someone'} are typing...`;
+    } else {
+      return `${users.length} people are typing...`;
+    }
+  };
+  
   return (
-    <div 
-      className="flex items-center mb-4"
-      style={{ color: colors.foreground }}
-    >
-      <div 
-        className="bg-gray-200 p-3 rounded-lg flex items-center"
-        style={{ backgroundColor: colors.agentMessage, color: colors.agentMessageText }}
-      >
-        <span className="text-sm mr-2">{agentName} is typing</span>
-        <div className="flex space-x-1">
-          <div className="w-2 h-2 rounded-full bg-current animate-pulse" style={{ animationDelay: '0ms' }}></div>
-          <div className="w-2 h-2 rounded-full bg-current animate-pulse" style={{ animationDelay: '200ms' }}></div>
-          <div className="w-2 h-2 rounded-full bg-current animate-pulse" style={{ animationDelay: '400ms' }}></div>
+    <div className="flex items-center py-2">
+      <div className="flex justify-center items-center px-3 py-1 rounded-full bg-opacity-10" 
+        style={{ backgroundColor: `${colors.agentMessage}50` }}>
+        <div className="flex space-x-1 mr-2">
+          <div className="w-2 h-2 rounded-full animate-bounce" style={{ backgroundColor: colors.primary, animationDelay: '0ms' }} />
+          <div className="w-2 h-2 rounded-full animate-bounce" style={{ backgroundColor: colors.primary, animationDelay: '150ms' }} />
+          <div className="w-2 h-2 rounded-full animate-bounce" style={{ backgroundColor: colors.primary, animationDelay: '300ms' }} />
         </div>
+        <span className="text-xs opacity-75">{getTypingText()}</span>
       </div>
     </div>
   );

@@ -1,103 +1,106 @@
 
-import React, { useState, useEffect } from 'react';
-import { useChat } from '@/hooks/chat/useChat';
+import React, { useState, useEffect, useRef } from 'react';
+import { ChatHeader } from '../header/ChatHeader';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
-import TypingIndicator from './TypingIndicator';
-import { ChatMessage, FileAttachment } from './types';
-import { ChevronLeft } from 'lucide-react';
+import { useMessageSubscription } from '@/hooks/chat/useMessageSubscription';
+import { useOfflineMessaging } from '@/hooks/chat/useOfflineMessaging';
 import { useThemeContext } from '@/context/ThemeContext';
+import { ChatMessage } from './types';
+import { v4 as uuidv4 } from 'uuid';
+import TypingIndicator from './TypingIndicator';
 import { useTypingIndicator } from '@/hooks/chat/useTypingIndicator';
 
 interface ConversationViewProps {
   conversationId: string;
   workspaceId: string;
-  onBack?: () => void;
+  onBack: () => void;
 }
 
 const ConversationView: React.FC<ConversationViewProps> = ({ conversationId, workspaceId, onBack }) => {
-  const { sendMessage, getMessages, loadingMessages } = useChat();
-  const [isSending, setIsSending] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const { colors } = useThemeContext();
-  const { isTyping, typingUser } = useTypingIndicator(conversationId, workspaceId);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const { publishMessage, isSubscribed } = useMessageSubscription(conversationId, workspaceId, {
+    onMessage: (message) => {
+      setMessages(prev => [...prev, message]);
+    },
+  });
+  const { queueMessage, getQueuedMessages, clearQueuedMessages } = useOfflineMessaging(conversationId);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { typingUsers, startTyping } = useTypingIndicator(conversationId, 'User');
 
-  // Load messages for this conversation
   useEffect(() => {
-    const fetchMessages = async () => {
-      if (conversationId) {
-        const conversationMessages = await getMessages(conversationId);
-        if (conversationMessages && conversationMessages.length > 0) {
-          setMessages(conversationMessages);
+    // Scroll to bottom whenever messages change
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, typingUsers]);
+
+  useEffect(() => {
+    // Check for and send queued messages when connection is restored
+    if (isSubscribed) {
+      const sendQueuedMessages = async () => {
+        const queuedMessages = await getQueuedMessages();
+        if (queuedMessages.length > 0) {
+          for (const message of queuedMessages) {
+            await publishMessage(message);
+          }
+          await clearQueuedMessages();
         }
-      }
-    };
+      };
 
-    fetchMessages();
-  }, [conversationId, getMessages]);
+      sendQueuedMessages();
+    }
+  }, [isSubscribed, getQueuedMessages, publishMessage, clearQueuedMessages]);
 
-  const handleSendMessage = async (messageText: string, attachments: FileAttachment[] = []) => {
-    if (!messageText.trim() && (!attachments || attachments.length === 0)) return;
-    
-    setIsSending(true);
-    
-    // Add user message to UI immediately
-    const userMessage: ChatMessage = {
-      id: Date.now().toString(),
+  const handleSendMessage = async (content: string) => {
+    const newMessage: ChatMessage = {
+      id: uuidv4(),
       sender: 'user',
-      content: messageText,
+      content,
       timestamp: new Date(),
-      conversationId: conversationId,
-      attachments,
-      readBy: []
+      conversationId,
     };
-    
-    setMessages(prev => [...prev, userMessage]);
-    
-    try {
-      // For simplicity, we're just passing the message text to sendMessage
-      // In a real implementation, you would also need to handle file uploads
-      await sendMessage(conversationId, messageText);
-      
-      // Mark message as read by the system in a few seconds (simulating agent reading)
+
+    setMessages(prev => [...prev, newMessage]);
+
+    if (isSubscribed) {
+      await publishMessage(newMessage);
+
+      // Simulate agent response for demonstration
       setTimeout(() => {
-        setMessages(prev => prev.map(msg => 
-          msg.id === userMessage.id 
-            ? { ...msg, readBy: [...(msg.readBy || []), 'system'] } 
-            : msg
-        ));
-      }, 2000);
-    } catch (error) {
-      console.error('Failed to send message:', error);
-    } finally {
-      setIsSending(false);
+        const agentResponse: ChatMessage = {
+          id: uuidv4(),
+          sender: 'agent',
+          content: `Thanks for your message: "${content}". How can I help further?`,
+          timestamp: new Date(),
+          conversationId,
+          readBy: ['agent-1']
+        };
+        setMessages(prev => [...prev, agentResponse]);
+      }, 1000);
+    } else {
+      await queueMessage(newMessage);
     }
   };
 
   return (
-    <div className="flex flex-col h-full">
-      {onBack && (
-        <div className="border-b p-3 flex items-center" style={{ borderColor: colors.border }}>
-          <button 
-            onClick={onBack}
-            className="p-1 mr-2 rounded-full hover:bg-gray-100 transition-colors"
-          >
-            <ChevronLeft size={20} />
-          </button>
-          <h2 className="font-medium truncate">Conversation</h2>
-        </div>
-      )}
+    <div className="flex flex-col h-full" style={{ background: colors.background, color: colors.foreground }}>
+      <ChatHeader title={`Conversation ${conversationId.substring(0, 8)}`} onBack={onBack} />
       
       <div className="flex-1 overflow-y-auto p-4">
-        <MessageList conversationId={conversationId} />
-        {isTyping && <TypingIndicator agentName={typingUser || undefined} />}
+        <MessageList messages={messages} />
+        
+        {typingUsers.length > 0 && (
+          <TypingIndicator users={typingUsers} />
+        )}
+        
+        <div ref={messagesEndRef} />
       </div>
       
-      <MessageInput
-        onSendMessage={handleSendMessage}
-        isDisabled={isSending || loadingMessages}
-        conversationId={conversationId}
-        workspaceId={workspaceId}
+      <MessageInput 
+        onSendMessage={handleSendMessage} 
+        onTyping={startTyping}
       />
     </div>
   );

@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
@@ -23,8 +22,7 @@ const LandingPage = () => {
       userMessage: '#9b87f5',
       userMessageText: '#ffffff',
       agentMessage: '#f1f1f1',
-      agentMessageText: '#1A1F2C',
-      inputBackground: '#f9f9f9'
+      agentMessageText: '#1A1F2C'
     },
     position: 'right',
     compact: false,
@@ -34,7 +32,6 @@ const LandingPage = () => {
       askQuestionButton: 'Ask a question',
       recentMessagesTitle: 'Recent message',
       noMessagesText: 'No messages yet. Start a conversation!',
-      startConversationButton: 'Start a conversation',
       messagePlaceholder: 'Type a message...'
     }
   };
