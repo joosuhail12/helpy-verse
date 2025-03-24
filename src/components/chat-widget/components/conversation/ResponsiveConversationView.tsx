@@ -1,87 +1,80 @@
-
-import React, { useState, useEffect } from 'react';
-import { ChevronLeft } from 'lucide-react';
-import { useChat } from '@/hooks/chat/useChat';
+import React, { useState, useEffect, useRef } from 'react';
+import { useThemeContext } from '@/context/ThemeContext';
+import { ChatMessage } from './types';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
-import { ChatMessage } from './types';
+import TypingIndicator from './TypingIndicator';
+import { useTypingIndicator } from '@/hooks/chat/useTypingIndicator';
+import { v4 as uuidv4 } from 'uuid';
 
 interface ResponsiveConversationViewProps {
+  messages: ChatMessage[];
+  onSendMessage: (message: string) => void;
+  isLoading?: boolean;
+  agentName?: string;
   conversationId: string;
-  workspaceId: string;
-  onBack: () => void;
 }
 
 const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
-  conversationId,
-  workspaceId,
-  onBack
+  messages,
+  onSendMessage,
+  isLoading = false,
+  agentName,
+  conversationId
 }) => {
-  const { sendMessage, getMessages, loadingMessages } = useChat();
-  const [isSending, setIsSending] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const { colors } = useThemeContext();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { typingUsers, startTyping } = useTypingIndicator(conversationId);
+  const [localMessages, setLocalMessages] = useState<ChatMessage[]>(messages);
 
-  // Load messages for this conversation
+  // Update local messages when prop changes
   useEffect(() => {
-    const fetchMessages = async () => {
-      if (conversationId) {
-        const conversationMessages = await getMessages(conversationId);
-        if (conversationMessages) {
-          setMessages(conversationMessages);
-        }
-      }
-    };
+    setLocalMessages(messages);
+  }, [messages]);
 
-    fetchMessages();
-  }, [conversationId, getMessages]);
-
-  const handleSendMessage = async (messageText: string) => {
-    if (!messageText.trim()) return;
-    
-    setIsSending(true);
-    
-    // Add user message to UI immediately
-    const userMessage: ChatMessage = {
-      id: Date.now().toString(),
-      sender: 'user',
-      content: messageText,
-      timestamp: new Date(),
-      conversationId
-    };
-    
-    setMessages(prev => [...prev, userMessage]);
-    
-    try {
-      await sendMessage(conversationId, messageText);
-    } catch (error) {
-      console.error('Failed to send message:', error);
-    } finally {
-      setIsSending(false);
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
+  }, [localMessages, typingUsers]);
+
+  const handleSendMessage = (content: string) => {
+    // Create a temporary local message
+    const tempMessage: ChatMessage = {
+      id: uuidv4(),
+      sender: 'user',
+      content,
+      timestamp: new Date(),
+      conversationId,
+    };
+
+    // Add to local state immediately for UI responsiveness
+    setLocalMessages(prev => [...prev, tempMessage]);
+    
+    // Send to parent component for processing
+    onSendMessage(content);
   };
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="border-b p-3 flex items-center">
-        <button 
-          onClick={onBack}
-          className="p-1 mr-2 rounded-full hover:bg-gray-100 transition-colors"
-        >
-          <ChevronLeft size={20} />
-        </button>
-        <h2 className="font-medium">Conversation</h2>
-      </div>
-      
-      {/* Messages */}
+    <div className="flex flex-col h-full" style={{ background: colors.background, color: colors.foreground }}>
       <div className="flex-1 overflow-y-auto p-4">
-        <MessageList conversationId={conversationId} />
+        <MessageList messages={localMessages} />
+        
+        {(typingUsers.length > 0 || agentName) && (
+          <TypingIndicator 
+            users={typingUsers} 
+            agentName={isLoading ? agentName : undefined} 
+          />
+        )}
+        
+        <div ref={messagesEndRef} />
       </div>
       
-      {/* Input */}
-      <MessageInput
-        onSendMessage={handleSendMessage}
-        isDisabled={isSending || loadingMessages}
+      <MessageInput 
+        onSendMessage={handleSendMessage} 
+        onTyping={startTyping}
+        isDisabled={isLoading}
       />
     </div>
   );

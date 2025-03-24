@@ -1,6 +1,6 @@
 
 import React, { useState, useRef } from 'react';
-import { PaperPlaneIcon, Paperclip } from 'lucide-react';
+import { Send, Paperclip } from 'lucide-react';
 import { useThemeContext } from '@/context/ThemeContext';
 import { FileAttachment } from './types';
 import FileAttachmentItem from './FileAttachmentItem';
@@ -8,9 +8,10 @@ import FileAttachmentItem from './FileAttachmentItem';
 interface MessageInputProps {
   onSendMessage: (content: string) => void;
   onTyping?: () => void;
+  isDisabled?: boolean;
 }
 
-const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, onTyping }) => {
+const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, onTyping, isDisabled = false }) => {
   const { colors, labels } = useThemeContext();
   const [message, setMessage] = useState('');
   const [attachments, setAttachments] = useState<FileAttachment[]>([]);
@@ -91,6 +92,7 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, onTyping }) 
           type="button"
           onClick={handleAttachmentClick}
           className="p-2 rounded-full hover:bg-gray-100 flex-shrink-0"
+          disabled={isDisabled}
         >
           <Paperclip size={18} />
         </button>
@@ -100,6 +102,7 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, onTyping }) 
           onChange={handleFileUpload}
           className="hidden"
           multiple
+          disabled={isDisabled}
         />
         <textarea
           value={message}
@@ -112,17 +115,18 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, onTyping }) 
             border: `1px solid ${colors.border}`
           }}
           rows={1}
+          disabled={isDisabled}
         />
         <button
           type="submit"
           className="p-3 rounded-full flex-shrink-0 flex items-center justify-center"
           style={{ 
-            backgroundColor: message.trim() || attachments.length > 0 ? colors.primary : '#ccc',
+            backgroundColor: (message.trim() || attachments.length > 0) && !isDisabled ? colors.primary : '#ccc',
             color: colors.primaryForeground
           }}
-          disabled={message.trim() === '' && attachments.length === 0}
+          disabled={message.trim() === '' && attachments.length === 0 || isDisabled}
         >
-          <PaperPlaneIcon size={18} />
+          <Send size={18} />
         </button>
       </form>
     </div>

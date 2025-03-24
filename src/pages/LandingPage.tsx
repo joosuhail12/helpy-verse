@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
@@ -22,7 +23,8 @@ const LandingPage = () => {
       userMessage: '#9b87f5',
       userMessageText: '#ffffff',
       agentMessage: '#f1f1f1',
-      agentMessageText: '#1A1F2C'
+      agentMessageText: '#1A1F2C',
+      inputBackground: '#f9f9f9'
     },
     position: 'right',
     compact: false,

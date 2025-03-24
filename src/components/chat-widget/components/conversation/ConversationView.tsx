@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { ChatHeader } from '../header/ChatHeader';
+import ChatHeader from '../header/ChatHeader';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import { useMessageSubscription } from '@/hooks/chat/useMessageSubscription';

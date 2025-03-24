@@ -5,19 +5,25 @@ import { useThemeContext } from '@/context/ThemeContext';
 interface TypingUser {
   clientId: string;
   name?: string;
+  timestamp?: number;
 }
 
 interface TypingIndicatorProps {
   users: TypingUser[];
+  agentName?: string;
 }
 
-const TypingIndicator: React.FC<TypingIndicatorProps> = ({ users }) => {
+const TypingIndicator: React.FC<TypingIndicatorProps> = ({ users, agentName }) => {
   const { colors } = useThemeContext();
   
-  if (users.length === 0) return null;
+  if (users.length === 0 && !agentName) return null;
   
   // Create a readable string of who's typing
   const getTypingText = () => {
+    if (agentName) {
+      return `${agentName} is typing...`;
+    }
+    
     if (users.length === 1) {
       return `${users[0].name || 'Someone'} is typing...`;
     } else if (users.length === 2) {

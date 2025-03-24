@@ -6,6 +6,7 @@ import { getAblyChannel } from '@/utils/ably';
 interface TypingUser {
   clientId: string;
   name?: string;
+  timestamp?: number;
 }
 
 export const useTypingIndicator = (
@@ -19,26 +20,29 @@ export const useTypingIndicator = (
   useEffect(() => {
     if (!client || !conversationId) return;
 
-    let subscriptionCleanup: (() => void) | null = null;
+    let channel: any;
+    let startCallback: any;
+    let stopCallback: any;
+    let cleanupInterval: NodeJS.Timeout;
     
     const setupSubscription = async () => {
       try {
-        const channel = await getAblyChannel(`chat:typing:${conversationId}`);
+        channel = await getAblyChannel(`chat:typing:${conversationId}`);
         
         // Subscribe to typing:start events
-        const startCallback = (message: any) => {
+        startCallback = (message: any) => {
           const user = message.data as TypingUser;
           // Only add if it's not the current user and not already in the list
           if (user.clientId !== clientId) {
             setTypingUsers(prev => {
               if (prev.some(u => u.clientId === user.clientId)) return prev;
-              return [...prev, user];
+              return [...prev, {...user, timestamp: Date.now()}];
             });
           }
         };
         
         // Subscribe to typing:stop events
-        const stopCallback = (message: any) => {
+        stopCallback = (message: any) => {
           const userId = message.data.clientId;
           if (userId !== clientId) {
             setTypingUsers(prev => prev.filter(user => user.clientId !== userId));
@@ -49,21 +53,15 @@ export const useTypingIndicator = (
         channel.subscribe('typing:stop', stopCallback);
         
         // Setup automatic cleanup after timeout
-        const cleanupInterval = setInterval(() => {
+        cleanupInterval = setInterval(() => {
           setTypingUsers(prev => {
             // Remove typing indicators older than 5 seconds
             const fiveSecondsAgo = Date.now() - 5000;
             return prev.filter(user => 
-              (user.timestamp as unknown as number || 0) > fiveSecondsAgo
+              (user.timestamp || 0) > fiveSecondsAgo
             );
           });
         }, 1000);
-        
-        subscriptionCleanup = () => {
-          channel.unsubscribe('typing:start', startCallback);
-          channel.unsubscribe('typing:stop', stopCallback);
-          clearInterval(cleanupInterval);
-        };
       } catch (error) {
         console.error('Error setting up typing indicator subscription:', error);
       }
@@ -72,9 +70,11 @@ export const useTypingIndicator = (
     setupSubscription();
     
     return () => {
-      if (subscriptionCleanup) {
-        subscriptionCleanup();
+      if (channel) {
+        if (startCallback) channel.unsubscribe('typing:start', startCallback);
+        if (stopCallback) channel.unsubscribe('typing:stop', stopCallback);
       }
+      if (cleanupInterval) clearInterval(cleanupInterval);
     };
   }, [client, clientId, conversationId]);
 
