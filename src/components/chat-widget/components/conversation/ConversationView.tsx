@@ -27,7 +27,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({ conversationId, wor
   });
   const { queueMessage, getQueuedMessages, clearQueuedMessages } = useOfflineMessaging(conversationId);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { typingUsers, startTyping } = useTypingIndicator(conversationId, 'User');
+  const { typingUsers, startTyping } = useTypingIndicator(conversationId, workspaceId);
 
   useEffect(() => {
     // Scroll to bottom whenever messages change

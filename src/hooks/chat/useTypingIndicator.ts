@@ -21,6 +21,7 @@ export const useTypingIndicator = (
   const { clientId } = useAbly();
   const [channel, setChannel] = useState<any>(null);
   const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [subscription, setSubscription] = useState<any>(null);
 
   // Initialize channel
   useEffect(() => {
@@ -31,7 +32,7 @@ export const useTypingIndicator = (
       setChannel(ablyChannel);
       
       // Subscribe to typing events
-      const subscription = ablyChannel.subscribe('typing', (message: any) => {
+      const sub = ablyChannel.subscribe('typing', (message: any) => {
         const { clientId: typingClientId, isTyping } = message.data;
         
         setTypingUsers((prevUsers) => {
@@ -55,13 +56,22 @@ export const useTypingIndicator = (
         }
       });
       
-      return () => {
-        subscription.unsubscribe();
-      };
+      setSubscription(sub);
     };
     
     initChannel();
-  }, [conversationId, workspaceId, options]);
+    
+    // Clean up subscription when component unmounts
+    return () => {
+      if (subscription) {
+        try {
+          subscription.unsubscribe();
+        } catch (err) {
+          console.error('Error unsubscribing from typing events:', err);
+        }
+      }
+    };
+  }, [conversationId, workspaceId, options, clientId]);
 
   // Start typing indicator
   const startTyping = useCallback(async () => {

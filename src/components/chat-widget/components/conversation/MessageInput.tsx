@@ -6,8 +6,10 @@ import { useThemeContext } from '@/context/ThemeContext';
 export interface MessageInputProps {
   onSendMessage: (message: string) => void;
   onChange?: (text: string) => void;
+  onTyping?: () => void;
   placeholder?: string;
   disabled?: boolean;
+  isDisabled?: boolean; // Alternative prop name for disabled
   showAttachments?: boolean;
   showEmoji?: boolean;
 }
@@ -15,14 +17,19 @@ export interface MessageInputProps {
 const MessageInput: React.FC<MessageInputProps> = ({
   onSendMessage,
   onChange,
+  onTyping,
   placeholder = 'Type a message...',
   disabled = false,
+  isDisabled, // Use this if provided, otherwise use disabled
   showAttachments = true,
   showEmoji = true
 }) => {
   const [message, setMessage] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { colors } = useThemeContext();
+  
+  // Use isDisabled if provided, otherwise use disabled
+  const isInputDisabled = isDisabled !== undefined ? isDisabled : disabled;
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newMessage = e.target.value;
@@ -31,6 +38,11 @@ const MessageInput: React.FC<MessageInputProps> = ({
     // Call the onChange handler if provided
     if (onChange) {
       onChange(newMessage);
+    }
+    
+    // Call onTyping if provided
+    if (onTyping && newMessage.trim()) {
+      onTyping();
     }
     
     // Auto-resize the textarea
@@ -48,7 +60,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
   };
 
   const handleSend = () => {
-    if (message.trim() && !disabled) {
+    if (message.trim() && !isInputDisabled) {
       onSendMessage(message.trim());
       setMessage('');
       
@@ -62,7 +74,10 @@ const MessageInput: React.FC<MessageInputProps> = ({
   return (
     <div 
       className="flex items-end p-2 border rounded-lg"
-      style={{ borderColor: colors.border, backgroundColor: colors.backgroundSecondary }}
+      style={{ 
+        borderColor: colors.border, 
+        backgroundColor: colors.inputBackground || colors.background 
+      }}
     >
       {showAttachments && (
         <button 
@@ -79,7 +94,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
         onChange={handleChange}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
-        disabled={disabled}
+        disabled={isInputDisabled}
         className="flex-1 outline-none border-none resize-none bg-transparent py-2 px-3 max-h-32"
         style={{ color: colors.foreground }}
         rows={1}
@@ -96,8 +111,8 @@ const MessageInput: React.FC<MessageInputProps> = ({
       
       <button
         onClick={handleSend}
-        disabled={!message.trim() || disabled}
-        className={`p-2 rounded-full ${message.trim() && !disabled ? 'bg-primary text-white' : 'bg-gray-200 text-gray-500'}`}
+        disabled={!message.trim() || isInputDisabled}
+        className={`p-2 rounded-full ${message.trim() && !isInputDisabled ? 'bg-primary text-white' : 'bg-gray-200 text-gray-500'}`}
         aria-label="Send message"
       >
         <Send size={20} />

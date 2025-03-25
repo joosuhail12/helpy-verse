@@ -52,7 +52,7 @@ const EnhancedConversationView: React.FC<EnhancedConversationViewProps> = ({
       
       <MessageInput 
         onSendMessage={handleSendMessage}
-        isDisabled={isDisabled || isLoading}
+        disabled={isDisabled || isLoading}
       />
     </div>
   );

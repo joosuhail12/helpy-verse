@@ -6,6 +6,7 @@ export interface ThemeConfig {
     primary: string;
     primaryForeground: string;
     background: string;
+    backgroundSecondary: string; // Added this property
     foreground: string;
     border: string;
     userMessage: string;
@@ -31,6 +32,7 @@ const defaultTheme: ThemeConfig = {
     primary: '#9b87f5',
     primaryForeground: '#ffffff',
     background: '#ffffff',
+    backgroundSecondary: '#f9f9f9', // Added default value
     foreground: '#1A1F2C',
     border: '#eaeaea',
     userMessage: '#9b87f5',

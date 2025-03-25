@@ -61,6 +61,10 @@ export const useAgentPresence = (workspaceId: string, conversationId: string) =>
       setAgents(Object.values(uniqueAgents));
     };
     
+    let enterSubscription: any = null;
+    let leaveSubscription: any = null;
+    let updateSubscription: any = null;
+    
     const fetchAgentPresence = async () => {
       try {
         setIsLoading(true);
@@ -81,7 +85,7 @@ export const useAgentPresence = (workspaceId: string, conversationId: string) =>
           setIsLoading(false);
           
           // Subscribe to presence updates
-          const enterSubscription = channel.presence.subscribe('enter', (member: any) => {
+          enterSubscription = channel.presence.subscribe('enter', (member: any) => {
             setAgents(prevAgents => {
               // Check if agent already exists
               const exists = prevAgents.some(agent => agent.clientId === member.clientId);
@@ -112,7 +116,7 @@ export const useAgentPresence = (workspaceId: string, conversationId: string) =>
             });
           });
           
-          const leaveSubscription = channel.presence.subscribe('leave', (member: any) => {
+          leaveSubscription = channel.presence.subscribe('leave', (member: any) => {
             setAgents(prevAgents => 
               prevAgents.map(agent => 
                 agent.clientId === member.clientId 
@@ -122,7 +126,7 @@ export const useAgentPresence = (workspaceId: string, conversationId: string) =>
             );
           });
           
-          const updateSubscription = channel.presence.subscribe('update', (member: any) => {
+          updateSubscription = channel.presence.subscribe('update', (member: any) => {
             setAgents(prevAgents => 
               prevAgents.map(agent => 
                 agent.clientId === member.clientId 
@@ -137,13 +141,6 @@ export const useAgentPresence = (workspaceId: string, conversationId: string) =>
               )
             );
           });
-          
-          // Return cleanup function
-          return () => {
-            enterSubscription.unsubscribe();
-            leaveSubscription.unsubscribe();
-            updateSubscription.unsubscribe();
-          };
         });
       } catch (err) {
         console.error('Error fetching agent presence:', err);
@@ -153,6 +150,33 @@ export const useAgentPresence = (workspaceId: string, conversationId: string) =>
     };
     
     fetchAgentPresence();
+    
+    // Return cleanup function
+    return () => {
+      if (enterSubscription) {
+        try {
+          enterSubscription.unsubscribe();
+        } catch (e) {
+          console.error('Error unsubscribing from enter events:', e);
+        }
+      }
+      
+      if (leaveSubscription) {
+        try {
+          leaveSubscription.unsubscribe();
+        } catch (e) {
+          console.error('Error unsubscribing from leave events:', e);
+        }
+      }
+      
+      if (updateSubscription) {
+        try {
+          updateSubscription.unsubscribe();
+        } catch (e) {
+          console.error('Error unsubscribing from update events:', e);
+        }
+      }
+    };
   }, [workspaceId, conversationId, clientId]);
 
   return {
