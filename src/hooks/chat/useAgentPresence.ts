@@ -1,99 +1,163 @@
 
 import { useState, useEffect } from 'react';
+import { getAblyChannel, getWorkspaceChannelName } from '@/utils/ably';
 import { useAbly } from '@/context/AblyContext';
-import { enterPresence, updatePresence, leavePresence, getPresent } from '@/utils/ably/presenceService';
 import { UserStatus } from '@/types/userStatus';
 
 export interface AgentPresence {
   clientId: string;
-  username?: string;
+  username: string;
   status: UserStatus;
   lastSeen?: string;
   avatarUrl?: string;
 }
 
+const mapAblyStatusToUserStatus = (status: string): UserStatus => {
+  switch (status) {
+    case 'online':
+      return 'available';
+    case 'away':
+      return 'inactive';
+    case 'typing':
+      return 'active-conversation';
+    default:
+      return 'offline';
+  }
+};
+
 export const useAgentPresence = (workspaceId: string, conversationId: string) => {
-  const { clientId, isConnected } = useAbly();
   const [agents, setAgents] = useState<AgentPresence[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+  const { clientId } = useAbly();
 
-  // Fetch current presence data on mount
   useEffect(() => {
-    const fetchPresence = async () => {
-      if (!isConnected) return;
+    const updateAgentList = (presenceData: any[]) => {
+      const uniqueAgents: Record<string, AgentPresence> = {};
       
+      presenceData.forEach(presence => {
+        const { clientId, data } = presence;
+        
+        // Skip if this is the current user
+        if (clientId === clientId) return;
+        
+        // Extract agent data
+        const username = data?.username || 'Anonymous Agent';
+        const status = mapAblyStatusToUserStatus(data?.status || 'offline');
+        const avatarUrl = data?.avatarUrl;
+        const lastSeen = data?.lastSeen || new Date().toISOString();
+        
+        // Add to unique agents map
+        uniqueAgents[clientId] = {
+          clientId,
+          username,
+          status,
+          lastSeen,
+          avatarUrl
+        };
+      });
+      
+      // Convert to array
+      setAgents(Object.values(uniqueAgents));
+    };
+    
+    const fetchAgentPresence = async () => {
       try {
         setIsLoading(true);
-        const presentClients = await getPresent(workspaceId, conversationId);
         
-        // Filter for agents and normalize data
-        const agentPresences = presentClients
-          .filter(client => client.metadata?.isAgent)
-          .map(client => ({
-            clientId: client.clientId,
-            username: client.username || 'Agent',
-            status: (client.status as UserStatus) || 'offline',
-            lastSeen: client.lastSeen,
-            avatarUrl: client.metadata?.avatarUrl
-          }));
+        // Get channel for this conversation
+        const channelName = getWorkspaceChannelName(workspaceId, `conversations:${conversationId}`);
+        const channel = await getAblyChannel(channelName);
         
-        setAgents(agentPresences);
-      } catch (error) {
-        console.error('Failed to fetch presence data:', error);
-      } finally {
+        // Get presence data
+        channel.presence.get((err: Error | null, presenceData: any[]) => {
+          if (err) {
+            setError(err);
+            setIsLoading(false);
+            return;
+          }
+          
+          updateAgentList(presenceData || []);
+          setIsLoading(false);
+          
+          // Subscribe to presence updates
+          const enterSubscription = channel.presence.subscribe('enter', (member: any) => {
+            setAgents(prevAgents => {
+              // Check if agent already exists
+              const exists = prevAgents.some(agent => agent.clientId === member.clientId);
+              
+              if (exists) {
+                // Update existing agent
+                return prevAgents.map(agent => 
+                  agent.clientId === member.clientId 
+                    ? {
+                        ...agent,
+                        status: mapAblyStatusToUserStatus(member.data?.status || 'online'),
+                        username: member.data?.username || agent.username,
+                        avatarUrl: member.data?.avatarUrl || agent.avatarUrl,
+                        lastSeen: new Date().toISOString()
+                      } 
+                    : agent
+                );
+              } else {
+                // Add new agent
+                return [...prevAgents, {
+                  clientId: member.clientId,
+                  username: member.data?.username || 'Anonymous Agent',
+                  status: mapAblyStatusToUserStatus(member.data?.status || 'online'),
+                  lastSeen: new Date().toISOString(),
+                  avatarUrl: member.data?.avatarUrl
+                }];
+              }
+            });
+          });
+          
+          const leaveSubscription = channel.presence.subscribe('leave', (member: any) => {
+            setAgents(prevAgents => 
+              prevAgents.map(agent => 
+                agent.clientId === member.clientId 
+                  ? { ...agent, status: 'offline', lastSeen: new Date().toISOString() } 
+                  : agent
+              )
+            );
+          });
+          
+          const updateSubscription = channel.presence.subscribe('update', (member: any) => {
+            setAgents(prevAgents => 
+              prevAgents.map(agent => 
+                agent.clientId === member.clientId 
+                  ? {
+                      ...agent,
+                      status: mapAblyStatusToUserStatus(member.data?.status || agent.status),
+                      username: member.data?.username || agent.username,
+                      avatarUrl: member.data?.avatarUrl || agent.avatarUrl,
+                      lastSeen: new Date().toISOString()
+                    } 
+                  : agent
+              )
+            );
+          });
+          
+          // Return cleanup function
+          return () => {
+            enterSubscription.unsubscribe();
+            leaveSubscription.unsubscribe();
+            updateSubscription.unsubscribe();
+          };
+        });
+      } catch (err) {
+        console.error('Error fetching agent presence:', err);
+        setError(err instanceof Error ? err : new Error('Unknown error'));
         setIsLoading(false);
       }
     };
-
-    fetchPresence();
     
-    // Set up subscription for presence updates
-    const channelName = `workspace:${workspaceId}:conversations:${conversationId}`;
-    const cleanupSubscription = subscribeToPresenceUpdates(channelName, (newAgents) => {
-      setAgents(newAgents);
-    });
-    
-    return () => {
-      cleanupSubscription();
-    };
-  }, [workspaceId, conversationId, isConnected]);
-
-  // Helper to subscribe to presence updates
-  const subscribeToPresenceUpdates = (channelName: string, callback: (agents: AgentPresence[]) => void) => {
-    // Implementation would connect to Ably channel and listen for presence events
-    // This is a simplified version that would be expanded in a real implementation
-    
-    // In a real implementation, we would:
-    // 1. Subscribe to enter/leave/update events
-    // 2. Update our local state accordingly
-    // 3. Return a cleanup function
-    
-    return () => {
-      // Cleanup function
-    };
-  };
-
-  // Update the current user's presence
-  const updateCurrentPresence = async (status: UserStatus) => {
-    if (!isConnected || !clientId) return;
-    
-    try {
-      await updatePresence(workspaceId, conversationId, {
-        clientId,
-        status,
-        lastSeen: new Date().toISOString(),
-        metadata: {
-          isAgent: true
-        }
-      });
-    } catch (error) {
-      console.error('Failed to update presence:', error);
-    }
-  };
+    fetchAgentPresence();
+  }, [workspaceId, conversationId, clientId]);
 
   return {
     agents,
     isLoading,
-    updateCurrentPresence
+    error
   };
 };

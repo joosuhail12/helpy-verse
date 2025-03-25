@@ -8,6 +8,7 @@ import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import TypingIndicator from './TypingIndicator';
 import { ChatMessage } from './types';
+import { useChat } from '@/hooks/chat/useChat';
 
 export interface ResponsiveConversationViewProps {
   conversationId: string;
@@ -22,36 +23,61 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
 }) => {
   const { messages, sendMessage, isLoading } = useRealtimeChat(conversationId, workspaceId);
   const [typingUsers, setTypingUsers] = useState<{ clientId: string; name?: string }[]>([]);
+  const { getMessages } = useChat();
+  const [loadedMessages, setLoadedMessages] = useState<ChatMessage[]>([]);
+
+  // Load messages when component mounts
+  useEffect(() => {
+    const loadMessages = async () => {
+      const msgs = await getMessages(conversationId);
+      setLoadedMessages(msgs);
+    };
+    
+    loadMessages();
+  }, [conversationId, getMessages]);
+
+  // Initialize message subscription
   const { publishMessage } = useMessageSubscription(conversationId, workspaceId, {
     onMessage: (message: ChatMessage) => {
       // Handle new messages if needed
     }
   });
 
-  const { startTyping, stopTyping } = useTypingIndicator({
-    conversationId,
-    workspaceId,
-    onTypingStatusChanged: (typingStatuses) => {
+  // Initialize typing indicator
+  const { startTyping, stopTyping } = useTypingIndicator(conversationId, workspaceId);
+
+  useEffect(() => {
+    // Subscribe to typing status updates
+    const handleTypingStatusChanged = (typingStatuses: Record<string, boolean>) => {
       setTypingUsers(
         Object.entries(typingStatuses)
           .filter(([_, isTyping]) => isTyping)
           .map(([clientId]) => ({ clientId }))
       );
-    }
-  });
+    };
+    
+    // Set up typing indicator listener
+    // This would typically be handled by the useTypingIndicator hook
+    return () => {
+      // Cleanup typing indicator listener
+    };
+  }, []);
 
   const handleSendMessage = async (content: string) => {
-    stopTyping();
+    if (stopTyping) stopTyping();
     await sendMessage(content);
   };
 
   const handleMessageInputChange = (text: string) => {
     if (text.trim()) {
-      startTyping();
+      if (startTyping) startTyping();
     } else {
-      stopTyping();
+      if (stopTyping) stopTyping();
     }
   };
+
+  // Combine real-time messages with loaded messages
+  const displayMessages = messages.length > 0 ? messages : loadedMessages;
 
   return (
     <div className="flex flex-col h-full">
@@ -62,12 +88,14 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
         conversationId={conversationId}
       />
       <div className="flex-1 overflow-hidden flex flex-col">
-        <MessageList messages={messages} isLoading={isLoading} />
+        <MessageList 
+          messages={displayMessages} 
+          conversationId={conversationId} 
+        />
         <div className="px-4 pb-2">
           <TypingIndicator users={typingUsers} agentName={typingUsers.length === 1 ? "Support agent" : undefined} />
           <MessageInput 
             onSendMessage={handleSendMessage} 
-            onChange={handleMessageInputChange}
           />
         </div>
       </div>

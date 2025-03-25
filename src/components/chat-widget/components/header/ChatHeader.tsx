@@ -7,7 +7,7 @@ import { useAgentPresence } from '@/hooks/chat/useAgentPresence';
 
 export interface ChatHeaderProps {
   title: string;
-  onBackClick?: () => void;
+  onBackClick?: (() => void) | null;
   onClose?: () => void;
   workspaceId?: string;
   conversationId?: string;

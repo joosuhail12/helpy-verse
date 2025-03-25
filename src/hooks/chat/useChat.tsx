@@ -3,11 +3,12 @@ import { useState, useCallback, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Conversation, ChatMessage } from '@/components/chat-widget/components/conversation/types';
 import { useAbly } from '@/context/AblyContext';
+import { MOCK_CONVERSATIONS } from '@/mock/chatMessages';
 
 interface UseChatReturn {
   conversations: Conversation[];
   currentConversation: Conversation | null;
-  createNewConversation: (title?: string) => Promise<string>;
+  createNewConversation: (title?: string, type?: string) => Promise<string>;
   selectConversation: (conversationId: string) => void;
   sendMessage: (conversationId: string, message: string) => Promise<void>;
   getMessages: (conversationId: string) => Promise<ChatMessage[]>;
@@ -21,9 +22,54 @@ export const useChat = (): UseChatReturn => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const { workspaceId } = useAbly();
+  const [mockConversationsInitialized, setMockConversationsInitialized] = useState(false);
+
+  // Initialize with mock conversations
+  useEffect(() => {
+    if (mockConversationsInitialized) return;
+    
+    const initMockConversations = () => {
+      const mockConversations: Conversation[] = [
+        {
+          id: 'customer-service-conv',
+          title: 'Order Issue #12345',
+          lastMessage: 'Great! Have a wonderful day, and don\'t hesitate to reach out if you need any further assistance.',
+          lastMessageTimestamp: new Date().toISOString(),
+          unreadCount: 0,
+          type: 'customer-service'
+        },
+        {
+          id: 'technical-support-conv',
+          title: 'Login Problem',
+          lastMessage: 'You too! Don\'t hesitate to reach out if you need any further assistance.',
+          lastMessageTimestamp: new Date(Date.now() - 45 * 60000).toISOString(),
+          unreadCount: 0,
+          type: 'technical-support'
+        },
+        {
+          id: 'billing-inquiry-conv',
+          title: 'Billing Issue',
+          lastMessage: 'You\'re welcome! Have a wonderful day.',
+          lastMessageTimestamp: new Date(Date.now() - 120 * 60000).toISOString(),
+          unreadCount: 0,
+          type: 'billing-inquiry'
+        }
+      ];
+      
+      setConversations(mockConversations);
+      if (mockConversations.length > 0) {
+        setCurrentConversation(mockConversations[0]);
+      }
+      setMockConversationsInitialized(true);
+    };
+    
+    initMockConversations();
+  }, [mockConversationsInitialized]);
 
   // Load conversations from local storage
   useEffect(() => {
+    if (mockConversationsInitialized) return;
+    
     const savedConversations = localStorage.getItem(`chat_conversations_${workspaceId}`);
     const savedCurrentId = localStorage.getItem(`chat_current_conversation_${workspaceId}`);
     
@@ -42,7 +88,7 @@ export const useChat = (): UseChatReturn => {
         console.error('Error parsing saved conversations:', error);
       }
     }
-  }, [workspaceId]);
+  }, [workspaceId, mockConversationsInitialized]);
 
   // Save conversations to local storage
   useEffect(() => {
@@ -56,13 +102,14 @@ export const useChat = (): UseChatReturn => {
   }, [conversations, currentConversation, workspaceId]);
 
   // Create a new conversation
-  const createNewConversation = useCallback(async (title?: string): Promise<string> => {
+  const createNewConversation = useCallback(async (title?: string, type?: string): Promise<string> => {
     const conversationId = uuidv4();
     const newConversation: Conversation = {
       id: conversationId,
       title: title || `Conversation ${new Date().toLocaleString()}`,
       lastMessageTimestamp: new Date().toISOString(),
       unreadCount: 0,
+      type: type || 'general'
     };
 
     setConversations(prev => [...prev, newConversation]);
@@ -80,9 +127,6 @@ export const useChat = (): UseChatReturn => {
 
   // Send a message
   const sendMessage = useCallback(async (conversationId: string, message: string): Promise<void> => {
-    // In a real app, this would send to an API
-    console.log(`Sending message to conversation ${conversationId}: ${message}`);
-    
     // Create a new message
     const newMessage: ChatMessage = {
       id: uuidv4(),
@@ -109,12 +153,21 @@ export const useChat = (): UseChatReturn => {
       const agentMessage: ChatMessage = {
         id: uuidv4(),
         sender: 'agent',
-        content: `Thanks for your message: "${message}". This is an automated response.`,
+        content: `Thanks for your message: "${message}". How else can I assist you today?`,
         timestamp: new Date(),
         conversationId
       };
       
       setMessages(prev => [...prev, agentMessage]);
+      
+      // Update conversation with agent's response
+      setConversations(prev => prev.map(conv => 
+        conv.id === conversationId ? {
+          ...conv,
+          lastMessage: agentMessage.content,
+          lastMessageTimestamp: new Date().toISOString()
+        } : conv
+      ));
     }, 1000);
   }, []);
 
@@ -122,12 +175,21 @@ export const useChat = (): UseChatReturn => {
   const getMessages = useCallback(async (conversationId: string): Promise<ChatMessage[]> => {
     setLoadingMessages(true);
     
-    // In a real app, this would fetch from an API
-    // For now, we'll just return the messages we have in state for this conversation
+    // Check if it's one of our mock conversations
+    const conversation = conversations.find(c => c.id === conversationId);
+    if (conversation?.type && MOCK_CONVERSATIONS[conversation.type as keyof typeof MOCK_CONVERSATIONS]) {
+      const mockMessageGenerator = MOCK_CONVERSATIONS[conversation.type as keyof typeof MOCK_CONVERSATIONS];
+      const mockMessages = mockMessageGenerator(conversationId);
+      setLoadingMessages(false);
+      return mockMessages;
+    }
+    
+    // Filter messages for this conversation
     const conversationMessages = messages.filter(m => m.conversationId === conversationId);
     
     // If there are no messages yet, add a welcome message
-    if (conversationMessages.length === 0) {
+    let resultMessages = [...conversationMessages];
+    if (resultMessages.length === 0) {
       const welcomeMessage: ChatMessage = {
         id: uuidv4(),
         sender: 'agent',
@@ -136,13 +198,13 @@ export const useChat = (): UseChatReturn => {
         conversationId
       };
       
+      resultMessages = [welcomeMessage];
       setMessages(prev => [...prev, welcomeMessage]);
-      conversationMessages.push(welcomeMessage);
     }
     
     setLoadingMessages(false);
-    return conversationMessages;
-  }, [messages]);
+    return resultMessages;
+  }, [messages, conversations]);
 
   return {
     conversations,

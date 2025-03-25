@@ -1,107 +1,127 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+import { getAblyChannel, getWorkspaceChannelName } from '@/utils/ably';
 import { useAbly } from '@/context/AblyContext';
-import { getAblyChannel } from '@/utils/ably';
 
-interface TypingUser {
+export interface TypingUser {
   clientId: string;
   name?: string;
-  timestamp?: number;
+}
+
+interface TypingIndicatorOptions {
+  onTypingStatusChanged?: (typingStatuses: Record<string, boolean>) => void;
 }
 
 export const useTypingIndicator = (
-  conversationId: string,
-  userName?: string
+  conversationId: string, 
+  workspaceId: string,
+  options?: TypingIndicatorOptions
 ) => {
-  const { client, clientId } = useAbly();
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
-  
-  // Subscribe to typing indicators
+  const { clientId } = useAbly();
+  const [channel, setChannel] = useState<any>(null);
+  const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null);
+
+  // Initialize channel
   useEffect(() => {
-    if (!client || !conversationId) return;
-
-    let channel: any;
-    let startCallback: any;
-    let stopCallback: any;
-    let cleanupInterval: NodeJS.Timeout;
-    
-    const setupSubscription = async () => {
-      try {
-        channel = await getAblyChannel(`chat:typing:${conversationId}`);
-        
-        // Subscribe to typing:start events
-        startCallback = (message: any) => {
-          const user = message.data as TypingUser;
-          // Only add if it's not the current user and not already in the list
-          if (user.clientId !== clientId) {
-            setTypingUsers(prev => {
-              if (prev.some(u => u.clientId === user.clientId)) return prev;
-              return [...prev, {...user, timestamp: Date.now()}];
-            });
-          }
-        };
-        
-        // Subscribe to typing:stop events
-        stopCallback = (message: any) => {
-          const userId = message.data.clientId;
-          if (userId !== clientId) {
-            setTypingUsers(prev => prev.filter(user => user.clientId !== userId));
-          }
-        };
-        
-        channel.subscribe('typing:start', startCallback);
-        channel.subscribe('typing:stop', stopCallback);
-        
-        // Setup automatic cleanup after timeout
-        cleanupInterval = setInterval(() => {
-          setTypingUsers(prev => {
-            // Remove typing indicators older than 5 seconds
-            const fiveSecondsAgo = Date.now() - 5000;
-            return prev.filter(user => 
-              (user.timestamp || 0) > fiveSecondsAgo
-            );
-          });
-        }, 1000);
-      } catch (error) {
-        console.error('Error setting up typing indicator subscription:', error);
-      }
-    };
-    
-    setupSubscription();
-    
-    return () => {
-      if (channel) {
-        if (startCallback) channel.unsubscribe('typing:start', startCallback);
-        if (stopCallback) channel.unsubscribe('typing:stop', stopCallback);
-      }
-      if (cleanupInterval) clearInterval(cleanupInterval);
-    };
-  }, [client, clientId, conversationId]);
-
-  // Report this user is typing
-  const startTyping = useCallback(async () => {
-    if (!client || !conversationId) return;
-    
-    try {
-      const channel = await getAblyChannel(`chat:typing:${conversationId}`);
+    const initChannel = async () => {
+      const channelName = getWorkspaceChannelName(workspaceId, `conversations:${conversationId}:typing`);
+      const ablyChannel = await getAblyChannel(channelName);
       
-      await channel.publish('typing:start', {
-        clientId,
-        name: userName || 'User',
-        timestamp: Date.now()
+      setChannel(ablyChannel);
+      
+      // Subscribe to typing events
+      const subscription = ablyChannel.subscribe('typing', (message: any) => {
+        const { clientId: typingClientId, isTyping } = message.data;
+        
+        setTypingUsers((prevUsers) => {
+          // Update typing users list
+          if (isTyping) {
+            // Add user if not already in the list
+            if (!prevUsers.some(user => user.clientId === typingClientId)) {
+              return [...prevUsers, { clientId: typingClientId }];
+            }
+          } else {
+            // Remove user from the list
+            return prevUsers.filter(user => user.clientId !== typingClientId);
+          }
+          
+          return prevUsers;
+        });
+        
+        // Call the callback if provided
+        if (options?.onTypingStatusChanged) {
+          options.onTypingStatusChanged({ [typingClientId]: isTyping });
+        }
       });
       
-      // Automatically stop typing after 3 seconds
-      setTimeout(async () => {
-        await channel.publish('typing:stop', { clientId });
-      }, 3000);
+      return () => {
+        subscription.unsubscribe();
+      };
+    };
+    
+    initChannel();
+  }, [conversationId, workspaceId, options]);
+
+  // Start typing indicator
+  const startTyping = useCallback(async () => {
+    if (!channel) return;
+    
+    // Clear any existing timeout
+    if (typingTimeout) {
+      clearTimeout(typingTimeout);
+    }
+    
+    // Publish typing started event
+    try {
+      await channel.publish('typing', { clientId, isTyping: true });
+      
+      // Set timeout to automatically stop typing indicator after 5 seconds
+      const timeout = setTimeout(async () => {
+        if (channel) {
+          await channel.publish('typing', { clientId, isTyping: false });
+        }
+      }, 5000);
+      
+      setTypingTimeout(timeout);
     } catch (error) {
       console.error('Error publishing typing indicator:', error);
     }
-  }, [client, clientId, conversationId, userName]);
+  }, [channel, clientId, typingTimeout]);
 
-  return {
-    typingUsers,
-    startTyping
-  };
+  // Stop typing indicator
+  const stopTyping = useCallback(async () => {
+    if (!channel) return;
+    
+    // Clear any existing timeout
+    if (typingTimeout) {
+      clearTimeout(typingTimeout);
+      setTypingTimeout(null);
+    }
+    
+    // Publish typing stopped event
+    try {
+      await channel.publish('typing', { clientId, isTyping: false });
+    } catch (error) {
+      console.error('Error publishing typing stopped indicator:', error);
+    }
+  }, [channel, clientId, typingTimeout]);
+
+  // Clean up on unmount
+  useEffect(() => {
+    return () => {
+      if (typingTimeout) {
+        clearTimeout(typingTimeout);
+      }
+      
+      // Try to stop typing indication when component unmounts
+      if (channel) {
+        channel.publish('typing', { clientId, isTyping: false }).catch((err: any) => {
+          console.error('Error cleaning up typing indicator:', err);
+        });
+      }
+    };
+  }, [channel, clientId, typingTimeout]);
+
+  return { typingUsers, startTyping, stopTyping };
 };

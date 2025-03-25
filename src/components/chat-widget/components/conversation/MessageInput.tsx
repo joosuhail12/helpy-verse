@@ -1,107 +1,108 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef, KeyboardEvent } from 'react';
+import { Send, Paperclip, Smile } from 'lucide-react';
 import { useThemeContext } from '@/context/ThemeContext';
-import { Send } from 'lucide-react';
 
-interface MessageInputProps {
+export interface MessageInputProps {
   onSendMessage: (message: string) => void;
-  onTyping?: () => void;
-  isDisabled?: boolean;
+  onChange?: (text: string) => void;
+  placeholder?: string;
+  disabled?: boolean;
+  showAttachments?: boolean;
+  showEmoji?: boolean;
 }
 
-const MessageInput: React.FC<MessageInputProps> = ({ 
-  onSendMessage, 
-  onTyping,
-  isDisabled = false
+const MessageInput: React.FC<MessageInputProps> = ({
+  onSendMessage,
+  onChange,
+  placeholder = 'Type a message...',
+  disabled = false,
+  showAttachments = true,
+  showEmoji = true
 }) => {
-  const { colors, labels } = useThemeContext();
   const [message, setMessage] = useState('');
-  const inputRef = useRef<HTMLTextAreaElement>(null);
-  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { colors } = useThemeContext();
 
-  // Auto-focus the input when the component mounts
-  useEffect(() => {
-    if (inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, []);
-
-  const handleTyping = () => {
-    if (onTyping) {
-      onTyping();
-      
-      // Clear previous timeout
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
-      }
-      
-      // Set new timeout to stop typing indication after 3 seconds
-      typingTimeoutRef.current = setTimeout(() => {
-        typingTimeoutRef.current = null;
-      }, 3000);
-    }
-  };
-
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newMessage = e.target.value;
+    setMessage(newMessage);
     
-    if (message.trim() && !isDisabled) {
-      onSendMessage(message);
-      setMessage('');
+    // Call the onChange handler if provided
+    if (onChange) {
+      onChange(newMessage);
+    }
+    
+    // Auto-resize the textarea
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 120)}px`;
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSubmit(e);
+      handleSend();
+    }
+  };
+
+  const handleSend = () => {
+    if (message.trim() && !disabled) {
+      onSendMessage(message.trim());
+      setMessage('');
+      
+      // Reset textarea height
+      if (textareaRef.current) {
+        textareaRef.current.style.height = 'auto';
+      }
     }
   };
 
   return (
-    <form 
-      onSubmit={handleSubmit} 
-      className="border-t p-3 flex items-end"
-      style={{ borderColor: colors.border }}
+    <div 
+      className="flex items-end p-2 border rounded-lg"
+      style={{ borderColor: colors.border, backgroundColor: colors.backgroundSecondary }}
     >
+      {showAttachments && (
+        <button 
+          className="p-2 rounded-full hover:bg-gray-200 text-gray-500"
+          aria-label="Attach files"
+        >
+          <Paperclip size={20} />
+        </button>
+      )}
+      
       <textarea
-        ref={inputRef}
+        ref={textareaRef}
         value={message}
-        onChange={(e) => {
-          setMessage(e.target.value);
-          handleTyping();
-        }}
+        onChange={handleChange}
         onKeyDown={handleKeyDown}
-        placeholder={labels.messagePlaceholder || "Type a message..."}
-        className="flex-1 resize-none outline-none max-h-24 p-2 rounded"
-        style={{ 
-          backgroundColor: colors.inputBackground || '#f9f9f9',
-          color: colors.foreground
-        }}
-        disabled={isDisabled}
+        placeholder={placeholder}
+        disabled={disabled}
+        className="flex-1 outline-none border-none resize-none bg-transparent py-2 px-3 max-h-32"
+        style={{ color: colors.foreground }}
         rows={1}
       />
+      
+      {showEmoji && (
+        <button 
+          className="p-2 rounded-full hover:bg-gray-200 text-gray-500"
+          aria-label="Add emoji"
+        >
+          <Smile size={20} />
+        </button>
+      )}
+      
       <button
-        type="submit"
-        className={`ml-2 p-2 rounded-full ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100'}`}
-        style={{ 
-          color: message.trim() ? colors.primary : `${colors.foreground}88` 
-        }}
-        disabled={!message.trim() || isDisabled}
+        onClick={handleSend}
+        disabled={!message.trim() || disabled}
+        className={`p-2 rounded-full ${message.trim() && !disabled ? 'bg-primary text-white' : 'bg-gray-200 text-gray-500'}`}
         aria-label="Send message"
       >
         <Send size={20} />
       </button>
-    </form>
+    </div>
   );
 };
 
