@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useThemeContext } from '@/context/ThemeContext';
 import { ChatMessage } from './types';
@@ -13,6 +14,8 @@ interface ResponsiveConversationViewProps {
   isLoading?: boolean;
   agentName?: string;
   conversationId: string;
+  workspaceId?: string;
+  onBack?: () => void;
 }
 
 const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
@@ -20,7 +23,8 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
   onSendMessage,
   isLoading = false,
   agentName,
-  conversationId
+  conversationId,
+  workspaceId
 }) => {
   const { colors } = useThemeContext();
   const messagesEndRef = useRef<HTMLDivElement>(null);

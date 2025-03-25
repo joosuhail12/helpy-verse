@@ -7,16 +7,22 @@ import { ChatMessage } from './types';
 
 interface MessageListProps {
   conversationId?: string;
+  messages?: ChatMessage[];
 }
 
-const MessageList: React.FC<MessageListProps> = ({ conversationId }) => {
+const MessageList: React.FC<MessageListProps> = ({ conversationId, messages: propMessages }) => {
   const { colors, labels } = useThemeContext();
   const { getMessages } = useChat();
   const endOfMessagesRef = useRef<HTMLDivElement>(null);
-  const [messages, setMessages] = React.useState<ChatMessage[]>([]);
+  const [messages, setMessages] = React.useState<ChatMessage[]>(propMessages || []);
 
-  // Fetch messages for this conversation
+  // Fetch messages for this conversation if propMessages is not provided
   useEffect(() => {
+    if (propMessages) {
+      setMessages(propMessages);
+      return;
+    }
+
     const fetchMessages = async () => {
       if (conversationId) {
         const fetchedMessages = await getMessages(conversationId);
@@ -26,8 +32,10 @@ const MessageList: React.FC<MessageListProps> = ({ conversationId }) => {
       }
     };
     
-    fetchMessages();
-  }, [conversationId, getMessages]);
+    if (conversationId) {
+      fetchMessages();
+    }
+  }, [conversationId, getMessages, propMessages]);
 
   // Scroll to bottom on new messages
   useEffect(() => {

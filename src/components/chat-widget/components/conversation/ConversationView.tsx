@@ -86,7 +86,10 @@ const ConversationView: React.FC<ConversationViewProps> = ({ conversationId, wor
 
   return (
     <div className="flex flex-col h-full" style={{ background: colors.background, color: colors.foreground }}>
-      <ChatHeader title={`Conversation ${conversationId.substring(0, 8)}`} onBack={onBack} />
+      <ChatHeader 
+        title={`Conversation ${conversationId.substring(0, 8)}`} 
+        onBackClick={onBack} 
+      />
       
       <div className="flex-1 overflow-y-auto p-4">
         <MessageList messages={messages} />

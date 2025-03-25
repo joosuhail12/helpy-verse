@@ -15,6 +15,7 @@ export const useMessageSubscription = (
   const { client, getChannelName } = useAbly();
   const [channel, setChannel] = useState<any>(null);
   const [isSubscribed, setIsSubscribed] = useState(false);
+  const [subscription, setSubscription] = useState<any>(null);
 
   // Initialize channel
   useEffect(() => {
@@ -32,7 +33,7 @@ export const useMessageSubscription = (
 
   // Subscribe to messages
   useEffect(() => {
-    if (!channel) return;
+    if (!channel || !channel.channel) return;
     
     const handleMessage = (message: any) => {
       const messageData = message.data as ChatMessage;
@@ -43,11 +44,15 @@ export const useMessageSubscription = (
     };
     
     // Subscribe to messages
-    const subscription = channel.channel.subscribe('message', handleMessage);
+    const sub = channel.channel.subscribe('message', handleMessage);
+    setSubscription(sub);
     setIsSubscribed(true);
     
     return () => {
-      subscription.unsubscribe();
+      // Check if subscription exists before calling unsubscribe
+      if (sub && typeof sub.unsubscribe === 'function') {
+        sub.unsubscribe();
+      }
       setIsSubscribed(false);
     };
   }, [channel, options]);
