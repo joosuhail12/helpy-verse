@@ -31,7 +31,7 @@ const ResponsiveChatWidgetContainer: React.FC<ResponsiveChatWidgetContainerProps
   if (isLoading) {
     return (
       <div className="flex flex-col h-full">
-        <ChatHeader onClose={onClose} title="Chat Support" />
+        <ChatHeader title="Chat Support" onClose={onClose} />
         <div className="flex-1 flex items-center justify-center">
           <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
         </div>
@@ -41,7 +41,7 @@ const ResponsiveChatWidgetContainer: React.FC<ResponsiveChatWidgetContainerProps
 
   return (
     <div className="flex flex-col h-full">
-      <ChatHeader onClose={onClose} title="Chat Support" />
+      <ChatHeader title="Chat Support" onClose={onClose} />
       
       {view === 'list' && (
         <div className="flex-1 p-4 overflow-y-auto">

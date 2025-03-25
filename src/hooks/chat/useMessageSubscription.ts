@@ -27,7 +27,9 @@ export const useMessageSubscription = (
     setChannel({ channel: channelInstance });
     
     return () => {
-      client.channels.release(channelName);
+      if (client && client.channels) {
+        client.channels.release(channelName);
+      }
     };
   }, [client, conversationId, getChannelName]);
 
@@ -43,15 +45,29 @@ export const useMessageSubscription = (
       }
     };
     
-    // Subscribe to messages
-    const sub = channel.channel.subscribe('message', handleMessage);
-    setSubscription(sub);
-    setIsSubscribed(true);
+    let sub: any = null;
+    
+    try {
+      // Subscribe to messages
+      sub = channel.channel.subscribe('message', handleMessage);
+      setSubscription(sub);
+      setIsSubscribed(true);
+    } catch (error) {
+      console.error('Error subscribing to channel:', error);
+    }
     
     return () => {
-      // Check if subscription exists before calling unsubscribe
-      if (sub && typeof sub.unsubscribe === 'function') {
-        sub.unsubscribe();
+      try {
+        // Check if subscription exists before calling unsubscribe
+        if (sub && typeof sub.unsubscribe === 'function') {
+          sub.unsubscribe();
+        }
+        // Or try to unsubscribe from channel directly
+        else if (channel && channel.channel) {
+          channel.channel.unsubscribe('message', handleMessage);
+        }
+      } catch (err) {
+        console.error('Error unsubscribing:', err);
       }
       setIsSubscribed(false);
     };

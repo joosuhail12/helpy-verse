@@ -1,14 +1,15 @@
 
 import React from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, X } from 'lucide-react';
 import { useThemeContext } from '@/context/ThemeContext';
 
 export interface ChatHeaderProps {
   title: string;
   onBackClick?: () => void;
+  onClose?: () => void;
 }
 
-const ChatHeader: React.FC<ChatHeaderProps> = ({ title, onBackClick }) => {
+const ChatHeader: React.FC<ChatHeaderProps> = ({ title, onBackClick, onClose }) => {
   const { colors } = useThemeContext();
 
   return (
@@ -25,6 +26,16 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ title, onBackClick }) => {
         </button>
       )}
       <h2 className="font-medium flex-1 truncate">{title}</h2>
+      {onClose && (
+        <button
+          onClick={onClose}
+          className="rounded-full p-1 hover:bg-gray-100 transition-colors"
+          style={{ color: colors.foreground }}
+          aria-label="Close chat"
+        >
+          <X size={20} />
+        </button>
+      )}
     </div>
   );
 };
