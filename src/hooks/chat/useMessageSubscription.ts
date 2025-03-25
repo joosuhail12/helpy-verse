@@ -58,12 +58,8 @@ export const useMessageSubscription = (
     
     return () => {
       try {
-        // Check if subscription exists before calling unsubscribe
-        if (sub && typeof sub.unsubscribe === 'function') {
-          sub.unsubscribe();
-        }
-        // Or try to unsubscribe from channel directly
-        else if (channel && channel.channel) {
+        // Check if channel exists before unsubscribing
+        if (channel && channel.channel) {
           channel.channel.unsubscribe('message', handleMessage);
         }
       } catch (err) {

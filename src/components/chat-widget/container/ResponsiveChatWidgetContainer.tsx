@@ -41,28 +41,29 @@ const ResponsiveChatWidgetContainer: React.FC<ResponsiveChatWidgetContainerProps
 
   return (
     <div className="flex flex-col h-full">
-      <ChatHeader title="Chat Support" onClose={onClose} />
-      
       {view === 'list' && (
-        <div className="flex-1 p-4 overflow-y-auto">
-          <h3 className="font-medium mb-3">Your conversations</h3>
-          <div className="space-y-2">
-            {conversations.map((conversation) => (
-              <button
-                key={conversation.id}
-                onClick={() => {
-                  setView('conversation');
-                }}
-                className="w-full text-left p-3 rounded-lg hover:bg-gray-100 transition"
-              >
-                <h4 className="font-medium">{conversation.title || "New Conversation"}</h4>
-                <p className="text-sm text-gray-500 truncate">
-                  {conversation.lastMessage || "No messages yet"}
-                </p>
-              </button>
-            ))}
+        <>
+          <ChatHeader title="Chat Support" onClose={onClose} />
+          <div className="flex-1 p-4 overflow-y-auto">
+            <h3 className="font-medium mb-3">Your conversations</h3>
+            <div className="space-y-2">
+              {conversations.map((conversation) => (
+                <button
+                  key={conversation.id}
+                  onClick={() => {
+                    setView('conversation');
+                  }}
+                  className="w-full text-left p-3 rounded-lg hover:bg-gray-100 transition"
+                >
+                  <h4 className="font-medium">{conversation.title || "New Conversation"}</h4>
+                  <p className="text-sm text-gray-500 truncate">
+                    {conversation.lastMessage || "No messages yet"}
+                  </p>
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        </>
       )}
       
       {view === 'conversation' && currentConversation && (

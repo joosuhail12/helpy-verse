@@ -1,113 +1,76 @@
 
-import React, { useState, useEffect, useRef } from 'react';
-import { useThemeContext } from '@/context/ThemeContext';
-import { ChatMessage } from './types';
+import React, { useState, useEffect } from 'react';
+import { useRealtimeChat } from '@/hooks/chat/useRealtimeChat';
+import { useMessageSubscription } from '@/hooks/chat/useMessageSubscription';
+import { useTypingIndicator } from '@/hooks/chat/useTypingIndicator';
+import ChatHeader from '../header/ChatHeader';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import TypingIndicator from './TypingIndicator';
-import { useTypingIndicator } from '@/hooks/chat/useTypingIndicator';
-import { useChat } from '@/hooks/chat/useChat';
-import { v4 as uuidv4 } from 'uuid';
+import { ChatMessage } from './types';
 
-interface ResponsiveConversationViewProps {
+export interface ResponsiveConversationViewProps {
   conversationId: string;
-  workspaceId?: string;
+  workspaceId: string;
   onBack?: () => void;
-  messages?: ChatMessage[];
-  onSendMessage?: (message: string) => void;
-  isLoading?: boolean;
-  agentName?: string;
 }
 
 const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
   conversationId,
   workspaceId,
-  onBack,
-  messages: propMessages = [],
-  onSendMessage: propSendMessage,
-  isLoading = false,
-  agentName
+  onBack
 }) => {
-  const { colors } = useThemeContext();
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { typingUsers, startTyping } = useTypingIndicator(conversationId);
-  const [localMessages, setLocalMessages] = useState<ChatMessage[]>(propMessages);
-  const { sendMessage, getMessages } = useChat();
-
-  // Fetch messages if they weren't provided as props
-  useEffect(() => {
-    if (propMessages && propMessages.length > 0) {
-      setLocalMessages(propMessages);
-      return;
+  const { messages, sendMessage, isLoading } = useRealtimeChat(conversationId, workspaceId);
+  const [typingUsers, setTypingUsers] = useState<{ clientId: string; name?: string }[]>([]);
+  const { publishMessage } = useMessageSubscription(conversationId, workspaceId, {
+    onMessage: (message: ChatMessage) => {
+      // Handle new messages if needed
     }
+  });
 
-    const fetchMessages = async () => {
-      if (conversationId) {
-        const fetchedMessages = await getMessages(conversationId);
-        if (fetchedMessages && fetchedMessages.length > 0) {
-          setLocalMessages(fetchedMessages);
-        }
-      }
-    };
-    
-    fetchMessages();
-  }, [conversationId, getMessages, propMessages]);
-
-  // Update local messages when prop changes
-  useEffect(() => {
-    if (propMessages && propMessages.length > 0) {
-      setLocalMessages(propMessages);
+  const { startTyping, stopTyping } = useTypingIndicator({
+    conversationId,
+    workspaceId,
+    onTypingStatusChanged: (typingStatuses) => {
+      setTypingUsers(
+        Object.entries(typingStatuses)
+          .filter(([_, isTyping]) => isTyping)
+          .map(([clientId]) => ({ clientId }))
+      );
     }
-  }, [propMessages]);
+  });
 
-  // Scroll to bottom when messages change
-  useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [localMessages, typingUsers]);
+  const handleSendMessage = async (content: string) => {
+    stopTyping();
+    await sendMessage(content);
+  };
 
-  const handleSendMessage = (content: string) => {
-    // Create a temporary local message
-    const tempMessage: ChatMessage = {
-      id: uuidv4(),
-      sender: 'user',
-      content,
-      timestamp: new Date(),
-      conversationId,
-    };
-
-    // Add to local state immediately for UI responsiveness
-    setLocalMessages(prev => [...prev, tempMessage]);
-    
-    // Use prop function if provided, otherwise use the hook's sendMessage
-    if (propSendMessage) {
-      propSendMessage(content);
-    } else if (conversationId) {
-      sendMessage(conversationId, content);
+  const handleMessageInputChange = (text: string) => {
+    if (text.trim()) {
+      startTyping();
+    } else {
+      stopTyping();
     }
   };
 
   return (
-    <div className="flex flex-col h-full" style={{ background: colors.background, color: colors.foreground }}>
-      <div className="flex-1 overflow-y-auto p-4">
-        <MessageList messages={localMessages} />
-        
-        {(typingUsers.length > 0 || isLoading) && (
-          <TypingIndicator 
-            users={typingUsers} 
-            agentName={isLoading ? agentName : undefined} 
-          />
-        )}
-        
-        <div ref={messagesEndRef} />
-      </div>
-      
-      <MessageInput 
-        onSendMessage={handleSendMessage} 
-        onTyping={startTyping}
-        isDisabled={isLoading}
+    <div className="flex flex-col h-full">
+      <ChatHeader 
+        title="Conversation" 
+        onBackClick={onBack} 
+        workspaceId={workspaceId}
+        conversationId={conversationId}
       />
+      <div className="flex-1 overflow-hidden flex flex-col">
+        <MessageList messages={messages} isLoading={isLoading} />
+        <div className="px-4 pb-2">
+          <TypingIndicator users={typingUsers} agentName={typingUsers.length === 1 ? "Support agent" : undefined} />
+          <MessageInput 
+            onSendMessage={handleSendMessage} 
+            onChange={handleMessageInputChange}
+          />
+        </div>
+      </div>
     </div>
   );
 };
