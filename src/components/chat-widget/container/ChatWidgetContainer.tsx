@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useChat } from '@/hooks/chat/useChat';
 import { useThemeContext } from '@/context/ThemeContext';
 import HomeView from '../views/HomeView';
@@ -22,21 +22,29 @@ const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({
   position = 'right',
   compact = false 
 }) => {
-  const { conversations, currentConversation, createNewConversation } = useChat();
+  const { conversations, currentConversation, setCurrentConversation, createNewConversation } = useChat();
   const { colors } = useThemeContext();
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [activeView, setActiveView] = useState<View>('home');
 
+  // Modified to not create a conversation on init
   useEffect(() => {
-    const initializeChat = async () => {
-      if (!currentConversation && conversations.length === 0) {
-        await createNewConversation(`Conversation ${Date.now()}`);
-      }
-      setIsLoading(false);
-    };
+    setIsLoading(false);
+  }, []);
 
-    initializeChat();
-  }, [currentConversation, conversations, createNewConversation]);
+  // Function to handle starting a new conversation when user sends first message
+  const handleStartConversation = useCallback(async (message: string) => {
+    setIsLoading(true);
+    try {
+      const newConversation = await createNewConversation(`Conversation ${new Date().toLocaleString()}`);
+      setCurrentConversation(newConversation);
+      // Now we can handle the message in the conversation component
+    } catch (error) {
+      console.error('Failed to create conversation:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [createNewConversation, setCurrentConversation]);
 
   if (isLoading) {
     return (
@@ -53,10 +61,30 @@ const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({
   return (
     <div className={`flex flex-col h-full text-gray-900 ${compact ? 'max-w-xs' : 'w-full'}`} 
       style={{ backgroundColor: colors.background, color: colors.foreground }}>
-      {activeView === 'home' && <HomeView workspaceId={workspaceId} onClose={onClose} setActiveView={(view: View) => setActiveView(view)} />}
-      {activeView === 'messages' && <MessagesView workspaceId={workspaceId} onClose={onClose} setActiveView={(view: View) => setActiveView(view)} />}
+      {activeView === 'home' && 
+        <HomeView 
+          workspaceId={workspaceId} 
+          onClose={onClose} 
+          setActiveView={(view: View) => setActiveView(view)} 
+        />
+      }
+      
+      {activeView === 'messages' && 
+        <MessagesView 
+          workspaceId={workspaceId} 
+          onClose={onClose} 
+          setActiveView={(view: View) => setActiveView(view)} 
+          onStartConversation={handleStartConversation}
+        />
+      }
+      
       {activeView === 'conversation' && currentConversation && 
-        <ConversationView conversationId={currentConversation.id} workspaceId={workspaceId} onBack={() => setActiveView('messages')} />}
+        <ConversationView 
+          conversationId={currentConversation.id} 
+          workspaceId={workspaceId} 
+          onBack={() => setActiveView('messages')} 
+        />
+      }
       
       <Navigation activeView={activeView} setActiveView={setActiveView} />
     </div>
