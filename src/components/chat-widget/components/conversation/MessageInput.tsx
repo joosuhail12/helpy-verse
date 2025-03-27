@@ -63,7 +63,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
           backgroundColor: colors.inputBackground,
           color: colors.foreground,
           borderColor: colors.border,
-          focusRing: colors.primary
+          // Removed focusRing as it's not a valid CSS property
         }}
         value={message}
         onChange={handleChange}

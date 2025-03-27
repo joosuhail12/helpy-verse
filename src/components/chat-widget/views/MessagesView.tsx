@@ -18,7 +18,7 @@ const MessagesView: React.FC<MessagesViewProps> = ({
   setActiveView,
   onStartConversation
 }) => {
-  const { conversations, currentConversation, setCurrentConversation } = useChat();
+  const { conversations, currentConversation, selectConversation } = useChat();
   const { labels, colors } = useThemeContext();
   const [messages, setMessages] = useState<any[]>([]);
 
@@ -45,11 +45,8 @@ const MessagesView: React.FC<MessagesViewProps> = ({
   };
 
   const handleConversationSelect = (conversationId: string) => {
-    const conversation = conversations.find(c => c.id === conversationId);
-    if (conversation) {
-      setCurrentConversation(conversation);
-      setActiveView('conversation');
-    }
+    selectConversation(conversationId);
+    setActiveView('conversation');
   };
 
   return (

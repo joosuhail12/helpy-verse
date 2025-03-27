@@ -22,7 +22,7 @@ const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({
   position = 'right',
   compact = false 
 }) => {
-  const { conversations, currentConversation, setCurrentConversation, createNewConversation } = useChat();
+  const { conversations, currentConversation, selectConversation, createNewConversation } = useChat();
   const { colors } = useThemeContext();
   const [isLoading, setIsLoading] = useState(false);
   const [activeView, setActiveView] = useState<View>('home');
@@ -36,15 +36,15 @@ const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({
   const handleStartConversation = useCallback(async (message: string) => {
     setIsLoading(true);
     try {
-      const newConversation = await createNewConversation(`Conversation ${new Date().toLocaleString()}`);
-      setCurrentConversation(newConversation);
+      const newConversationId = await createNewConversation(`Conversation ${new Date().toLocaleString()}`);
+      selectConversation(newConversationId);
       // Now we can handle the message in the conversation component
     } catch (error) {
       console.error('Failed to create conversation:', error);
     } finally {
       setIsLoading(false);
     }
-  }, [createNewConversation, setCurrentConversation]);
+  }, [createNewConversation, selectConversation]);
 
   if (isLoading) {
     return (
