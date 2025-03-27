@@ -44,7 +44,7 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
   });
 
   // Initialize typing indicator
-  const { startTyping, stopTyping } = useTypingIndicator(conversationId, workspaceId);
+  const { typingUsers: activeTypers, sendTypingIndicator } = useTypingIndicator(conversationId);
 
   useEffect(() => {
     // Subscribe to typing status updates
@@ -64,16 +64,12 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
   }, []);
 
   const handleSendMessage = async (content: string) => {
-    if (stopTyping) stopTyping();
+    sendTypingIndicator(false);
     await sendMessage(content);
   };
 
-  const handleMessageInputChange = (text: string) => {
-    if (text.trim()) {
-      if (startTyping) startTyping();
-    } else {
-      if (stopTyping) stopTyping();
-    }
+  const handleMessageInputChange = () => {
+    sendTypingIndicator(true);
   };
 
   // Combine real-time messages with loaded messages
@@ -93,9 +89,10 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
           conversationId={conversationId} 
         />
         <div className="px-4 pb-2">
-          <TypingIndicator users={typingUsers} agentName={typingUsers.length === 1 ? "Support agent" : undefined} />
+          <TypingIndicator users={activeTypers} agentName={activeTypers.length === 1 ? "Support agent" : undefined} />
           <MessageInput 
-            onSendMessage={handleSendMessage} 
+            onSendMessage={handleSendMessage}
+            onTyping={handleMessageInputChange}
           />
         </div>
       </div>

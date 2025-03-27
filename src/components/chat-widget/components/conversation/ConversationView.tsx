@@ -27,7 +27,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({ conversationId, wor
   });
   const { queueMessage, getQueuedMessages, clearQueuedMessages } = useOfflineMessaging(conversationId);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { typingUsers, startTyping } = useTypingIndicator(conversationId, workspaceId);
+  const { typingUsers, sendTypingIndicator } = useTypingIndicator(conversationId);
 
   useEffect(() => {
     // Scroll to bottom whenever messages change
@@ -84,6 +84,10 @@ const ConversationView: React.FC<ConversationViewProps> = ({ conversationId, wor
     }
   };
 
+  const handleTyping = () => {
+    sendTypingIndicator(true);
+  };
+
   return (
     <div className="flex flex-col h-full" style={{ background: colors.background, color: colors.foreground }}>
       <ChatHeader 
@@ -103,7 +107,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({ conversationId, wor
       
       <MessageInput 
         onSendMessage={handleSendMessage} 
-        onTyping={startTyping}
+        onTyping={handleTyping}
       />
     </div>
   );
