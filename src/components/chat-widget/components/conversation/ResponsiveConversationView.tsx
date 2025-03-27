@@ -9,6 +9,7 @@ import MessageInput from './MessageInput';
 import TypingIndicator from './TypingIndicator';
 import { ChatMessage } from './types';
 import { useChat } from '@/hooks/chat/useChat';
+import UserAvatar from '../user/UserAvatar';
 
 export interface ResponsiveConversationViewProps {
   conversationId: string;
@@ -86,7 +87,8 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
       <div className="flex-1 overflow-hidden flex flex-col">
         <MessageList 
           messages={displayMessages} 
-          conversationId={conversationId} 
+          conversationId={conversationId}
+          showAvatars={true}
         />
         <div className="px-4 pb-2">
           <TypingIndicator users={activeTypers} agentName={activeTypers.length === 1 ? "Support agent" : undefined} />

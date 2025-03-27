@@ -96,7 +96,10 @@ const ConversationView: React.FC<ConversationViewProps> = ({ conversationId, wor
       />
       
       <div className="flex-1 overflow-y-auto p-4">
-        <MessageList messages={messages} />
+        <MessageList 
+          messages={messages} 
+          showAvatars={true}
+        />
         
         {typingUsers.length > 0 && (
           <TypingIndicator users={typingUsers} />

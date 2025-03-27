@@ -5,14 +5,16 @@ import { useThemeContext } from '@/context/ThemeContext';
 import { useAbly } from '@/context/AblyContext';
 import { ChatMessage, FileAttachment } from './types';
 import FileAttachmentItem from './FileAttachmentItem';
+import UserAvatar from '../user/UserAvatar';
 
 interface MessageItemProps {
   message: ChatMessage;
+  showAvatar?: boolean;
 }
 
 const COMMON_REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
 
-const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
+const MessageItem: React.FC<MessageItemProps> = ({ message, showAvatar = false }) => {
   const { colors } = useThemeContext();
   const { clientId } = useAbly();
   const [showReactions, setShowReactions] = useState(false);
@@ -37,76 +39,100 @@ const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
 
   return (
     <div 
-      className={`flex flex-col mb-4 ${isUserMessage ? 'items-end' : 'items-start'}`}
+      className={`flex mb-4 ${isUserMessage ? 'justify-end' : 'justify-start'}`}
     >
-      <div 
-        className={`px-4 py-2 rounded-lg max-w-[85%] relative ${
-          isUserMessage 
-            ? 'bg-primary text-white' 
-            : 'bg-gray-200'
-        }`}
-        style={{
-          backgroundColor: isUserMessage ? colors.userMessage : colors.agentMessage,
-          color: isUserMessage ? colors.userMessageText : colors.agentMessageText,
-        }}
-      >
-        {message.content}
-        
-        {/* File attachments */}
-        {message.attachments && message.attachments.length > 0 && (
-          <div className="mt-2 space-y-1">
-            {message.attachments.map((attachment) => (
-              <FileAttachmentItem key={attachment.id} attachment={attachment} />
-            ))}
-          </div>
-        )}
-        
-        {/* Reaction button */}
-        <button 
-          onClick={() => setShowReactions(!showReactions)}
-          className="absolute -bottom-3 right-2 bg-white rounded-full p-1 shadow-sm hover:bg-gray-100"
+      {/* Avatar for agent messages (left side) */}
+      {showAvatar && !isUserMessage && (
+        <div className="mr-2 flex-shrink-0">
+          <UserAvatar 
+            name="Agent" 
+            status="available" 
+            size="sm"
+          />
+        </div>
+      )}
+
+      <div className={`flex flex-col ${isUserMessage ? 'items-end' : 'items-start'}`}>
+        <div 
+          className={`px-4 py-2 rounded-lg max-w-[85%] relative ${
+            isUserMessage 
+              ? 'bg-primary text-white' 
+              : 'bg-gray-200'
+          }`}
+          style={{
+            backgroundColor: isUserMessage ? colors.userMessage : colors.agentMessage,
+            color: isUserMessage ? colors.userMessageText : colors.agentMessageText,
+          }}
         >
-          <Smile size={14} className="text-gray-500" />
-        </button>
-        
-        {/* Reactions display */}
-        {message.reactions && Object.keys(message.reactions).length > 0 && (
-          <div className="mt-1 flex flex-wrap gap-1">
-            {Object.entries(message.reactions).map(([emoji, users]) => (
-              <div key={emoji} className="bg-white rounded-full px-2 py-0.5 text-xs shadow-sm">
-                {emoji} {users.length}
-              </div>
-            ))}
-          </div>
-        )}
-        
-        {/* Reaction picker */}
-        {showReactions && (
-          <div className="absolute top-full mt-2 right-0 bg-white rounded-lg shadow-md p-2 z-10">
-            <div className="flex gap-1">
-              {COMMON_REACTIONS.map(emoji => (
-                <button
-                  key={emoji}
-                  onClick={() => handleReaction(emoji)}
-                  className="hover:bg-gray-100 p-1 rounded"
-                >
-                  {emoji}
-                </button>
+          {message.content}
+          
+          {/* File attachments */}
+          {message.attachments && message.attachments.length > 0 && (
+            <div className="mt-2 space-y-1">
+              {message.attachments.map((attachment) => (
+                <FileAttachmentItem key={attachment.id} attachment={attachment} />
               ))}
             </div>
-          </div>
-        )}
+          )}
+          
+          {/* Reaction button */}
+          <button 
+            onClick={() => setShowReactions(!showReactions)}
+            className="absolute -bottom-3 right-2 bg-white rounded-full p-1 shadow-sm hover:bg-gray-100"
+          >
+            <Smile size={14} className="text-gray-500" />
+          </button>
+          
+          {/* Reactions display */}
+          {message.reactions && Object.keys(message.reactions).length > 0 && (
+            <div className="mt-1 flex flex-wrap gap-1">
+              {Object.entries(message.reactions).map(([emoji, users]) => (
+                <div key={emoji} className="bg-white rounded-full px-2 py-0.5 text-xs shadow-sm">
+                  {emoji} {users.length}
+                </div>
+              ))}
+            </div>
+          )}
+          
+          {/* Reaction picker */}
+          {showReactions && (
+            <div className="absolute top-full mt-2 right-0 bg-white rounded-lg shadow-md p-2 z-10">
+              <div className="flex gap-1">
+                {COMMON_REACTIONS.map(emoji => (
+                  <button
+                    key={emoji}
+                    onClick={() => handleReaction(emoji)}
+                    className="hover:bg-gray-100 p-1 rounded"
+                  >
+                    {emoji}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+        
+        <div className="flex items-center mt-1 text-xs text-gray-500">
+          <span>
+            {typeof message.timestamp === 'string' 
+              ? new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+              : message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            }
+          </span>
+          {getReadStatus()}
+        </div>
       </div>
       
-      <div className="flex items-center mt-1 text-xs text-gray-500">
-        <span>
-          {typeof message.timestamp === 'string' 
-            ? new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            : message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-          }
-        </span>
-        {getReadStatus()}
-      </div>
+      {/* Avatar for user messages (right side) */}
+      {showAvatar && isUserMessage && (
+        <div className="ml-2 flex-shrink-0">
+          <UserAvatar 
+            name="You" 
+            status="available" 
+            size="sm"
+          />
+        </div>
+      )}
     </div>
   );
 };
