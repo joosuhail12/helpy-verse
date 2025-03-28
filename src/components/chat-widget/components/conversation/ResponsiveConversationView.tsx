@@ -9,7 +9,7 @@ import MessageInput from './MessageInput';
 import TypingIndicator from './TypingIndicator';
 import { ChatMessage } from './types';
 import { useChat } from '@/hooks/chat/useChat';
-import UserAvatar from '../user/UserAvatar';
+import { v4 as uuidv4 } from 'uuid';
 
 export interface ResponsiveConversationViewProps {
   conversationId: string;
@@ -31,7 +31,20 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
   useEffect(() => {
     const loadMessages = async () => {
       const msgs = await getMessages(conversationId);
-      setLoadedMessages(msgs);
+      
+      // Assign status to messages based on readBy property
+      const processedMsgs = msgs.map(msg => {
+        if (msg.sender === 'user') {
+          if (msg.readBy && msg.readBy.length > 0) {
+            return { ...msg, status: 'read' as const };
+          } else {
+            return { ...msg, status: 'delivered' as const };
+          }
+        }
+        return msg;
+      });
+      
+      setLoadedMessages(processedMsgs);
     };
     
     loadMessages();
@@ -40,7 +53,20 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
   // Initialize message subscription
   const { publishMessage } = useMessageSubscription(conversationId, workspaceId, {
     onMessage: (message: ChatMessage) => {
-      // Handle new messages if needed
+      // Mark agent messages as read when received by user
+      if (message.sender === 'agent') {
+        const updatedMsg = {
+          ...message,
+          readBy: message.readBy || []
+        };
+        
+        if (!updatedMsg.readBy.includes('user')) {
+          updatedMsg.readBy.push('user');
+          setTimeout(() => {
+            publishMessage(updatedMsg);
+          }, 1000);
+        }
+      }
     }
   });
 
@@ -66,7 +92,49 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
 
   const handleSendMessage = async (content: string) => {
     sendTypingIndicator(false);
-    await sendMessage(content);
+    
+    // Create message with 'sending' status
+    const messageId = uuidv4();
+    const messageWithStatus: ChatMessage = {
+      id: messageId,
+      sender: 'user',
+      content,
+      timestamp: new Date(),
+      conversationId,
+      status: 'sending'
+    };
+    
+    // We need to add the message to the local state first with 'sending' status
+    setLoadedMessages(prev => [...prev, messageWithStatus]);
+    
+    try {
+      await sendMessage(content);
+      
+      // Update status to 'sent' then 'delivered'
+      setTimeout(() => {
+        setLoadedMessages(prev => 
+          prev.map(msg => msg.id === messageId ? { ...msg, status: 'sent' as const } : msg)
+        );
+        
+        setTimeout(() => {
+          setLoadedMessages(prev => 
+            prev.map(msg => msg.id === messageId ? { ...msg, status: 'delivered' as const } : msg)
+          );
+          
+          // Simulate read receipt after agent reply
+          setTimeout(() => {
+            setLoadedMessages(prev => 
+              prev.map(msg => msg.id === messageId ? { ...msg, status: 'read' as const } : msg)
+            );
+          }, 2000);
+        }, 800);
+      }, 400);
+    } catch (error) {
+      // Update status to 'failed' if sending fails
+      setLoadedMessages(prev => 
+        prev.map(msg => msg.id === messageId ? { ...msg, status: 'failed' as const } : msg)
+      );
+    }
   };
 
   const handleMessageInputChange = () => {

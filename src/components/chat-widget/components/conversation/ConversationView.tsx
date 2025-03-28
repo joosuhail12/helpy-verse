@@ -23,11 +23,25 @@ const ConversationView: React.FC<ConversationViewProps> = ({ conversationId, wor
   const { publishMessage, isSubscribed } = useMessageSubscription(conversationId, workspaceId, {
     onMessage: (message) => {
       setMessages(prev => [...prev, message]);
+      
+      // Mark agent messages as read when received
+      if (message.sender === 'agent') {
+        setTimeout(() => {
+          updateMessageStatus(message.id, 'read');
+        }, 1000);
+      }
     },
   });
   const { queueMessage, getQueuedMessages, clearQueuedMessages } = useOfflineMessaging(conversationId);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { typingUsers, sendTypingIndicator } = useTypingIndicator(conversationId);
+
+  // Function to update message status
+  const updateMessageStatus = (messageId: string, status: ChatMessage['status']) => {
+    setMessages(prev => prev.map(msg => 
+      msg.id === messageId ? { ...msg, status } : msg
+    ));
+  };
 
   useEffect(() => {
     // Scroll to bottom whenever messages change
@@ -54,33 +68,55 @@ const ConversationView: React.FC<ConversationViewProps> = ({ conversationId, wor
   }, [isSubscribed, getQueuedMessages, publishMessage, clearQueuedMessages]);
 
   const handleSendMessage = async (content: string) => {
+    const messageId = uuidv4();
     const newMessage: ChatMessage = {
-      id: uuidv4(),
+      id: messageId,
       sender: 'user',
       content,
       timestamp: new Date(),
       conversationId,
+      status: 'sending'
     };
 
     setMessages(prev => [...prev, newMessage]);
 
     if (isSubscribed) {
-      await publishMessage(newMessage);
+      try {
+        await publishMessage(newMessage);
+        
+        // Update status to sent
+        updateMessageStatus(messageId, 'sent');
+        
+        // Simulate server delivery after a slight delay
+        setTimeout(() => {
+          updateMessageStatus(messageId, 'delivered');
+        }, 500);
 
-      // Simulate agent response for demonstration
-      setTimeout(() => {
-        const agentResponse: ChatMessage = {
-          id: uuidv4(),
-          sender: 'agent',
-          content: `Thanks for your message: "${content}". How can I help further?`,
-          timestamp: new Date(),
-          conversationId,
-          readBy: ['agent-1']
-        };
-        setMessages(prev => [...prev, agentResponse]);
-      }, 1000);
+        // Simulate agent response for demonstration
+        setTimeout(() => {
+          const agentResponse: ChatMessage = {
+            id: uuidv4(),
+            sender: 'agent',
+            content: `Thanks for your message: "${content}". How can I help further?`,
+            timestamp: new Date(),
+            conversationId,
+            readBy: ['agent-1']
+          };
+          
+          publishMessage(agentResponse);
+          
+          // Simulate agent reading the message after response
+          setTimeout(() => {
+            updateMessageStatus(messageId, 'read');
+          }, 1000);
+        }, 1500);
+      } catch (error) {
+        console.error('Failed to send message', error);
+        updateMessageStatus(messageId, 'failed');
+      }
     } else {
       await queueMessage(newMessage);
+      updateMessageStatus(messageId, 'sent');
     }
   };
 
@@ -95,17 +131,17 @@ const ConversationView: React.FC<ConversationViewProps> = ({ conversationId, wor
         onBackClick={onBack} 
       />
       
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className="flex-1 overflow-hidden">
         <MessageList 
           messages={messages} 
           showAvatars={true}
         />
         
         {typingUsers.length > 0 && (
-          <TypingIndicator users={typingUsers} />
+          <div className="px-4">
+            <TypingIndicator users={typingUsers} />
+          </div>
         )}
-        
-        <div ref={messagesEndRef} />
       </div>
       
       <MessageInput 

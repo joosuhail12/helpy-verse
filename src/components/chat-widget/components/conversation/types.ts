@@ -9,6 +9,7 @@ export interface ChatMessage {
   attachments?: FileAttachment[];
   reactions?: Record<string, string[]>;
   readBy?: string[];
+  status?: 'sending' | 'sent' | 'delivered' | 'read' | 'failed';
 }
 
 export interface Conversation {
@@ -31,4 +32,12 @@ export interface FileAttachment {
   type: string;
   url: string;
   size: number;
+}
+
+export interface MessageSearchResult {
+  messageId: string;
+  conversationId: string;
+  snippet: string;
+  timestamp: string | Date;
+  highlight: [number, number][];
 }
