@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { X, MessageSquare } from 'lucide-react';
@@ -23,33 +22,28 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(isPreview);
 
-  // Apply settings to theme if provided
   const combinedTheme: Partial<ThemeConfig> = {
     ...theme,
-    // Override with settings if provided
     ...(settings && {
-      position: settings.position,
-      compact: settings.compact,
       colors: {
         ...theme.colors,
-        primary: settings.primaryColor,
-        background: settings.backgroundColor,
-        backgroundSecondary: settings.backgroundSecondary,
-        foreground: settings.foregroundColor,
-        border: settings.borderColor,
-        userMessage: settings.userMessageColor,
-        agentMessage: settings.agentMessageColor
+        background: settings.colors?.background || theme.colors?.background,
+        backgroundSecondary: settings.colors?.backgroundSecondary || theme.colors?.backgroundSecondary,
+        foreground: settings.colors?.foreground || theme.colors?.foreground,
+        border: settings.colors?.border || theme.colors?.border,
+        userMessage: settings.colors?.userMessage?.background || theme.colors?.userMessage,
+        userMessageText: settings.colors?.userMessage?.text || theme.colors?.userMessageText,
+        agentMessage: settings.colors?.agentMessage?.background || theme.colors?.agentMessage,
+        agentMessageText: settings.colors?.agentMessage?.text || theme.colors?.agentMessageText,
+        inputBackground: settings.colors?.input?.background || theme.colors?.inputBackground,
       },
-      labels: {
-        ...theme.labels,
-        welcomeTitle: settings.welcomeTitle,
-        welcomeSubtitle: settings.welcomeSubtitle
+      typography: {
+        fontFamily: settings.typography?.fontFamily || theme.typography?.fontFamily,
+        fontSize: settings.typography?.fontSize || theme.typography?.fontSize,
       },
-      features: {
-        typingIndicator: settings.enableTypingIndicator,
-        reactions: settings.enableReactions,
-        fileAttachments: settings.enableFileAttachments,
-        readReceipts: settings.enableReadReceipts
+      layout: {
+        borderRadius: settings.layout?.borderRadius || theme.layout?.borderRadius,
+        spacing: settings.layout?.spacing || theme.layout?.spacing,
       }
     })
   };
@@ -58,7 +52,6 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({
     setIsOpen((prev) => !prev);
   };
 
-  // For preview mode, we constrain the styles
   const previewStyles = isPreview ? {
     position: 'relative' as const,
     bottom: 'auto',

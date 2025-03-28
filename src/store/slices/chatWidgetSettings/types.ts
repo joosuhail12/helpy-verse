@@ -1,4 +1,3 @@
-
 export interface ChatWidgetSettings {
   primaryColor: string;
   welcomeTitle: string;
@@ -9,13 +8,53 @@ export interface ChatWidgetSettings {
   enableReactions: boolean;
   enableFileAttachments: boolean;
   enableReadReceipts: boolean;
-  // Theme settings
-  backgroundColor: string;
-  backgroundSecondary: string;
-  foregroundColor: string;
-  userMessageColor: string;
-  agentMessageColor: string;
-  borderColor: string;
+
+  colors: {
+    background: string;
+    backgroundSecondary: string;
+    foreground: string;
+    border: string;
+    userMessage: {
+      background: string;
+      text: string;
+    };
+    agentMessage: {
+      background: string;
+      text: string;
+    };
+    input: {
+      background: string;
+      text: string;
+      border: string;
+    };
+    button: {
+      background: string;
+      text: string;
+      hover: string;
+    };
+  };
+
+  typography: {
+    fontFamily: string;
+    fontSize: {
+      small: string;
+      medium: string;
+      large: string;
+    };
+  };
+
+  layout: {
+    borderRadius: {
+      small: string;
+      medium: string;
+      large: string;
+    };
+    spacing: {
+      small: string;
+      medium: string;
+      large: string;
+    };
+  };
 }
 
 export interface ChatWidgetSettingsState {
