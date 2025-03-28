@@ -204,30 +204,25 @@ export const QueryGroupComponent = ({
                 />
               )}
             </div>
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() => copyRuleToClipboard(rule)}
-              >
-                <Copy className="w-4 h-4" />
-              </Button>
+            <div className="flex items-center space-x-1">
               <Button
                 type="button"
                 variant="ghost"
                 size="icon"
                 onClick={() => handleDuplicateRule(index)}
+                title="Duplicate"
               >
-                <Copy className="w-4 h-4" />
+                <Copy className="h-4 w-4" />
               </Button>
               <Button
                 type="button"
                 variant="ghost"
                 size="icon"
                 onClick={() => handleRemoveRule(index)}
+                title="Delete"
+                className="text-destructive hover:text-destructive"
               >
-                <Trash className="w-4 h-4" />
+                <Trash className="h-4 w-4" />
               </Button>
             </div>
           </div>

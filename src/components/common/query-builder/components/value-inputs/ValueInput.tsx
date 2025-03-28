@@ -23,7 +23,9 @@ export const ValueInput: React.FC<ValueInputProps> = ({
   onChange,
   errorMessage
 }) => {
-  const noValueOperators: Operator[] = ['isEmpty', 'isNotEmpty'];
+  const noValueOperators: Operator[] = [
+    'isEmpty', 'isNotEmpty', 'is_empty', 'is_not_empty'
+  ];
   
   if (noValueOperators.includes(operator)) {
     return null;

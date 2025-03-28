@@ -36,7 +36,12 @@ export type Operator =
   | 'isEmpty' 
   | 'isNotEmpty' 
   | 'in' 
-  | 'notIn';
+  | 'notIn'
+  | 'is_empty'
+  | 'is_not_empty'
+  | 'not_equals'
+  | 'greater_than'
+  | 'less_than';
 
 export type DataSource = 
   | 'contact' 

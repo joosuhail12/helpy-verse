@@ -1,29 +1,35 @@
 
-import { Checkbox } from '@/components/ui/checkbox';
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select';
 
 interface BooleanInputProps {
-  value: boolean;
+  value: boolean | string;
   onChange: (value: boolean) => void;
   errorMessage?: string | null;
 }
 
 export const BooleanInput = ({ value, onChange, errorMessage }: BooleanInputProps) => {
+  const boolValue = typeof value === 'string' 
+    ? value === 'true' 
+    : Boolean(value);
+
   return (
-    <div className="relative">
-      <div className="flex items-center space-x-2">
-        <Checkbox
-          id="value-checkbox"
-          checked={value}
-          onCheckedChange={onChange}
-          className={errorMessage ? 'border-red-500' : ''}
-        />
-        <label htmlFor="value-checkbox" className="text-sm">
-          {value ? 'True' : 'False'}
-        </label>
-      </div>
-      {errorMessage && (
-        <p className="text-sm text-red-500 mt-1">{errorMessage}</p>
-      )}
-    </div>
+    <Select 
+      value={boolValue.toString()} 
+      onValueChange={(val) => onChange(val === 'true')}
+    >
+      <SelectTrigger className={`w-full ${errorMessage ? 'border-red-500' : ''}`}>
+        <SelectValue placeholder="Select value" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="true">True</SelectItem>
+        <SelectItem value="false">False</SelectItem>
+      </SelectContent>
+    </Select>
   );
 };

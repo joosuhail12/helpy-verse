@@ -1,7 +1,7 @@
 
 // Define test configuration interface
 export interface TestConfig {
-  paramValues: Record<string, any>;
+  paramValues?: Record<string, any>;
   parameterValues?: Record<string, any>;
   savedAt?: string;
   responseTime?: number;

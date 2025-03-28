@@ -79,10 +79,11 @@ const validateRule = (
   }
 
   // For operators that require a value, check if value is provided
+  const noValueOperators = ['isEmpty', 'isNotEmpty', 'is_empty', 'is_not_empty'];
+  
   if (
     rule.operator &&
-    rule.operator !== 'isEmpty' &&
-    rule.operator !== 'isNotEmpty'
+    !noValueOperators.includes(rule.operator)
   ) {
     if (rule.value === undefined || rule.value === null || rule.value === '') {
       errors.push({
@@ -112,18 +113,23 @@ export const evaluateRules = (group: QueryGroup, data: any): boolean => {
       case 'equals':
         return value === rule.value;
       case 'notEquals':
+      case 'not_equals':
         return value !== rule.value;
       case 'contains':
         return String(value).includes(String(rule.value));
       case 'notContains':
         return !String(value).includes(String(rule.value));
       case 'greaterThan':
+      case 'greater_than':
         return Number(value) > Number(rule.value);
       case 'lessThan':
+      case 'less_than':
         return Number(value) < Number(rule.value);
       case 'isEmpty':
+      case 'is_empty':
         return !value || value.length === 0;
       case 'isNotEmpty':
+      case 'is_not_empty':
         return !!value && value.length > 0;
       default:
         return false;
