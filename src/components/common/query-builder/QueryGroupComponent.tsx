@@ -1,11 +1,9 @@
-
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Plus, Trash, Copy } from 'lucide-react';
-import type { QueryGroup, QueryRule, QueryField } from '@/types/queryBuilder';
+import type { QueryGroup, QueryRule, QueryField, ValidationError } from '@/types/queryBuilder';
 import { QueryRule as QueryRuleComponent } from './QueryRule';
 import { generateId } from '@/lib/utils';
-import type { ValidationError } from '@/components/automation/chatbots/form/audience-rules/utils/validation';
 import { toast } from '@/hooks/use-toast';
 import { useCallback } from 'react';
 
@@ -237,4 +235,3 @@ export const QueryGroupComponent = ({
     </div>
   );
 };
-

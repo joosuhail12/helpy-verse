@@ -2,7 +2,7 @@
 import React from 'react';
 import { AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import type { ValidationError } from '@/types/queryBuilder';
+import { ValidationError } from '@/types/queryBuilder';
 
 interface RuleValidationSummaryProps {
   errors: ValidationError[];

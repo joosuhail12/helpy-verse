@@ -1,7 +1,6 @@
 
 import { useState } from 'react';
-import type { QueryRule as QueryRuleType, QueryField, DataSource } from '@/types/queryBuilder';
-import type { ValidationError } from '@/components/automation/chatbots/form/audience-rules/utils/validation';
+import type { QueryRule as QueryRuleType, QueryField, DataSource, ValidationError } from '@/types/queryBuilder';
 import { OperatorSelect } from './components/OperatorSelect';
 import { SourceSelect } from './components/SourceSelect';
 import { FieldSelect } from './components/FieldSelect';
