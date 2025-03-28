@@ -61,7 +61,7 @@ const EnhancedConversationView: React.FC<EnhancedConversationViewProps> = ({
   // Handle message sending
   const handleSendMessage = async (content: string, attachments?: File[]) => {
     // Check rate limiting
-    if (rateLimiter.checkRateLimit()) {
+    if (rateLimiter.isLimited()) {
       // Show rate limit message - we could display this in UI
       console.warn(`Rate limit reached. Please wait ${Math.ceil(rateLimiter.getRateLimitTimeRemaining() / 1000)} seconds.`);
       return;
@@ -118,6 +118,7 @@ const EnhancedConversationView: React.FC<EnhancedConversationViewProps> = ({
       <div className="flex-1 overflow-hidden" ref={messageListRef}>
         <MessageList
           messages={messages}
+          conversationId={conversationId}
           typingUsers={typingUsers}
           useVirtualization={virtualized}
           showReactions={showReactions}
@@ -130,7 +131,7 @@ const EnhancedConversationView: React.FC<EnhancedConversationViewProps> = ({
         disabled={isLoading}
         encrypted={encrypted}
         attachments={showAttachments ? [] : undefined}
-        isRateLimited={rateLimiter.checkRateLimit()}
+        isRateLimited={rateLimiter.isLimited()}
         rateLimitTimeRemaining={rateLimiter.getRateLimitTimeRemaining()}
       />
     </div>

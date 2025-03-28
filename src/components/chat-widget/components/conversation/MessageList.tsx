@@ -1,138 +1,168 @@
 
-import React, { useRef, useEffect } from 'react';
-import { useVirtualizer } from '@tanstack/react-virtual';
-import { ChatMessage, TypingUser } from './types';
-import TypingIndicator from './TypingIndicator';
+import React, { useRef, useState, useEffect } from 'react';
+import { ChatMessage, TypingUser, MessageListProps } from './types';
 import MessageItem from './MessageItem';
-import { Loader2 } from 'lucide-react';
-
-export interface MessageListProps {
-  messages: ChatMessage[];
-  conversationId?: string;
-  isLoading?: boolean;
-  useVirtualization?: boolean;
-  showReadReceipts?: boolean;
-  encrypted?: boolean;
-  typingUsers?: TypingUser[];
-  showReactions?: boolean;
-}
+import TypingIndicator from './TypingIndicator';
+import { useVirtualizer } from '@tanstack/react-virtual';
 
 const MessageList: React.FC<MessageListProps> = ({
-  messages,
+  messages = [],
   conversationId,
   isLoading = false,
-  useVirtualization = false,
-  showReadReceipts = false,
   encrypted = false,
-  typingUsers = [],
-  showReactions = false
+  showAvatars = true,
+  showReactions = false,
+  showReadReceipts = false,
+  useVirtualization = false,
+  typingUsers = []
 }) => {
   const parentRef = useRef<HTMLDivElement>(null);
-  const endRef = useRef<HTMLDivElement>(null);
+  const [scrolledToBottom, setScrolledToBottom] = useState(true);
+  const [hasNewMessage, setHasNewMessage] = useState(false);
+  
+  // Set up virtualization if enabled
+  const rowVirtualizer = useVirtualization ? useVirtualizer({
+    count: messages.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 100, // Estimate height of each message
+    overscan: 5
+  }) : null;
   
   // Scroll to bottom on new messages
   useEffect(() => {
-    if (endRef.current) {
-      endRef.current.scrollIntoView({ behavior: 'smooth' });
+    if (messages.length > 0 && scrolledToBottom) {
+      setTimeout(() => {
+        if (parentRef.current) {
+          parentRef.current.scrollTop = parentRef.current.scrollHeight;
+        }
+      }, 100);
+    } else if (messages.length > 0 && !scrolledToBottom) {
+      setHasNewMessage(true);
     }
-  }, [messages, typingUsers]);
+  }, [messages.length, scrolledToBottom]);
   
-  // Virtual list for performance with large message lists
-  const rowVirtualizer = useVirtualizer({
-    count: messages.length,
-    getScrollElement: () => parentRef.current,
-    estimateSize: () => 80, // Estimate height of each message
-    overscan: 5, // Number of items to render before and after visible items
-  });
+  // Handle scroll events to track if we're at the bottom
+  const handleScroll = () => {
+    if (parentRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = parentRef.current;
+      const isBottom = scrollTop + clientHeight >= scrollHeight - 20;
+      setScrolledToBottom(isBottom);
+      
+      if (isBottom && hasNewMessage) {
+        setHasNewMessage(false);
+      }
+    }
+  };
   
-  if (isLoading) {
-    return (
-      <div className="flex-1 flex items-center justify-center">
-        <Loader2 className="w-6 h-6 text-gray-400 animate-spin" />
-      </div>
-    );
-  }
+  // Scroll to bottom function
+  const scrollToBottom = () => {
+    if (parentRef.current) {
+      parentRef.current.scrollTop = parentRef.current.scrollHeight;
+      setScrolledToBottom(true);
+      setHasNewMessage(false);
+    }
+  };
   
-  if (messages.length === 0) {
-    return (
-      <div className="flex-1 flex flex-col items-center justify-center p-4 text-center text-gray-500">
-        <p>No messages yet</p>
-        <p className="text-sm mt-1">Start the conversation by typing a message below</p>
-      </div>
-    );
-  }
-  
-  // Render using virtualization for better performance with large lists
-  if (useVirtualization) {
-    return (
-      <div 
-        ref={parentRef} 
-        className="flex-1 overflow-y-auto py-4 px-3"
-      >
-        <div 
+  // Render content based on virtualization setting
+  const renderMessages = () => {
+    if (useVirtualization && rowVirtualizer) {
+      return (
+        <div
           style={{
             height: `${rowVirtualizer.getTotalSize()}px`,
-            width: '100%',
             position: 'relative',
+            width: '100%',
           }}
         >
-          {rowVirtualizer.getVirtualItems().map(virtualRow => {
-            const message = messages[virtualRow.index];
+          {rowVirtualizer.getVirtualItems().map((virtualItem) => {
+            const message = messages[virtualItem.index];
             return (
               <div
-                key={virtualRow.index}
-                id={`message-${virtualRow.index}`}
+                key={message.id}
+                data-index={virtualItem.index}
+                ref={rowVirtualizer.measureElement}
                 style={{
                   position: 'absolute',
                   top: 0,
                   left: 0,
                   width: '100%',
-                  transform: `translateY(${virtualRow.start}px)`,
+                  transform: `translateY(${virtualItem.start}px)`,
                 }}
               >
-                <MessageItem 
+                <MessageItem
                   message={message}
                   encrypted={encrypted}
-                  showReadReceipt={showReadReceipts}
                   showReactions={showReactions}
+                  showReadReceipt={showReadReceipts}
                 />
               </div>
             );
           })}
+          
+          {typingUsers.length > 0 && scrolledToBottom && (
+            <div className="pt-1 pb-2">
+              <TypingIndicator typingUsers={typingUsers} />
+            </div>
+          )}
         </div>
+      );
+    }
+    
+    return (
+      <>
+        {messages.map((message) => (
+          <MessageItem
+            key={message.id}
+            message={message}
+            encrypted={encrypted}
+            showReactions={showReactions}
+            showReadReceipt={showReadReceipts}
+          />
+        ))}
         
-        {typingUsers && typingUsers.length > 0 && (
-          <div className="p-2">
+        {typingUsers.length > 0 && scrolledToBottom && (
+          <div className="pt-1 pb-2">
             <TypingIndicator typingUsers={typingUsers} />
           </div>
         )}
-        
-        <div ref={endRef} />
+      </>
+    );
+  };
+  
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-full p-4">
+        <div className="animate-pulse flex flex-col space-y-4 w-full">
+          <div className="h-10 bg-gray-200 rounded w-3/4"></div>
+          <div className="h-10 bg-gray-200 rounded w-1/2"></div>
+          <div className="h-10 bg-gray-200 rounded w-5/6"></div>
+        </div>
       </div>
     );
   }
   
-  // Regular rendering for smaller message lists
   return (
-    <div className="flex-1 overflow-y-auto py-4 px-3" ref={parentRef}>
-      {messages.map((message, index) => (
-        <div id={`message-${index}`} key={message.id || index}>
-          <MessageItem 
-            message={message}
-            encrypted={encrypted}
-            showReadReceipt={showReadReceipts}
-            showReactions={showReactions}
-          />
+    <div
+      ref={parentRef}
+      onScroll={handleScroll}
+      className="flex flex-col h-full overflow-y-auto p-4 space-y-4"
+    >
+      {messages.length === 0 ? (
+        <div className="flex items-center justify-center h-full text-gray-500">
+          No messages yet. Start a conversation!
         </div>
-      ))}
-      
-      {typingUsers && typingUsers.length > 0 && (
-        <div className="p-2">
-          <TypingIndicator typingUsers={typingUsers} />
-        </div>
+      ) : (
+        renderMessages()
       )}
       
-      <div ref={endRef} />
+      {hasNewMessage && !scrolledToBottom && (
+        <button
+          onClick={scrollToBottom}
+          className="fixed bottom-24 right-4 bg-primary text-white rounded-full p-2 shadow-lg"
+        >
+          ↓ New messages
+        </button>
+      )}
     </div>
   );
 };

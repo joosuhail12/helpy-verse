@@ -89,7 +89,6 @@ export interface MessageInputProps {
   disabled?: boolean;
   encrypted?: boolean;
   attachments?: File[];
-  showAttachments?: boolean;
   isRateLimited?: boolean;
   rateLimitTimeRemaining?: number;
   placeholder?: string;
@@ -118,3 +117,4 @@ export interface UseChatOptions {
   conversationId: string;
   enableEncryption?: boolean;
 }
+

@@ -29,7 +29,7 @@ const EventDebugger: React.FC<EventDebuggerProps> = ({
     });
     
     // Subscribe to all events using wildcard
-    const unsubscribeAll = eventSystem.addEventListener('*', (event: ChatEventUnion) => {
+    const unsubscribeAll = eventSystem.subscribe('*' as ChatEventType, (event: ChatEventUnion) => {
       setEvents(prev => [event, ...prev].slice(0, maxEvents));
     });
     
