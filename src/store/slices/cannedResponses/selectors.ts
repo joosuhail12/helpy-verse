@@ -1,9 +1,32 @@
 
+import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from '../../store';
 
-export const selectCannedResponses = (state: RootState) => state.cannedResponses?.responses || [];
-export const selectCannedResponsesLoading = (state: RootState) => state.cannedResponses?.loading || false;
-export const selectCannedResponsesError = (state: RootState) => state.cannedResponses?.error || null;
-export const selectSelectedCannedResponse = (state: RootState) => state.cannedResponses?.selectedResponse || null;
-export const selectCannedResponseById = (state: RootState, id: string) => 
-  state.cannedResponses?.responses?.find(response => response.id === id) || null;
+// Base selector
+const getCannedResponsesState = (state: RootState) => state.cannedResponses;
+
+// Memoized selectors
+export const selectCannedResponses = createSelector(
+  [getCannedResponsesState],
+  (state) => state?.responses || []
+);
+
+export const selectCannedResponsesLoading = createSelector(
+  [getCannedResponsesState],
+  (state) => state?.loading || false
+);
+
+export const selectCannedResponsesError = createSelector(
+  [getCannedResponsesState],
+  (state) => state?.error || null
+);
+
+export const selectSelectedCannedResponse = createSelector(
+  [getCannedResponsesState],
+  (state) => state?.selectedResponse || null
+);
+
+export const selectCannedResponseById = createSelector(
+  [selectCannedResponses, (_, id: string) => id],
+  (responses, id) => responses.find(response => response.id === id) || null
+);

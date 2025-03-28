@@ -1,6 +1,7 @@
 
 import { useAppSelector } from '../useAppSelector';
 import { RootState } from '../../store/store';
+import { createSelector } from '@reduxjs/toolkit';
 
 /**
  * Hook to provide standardized selectors for a slice
@@ -10,23 +11,35 @@ export const useStandardSelector = <T extends Record<string, any>>(
   sliceName: keyof RootState,
   customSelectors: Record<string, (state: RootState) => any> = {}
 ) => {
-  const all = useAppSelector(state => state[sliceName] as unknown as T);
-  const loading = useAppSelector(state => {
-    const slice = state[sliceName] as any;
-    return slice?.loading || false;
-  });
-  const error = useAppSelector(state => {
-    const slice = state[sliceName] as any;
-    return slice?.error || null;
-  });
-  const items = useAppSelector(state => {
-    const slice = state[sliceName] as any;
-    return slice?.items || [];
-  });
-  const selected = useAppSelector(state => {
-    const slice = state[sliceName] as any;
-    return slice?.selected || null;
-  });
+  // Create base selectors
+  const selectSlice = (state: RootState) => state[sliceName] as unknown as T;
+  
+  const selectLoading = createSelector(
+    [selectSlice],
+    (slice) => (slice as any)?.loading || false
+  );
+  
+  const selectError = createSelector(
+    [selectSlice],
+    (slice) => (slice as any)?.error || null
+  );
+  
+  const selectItems = createSelector(
+    [selectSlice],
+    (slice) => (slice as any)?.items || []
+  );
+  
+  const selectSelected = createSelector(
+    [selectSlice],
+    (slice) => (slice as any)?.selected || null
+  );
+  
+  // Use the selectors with our hook
+  const all = useAppSelector(selectSlice);
+  const loading = useAppSelector(selectLoading);
+  const error = useAppSelector(selectError);
+  const items = useAppSelector(selectItems);
+  const selected = useAppSelector(selectSelected);
   
   // Apply any custom selectors
   const customSelectorValues = Object.entries(customSelectors).reduce((acc, [key, selector]) => {

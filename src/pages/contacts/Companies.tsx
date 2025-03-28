@@ -6,9 +6,9 @@ import { useAppSelector } from '@/hooks/useAppSelector';
 import { 
   selectCompanies, 
   selectCompanyLoading, 
-  selectCompanyError 
+  selectCompanyError,
+  fetchCompanies 
 } from '@/store/slices/companies/companiesSlice';
-import { fetchCompanies } from '@/store/slices/companies/companiesSlice';
 import { CompaniesList } from '@/components/companies/CompaniesList';
 import { CompaniesHeader } from '@/components/companies/CompaniesHeader';
 import { CompaniesListControls } from '@/components/companies/CompaniesListControls';

@@ -1,9 +1,8 @@
 
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, PayloadAction, createSelector } from '@reduxjs/toolkit';
 import { RootState } from '../../store';
 import { companiesService } from '@/api/services/companiesService';
 import { Company } from '@/types/company';
-import { createSelector } from '@reduxjs/toolkit';
 
 export interface CompaniesState {
   companies: Company[];
@@ -213,15 +212,40 @@ export const {
   setSelectedCompanies 
 } = companiesSlice.actions;
 
-// Basic selectors
-export const selectCompanies = (state: RootState) => state.companies.companies;
-export const selectCompanyLoading = (state: RootState) => state.companies.loading;
-export const selectCompanyError = (state: RootState) => state.companies.error;
-export const selectCompanyDetails = (state: RootState) => state.companies.companyDetails;
-export const selectSelectedCompany = (state: RootState) => state.companies.selectedCompany;
-export const selectSelectedCompanies = (state: RootState) => state.companies.selectedCompanies;
+// Base selector
+const getCompaniesState = (state: RootState) => state.companies;
 
-// Memoized selectors
+// Memoized selectors using createSelector
+export const selectCompanies = createSelector(
+  [getCompaniesState],
+  (state) => state.companies
+);
+
+export const selectCompanyLoading = createSelector(
+  [getCompaniesState],
+  (state) => state.loading
+);
+
+export const selectCompanyError = createSelector(
+  [getCompaniesState],
+  (state) => state.error
+);
+
+export const selectCompanyDetails = createSelector(
+  [getCompaniesState],
+  (state) => state.companyDetails
+);
+
+export const selectSelectedCompany = createSelector(
+  [getCompaniesState],
+  (state) => state.selectedCompany
+);
+
+export const selectSelectedCompanies = createSelector(
+  [getCompaniesState],
+  (state) => state.selectedCompanies
+);
+
 export const selectCompanyById = createSelector(
   [selectCompanies, (_, companyId: string) => companyId],
   (companies, companyId) => companies.find(company => company.id === companyId) || null

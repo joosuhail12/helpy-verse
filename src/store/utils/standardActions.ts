@@ -17,20 +17,22 @@ export const createStandardCrudThunks = <T, S>(
     // Add any additional API methods as needed
   }
 ) => {
-  const thunks: Record<string, any> = {
-    fetchAll: createAsyncThunk(
-      `${prefix}/fetchAll`,
-      async (params = {}, { rejectWithValue }) => {
-        try {
-          const response = await api.fetch(params);
-          return response.data;
-        } catch (error: any) {
-          return rejectWithValue(error.message || `Failed to fetch ${prefix}`);
-        }
+  const thunks: Record<string, any> = {};
+  
+  // Define fetchAll thunk
+  thunks.fetchAll = createAsyncThunk(
+    `${prefix}/fetchAll`,
+    async (params = {}, { rejectWithValue }) => {
+      try {
+        const response = await api.fetch(params);
+        return response.data;
+      } catch (error: any) {
+        return rejectWithValue(error.message || `Failed to fetch ${prefix}`);
       }
-    )
-  };
+    }
+  );
 
+  // Define fetchById thunk if api.getById exists
   if (api.getById) {
     thunks.fetchById = createAsyncThunk(
       `${prefix}/fetchById`,
@@ -45,6 +47,7 @@ export const createStandardCrudThunks = <T, S>(
     );
   }
 
+  // Define create thunk if api.create exists
   if (api.create) {
     thunks.create = createAsyncThunk(
       `${prefix}/create`,
@@ -59,6 +62,7 @@ export const createStandardCrudThunks = <T, S>(
     );
   }
 
+  // Define update thunk if api.update exists
   if (api.update) {
     thunks.update = createAsyncThunk(
       `${prefix}/update`,
@@ -73,6 +77,7 @@ export const createStandardCrudThunks = <T, S>(
     );
   }
 
+  // Define delete thunk if api.delete exists
   if (api.delete) {
     thunks.delete = createAsyncThunk(
       `${prefix}/delete`,

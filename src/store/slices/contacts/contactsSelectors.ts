@@ -1,9 +1,42 @@
 
+import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from '../../store';
 
-export const selectContacts = (state: RootState) => state.contacts.items;
-export const selectContactsLoading = (state: RootState) => state.contacts.loading;
-export const selectContactsError = (state: RootState) => state.contacts.error;
-export const selectContactDetails = (state: RootState) => state.contacts.contactDetails;
-export const selectSelectedContact = (state: RootState) => state.contacts.selectedContact;
-export const selectSelectedContacts = (state: RootState) => state.contacts.selectedContacts;
+// Base selector
+const getContactsState = (state: RootState) => state.contacts;
+
+// Memoized selectors
+export const selectContacts = createSelector(
+  [getContactsState],
+  (state) => state.items
+);
+
+export const selectContactsLoading = createSelector(
+  [getContactsState],
+  (state) => state.loading
+);
+
+export const selectContactsError = createSelector(
+  [getContactsState],
+  (state) => state.error
+);
+
+export const selectContactDetails = createSelector(
+  [getContactsState],
+  (state) => state.contactDetails
+);
+
+export const selectSelectedContact = createSelector(
+  [getContactsState],
+  (state) => state.selectedContact
+);
+
+export const selectSelectedContacts = createSelector(
+  [getContactsState],
+  (state) => state.selectedContacts
+);
+
+export const selectContactById = createSelector(
+  [selectContacts, (_, id: string) => id],
+  (contacts, id) => contacts.find(contact => contact.id === id) || null
+);
