@@ -34,11 +34,11 @@ export const AudienceRules = () => {
             value={queryGroup}
             onChange={updateQueryGroup}
             fields={fields}
-            errors={errors as ValidationError[]}
+            errors={errors}
           />
           {!isValid && errors.length > 0 && (
             <div className="mt-4">
-              <RuleValidationSummary errors={errors as ValidationError[]} />
+              <RuleValidationSummary errors={errors} />
             </div>
           )}
         </CardContent>

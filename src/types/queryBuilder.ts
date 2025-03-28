@@ -60,7 +60,7 @@ export interface QueryField {
   type: FieldType;
   dataSource?: DataSource;
   customObject?: string;
-  options?: Array<{ label: string; value: string; }>;
+  options?: Array<{ label: string; value: string; } | string>;
   placeholder?: string;
   defaultValue?: any;
   validation?: ValidationRule[];

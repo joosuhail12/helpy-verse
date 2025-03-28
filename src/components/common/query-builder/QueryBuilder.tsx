@@ -1,7 +1,6 @@
 
-import { QueryGroup, QueryField } from '@/types/queryBuilder';
+import { QueryGroup, QueryField, ValidationError } from '@/types/queryBuilder';
 import { QueryGroupComponent } from './QueryGroupComponent';
-import type { ValidationError } from '@/components/automation/chatbots/form/audience-rules/utils/validation';
 
 interface QueryBuilderProps {
   value: QueryGroup;
