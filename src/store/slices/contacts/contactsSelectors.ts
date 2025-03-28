@@ -21,10 +21,14 @@ export const selectContactLoading = createSelector(
   (contactsState) => contactsState.loading
 );
 
+export const selectContactsLoading = selectContactLoading;
+
 export const selectContactError = createSelector(
   [getContactsState],
   (contactsState) => contactsState.error
 );
+
+export const selectContactsError = selectContactError;
 
 export const selectSelectedContact = createSelector(
   [getContactsState],
@@ -48,7 +52,9 @@ export const selectPaginatedContacts = createSelector(
 
 export const selectContactsByCompany = createSelector(
   [selectAllContacts, (_, companyId) => companyId],
-  (contacts, companyId) => contacts.filter(contact => String(contact.company) === String(companyId))
+  (contacts, companyId) => contacts.filter(contact => 
+    contact.company !== undefined && String(contact.company) === String(companyId)
+  )
 );
 
 export const selectContactFilters = createSelector(
@@ -56,8 +62,15 @@ export const selectContactFilters = createSelector(
   (contactsState) => contactsState.filters
 );
 
-// Add this selector for selected contact IDs
 export const selectSelectedContactIds = createSelector(
   [getContactsState],
-  (contactsState) => contactsState.selectedContactIds || []
+  (contactsState) => contactsState.selectedContactIds
 );
+
+export const selectContactDetails = createSelector(
+  [getContactsState],
+  (contactsState) => contactsState.contactDetails
+);
+
+// For convenience in components
+export const selectContacts = selectAllContacts;

@@ -1,9 +1,9 @@
 
-import { ValidationResult, ValidationError, QueryGroup, QueryRule } from '@/types/queryBuilder';
+import { ValidationResult, ValidationError, QueryGroup, QueryRule, QueryField } from '@/types/queryBuilder';
 
 export const validateRuleGroup = (
   group: QueryGroup,
-  availableFields: any[],
+  availableFields: QueryField[] = [],
   path = ''
 ): ValidationResult => {
   const errors: ValidationError[] = [];
@@ -45,7 +45,7 @@ export const validateRuleGroup = (
 
 const validateRule = (
   rule: QueryRule,
-  availableFields: any[],
+  availableFields: QueryField[] = [],
   path: string
 ): ValidationResult => {
   const errors: ValidationError[] = [];
@@ -60,7 +60,7 @@ const validateRule = (
   } else {
     // Check if field exists in available fields
     const fieldExists = availableFields.some((field) => field.id === rule.field);
-    if (!fieldExists) {
+    if (!fieldExists && availableFields.length > 0) {
       errors.push({
         message: `Field '${rule.field}' does not exist`,
         rule,
@@ -97,4 +97,61 @@ const validateRule = (
     isValid: errors.length === 0,
     errors
   };
+};
+
+// Export the ValidationError type for other components to use
+export type { ValidationError };
+
+// Add evaluateRules function for SampleMatchesPreview
+export const evaluateRules = (group: QueryGroup, data: any): boolean => {
+  if (!group.rules || group.rules.length === 0) {
+    return true;
+  }
+
+  const evaluateRule = (rule: QueryRule): boolean => {
+    const value = data[rule.field];
+    
+    switch (rule.operator) {
+      case 'equals':
+        return value === rule.value;
+      case 'not_equals':
+        return value !== rule.value;
+      case 'contains':
+        return String(value).includes(String(rule.value));
+      case 'not_contains':
+        return !String(value).includes(String(rule.value));
+      case 'greater_than':
+        return Number(value) > Number(rule.value);
+      case 'less_than':
+        return Number(value) < Number(rule.value);
+      case 'is_empty':
+        return !value || value.length === 0;
+      case 'is_not_empty':
+        return !!value && value.length > 0;
+      default:
+        return false;
+    }
+  };
+
+  const evaluateGroup = (group: QueryGroup): boolean => {
+    if (group.rules.length === 0) return true;
+
+    if (group.combinator === 'and') {
+      return group.rules.every(rule => {
+        if ('rules' in rule) {
+          return evaluateGroup(rule);
+        }
+        return evaluateRule(rule as QueryRule);
+      });
+    } else {
+      return group.rules.some(rule => {
+        if ('rules' in rule) {
+          return evaluateGroup(rule);
+        }
+        return evaluateRule(rule as QueryRule);
+      });
+    }
+  };
+
+  return evaluateGroup(group);
 };

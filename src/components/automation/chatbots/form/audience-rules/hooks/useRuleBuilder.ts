@@ -6,7 +6,7 @@ import { validateRuleGroup } from '../utils/validation';
 import { useAudienceFields } from './useAudienceFields';
 
 export const useRuleBuilder = (initialRules?: QueryGroup) => {
-  const [ruleGroup, setRuleGroup] = useState<QueryGroup>(initialRules || {
+  const [queryGroup, setQueryGroup] = useState<QueryGroup>(initialRules || {
     id: uuidv4(),
     combinator: 'and',
     rules: []
@@ -14,10 +14,14 @@ export const useRuleBuilder = (initialRules?: QueryGroup) => {
   
   const availableFields = useAudienceFields();
 
+  const validate = useCallback((): boolean => {
+    const result = validateRuleGroup(queryGroup, availableFields);
+    return result.isValid;
+  }, [queryGroup, availableFields]);
+
   const validateRules = useCallback((): ValidationResult => {
-    const result = validateRuleGroup(ruleGroup, availableFields);
+    const result = validateRuleGroup(queryGroup, availableFields);
     if (!result.isValid) {
-      // Map validation errors to include more context
       const contextualErrors: ValidationError[] = result.errors.map(error => ({
         ...error,
         message: `${error.message} ${error.rule ? `for rule with field ${error.rule.field}` : ''}`
@@ -25,10 +29,19 @@ export const useRuleBuilder = (initialRules?: QueryGroup) => {
       return { isValid: false, errors: contextualErrors };
     }
     return { isValid: true, errors: [] };
-  }, [ruleGroup, availableFields]);
+  }, [queryGroup, availableFields]);
+
+  // Store validation errors
+  const [errors, setErrors] = useState<ValidationError[]>([]);
+
+  const updateQueryGroup = useCallback((newGroup: QueryGroup) => {
+    setQueryGroup(newGroup);
+    const result = validateRuleGroup(newGroup, availableFields);
+    setErrors(result.errors);
+  }, [availableFields]);
 
   const addRule = useCallback(() => {
-    setRuleGroup(prev => ({
+    setQueryGroup(prev => ({
       ...prev,
       rules: [
         ...prev.rules,
@@ -43,7 +56,7 @@ export const useRuleBuilder = (initialRules?: QueryGroup) => {
   }, [availableFields]);
 
   const addGroup = useCallback(() => {
-    setRuleGroup(prev => ({
+    setQueryGroup(prev => ({
       ...prev,
       rules: [
         ...prev.rules,
@@ -73,8 +86,11 @@ export const useRuleBuilder = (initialRules?: QueryGroup) => {
       };
     };
 
-    setRuleGroup(prev => updateRuleInGroup(prev));
-  }, []);
+    const updatedGroup = updateRuleInGroup(queryGroup);
+    setQueryGroup(updatedGroup);
+    const validationResult = validateRuleGroup(updatedGroup, availableFields);
+    setErrors(validationResult.errors);
+  }, [queryGroup, availableFields]);
 
   const removeRule = useCallback((id: string) => {
     const removeRuleFromGroup = (group: QueryGroup): QueryGroup => {
@@ -92,7 +108,7 @@ export const useRuleBuilder = (initialRules?: QueryGroup) => {
       };
     };
 
-    setRuleGroup(prev => removeRuleFromGroup(prev));
+    setQueryGroup(prev => removeRuleFromGroup(prev));
   }, []);
 
   const updateCombinator = useCallback((id: string, combinator: 'and' | 'or') => {
@@ -113,13 +129,16 @@ export const useRuleBuilder = (initialRules?: QueryGroup) => {
       };
     };
 
-    setRuleGroup(prev => updateCombinatorInGroup(prev));
+    setQueryGroup(prev => updateCombinatorInGroup(prev));
   }, []);
 
   return {
-    ruleGroup,
-    setRuleGroup,
+    queryGroup,
+    setQueryGroup,
+    updateQueryGroup,
     validateRules,
+    validate,
+    errors,
     addRule,
     addGroup,
     updateRule,

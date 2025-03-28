@@ -22,8 +22,8 @@ export const AudienceRules = () => {
   } = useRuleBuilder();
 
   useEffect(() => {
-    const isValid = validate();
-    setIsValid(isValid);
+    const valid = validate();
+    setIsValid(valid);
   }, [queryGroup, validate]);
 
   return (
