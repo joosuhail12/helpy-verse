@@ -128,7 +128,9 @@ const SampleConversation: React.FC<SampleConversationProps> = ({
         msg.id === messageId 
           ? { 
               ...msg, 
-              reactions: msg.reactions ? [...msg.reactions, { emoji: '👍', userId: 'user1' }] : [{ emoji: '👍', userId: 'user1' }]
+              reactions: msg.reactions 
+                ? { ...msg.reactions, '👍': [...(msg.reactions['👍'] || []), 'user1'] }
+                : { '👍': ['user1'] }
             }
           : msg
       )
@@ -179,14 +181,14 @@ const SampleConversation: React.FC<SampleConversationProps> = ({
                 )}
                 
                 {/* Reactions */}
-                {features.reactions && message.reactions && message.reactions.length > 0 && (
+                {features.reactions && message.reactions && Object.keys(message.reactions).length > 0 && (
                   <div className="flex mt-1 gap-1">
-                    {message.reactions.map((reaction, index) => (
+                    {Object.entries(message.reactions).map(([emoji, users]) => (
                       <span 
-                        key={index} 
+                        key={emoji} 
                         className="bg-gray-100 rounded-full px-2 py-0.5 text-xs"
                       >
-                        {reaction.emoji} 1
+                        {emoji} {users.length}
                       </span>
                     ))}
                   </div>
