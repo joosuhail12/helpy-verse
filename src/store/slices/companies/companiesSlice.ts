@@ -3,6 +3,7 @@ import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../store';
 import { companiesService } from '@/api/services/companiesService';
 import { Company } from '@/types/company';
+import * as companiesSelectors from './selectors';
 
 export interface CompaniesState {
   entities: Record<string, Company>;
@@ -248,6 +249,31 @@ export const {
   clearSelectedCompanies, 
   setSelectedCompanies 
 } = companiesSlice.actions;
+
+// Re-export async thunks
+export { 
+  fetchCompanies,
+  fetchCompanyById, 
+  createCompany,
+  updateCompany,
+  deleteCompany
+};
+
+// Export selectors
+export {
+  companiesSelectors
+};
+
+// Export individual selectors for direct import
+export const {
+  selectAllCompanies,
+  selectCompaniesLoading,
+  selectCompaniesError,
+  selectCompanyDetails,
+  selectSelectedCompany,
+  selectSelectedCompanies,
+  selectCompanyById
+} = companiesSelectors;
 
 // Export the reducer
 export default companiesSlice.reducer;

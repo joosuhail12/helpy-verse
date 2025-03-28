@@ -1,5 +1,6 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import * as inboxSelectors from './selectors';
 
 // Define ticket type
 export interface Ticket {
@@ -93,5 +94,22 @@ export const {
   setLoading, 
   setError 
 } = inboxSlice.actions;
+
+// Export selectors
+export {
+  inboxSelectors
+};
+
+// For direct imports
+export const {
+  selectAllTickets,
+  selectTicketById,
+  selectSelectedTicket,
+  selectInboxLoading,
+  selectInboxError,
+  selectTicketsByStatus,
+  selectTicketsByAssignee,
+  selectUnreadTicketsCount
+} = inboxSelectors;
 
 export default inboxSlice.reducer;

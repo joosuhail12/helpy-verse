@@ -2,6 +2,7 @@
 import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from '../../store';
 import type { Contact } from '@/types/contact';
+import { ContactsState } from './types';
 
 // Base selector
 const getContactsState = (state: RootState) => state.contacts;
@@ -17,7 +18,7 @@ export const selectContactEntities = createSelector(
   (contactsState) => contactsState.entities
 );
 
-export const selectContacts = createSelector(
+export const selectAllContacts = createSelector(
   [selectContactIds, selectContactEntities],
   (ids, entities) => ids.map(id => entities[id])
 );
@@ -64,12 +65,12 @@ export const selectContactById = createSelector(
 );
 
 export const selectContactsByCompany = createSelector(
-  [selectContacts, (_, companyId: string) => companyId],
+  [selectAllContacts, (_, companyId: string) => companyId],
   (contacts, companyId) => contacts.filter(contact => contact.company === companyId)
 );
 
 export const selectFilteredContacts = createSelector(
-  [selectContacts, (state: RootState) => state.contacts.filters],
+  [selectAllContacts, (state: RootState) => state.contacts.filters],
   (contacts, filters) => {
     let result = [...contacts];
     
@@ -99,8 +100,8 @@ export const selectSortedContacts = createSelector(
   (contacts, sort) => {
     const { field, direction } = sort;
     return [...contacts].sort((a, b) => {
-      const valueA = a[field] as string | number;
-      const valueB = b[field] as string | number;
+      const valueA = a[field];
+      const valueB = b[field];
       
       if (valueA < valueB) {
         return direction === 'asc' ? -1 : 1;

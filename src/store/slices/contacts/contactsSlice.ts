@@ -12,6 +12,7 @@ import {
   updateContactCompany,
   deleteContact
 } from './contactsActions';
+import * as contactsSelectors from './contactsSelectors';
 
 const initialState: ContactsState = {
   entities: {},
@@ -207,5 +208,24 @@ export {
   updateContactCompany,
   deleteContact
 };
+
+// Export all selectors
+export {
+  contactsSelectors
+};
+
+// For direct imports without namespace
+export const { 
+  selectAllContacts,
+  selectContactsLoading,
+  selectContactsError,
+  selectContactDetails,
+  selectSelectedContact,
+  selectSelectedContacts,
+  selectContactById,
+  selectContactsByCompany,
+  selectFilteredContacts,
+  selectSortedContacts
+} = contactsSelectors;
 
 export default contactsSlice.reducer;

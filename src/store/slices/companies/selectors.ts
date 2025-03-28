@@ -17,17 +17,17 @@ export const selectCompanyEntities = createSelector(
   (companiesState) => companiesState.entities
 );
 
-export const selectCompanies = createSelector(
+export const selectAllCompanies = createSelector(
   [selectCompanyIds, selectCompanyEntities],
   (ids, entities) => ids.map(id => entities[id])
 );
 
-export const selectCompanyLoading = createSelector(
+export const selectCompaniesLoading = createSelector(
   [getCompaniesState],
   (companiesState) => companiesState.loading
 );
 
-export const selectCompanyError = createSelector(
+export const selectCompaniesError = createSelector(
   [getCompaniesState],
   (companiesState) => companiesState.error
 );
@@ -47,13 +47,13 @@ export const selectSelectedCompany = createSelector(
   (entities, selectedId) => selectedId ? entities[selectedId] : null
 );
 
-export const selectSelectedCompanies = createSelector(
+export const selectSelectedCompanyIds = createSelector(
   [getCompaniesState],
   (companiesState) => companiesState.selectedCompanyIds
 );
 
-export const selectSelectedCompanyEntities = createSelector(
-  [selectCompanyEntities, selectSelectedCompanies],
+export const selectSelectedCompanies = createSelector(
+  [selectCompanyEntities, selectSelectedCompanyIds],
   (entities, selectedIds) => selectedIds.map(id => entities[id]).filter(Boolean)
 );
 

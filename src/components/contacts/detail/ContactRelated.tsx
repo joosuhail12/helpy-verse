@@ -1,62 +1,62 @@
 
+import React, { useEffect, useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Contact } from '@/types/contact';
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-} from '@/components/ui/card';
-import { Users2 } from 'lucide-react';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { User } from 'lucide-react';
 import { useAppSelector } from '@/hooks/useAppSelector';
+import { selectContactsByCompany } from '@/store/slices/contacts/contactsSlice';
+import { Link } from 'react-router-dom';
 
 interface ContactRelatedProps {
   contact: Contact;
 }
 
-export const ContactRelated = ({ contact }: ContactRelatedProps) => {
-  const allContacts = useAppSelector((state) => state.contacts.contacts);
-  
-  if (!contact.company) return null;
-
-  // Find colleagues (same company, excluding self)
-  const colleagues = allContacts.filter(c => 
-    c.company === contact.company && 
-    c.id !== contact.id
+export const ContactRelated: React.FC<ContactRelatedProps> = ({ contact }) => {
+  const companyId = contact.company;
+  const relatedContacts = useAppSelector(state => 
+    companyId ? selectContactsByCompany(state, companyId) : []
   );
-
-  if (colleagues.length === 0) return null;
-
+  
+  // Filter out the current contact
+  const otherContacts = relatedContacts.filter(c => c.id !== contact.id);
+  
+  if (otherContacts.length === 0) {
+    return null;
+  }
+  
   return (
-    <Card className="mt-4 bg-white/60 backdrop-blur-sm border-purple-100/50 shadow-lg shadow-purple-500/5 transition-all duration-300 hover:shadow-purple-500/10">
-      <CardHeader className="border-b border-purple-100/20 pb-4">
-        <CardTitle className="text-lg font-semibold text-purple-900">Related Contacts</CardTitle>
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-lg">Related Contacts</CardTitle>
       </CardHeader>
-      <CardContent className="pt-6">
-        <div className="pt-4">
-          <div className="flex items-center gap-2 text-sm font-medium text-purple-900/70 mb-3">
-            <Users2 className="h-4 w-4" />
-            <span>Colleagues at {contact.company}</span>
-          </div>
-          <div className="space-y-3">
-            {colleagues.map((colleague) => (
-              <div key={colleague.id} className="flex items-center gap-3">
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback>
-                    <User className="h-4 w-4" />
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="text-sm font-medium">{colleague.firstname} {colleague.lastname}</p>
-                  <p className="text-xs text-muted-foreground">{colleague.title}</p>
+      <CardContent>
+        <div className="space-y-3">
+          {otherContacts.slice(0, 5).map((relatedContact) => (
+            <div key={relatedContact.id} className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center text-primary">
+                {relatedContact.firstname.charAt(0)}
+                {relatedContact.lastname.charAt(0)}
+              </div>
+              <div>
+                <Link 
+                  to={`/contacts/${relatedContact.id}`}
+                  className="font-medium hover:underline"
+                >
+                  {relatedContact.firstname} {relatedContact.lastname}
+                </Link>
+                <div className="text-sm text-muted-foreground">
+                  {relatedContact.role || 'No role'}
                 </div>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
+          
+          {otherContacts.length > 5 && (
+            <div className="text-sm text-muted-foreground pt-2">
+              {otherContacts.length - 5} more related contacts
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
   );
 };
-

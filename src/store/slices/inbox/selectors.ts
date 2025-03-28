@@ -1,7 +1,7 @@
 
 import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from '@/store/store';
-import { Ticket } from './inboxSlice';
+import { Ticket } from '../inbox/inboxSlice';
 
 // Base selector
 const getInboxState = (state: RootState) => state.inbox;

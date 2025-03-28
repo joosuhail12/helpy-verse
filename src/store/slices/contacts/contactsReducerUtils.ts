@@ -65,7 +65,7 @@ export const removeContactFromState = (
   state.selectedContactIds = state.selectedContactIds.filter(id => id !== contactId);
   
   // Clear contact details if it's the current contact
-  if (state.contactDetails?.id === contactId) {
+  if (state.contactDetails && state.contactDetails.id === contactId) {
     state.contactDetails = null;
   }
 };

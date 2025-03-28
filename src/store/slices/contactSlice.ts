@@ -1,66 +1,28 @@
-
 import { createSlice } from '@reduxjs/toolkit';
 import { RootState } from '../store';
+import * as contactsSelectors from './contacts/contactsSelectors';
 
-// Define contact state type
-interface ContactState {
-  items: any[];
-  contactDetails: any | null;
-  selectedContact: any | null;
-  selectedContacts: string[];
-  loading: boolean;
-  error: string | null;
-  lastFetchTime: number | null;
-}
+// This slice is being deprecated in favor of the contacts/contactsSlice.ts
+// We're keeping it here with forwarded selectors for backward compatibility
 
-// Initial state
-const initialState: ContactState = {
-  items: [],
-  contactDetails: null,
-  selectedContact: null,
-  selectedContacts: [],
-  loading: false,
-  error: null,
-  lastFetchTime: null,
-};
-
-// Create the contact slice
+// Create the contact slice (compatibility layer)
 const contactSlice = createSlice({
-  name: 'contacts',
-  initialState,
-  reducers: {
-    setSelectedContacts: (state, action) => {
-      state.selectedContacts = action.payload;
-    },
-    clearSelectedContacts: (state) => {
-      state.selectedContacts = [];
-    },
-    toggleSelectContact: (state, action) => {
-      const contactId = action.payload;
-      if (state.selectedContacts.includes(contactId)) {
-        state.selectedContacts = state.selectedContacts.filter(id => id !== contactId);
-      } else {
-        state.selectedContacts.push(contactId);
-      }
-    },
-    selectContact: (state, action) => {
-      state.selectedContact = action.payload;
-    },
-    clearSelection: (state) => {
-      state.selectedContacts = [];
-    },
-  },
+  name: 'legacyContacts',
+  initialState: {}, // Empty state as we're just forwarding to the real contacts slice
+  reducers: {}
 });
 
-// Export actions and reducer
-export const { setSelectedContacts, clearSelectedContacts, toggleSelectContact, selectContact, clearSelection } = contactSlice.actions;
+// Re-export the selectors from contactsSelectors for backwards compatibility
+export {
+  contactsSelectors
+};
 
-// Selectors
-export const selectContacts = (state: RootState) => state.contacts?.items ?? [];
-export const selectContactsLoading = (state: RootState) => state.contacts?.loading ?? false;
-export const selectContactsError = (state: RootState) => state.contacts?.error ?? null;
-export const selectContactDetails = (state: RootState) => state.contacts?.contactDetails ?? null;
-export const selectSelectedContact = (state: RootState) => state.contacts?.selectedContact ?? null;
-export const selectSelectedContacts = (state: RootState) => state.contacts?.selectedContacts ?? [];
+// Export selectors with the old names for backward compatibility
+export const selectContacts = contactsSelectors.selectAllContacts;
+export const selectContactsLoading = contactsSelectors.selectContactsLoading;
+export const selectContactsError = contactsSelectors.selectContactsError;
+export const selectContactDetails = contactsSelectors.selectContactDetails;
+export const selectSelectedContact = contactsSelectors.selectSelectedContact;
+export const selectSelectedContacts = contactsSelectors.selectSelectedContacts;
 
 export default contactSlice.reducer;
