@@ -13,20 +13,41 @@ interface MessageItemProps {
 }
 
 // Create a placeholder UserAvatar component that matches the expected props
-const UserAvatar: React.FC<UserAvatarProps> = ({ name, userId, color }) => {
+const UserAvatar: React.FC<UserAvatarProps> = ({ name, userId, color, avatarUrl, size = 'md', status }) => {
   const initials = name
-    .split(' ')
-    .map(part => part[0])
-    .join('')
-    .toUpperCase()
-    .substring(0, 2);
+    ? name
+        .split(' ')
+        .map(part => part[0])
+        .join('')
+        .toUpperCase()
+        .substring(0, 2)
+    : 'U';
 
   return (
     <div 
-      className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium"
+      className={cn(
+        "rounded-full flex items-center justify-center text-white text-sm font-medium",
+        size === 'sm' ? 'w-6 h-6' : size === 'lg' ? 'w-10 h-10' : 'w-8 h-8',
+        status && 'relative'
+      )}
       style={{ backgroundColor: color || '#4F46E5' }}
     >
-      {initials}
+      {avatarUrl ? (
+        <img src={avatarUrl} alt={name} className="w-full h-full object-cover rounded-full" />
+      ) : (
+        initials
+      )}
+      
+      {status && (
+        <span 
+          className={cn(
+            "absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white",
+            status === 'online' ? 'bg-green-500' : 
+            status === 'away' ? 'bg-yellow-500' : 
+            status === 'busy' ? 'bg-red-500' : 'bg-gray-400'
+          )} 
+        />
+      )}
     </div>
   );
 };

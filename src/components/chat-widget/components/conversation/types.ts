@@ -65,9 +65,12 @@ export interface UserAvatarProps {
   avatarUrl?: string;
   size?: 'sm' | 'md' | 'lg';
   status?: 'online' | 'offline' | 'away' | 'busy';
+  userId?: string; // Add missing property
+  color?: string; // Add missing property
 }
 
 export interface TypingIndicatorProps {
   users: TypingUser[];
   className?: string;
 }
+

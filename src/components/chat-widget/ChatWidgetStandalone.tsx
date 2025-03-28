@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { ChatWidget } from './ChatWidget';
 import { ChatProvider } from '@/context/ChatContext';
@@ -12,7 +11,7 @@ import { ChatEventType } from '@/utils/events/eventTypes';
 import { useContactManagement } from '@/hooks/chat/useContactManagement';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import ContactContextPanel from './components/contact-context/ContactContextPanel';
-import SessionTimeoutAlert from './components/session/SessionTimeoutAlert';
+import { SessionTimeoutAlert } from './components/session/SessionTimeoutAlert';
 
 // Get configuration from window object or use defaults
 const config = (window as any).PULLSE_CHAT_CONFIG || {

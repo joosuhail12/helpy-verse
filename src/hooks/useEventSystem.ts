@@ -1,80 +1,47 @@
 
-import { useEffect, useCallback } from 'react';
-import { eventManager } from '@/utils/events/eventManager';
-import { ChatEventType, ChatEventUnion } from '@/utils/events/eventTypes';
+import { useCallback } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 
-/**
- * React hook for interacting with the event system
- */
-export const useEventSystem = () => {
-  /**
-   * Subscribe to a specific event type
-   */
-  const subscribe = useCallback((
-    eventType: ChatEventType, 
-    callback: (event: ChatEventUnion) => void
-  ) => {
-    return eventManager.subscribe(eventType, callback);
+type EventCallback = (event: any) => void;
+
+interface EventSystem {
+  emit: (eventType: string, data?: any) => void;
+  subscribe: (eventType: string, callback: EventCallback) => () => void;
+}
+
+export function useEventSystem(): EventSystem {
+  const emit = useCallback((eventType: string, data: any = {}) => {
+    const event = new CustomEvent(eventType, {
+      detail: {
+        ...data,
+        id: uuidv4(),
+        timestamp: new Date().toISOString(),
+        eventType
+      }
+    });
+    
+    window.dispatchEvent(event);
+    
+    // Also log events in development
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[Event] ${eventType}:`, data);
+    }
   }, []);
   
-  /**
-   * Subscribe to all events
-   */
-  const subscribeToAll = useCallback((
-    callback: (event: ChatEventUnion) => void
-  ) => {
-    return eventManager.subscribeToAll(callback);
+  const subscribe = useCallback((eventType: string, callback: EventCallback) => {
+    const handleEvent = (event: CustomEvent) => {
+      callback(event.detail);
+    };
+    
+    window.addEventListener(eventType, handleEvent as EventListener);
+    
+    return () => {
+      window.removeEventListener(eventType, handleEvent as EventListener);
+    };
   }, []);
-  
-  /**
-   * Publish an event
-   */
-  const publish = useCallback((event: ChatEventUnion) => {
-    eventManager.publish(event);
-  }, []);
-  
-  /**
-   * Create a specialized hook for a specific event type
-   */
-  const useEvent = <T extends ChatEventUnion>(
-    eventType: ChatEventType,
-    callback: (event: T) => void,
-    deps: React.DependencyList = []
-  ) => {
-    useEffect(() => {
-      const unsubscribe = eventManager.subscribe(eventType, callback as (event: ChatEventUnion) => void);
-      return unsubscribe;
-    }, [...deps]);
-  };
   
   return {
-    subscribe,
-    subscribeToAll,
-    publish,
-    useEvent
+    emit,
+    subscribe
   };
-};
-
-/**
- * Hook for handling specific event types
- */
-export const useEventListener = <T extends ChatEventUnion>(
-  eventType: ChatEventType,
-  callback: (event: T) => void,
-  deps: React.DependencyList = []
-) => {
-  useEffect(() => {
-    const unsubscribe = eventManager.subscribe(
-      eventType, 
-      callback as (event: ChatEventUnion) => void
-    );
-    return unsubscribe;
-  }, deps);
-};
-
-/**
- * Convenience function to emit events
- */
-export const emitEvent = (event: ChatEventUnion) => {
-  eventManager.publish(event);
-};
+}

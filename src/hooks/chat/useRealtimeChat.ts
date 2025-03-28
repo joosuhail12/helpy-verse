@@ -8,7 +8,7 @@ import { useEncryptedMessages } from './useEncryptedMessages';
 import { emitEvent } from '@/utils/events/eventManager';
 import { ChatEventType } from '@/utils/events/eventTypes';
 import { validateAndSanitizeMessage } from '@/utils/validation/messageValidation';
-import { RateLimiter } from '@/utils/chat/rateLimiter';
+import { useRateLimiter } from '@/utils/chat/rateLimiter';
 
 interface SyncManager {
   register(tag: string): Promise<void>;
@@ -44,7 +44,7 @@ export const useRealtimeChat = (
     rateLimitConfig
   } = options;
   
-  const { client, clientId, getChannelName } = useAbly();
+  const { ably: client, clientId, getChannelName } = useAbly();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [channel, setChannel] = useState<ChannelAndClient | null>(null);
   const [isLoading, setIsLoading] = useState(true);

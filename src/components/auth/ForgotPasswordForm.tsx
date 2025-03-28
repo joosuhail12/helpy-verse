@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAppDispatch } from "../../hooks/useAppDispatch";
 import { useAppSelector } from "../../hooks/useAppSelector";
-import { requestPasswordReset } from "../../store/slices/authSlice";
+import { requestPasswordReset } from "../../store/slices/auth/authActions";
 import { toast } from "../../components/ui/use-toast";
 
 export const ForgotPasswordForm = () => {

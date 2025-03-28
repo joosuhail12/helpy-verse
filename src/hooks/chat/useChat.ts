@@ -1,138 +1,120 @@
 
 import { useState, useCallback, useEffect } from 'react';
-import { useAbly } from '@/context/AblyContext';
-import { ChatMessage } from '@/components/chat-widget/components/conversation/types';
-import { mockChatMessages } from '@/mock/chatMessages';
 import { v4 as uuidv4 } from 'uuid';
+import { ChatMessage, Conversation } from '@/components/chat-widget/components/conversation/types';
+import { mockChatMessages } from '@/mock/chatMessages';
 
-export function useChat(conversationId: string = 'default') {
+// This is a simplified mock implementation for the chat hook
+export const useChat = (conversationId?: string) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
-  const { ably, connect, isConnected } = useAbly();
-
-  // Initialize connection to Ably
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [currentConversation, setCurrentConversation] = useState<Conversation | null>(null);
+  
+  // Load mock data on initialization
   useEffect(() => {
-    if (!isConnected) {
-      connect();
-    }
-  }, [isConnected, connect]);
-
-  // Load initial messages
-  useEffect(() => {
-    const loadMessages = async () => {
-      try {
-        // In a real app, this would fetch messages from an API
-        // For demo purposes, we'll use mock data
-        const initialMessages = mockChatMessages;
-        setMessages(initialMessages);
-      } catch (error) {
-        console.error('Error loading messages:', error);
-      } finally {
-        setIsLoading(false);
+    const delay = setTimeout(() => {
+      if (conversationId) {
+        setMessages(mockChatMessages);
       }
-    };
-
-    loadMessages();
-  }, [conversationId]);
-
-  // Subscribe to new messages
-  useEffect(() => {
-    if (!ably) return;
-
-    const channel = ably.channels.get(`chat:${conversationId}`);
-    
-    channel.subscribe('message', (msg) => {
-      const newMessage = msg.data as ChatMessage;
-      setMessages((prev) => [...prev, newMessage]);
-    });
-
-    channel.subscribe('typing', (msg) => {
-      const { user, isTyping } = msg.data;
       
-      if (isTyping) {
-        setTypingUsers((prev) => (prev.includes(user) ? prev : [...prev, user]));
-        
-        // Automatically remove typing indicator after 3 seconds
-        setTimeout(() => {
-          setTypingUsers((prev) => prev.filter((u) => u !== user));
-        }, 3000);
-      } else {
-        setTypingUsers((prev) => prev.filter((u) => u !== user));
+      setConversations([
+        {
+          id: 'demo-conversation',
+          title: 'Support Conversation',
+          lastMessage: 'I want to upgrade my plan',
+          lastMessageTimestamp: new Date().toISOString(),
+          unreadCount: 0
+        }
+      ]);
+      
+      setIsLoading(false);
+    }, 500);
+    
+    return () => clearTimeout(delay);
+  }, [conversationId]);
+  
+  // Update current conversation when conversationId changes
+  useEffect(() => {
+    if (conversationId && conversations.length > 0) {
+      const conversation = conversations.find(conv => conv.id === conversationId);
+      if (conversation) {
+        setCurrentConversation(conversation);
       }
-    });
-
-    return () => {
-      channel.unsubscribe();
+    }
+  }, [conversationId, conversations]);
+  
+  // Send a message
+  const sendMessage = useCallback((content: string, attachments: File[] = []) => {
+    if (!content.trim() && attachments.length === 0) return;
+    
+    const newMessage: ChatMessage = {
+      id: uuidv4(),
+      content,
+      sender: 'user',
+      timestamp: new Date().toISOString(),
+      conversationId: conversationId || 'demo-conversation',
+      status: 'sent'
     };
-  }, [ably, conversationId]);
-
-  const sendMessage = useCallback(
-    async (content: string, attachments: File[] = []) => {
-      if (!content.trim() && attachments.length === 0) return;
-
-      // Create a new message
-      const newMessage: ChatMessage = {
+    
+    setMessages(prev => [...prev, newMessage]);
+    
+    // Simulate agent response after delay
+    setTimeout(() => {
+      const responseMessage: ChatMessage = {
         id: uuidv4(),
-        content,
-        sender: 'user',
+        content: 'Thank you for your message. An agent will respond shortly.',
+        sender: 'agent',
         timestamp: new Date().toISOString(),
-        conversationId,
-        status: 'sent',
-        attachments: attachments.map((file) => ({
-          id: uuidv4(),
-          name: file.name,
-          url: URL.createObjectURL(file),
-          size: file.size,
-          type: file.type,
-        })),
+        conversationId: conversationId || 'demo-conversation',
+        status: 'delivered'
       };
-
-      // Add message to local state immediately
-      setMessages((prev) => [...prev, newMessage]);
-
-      // In a real app, this would send the message to an API
-      // For demo purposes, we'll simulate a response
-      setTimeout(() => {
-        const responseMessage: ChatMessage = {
-          id: uuidv4(),
-          content: 'Thank you for your message. Our team will get back to you shortly.',
-          sender: 'agent',
-          timestamp: new Date().toISOString(),
-          conversationId,
-          status: 'delivered',
-        };
-
-        setMessages((prev) => [...prev, responseMessage]);
-      }, 1000);
-
-      // If Ably is connected, publish the message
-      if (ably) {
-        const channel = ably.channels.get(`chat:${conversationId}`);
-        channel.publish('message', newMessage);
-      }
-    },
-    [ably, conversationId]
-  );
-
-  const notifyTyping = useCallback(
-    (isTyping: boolean) => {
-      if (ably) {
-        const channel = ably.channels.get(`chat:${conversationId}`);
-        channel.publish('typing', {
-          user: 'currentUser', // In a real app, use actual user info
-          isTyping,
-        });
-      }
-    },
-    [ably, conversationId]
-  );
-
+      
+      setMessages(prev => [...prev, responseMessage]);
+    }, 1000);
+  }, [conversationId]);
+  
+  // Notify typing
+  const notifyTyping = useCallback(() => {
+    // This would normally send a typing indicator to the server
+    console.log('User is typing...');
+  }, []);
+  
+  // Create a new conversation
+  const createNewConversation = useCallback(async (title: string): Promise<string> => {
+    const newConversationId = uuidv4();
+    
+    const newConversation: Conversation = {
+      id: newConversationId,
+      title,
+      lastMessageTimestamp: new Date().toISOString(),
+      unreadCount: 0
+    };
+    
+    setConversations(prev => [...prev, newConversation]);
+    setCurrentConversation(newConversation);
+    
+    return newConversationId;
+  }, []);
+  
+  // Select a conversation
+  const selectConversation = useCallback((id: string) => {
+    const conversation = conversations.find(conv => conv.id === id);
+    if (conversation) {
+      setCurrentConversation(conversation);
+    }
+  }, [conversations]);
+  
   return {
     messages,
     isLoading,
     typingUsers,
     sendMessage,
     notifyTyping,
+    conversations,
+    currentConversation,
+    createNewConversation,
+    selectConversation
   };
-}
+};

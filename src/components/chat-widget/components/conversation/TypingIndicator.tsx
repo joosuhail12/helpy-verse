@@ -3,7 +3,17 @@ import React from 'react';
 import { useThemeContext } from '@/context/ThemeContext';
 import { TypingUser, TypingIndicatorProps } from './types';
 
-const TypingIndicator: React.FC<TypingIndicatorProps> = ({ users, agentName, compact }) => {
+interface EnhancedTypingIndicatorProps extends TypingIndicatorProps {
+  agentName?: string;
+  compact?: boolean;
+}
+
+const TypingIndicator: React.FC<EnhancedTypingIndicatorProps> = ({ 
+  users, 
+  agentName, 
+  compact,
+  className
+}) => {
   const { colors } = useThemeContext();
   
   if (users.length === 0 && !agentName) return null;
@@ -26,7 +36,7 @@ const TypingIndicator: React.FC<TypingIndicatorProps> = ({ users, agentName, com
   };
   
   return (
-    <div className="flex items-center py-2">
+    <div className={`flex items-center py-2 ${className || ''}`}>
       <div className={`flex justify-center items-center px-3 py-1 rounded-full bg-opacity-10 ${compact ? 'text-xs' : ''}`} 
         style={{ backgroundColor: `${colors.agentMessage}50` }}>
         <div className="flex space-x-1 mr-2 items-end">

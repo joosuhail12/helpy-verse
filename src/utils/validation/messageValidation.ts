@@ -1,89 +1,80 @@
 
-import DOMPurify from 'dompurify';
-import { isValidHttpUrl } from './validationUtils';
+interface ValidationOptions {
+  maxLength?: number;
+  allowHtml?: boolean;
+  allowUrls?: boolean;
+  urlMaxLength?: number;
+}
 
-/**
- * Message validation errors
- */
-export type MessageValidationError = {
-  code: 'xss' | 'length' | 'spam' | 'format' | 'url';
+interface ValidationError {
   message: string;
-};
+  code: string;
+}
 
-/**
- * Validate and sanitize chat message content
- */
-export const validateAndSanitizeMessage = (
-  content: string, 
-  options: {
-    maxLength?: number;
-    allowHtml?: boolean;
-    allowUrls?: boolean;
-    blockWords?: string[];
-  } = {}
-): { 
-  isValid: boolean; 
-  sanitizedContent: string; 
-  errors: MessageValidationError[];
-} => {
+interface ValidationResult {
+  isValid: boolean;
+  sanitizedContent: string;
+  errors: ValidationError[];
+}
+
+export function validateAndSanitizeMessage(
+  content: string,
+  options: ValidationOptions = {}
+): ValidationResult {
   const {
     maxLength = 2000,
     allowHtml = false,
     allowUrls = true,
-    blockWords = []
+    urlMaxLength = 100
   } = options;
   
-  const errors: MessageValidationError[] = [];
+  const errors: ValidationError[] = [];
+  let sanitizedContent = content;
   
-  // Sanitize content to prevent XSS
-  let sanitizedContent = allowHtml 
-    ? DOMPurify.sanitize(content, { 
-        ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'br'],
-        ALLOWED_ATTR: ['href', 'target', 'rel']
-      })
-    : DOMPurify.sanitize(content, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
-  
-  // Check message length
-  if (sanitizedContent.length > maxLength) {
+  // Check for empty content
+  if (!content.trim()) {
     errors.push({
-      code: 'length',
-      message: `Message exceeds maximum length of ${maxLength} characters`
+      message: 'Message cannot be empty',
+      code: 'EMPTY_MESSAGE'
     });
+    return { isValid: false, sanitizedContent: '', errors };
   }
   
-  // Check for blocked words
-  if (blockWords.length > 0) {
-    const lowerContent = sanitizedContent.toLowerCase();
-    for (const word of blockWords) {
-      if (lowerContent.includes(word.toLowerCase())) {
-        sanitizedContent = sanitizedContent.replace(
-          new RegExp(word, 'gi'), 
-          '*'.repeat(word.length)
-        );
-        errors.push({
-          code: 'spam',
-          message: 'Message contains blocked words'
-        });
-      }
-    }
+  // Check length
+  if (content.length > maxLength) {
+    errors.push({
+      message: `Message exceeds maximum length of ${maxLength} characters`,
+      code: 'MESSAGE_TOO_LONG'
+    });
+    sanitizedContent = content.substring(0, maxLength);
   }
   
-  // Validate URLs if present and not allowed
+  // Sanitize HTML if not allowed
+  if (!allowHtml) {
+    sanitizedContent = sanitizedContent
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+  
+  // Check for URLs if not allowed
   if (!allowUrls) {
     const urlRegex = /(https?:\/\/[^\s]+)/g;
-    const urls = sanitizedContent.match(urlRegex);
-    
-    if (urls && urls.length > 0) {
-      for (const url of urls) {
-        if (isValidHttpUrl(url)) {
-          sanitizedContent = sanitizedContent.replace(url, '[URL REMOVED]');
-          errors.push({
-            code: 'url',
-            message: 'URLs are not allowed in this conversation'
-          });
-        }
-      }
+    if (urlRegex.test(content)) {
+      errors.push({
+        message: 'URLs are not allowed in messages',
+        code: 'URLS_NOT_ALLOWED'
+      });
+      sanitizedContent = sanitizedContent.replace(urlRegex, '[URL REMOVED]');
     }
+  } else if (urlMaxLength) {
+    // Truncate long URLs
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    sanitizedContent = sanitizedContent.replace(urlRegex, (url) => {
+      if (url.length > urlMaxLength) {
+        return url.substring(0, urlMaxLength) + '...';
+      }
+      return url;
+    });
   }
   
   return {
@@ -91,57 +82,4 @@ export const validateAndSanitizeMessage = (
     sanitizedContent,
     errors
   };
-};
-
-/**
- * Check if content potentially contains suspicious patterns
- */
-export const detectSuspiciousContent = (content: string): boolean => {
-  // Check for script tags or suspicious patterns
-  const suspiciousPatterns = [
-    /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
-    /javascript:/gi,
-    /data:/gi,
-    /vbscript:/gi,
-    /on\w+=/gi, // onclick, onload, etc.
-    /expression\(/gi, // CSS expressions
-    /<iframe/gi
-  ];
-  
-  return suspiciousPatterns.some(pattern => pattern.test(content));
-};
-
-/**
- * Check if the message is potentially a spam
- */
-export const isSpamMessage = (
-  content: string, 
-  options: { 
-    maxRepeatedChars?: number;
-    maxUrls?: number; 
-  } = {}
-): boolean => {
-  const { maxRepeatedChars = 5, maxUrls = 3 } = options;
-  
-  // Check for repeated characters (like "aaaaa")
-  const repeatedCharsRegex = new RegExp(`(.)\\1{${maxRepeatedChars},}`, 'g');
-  if (repeatedCharsRegex.test(content)) {
-    return true;
-  }
-  
-  // Check for too many URLs
-  const urlRegex = /(https?:\/\/[^\s]+)/g;
-  const urls = content.match(urlRegex);
-  if (urls && urls.length > maxUrls) {
-    return true;
-  }
-  
-  // Check for all caps (shouting)
-  const words = content.split(/\s+/);
-  const capsWords = words.filter(word => word.length > 3 && word === word.toUpperCase());
-  if (capsWords.length > words.length * 0.7) { // If more than 70% of words are all caps
-    return true;
-  }
-  
-  return false;
-};
+}

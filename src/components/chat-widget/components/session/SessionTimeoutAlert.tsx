@@ -1,29 +1,27 @@
 
 import React, { useState, useEffect } from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
-import { useEventSystem } from '@/hooks/useEventSystem';
 import { AlertDialog, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 
 interface SessionTimeoutAlertProps {
   timeoutMinutes?: number;
   warningMinutes?: number;
-  onRenew?: () => void;
-  onTimeout?: () => void;
+  onExtend?: () => void;
+  onLogout?: () => void;
   isAuthenticated?: boolean;
 }
 
 export function SessionTimeoutAlert({
   timeoutMinutes = 30,
   warningMinutes = 5,
-  onRenew,
-  onTimeout,
+  onExtend,
+  onLogout,
   isAuthenticated = false,
 }: SessionTimeoutAlertProps) {
   const [lastActivity, setLastActivity] = useState<Date>(new Date());
   const [showWarning, setShowWarning] = useState(false);
   const [remainingTime, setRemainingTime] = useState(timeoutMinutes * 60);
-  const { emit } = useEventSystem();
 
   // Reset the timer when there's user activity
   const updateActivity = () => {
@@ -34,15 +32,13 @@ export function SessionTimeoutAlert({
   // Handle session renewal
   const handleRenew = () => {
     updateActivity();
-    onRenew?.();
-    emit('session:renewed', { timestamp: new Date() });
+    onExtend?.();
   };
 
   // Handle session timeout
   const handleTimeout = () => {
     setShowWarning(false);
-    onTimeout?.();
-    emit('session:timeout', { timestamp: new Date() });
+    onLogout?.();
   };
 
   // Set up activity listeners
@@ -83,7 +79,6 @@ export function SessionTimeoutAlert({
       // Show warning when approaching timeout
       if (timeRemaining <= warningMinutes * 60 && !showWarning) {
         setShowWarning(true);
-        emit('session:warning', { timeRemaining });
       }
       
       // Handle timeout
@@ -99,46 +94,42 @@ export function SessionTimeoutAlert({
   }, [isAuthenticated, lastActivity, timeoutMinutes, warningMinutes, showWarning]);
 
   // Format the remaining time as MM:SS
-  const formatTime = (seconds: number) => {
+  const formatTime = (seconds: number): string => {
     const mins = Math.floor(Math.max(0, seconds) / 60);
-    const secs = Math.max(0, seconds) % 60;
+    const secs = Math.floor(Math.max(0, seconds) % 60);
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  if (!isAuthenticated || !showWarning) {
+  if (!showWarning) {
     return null;
   }
 
   return (
-    <AlertDialog open={showWarning} onOpenChange={(open) => !open && updateActivity()}>
-      <AlertDialogContent className="bg-amber-50 border-amber-200">
+    <AlertDialog open={showWarning}>
+      <AlertDialogContent>
         <AlertDialogHeader>
-          <div className="flex items-center gap-3">
+          <AlertDialogTitle className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-amber-500" />
-            <AlertDialogTitle>Session timeout warning</AlertDialogTitle>
-          </div>
+            Session Timeout Warning
+          </AlertDialogTitle>
         </AlertDialogHeader>
-        
-        <div className="py-3">
-          <p className="text-sm text-gray-700">
-            Your session will expire in <span className="font-bold">{formatTime(remainingTime)}</span> due to inactivity.
-          </p>
-          <p className="text-sm text-gray-700 mt-2">
-            Click 'Continue Session' to stay signed in.
-          </p>
+        <div className="py-4">
+          <p>Your session will expire in <span className="font-bold">{formatTime(remainingTime)}</span>.</p>
+          <p className="mt-2">Would you like to extend your session?</p>
         </div>
-        
         <AlertDialogFooter>
-          <Button
-            variant="outline"
-            onClick={handleRenew}
-            className="bg-white border-gray-300 hover:bg-gray-50"
-          >
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Continue Session
+          <Button variant="outline" onClick={handleTimeout}>
+            Logout
+          </Button>
+          <Button onClick={handleRenew} className="gap-2">
+            <RefreshCw className="h-4 w-4" />
+            Extend Session
           </Button>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
   );
 }
+
+// Export as named export and as default for backwards compatibility
+export default SessionTimeoutAlert;

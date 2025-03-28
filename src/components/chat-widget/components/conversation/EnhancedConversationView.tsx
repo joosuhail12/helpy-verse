@@ -1,8 +1,8 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageList } from './MessageList';
-import { MessageInput } from './MessageInput';
-import { MessageSearch } from './MessageSearch';
+import MessageList from './MessageList';
+import MessageInput from './MessageInput';
+import MessageSearch from './MessageSearch';
 import { useChat } from '@/hooks/chat/useChat';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Loader2 } from 'lucide-react';

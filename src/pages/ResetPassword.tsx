@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { Logo } from "@/components/auth/Logo";
@@ -9,7 +8,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { ArrowLeft, Loader2, Check } from 'lucide-react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
-import { confirmPasswordReset } from '@/store/slices/authSlice';
+import { confirmPasswordReset } from '@/store/slices/auth/authActions';
 
 const ResetPassword = () => {
   const [searchParams] = useSearchParams();
