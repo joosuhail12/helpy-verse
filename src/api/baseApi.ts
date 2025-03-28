@@ -52,12 +52,6 @@ export const baseApi = createApi({
   endpoints: () => ({}),
 });
 
-export const enhancedApi = baseApi.enhanceEndpoints({
-  endpoints: () => ({
-    // Global configuration for all endpoints can be added here
-  }),
-});
-
 // Export hooks factory
 export const { 
   useQuery: useBaseQuery, 

@@ -7,10 +7,10 @@ import { mockContacts } from '@/store/slices/contacts/mockData';
 export const contactsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // Get all contacts with filtering
-    getContacts: builder.query<{ data: Contact[], total: number }, ContactFilters>({
+    getContacts: builder.query<{ data: Contact[], total: number }, Partial<ContactFilters> & { page?: number; limit?: number }>({
       query: (filters) => ({
         url: '/contacts',
-        params: { ...filters }
+        params: filters
       }),
       // For demo/mock purposes
       transformResponse: () => ({

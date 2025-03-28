@@ -12,7 +12,7 @@ export const useAssociatedContacts = (companyId: string) => {
   const allContacts = useAppSelector(selectAllContacts);
   
   // Use RTK Query mutation for updating contacts
-  const [updateContactCompany, { isLoading: loading }] = useUpdateContactCompanyMutation();
+  const [updateContactCompany, { isLoading }] = useUpdateContactCompanyMutation();
   
   // Filter contacts associated with the company
   const associatedContacts = allContacts.filter(
@@ -56,8 +56,8 @@ export const useAssociatedContacts = (companyId: string) => {
     associatedContacts,
     isPopoverOpen,
     setIsPopoverOpen,
-    isLoading: false, // This will be updated in future refactoring
-    loading,
+    isLoading,
+    loading: isLoading,
     filteredContacts,
     handleAssociateContact,
     handleRemoveAssociation

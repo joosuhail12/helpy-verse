@@ -17,8 +17,16 @@ export const useContactsData = (initialFilters: ContactFilters = { search: '', s
   });
   
   // Use our loading state hook to standardize loading states
-  const { data, isInitialLoading, isRefreshing, isAnyLoading, isError, errorMessage, isEmpty, retry } = 
-    useLoadingState(contactsQuery);
+  const { 
+    data, 
+    isInitialLoading, 
+    isRefreshing, 
+    isAnyLoading, 
+    isError, 
+    errorMessage, 
+    isEmpty, 
+    retry 
+  } = useLoadingState(contactsQuery);
   
   // Handler for updating filters
   const updateFilters = useCallback((newFilters: Partial<ContactFilters>) => {
