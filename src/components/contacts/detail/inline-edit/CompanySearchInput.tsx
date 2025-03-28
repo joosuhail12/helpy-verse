@@ -7,6 +7,8 @@ import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem } from '
 import { companiesService } from '@/api/services/companiesService';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from '@/components/ui/use-toast';
+import { useAppSelector } from '@/hooks/useAppSelector';
+import { selectCompanies } from '@/store/slices/companies/companiesSlice';
 
 interface CompanySearchInputProps {
   value: string;
@@ -19,18 +21,22 @@ export const CompanySearchInput = ({ value, onChange, disabled }: CompanySearchI
   const [inputValue, setInputValue] = useState(value);
   const [searchQuery, setSearchQuery] = useState('');
   
-  // Fetch companies from the API
+  // Use the data from Redux store first
+  const cachedCompanies = useAppSelector(selectCompanies);
+  
+  // Fetch companies from the API if needed
   const { data: companiesResponse, isLoading, error } = useQuery({
     queryKey: ['companies', searchQuery],
     queryFn: () => companiesService.fetchCompanies({ 
       searchQuery,
       limit: 10
     }),
-    enabled: open,
+    enabled: open && searchQuery.length > 0,
     staleTime: 60000, // 1 minute
   });
 
-  const companies = companiesResponse?.companies || [];
+  // Use API response if available, otherwise use cached companies
+  const companies = companiesResponse?.companies || cachedCompanies || [];
 
   useEffect(() => {
     setInputValue(value);

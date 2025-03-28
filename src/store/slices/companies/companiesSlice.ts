@@ -1,15 +1,9 @@
-import { HttpClient } from "@/api/services/http";
+
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../store';
 import { companiesService } from '@/api/services/companiesService';
-import { Company as CompanyType } from '@/types/company';
-
-export type Company = CompanyType;
-
-const API_ENDPOINTS = {
-  COMPANIES: '/company',
-  COMPANY_BY_ID: (id: string) => `/company/${id}`
-};
+import { Company } from '@/types/company';
+import { createSelector } from '@reduxjs/toolkit';
 
 export interface CompaniesState {
   companies: Company[];
@@ -18,6 +12,7 @@ export interface CompaniesState {
   error: string | null;
   companyDetails: Company | null;
   selectedCompanies: string[];
+  lastFetchTime: number | null;
 }
 
 const initialState: CompaniesState = {
@@ -26,14 +21,27 @@ const initialState: CompaniesState = {
   loading: false,
   error: null,
   companyDetails: null,
-  selectedCompanies: []
+  selectedCompanies: [],
+  lastFetchTime: null
 };
+
+// Cache duration in milliseconds (5 minutes)
+export const CACHE_DURATION = 5 * 60 * 1000;
 
 export const fetchCompanies = createAsyncThunk(
   'companies/fetchCompanies',
-  async (_, { rejectWithValue }) => {
+  async (_, { getState, rejectWithValue }) => {
     try {
       console.log('Fetching companies');
+      const state = getState() as RootState;
+      const { lastFetchTime } = state.companies;
+      
+      // Use cache if data is fresh
+      if (lastFetchTime && Date.now() - lastFetchTime < CACHE_DURATION) {
+        console.log('Using cached companies data');
+        return null;
+      }
+
       const response = await companiesService.fetchCompanies();
       return response.data;
     } catch (error: any) {
@@ -78,6 +86,18 @@ export const updateCompany = createAsyncThunk(
   }
 );
 
+export const deleteCompany = createAsyncThunk(
+  'companies/deleteCompany',
+  async (id: string, { rejectWithValue }) => {
+    try {
+      await companiesService.deleteCompany(id);
+      return id;
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to delete company');
+    }
+  }
+);
+
 const companiesSlice = createSlice({
   name: 'companies',
   initialState,
@@ -111,7 +131,10 @@ const companiesSlice = createSlice({
       })
       .addCase(fetchCompanies.fulfilled, (state, action) => {
         state.loading = false;
-        state.companies = action.payload;
+        if (action.payload) { // Only update if we got new data (not using cache)
+          state.companies = action.payload;
+          state.lastFetchTime = Date.now();
+        }
       })
       .addCase(fetchCompanies.rejected, (state, action) => {
         state.loading = false;
@@ -129,10 +152,24 @@ const companiesSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
+      .addCase(createCompany.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(createCompany.fulfilled, (state, action) => {
+        state.loading = false;
         state.companies.push(action.payload);
       })
+      .addCase(createCompany.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(updateCompany.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(updateCompany.fulfilled, (state, action) => {
+        state.loading = false;
         const index = state.companies.findIndex(company => company.id === action.payload.id);
         if (index !== -1) {
           state.companies[index] = action.payload;
@@ -140,10 +177,34 @@ const companiesSlice = createSlice({
         if (state.companyDetails?.id === action.payload.id) {
           state.companyDetails = action.payload;
         }
+      })
+      .addCase(updateCompany.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(deleteCompany.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteCompany.fulfilled, (state, action) => {
+        state.loading = false;
+        state.companies = state.companies.filter(company => company.id !== action.payload);
+        if (state.companyDetails?.id === action.payload) {
+          state.companyDetails = null;
+        }
+        state.selectedCompanies = state.selectedCompanies.filter(id => id !== action.payload);
+        if (state.selectedCompany === action.payload) {
+          state.selectedCompany = null;
+        }
+      })
+      .addCase(deleteCompany.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
       });
   },
 });
 
+// Export action creators
 export const { 
   selectCompany, 
   clearSelectedCompany, 
@@ -152,11 +213,23 @@ export const {
   setSelectedCompanies 
 } = companiesSlice.actions;
 
+// Basic selectors
 export const selectCompanies = (state: RootState) => state.companies.companies;
 export const selectCompanyLoading = (state: RootState) => state.companies.loading;
 export const selectCompanyError = (state: RootState) => state.companies.error;
 export const selectCompanyDetails = (state: RootState) => state.companies.companyDetails;
 export const selectSelectedCompany = (state: RootState) => state.companies.selectedCompany;
 export const selectSelectedCompanies = (state: RootState) => state.companies.selectedCompanies;
+
+// Memoized selectors
+export const selectCompanyById = createSelector(
+  [selectCompanies, (_, companyId: string) => companyId],
+  (companies, companyId) => companies.find(company => company.id === companyId) || null
+);
+
+export const selectCompaniesByIds = createSelector(
+  [selectCompanies, (_, companyIds: string[]) => companyIds],
+  (companies, companyIds) => companies.filter(company => companyIds.includes(company.id))
+);
 
 export default companiesSlice.reducer;
