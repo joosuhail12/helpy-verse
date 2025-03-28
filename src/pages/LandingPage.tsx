@@ -33,17 +33,34 @@ const LandingPage = () => {
       outgoingMessage: '#9b87f5',
       outgoingMessageForeground: '#ffffff',
       incomingMessage: '#f1f1f1',
-      incomingMessageForeground: '#1A1F2C'
+      incomingMessageForeground: '#1A1F2C',
+      primaryDark: '#7c69d6',
+      accent: '#8B5CF6',
+      accentForeground: '#FFFFFF',
+      headerBackground: '#ffffff',
+      headerForeground: '#1A1F2C'
     },
     position: 'right',
     compact: false,
+    radius: 'md',
+    shadow: 'md',
+    animation: {
+      speed: 'normal',
+      type: 'fade'
+    },
     labels: {
       welcomeTitle: 'Hello there.',
       welcomeSubtitle: 'How can we help?',
       askQuestionButton: 'Ask a question',
       recentMessagesTitle: 'Recent message',
       noMessagesText: 'No messages yet. Start a conversation!',
-      messagePlaceholder: 'Type a message...'
+      messagePlaceholder: 'Type a message...',
+      chatTitle: 'Customer Support',
+      sendButtonText: 'Send',
+      typingText: 'Customer support is typing...'
+    },
+    branding: {
+      showPoweredBy: false
     }
   };
 
