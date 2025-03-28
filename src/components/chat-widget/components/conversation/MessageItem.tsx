@@ -8,12 +8,14 @@ export interface MessageItemProps {
   message: ChatMessage;
   encrypted?: boolean;
   showReadReceipt?: boolean;
+  showReactions?: boolean;
 }
 
 const MessageItem: React.FC<MessageItemProps> = ({
   message,
   encrypted = false,
-  showReadReceipt = false
+  showReadReceipt = false,
+  showReactions = false
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const isUser = message.sender === 'user';
@@ -96,6 +98,16 @@ const MessageItem: React.FC<MessageItemProps> = ({
           
           {showReadReceipt && getStatusIndicator()}
         </div>
+        
+        {showReactions && message.metadata?.reactions && (
+          <div className="mt-1 flex flex-wrap gap-1">
+            {Object.entries(message.metadata.reactions).map(([emoji, count]) => (
+              <span key={emoji} className="text-xs bg-black/5 rounded-full px-2 py-0.5">
+                {emoji} {count}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

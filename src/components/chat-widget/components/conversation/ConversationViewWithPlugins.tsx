@@ -133,7 +133,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
         
         {typingUsers.length > 0 && (
           <div className="px-4 py-2">
-            <TypingIndicator users={typingUsers} />
+            <TypingIndicator typingUsers={typingUsers} />
           </div>
         )}
         

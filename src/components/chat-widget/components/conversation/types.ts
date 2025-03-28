@@ -60,3 +60,24 @@ export interface ReadReceipt {
   username?: string;
   timestamp: string;
 }
+
+// New interfaces for component props
+export interface TypingIndicatorProps {
+  typingUsers: TypingUser[];
+  agentName?: string;
+  compact?: boolean;
+  className?: string;
+}
+
+export interface MessageSearchProps {
+  value: string;
+  onChange: (value: string) => void;
+  resultCount: number;
+  currentResult: number;
+  onNavigate: (direction: 'next' | 'prev') => void;
+}
+
+export interface UseChatOptions {
+  conversationId: string;
+  enableEncryption?: boolean;
+}

@@ -14,6 +14,7 @@ export interface MessageListProps {
   showReadReceipts?: boolean;
   encrypted?: boolean;
   typingUsers?: TypingUser[];
+  showReactions?: boolean;
 }
 
 const MessageList: React.FC<MessageListProps> = ({
@@ -23,7 +24,8 @@ const MessageList: React.FC<MessageListProps> = ({
   useVirtualization = false,
   showReadReceipts = false,
   encrypted = false,
-  typingUsers = []
+  typingUsers = [],
+  showReactions = false
 }) => {
   const parentRef = useRef<HTMLDivElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
@@ -92,6 +94,7 @@ const MessageList: React.FC<MessageListProps> = ({
                   message={message}
                   encrypted={encrypted}
                   showReadReceipt={showReadReceipts}
+                  showReactions={showReactions}
                 />
               </div>
             );
@@ -100,7 +103,7 @@ const MessageList: React.FC<MessageListProps> = ({
         
         {typingUsers && typingUsers.length > 0 && (
           <div className="p-2">
-            <TypingIndicator users={typingUsers} />
+            <TypingIndicator typingUsers={typingUsers} />
           </div>
         )}
         
@@ -118,13 +121,14 @@ const MessageList: React.FC<MessageListProps> = ({
             message={message}
             encrypted={encrypted}
             showReadReceipt={showReadReceipts}
+            showReactions={showReactions}
           />
         </div>
       ))}
       
       {typingUsers && typingUsers.length > 0 && (
         <div className="p-2">
-          <TypingIndicator users={typingUsers} />
+          <TypingIndicator typingUsers={typingUsers} />
         </div>
       )}
       

@@ -1,57 +1,38 @@
 
-import { useState, useEffect, useCallback } from 'react';
-import { ChatMessage } from '@/components/chat-widget/components/conversation/types';
+import { useState, useCallback, useEffect } from 'react';
+import { ChatMessage, UseChatOptions } from '@/components/chat-widget/components/conversation/types';
 
-interface UseChatOptions {
-  conversationId: string;
-  encrypted?: boolean;
-}
-
-export const useChat = ({ conversationId, encrypted = false }: UseChatOptions) => {
+export const useChat = (options?: UseChatOptions) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const conversationId = options?.conversationId || '';
 
   // Load messages
   useEffect(() => {
-    setIsLoading(true);
+    if (!conversationId) return;
     
-    // Simulate API call
-    setTimeout(() => {
-      // Mock messages
-      const mockMessages: ChatMessage[] = [
-        {
-          id: '1',
-          content: 'Hello! How can I help you today?',
-          sender: 'agent',
-          timestamp: new Date(Date.now() - 1000 * 60 * 5).toISOString(),
-          conversationId
-        },
-        {
-          id: '2',
-          content: 'I have a question about my order',
-          sender: 'user',
-          timestamp: new Date(Date.now() - 1000 * 60 * 4).toISOString(),
-          conversationId
-        },
-        {
-          id: '3',
-          content: 'Sure, I\'d be happy to help. Could you provide your order number?',
-          sender: 'agent',
-          timestamp: new Date(Date.now() - 1000 * 60 * 3).toISOString(),
-          conversationId
-        }
-      ];
-      
-      setMessages(mockMessages);
-      setIsLoading(false);
-    }, 500);
+    const fetchMessages = async () => {
+      setIsLoading(true);
+      try {
+        // In a real implementation, we would fetch messages from an API or local storage
+        // For now, we'll just mock this with empty data
+        const mockMessages: ChatMessage[] = [];
+        setMessages(mockMessages);
+      } catch (error) {
+        console.error('Error fetching messages:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchMessages();
   }, [conversationId]);
 
   // Send a message
   const sendMessage = useCallback(async (content: string): Promise<void> => {
-    if (!content.trim()) return;
+    if (!content.trim() || !conversationId) return;
     
-    // Create new message
+    // Create a new message
     const newMessage: ChatMessage = {
       id: `msg-${Date.now()}`,
       content,
@@ -61,26 +42,28 @@ export const useChat = ({ conversationId, encrypted = false }: UseChatOptions) =
       status: 'sending'
     };
     
-    // Add message to state
+    // Add to messages
     setMessages(prev => [...prev, newMessage]);
     
-    // Simulate sending to server
+    // Simulate message being sent
     setTimeout(() => {
       setMessages(prev => 
         prev.map(msg => 
-          msg.id === newMessage.id ? { ...msg, status: 'sent' } : msg
+          msg.id === newMessage.id 
+            ? { ...msg, status: 'sent' } 
+            : msg
         )
       );
       
-      // Simulate agent response
+      // Simulate an agent response
       setTimeout(() => {
         const responseMessage: ChatMessage = {
-          id: `msg-${Date.now()}`,
-          content: `Thank you for your message. I'm reviewing your request.`,
+          id: `msg-${Date.now()}-response`,
+          content: `Thanks for your message. This is a simulated response to: "${content}"`,
           sender: 'agent',
           timestamp: new Date().toISOString(),
           conversationId,
-          status: 'sent'
+          status: 'delivered'
         };
         
         setMessages(prev => [...prev, responseMessage]);

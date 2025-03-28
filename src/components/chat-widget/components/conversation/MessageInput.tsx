@@ -13,6 +13,8 @@ interface MessageInputProps {
   attachments?: File[];
   maxLength?: number;
   className?: string;
+  isRateLimited?: boolean;
+  rateLimitTimeRemaining?: number;
 }
 
 const MessageInput: React.FC<MessageInputProps> = ({
@@ -24,7 +26,9 @@ const MessageInput: React.FC<MessageInputProps> = ({
   onRemoveFile,
   attachments = [],
   maxLength = 2000,
-  className = ''
+  className = '',
+  isRateLimited = false,
+  rateLimitTimeRemaining = 0
 }) => {
   const [message, setMessage] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -44,25 +48,24 @@ const MessageInput: React.FC<MessageInputProps> = ({
     
     if (!message.trim()) return;
     
-    const validation = validateMessage(message, {
-      maxLength,
-      allowHtml: false,
-      allowUrls: true,
-      blockWords: []
-    });
+    const result = validateMessage(message, maxLength);
     
-    if (!validation.isValid) {
-      setError(validation.errors[0]);
+    if (!result) {
+      setError('Failed to validate message');
       return;
     }
     
-    onSendMessage(validation.sanitizedContent);
-    setMessage('');
-    setError(null);
-    
-    // Reset textarea height
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
+    if (result && result.isValid) {
+      onSendMessage(result.sanitizedContent);
+      setMessage('');
+      setError(null);
+      
+      // Reset textarea height
+      if (textareaRef.current) {
+        textareaRef.current.style.height = 'auto';
+      }
+    } else if (result && result.errors && result.errors.length > 0) {
+      setError(result.errors[0]);
     }
   };
   
@@ -92,6 +95,12 @@ const MessageInput: React.FC<MessageInputProps> = ({
       {error && (
         <div className="mb-2 text-xs text-red-500 p-1 bg-red-50 rounded">
           {error}
+        </div>
+      )}
+      
+      {isRateLimited && (
+        <div className="mb-2 text-xs text-amber-500 p-1 bg-amber-50 rounded">
+          Message rate limit reached. Please wait {Math.ceil(rateLimitTimeRemaining / 1000)} seconds.
         </div>
       )}
       
@@ -128,12 +137,12 @@ const MessageInput: React.FC<MessageInputProps> = ({
               className="hidden"
               multiple
               onChange={handleFileChange}
-              disabled={disabled}
+              disabled={disabled || isRateLimited}
             />
             <button
               type="button"
               onClick={triggerFileUpload}
-              disabled={disabled}
+              disabled={disabled || isRateLimited}
               className="p-2 rounded-full text-gray-500 hover:bg-gray-100"
             >
               <Paperclip className="h-5 w-5" />
@@ -148,7 +157,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={handleKeyPress}
             placeholder={placeholder}
-            disabled={disabled}
+            disabled={disabled || isRateLimited}
             maxLength={maxLength}
             rows={1}
             className="w-full p-2 pr-8 resize-none border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"
@@ -162,9 +171,9 @@ const MessageInput: React.FC<MessageInputProps> = ({
         
         <button
           type="submit"
-          disabled={!message.trim() || disabled}
+          disabled={!message.trim() || disabled || isRateLimited}
           className={`p-2 rounded-full ${
-            !message.trim() || disabled
+            !message.trim() || disabled || isRateLimited
               ? 'text-gray-400 bg-gray-100'
               : 'text-white bg-primary hover:bg-primary/90'
           }`}

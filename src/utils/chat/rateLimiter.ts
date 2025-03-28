@@ -1,95 +1,97 @@
 
 /**
- * Rate limiter utility to prevent abuse
+ * Rate limiter utility for chat operations
  */
 
-export class RateLimiter {
-  private actions: number[] = [];
-  private maxActions: number;
-  private timeWindow: number;
-  private isLimited: boolean = false;
-  private limitExpiry: number = 0;
-  private limitDuration: number = 30000; // 30 seconds default
+export interface RateLimiter {
+  checkAction: () => boolean;
+  checkRateLimit: () => boolean;
+  getRateLimitTimeRemaining: () => number;
+  resetRateLimit: () => void;
+  setLimitDuration: (duration: number) => void;
+}
 
-  constructor(maxActions: number = 10, timeWindow: number = 60000) {
-    this.maxActions = maxActions; // Max number of actions in the time window
-    this.timeWindow = timeWindow; // Time window in milliseconds
-  }
-
+export function useRateLimiter(
+  maxAttempts: number = 5,
+  timeWindow: number = 10000,  // 10 seconds
+  resetAfter: number = 30000   // 30 seconds
+): RateLimiter {
+  // Store attempts in an array to track their timestamps
+  let attempts: number[] = [];
+  let limitUntil: number = 0;
+  let limitDuration: number = resetAfter;
+  
   /**
-   * Check if an action is allowed
-   * @returns True if action is allowed, false if rate limited
+   * Record an action and check if it's allowed
    */
-  checkAction(): boolean {
+  const checkAction = (): boolean => {
     const now = Date.now();
     
-    // Clear expired actions
-    this.actions = this.actions.filter(time => time > now - this.timeWindow);
-    
-    // Check if currently rate limited
-    if (this.isLimited) {
-      if (now >= this.limitExpiry) {
-        // Rate limit has expired
-        this.isLimited = false;
-        this.actions = [];
-      } else {
-        // Still rate limited
-        return false;
-      }
+    // If we're still in the rate limit period, block the action
+    if (limitUntil > now) {
+      return false;
     }
     
-    // Add current action
-    this.actions.push(now);
+    // Clean out old attempts
+    attempts = attempts.filter(timestamp => now - timestamp < timeWindow);
     
-    // Check if we've exceeded the limit
-    if (this.actions.length > this.maxActions) {
-      this.isLimited = true;
-      this.limitExpiry = now + this.limitDuration;
+    // Register the new attempt
+    attempts.push(now);
+    
+    // Check if we've hit the max attempts
+    if (attempts.length > maxAttempts) {
+      limitUntil = now + limitDuration;
       return false;
     }
     
     return true;
-  }
-
+  };
+  
   /**
-   * Get time remaining in rate limit in milliseconds
+   * Check if rate limit is currently active
    */
-  getRateLimitTimeRemaining(): number {
-    if (!this.isLimited) return 0;
-    
-    const timeRemaining = Math.max(0, this.limitExpiry - Date.now());
-    return timeRemaining;
-  }
-
+  const checkRateLimit = (): boolean => {
+    return limitUntil > Date.now();
+  };
+  
   /**
-   * Set the duration for rate limiting
-   * @param duration Duration in milliseconds
+   * Get remaining time in rate limit in milliseconds
    */
-  setLimitDuration(duration: number): void {
-    this.limitDuration = duration;
-  }
-
+  const getRateLimitTimeRemaining = (): number => {
+    const remaining = limitUntil - Date.now();
+    return remaining > 0 ? remaining : 0;
+  };
+  
   /**
-   * Clear the rate limit
+   * Reset the rate limiter
    */
-  resetRateLimit(): void {
-    this.isLimited = false;
-    this.actions = [];
-  }
-}
-
-/**
- * Hook for using rate limiting in components
- */
-export const useRateLimiter = (maxActions: number = 10, timeWindow: number = 60000) => {
-  const rateLimiter = new RateLimiter(maxActions, timeWindow);
+  const resetRateLimit = (): void => {
+    attempts = [];
+    limitUntil = 0;
+  };
+  
+  /**
+   * Set the limit duration
+   */
+  const setLimitDuration = (duration: number): void => {
+    limitDuration = duration;
+  };
   
   return {
-    checkAction: () => rateLimiter.checkAction(),
-    getRateLimitTimeRemaining: () => rateLimiter.getRateLimitTimeRemaining(),
-    resetRateLimit: () => rateLimiter.resetRateLimit(),
-    setLimitDuration: (duration: number) => rateLimiter.setLimitDuration(duration)
+    checkAction,
+    checkRateLimit,
+    getRateLimitTimeRemaining,
+    resetRateLimit,
+    setLimitDuration
   };
+}
+
+export const createRateLimiter = (
+  maxAttempts: number = 5,
+  timeWindow: number = 10000,
+  resetAfter: number = 30000
+): RateLimiter => {
+  return useRateLimiter(maxAttempts, timeWindow, resetAfter);
 };
 
 export default useRateLimiter;

@@ -32,6 +32,7 @@ export enum ChatEventType {
   // Agent events
   AGENT_JOINED = 'agent:joined',
   AGENT_LEFT = 'agent:left',
+  AGENT_PRESENCE_UPDATED = 'agent:presence:updated',
   
   // Session events
   SESSION_STARTED = 'session:started',

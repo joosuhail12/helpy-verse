@@ -1,5 +1,5 @@
-
 import { useState, useEffect, useCallback } from 'react';
+import '@/utils/polyfills/serviceWorkerSync';
 
 interface UseServiceWorkerSyncOptions {
   conversationId: string;

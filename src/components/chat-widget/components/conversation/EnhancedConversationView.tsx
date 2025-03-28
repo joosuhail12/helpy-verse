@@ -4,7 +4,7 @@ import { useChat } from '@/hooks/chat/useChat';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import MessageSearch from './MessageSearch';
-import { ChatMessage, TypingUser } from './types';
+import { ChatMessage, TypingUser, UseChatOptions } from './types';
 import { useRateLimiter } from '@/utils/chat/rateLimiter';
 
 interface EnhancedConversationViewProps {
@@ -26,7 +26,7 @@ const EnhancedConversationView: React.FC<EnhancedConversationViewProps> = ({
   encrypted = false,
   virtualized = true,
 }) => {
-  const { messages, sendMessage, isLoading } = useChat(conversationId);
+  const { messages, sendMessage, isLoading } = useChat({ conversationId });
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<number[]>([]);
   const [currentResult, setCurrentResult] = useState(0);
@@ -34,11 +34,7 @@ const EnhancedConversationView: React.FC<EnhancedConversationViewProps> = ({
   const messageListRef = useRef<HTMLDivElement>(null);
   
   // Rate limiter for message sending
-  const rateLimiter = useRateLimiter({
-    maxAttempts: 5,
-    timeWindow: 10000, // 10 seconds
-    resetAfter: 30000, // 30 seconds
-  });
+  const rateLimiter = useRateLimiter(5, 10000, 30000);
 
   // Filter messages based on search query
   useEffect(() => {
@@ -65,7 +61,7 @@ const EnhancedConversationView: React.FC<EnhancedConversationViewProps> = ({
   // Handle message sending
   const handleSendMessage = async (content: string, attachments?: File[]) => {
     // Check rate limiting
-    if (rateLimiter.isLimited()) {
+    if (rateLimiter.checkRateLimit()) {
       // Show rate limit message - we could display this in UI
       console.warn(`Rate limit reached. Please wait ${Math.ceil(rateLimiter.getRateLimitTimeRemaining() / 1000)} seconds.`);
       return;
@@ -133,8 +129,8 @@ const EnhancedConversationView: React.FC<EnhancedConversationViewProps> = ({
         onSendMessage={handleSendMessage}
         disabled={isLoading}
         encrypted={encrypted}
-        showAttachments={showAttachments}
-        isRateLimited={rateLimiter.isLimited()}
+        attachments={showAttachments ? [] : undefined}
+        isRateLimited={rateLimiter.checkRateLimit()}
         rateLimitTimeRemaining={rateLimiter.getRateLimitTimeRemaining()}
       />
     </div>
