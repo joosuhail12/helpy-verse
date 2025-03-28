@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { useChat } from '@/hooks/chat/useChat';
+import { useChat } from '@/context/ChatContext';
 import ResponsiveConversationView from '../components/conversation/ResponsiveConversationView';
 import ChatHeader from '../components/header/ChatHeader';
 
@@ -13,20 +13,26 @@ const ResponsiveChatWidgetContainer: React.FC<ResponsiveChatWidgetContainerProps
   onClose,
   workspaceId,
 }) => {
-  const { conversations, currentConversation, createNewConversation, selectConversation } = useChat();
+  const { 
+    conversations, 
+    currentConversation, 
+    createNewConversation: createConversation, 
+    selectConversation: setSelectedConversation 
+  } = useChat();
+  
   const [isLoading, setIsLoading] = useState(true);
   const [view, setView] = useState<'list' | 'conversation'>('list');
 
   useEffect(() => {
     const initializeChat = async () => {
       if (!currentConversation && conversations.length === 0) {
-        await createNewConversation(`New Conversation ${Date.now()}`);
+        await createConversation(`New Conversation ${Date.now()}`);
       }
       setIsLoading(false);
     };
 
     initializeChat();
-  }, [currentConversation, conversations, createNewConversation]);
+  }, [currentConversation, conversations, createConversation]);
 
   if (isLoading) {
     return (
@@ -51,7 +57,7 @@ const ResponsiveChatWidgetContainer: React.FC<ResponsiveChatWidgetContainerProps
                 <button
                   key={conversation.id}
                   onClick={() => {
-                    selectConversation(conversation.id);
+                    setSelectedConversation(conversation.id);
                     setView('conversation');
                   }}
                   className="w-full text-left p-3 rounded-lg hover:bg-gray-100 transition"

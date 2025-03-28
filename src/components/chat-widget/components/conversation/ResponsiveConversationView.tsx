@@ -1,102 +1,131 @@
 
 import React, { useState, useEffect } from 'react';
-import { useChat } from '@/hooks/chat/useChat';
+import { useChat } from '@/context/ChatContext';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import TypingIndicator from './TypingIndicator';
-import { useMediaQuery } from '@/hooks/use-mobile';
-import { ChatMessage, ResponsiveConversationViewProps, TypingUser } from './types';
+import ChatHeader from '../header/ChatHeader';
+import { TypingUser } from './types';
+
+interface ResponsiveConversationViewProps {
+  conversationId: string;
+  onBack?: () => void;
+}
 
 const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
   conversationId,
-  compact = false,
-  workspaceId,
   onBack
 }) => {
-  const isMobile = useMediaQuery('(max-width: 640px)');
-  const { sendMessage, messages: chatMessages } = useChat();
-  
-  const [isLoading, setIsLoading] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [attachments, setAttachments] = useState<File[]>([]);
-  const [inputHeight, setInputHeight] = useState<number>(64); // Default height
+  const { 
+    sendMessage, 
+    getMessages, 
+    saveMessages,
+    conversations
+  } = useChat();
+  const [messages, setMessages] = useState([]);
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
-
-  // Mock methods for typing indicators
-  const startTyping = () => console.log('Started typing');
-  const stopTyping = () => console.log('Stopped typing');
-
-  // Load messages for this conversation
+  const [isLoading, setIsLoading] = useState(true);
+  
+  const currentConversation = conversations.find(c => c.id === conversationId);
+  
   useEffect(() => {
-    // In a real app, this would fetch messages from a service
-    setMessages(chatMessages.filter(msg => msg.conversationId === conversationId));
-  }, [conversationId, chatMessages]);
-
-  // Calculate available height for message list
-  const calculateMessageListHeight = () => {
-    // Header (56px) + Input height + Padding
-    const usedHeight = 56 + inputHeight + 16;
-    return `calc(100% - ${usedHeight}px)`;
+    const loadMessages = async () => {
+      setIsLoading(true);
+      try {
+        const loadedMessages = await getMessages(conversationId);
+        setMessages(loadedMessages);
+      } catch (error) {
+        console.error('Failed to load messages:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadMessages();
+  }, [conversationId, getMessages]);
+  
+  const handleSendMessage = async (content: string) => {
+    if (!content.trim()) return;
+    
+    // Create a new message
+    const newMessage = {
+      id: crypto.randomUUID(),
+      content,
+      sender: 'user',
+      timestamp: new Date().toISOString(),
+      conversationId
+    };
+    
+    // Add locally for immediate feedback
+    setMessages(prev => [...prev, newMessage]);
+    
+    // Save to local storage
+    const updatedMessages = [...messages, newMessage];
+    await saveMessages(conversationId, updatedMessages);
+    
+    // Send to backend
+    await sendMessage(conversationId, content);
+    
+    // Simulate an agent response after a short delay
+    setTimeout(() => {
+      const agentResponse = {
+        id: crypto.randomUUID(),
+        sender: 'agent',
+        content: `Thank you for your message. I'll help you with that shortly!`,
+        timestamp: new Date().toISOString(),
+        conversationId
+      };
+      
+      setMessages(prev => [...prev, agentResponse]);
+      saveMessages(conversationId, [...updatedMessages, agentResponse]);
+    }, 1000);
   };
-
+  
+  // Mock typing indicators for demo purposes
   useEffect(() => {
-    // Adjust layout when input height changes
-    const messageList = document.querySelector('.message-list-container');
-    if (messageList) {
-      (messageList as HTMLElement).style.height = calculateMessageListHeight();
+    if (messages.length > 0 && messages[messages.length - 1].sender === 'user') {
+      const timeout = setTimeout(() => {
+        setTypingUsers([{
+          clientId: 'agent-1',
+          name: 'Agent',
+          timestamp: Date.now()
+        }]);
+        
+        setTimeout(() => {
+          setTypingUsers([]);
+        }, 3000);
+      }, 1000);
+      
+      return () => clearTimeout(timeout);
     }
-  }, [inputHeight]);
-
-  const handleSendMessage = (content: string) => {
-    sendMessage(conversationId, content, attachments);
-    setAttachments([]);
-  };
-
-  const handleFileUpload = (files: File[]) => {
-    setAttachments((prev) => [...prev, ...files]);
-  };
-
-  const handleRemoveFile = (file: File) => {
-    setAttachments((prev) => prev.filter((f) => f !== file));
-  };
-
-  const handleInputResize = (height: number) => {
-    setInputHeight(height);
-  };
-
-  if (isLoading) {
-    return <div className="flex-1 flex items-center justify-center">Loading messages...</div>;
-  }
-
+  }, [messages]);
+  
   return (
     <div className="flex flex-col h-full">
-      <div 
-        className="message-list-container flex-1 overflow-hidden"
-        style={{ height: calculateMessageListHeight() }}
-      >
+      <ChatHeader 
+        title={currentConversation?.title || 'Conversation'} 
+        onBackClick={onBack}
+      />
+      
+      <div className="flex-1 overflow-hidden">
         <MessageList 
           messages={messages} 
           conversationId={conversationId}
-          showAvatars={true}
+          isLoading={isLoading}
+        />
+        
+        {typingUsers.length > 0 && (
+          <div className="px-4 py-2">
+            <TypingIndicator users={typingUsers} />
+          </div>
+        )}
+        
+        <MessageInput 
+          onSendMessage={handleSendMessage}
+          placeholder="Type a message..."
+          disabled={isLoading}
         />
       </div>
-      
-      {typingUsers.length > 0 && (
-        <div className="px-4 py-1">
-          <TypingIndicator users={typingUsers} compact={isMobile} />
-        </div>
-      )}
-      
-      <MessageInput 
-        onSendMessage={handleSendMessage}
-        onTypingStart={startTyping}
-        onTypingEnd={stopTyping}
-        attachments={attachments}
-        onFileUpload={handleFileUpload}
-        onRemoveFile={handleRemoveFile}
-        compact={compact || isMobile}
-        onHeightChange={handleInputResize}
-      />
     </div>
   );
 };

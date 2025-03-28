@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { useChat } from '@/hooks/chat/useChat';
+import { useChat } from '@/context/ChatContext';
 import { useThemeContext } from '@/context/ThemeContext';
 import ChatHeader from '../components/header/ChatHeader';
 import MessageInput from '../components/conversation/MessageInput';
@@ -18,7 +18,7 @@ const MessagesView: React.FC<MessagesViewProps> = ({
   setActiveView,
   onStartConversation
 }) => {
-  const { conversations, selectConversation } = useChat();
+  const { conversations, selectConversation: setSelectedConversation } = useChat();
   const { labels, colors } = useThemeContext();
   const [newMessageContent, setNewMessageContent] = useState('');
 
@@ -33,7 +33,7 @@ const MessagesView: React.FC<MessagesViewProps> = ({
   };
 
   const handleConversationSelect = (conversationId: string) => {
-    selectConversation(conversationId);
+    setSelectedConversation(conversationId);
     setActiveView('conversation');
   };
 

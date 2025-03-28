@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { ArrowRight } from 'lucide-react';
-import { useChat } from '@/hooks/chat/useChat';
+import { useChat } from '@/context/ChatContext';
 import { useThemeContext } from '@/context/ThemeContext';
 import { View } from '../container/ChatWidgetContainer';
 
@@ -12,12 +12,12 @@ interface HomeViewProps {
 }
 
 const HomeView: React.FC<HomeViewProps> = ({ workspaceId, setActiveView }) => {
-  const { createNewConversation, selectConversation } = useChat();
+  const { createNewConversation: createConversation, selectConversation: setSelectedConversation } = useChat();
   const { colors, labels } = useThemeContext();
 
   const handleAskQuestion = async () => {
-    const conversationId = await createNewConversation("New question");
-    selectConversation(conversationId);
+    const conversationId = await createConversation("New question");
+    setSelectedConversation(conversationId);
     setActiveView('conversation');
   };
 
@@ -41,10 +41,13 @@ const HomeView: React.FC<HomeViewProps> = ({ workspaceId, setActiveView }) => {
       {/* Content area */}
       <div className="flex-1 px-4 pb-4 overflow-y-auto space-y-4">
         {/* Recent message */}
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100" 
-          style={{ borderColor: colors.border }}>
+        <div 
+          onClick={() => setActiveView('messages')}
+          className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors" 
+          style={{ borderColor: colors.border }}
+        >
           <h3 className="font-medium mb-2">{labels.recentMessagesTitle || 'Recent messages'}</h3>
-          <div className="flex items-center space-x-3 cursor-pointer">
+          <div className="flex items-center space-x-3">
             <div className="bg-gray-100 rounded-md p-2 flex-shrink-0" 
               style={{ backgroundColor: colors.border }}>
               <svg viewBox="0 0 24 24" width="20" height="20" fill={colors.foreground}>

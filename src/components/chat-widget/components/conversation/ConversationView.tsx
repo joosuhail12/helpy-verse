@@ -1,14 +1,11 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { useChat } from '@/hooks/chat/useChat';
+import { useChat } from '@/context/ChatContext';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import TypingIndicator from './TypingIndicator';
+import ChatHeader from '../header/ChatHeader';
 import { ChatMessage, TypingUser } from './types';
-import { usePaginatedMessages } from '@/hooks/chat/usePaginatedMessages';
-import { useOfflineSyncManager } from '@/hooks/chat/useOfflineSyncManager';
-import { RateLimiter } from '@/utils/chat/rateLimiter';
-import { toast } from 'sonner';
 
 interface ConversationViewProps {
   conversationId: string;
@@ -23,71 +20,79 @@ const ConversationView: React.FC<ConversationViewProps> = ({
   conversationId,
   showAvatars = true,
   onSendMessage,
-  encrypted = false
+  encrypted = false,
+  onBack
 }) => {
-  const { sendMessage } = useChat();
+  const { 
+    sendMessage, 
+    getMessages, 
+    saveMessages,
+    conversations
+  } = useChat();
+  
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [attachments, setAttachments] = useState<File[]>([]);
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
-  const [rateLimiter] = useState(() => new RateLimiter(conversationId));
+  const [isLoading, setIsLoading] = useState(true);
   
-  // Use our new hooks
-  const {
-    messages,
-    isLoading,
-    hasMore,
-    loadMoreMessages,
-    addMessage
-  } = usePaginatedMessages({
-    conversationId,
-    pageSize: 20
-  });
+  // Get the current conversation
+  const currentConversation = conversations.find(c => c.id === conversationId);
   
-  const {
-    offlineMode,
-    queueMessage,
-    hasQueuedMessages,
-    triggerSync
-  } = useOfflineSyncManager(conversationId);
-  
-  // Check for offline messages and sync when coming online
+  // Load messages on mount
   useEffect(() => {
-    if (!offlineMode && hasQueuedMessages) {
-      triggerSync();
-    }
-  }, [offlineMode, hasQueuedMessages, triggerSync]);
+    const loadMessages = async () => {
+      setIsLoading(true);
+      try {
+        const loadedMessages = await getMessages(conversationId);
+        setMessages(loadedMessages);
+      } catch (error) {
+        console.error('Failed to load messages:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadMessages();
+  }, [conversationId, getMessages]);
 
   const handleSendMessage = async (content: string) => {
-    // Check rate limiting
-    const rateCheck = rateLimiter.canSendMessage();
-    if (!rateCheck.allowed) {
-      toast.error(rateCheck.reason || 'Too many messages. Please wait before sending again.');
-      return;
-    }
+    if (!content.trim()) return;
     
-    // Record this message with the rate limiter
-    rateLimiter.recordMessage();
+    // Create a new message
+    const newMessage: ChatMessage = {
+      id: crypto.randomUUID(),
+      content,
+      sender: 'user',
+      timestamp: new Date().toISOString(),
+      status: 'sent',
+      conversationId
+    };
+    
+    // Add locally for immediate feedback
+    setMessages(prev => [...prev, newMessage]);
+    
+    // Save to local storage
+    const updatedMessages = [...messages, newMessage];
+    await saveMessages(conversationId, updatedMessages);
     
     if (onSendMessage) {
       onSendMessage(content, attachments);
     } else {
-      const message: ChatMessage = {
-        id: crypto.randomUUID(),
-        content,
-        sender: 'user',
-        timestamp: new Date().toISOString(),
-        status: offlineMode ? 'sending' : 'sent'
-      };
+      await sendMessage(conversationId, content, attachments);
       
-      // Add locally for immediate feedback
-      addMessage(message);
-      
-      if (offlineMode) {
-        // Queue for later if offline
-        await queueMessage(message);
-      } else {
-        // Send normally if online
-        await sendMessage(conversationId, content);
-      }
+      // Simulate an agent response after a short delay
+      setTimeout(() => {
+        const agentResponse: ChatMessage = {
+          id: crypto.randomUUID(),
+          sender: 'agent',
+          content: `Thank you for your message. I'll help you with that shortly!`,
+          timestamp: new Date().toISOString(),
+          conversationId
+        };
+        
+        setMessages(prev => [...prev, agentResponse]);
+        saveMessages(conversationId, [...updatedMessages, agentResponse]);
+      }, 1000);
     }
     
     setAttachments([]);
@@ -122,31 +127,38 @@ const ConversationView: React.FC<ConversationViewProps> = ({
 
   return (
     <div className="flex flex-col h-full">
-      <MessageList 
-        messages={messages} 
-        conversationId={conversationId}
-        showAvatars={showAvatars}
-        encrypted={encrypted}
-        isLoading={isLoading}
-        hasMore={hasMore}
-        onLoadMore={loadMoreMessages}
-      />
-      
-      {typingUsers.length > 0 && (
-        <div className="px-4 py-2">
-          <TypingIndicator users={typingUsers} />
-        </div>
+      {onBack && (
+        <ChatHeader 
+          title={currentConversation?.title || 'Conversation'} 
+          onBackClick={onBack}
+        />
       )}
       
-      <MessageInput 
-        onSendMessage={handleSendMessage}
-        placeholder={offlineMode ? "You're offline. Messages will be sent when you reconnect." : "Type a message..."}
-        disabled={isLoading}
-        encrypted={encrypted}
-        onFileUpload={handleFileUpload}
-        onRemoveFile={handleRemoveFile}
-        attachments={attachments}
-      />
+      <div className="flex-1 overflow-hidden flex flex-col">
+        <MessageList 
+          messages={messages} 
+          conversationId={conversationId}
+          showAvatars={showAvatars}
+          encrypted={encrypted}
+          isLoading={isLoading}
+        />
+        
+        {typingUsers.length > 0 && (
+          <div className="px-4 py-2">
+            <TypingIndicator users={typingUsers} />
+          </div>
+        )}
+        
+        <MessageInput 
+          onSendMessage={handleSendMessage}
+          placeholder="Type a message..."
+          disabled={isLoading}
+          encrypted={encrypted}
+          onFileUpload={handleFileUpload}
+          onRemoveFile={handleRemoveFile}
+          attachments={attachments}
+        />
+      </div>
     </div>
   );
 };
