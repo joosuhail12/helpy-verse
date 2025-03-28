@@ -15,7 +15,7 @@ import {
 } from './userActions';
 import { getUserPermission } from './permissionActions';
 
-// Import getCookie directly from utils/auth/tokenManager to avoid circular imports
+// Import isAuthenticated function directly to avoid circular dependencies
 import { isAuthenticated } from '@/utils/auth/tokenManager';
 
 const initialState: AuthState = {

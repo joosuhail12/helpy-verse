@@ -2,7 +2,10 @@
 // This file re-exports everything from the refactored auth slice
 // for backward compatibility
 
+// First, import the reducer directly
 import authReducer from './auth/authSlice';
+
+// Then re-export actions and types
 import { 
   logout, 
   clearError,
