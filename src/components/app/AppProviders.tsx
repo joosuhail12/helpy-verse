@@ -1,7 +1,5 @@
 
 import React from 'react';
-import { Provider } from 'react-redux';
-import { store } from '@/store/store';
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -21,19 +19,17 @@ interface AppProvidersProps {
 const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
   return (
     <AppErrorBoundary>
-      <Provider store={store}>
-        <AppQueryProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <CaslProvider>
-              <AppInitializer>
-                {children}
-              </AppInitializer>
-            </CaslProvider>
-          </TooltipProvider>
-        </AppQueryProvider>
-      </Provider>
+      <AppQueryProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <CaslProvider>
+            <AppInitializer>
+              {children}
+            </AppInitializer>
+          </CaslProvider>
+        </TooltipProvider>
+      </AppQueryProvider>
     </AppErrorBoundary>
   );
 };

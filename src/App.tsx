@@ -1,4 +1,5 @@
 
+import React from 'react';
 import './App.css';
 import { Provider } from 'react-redux';
 import { store } from './store/store';
@@ -8,13 +9,15 @@ import AppErrorBoundary from './components/app/AppErrorBoundary';
 
 function App() {
   return (
-    <Provider store={store}>
+    <React.StrictMode>
       <AppErrorBoundary>
-        <AppProviders>
-          <AppRoutes />
-        </AppProviders>
+        <Provider store={store}>
+          <AppProviders>
+            <AppRoutes />
+          </AppProviders>
+        </Provider>
       </AppErrorBoundary>
-    </Provider>
+    </React.StrictMode>
   );
 }
 
