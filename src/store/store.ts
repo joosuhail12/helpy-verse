@@ -1,5 +1,6 @@
 
 import { configureStore } from '@reduxjs/toolkit';
+// Import the auth reducer directly to resolve circular dependency
 import authReducer from './slices/auth/authSlice';
 import { actionsReducer } from './slices/actions/actionsSlice';
 import contentReducer from './slices/content/contentSlice';
