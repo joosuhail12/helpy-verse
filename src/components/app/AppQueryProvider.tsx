@@ -2,32 +2,24 @@
 import * as React from 'react';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-// Create client configuration with defaults
-const createQueryClient = () => new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      refetchOnWindowFocus: false,
-      staleTime: 5 * 60 * 1000, // 5 minutes
-    },
-  },
-});
-
 interface AppQueryProviderProps {
   children: React.ReactNode;
 }
 
 const AppQueryProvider: React.FC<AppQueryProviderProps> = ({ children }) => {
   // Create and memoize the QueryClient to prevent unnecessary re-renders
-  const queryClientRef = React.useRef<QueryClient>();
-  
-  // Initialize queryClient on first render
-  if (!queryClientRef.current) {
-    queryClientRef.current = createQueryClient();
-  }
+  const queryClient = React.useMemo(() => new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: 1,
+        refetchOnWindowFocus: false,
+        staleTime: 5 * 60 * 1000, // 5 minutes
+      },
+    },
+  }), []);
   
   return (
-    <QueryClientProvider client={queryClientRef.current}>
+    <QueryClientProvider client={queryClient}>
       {children}
     </QueryClientProvider>
   );
