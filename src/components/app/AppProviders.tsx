@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { BrowserRouter } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '../ui/toaster';
 import { ThemeProvider } from 'next-themes';
@@ -18,16 +17,14 @@ const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
   return (
     <AppErrorBoundary>
       <ReduxProvider store={store}>
-        <BrowserRouter>
-          <AppQueryProvider>
-            <ThemeProvider attribute="class" defaultTheme="light">
-              <CaslProvider>
-                {children}
-                <Toaster />
-              </CaslProvider>
-            </ThemeProvider>
-          </AppQueryProvider>
-        </BrowserRouter>
+        <AppQueryProvider>
+          <ThemeProvider attribute="class" defaultTheme="light">
+            <CaslProvider>
+              {children}
+              <Toaster />
+            </CaslProvider>
+          </ThemeProvider>
+        </AppQueryProvider>
       </ReduxProvider>
     </AppErrorBoundary>
   );
