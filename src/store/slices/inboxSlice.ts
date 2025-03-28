@@ -1,11 +1,12 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../store';
+import { Ticket } from '@/types/ticket';
 
 // Define inbox state type
 interface InboxState {
-  tickets: any[];
-  selectedTicket: any | null;
+  tickets: Ticket[];
+  selectedTicket: Ticket | null;
   loading: boolean;
   error: string | null;
 }
@@ -23,10 +24,10 @@ const inboxSlice = createSlice({
   name: 'inbox',
   initialState,
   reducers: {
-    setTickets: (state, action: PayloadAction<any[]>) => {
+    setTickets: (state, action: PayloadAction<Ticket[]>) => {
       state.tickets = action.payload;
     },
-    setSelectedTicket: (state, action: PayloadAction<any>) => {
+    setSelectedTicket: (state, action: PayloadAction<Ticket>) => {
       state.selectedTicket = action.payload;
     },
     setLoading: (state, action: PayloadAction<boolean>) => {
