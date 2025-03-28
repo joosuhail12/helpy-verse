@@ -1,6 +1,6 @@
 
 import { useState, useCallback } from 'react';
-import { QueryGroup, QueryRule, ValidationError, ValidationResult } from '@/types/queryBuilder';
+import { QueryGroup, QueryRule, ValidationError } from '@/types/queryBuilder';
 import { validateQueryGroup } from '../utils/ruleValidator';
 import { generateId } from '@/lib/utils';
 
@@ -10,8 +10,8 @@ export const useRuleBuilder = (initialGroup: QueryGroup = { id: generateId(), co
 
   const validate = useCallback(() => {
     const result = validateQueryGroup(queryGroup);
-    if (!result.isValid && result.error) {
-      setErrors([{ ruleId: 'root', field: 'group', message: result.error }]);
+    if (!result.isValid && result.errors.length > 0) {
+      setErrors(result.errors);
       return false;
     }
     setErrors([]);

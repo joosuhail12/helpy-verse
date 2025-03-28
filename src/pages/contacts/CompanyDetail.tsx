@@ -3,7 +3,8 @@ import { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
-import { fetchCompanyById, selectCompanyDetails, selectCompaniesLoading, selectCompaniesError } from '@/store/slices/companies/companiesSlice';
+import { fetchCompanyById } from '@/store/slices/companies/companiesSlice';
+import { selectCompanyDetails, selectCompaniesLoading, selectCompaniesError } from '@/store/slices/companies/selectors';
 import { CompanyDetailHeader } from '@/components/companies/detail/CompanyDetailHeader';
 import { CompanyDetailContent } from '@/components/companies/detail/CompanyDetailContent';
 import { CompanyDetailSidebar } from '@/components/companies/detail/CompanyDetailSidebar';
@@ -28,7 +29,7 @@ const CompanyDetail = () => {
   }
 
   if (error) {
-    return <CompanyDetailError errorMessage={error} />;
+    return <CompanyDetailError error={error} />;
   }
 
   if (!company) {
@@ -40,7 +41,7 @@ const CompanyDetail = () => {
 
   return (
     <div className="flex flex-col space-y-6">
-      <CompanyDetailHeader company={company} />
+      <CompanyDetailHeader company={company} onDeleteClick={() => console.log('Delete clicked')} />
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">

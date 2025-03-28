@@ -41,7 +41,7 @@ export const CompanySearchInput = ({
   const dispatch = useAppDispatch();
   
   useEffect(() => {
-    dispatch(fetchCompanies());
+    dispatch(fetchCompanies({}));
   }, [dispatch]);
   
   // Find current company name if we have a value (company ID)

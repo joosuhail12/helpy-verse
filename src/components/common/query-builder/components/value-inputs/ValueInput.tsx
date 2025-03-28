@@ -72,7 +72,7 @@ export const ValueInput: React.FC<ValueInputProps> = ({
         <SelectInput
           value={value}
           onChange={onChange}
-          options={field.options || []}
+          options={field.options?.map(opt => typeof opt === 'string' ? opt : opt.value) || []}
           errorMessage={errorMessage}
         />
       );
@@ -82,7 +82,7 @@ export const ValueInput: React.FC<ValueInputProps> = ({
         <MultiSelectInput
           value={value || []}
           onChange={onChange}
-          options={field.options || []}
+          options={field.options?.map(opt => typeof opt === 'string' ? opt : opt.value) || []}
           errorMessage={errorMessage}
         />
       );

@@ -4,7 +4,7 @@ import { QueryGroup, QueryRule, ValidationError, ValidationResult } from '@/type
 // Validate a query group and its rules
 export const validateQueryGroup = (group: QueryGroup): ValidationResult => {
   if (group.rules.length === 0) {
-    return { isValid: true };
+    return { isValid: true, errors: [] };
   }
   
   const errors: ValidationError[] = [];
@@ -21,7 +21,8 @@ export const validateQueryGroup = (group: QueryGroup): ValidationResult => {
       // This is a nested group
       const nestedResult = validateQueryGroup(rule);
       if (!nestedResult.isValid) {
-        return nestedResult;
+        errors.push(...nestedResult.errors);
+        return { isValid: false, errors };
       }
     }
   }
@@ -29,11 +30,11 @@ export const validateQueryGroup = (group: QueryGroup): ValidationResult => {
   if (errors.length > 0) {
     return { 
       isValid: false, 
-      error: errors.map(e => e.message).join(', ') 
+      errors
     };
   }
   
-  return { isValid: true };
+  return { isValid: true, errors: [] };
 };
 
 // Validate a single rule
@@ -41,26 +42,26 @@ export const validateRule = (rule: QueryRule): ValidationError | null => {
   // Basic validation - requires a field and operator
   if (!rule.field) {
     return {
-      ruleId: rule.id,
-      field: 'field',
-      message: 'Field is required'
+      message: 'Field is required',
+      rule,
+      path: 'field'
     };
   }
   
   if (!rule.operator) {
     return {
-      ruleId: rule.id,
-      field: 'operator',
-      message: 'Operator is required'
+      message: 'Operator is required',
+      rule,
+      path: 'operator'
     };
   }
   
   // For operators that require a value, check if value is present
   if (!['is_empty', 'is_not_empty'].includes(rule.operator) && rule.value === undefined) {
     return {
-      ruleId: rule.id,
-      field: 'value',
-      message: 'Value is required for this operator'
+      message: 'Value is required for this operator',
+      rule,
+      path: 'value'
     };
   }
   

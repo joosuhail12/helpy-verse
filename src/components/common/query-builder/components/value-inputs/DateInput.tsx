@@ -6,9 +6,6 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { ComparisonOperator } from '@/types/queryBuilder';
-import { CustomRangeInput } from './date/CustomRangeInput';
-import { RelativeDateInput } from './date/RelativeDateInput';
-import { RollingPeriodInput } from './date/RollingPeriodInput';
 
 export interface DateInputProps {
   value: any;
@@ -17,16 +14,26 @@ export interface DateInputProps {
   errorMessage?: string | null;
 }
 
+interface CustomRangeInputProps {
+  value: any;
+  onChange: (value: any) => void;
+}
+
+interface RollingPeriodInputProps {
+  value: any;
+  onChange: (value: any) => void;
+  operator: ComparisonOperator;
+}
+
 export const DateInput: React.FC<DateInputProps> = ({ value, onChange, operator, errorMessage }) => {
   const [open, setOpen] = useState(false);
 
   // Handle different date input based on operator
-  if (operator === 'custom_range' as ComparisonOperator) {
+  if (operator === 'custom_range') {
     return <CustomRangeInput value={value} onChange={onChange} />;
   }
 
-  if (operator === 'last_n_days' as ComparisonOperator || 
-      operator === 'next_n_days' as ComparisonOperator) {
+  if (operator === 'last_n_days' || operator === 'next_n_days') {
     return <RollingPeriodInput value={value} onChange={onChange} operator={operator} />;
   }
 
@@ -61,6 +68,29 @@ export const DateInput: React.FC<DateInputProps> = ({ value, onChange, operator,
         </PopoverContent>
       </Popover>
       {errorMessage && <p className="text-sm text-red-500 mt-1">{errorMessage}</p>}
+    </div>
+  );
+};
+
+// Placeholder components for custom date inputs
+const CustomRangeInput: React.FC<CustomRangeInputProps> = ({ value, onChange }) => {
+  return (
+    <div>
+      <Button variant="outline">
+        <CalendarIcon className="mr-2 h-4 w-4" />
+        <span>Custom Range</span>
+      </Button>
+    </div>
+  );
+};
+
+const RollingPeriodInput: React.FC<RollingPeriodInputProps> = ({ value, onChange, operator }) => {
+  return (
+    <div>
+      <Button variant="outline">
+        <CalendarIcon className="mr-2 h-4 w-4" />
+        <span>{operator === 'last_n_days' ? 'Last' : 'Next'} N Days</span>
+      </Button>
     </div>
   );
 };

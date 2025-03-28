@@ -66,3 +66,5 @@ export interface ValidationResult {
   isValid: boolean;
   errors: ValidationError[];
 }
+
+export type DataSource = 'contacts' | 'companies' | 'general';

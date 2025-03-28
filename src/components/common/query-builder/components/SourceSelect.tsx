@@ -20,6 +20,7 @@ export const SourceSelect = ({ value, onChange, errorMessage }: SourceSelectProp
   const getSourceLabel = (source: ExtendedDataSource) => {
     if (source === 'contacts') return 'Contact Information';
     if (source === 'companies') return 'Company Information';
+    if (source === 'general') return 'General Information';
     if (source.startsWith('custom_objects.')) {
       const slug = source.split('.')[1];
       const customObject = mockCustomObjects.find(obj => obj.slug === slug);
@@ -34,9 +35,9 @@ export const SourceSelect = ({ value, onChange, errorMessage }: SourceSelectProp
         <SelectValue placeholder="Select data source" />
       </SelectTrigger>
       <SelectContent>
-        {[...['contacts', 'companies'], ...availableSources].map((source) => (
+        {[...['contacts', 'companies', 'general'] as ExtendedDataSource[], ...availableSources].map((source) => (
           <SelectItem key={source} value={source}>
-            {getSourceLabel(source as ExtendedDataSource)}
+            {getSourceLabel(source)}
           </SelectItem>
         ))}
       </SelectContent>
