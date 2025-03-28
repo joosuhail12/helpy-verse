@@ -1,6 +1,6 @@
 
 import { lazy, Suspense } from 'react';
-import { LoadingSpinner } from './index'; // Import the shared LoadingSpinner
+import LoadingSpinner from '@/components/shared/LoadingSpinner';
 
 // Lazy load inbox components
 const Inbox = lazy(() => import('@/pages/Inbox'));

@@ -1,6 +1,6 @@
 
 import { lazy, Suspense } from 'react';
-import { LoadingSpinner } from './index'; // Import the shared LoadingSpinner
+import LoadingSpinner from '@/components/shared/LoadingSpinner';
 
 // Lazy load settings components
 const Settings = lazy(() => import('@/pages/Settings'));

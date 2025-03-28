@@ -5,19 +5,16 @@ import { Loader2 } from 'lucide-react';
 import RootRedirect from '../components/app/RootRedirect';
 import RouteErrorBoundary from '@/components/app/RouteErrorBoundary';
 import { PrivateRoute } from '@/utils/helpers/Routes';
-
-// Define LoadingSpinner component first to avoid reference errors
-export const LoadingSpinner = () => (
-  <div className="min-h-screen flex items-center justify-center">
-    <Loader2 className="h-8 w-8 animate-spin text-primary" />
-  </div>
-);
+import LoadingSpinner from '@/components/shared/LoadingSpinner';
 
 // Import route modules
 import { dashboardRoutes } from './dashboardRoutes';
 import { inboxRoutes } from './inboxRoutes';
 import { settingsRoutes } from './settingsRoutes';
 import { automationRoutes } from './automationRoutes';
+
+// Re-export the LoadingSpinner for backward compatibility
+export { LoadingSpinner };
 
 // Lazy load components
 const SignIn = lazy(() => import('../pages/SignIn'));
