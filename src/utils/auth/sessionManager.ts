@@ -1,48 +1,50 @@
 
-// Define session events enum
-export enum SessionEvents {
-  SESSION_CREATED = 'session:created',
-  SESSION_EXPIRED = 'session:expired',
-  SESSION_WARNING = 'session:warning',
-  SESSION_EXTENDED = 'session:extended',
-  SESSION_ENDED = 'session:ended'
-}
-
+/**
+ * Session management utility for handling user sessions
+ */
 class SessionManager {
   private sessionKey = 'app_session';
-  private sessionTimeout = 30 * 60 * 1000; // 30 minutes by default
-  private warningThreshold = 5 * 60 * 1000; // 5 minutes before expiry
-  private listeners: { [event: string]: Function[] } = {};
-  private monitorIntervals: { [id: number]: NodeJS.Timeout } = {};
+  private sessionTimeoutKey = 'app_session_timeout';
+  private csrfTokenKey = 'app_csrf_token';
+  private monitorIntervals: Record<number, NodeJS.Timeout> = {};
   private nextIntervalId = 1;
+  private listeners: Record<string, Function[]> = {};
 
-  // Initialize a session with optional timeout
-  public initSession(timeout?: number): void {
-    if (timeout) {
-      this.sessionTimeout = timeout;
-      this.warningThreshold = Math.min(5 * 60 * 1000, timeout * 0.2);
+  // Initialize or restore a session
+  public initSession(timeoutMs = 30 * 60 * 1000): void {
+    const existingSession = this.getSession();
+    
+    if (!existingSession) {
+      this.createSession(timeoutMs);
+    } else {
+      this.updateActivity();
     }
     
-    if (!this.getSession()) {
-      this.createSession();
+    // Create CSRF token if it doesn't exist
+    if (!this.getCsrfToken()) {
+      this.generateCsrfToken();
     }
   }
-
+  
   // Create a new session
-  public createSession(duration?: number): void {
+  public createSession(timeoutMs = 30 * 60 * 1000): void {
+    const sessionId = Math.random().toString(36).substring(2, 15);
+    const timestamp = Date.now();
+    
     const session = {
-      id: this.generateSessionId(),
-      startTime: Date.now(),
-      expiryTime: Date.now() + (duration || this.sessionTimeout),
-      lastActivity: Date.now(),
-      csrfToken: this.generateCsrfToken()
+      sessionId,
+      createdAt: timestamp,
+      lastActivity: timestamp,
+      expiresAt: timestamp + timeoutMs
     };
     
-    this.saveSession(session);
-    this.notifyListeners(SessionEvents.SESSION_CREATED, session);
+    localStorage.setItem(this.sessionKey, JSON.stringify(session));
+    localStorage.setItem(this.sessionTimeoutKey, timeoutMs.toString());
+    
+    this.triggerEvent('session_created', session);
   }
-
-  // Get current session
+  
+  // Get the current session data
   public getSession(): any {
     const sessionStr = localStorage.getItem(this.sessionKey);
     if (!sessionStr) return null;
@@ -53,148 +55,92 @@ class SessionManager {
       return null;
     }
   }
-
-  // Save session to storage
-  private saveSession(session: any): void {
-    localStorage.setItem(this.sessionKey, JSON.stringify(session));
-  }
-
-  // Generate a random session ID
-  private generateSessionId(): string {
-    return Math.random().toString(36).substring(2, 15) + 
-           Math.random().toString(36).substring(2, 15);
-  }
-
-  // Generate a random CSRF token
-  private generateCsrfToken(): string {
-    return Math.random().toString(36).substring(2, 15) + 
-           Math.random().toString(36).substring(2, 15);
-  }
-
-  // Check if the session is active
-  public isSessionActive(): boolean {
-    const session = this.getSession();
-    if (!session) return false;
-    
-    return Date.now() < session.expiryTime;
-  }
-
-  // Get remaining time in session
-  public getSessionTimeRemaining(): number {
-    const session = this.getSession();
-    if (!session) return 0;
-    
-    const remainingTime = session.expiryTime - Date.now();
-    return Math.max(0, remainingTime);
-  }
-
-  // Check if session warning should be shown
-  public isSessionWarningNeeded(): boolean {
-    if (!this.isSessionActive()) return false;
-    
-    const remainingTime = this.getSessionTimeRemaining();
-    return remainingTime > 0 && remainingTime <= this.warningThreshold;
-  }
-
+  
   // Update the last activity timestamp
   public updateActivity(): void {
     const session = this.getSession();
     if (!session) return;
     
     session.lastActivity = Date.now();
-    this.saveSession(session);
+    
+    // Get timeout from storage or use default 30 minutes
+    const timeoutMs = Number(localStorage.getItem(this.sessionTimeoutKey)) || 30 * 60 * 1000;
+    session.expiresAt = session.lastActivity + timeoutMs;
+    
+    localStorage.setItem(this.sessionKey, JSON.stringify(session));
+    
+    this.triggerEvent('activity_updated', session);
   }
-
-  // Extend the current session
-  public extendSession(duration?: number): void {
+  
+  // Check if the session is still active
+  public isSessionActive(): boolean {
     const session = this.getSession();
-    if (!session) {
-      this.createSession(duration);
-      return;
-    }
+    if (!session) return false;
     
-    session.expiryTime = Date.now() + (duration || this.sessionTimeout);
-    session.lastActivity = Date.now();
-    this.saveSession(session);
-    
-    this.notifyListeners(SessionEvents.SESSION_EXTENDED, session);
+    const now = Date.now();
+    return session.expiresAt > now;
   }
-
+  
+  // Get time remaining in session (milliseconds)
+  public getSessionTimeRemaining(): number {
+    const session = this.getSession();
+    if (!session) return 0;
+    
+    const now = Date.now();
+    return Math.max(0, session.expiresAt - now);
+  }
+  
+  // Check if session warning should be shown
+  public isSessionWarningNeeded(): boolean {
+    const timeRemaining = this.getSessionTimeRemaining();
+    const timeoutMs = Number(localStorage.getItem(this.sessionTimeoutKey)) || 30 * 60 * 1000;
+    
+    // Show warning when less than 10% of session time remains
+    return timeRemaining > 0 && timeRemaining < (timeoutMs * 0.1);
+  }
+  
   // End the current session
   public endSession(): void {
     const session = this.getSession();
+    
     localStorage.removeItem(this.sessionKey);
-    
-    if (session) {
-      this.notifyListeners(SessionEvents.SESSION_ENDED, session);
-    }
+    this.triggerEvent('session_ended', session);
   }
-
-  // Get CSRF token for the current session
-  public getCsrfToken(): string {
+  
+  // Extend the current session
+  public extendSession(timeoutMs?: number): void {
     const session = this.getSession();
-    return session ? session.csrfToken : '';
-  }
-
-  // Add event listener
-  public addEventListener(event: SessionEvents, callback: Function): () => void {
-    if (!this.listeners[event]) {
-      this.listeners[event] = [];
-    }
+    if (!session) return;
     
-    this.listeners[event].push(callback);
+    const now = Date.now();
+    const timeout = timeoutMs || Number(localStorage.getItem(this.sessionTimeoutKey)) || 30 * 60 * 1000;
     
-    // Return unsubscribe function
-    return () => {
-      this.listeners[event] = this.listeners[event].filter(cb => cb !== callback);
-    };
-  }
-
-  // Notify listeners of an event
-  private notifyListeners(event: SessionEvents, data: any): void {
-    if (!this.listeners[event]) return;
+    session.lastActivity = now;
+    session.expiresAt = now + timeout;
     
-    for (const callback of this.listeners[event]) {
-      try {
-        callback(data);
-      } catch (e) {
-        console.error(`Error in session event listener for ${event}:`, e);
-      }
-    }
+    localStorage.setItem(this.sessionKey, JSON.stringify(session));
+    
+    this.triggerEvent('session_extended', session);
   }
-
+  
   // Start session monitoring
-  public startSessionMonitoring(checkInterval = 60000): number {
+  public startSessionMonitoring(checkIntervalMs = 60000): number {
     const intervalId = this.nextIntervalId++;
     
     this.monitorIntervals[intervalId] = setInterval(() => {
-      const session = this.getSession();
-      if (!session) return;
-      
-      const currentTime = Date.now();
-      const timeRemaining = session.expiryTime - currentTime;
-      
-      // Session expired
-      if (timeRemaining <= 0) {
-        this.notifyListeners(SessionEvents.SESSION_EXPIRED, { 
-          sessionId: session.id, 
-          expiredAt: new Date(session.expiryTime) 
-        });
-        this.endSession();
-      }
-      // Session warning needed
-      else if (timeRemaining <= this.warningThreshold) {
-        this.notifyListeners(SessionEvents.SESSION_WARNING, {
-          sessionId: session.id,
-          expiresIn: timeRemaining,
-          expiryTime: new Date(session.expiryTime)
+      if (!this.isSessionActive()) {
+        this.triggerEvent('session_expired', { sessionId: this.getSession()?.sessionId });
+      } else if (this.isSessionWarningNeeded()) {
+        this.triggerEvent('session_expiring_soon', { 
+          timeRemaining: this.getSessionTimeRemaining(),
+          sessionId: this.getSession()?.sessionId
         });
       }
-    }, checkInterval);
+    }, checkIntervalMs);
     
     return intervalId;
   }
-
+  
   // Stop session monitoring
   public stopSessionMonitoring(intervalId: number): void {
     if (this.monitorIntervals[intervalId]) {
@@ -202,7 +148,67 @@ class SessionManager {
       delete this.monitorIntervals[intervalId];
     }
   }
+  
+  // Generate a new CSRF token
+  public generateCsrfToken(): string {
+    const token = Math.random().toString(36).substring(2, 15) + 
+                 Math.random().toString(36).substring(2, 15);
+    
+    localStorage.setItem(this.csrfTokenKey, token);
+    return token;
+  }
+  
+  // Get the current CSRF token
+  public getCsrfToken(): string | null {
+    return localStorage.getItem(this.csrfTokenKey);
+  }
+  
+  // Validate a CSRF token
+  public validateCsrfToken(token: string): boolean {
+    const storedToken = this.getCsrfToken();
+    return storedToken !== null && token === storedToken;
+  }
+  
+  // Add event listener
+  public addEventListener(event: string, callback: Function): () => void {
+    if (!this.listeners[event]) {
+      this.listeners[event] = [];
+    }
+    
+    this.listeners[event].push(callback);
+    
+    return () => {
+      this.listeners[event] = this.listeners[event].filter(cb => cb !== callback);
+      if (this.listeners[event].length === 0) {
+        delete this.listeners[event];
+      }
+    };
+  }
+  
+  // Trigger event
+  private triggerEvent(event: string, data: any): void {
+    if (!this.listeners[event]) return;
+    
+    this.listeners[event].forEach(callback => {
+      try {
+        callback(data);
+      } catch (e) {
+        console.error(`Error in session event listener for ${event}:`, e);
+      }
+    });
+  }
 }
 
 export const sessionManager = new SessionManager();
+
+// Session events enum for type safety
+export enum SessionEvents {
+  CREATED = 'session_created',
+  UPDATED = 'activity_updated',
+  ENDED = 'session_ended',
+  EXTENDED = 'session_extended',
+  EXPIRED = 'session_expired',
+  EXPIRING_SOON = 'session_expiring_soon'
+}
+
 export default sessionManager;

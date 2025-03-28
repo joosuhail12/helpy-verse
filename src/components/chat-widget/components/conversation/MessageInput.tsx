@@ -1,189 +1,117 @@
 
-import React, { useState, useRef, useEffect } from 'react';
-import { Send, Paperclip, Lock, AlertTriangle, Clock } from 'lucide-react';
-import { useThemeContext } from '@/context/ThemeContext';
-import { MessageInputProps } from './types';
-import { validateAndSanitizeMessage, detectSuspiciousContent, isSpamMessage } from '@/utils/validation/messageValidation';
+import React, { useState, useRef, useEffect, FormEvent } from 'react';
+import { Send, Paperclip, X, Lock } from 'lucide-react';
+import { validateMessage } from '@/utils/validation/messageValidation';
+
+interface MessageInputProps {
+  onSendMessage: (message: string) => void;
+  placeholder?: string;
+  disabled?: boolean;
+  encrypted?: boolean;
+  onFileUpload?: (files: File[]) => void;
+  onRemoveFile?: (file: File) => void;
+  attachments?: File[];
+  maxLength?: number;
+  className?: string;
+}
 
 const MessageInput: React.FC<MessageInputProps> = ({
   onSendMessage,
-  onTyping,
-  placeholder = 'Type your message...',
+  placeholder = 'Type a message...',
   disabled = false,
   encrypted = false,
-  attachments = [],
   onFileUpload,
   onRemoveFile,
-  onTypingStart,
-  onTypingEnd,
-  compact = false,
-  onHeightChange,
-  isRateLimited = false,
-  rateLimitTimeRemaining = 0,
-  showAttachments = true
+  attachments = [],
+  maxLength = 2000,
+  className = ''
 }) => {
-  const { colors } = useThemeContext();
   const [message, setMessage] = useState('');
-  const [validationError, setValidationError] = useState<string | null>(null);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const inputValue = e.target.value;
-    setMessage(inputValue);
-    
-    // Clear any previous validation errors when user is typing
-    if (validationError) {
-      setValidationError(null);
+  const [error, setError] = useState<string | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Auto-resize textarea based on content
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
+  }, [message]);
+  
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
     
-    // Check for suspicious content while typing
-    if (detectSuspiciousContent(inputValue)) {
-      setValidationError('Your message contains potentially unsafe content');
-    }
+    if (!message.trim()) return;
     
-    // Check for spam patterns
-    if (isSpamMessage(inputValue)) {
-      setValidationError('Your message appears to be spam');
-    }
-    
-    // Trigger typing indicator
-    if (onTyping) {
-      // Clear any existing timeout
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-      
-      // Set a new timeout
-      onTyping();
-      
-      // Set a timeout to clear the typing indicator
-      timeoutRef.current = setTimeout(() => {
-        timeoutRef.current = null;
-      }, 3000);
-    }
-    
-    // For ResponsiveConversationView compatibility
-    if (onTypingStart) {
-      onTypingStart();
-      
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-      
-      timeoutRef.current = setTimeout(() => {
-        if (onTypingEnd) onTypingEnd();
-        timeoutRef.current = null;
-      }, 3000);
-    }
-  };
-
-  const handleSend = () => {
-    if (!message.trim() || isRateLimited) return;
-    
-    // Validate and sanitize the message before sending
-    const validationResult = validateAndSanitizeMessage(message, {
-      maxLength: 2000,
+    const validation = validateMessage(message, {
+      maxLength,
       allowHtml: false,
       allowUrls: true,
-      blockWords: [] // Add blocked words here if needed
+      blockWords: []
     });
     
-    if (!validationResult.isValid) {
-      setValidationError(validationResult.errors[0].message);
+    if (!validation.isValid) {
+      setError(validation.errors[0]);
       return;
     }
     
-    // If message passes validation, send it
-    onSendMessage(validationResult.sanitizedContent, attachments);
+    onSendMessage(validation.sanitizedContent);
     setMessage('');
-    setValidationError(null);
+    setError(null);
     
-    // Focus the input after sending
-    if (inputRef.current) {
-      inputRef.current.focus();
+    // Reset textarea height
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
     }
   };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  
+  const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSend();
+      handleSubmit(e);
     }
   };
-
-  // Format remaining time as MM:SS
-  const formatTimeRemaining = (ms: number) => {
-    const seconds = Math.ceil(ms / 1000);
-    if (seconds < 60) {
-      return `${seconds}s`;
+  
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0 && onFileUpload) {
+      const filesArray = Array.from(e.target.files);
+      onFileUpload(filesArray);
+      e.target.value = ''; // Reset the input for future uploads
     }
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
   };
-
-  // Auto-resize the textarea
-  useEffect(() => {
-    const textarea = inputRef.current;
-    if (textarea) {
-      textarea.style.height = 'auto';
-      const newHeight = Math.min(textarea.scrollHeight, 120);
-      textarea.style.height = `${newHeight}px`;
-      
-      if (onHeightChange) {
-        onHeightChange(newHeight + 48); // Account for padding/borders
-      }
-    }
-  }, [message, onHeightChange]);
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && onFileUpload) {
-      onFileUpload(Array.from(e.target.files));
-      e.target.value = ''; // Reset the input
+  
+  const triggerFileUpload = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
     }
   };
 
   return (
-    <div
-      className="border-t p-3"
-      style={{ borderColor: colors.border, background: colors.background }}
-    >
-      {encrypted && (
-        <div className="flex items-center justify-center mb-1 text-xs text-gray-500">
-          <Lock className="h-3 w-3 mr-1" />
-          <span>End-to-end encrypted</span>
+    <div className={`p-3 border-t ${className}`}>
+      {error && (
+        <div className="mb-2 text-xs text-red-500 p-1 bg-red-50 rounded">
+          {error}
         </div>
       )}
       
-      {/* Rate limit warning */}
-      {isRateLimited && rateLimitTimeRemaining > 0 && (
-        <div className="flex items-center mb-1 text-xs text-red-500">
-          <Clock className="h-3 w-3 mr-1" />
-          <span>Rate limit exceeded. Wait {formatTimeRemaining(rateLimitTimeRemaining)} before sending another message.</span>
-        </div>
-      )}
-      
-      {/* Validation error message */}
-      {validationError && (
-        <div className="flex items-center mb-1 text-xs text-red-500">
-          <AlertTriangle className="h-3 w-3 mr-1" />
-          <span>{validationError}</span>
-        </div>
-      )}
-      
-      {/* Attachment previews */}
       {attachments && attachments.length > 0 && (
-        <div className="flex flex-wrap gap-2 mb-2">
+        <div className="mb-2 flex flex-wrap gap-2">
           {attachments.map((file, index) => (
-            <div key={index} className="flex items-center bg-gray-100 rounded px-2 py-1 text-xs text-gray-700">
-              <span className="truncate max-w-[120px]">{file.name}</span>
+            <div 
+              key={index} 
+              className="bg-gray-100 rounded px-2 py-1 text-xs flex items-center"
+            >
+              <span className="truncate max-w-[150px]">{file.name}</span>
+              <span className="ml-1 text-gray-500">
+                ({(file.size / 1024).toFixed(1)} KB)
+              </span>
               {onRemoveFile && (
                 <button 
-                  onClick={() => onRemoveFile(file)} 
-                  className="ml-1 text-gray-500 hover:text-gray-700"
+                  onClick={() => onRemoveFile(file)}
+                  className="ml-1 text-gray-500 hover:text-red-500"
                 >
-                  &times;
+                  <X className="h-3 w-3" />
                 </button>
               )}
             </div>
@@ -191,58 +119,59 @@ const MessageInput: React.FC<MessageInputProps> = ({
         </div>
       )}
       
-      <div
-        className="flex items-end gap-2 rounded-lg p-2"
-        style={{ 
-          background: colors.inputBackground,
-          borderColor: validationError ? 'rgb(239, 68, 68)' : colors.border,
-          borderWidth: validationError ? '1px' : '0px',
-          opacity: isRateLimited ? '0.7' : '1'
-        }}
-      >
-        {showAttachments && onFileUpload && (
-          <label className={`cursor-pointer ${isRateLimited ? 'pointer-events-none' : ''}`}>
+      <form onSubmit={handleSubmit} className="flex items-end gap-2">
+        {onFileUpload && (
+          <>
             <input
               type="file"
+              ref={fileInputRef}
               className="hidden"
               multiple
-              onChange={handleFileSelect}
-              disabled={disabled || isRateLimited}
+              onChange={handleFileChange}
+              disabled={disabled}
             />
-            <div className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
-              <Paperclip className="h-5 w-5" style={{ color: colors.foreground }} />
-            </div>
-          </label>
+            <button
+              type="button"
+              onClick={triggerFileUpload}
+              disabled={disabled}
+              className="p-2 rounded-full text-gray-500 hover:bg-gray-100"
+            >
+              <Paperclip className="h-5 w-5" />
+            </button>
+          </>
         )}
         
-        <textarea
-          ref={inputRef}
-          value={message}
-          onChange={handleChange}
-          onKeyDown={handleKeyDown}
-          placeholder={isRateLimited ? 'Rate limit exceeded, please wait...' : placeholder}
-          rows={1}
-          className="flex-1 bg-transparent resize-none outline-none max-h-[120px] min-h-[24px]"
-          style={{ color: colors.foreground }}
-          disabled={disabled || isRateLimited}
-          aria-invalid={validationError !== null}
-        />
+        <div className="flex-1 relative">
+          <textarea
+            ref={textareaRef}
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            onKeyDown={handleKeyPress}
+            placeholder={placeholder}
+            disabled={disabled}
+            maxLength={maxLength}
+            rows={1}
+            className="w-full p-2 pr-8 resize-none border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"
+          />
+          {encrypted && (
+            <div className="absolute top-2 right-2 text-green-600">
+              <Lock className="h-4 w-4" />
+            </div>
+          )}
+        </div>
         
         <button
-          onClick={handleSend}
-          disabled={!message.trim() || disabled || validationError !== null || isRateLimited}
-          className={`p-1 rounded-full ${
-            message.trim() && !validationError && !isRateLimited ? 'opacity-100' : 'opacity-50'
+          type="submit"
+          disabled={!message.trim() || disabled}
+          className={`p-2 rounded-full ${
+            !message.trim() || disabled
+              ? 'text-gray-400 bg-gray-100'
+              : 'text-white bg-primary hover:bg-primary/90'
           }`}
-          style={{ 
-            background: message.trim() && !validationError && !isRateLimited ? colors.primary : 'transparent',
-            color: message.trim() && !validationError && !isRateLimited ? colors.primaryForeground : colors.foreground
-          }}
-          aria-label="Send message"
         >
           <Send className="h-5 w-5" />
         </button>
-      </div>
+      </form>
     </div>
   );
 };

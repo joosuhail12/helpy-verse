@@ -1,94 +1,62 @@
 
+// Message sender types
+export type MessageSender = 'user' | 'agent' | 'system' | string;
+
+// Message status types
+export type MessageStatus = 'sending' | 'sent' | 'delivered' | 'read' | 'failed' | 'queued';
+
+// Conversation type
+export interface Conversation {
+  id: string;
+  title: string;
+  lastMessageTimestamp: string;
+  lastMessage?: string;
+  unreadCount: number;
+  encrypted?: boolean;
+  participants?: string[];
+  metadata?: Record<string, any>;
+}
+
+// Chat message type
 export interface ChatMessage {
   id: string;
   content: string;
-  sender: 'user' | 'agent' | 'system' | string;
+  sender: MessageSender;
   timestamp: string;
   conversationId: string;
+  status?: MessageStatus;
   encrypted?: boolean;
   encryptedContent?: string;
   metadata?: Record<string, any>;
-  status?: 'sending' | 'sent' | 'delivered' | 'read' | 'failed';
-  attachments?: {
+  attachments?: Array<{
     id: string;
     name: string;
     url: string;
     size: number;
     type: string;
-  }[];
+  }>;
 }
 
-export interface MessageInputProps {
-  onSendMessage: (content: string, attachments?: File[]) => void;
-  placeholder?: string;
-  disabled?: boolean;
-  onTyping?: () => void;
-  encrypted?: boolean;
-  attachments?: File[];
-  onFileUpload?: (files: File[]) => void;
-  onRemoveFile?: (file: File) => void;
-  onTypingStart?: () => void;
-  onTypingEnd?: () => void;
-  compact?: boolean;
-  onHeightChange?: (height: number) => void;
-  isRateLimited?: boolean;
-  rateLimitTimeRemaining?: number;
-  showAttachments?: boolean;
-}
-
-export interface MessageSearchProps {
-  value: string;
-  onChange: React.Dispatch<React.SetStateAction<string>>;
-  resultCount: number;
-  currentResult: number;
-  onNavigate: (direction: 'next' | 'prev') => void;
-}
-
-export interface MessageListProps {
-  messages: ChatMessage[];
-  typingUsers?: string[];
-  useVirtualization?: boolean;
-  showReactions?: boolean;
-  showReadReceipts?: boolean;
-}
-
+// Typing indicator user type
 export interface TypingUser {
   clientId: string;
   name?: string;
   timestamp: number;
 }
 
-export interface TypingIndicatorProps {
-  users: TypingUser[];
-  className?: string;
-  agentName?: string;
-  compact?: boolean;
+// Message reaction type
+export interface MessageReaction {
+  messageId: string;
+  userId: string;
+  username?: string;
+  emoji: string;
+  timestamp: string;
 }
 
-export interface Conversation {
-  id: string;
-  title: string;
-  lastMessage?: string;
-  lastMessageTimestamp: string;
-  unreadCount: number;
-  encrypted?: boolean;
-}
-
-export interface EnhancedConversationViewProps {
-  conversationId: string;
-  showSearch?: boolean;
-  showAttachments?: boolean;
-  showReactions?: boolean;
-  showReadReceipts?: boolean;
-  encrypted?: boolean;
-  virtualized?: boolean;
-}
-
-export interface UserAvatarProps {
-  name?: string;
-  avatarUrl?: string;
-  size?: 'sm' | 'md' | 'lg';
-  status?: 'online' | 'offline' | 'away' | 'busy';
-  userId?: string;
-  color?: string;
+// Read receipt type
+export interface ReadReceipt {
+  messageId: string;
+  userId: string;
+  username?: string;
+  timestamp: string;
 }

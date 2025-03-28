@@ -1,145 +1,75 @@
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAbly } from '@/context/AblyContext';
+import { TypingUser } from '@/components/chat-widget/components/conversation/types';
 
-export interface TypingUser {
-  clientId: string;
-  name?: string;
-  timestamp: number;
-}
+const TYPING_TIMEOUT = 3000; // 3 seconds
 
-/**
- * Hook to handle typing indicators in a chat
- */
 export const useTypingIndicator = (conversationId: string) => {
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
-  const { client, clientId, getChannelName } = useAbly();
-  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const channelRef = useRef<any>(null);
+  const ably = useAbly();
 
-  // Clear typing users after a timeout
-  const TYPING_TIMEOUT = 3000;
+  // Send typing indicator
+  const sendTypingIndicator = useCallback(async () => {
+    try {
+      const channelName = ably.getChannelName(`typing:${conversationId}`);
+      await ably.publish(channelName, 'typing', {
+        clientId: ably.clientId,
+        timestamp: Date.now()
+      });
+    } catch (error) {
+      console.error('Failed to send typing indicator:', error);
+    }
+  }, [conversationId, ably]);
 
+  // Subscribe to typing indicators
   useEffect(() => {
-    if (!client || !conversationId) return;
-
-    // Initialize channel
-    const channelName = getChannelName(conversationId);
-    const channel = client.channels.get(channelName);
-    channelRef.current = channel;
-
-    // Handle typing start events
-    const handleTypingStart = (message: any) => {
-      const typingData = message.data as TypingUser;
+    const channelName = ably.getChannelName(`typing:${conversationId}`);
+    
+    const unsubscribe = ably.subscribe(channelName, 'typing', message => {
+      const data = message.data;
+      if (!data || data.clientId === ably.clientId) return;
       
-      // Don't show our own typing indicator
-      if (typingData.clientId === clientId) return;
-      
-      setTypingUsers(prevUsers => {
-        // Check if this user is already in the typing users list
-        const existingUserIndex = prevUsers.findIndex(user => user.clientId === typingData.clientId);
+      setTypingUsers(prev => {
+        // Check if this user is already in the list
+        const existing = prev.find(u => u.clientId === data.clientId);
         
-        if (existingUserIndex >= 0) {
-          // Update existing user's timestamp
-          const updatedUsers = [...prevUsers];
-          updatedUsers[existingUserIndex] = {
-            ...updatedUsers[existingUserIndex],
-            timestamp: Date.now()
-          };
-          return updatedUsers;
+        if (existing) {
+          // Update the timestamp
+          return prev.map(u => 
+            u.clientId === data.clientId 
+              ? { ...u, timestamp: data.timestamp }
+              : u
+          );
         } else {
           // Add new typing user
-          return [...prevUsers, { ...typingData, timestamp: Date.now() }];
+          return [...prev, {
+            clientId: data.clientId,
+            name: data.name || 'User',
+            timestamp: data.timestamp
+          }];
         }
       });
-    };
-
-    // Handle typing stop events
-    const handleTypingStop = (message: any) => {
-      const { clientId: typingClientId } = message.data;
-      
-      setTypingUsers(prevUsers => 
-        prevUsers.filter(user => user.clientId !== typingClientId)
-      );
-    };
-
-    // Subscribe to typing events
-    const startSubscription = channel.subscribe('typing:start', handleTypingStart);
-    const stopSubscription = channel.subscribe('typing:stop', handleTypingStop);
-
-    // Return cleanup function
-    return () => {
-      // First check if channelRef.current exists before trying to unsubscribe
-      if (channelRef.current) {
-        // Use try/catch to handle potential errors during cleanup
-        try {
-          channelRef.current.unsubscribe('typing:start', handleTypingStart);
-          channelRef.current.unsubscribe('typing:stop', handleTypingStop);
-        } catch (error) {
-          console.error('Error unsubscribing from typing events:', error);
-        }
-      }
-      
-      // Clear any existing timeout
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
-      }
-    };
-  }, [client, clientId, conversationId, getChannelName]);
-
-  // Clean up stale typing indicators
-  useEffect(() => {
-    if (typingUsers.length === 0) return;
+    });
     
-    // Clear previous timeout
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-    }
-    
-    // Set new timeout to check for stale typing indicators
-    typingTimeoutRef.current = setTimeout(() => {
+    // Clean up typing users that haven't typed recently
+    const cleanupInterval = setInterval(() => {
       const now = Date.now();
-      setTypingUsers(prevUsers => 
-        prevUsers.filter(user => (now - user.timestamp) < TYPING_TIMEOUT)
+      setTypingUsers(prev => 
+        prev.filter(user => now - user.timestamp < TYPING_TIMEOUT)
       );
     }, 1000);
     
     return () => {
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
-      }
+      unsubscribe();
+      clearInterval(cleanupInterval);
     };
-  }, [typingUsers]);
-
-  // Send typing indicator
-  const sendTypingIndicator = (isTyping: boolean, name?: string) => {
-    if (!channelRef.current || !clientId) return;
-    
-    try {
-      const eventName = isTyping ? 'typing:start' : 'typing:stop';
-      const payload = {
-        clientId,
-        name,
-        timestamp: Date.now()
-      };
-      
-      channelRef.current.publish(eventName, payload);
-    } catch (error) {
-      console.error('Error sending typing indicator:', error);
-    }
-  };
-
-  // Utility function to check if there are active typing users
-  const isUserTyping = (specificClientId?: string) => {
-    if (specificClientId) {
-      return typingUsers.some(user => user.clientId === specificClientId);
-    }
-    return typingUsers.length > 0;
-  };
+  }, [conversationId, ably]);
 
   return {
     typingUsers,
-    sendTypingIndicator,
-    isUserTyping
+    sendTypingIndicator
   };
 };
+
+export default useTypingIndicator;

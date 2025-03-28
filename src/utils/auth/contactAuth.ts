@@ -1,9 +1,11 @@
 
-import { sessionManager } from './sessionManager';
-
+/**
+ * Authentication utility for contacts
+ */
 class ContactAuth {
   private contactKey = 'app_contact';
   private authStateKey = 'app_auth_state';
+  private tokenKey = 'app_auth_token';
   
   // Authenticate a contact
   public async authenticate(contactId: string, token: string): Promise<boolean> {
@@ -18,14 +20,13 @@ class ContactAuth {
       localStorage.setItem(this.contactKey, JSON.stringify({
         id: contactId,
         authenticated: true,
-        authenticatedAt: new Date().toISOString()
+        authenticatedAt: new Date().toISOString(),
+        token
       }));
       
       // Update auth state
       localStorage.setItem(this.authStateKey, 'authenticated');
-      
-      // Create or extend session
-      sessionManager.extendSession();
+      localStorage.setItem(this.tokenKey, token);
       
       return true;
     } catch (error) {
@@ -41,7 +42,7 @@ class ContactAuth {
     
     try {
       const contact = JSON.parse(contactStr);
-      return contact.authenticated === true && sessionManager.isSessionActive();
+      return contact.authenticated === true;
     } catch (e) {
       return false;
     }
@@ -65,11 +66,16 @@ class ContactAuth {
     return contact ? contact.id : null;
   }
   
+  // Get auth token
+  public getToken(): string | null {
+    return localStorage.getItem(this.tokenKey);
+  }
+  
   // Logout
   public logout(): void {
     localStorage.removeItem(this.contactKey);
     localStorage.removeItem(this.authStateKey);
-    sessionManager.endSession();
+    localStorage.removeItem(this.tokenKey);
   }
   
   // Verify contact with verification code
@@ -97,9 +103,6 @@ class ContactAuth {
       
       // Update auth state
       localStorage.setItem(this.authStateKey, 'authenticated');
-      
-      // Create or extend session
-      sessionManager.extendSession();
       
       return true;
     } catch (error) {

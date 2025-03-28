@@ -1,8 +1,13 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { ChatMessage } from '@/components/chat-widget/components/conversation/types';
 
-export const useChat = (conversationId: string, encrypted: boolean = false) => {
+interface UseChatOptions {
+  conversationId: string;
+  encrypted?: boolean;
+}
+
+export const useChat = ({ conversationId, encrypted = false }: UseChatOptions) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -43,7 +48,7 @@ export const useChat = (conversationId: string, encrypted: boolean = false) => {
   }, [conversationId]);
 
   // Send a message
-  const sendMessage = async (content: string): Promise<void> => {
+  const sendMessage = useCallback(async (content: string): Promise<void> => {
     if (!content.trim()) return;
     
     // Create new message
@@ -81,7 +86,7 @@ export const useChat = (conversationId: string, encrypted: boolean = false) => {
         setMessages(prev => [...prev, responseMessage]);
       }, 1500);
     }, 500);
-  };
+  }, [conversationId]);
 
   return {
     messages,

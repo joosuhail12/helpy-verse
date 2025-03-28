@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
+import { encryptionService } from '@/utils/crypto/encryptionService';
 import { ChatMessage } from '@/components/chat-widget/components/conversation/types';
-import { v4 as uuidv4 } from 'uuid';
 
 interface UseEncryptedMessagesOptions {
   conversationId: string;
@@ -9,70 +9,143 @@ interface UseEncryptedMessagesOptions {
   rotationPeriod?: number;
 }
 
-export const useEncryptedMessages = (options: UseEncryptedMessagesOptions) => {
-  const { conversationId, enabled, rotationPeriod = 86400000 } = options; // Default 24 hours
-  const [isInitialized, setIsInitialized] = useState(false);
-  const [currentKeyVersion, setCurrentKeyVersion] = useState(1);
+export const useEncryptedMessages = ({
+  conversationId,
+  enabled,
+  rotationPeriod = 24 * 60 * 60 * 1000 // 24 hours
+}: UseEncryptedMessagesOptions) => {
+  const [isEncrypted, setIsEncrypted] = useState<boolean>(enabled);
+  const [currentKeyVersion, setCurrentKeyVersion] = useState<string | null>(null);
   
-  // Initialize encryption for the conversation
-  useEffect(() => {
+  // Initialize encryption for this conversation
+  const initializeEncryption = useCallback(async (): Promise<void> => {
     if (!enabled) return;
     
-    const initEncryption = async () => {
-      // Simulate encryption setup with a delay
-      await new Promise(resolve => setTimeout(resolve, 100));
-      setIsInitialized(true);
-    };
-    
-    initEncryption();
-  }, [enabled, conversationId]);
+    try {
+      // Check if we already have a key for this conversation
+      const hasKey = await encryptionService.hasConversationKey(conversationId);
+      
+      if (!hasKey) {
+        // If not, set up new keys
+        const keyVersion = await encryptionService.setupConversationEncryption(conversationId);
+        setCurrentKeyVersion(keyVersion);
+      } else {
+        // If yes, get the current key version
+        const keyVersion = await encryptionService.getCurrentKeyVersion(conversationId);
+        setCurrentKeyVersion(keyVersion);
+      }
+      
+      setIsEncrypted(true);
+    } catch (error) {
+      console.error('Failed to initialize encryption:', error);
+      setIsEncrypted(false);
+    }
+  }, [conversationId, enabled]);
   
-  // Mock encrypt a message
-  const encryptMessage = useCallback(async (content: string): Promise<ChatMessage> => {
-    // In a real implementation, this would encrypt the content
-    const encryptedContent = `ENCRYPTED:${content}`;
+  // Rotate encryption keys periodically
+  useEffect(() => {
+    if (!enabled || !isEncrypted) return;
     
-    return {
-      id: uuidv4(),
-      content: content,
-      encryptedContent,
-      sender: 'user',
-      timestamp: new Date().toISOString(),
-      conversationId,
-      encrypted: true,
-      metadata: {
-        keyVersion: currentKeyVersion
+    const checkKeyRotation = async () => {
+      try {
+        const shouldRotate = await encryptionService.shouldRotateKey(conversationId, rotationPeriod);
+        
+        if (shouldRotate) {
+          const newKeyVersion = await encryptionService.rotateEncryptionKey(conversationId);
+          setCurrentKeyVersion(newKeyVersion);
+        }
+      } catch (error) {
+        console.error('Error checking key rotation:', error);
       }
     };
-  }, [conversationId, currentKeyVersion]);
+    
+    checkKeyRotation();
+    
+    const intervalId = setInterval(checkKeyRotation, rotationPeriod / 10);
+    
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [conversationId, enabled, isEncrypted, rotationPeriod]);
   
-  // Mock decrypt messages
+  // Encrypt a message
+  const encryptMessage = useCallback(async (content: string): Promise<{
+    ciphertext: string;
+    iv: string;
+    keyVersion: string;
+  }> => {
+    if (!isEncrypted) {
+      throw new Error('Encryption is not enabled');
+    }
+    
+    try {
+      const key = await encryptionService.getConversationKey(conversationId);
+      if (!key) {
+        throw new Error('No encryption key available');
+      }
+      
+      return await encryptionService.encryptMessage(content, key);
+    } catch (error) {
+      console.error('Failed to encrypt message:', error);
+      throw error;
+    }
+  }, [conversationId, isEncrypted]);
+  
+  // Decrypt messages
   const decryptMessages = useCallback(async (messages: ChatMessage[]): Promise<ChatMessage[]> => {
-    return messages.map(message => {
-      if (message.encrypted && message.encryptedContent) {
-        // In a real implementation, this would decrypt the content
-        const decryptedContent = message.encryptedContent.replace('ENCRYPTED:', '');
-        return {
-          ...message,
-          content: decryptedContent
-        };
+    if (!isEncrypted) return messages;
+    
+    try {
+      const key = await encryptionService.getConversationKey(conversationId);
+      if (!key) {
+        throw new Error('No encryption key available');
       }
-      return message;
-    });
-  }, []);
+      
+      return Promise.all(
+        messages.map(async (message) => {
+          if (message.encrypted && message.encryptedContent) {
+            try {
+              const parsed = JSON.parse(message.encryptedContent);
+              const decrypted = await encryptionService.decryptMessage(parsed, key);
+              return { ...message, content: decrypted };
+            } catch (error) {
+              console.error('Failed to decrypt message:', error);
+              return { ...message, content: '[Encrypted message - unable to decrypt]' };
+            }
+          }
+          return message;
+        })
+      );
+    } catch (error) {
+      console.error('Failed to decrypt messages:', error);
+      return messages.map(msg => 
+        msg.encrypted ? { ...msg, content: '[Encrypted message - decryption failed]' } : msg
+      );
+    }
+  }, [conversationId, isEncrypted]);
   
-  // Rotate encryption keys
-  const rotateKey = useCallback(async (): Promise<void> => {
-    // Simulate key rotation
-    setCurrentKeyVersion(prev => prev + 1);
-    return Promise.resolve();
-  }, []);
+  // Rotate encryption key
+  const rotateKey = useCallback(async (): Promise<string | null> => {
+    if (!isEncrypted) return null;
+    
+    try {
+      const newKeyVersion = await encryptionService.rotateEncryptionKey(conversationId);
+      setCurrentKeyVersion(newKeyVersion);
+      return newKeyVersion;
+    } catch (error) {
+      console.error('Failed to rotate encryption key:', error);
+      return null;
+    }
+  }, [conversationId, isEncrypted]);
   
   return {
-    isInitialized,
+    isEncrypted,
+    currentKeyVersion,
+    initializeEncryption,
     encryptMessage,
     decryptMessages,
-    rotateKey,
-    currentKeyVersion
+    rotateKey
   };
 };
+
+export default useEncryptedMessages;

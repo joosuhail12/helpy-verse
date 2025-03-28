@@ -11,8 +11,8 @@ export interface MessageListProps {
   conversationId?: string;
   isLoading?: boolean;
   useVirtualization?: boolean;
-  showReactions?: boolean;
   showReadReceipts?: boolean;
+  encrypted?: boolean;
   typingUsers?: TypingUser[];
 }
 
@@ -21,8 +21,8 @@ const MessageList: React.FC<MessageListProps> = ({
   conversationId,
   isLoading = false,
   useVirtualization = false,
-  showReactions = false,
   showReadReceipts = false,
+  encrypted = false,
   typingUsers = []
 }) => {
   const parentRef = useRef<HTMLDivElement>(null);
@@ -89,8 +89,8 @@ const MessageList: React.FC<MessageListProps> = ({
                 }}
               >
                 <MessageItem 
-                  message={message} 
-                  showReactions={showReactions}
+                  message={message}
+                  encrypted={encrypted}
                   showReadReceipt={showReadReceipts}
                 />
               </div>
@@ -115,8 +115,8 @@ const MessageList: React.FC<MessageListProps> = ({
       {messages.map((message, index) => (
         <div id={`message-${index}`} key={message.id || index}>
           <MessageItem 
-            message={message} 
-            showReactions={showReactions}
+            message={message}
+            encrypted={encrypted}
             showReadReceipt={showReadReceipts}
           />
         </div>

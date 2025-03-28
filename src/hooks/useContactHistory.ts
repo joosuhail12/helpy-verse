@@ -3,7 +3,7 @@ import { useCallback } from 'react';
 import { useAbly } from '../context/AblyContext';
 
 export function useContactHistory(contactId: string) {
-  const { ably } = useAbly();
+  const ably = useAbly();
   
   const fetchHistory = useCallback(async () => {
     // This would typically fetch contact history from an API
@@ -33,16 +33,16 @@ export function useContactHistory(contactId: string) {
   const addHistoryItem = useCallback((item: { type: string; description: string }) => {
     // In a real app, this would save to a database
     // For now, we'll just publish a realtime event
-    if (ably && ably.channels) {
-      const channel = ably.channels.get(`contact:${contactId}`);
-      channel.publish({
-        name: 'history-update',
-        data: {
-          id: Date.now().toString(),
-          date: new Date().toISOString(),
-          ...item
-        }
+    const channelName = ably.getChannelName(`contact:${contactId}`);
+    
+    try {
+      ably.publish(channelName, 'history-update', {
+        id: Date.now().toString(),
+        date: new Date().toISOString(),
+        ...item
       });
+    } catch (error) {
+      console.error('Failed to add history item:', error);
     }
   }, [ably, contactId]);
   
@@ -51,3 +51,5 @@ export function useContactHistory(contactId: string) {
     addHistoryItem,
   };
 }
+
+export default useContactHistory;

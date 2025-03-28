@@ -1,4 +1,3 @@
-
 import eventManager from './eventManager';
 import { ChatEventType, ChatEventUnion } from './eventTypes';
 
@@ -11,7 +10,7 @@ class EventTracker {
   
   constructor() {
     // Subscribe to all events
-    eventManager.subscribeToAll(this.trackEvent);
+    eventManager.addEventListener('*', this.trackEvent);
   }
   
   /**
