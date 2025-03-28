@@ -3,6 +3,7 @@ import { createSlice } from '@reduxjs/toolkit';
 import { getCookie } from '@/utils/helpers/helpers';
 import { handleLogout as tokenHandleLogout } from '@/utils/auth/tokenManager';
 import { AuthState } from './types';
+// Import actions before using them in the slice
 import { loginUser, registerUser, requestPasswordReset, confirmPasswordReset } from './authActions';
 import { fetchUserData, fetchUserProfile, fetchWorkspaceData } from './userActions';
 import { getUserPermission } from './permissionActions';
