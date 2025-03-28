@@ -1,4 +1,3 @@
-
 /**
  * Event types for the chat widget
  */
@@ -18,7 +17,11 @@ export enum ChatEventType {
   FILE_UPLOADED = 'file_uploaded',
   THEME_CHANGED = 'theme_changed',
   CONTACT_LOADED = 'contact_loaded',
-  HISTORY_VIEWED = 'history_viewed'
+  HISTORY_VIEWED = 'history_viewed',
+  ENCRYPTION_ENABLED = 'encryption_enabled',
+  KEY_ROTATED = 'key_rotated',
+  MESSAGE_ENCRYPTED = 'message_encrypted',
+  MESSAGE_DECRYPTED = 'message_decrypted'
 }
 
 /**
@@ -109,6 +112,44 @@ export interface HistoryViewedEvent extends ChatEvent {
 }
 
 /**
+ * Event for when a key is rotated
+ */
+export interface KeyRotatedEvent extends ChatEvent {
+  type: ChatEventType.KEY_ROTATED;
+  conversationId: string;
+  keyVersion: number;
+}
+
+/**
+ * Event for when encryption is enabled for a conversation
+ */
+export interface EncryptionEnabledEvent extends ChatEvent {
+  type: ChatEventType.ENCRYPTION_ENABLED;
+  conversationId: string;
+}
+
+/**
+ * Event for when a message is encrypted
+ */
+export interface MessageEncryptedEvent extends ChatEvent {
+  type: ChatEventType.MESSAGE_ENCRYPTED;
+  conversationId: string;
+  messageId: string;
+  keyVersion: number;
+}
+
+/**
+ * Event for when a message is decrypted
+ */
+export interface MessageDecryptedEvent extends ChatEvent {
+  type: ChatEventType.MESSAGE_DECRYPTED;
+  conversationId: string;
+  messageId: string;
+  keyVersion: number;
+  success: boolean;
+}
+
+/**
  * Union type of all possible chat events
  */
 export type ChatEventUnion = 
@@ -120,4 +161,8 @@ export type ChatEventUnion =
   | UserIdentifiedEvent
   | ContactLoadedEvent
   | HistoryViewedEvent
+  | KeyRotatedEvent
+  | EncryptionEnabledEvent
+  | MessageEncryptedEvent
+  | MessageDecryptedEvent
   | ChatEvent; // Base type for other events

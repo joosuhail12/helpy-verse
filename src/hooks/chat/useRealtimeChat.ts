@@ -1,9 +1,11 @@
+
 import { useEffect, useState, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useAbly } from '@/context/AblyContext';
 import { ChatMessage } from '@/components/chat-widget/components/conversation/types';
 import { useOfflineMessaging } from './useOfflineMessaging';
 import { useServiceWorkerSync } from './useServiceWorkerSync';
+import { useEncryptedMessages } from './useEncryptedMessages';
 import { emitEvent } from '@/utils/events/eventManager';
 import { ChatEventType } from '@/utils/events/eventTypes';
 
@@ -20,7 +22,17 @@ interface ChannelAndClient {
   clientId: string;
 }
 
-export const useRealtimeChat = (conversationId: string, workspaceId: string) => {
+interface UseRealtimeChatOptions {
+  enableEncryption?: boolean;
+  keyRotationPeriod?: number;
+}
+
+export const useRealtimeChat = (
+  conversationId: string, 
+  workspaceId: string,
+  options: UseRealtimeChatOptions = {}
+) => {
+  const { enableEncryption = false, keyRotationPeriod } = options;
   const { client, clientId, getChannelName } = useAbly();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [channel, setChannel] = useState<ChannelAndClient | null>(null);
@@ -43,6 +55,18 @@ export const useRealtimeChat = (conversationId: string, workspaceId: string) => 
     onSyncStarted: () => console.log(`Starting sync for conversation ${conversationId}`),
     onSyncCompleted: () => console.log(`Sync completed for conversation ${conversationId}`),
     onSyncFailed: (error) => console.error(`Sync failed for conversation ${conversationId}:`, error)
+  });
+
+  const {
+    isInitialized: isEncryptionInitialized,
+    encryptMessage,
+    decryptMessages,
+    rotateKey,
+    currentKeyVersion
+  } = useEncryptedMessages({
+    conversationId,
+    enabled: enableEncryption,
+    rotationPeriod: keyRotationPeriod
   });
 
   useEffect(() => {
@@ -119,21 +143,35 @@ export const useRealtimeChat = (conversationId: string, workspaceId: string) => 
       
       if (result && result.items) {
         const historyMessages = result.items.map((item: any) => item.data);
-        setMessages((prevMessages) => {
-          const newMessages = [...prevMessages];
+        
+        // Decrypt messages if encryption is enabled
+        (async () => {
+          let messagesToAdd = historyMessages;
           
-          for (const historyMsg of historyMessages) {
-            if (!newMessages.some(msg => msg.id === historyMsg.id)) {
-              newMessages.push(historyMsg);
+          if (enableEncryption && isEncryptionInitialized) {
+            try {
+              messagesToAdd = await decryptMessages(historyMessages);
+            } catch (decryptError) {
+              console.error('Error decrypting messages:', decryptError);
             }
           }
           
-          return newMessages.sort((a, b) => {
-            const timeA = new Date(a.timestamp).getTime();
-            const timeB = new Date(b.timestamp).getTime();
-            return timeA - timeB;
+          setMessages((prevMessages) => {
+            const newMessages = [...prevMessages];
+            
+            for (const historyMsg of messagesToAdd) {
+              if (!newMessages.some(msg => msg.id === historyMsg.id)) {
+                newMessages.push(historyMsg);
+              }
+            }
+            
+            return newMessages.sort((a, b) => {
+              const timeA = new Date(a.timestamp).getTime();
+              const timeB = new Date(b.timestamp).getTime();
+              return timeA - timeB;
+            });
           });
-        });
+        })();
       }
     });
     
@@ -145,7 +183,11 @@ export const useRealtimeChat = (conversationId: string, workspaceId: string) => 
     getQueuedMessages, 
     clearQueuedMessages, 
     offlineMode, 
-    hasQueuedMessages
+    hasQueuedMessages,
+    enableEncryption,
+    isEncryptionInitialized,
+    decryptMessages,
+    conversationId
   ]);
 
   useEffect(() => {
@@ -161,31 +203,54 @@ export const useRealtimeChat = (conversationId: string, workspaceId: string) => 
     };
   }, [triggerManualSync]);
 
+  // Rotate encryption key when requested
+  const handleKeyRotation = useCallback(async () => {
+    if (!enableEncryption || !isEncryptionInitialized) {
+      return false;
+    }
+    
+    try {
+      await rotateKey();
+      console.log(`Rotated encryption key for conversation ${conversationId} to version ${currentKeyVersion}`);
+      return true;
+    } catch (error) {
+      console.error('Failed to rotate encryption key:', error);
+      return false;
+    }
+  }, [enableEncryption, isEncryptionInitialized, rotateKey, conversationId, currentKeyVersion]);
+
   const sendMessage = useCallback(async (content: string, metadata: Record<string, any> = {}) => {
     if (!content.trim()) return false;
     
-    const messageId = uuidv4();
-    const message: ChatMessage = {
-      id: messageId,
-      content,
-      sender: 'user',
-      timestamp: new Date().toISOString(),
-      conversationId,
-      metadata: {
-        ...metadata,
-        clientId,
-        conversationId,
-        workspaceId,
-      },
-    };
+    let message: ChatMessage;
     
     try {
+      // Encrypt the message if encryption is enabled
+      if (enableEncryption && isEncryptionInitialized) {
+        message = await encryptMessage(content);
+      } else {
+        // Use regular message format if encryption is not enabled
+        message = {
+          id: uuidv4(),
+          content,
+          sender: 'user',
+          timestamp: new Date().toISOString(),
+          conversationId,
+          metadata: {
+            ...metadata,
+            clientId,
+            conversationId,
+            workspaceId,
+          },
+        };
+      }
+      
       emitEvent({
         type: ChatEventType.MESSAGE_SENT,
         timestamp: new Date().toISOString(),
         source: 'realtime-chat',
-        messageId,
-        content,
+        messageId: message.id,
+        content: message.content,
         conversationId,
         attachments: metadata.attachments?.length || 0,
         pageUrl: window.location.href
@@ -222,14 +287,29 @@ export const useRealtimeChat = (conversationId: string, workspaceId: string) => 
         source: 'realtime-chat',
         metadata: {
           error: err instanceof Error ? err.message : 'Unknown error sending message',
-          messageId
+          messageId: uuidv4()
         },
         pageUrl: window.location.href
       });
       
-      await queueMessage(message);
+      // Fall back to unencrypted message on error
+      const fallbackMessage = {
+        id: uuidv4(),
+        content,
+        sender: 'user',
+        timestamp: new Date().toISOString(),
+        conversationId,
+        metadata: {
+          ...metadata,
+          clientId,
+          conversationId,
+          workspaceId,
+          encryptionFailed: true
+        },
+      };
       
-      setMessages(prev => [...prev, message]);
+      await queueMessage(fallbackMessage);
+      setMessages(prev => [...prev, fallbackMessage]);
       return false;
     }
   }, [
@@ -238,7 +318,10 @@ export const useRealtimeChat = (conversationId: string, workspaceId: string) => 
     conversationId, 
     workspaceId, 
     queueMessage, 
-    offlineMode
+    offlineMode,
+    enableEncryption,
+    isEncryptionInitialized,
+    encryptMessage
   ]);
 
   return {
@@ -249,6 +332,9 @@ export const useRealtimeChat = (conversationId: string, workspaceId: string) => 
     isOffline: offlineMode,
     isSyncing,
     hasQueuedMessages,
-    triggerSync: triggerManualSync
+    triggerSync: triggerManualSync,
+    isEncryptionEnabled: enableEncryption && isEncryptionInitialized,
+    currentKeyVersion,
+    rotateEncryptionKey: handleKeyRotation
   };
 };
