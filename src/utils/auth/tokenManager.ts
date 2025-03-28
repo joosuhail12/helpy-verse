@@ -1,5 +1,5 @@
 
-import { getCookie, removeCookie } from '../helpers/helpers';
+import { getCookie, setCookie, deleteCookie } from '../cookies/cookieManager';
 
 // Check if user is authenticated
 export const isAuthenticated = (): boolean => {
@@ -11,17 +11,30 @@ export const getToken = (): string | null => {
   return getCookie("customerToken");
 };
 
+// Set token with optional expiration
+export const handleSetToken = (token: string, expiryDays: number = 30): void => {
+  setCookie("customerToken", token, expiryDays);
+  
+  // Also store in localStorage for additional redundancy
+  try {
+    localStorage.setItem("customerToken", token);
+  } catch (error) {
+    console.error("Error storing token in localStorage:", error);
+  }
+};
+
 // Alias for getToken to maintain compatibility with other code that uses getAuthToken
 export const getAuthToken = getToken;
 
 // Handle logout
 export const handleLogout = (): void => {
   // Remove auth token
-  removeCookie("customerToken");
+  deleteCookie("customerToken");
   
   // Clear any other auth-related items from localStorage
   localStorage.removeItem("userProfile");
   localStorage.removeItem("permissions");
+  localStorage.removeItem("customerToken");
   
   // Dispatch a logout event that can be caught by other components
   const logoutEvent = new CustomEvent('user:logout');
@@ -60,5 +73,40 @@ export const isTokenExpired = (token: string): boolean => {
   } catch (error) {
     console.error('Error checking token expiration:', error);
     return true; // Assume expired if there's an error
+  }
+};
+
+// Get user ID from token
+export const getUserIdFromToken = (token: string): string | null => {
+  try {
+    const payload = parseToken(token);
+    return payload?.sub || payload?.userId || null;
+  } catch (error) {
+    console.error('Error extracting user ID from token:', error);
+    return null;
+  }
+};
+
+// Get user role from token
+export const getUserRoleFromToken = (token: string): string | null => {
+  try {
+    const payload = parseToken(token);
+    return payload?.role || null;
+  } catch (error) {
+    console.error('Error extracting user role from token:', error);
+    return null;
+  }
+};
+
+// Get token expiration time
+export const getTokenExpirationTime = (token: string): number | null => {
+  try {
+    const payload = parseToken(token);
+    if (!payload || !payload.exp) return null;
+    
+    return payload.exp * 1000; // Convert to milliseconds
+  } catch (error) {
+    console.error('Error getting token expiration time:', error);
+    return null;
   }
 };

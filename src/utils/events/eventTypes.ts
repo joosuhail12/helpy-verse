@@ -27,6 +27,7 @@ export enum ChatEventType {
   
   // Contact events
   CONTACT_IDENTIFIED = 'contact:identified',
+  USER_IDENTIFIED = 'user:identified',
   
   // Agent events
   AGENT_JOINED = 'agent:joined',
@@ -34,7 +35,10 @@ export enum ChatEventType {
   
   // Session events
   SESSION_STARTED = 'session:started',
-  SESSION_ENDED = 'session:ended'
+  SESSION_ENDED = 'session:ended',
+  
+  // Security events
+  CSRF_VALIDATION_FAILED = 'security:csrf_validation_failed'
 }
 
 export type ChatEventUnion = {

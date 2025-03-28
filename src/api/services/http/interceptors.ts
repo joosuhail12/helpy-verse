@@ -4,8 +4,8 @@ import { get } from 'lodash';
 import { handleLogout } from './cookieManager';
 import { getAuthToken } from '@/utils/auth/tokenManager';
 import { store } from '@/store/store';
-import { sessionManager } from '@/utils/auth/sessionManager';
-import { emitEvent } from '@/utils/events/eventManager';
+import sessionManager from '@/utils/auth/sessionManager';
+import eventManager, { emitEvent } from '@/utils/events/eventManager';
 import { ChatEventType } from '@/utils/events/eventTypes';
 
 // Request Interceptor - Adds Token, Workspace ID, and CSRF token to all requests

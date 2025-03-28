@@ -1,5 +1,5 @@
 
-import { eventManager } from './eventManager';
+import eventManager from './eventManager';
 import { ChatEventType, ChatEventUnion } from './eventTypes';
 
 /**
@@ -96,8 +96,46 @@ class EventTracker {
       console.error('Failed to import events:', error);
     }
   }
+  
+  /**
+   * Get session metrics for analysis
+   */
+  getSessionMetrics(): Record<string, any> {
+    const now = new Date();
+    const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    
+    // Count total events
+    const totalEvents = this.events.length;
+    
+    // Count events in last 24 hours
+    const recentEvents = this.getEventsByTimeRange(oneDayAgo, now);
+    
+    // Count sessions
+    const sessionStartEvents = this.getEventsByType(ChatEventType.SESSION_STARTED);
+    const sessionEndEvents = this.getEventsByType(ChatEventType.SESSION_ENDED);
+    
+    // Calculate total time spent (sum of all session durations)
+    let totalTimeSpent = 0;
+    sessionEndEvents.forEach(event => {
+      if (typeof event.duration === 'number') {
+        totalTimeSpent += event.duration;
+      }
+    });
+    
+    // Count events by type
+    const eventCounts = this.getEventCountByType();
+    
+    return {
+      totalEvents,
+      recentEvents: recentEvents.length,
+      sessionsStarted: sessionStartEvents.length,
+      sessionsEnded: sessionEndEvents.length,
+      totalTimeSpent,
+      eventCounts
+    };
+  }
 }
 
 // Export a singleton instance
-const eventTracker = new EventTracker();
+export const eventTracker = new EventTracker();
 export default eventTracker;

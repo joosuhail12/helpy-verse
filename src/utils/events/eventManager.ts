@@ -106,4 +106,9 @@ class EventManager {
 // Export a singleton instance
 export const eventManager = new EventManager();
 
+// Export a convenience function for emitting events
+export const emitEvent = (event: ChatEventUnion): void => {
+  eventManager.publish(event);
+};
+
 export default eventManager;

@@ -1,149 +1,115 @@
 
-import { ChatEventType } from '@/utils/events/eventTypes';
-import eventManager from '@/utils/events/eventManager';
+interface RateLimiterOptions {
+  maxAttempts: number;      // Maximum number of attempts in the time window
+  timeWindow: number;       // Time window in milliseconds
+  resetAfter?: number;      // Optional: Full reset after this many milliseconds
+}
 
-/**
- * Rate limiter for controlling message sending frequency
- */
-export class RateLimiter {
-  private lastActionTime: number = 0;
-  private isRateLimited: boolean = false;
-  private rateLimitExpiry: number = 0;
-  private readonly minInterval: number; // Minimum time between actions in ms
-  private readonly rateLimitDuration: number; // Duration of rate limiting in ms
-  private readonly maxActionsPerMinute: number;
-  private actions: number[] = []; // Timestamps of recent actions
-  
-  constructor({
-    minInterval = 500, // 500ms between messages
-    rateLimitDuration = 30000, // 30 seconds
-    maxActionsPerMinute = 20 // 20 messages per minute
-  } = {}) {
-    this.minInterval = minInterval;
-    this.rateLimitDuration = rateLimitDuration;
-    this.maxActionsPerMinute = maxActionsPerMinute;
-  }
-  
+export function useRateLimiter(options: RateLimiterOptions) {
+  const attempts: number[] = [];
+  let isLimitedFlag = false;
+  let resetTimeout: number | null = null;
+
+  const { maxAttempts, timeWindow, resetAfter } = options;
+
   /**
-   * Check if an action is allowed at the current time
+   * Register an action and check if rate limit is exceeded
    */
-  checkAction(): boolean {
+  const checkAction = (): boolean => {
     const now = Date.now();
     
-    // If already rate limited, check if it's expired
-    if (this.isRateLimited) {
-      if (now >= this.rateLimitExpiry) {
-        this.clearRateLimit();
-        return true;
-      }
-      return false;
-    }
+    // Remove attempts outside the time window
+    const validAttempts = attempts.filter(timestamp => now - timestamp < timeWindow);
+    attempts.length = 0;
+    attempts.push(...validAttempts);
     
-    // Check minimum interval between actions
-    if (now - this.lastActionTime < this.minInterval) {
-      this.applyRateLimit();
-      return false;
-    }
+    // Add current attempt
+    attempts.push(now);
     
-    // Check actions per minute limit
-    const oneMinuteAgo = now - 60000;
-    this.actions = this.actions.filter(time => time > oneMinuteAgo);
-    
-    if (this.actions.length >= this.maxActionsPerMinute) {
-      this.applyRateLimit();
-      return false;
-    }
-    
-    // Action is allowed, record it
-    this.lastActionTime = now;
-    this.actions.push(now);
-    return true;
-  }
-  
-  /**
-   * Apply rate limiting
-   */
-  private applyRateLimit(): void {
-    const now = Date.now();
-    this.isRateLimited = true;
-    this.rateLimitExpiry = now + this.rateLimitDuration;
-    
-    // Dispatch rate limit event
-    eventManager.publish({
-      type: ChatEventType.RATE_LIMIT_TRIGGERED,
-      timestamp: new Date().toISOString(),
-      source: 'rateLimiter',
-      duration: this.rateLimitDuration,
-      expiry: this.rateLimitExpiry
-    });
-    
-    // Set timeout to clear rate limit
-    setTimeout(() => {
-      this.clearRateLimit();
-    }, this.rateLimitDuration);
-  }
-  
-  /**
-   * Clear rate limiting
-   */
-  private clearRateLimit(): void {
-    if (this.isRateLimited) {
-      this.isRateLimited = false;
-      this.rateLimitExpiry = 0;
+    // Check if limit exceeded
+    if (attempts.length > maxAttempts) {
+      isLimitedFlag = true;
       
-      // Dispatch rate limit cleared event
-      eventManager.publish({
-        type: ChatEventType.RATE_LIMIT_CLEARED,
-        timestamp: new Date().toISOString(),
-        source: 'rateLimiter'
-      });
+      // Set timeout to reset the limited flag after resetAfter ms (if provided)
+      if (resetAfter && !resetTimeout) {
+        resetTimeout = window.setTimeout(() => {
+          reset();
+        }, resetAfter);
+      }
+      
+      return false;
     }
-  }
-  
+    
+    return true;
+  };
+
   /**
    * Check if currently rate limited
    */
-  isLimited(): boolean {
-    // If rate limit has expired, clear it
-    if (this.isRateLimited && Date.now() >= this.rateLimitExpiry) {
-      this.clearRateLimit();
+  const isLimited = (): boolean => {
+    const now = Date.now();
+    
+    // If we're not in limited state, return false immediately
+    if (!isLimitedFlag) return false;
+    
+    // If in limited state, check if we should exit it
+    // This happens when the oldest attempt is now outside the time window
+    // AND we have fewer than maxAttempts in the time window
+    
+    // Remove attempts outside the time window
+    const validAttempts = attempts.filter(timestamp => now - timestamp < timeWindow);
+    
+    if (validAttempts.length < maxAttempts) {
+      isLimitedFlag = false;
+      
+      // Clear any reset timeout
+      if (resetTimeout) {
+        clearTimeout(resetTimeout);
+        resetTimeout = null;
+      }
+      
+      // Update our attempts array
+      attempts.length = 0;
+      attempts.push(...validAttempts);
+      
+      return false;
     }
     
-    return this.isRateLimited;
-  }
-  
-  /**
-   * Get time remaining for rate limit in milliseconds
-   */
-  getRateLimitTimeRemaining(): number {
-    if (!this.isRateLimited) return 0;
-    
-    const remaining = this.rateLimitExpiry - Date.now();
-    return Math.max(0, remaining);
-  }
-  
-  /**
-   * Reset rate limiter state
-   */
-  reset(): void {
-    this.lastActionTime = 0;
-    this.actions = [];
-    this.clearRateLimit();
-  }
-}
-
-/**
- * Hook for using rate limiter
- */
-export const useRateLimiter = (options = {}) => {
-  const rateLimiter = new RateLimiter(options);
-  
-  return {
-    checkAction: () => rateLimiter.checkAction(),
-    isLimited: () => rateLimiter.isLimited(),
-    getRateLimitTimeRemaining: () => rateLimiter.getRateLimitTimeRemaining(),
-    reset: () => rateLimiter.reset()
+    return true;
   };
-};
+
+  /**
+   * Get remaining time until rate limit clears
+   */
+  const getRateLimitTimeRemaining = (): number => {
+    if (!isLimitedFlag || attempts.length === 0) return 0;
+    
+    const now = Date.now();
+    const oldestAttempt = attempts[0];
+    
+    // Calculate when the oldest attempt will exit the time window
+    return Math.max(0, timeWindow - (now - oldestAttempt));
+  };
+
+  /**
+   * Reset the rate limiter
+   */
+  const reset = (): void => {
+    attempts.length = 0;
+    isLimitedFlag = false;
+    
+    if (resetTimeout) {
+      clearTimeout(resetTimeout);
+      resetTimeout = null;
+    }
+  };
+
+  return {
+    checkAction,
+    isLimited,
+    getRateLimitTimeRemaining,
+    reset
+  };
+}
 
 export default useRateLimiter;

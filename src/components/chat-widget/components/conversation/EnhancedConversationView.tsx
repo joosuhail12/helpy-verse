@@ -1,14 +1,13 @@
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useChat } from '@/hooks/chat/useChat';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import MessageSearch from './MessageSearch';
-import { useChat } from '@/hooks/chat/useChat';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2 } from 'lucide-react';
+import { ChatMessage } from './types';
 import { useRateLimiter } from '@/utils/chat/rateLimiter';
 
-export interface EnhancedConversationViewProps {
+interface EnhancedConversationViewProps {
   conversationId: string;
   showSearch?: boolean;
   showAttachments?: boolean;
@@ -18,131 +17,128 @@ export interface EnhancedConversationViewProps {
   virtualized?: boolean;
 }
 
-export function EnhancedConversationView({
+const EnhancedConversationView: React.FC<EnhancedConversationViewProps> = ({
   conversationId,
   showSearch = false,
   showAttachments = true,
   showReactions = false,
-  showReadReceipts = true,
+  showReadReceipts = false,
   encrypted = false,
-  virtualized = false
-}: EnhancedConversationViewProps) {
-  const {
-    messages,
-    isLoading,
-    typingUsers,
-    sendMessage,
-    notifyTyping
-  } = useChat(conversationId);
-  
-  const [searchTerm, setSearchTerm] = useState('');
+  virtualized = true,
+}) => {
+  const { messages, sendMessage, isLoading } = useChat(conversationId, encrypted);
+  const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<number[]>([]);
-  const [currentResultIndex, setCurrentResultIndex] = useState(-1);
-  const conversationRef = useRef<HTMLDivElement>(null);
+  const [currentResult, setCurrentResult] = useState(0);
+  const [typingUsers, setTypingUsers] = useState<string[]>([]);
+  const messageListRef = useRef<HTMLDivElement>(null);
   
-  const { isRateLimited, getRemainingTime, checkRateLimit } = useRateLimiter({
-    maxMessages: 5,
-    timeWindowMs: 10000, // 10 seconds
+  // Rate limiter for message sending
+  const rateLimiter = useRateLimiter({
+    maxAttempts: 5,
+    timeWindow: 10000, // 10 seconds
+    resetAfter: 30000, // 30 seconds
   });
 
-  // Search functionality
+  // Filter messages based on search query
   useEffect(() => {
-    if (!searchTerm) {
+    if (!searchQuery.trim()) {
       setSearchResults([]);
-      setCurrentResultIndex(-1);
+      setCurrentResult(0);
       return;
     }
-    
-    const results = messages
-      .map((msg, index) => {
-        if (msg.content.toLowerCase().includes(searchTerm.toLowerCase())) {
-          return index;
-        }
-        return -1;
-      })
-      .filter(index => index !== -1);
-    
-    setSearchResults(results);
-    setCurrentResultIndex(results.length > 0 ? 0 : -1);
-  }, [searchTerm, messages]);
 
-  // Handle sending a message
-  const handleSendMessage = (content: string, attachments: File[] = []) => {
+    const query = searchQuery.toLowerCase();
+    const results = messages
+      .map((msg, index) => (msg.content.toLowerCase().includes(query) ? index : -1))
+      .filter(index => index !== -1);
+
+    setSearchResults(results);
+    setCurrentResult(0);
+
+    // Scroll to first result if there are any
+    if (results.length > 0) {
+      scrollToMessage(results[0]);
+    }
+  }, [searchQuery, messages]);
+
+  // Handle message sending
+  const handleSendMessage = async (content: string, attachments?: File[]) => {
     // Check rate limiting
-    const rateCheck = checkRateLimit();
-    
-    if (rateCheck === false) {
-      // User is rate limited, don't send message
+    if (rateLimiter.isLimited()) {
+      // Show rate limit message - we could display this in UI
+      console.warn(`Rate limit reached. Please wait ${Math.ceil(rateLimiter.getRateLimitTimeRemaining() / 1000)} seconds.`);
       return;
     }
-    
-    sendMessage(content, attachments);
+
+    // Register this action with the rate limiter
+    rateLimiter.checkAction();
+
+    // Send the message
+    await sendMessage(content, encrypted);
   };
 
-  // Navigate search results
+  // Navigate between search results
   const navigateSearch = (direction: 'next' | 'prev') => {
     if (searchResults.length === 0) return;
-    
+
+    let newIndex;
     if (direction === 'next') {
-      setCurrentResultIndex(prev => 
-        prev < searchResults.length - 1 ? prev + 1 : 0
-      );
+      newIndex = (currentResult + 1) % searchResults.length;
     } else {
-      setCurrentResultIndex(prev => 
-        prev > 0 ? prev - 1 : searchResults.length - 1
-      );
+      newIndex = (currentResult - 1 + searchResults.length) % searchResults.length;
+    }
+
+    setCurrentResult(newIndex);
+    scrollToMessage(searchResults[newIndex]);
+  };
+
+  // Scroll to a specific message
+  const scrollToMessage = (index: number) => {
+    const messageElement = document.getElementById(`message-${index}`);
+    if (messageElement && messageListRef.current) {
+      messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      
+      // Highlight the message temporarily
+      messageElement.classList.add('bg-yellow-100');
+      setTimeout(() => {
+        messageElement.classList.remove('bg-yellow-100');
+      }, 1000);
     }
   };
 
-  // Scroll to search result
-  useEffect(() => {
-    if (currentResultIndex >= 0 && searchResults[currentResultIndex] !== undefined) {
-      const messageElements = conversationRef.current?.querySelectorAll('.message-item');
-      if (messageElements && messageElements[searchResults[currentResultIndex]]) {
-        messageElements[searchResults[currentResultIndex]].scrollIntoView({
-          behavior: 'smooth',
-          block: 'center'
-        });
-      }
-    }
-  }, [currentResultIndex, searchResults]);
-
-  if (isLoading) {
-    return (
-      <div className="flex-1 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
   return (
-    <div className="flex flex-col h-full" ref={conversationRef}>
+    <div className="flex flex-col h-full">
       {showSearch && (
         <MessageSearch
-          value={searchTerm}
-          onChange={setSearchTerm}
+          value={searchQuery}
+          onChange={setSearchQuery}
           resultCount={searchResults.length}
-          currentResult={currentResultIndex + 1}
+          currentResult={currentResult}
           onNavigate={navigateSearch}
         />
       )}
       
-      <MessageList
-        messages={messages}
-        typingUsers={typingUsers}
-        useVirtualization={virtualized}
-        showReactions={showReactions}
-        showReadReceipts={showReadReceipts}
-      />
+      <div className="flex-1 overflow-hidden" ref={messageListRef}>
+        <MessageList
+          messages={messages}
+          typingUsers={typingUsers}
+          useVirtualization={virtualized}
+          showReactions={showReactions}
+          showReadReceipts={showReadReceipts}
+        />
+      </div>
       
       <MessageInput
         onSendMessage={handleSendMessage}
-        onTyping={notifyTyping}
+        disabled={isLoading}
         encrypted={encrypted}
         showAttachments={showAttachments}
-        isRateLimited={!!isRateLimited && isRateLimited()}
-        rateLimitTimeRemaining={getRemainingTime ? getRemainingTime() : 0}
+        isRateLimited={rateLimiter.isLimited()}
+        rateLimitTimeRemaining={rateLimiter.getRateLimitTimeRemaining()}
       />
     </div>
   );
-}
+};
+
+export default EnhancedConversationView;
