@@ -28,6 +28,7 @@ const EditTeam = lazy(() => import('../pages/settings/EditTeam'));
 const CannedResponses = lazy(() => import('../pages/settings/CannedResponses'));
 const CreateCannedResponse = lazy(() => import('../pages/settings/CreateCannedResponse'));
 const CannedResponseDetail = lazy(() => import('../pages/settings/CannedResponseDetail'));
+const ChatSettings = lazy(() => import('../pages/settings/ChatSettings'));
 
 // Helper to wrap components with Suspense, ProtectedRoute and RouteErrorBoundary
 const withSuspenseAndProtection = (component: ReactNode) => (
@@ -104,6 +105,10 @@ export const settingsRoutes = [
       {
         path: 'canned-responses/:id',
         element: <Suspense fallback={<LoadingSpinner />}><CannedResponseDetail /></Suspense>,
+      },
+      {
+        path: 'chat',
+        element: <Suspense fallback={<LoadingSpinner />}><ChatSettings /></Suspense>,
       }
     ],
   },
