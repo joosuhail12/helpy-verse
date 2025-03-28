@@ -1,4 +1,3 @@
-
 import { useEffect, useState, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useAbly } from '@/context/AblyContext';
@@ -8,6 +7,7 @@ import { useServiceWorkerSync } from './useServiceWorkerSync';
 import { useEncryptedMessages } from './useEncryptedMessages';
 import { emitEvent } from '@/utils/events/eventManager';
 import { ChatEventType } from '@/utils/events/eventTypes';
+import { validateAndSanitizeMessage } from '@/utils/validation/messageValidation';
 
 interface SyncManager {
   register(tag: string): Promise<void>;
@@ -144,7 +144,6 @@ export const useRealtimeChat = (
       if (result && result.items) {
         const historyMessages = result.items.map((item: any) => item.data);
         
-        // Decrypt messages if encryption is enabled
         (async () => {
           let messagesToAdd = historyMessages;
           
@@ -203,7 +202,6 @@ export const useRealtimeChat = (
     };
   }, [triggerManualSync]);
 
-  // Rotate encryption key when requested
   const handleKeyRotation = useCallback(async () => {
     if (!enableEncryption || !isEncryptionInitialized) {
       return false;
@@ -222,17 +220,39 @@ export const useRealtimeChat = (
   const sendMessage = useCallback(async (content: string, metadata: Record<string, any> = {}) => {
     if (!content.trim()) return false;
     
+    const { isValid, sanitizedContent, errors } = validateAndSanitizeMessage(content, {
+      maxLength: 4000,
+      allowHtml: false,
+      allowUrls: true
+    });
+    
+    if (!isValid) {
+      console.error('Message validation failed:', errors);
+      setError(new Error(errors[0].message));
+      
+      emitEvent({
+        type: ChatEventType.ERROR_OCCURRED,
+        timestamp: new Date().toISOString(),
+        source: 'realtime-chat',
+        metadata: {
+          error: errors[0].message,
+          messageId: uuidv4()
+        },
+        pageUrl: window.location.href
+      });
+      
+      return false;
+    }
+    
     let message: ChatMessage;
     
     try {
-      // Encrypt the message if encryption is enabled
       if (enableEncryption && isEncryptionInitialized) {
-        message = await encryptMessage(content);
+        message = await encryptMessage(sanitizedContent);
       } else {
-        // Use regular message format if encryption is not enabled
         message = {
           id: uuidv4(),
-          content,
+          content: sanitizedContent,
           sender: 'user',
           timestamp: new Date().toISOString(),
           conversationId,
@@ -292,10 +312,9 @@ export const useRealtimeChat = (
         pageUrl: window.location.href
       });
       
-      // Fall back to unencrypted message on error
       const fallbackMessage = {
         id: uuidv4(),
-        content,
+        content: sanitizedContent,
         sender: 'user',
         timestamp: new Date().toISOString(),
         conversationId,

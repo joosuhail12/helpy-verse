@@ -21,7 +21,9 @@ export enum ChatEventType {
   ENCRYPTION_ENABLED = 'encryption_enabled',
   KEY_ROTATED = 'key_rotated',
   MESSAGE_ENCRYPTED = 'message_encrypted',
-  MESSAGE_DECRYPTED = 'message_decrypted'
+  MESSAGE_DECRYPTED = 'message_decrypted',
+  MESSAGE_VALIDATION_FAILED = 'message_validation_failed',
+  SUSPICIOUS_CONTENT_DETECTED = 'suspicious_content_detected'
 }
 
 /**
@@ -150,6 +152,25 @@ export interface MessageDecryptedEvent extends ChatEvent {
 }
 
 /**
+ * Event for when message validation fails
+ */
+export interface MessageValidationFailedEvent extends ChatEvent {
+  type: ChatEventType.MESSAGE_VALIDATION_FAILED;
+  conversationId: string;
+  errorCode: string;
+  errorMessage: string;
+}
+
+/**
+ * Event for when suspicious content is detected
+ */
+export interface SuspiciousContentDetectedEvent extends ChatEvent {
+  type: ChatEventType.SUSPICIOUS_CONTENT_DETECTED;
+  conversationId: string;
+  patternType: string;
+}
+
+/**
  * Union type of all possible chat events
  */
 export type ChatEventUnion = 
@@ -165,4 +186,6 @@ export type ChatEventUnion =
   | EncryptionEnabledEvent
   | MessageEncryptedEvent
   | MessageDecryptedEvent
+  | MessageValidationFailedEvent
+  | SuspiciousContentDetectedEvent
   | ChatEvent; // Base type for other events
