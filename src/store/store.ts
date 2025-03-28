@@ -33,6 +33,7 @@ const rootReducer = {
   user: userReducer,
 };
 
+// Create the store without any circular dependencies
 export const store = configureStore({
   reducer: rootReducer,
   middleware: (getDefaultMiddleware) =>

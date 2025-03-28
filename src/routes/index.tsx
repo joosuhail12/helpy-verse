@@ -4,6 +4,7 @@ import { createBrowserRouter } from 'react-router-dom';
 import RootRedirect from '../components/app/RootRedirect';
 import RouteErrorBoundary from '@/components/app/RouteErrorBoundary';
 import { PrivateRoute } from '@/utils/helpers/Routes';
+// Import the LoadingSpinner directly from its file, not from a re-export
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 
 // Import route modules
