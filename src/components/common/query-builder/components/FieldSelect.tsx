@@ -1,6 +1,13 @@
 
+import React from 'react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import type { QueryField } from '@/types/queryBuilder';
+
+interface QueryField {
+  id: string;
+  label: string;
+  type: string;
+  name: string;
+}
 
 interface FieldSelectProps {
   value: string;
@@ -10,13 +17,13 @@ interface FieldSelectProps {
   errorMessage?: string | null;
 }
 
-export const FieldSelect = ({
+export const FieldSelect: React.FC<FieldSelectProps> = ({
   value,
   onChange,
   fields,
   disabled,
   errorMessage,
-}: FieldSelectProps) => {
+}) => {
   // Group fields by type for better organization
   const groupedFields = fields.reduce((acc, field) => {
     const type = field.type.charAt(0).toUpperCase() + field.type.slice(1);

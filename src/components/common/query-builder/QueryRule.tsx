@@ -1,11 +1,10 @@
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { OperatorSelect } from './components/OperatorSelect';
 import { FieldSelect } from './components/FieldSelect';
 import { ValueInput } from './components/value-inputs/ValueInput';
 import { SourceSelect } from './components/SourceSelect';
 
-// Simplified interfaces to avoid complex type references
 interface QueryField {
   id: string;
   label: string;
@@ -13,10 +12,10 @@ interface QueryField {
   name: string;
   dataSource?: string;
   customObject?: string;
-  options?: string[];
+  options?: Array<string | { label: string; value: string }>;
 }
 
-interface QueryRule {
+interface QueryRuleType {
   id: string;
   field: string;
   operator: string;
@@ -31,13 +30,18 @@ interface ValidationError {
 }
 
 interface QueryRuleProps {
-  rule: QueryRule;
-  onChange: (rule: QueryRule) => void;
+  rule: QueryRuleType;
+  onChange: (rule: QueryRuleType) => void;
   fields: QueryField[];
   errors?: ValidationError[];
 }
 
-export const QueryRule = ({ rule, onChange, fields, errors = [] }: QueryRuleProps) => {
+export const QueryRule: React.FC<QueryRuleProps> = ({ 
+  rule, 
+  onChange, 
+  fields, 
+  errors = [] 
+}) => {
   const [selectedSource, setSelectedSource] = useState<string>('');
   const selectedField = fields.find((f) => f.id === rule.field);
   const ruleErrors = errors.filter(error => error.rule?.id === rule.id);

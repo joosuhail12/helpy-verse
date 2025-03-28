@@ -3,16 +3,18 @@ import React from 'react';
 import { TextInput } from './TextInput';
 import { NumberInput } from './NumberInput';
 import { DateInput } from './DateInput';
+import { BooleanInput } from './BooleanInput';
+import { SelectInput } from './SelectInput';
+import { MultiSelectInput } from './MultiSelectInput';
 
-// Simplified interface to avoid complex type references
-interface FieldProps {
+interface SimpleField {
   id: string;
   type: string;
-  options?: Array<string>;
+  options?: Array<string | { label: string; value: string }>;
 }
 
 interface ValueInputProps {
-  field: FieldProps;
+  field: SimpleField;
   operator: string;
   value: any;
   onChange: (value: any) => void;
@@ -39,7 +41,7 @@ export const ValueInput: React.FC<ValueInputProps> = ({
     case 'text':
       return (
         <TextInput
-          value={String(value || '')}
+          value={value === null || value === undefined ? '' : String(value)}
           onChange={onChange}
           errorMessage={errorMessage}
         />
@@ -48,7 +50,7 @@ export const ValueInput: React.FC<ValueInputProps> = ({
     case 'number':
       return (
         <NumberInput
-          value={value || ''}
+          value={value === null || value === undefined ? '' : value}
           onChange={onChange}
           errorMessage={errorMessage}
         />
@@ -57,17 +59,47 @@ export const ValueInput: React.FC<ValueInputProps> = ({
     case 'date':
       return (
         <DateInput
-          value={String(value || '')}
+          value={value === null || value === undefined ? '' : String(value)}
+          onChange={onChange}
+          errorMessage={errorMessage}
+        />
+      );
+    
+    case 'boolean':
+      return (
+        <BooleanInput
+          value={!!value}
           onChange={onChange}
           errorMessage={errorMessage}
         />
       );
       
+    case 'select':
+      return (
+        <SelectInput
+          value={value === null || value === undefined ? '' : String(value)}
+          onChange={onChange}
+          options={field.options || []}
+          errorMessage={errorMessage}
+        />
+      );
+      
+    case 'multiselect':
+    case 'multi-select':
+      return (
+        <MultiSelectInput
+          value={Array.isArray(value) ? value : []}
+          onChange={onChange}
+          options={field.options || []}
+          errorMessage={errorMessage}
+        />
+      );
+
     default:
       // Fallback to text input for any unhandled types
       return (
         <TextInput
-          value={String(value || '')}
+          value={value === null || value === undefined ? '' : String(value)}
           onChange={onChange}
           errorMessage={errorMessage}
         />

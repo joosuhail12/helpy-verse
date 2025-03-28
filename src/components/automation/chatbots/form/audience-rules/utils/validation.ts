@@ -89,7 +89,6 @@ const validateRule = (
   return errors;
 };
 
-// Add evaluateRules function for SampleMatchesPreview
 export const evaluateRules = (group: QueryGroup, data: any): boolean => {
   if (!group.rules || group.rules.length === 0) {
     return true;

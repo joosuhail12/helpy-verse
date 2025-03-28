@@ -1,5 +1,6 @@
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import React from 'react';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface SourceSelectProps {
   value: string;
@@ -7,30 +8,28 @@ interface SourceSelectProps {
   errorMessage?: string | null;
 }
 
-export const SourceSelect = ({
-  value,
-  onChange,
-  errorMessage,
-}: SourceSelectProps) => {
+export const SourceSelect: React.FC<SourceSelectProps> = ({ value, onChange, errorMessage }) => {
+  // Simple source options
   const sources = [
-    { value: 'contact', label: 'Contact' },
-    { value: 'company', label: 'Company' },
-    { value: 'conversation', label: 'Conversation' },
-    { value: 'ticket', label: 'Ticket' },
-    { value: 'event', label: 'Event' },
+    { label: 'Contact', value: 'contact' },
+    { label: 'Company', value: 'company' },
+    { label: 'Conversation', value: 'conversation' }
   ];
 
   return (
     <Select value={value} onValueChange={onChange}>
-      <SelectTrigger className={`w-[150px] ${errorMessage ? 'border-red-500' : ''}`}>
-        <SelectValue placeholder="Select source" />
+      <SelectTrigger className={`w-[130px] ${errorMessage ? 'border-red-500' : ''}`}>
+        <SelectValue placeholder="Data source" />
       </SelectTrigger>
       <SelectContent>
-        {sources.map((source) => (
-          <SelectItem key={source.value} value={source.value}>
-            {source.label}
-          </SelectItem>
-        ))}
+        <SelectGroup>
+          <SelectLabel>Data Sources</SelectLabel>
+          {sources.map((source) => (
+            <SelectItem key={source.value} value={source.value}>
+              {source.label}
+            </SelectItem>
+          ))}
+        </SelectGroup>
       </SelectContent>
     </Select>
   );

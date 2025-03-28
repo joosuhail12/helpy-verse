@@ -13,8 +13,8 @@ export interface QueryField {
   id: string;
   name: string;
   label: string;
-  type: 'text' | 'number' | 'date' | 'boolean' | 'select' | 'multiselect';
-  dataSource?: DataSource;
+  type: 'text' | 'number' | 'date' | 'boolean' | 'select' | 'multiselect' | 'multi-select';
+  dataSource?: string;
   customObject?: string;
   options?: Array<{ label: string; value: string; } | string>;
   operators?: string[];
@@ -43,18 +43,10 @@ export type Operator =
   | 'greater_than'
   | 'less_than';
 
-export type DataSource = 
-  | 'contact' 
-  | 'company' 
-  | 'conversation' 
-  | 'ticket' 
-  | 'event'
-  | '';
-
 export interface QueryRule {
   id: string;
   field: string;
-  operator: Operator;
+  operator: string;
   value: any;
 }
 

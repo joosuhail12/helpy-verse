@@ -20,9 +20,12 @@ export const BooleanInput: React.FC<BooleanInputProps> = ({
         id="boolean-input"
         checked={!!value}
         onCheckedChange={(checked) => onChange(!!checked)}
-        className="h-4 w-4"
       />
       <Label htmlFor="boolean-input" className="text-sm">{value ? 'True' : 'False'}</Label>
+      
+      {errorMessage && (
+        <p className="text-sm text-red-500 ml-2">{errorMessage}</p>
+      )}
     </div>
   );
 };

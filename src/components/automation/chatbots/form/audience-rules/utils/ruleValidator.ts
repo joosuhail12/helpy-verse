@@ -55,7 +55,9 @@ const validateRule = (rule: QueryRule): ValidationResult => {
   }
 
   // Validate value based on operator
-  if (rule.operator !== 'isEmpty' && rule.operator !== 'isNotEmpty') {
+  const noValueOperators = ['isEmpty', 'isNotEmpty', 'is_empty', 'is_not_empty'];
+  
+  if (!noValueOperators.includes(rule.operator)) {
     if (rule.value === undefined || rule.value === null || rule.value === '') {
       errors.push({
         message: 'Value is required',

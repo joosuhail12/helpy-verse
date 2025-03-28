@@ -1,4 +1,5 @@
 
+import React from 'react';
 import { QueryGroup, QueryField } from '@/types/queryBuilder';
 import { RulesSummary } from '@/components/common/query-builder/components/RulesSummary';
 import AudienceSizeEstimator from './AudienceSizeEstimator';
@@ -11,7 +12,7 @@ interface RulePreviewProps {
   fields: QueryField[];
 }
 
-export const RulePreview = ({ group, fields }: RulePreviewProps) => {
+export const RulePreview: React.FC<RulePreviewProps> = ({ group, fields }) => {
   return (
     <div className="space-y-6">
       <h3 className="text-lg font-medium">Rule Preview and Validation</h3>

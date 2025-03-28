@@ -1,22 +1,22 @@
 
+import React from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Plus, Trash } from 'lucide-react';
 import { QueryRule } from './QueryRule';
-import { generateId } from '@/lib/utils';
+import { v4 as uuidv4 } from 'uuid';
 
-// Simplified interfaces
-interface QueryRule {
+interface QueryRuleType {
   id: string;
   field: string;
   operator: string;
   value: any;
 }
 
-interface QueryGroup {
+interface QueryGroupType {
   id: string;
   combinator: 'and' | 'or';
-  rules: Array<QueryRule | QueryGroup>;
+  rules: Array<QueryRuleType | QueryGroupType>;
 }
 
 interface QueryField {
@@ -24,7 +24,9 @@ interface QueryField {
   label: string;
   type: string;
   name: string;
-  options?: string[];
+  dataSource?: string;
+  customObject?: string;
+  options?: Array<string | { label: string; value: string }>;
 }
 
 interface ValidationError {
@@ -32,19 +34,19 @@ interface ValidationError {
   path?: string;
   field?: string;
   rule?: { id: string };
-  group?: QueryGroup;
+  group?: QueryGroupType;
 }
 
 interface QueryGroupComponentProps {
-  group: QueryGroup;
-  onChange: (group: QueryGroup) => void;
+  group: QueryGroupType;
+  onChange: (group: QueryGroupType) => void;
   fields: QueryField[];
   depth: number;
   maxDepth: number;
   errors?: ValidationError[];
 }
 
-export const QueryGroupComponent = ({
+export const QueryGroupComponent: React.FC<QueryGroupComponentProps> = ({
   group,
   onChange,
   fields,
@@ -59,7 +61,7 @@ export const QueryGroupComponent = ({
     });
   };
 
-  const handleRuleChange = (index: number, rule: QueryRule | QueryGroup) => {
+  const handleRuleChange = (index: number, rule: QueryRuleType | QueryGroupType) => {
     const newRules = [...group.rules];
     newRules[index] = rule;
     onChange({ ...group, rules: newRules });
@@ -71,7 +73,7 @@ export const QueryGroupComponent = ({
       rules: [
         ...group.rules,
         {
-          id: generateId(),
+          id: uuidv4(),
           field: '',
           operator: 'equals',
           value: '',
@@ -87,7 +89,7 @@ export const QueryGroupComponent = ({
         rules: [
           ...group.rules,
           {
-            id: generateId(),
+            id: uuidv4(),
             combinator: 'and',
             rules: [],
           },
@@ -140,18 +142,18 @@ export const QueryGroupComponent = ({
 
       <div className="space-y-4">
         {group.rules.map((rule, index) => (
-          <div key={'field' in rule ? rule.id : rule.id} className="flex items-start gap-2">
+          <div key={rule.id} className="flex items-start gap-2">
             <div className="flex-1">
               {'field' in rule ? (
                 <QueryRule
-                  rule={rule as QueryRule}
+                  rule={rule as QueryRuleType}
                   onChange={(newRule) => handleRuleChange(index, newRule)}
                   fields={fields}
                   errors={errors}
                 />
               ) : (
                 <QueryGroupComponent
-                  group={rule as QueryGroup}
+                  group={rule as QueryGroupType}
                   onChange={(newGroup) => handleRuleChange(index, newGroup)}
                   fields={fields}
                   depth={depth + 1}

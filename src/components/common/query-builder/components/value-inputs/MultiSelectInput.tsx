@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 interface MultiSelectInputProps {
   value: string[];
   onChange: (value: string[]) => void;
-  options: string[];
+  options: Array<string | { label: string; value: string }>;
   errorMessage?: string | null;
 }
 
@@ -16,26 +16,35 @@ export const MultiSelectInput: React.FC<MultiSelectInputProps> = ({
   options,
   errorMessage
 }) => {
-  const handleToggleOption = (option: string) => {
-    if (value.includes(option)) {
-      onChange(value.filter(item => item !== option));
+  const handleToggleOption = (optionValue: string) => {
+    if (value.includes(optionValue)) {
+      onChange(value.filter(item => item !== optionValue));
     } else {
-      onChange([...value, option]);
+      onChange([...value, optionValue]);
     }
   };
 
   return (
     <div className={`space-y-2 ${errorMessage ? 'border-red-500 border rounded p-2' : ''}`}>
-      {options.map((option) => (
-        <div key={option} className="flex items-center space-x-2">
-          <Checkbox
-            id={`option-${option}`}
-            checked={value.includes(option)}
-            onCheckedChange={() => handleToggleOption(option)}
-          />
-          <Label htmlFor={`option-${option}`} className="text-sm">{option}</Label>
-        </div>
-      ))}
+      {options.map((option) => {
+        const optionValue = typeof option === 'string' ? option : option.value;
+        const optionLabel = typeof option === 'string' ? option : option.label;
+        
+        return (
+          <div key={optionValue} className="flex items-center space-x-2">
+            <Checkbox
+              id={`option-${optionValue}`}
+              checked={value.includes(optionValue)}
+              onCheckedChange={() => handleToggleOption(optionValue)}
+            />
+            <Label htmlFor={`option-${optionValue}`} className="text-sm">{optionLabel}</Label>
+          </div>
+        );
+      })}
+      
+      {errorMessage && (
+        <p className="text-sm text-red-500 mt-1">{errorMessage}</p>
+      )}
     </div>
   );
 };

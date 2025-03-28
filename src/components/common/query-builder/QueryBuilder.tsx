@@ -2,7 +2,6 @@
 import React from 'react';
 import { QueryGroupComponent } from './QueryGroupComponent';
 
-// Simplified interfaces
 interface QueryRule {
   id: string;
   field: string;
@@ -21,7 +20,9 @@ interface QueryField {
   label: string;
   type: string;
   name: string;
-  options?: string[];
+  dataSource?: string;
+  customObject?: string;
+  options?: Array<string | { label: string; value: string }>;
 }
 
 interface ValidationError {

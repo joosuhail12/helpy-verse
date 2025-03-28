@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { QueryBuilder } from '@/components/common/query-builder/QueryBuilder';
 import { useRuleBuilder } from './hooks/useRuleBuilder';
@@ -7,9 +7,8 @@ import { useAudienceFields } from './hooks/useAudienceFields';
 import AudienceSizeEstimator from './components/AudienceSizeEstimator';
 import SampleMatchesPreview from './components/SampleMatchesPreview';
 import { RuleValidationSummary } from './components/RuleValidationSummary';
-import { ValidationError } from '@/types/queryBuilder';
 
-export const AudienceRules = () => {
+export const AudienceRules: React.FC = () => {
   const [isValid, setIsValid] = useState(true);
   const fields = useAudienceFields();
   const {

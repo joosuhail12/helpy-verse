@@ -1,20 +1,26 @@
 
+import React from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import type { QueryField, Operator } from '@/types/queryBuilder';
+
+interface QueryField {
+  id: string;
+  type: string;
+  operators?: string[];
+}
 
 interface OperatorSelectProps {
-  value: Operator;
+  value: string;
   onValueChange: (value: string) => void;
   selectedField?: QueryField;
   disabled?: boolean;
 }
 
-export const OperatorSelect = ({
+export const OperatorSelect: React.FC<OperatorSelectProps> = ({
   value,
   onValueChange,
   selectedField,
   disabled,
-}: OperatorSelectProps) => {
+}) => {
   // Default operators for any field type
   const defaultOperators = [
     { value: 'equals', label: 'Equals' },
