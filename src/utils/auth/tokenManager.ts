@@ -26,3 +26,19 @@ export const hasValidToken = (): boolean => {
   
   return true;
 };
+
+// Export a function to handle setting tokens
+export const handleSetToken = (token: string): void => {
+  setAuthToken(token);
+  console.log('Token set successfully via handleSetToken');
+};
+
+// Alias for isAuthenticated to check for valid tokens
+export const isAuthenticated = hasValidToken;
+
+// Logout function
+export const handleLogout = (): void => {
+  removeAuthToken();
+  console.log('User logged out - token removed');
+  window.location.href = "/sign-in";
+};
