@@ -6,6 +6,7 @@ import {
   updateTag, 
   deleteTags 
 } from '@/store/slices/tags/tagsSlice';
+import { selectAllTags, selectTagsLoading, selectTagsError, selectTagsTotal } from '@/store/slices/tags/selectors';
 import { Tag, SortField } from '@/types/tag';
 import TagTable from './TagTable';
 import { Button } from '@/components/ui/button';
@@ -14,7 +15,7 @@ import EditTagDialog from './EditTagDialog';
 import DeleteTagDialog from './DeleteTagDialog';
 import TagPagination from './TagPagination';
 import BulkActions from './BulkActions';
-import { TagUsageStats } from './TagUsageStats';
+import TagUsageStats from './TagUsageStats';
 
 // Define props interface for TagList
 interface TagListProps {
@@ -31,7 +32,10 @@ const TagList: React.FC<TagListProps> = ({
   onPageChange 
 }) => {
   const dispatch = useAppDispatch();
-  const { tags, loading, error, total } = useAppSelector(state => state.tags);
+  const tags = useAppSelector(selectAllTags);
+  const loading = useAppSelector(selectTagsLoading);
+  const error = useAppSelector(selectTagsError);
+  const total = useAppSelector(selectTagsTotal);
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -145,28 +149,24 @@ const TagList: React.FC<TagListProps> = ({
       {selectedTagIds.length > 0 ? (
         <BulkActions 
           selectedCount={selectedTagIds.length} 
-          onClearSelection={() => setSelectedTagIds([])} 
+          onEditSelected={() => {}} 
+          onDeleteSelected={() => {}} 
         />
       ) : (
-        <TagUsageStats />
+        <TagUsageStats 
+          tickets={0} 
+          contacts={0} 
+          companies={0} 
+        />
       )}
       
       <TagTable 
-        tags={sortedTags} 
-        onEdit={handleEditTag}
-        onDelete={handleDeleteTag}
-        selectedTagIds={selectedTagIds}
-        setSelectedTagIds={setSelectedTagIds}
-        sortField={sortField}
-        sortDirection={sortDirection}
-        onSortChange={(field) => {
-          if (field === sortField) {
-            setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-          } else {
-            setSortField(field);
-            setSortDirection('asc');
-          }
-        }}
+        tags={sortedTags}
+        selectedTags={selectedTagIds}
+        onSelectAll={() => {}}
+        onSelectTag={() => {}}
+        onEditTag={handleEditTag}
+        onDeleteTag={handleDeleteTag}
       />
       
       {totalPages > 1 && (
@@ -174,8 +174,6 @@ const TagList: React.FC<TagListProps> = ({
           currentPage={currentPage} 
           totalPages={totalPages} 
           onPageChange={onPageChange}
-          totalItems={total}
-          itemsPerPage={itemsPerPage}
         />
       )}
       
@@ -185,13 +183,13 @@ const TagList: React.FC<TagListProps> = ({
             open={isEditDialogOpen} 
             onOpenChange={setIsEditDialogOpen}
             tag={currentTag}
-            onUpdate={(data) => handleUpdateTag(currentTag.id, data)}
+            onSave={(data) => handleUpdateTag(currentTag.id, data)}
           />
           
           <DeleteTagDialog 
             open={isDeleteDialogOpen} 
             onOpenChange={setIsDeleteDialogOpen}
-            tagName={currentTag.name}
+            tag={currentTag}
             onConfirm={handleConfirmDelete}
           />
         </>
