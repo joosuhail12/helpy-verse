@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useAbly } from '@/context/AblyContext';
 import { ChatMessage } from '@/components/chat-widget/components/conversation/types';
@@ -8,6 +8,7 @@ import { useEncryptedMessages } from './useEncryptedMessages';
 import { emitEvent } from '@/utils/events/eventManager';
 import { ChatEventType } from '@/utils/events/eventTypes';
 import { validateAndSanitizeMessage } from '@/utils/validation/messageValidation';
+import { RateLimiter } from '@/utils/chat/rateLimiter';
 
 interface SyncManager {
   register(tag: string): Promise<void>;
@@ -25,6 +26,11 @@ interface ChannelAndClient {
 interface UseRealtimeChatOptions {
   enableEncryption?: boolean;
   keyRotationPeriod?: number;
+  rateLimitConfig?: {
+    maxMessages: number;
+    timeWindowMs: number;
+    cooldownMs: number;
+  };
 }
 
 export const useRealtimeChat = (
@@ -32,12 +38,21 @@ export const useRealtimeChat = (
   workspaceId: string,
   options: UseRealtimeChatOptions = {}
 ) => {
-  const { enableEncryption = false, keyRotationPeriod } = options;
+  const { 
+    enableEncryption = false, 
+    keyRotationPeriod,
+    rateLimitConfig
+  } = options;
+  
   const { client, clientId, getChannelName } = useAbly();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [channel, setChannel] = useState<ChannelAndClient | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [isRateLimited, setIsRateLimited] = useState(false);
+  const [rateLimitTimeRemaining, setRateLimitTimeRemaining] = useState(0);
+  
+  const rateLimiterRef = useRef<RateLimiter | null>(null);
   
   const { 
     queueMessage, 
@@ -68,6 +83,23 @@ export const useRealtimeChat = (
     enabled: enableEncryption,
     rotationPeriod: keyRotationPeriod
   });
+
+  useEffect(() => {
+    if (!rateLimiterRef.current) {
+      rateLimiterRef.current = new RateLimiter(conversationId, rateLimitConfig);
+    }
+    
+    const handleRateLimitCleared = () => {
+      setIsRateLimited(false);
+      setRateLimitTimeRemaining(0);
+    };
+    
+    window.addEventListener('rateLimitCleared', handleRateLimitCleared);
+    
+    return () => {
+      window.removeEventListener('rateLimitCleared', handleRateLimitCleared);
+    };
+  }, [conversationId, rateLimitConfig]);
 
   useEffect(() => {
     if (!client) return;
@@ -202,6 +234,25 @@ export const useRealtimeChat = (
     };
   }, [triggerManualSync]);
 
+  useEffect(() => {
+    if (!rateLimiterRef.current || !isRateLimited) return;
+    
+    const checkInterval = setInterval(() => {
+      const { isBlocked, timeRemaining } = rateLimiterRef.current!.getState();
+      
+      setIsRateLimited(isBlocked);
+      setRateLimitTimeRemaining(timeRemaining);
+      
+      if (!isBlocked) {
+        clearInterval(checkInterval);
+      }
+    }, 1000);
+    
+    return () => {
+      clearInterval(checkInterval);
+    };
+  }, [isRateLimited]);
+
   const handleKeyRotation = useCallback(async () => {
     if (!enableEncryption || !isEncryptionInitialized) {
       return false;
@@ -219,6 +270,27 @@ export const useRealtimeChat = (
 
   const sendMessage = useCallback(async (content: string, metadata: Record<string, any> = {}) => {
     if (!content.trim()) return false;
+    
+    if (rateLimiterRef.current) {
+      const rateLimitCheck = rateLimiterRef.current.canSendMessage();
+      if (!rateLimitCheck.allowed) {
+        setIsRateLimited(true);
+        setRateLimitTimeRemaining(rateLimitCheck.retryAfterMs || 0);
+        
+        emitEvent({
+          type: ChatEventType.RATE_LIMIT_TRIGGERED,
+          timestamp: new Date().toISOString(),
+          source: 'realtime-chat',
+          conversationId,
+          retryAfterMs: rateLimitCheck.retryAfterMs || 0,
+          messageAttempt: rateLimiterRef.current.getState().messageCount,
+          pageUrl: window.location.href
+        });
+        
+        setError(new Error(rateLimitCheck.reason || 'Rate limit exceeded'));
+        return false;
+      }
+    }
     
     const { isValid, sanitizedContent, errors } = validateAndSanitizeMessage(content, {
       maxLength: 4000,
@@ -278,11 +350,20 @@ export const useRealtimeChat = (
       
       if (channel && channel.channelInstance && !offlineMode) {
         await channel.channelInstance.publish('message', message);
+        
+        if (rateLimiterRef.current) {
+          rateLimiterRef.current.recordMessage();
+        }
+        
         return true;
       } else {
         await queueMessage(message);
         
         setMessages(prev => [...prev, message]);
+        
+        if (rateLimiterRef.current) {
+          rateLimiterRef.current.recordMessage();
+        }
         
         if ('serviceWorker' in navigator && 'SyncManager' in window) {
           try {
@@ -354,6 +435,15 @@ export const useRealtimeChat = (
     triggerSync: triggerManualSync,
     isEncryptionEnabled: enableEncryption && isEncryptionInitialized,
     currentKeyVersion,
-    rotateEncryptionKey: handleKeyRotation
+    rotateEncryptionKey: handleKeyRotation,
+    isRateLimited,
+    rateLimitTimeRemaining,
+    resetRateLimit: useCallback(() => {
+      if (rateLimiterRef.current) {
+        rateLimiterRef.current.reset();
+        setIsRateLimited(false);
+        setRateLimitTimeRemaining(0);
+      }
+    }, [])
   };
 };

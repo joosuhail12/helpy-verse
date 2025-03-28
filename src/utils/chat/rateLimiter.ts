@@ -1,12 +1,14 @@
 
 /**
- * A simple rate limiter for chat messages to prevent spam
+ * A robust rate limiter for chat messages to prevent spam and DoS attacks
  */
 
 interface RateLimitConfig {
   maxMessages: number;
   timeWindowMs: number;
   cooldownMs: number;
+  maxConsecutiveBlockCount: number;
+  escalationFactor: number;
 }
 
 interface RateLimitState {
@@ -14,12 +16,15 @@ interface RateLimitState {
   lastMessageTime: number;
   isBlocked: boolean;
   blockUntil: number;
+  consecutiveBlockCount: number;
+  lastBlockReason: string;
 }
 
 export class RateLimiter {
   private config: RateLimitConfig;
   private state: RateLimitState;
   private storageKey: string;
+  private rateLimitEventEmitted: boolean = false;
 
   constructor(
     conversationId: string,
@@ -30,6 +35,8 @@ export class RateLimiter {
       maxMessages: 10,
       timeWindowMs: 10000, // 10 seconds
       cooldownMs: 30000, // 30 seconds
+      maxConsecutiveBlockCount: 3,
+      escalationFactor: 2,
       ...config
     };
 
@@ -45,7 +52,7 @@ export class RateLimiter {
         
         // If the block has expired, reset the state
         if (this.state.isBlocked && Date.now() > this.state.blockUntil) {
-          this.resetState();
+          this.resetBlockState();
         }
       } else {
         this.resetState();
@@ -69,9 +76,57 @@ export class RateLimiter {
       messages: 0,
       lastMessageTime: 0,
       isBlocked: false,
-      blockUntil: 0
+      blockUntil: 0,
+      consecutiveBlockCount: 0,
+      lastBlockReason: ''
     };
     this.saveState();
+  }
+  
+  private resetBlockState(): void {
+    this.state.messages = 0;
+    this.state.isBlocked = false;
+    this.state.blockUntil = 0;
+    this.saveState();
+    
+    // Dispatch rate limit cleared event
+    this.dispatchRateLimitClearedEvent();
+  }
+  
+  private dispatchRateLimitWarningEvent(message: string, duration: number): void {
+    // Only emit the event once per block period
+    if (!this.rateLimitEventEmitted) {
+      const event = new CustomEvent('rateLimitWarning', { 
+        detail: { 
+          message, 
+          duration 
+        } 
+      });
+      window.dispatchEvent(event);
+      this.rateLimitEventEmitted = true;
+      
+      setTimeout(() => {
+        this.rateLimitEventEmitted = false;
+      }, duration);
+    }
+  }
+  
+  private dispatchRateLimitClearedEvent(): void {
+    const event = new CustomEvent('rateLimitCleared');
+    window.dispatchEvent(event);
+    this.rateLimitEventEmitted = false;
+  }
+  
+  /**
+   * Calculate cooldown period with exponential backoff
+   */
+  private calculateCooldownPeriod(): number {
+    const { cooldownMs, escalationFactor, maxConsecutiveBlockCount } = this.config;
+    const factor = Math.min(
+      Math.pow(escalationFactor, this.state.consecutiveBlockCount), 
+      Math.pow(escalationFactor, maxConsecutiveBlockCount)
+    );
+    return cooldownMs * factor;
   }
 
   /**
@@ -85,14 +140,20 @@ export class RateLimiter {
     if (this.state.isBlocked) {
       const timeRemaining = this.state.blockUntil - Date.now();
       if (timeRemaining > 0) {
+        const seconds = Math.ceil(timeRemaining / 1000);
+        const message = `You're sending too many messages. Please wait ${seconds} second${seconds !== 1 ? 's' : ''}.`;
+        
+        // Dispatch event for UI notification
+        this.dispatchRateLimitWarningEvent(message, timeRemaining);
+        
         return {
           allowed: false,
-          reason: `You're sending too many messages. Please wait ${Math.ceil(timeRemaining / 1000)} seconds.`,
+          reason: message,
           retryAfterMs: timeRemaining
         };
       } else {
         // Reset if block period has passed
-        this.resetState();
+        this.resetBlockState();
       }
     }
 
@@ -106,14 +167,23 @@ export class RateLimiter {
 
     // Check if user has exceeded rate limit
     if (this.state.messages >= this.config.maxMessages) {
+      const cooldownPeriod = this.calculateCooldownPeriod();
       this.state.isBlocked = true;
-      this.state.blockUntil = now + this.config.cooldownMs;
+      this.state.blockUntil = now + cooldownPeriod;
+      this.state.consecutiveBlockCount++;
+      this.state.lastBlockReason = 'Too many messages sent too quickly';
       this.saveState();
 
+      const seconds = Math.ceil(cooldownPeriod / 1000);
+      const message = `You've sent too many messages too quickly. Please wait ${seconds} second${seconds !== 1 ? 's' : ''}.`;
+      
+      // Dispatch event for UI notification
+      this.dispatchRateLimitWarningEvent(message, cooldownPeriod);
+      
       return {
         allowed: false,
-        reason: `You've sent too many messages too quickly. Please wait ${Math.ceil(this.config.cooldownMs / 1000)} seconds.`,
-        retryAfterMs: this.config.cooldownMs
+        reason: message,
+        retryAfterMs: cooldownPeriod
       };
     }
 
@@ -127,5 +197,32 @@ export class RateLimiter {
     this.state.messages += 1;
     this.state.lastMessageTime = Date.now();
     this.saveState();
+  }
+  
+  /**
+   * Get current rate limit state
+   */
+  getState(): {
+    isBlocked: boolean;
+    timeRemaining: number;
+    messageCount: number;
+    maxMessages: number;
+  } {
+    this.loadState();
+    
+    return {
+      isBlocked: this.state.isBlocked,
+      timeRemaining: Math.max(0, this.state.blockUntil - Date.now()),
+      messageCount: this.state.messages,
+      maxMessages: this.config.maxMessages
+    };
+  }
+  
+  /**
+   * Reset rate limit state (for testing or administrative purposes)
+   */
+  reset(): void {
+    this.resetState();
+    this.dispatchRateLimitClearedEvent();
   }
 }

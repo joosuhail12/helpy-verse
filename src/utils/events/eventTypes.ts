@@ -28,7 +28,9 @@ export enum ChatEventType {
   SESSION_ENDED = 'session_ended',
   SESSION_EXTENDED = 'session_extended',
   SESSION_EXPIRED = 'session_expired',
-  CSRF_VALIDATION_FAILED = 'csrf_validation_failed'
+  CSRF_VALIDATION_FAILED = 'csrf_validation_failed',
+  RATE_LIMIT_TRIGGERED = 'rate_limit_triggered',
+  RATE_LIMIT_CLEARED = 'rate_limit_cleared'
 }
 
 /**
@@ -217,6 +219,24 @@ export interface CsrfValidationFailedEvent extends ChatEvent {
 }
 
 /**
+ * Event for when a rate limit is triggered
+ */
+export interface RateLimitTriggeredEvent extends ChatEvent {
+  type: ChatEventType.RATE_LIMIT_TRIGGERED;
+  conversationId: string;
+  retryAfterMs: number;
+  messageAttempt: number;
+}
+
+/**
+ * Event for when a rate limit is cleared
+ */
+export interface RateLimitClearedEvent extends ChatEvent {
+  type: ChatEventType.RATE_LIMIT_CLEARED;
+  conversationId: string;
+}
+
+/**
  * Union type of all possible chat events
  */
 export type ChatEventUnion = 
@@ -239,4 +259,6 @@ export type ChatEventUnion =
   | SessionExtendedEvent
   | SessionExpiredEvent
   | CsrfValidationFailedEvent
+  | RateLimitTriggeredEvent
+  | RateLimitClearedEvent
   | ChatEvent; // Base type for other events

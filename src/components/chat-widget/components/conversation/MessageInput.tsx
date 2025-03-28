@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Paperclip, Lock, AlertTriangle } from 'lucide-react';
+import { Send, Paperclip, Lock, AlertTriangle, Clock } from 'lucide-react';
 import { useThemeContext } from '@/context/ThemeContext';
 import { MessageInputProps } from './types';
 import { validateAndSanitizeMessage, detectSuspiciousContent, isSpamMessage } from '@/utils/validation/messageValidation';
@@ -18,6 +18,8 @@ const MessageInput: React.FC<MessageInputProps> = ({
   onTypingEnd,
   compact = false,
   onHeightChange,
+  isRateLimited = false,
+  rateLimitTimeRemaining = 0
 }) => {
   const { colors } = useThemeContext();
   const [message, setMessage] = useState('');
@@ -76,7 +78,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
   };
 
   const handleSend = () => {
-    if (!message.trim()) return;
+    if (!message.trim() || isRateLimited) return;
     
     // Validate and sanitize the message before sending
     const { isValid, sanitizedContent, errors } = validateAndSanitizeMessage(message, {
@@ -107,6 +109,17 @@ const MessageInput: React.FC<MessageInputProps> = ({
       e.preventDefault();
       handleSend();
     }
+  };
+
+  // Format remaining time as MM:SS
+  const formatTimeRemaining = (ms: number) => {
+    const seconds = Math.ceil(ms / 1000);
+    if (seconds < 60) {
+      return `${seconds}s`;
+    }
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
   };
 
   // Auto-resize the textarea
@@ -142,6 +155,14 @@ const MessageInput: React.FC<MessageInputProps> = ({
         </div>
       )}
       
+      {/* Rate limit warning */}
+      {isRateLimited && rateLimitTimeRemaining > 0 && (
+        <div className="flex items-center mb-1 text-xs text-red-500">
+          <Clock className="h-3 w-3 mr-1" />
+          <span>Rate limit exceeded. Wait {formatTimeRemaining(rateLimitTimeRemaining)} before sending another message.</span>
+        </div>
+      )}
+      
       {/* Validation error message */}
       {validationError && (
         <div className="flex items-center mb-1 text-xs text-red-500">
@@ -174,17 +195,18 @@ const MessageInput: React.FC<MessageInputProps> = ({
         style={{ 
           background: colors.inputBackground,
           borderColor: validationError ? 'rgb(239, 68, 68)' : colors.border,
-          borderWidth: validationError ? '1px' : '0px'
+          borderWidth: validationError ? '1px' : '0px',
+          opacity: isRateLimited ? '0.7' : '1'
         }}
       >
         {onFileUpload && (
-          <label className="cursor-pointer">
+          <label className={`cursor-pointer ${isRateLimited ? 'pointer-events-none' : ''}`}>
             <input
               type="file"
               className="hidden"
               multiple
               onChange={handleFileSelect}
-              disabled={disabled}
+              disabled={disabled || isRateLimited}
             />
             <div className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
               <Paperclip className="h-5 w-5" style={{ color: colors.foreground }} />
@@ -197,23 +219,23 @@ const MessageInput: React.FC<MessageInputProps> = ({
           value={message}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
-          placeholder={placeholder}
+          placeholder={isRateLimited ? 'Rate limit exceeded, please wait...' : placeholder}
           rows={1}
           className="flex-1 bg-transparent resize-none outline-none max-h-[120px] min-h-[24px]"
           style={{ color: colors.foreground }}
-          disabled={disabled}
+          disabled={disabled || isRateLimited}
           aria-invalid={validationError !== null}
         />
         
         <button
           onClick={handleSend}
-          disabled={!message.trim() || disabled || validationError !== null}
+          disabled={!message.trim() || disabled || validationError !== null || isRateLimited}
           className={`p-1 rounded-full ${
-            message.trim() && !validationError ? 'opacity-100' : 'opacity-50'
+            message.trim() && !validationError && !isRateLimited ? 'opacity-100' : 'opacity-50'
           }`}
           style={{ 
-            background: message.trim() && !validationError ? colors.primary : 'transparent',
-            color: message.trim() && !validationError ? colors.primaryForeground : colors.foreground
+            background: message.trim() && !validationError && !isRateLimited ? colors.primary : 'transparent',
+            color: message.trim() && !validationError && !isRateLimited ? colors.primaryForeground : colors.foreground
           }}
           aria-label="Send message"
         >
