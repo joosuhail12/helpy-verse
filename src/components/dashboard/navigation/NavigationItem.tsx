@@ -2,6 +2,7 @@
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useSafeNavigation } from '@/context/NavigationContext';
 
 interface NavigationItemProps {
   item: any;
@@ -10,7 +11,6 @@ interface NavigationItemProps {
   toggleExpanded: (itemTitle: string) => void;
   hasActiveChild: (children: any[]) => boolean;
   isItemActive: (path: string) => boolean;
-  navigate: (path: string) => void;
   filterMenuItems: (items: any[]) => any[];
 }
 
@@ -21,9 +21,10 @@ const NavigationItem = ({
   toggleExpanded,
   hasActiveChild,
   isItemActive,
-  navigate,
   filterMenuItems
 }: NavigationItemProps) => {
+  const { navigate } = useSafeNavigation();
+  
   const isExpanded = expandedItems.includes(item.title);
   const hasChildren = item.children && item.children.length > 0;
   const isActive = isItemActive(item.path);

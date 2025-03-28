@@ -6,24 +6,17 @@ import UserProfileCard from './UserProfileCard';
 import NavigationHeader from './navigation/NavigationHeader';
 import SearchInput from './navigation/SearchInput';
 import NavigationItem from './navigation/NavigationItem';
+import { useSafeNavigation } from '@/context/NavigationContext';
 
-interface SubNavigationProps {
-  activeMainNav: string;
-  isSecondPanelCollapsed: boolean;
-  toggleSecondPanel: () => void;
-  expandedItems: string[];
-  toggleExpanded: (itemTitle: string) => void;
-  navigate: (path: string) => void;
-}
-
-const SubNavigation = ({ 
-  activeMainNav, 
-  isSecondPanelCollapsed, 
-  toggleSecondPanel, 
-  expandedItems, 
-  toggleExpanded, 
-  navigate 
-}: SubNavigationProps) => {
+const SubNavigation = () => {
+  const { 
+    activeMainNav, 
+    isSecondPanelCollapsed, 
+    toggleSecondPanel, 
+    expandedItems, 
+    toggleExpanded
+  } = useSafeNavigation();
+  
   // Try to use location, but have a fallback
   let currentPath = '';
   try {
@@ -108,7 +101,6 @@ const SubNavigation = ({
               toggleExpanded={toggleExpanded}
               hasActiveChild={hasActiveChild}
               isItemActive={isItemActive}
-              navigate={navigate}
               filterMenuItems={filterMenuItems}
             />
           ))}

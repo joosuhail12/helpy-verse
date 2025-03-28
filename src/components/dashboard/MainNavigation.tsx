@@ -1,7 +1,7 @@
 
 import { Button } from '@/components/ui/button';
 import { mainNavItems } from './navigationConfig';
-import { NavigateFunction, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 import {
   Tooltip,
@@ -9,14 +9,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useSafeNavigation } from '@/context/NavigationContext';
 
-interface MainNavigationProps {
-  activeMainNav: string;
-  setActiveMainNav: (id: string) => void;
-  navigate: NavigateFunction | ((path: string) => void);
-}
-
-const MainNavigation = ({ activeMainNav, setActiveMainNav, navigate }: MainNavigationProps) => {
+const MainNavigation = () => {
+  const { activeMainNav, setActiveMainNav, navigate } = useSafeNavigation();
+  
   // Try to use location, but have a fallback
   let currentPath = '';
   try {

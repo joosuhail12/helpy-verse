@@ -9,6 +9,7 @@ import AppQueryProvider from './AppQueryProvider';
 import AppErrorBoundary from './AppErrorBoundary';
 import CaslProvider from "@/components/CaslProvider";
 import AppInitializer from './AppInitializer';
+import { NavigationProvider } from '@/context/NavigationContext';
 
 interface AppProvidersProps {
   children: React.ReactNode;
@@ -24,15 +25,17 @@ const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
       <React.StrictMode>
         <Provider store={store}>
           <AppQueryProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Sonner />
-              <CaslProvider>
-                <AppInitializer>
-                  {children}
-                </AppInitializer>
-              </CaslProvider>
-            </TooltipProvider>
+            <NavigationProvider>
+              <TooltipProvider>
+                <Toaster />
+                <Sonner />
+                <CaslProvider>
+                  <AppInitializer>
+                    {children}
+                  </AppInitializer>
+                </CaslProvider>
+              </TooltipProvider>
+            </NavigationProvider>
           </AppQueryProvider>
         </Provider>
       </React.StrictMode>
