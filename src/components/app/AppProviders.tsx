@@ -1,39 +1,34 @@
 
 import React from 'react';
-import { Provider } from 'react-redux';
-import { store } from '@/store/store';
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import AppQueryProvider from './AppQueryProvider';
+import { BrowserRouter } from 'react-router-dom';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { Toaster } from '../ui/toaster';
+import { ThemeProvider } from 'next-themes';
 import AppErrorBoundary from './AppErrorBoundary';
-import CaslProvider from "@/components/CaslProvider";
-import AppInitializer from './AppInitializer';
+import AppQueryProvider from './AppQueryProvider';
+import CaslProvider from '../CaslProvider';
+import { Provider as ReduxProvider } from 'react-redux';
+import { store } from '@/store';
 
 interface AppProvidersProps {
   children: React.ReactNode;
 }
 
-/**
- * Top-level providers component that wraps the entire application
- * with necessary providers and error boundaries.
- */
 const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
   return (
     <AppErrorBoundary>
-      <Provider store={store}>
-        <AppQueryProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <CaslProvider>
-              <AppInitializer>
+      <ReduxProvider store={store}>
+        <BrowserRouter>
+          <AppQueryProvider>
+            <ThemeProvider attribute="class" defaultTheme="light">
+              <CaslProvider>
                 {children}
-              </AppInitializer>
-            </CaslProvider>
-          </TooltipProvider>
-        </AppQueryProvider>
-      </Provider>
+                <Toaster />
+              </CaslProvider>
+            </ThemeProvider>
+          </AppQueryProvider>
+        </BrowserRouter>
+      </ReduxProvider>
     </AppErrorBoundary>
   );
 };
