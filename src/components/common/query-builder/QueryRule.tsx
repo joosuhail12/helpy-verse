@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import type { QueryRule as QueryRuleType, QueryField, DataSource, ValidationError } from '@/types/queryBuilder';
+import type { QueryRule as QueryRuleType, QueryField, DataSource, ValidationError, Operator } from '@/types/queryBuilder';
 import { OperatorSelect } from './components/OperatorSelect';
 import { SourceSelect } from './components/SourceSelect';
 import { FieldSelect } from './components/FieldSelect';
@@ -68,7 +68,7 @@ export const QueryRule = ({ rule, onChange, fields, errors = [] }: QueryRuleProp
           <OperatorSelect
             selectedField={selectedField}
             value={rule.operator}
-            onValueChange={(value) => onChange({ ...rule, operator: value })}
+            onValueChange={(value) => onChange({ ...rule, operator: value as Operator })}
             disabled={!rule.field}
           />
           {getErrorMessage('operator') && (

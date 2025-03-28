@@ -24,7 +24,7 @@ export const useRuleBuilder = (initialRules?: QueryGroup) => {
     if (!result.isValid) {
       const contextualErrors: ValidationError[] = result.errors.map(error => ({
         ...error,
-        message: `${error.message} ${error.rule ? `for rule with field ${error.rule.field}` : ''}`
+        message: `${error.message} ${error.rule ? `for rule with field ${error.field || ''}` : ''}`
       }));
       return { isValid: false, errors: contextualErrors };
     }

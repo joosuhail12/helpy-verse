@@ -42,7 +42,7 @@ const validateRule = (rule: QueryRule): ValidationResult => {
   if (!rule.field) {
     errors.push({
       message: 'Field is required',
-      rule
+      rule: { id: rule.id }
     });
   }
 
@@ -50,16 +50,16 @@ const validateRule = (rule: QueryRule): ValidationResult => {
   if (!rule.operator) {
     errors.push({
       message: 'Operator is required',
-      rule
+      rule: { id: rule.id }
     });
   }
 
   // Validate value based on operator
-  if (rule.operator !== 'is_empty' && rule.operator !== 'is_not_empty') {
+  if (rule.operator !== 'isEmpty' && rule.operator !== 'isNotEmpty') {
     if (rule.value === undefined || rule.value === null || rule.value === '') {
       errors.push({
         message: 'Value is required',
-        rule
+        rule: { id: rule.id }
       });
     }
   }

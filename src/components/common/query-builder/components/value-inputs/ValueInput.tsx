@@ -6,11 +6,11 @@ import { DateInput } from './DateInput';
 import { SelectInput } from './SelectInput';
 import { MultiSelectInput } from './MultiSelectInput';
 import { BooleanInput } from './BooleanInput';
-import { FieldType, ComparisonOperator, QueryField } from '@/types/queryBuilder';
+import { QueryField, Operator } from '@/types/queryBuilder';
 
 interface ValueInputProps {
   field: QueryField;
-  operator: ComparisonOperator;
+  operator: Operator;
   value: any;
   onChange: (value: any) => void;
   errorMessage?: string | null;
@@ -23,7 +23,7 @@ export const ValueInput: React.FC<ValueInputProps> = ({
   onChange,
   errorMessage
 }) => {
-  const noValueOperators: ComparisonOperator[] = ['is_empty', 'is_not_empty'];
+  const noValueOperators: Operator[] = ['isEmpty', 'isNotEmpty'];
   
   if (noValueOperators.includes(operator)) {
     return null;
@@ -77,7 +77,7 @@ export const ValueInput: React.FC<ValueInputProps> = ({
         />
       );
     
-    case 'multi-select':
+    case 'multiselect':
       return (
         <MultiSelectInput
           value={value || []}

@@ -5,6 +5,8 @@ export interface ValidationError {
   rule?: {
     id: string;
   };
+  group?: QueryGroup;
+  field?: string;
 }
 
 export interface QueryField {
@@ -14,8 +16,10 @@ export interface QueryField {
   type: 'text' | 'number' | 'date' | 'boolean' | 'select' | 'multiselect';
   dataSource?: DataSource;
   customObject?: string;
-  options?: string[];
+  options?: Array<{ label: string; value: string; } | string>;
   operators?: string[];
+  placeholder?: string;
+  defaultValue?: any;
 }
 
 export type Operator = 
@@ -53,4 +57,9 @@ export interface QueryGroup {
   id: string;
   combinator: 'and' | 'or';
   rules: (QueryRule | QueryGroup)[];
+}
+
+export interface ValidationResult {
+  isValid: boolean;
+  errors: ValidationError[];
 }

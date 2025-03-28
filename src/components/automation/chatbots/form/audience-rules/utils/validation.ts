@@ -54,7 +54,7 @@ const validateRule = (
   if (!rule.field) {
     errors.push({
       message: 'Field is required',
-      rule,
+      rule: { id: rule.id },
       path: `${path}.field`
     });
   } else {
@@ -63,7 +63,7 @@ const validateRule = (
     if (!fieldExists && availableFields.length > 0) {
       errors.push({
         message: `Field '${rule.field}' does not exist`,
-        rule,
+        rule: { id: rule.id },
         path: `${path}.field`
       });
     }
@@ -73,7 +73,7 @@ const validateRule = (
   if (!rule.operator) {
     errors.push({
       message: 'Operator is required',
-      rule,
+      rule: { id: rule.id },
       path: `${path}.operator`
     });
   }
@@ -81,13 +81,13 @@ const validateRule = (
   // For operators that require a value, check if value is provided
   if (
     rule.operator &&
-    rule.operator !== 'is_empty' &&
-    rule.operator !== 'is_not_empty'
+    rule.operator !== 'isEmpty' &&
+    rule.operator !== 'isNotEmpty'
   ) {
     if (rule.value === undefined || rule.value === null || rule.value === '') {
       errors.push({
         message: 'Value is required',
-        rule,
+        rule: { id: rule.id },
         path: `${path}.value`
       });
     }
@@ -111,19 +111,19 @@ export const evaluateRules = (group: QueryGroup, data: any): boolean => {
     switch (rule.operator) {
       case 'equals':
         return value === rule.value;
-      case 'not_equals':
+      case 'notEquals':
         return value !== rule.value;
       case 'contains':
         return String(value).includes(String(rule.value));
-      case 'not_contains':
+      case 'notContains':
         return !String(value).includes(String(rule.value));
-      case 'greater_than':
+      case 'greaterThan':
         return Number(value) > Number(rule.value);
-      case 'less_than':
+      case 'lessThan':
         return Number(value) < Number(rule.value);
-      case 'is_empty':
+      case 'isEmpty':
         return !value || value.length === 0;
-      case 'is_not_empty':
+      case 'isNotEmpty':
         return !!value && value.length > 0;
       default:
         return false;
