@@ -23,18 +23,18 @@ export interface ThemeConfig {
     incomingMessage: string;
     incomingMessageForeground: string;
     primaryDark: string;
-    accent?: string;
-    accentForeground?: string;
-    success?: string;
-    successForeground?: string;
-    warning?: string;
-    warningForeground?: string;
-    error?: string;
-    errorForeground?: string;
-    headerBackground?: string;
-    headerForeground?: string;
-    navigationBackground?: string;
-    navigationForeground?: string;
+    accent: string;
+    accentForeground: string;
+    success: string;
+    successForeground: string;
+    warning: string;
+    warningForeground: string;
+    error: string;
+    errorForeground: string;
+    headerBackground: string;
+    headerForeground: string;
+    navigationBackground: string;
+    navigationForeground: string;
   };
   position?: 'left' | 'right';
   compact?: boolean;
@@ -53,12 +53,12 @@ export interface ThemeConfig {
     noMessagesText: string;
     messagePlaceholder: string;
     chatTitle: string;
-    sendButtonText?: string;
-    attachmentButtonLabel?: string;
-    conversationStartedText?: string;
-    poweredByText?: string;
-    loadMoreText?: string;
-    typingText?: string;
+    sendButtonText: string;
+    attachmentButtonLabel: string;
+    conversationStartedText: string;
+    poweredByText: string;
+    loadMoreText: string;
+    typingText: string;
   };
   branding?: {
     logoUrl?: string;
@@ -153,36 +153,46 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
   children, 
   initialTheme = {} 
 }) => {
+  // Ensure all required properties have default values
+  const mergedColors = { ...defaultColors, ...initialTheme.colors };
+  const mergedLabels = { ...defaultLabels, ...initialTheme.labels };
+
   const [themeState, setThemeState] = useState<ThemeConfig>({
-    colors: { ...defaultColors, ...initialTheme.colors },
+    colors: mergedColors,
     position: initialTheme.position || 'right',
     compact: initialTheme.compact || false,
     radius: initialTheme.radius || 'md',
     shadow: initialTheme.shadow || 'md',
     fontFamily: initialTheme.fontFamily,
     animation: initialTheme.animation || { speed: 'normal', type: 'fade' },
-    labels: { ...defaultLabels, ...initialTheme.labels },
+    labels: mergedLabels,
     branding: initialTheme.branding || { showPoweredBy: true }
   });
 
   const updateTheme = (theme: Partial<ThemeConfig>) => {
-    setThemeState(prev => ({
-      ...prev,
-      colors: { ...prev.colors, ...theme.colors },
-      position: theme.position || prev.position,
-      compact: theme.compact !== undefined ? theme.compact : prev.compact,
-      radius: theme.radius || prev.radius,
-      shadow: theme.shadow || prev.shadow,
-      fontFamily: theme.fontFamily || prev.fontFamily,
-      animation: { ...prev.animation, ...theme.animation },
-      labels: { ...prev.labels, ...theme.labels },
-      branding: { ...prev.branding, ...theme.branding }
-    }));
+    setThemeState(prev => {
+      // Create merged values to ensure all required properties have values
+      const updatedColors = { ...prev.colors, ...theme.colors };
+      const updatedLabels = { ...prev.labels, ...theme.labels };
+      
+      return {
+        ...prev,
+        colors: updatedColors,
+        position: theme.position || prev.position,
+        compact: theme.compact !== undefined ? theme.compact : prev.compact,
+        radius: theme.radius || prev.radius,
+        shadow: theme.shadow || prev.shadow,
+        fontFamily: theme.fontFamily || prev.fontFamily,
+        animation: { ...prev.animation, ...theme.animation },
+        labels: updatedLabels,
+        branding: { ...prev.branding, ...theme.branding }
+      };
+    });
   };
 
   const contextValue: ThemeContextType = {
-    colors: themeState.colors || defaultColors,
-    labels: themeState.labels || defaultLabels,
+    colors: themeState.colors,
+    labels: themeState.labels,
     position: themeState.position,
     compact: themeState.compact,
     radius: themeState.radius,
