@@ -31,7 +31,7 @@ const MessageList: React.FC<MessageListProps> = ({
     }
 
     const lastGroup = groups[groups.length - 1];
-    const lastMessage = lastMessage = lastGroup[lastGroup.length - 1];
+    const lastMessage = lastGroup[lastGroup.length - 1];
     
     // Conditions for grouping messages together:
     // 1. Same sender
