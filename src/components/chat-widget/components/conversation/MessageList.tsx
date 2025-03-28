@@ -37,10 +37,15 @@ const MessageList: React.FC<MessageListProps> = ({
     // 1. Same sender
     // 2. Time difference less than 2 minutes (120,000 ms)
     const sameUser = lastMessage.sender === message.sender;
-    const timeDiff = typeof message.timestamp === 'string'
-      ? new Date(message.timestamp).getTime() - new Date(lastMessage.timestamp).getTime()
-      : message.timestamp.getTime() - lastMessage.timestamp.getTime();
     
+    // Fixed timestamp handling to properly handle string or Date objects
+    const getTimestampMs = (timestamp: string | Date): number => {
+      return typeof timestamp === 'string' 
+        ? new Date(timestamp).getTime() 
+        : timestamp.getTime();
+    };
+    
+    const timeDiff = getTimestampMs(message.timestamp) - getTimestampMs(lastMessage.timestamp);
     const closeInTime = timeDiff < 120000; // 2 minutes
     
     if (sameUser && closeInTime) {
