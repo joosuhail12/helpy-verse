@@ -40,7 +40,7 @@ const ConversationHeader = ({ ticket, onClose, activeUsers }: ConversationHeader
     // Fallback to ticket data if no contact details available
     return {
       name: ticket.customer,
-      initials: ticket.customer[0],
+      initials: ticket.customer ?? '',
       company: ticket.company,
       id: ticket.customer
     };
