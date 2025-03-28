@@ -14,6 +14,7 @@ interface ChatWidgetProps {
   settings?: Partial<ChatWidgetSettings>;
   isPreview?: boolean;
   showLauncher?: boolean;
+  sampleMessages?: boolean;
 }
 
 export const ChatWidget: React.FC<ChatWidgetProps> = ({ 
@@ -21,7 +22,8 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({
   theme = {}, 
   settings,
   isPreview = false,
-  showLauncher = false
+  showLauncher = false,
+  sampleMessages = false
 }) => {
   const [isOpen, setIsOpen] = useState(isPreview);
 
@@ -95,6 +97,8 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({
                     workspaceId={workspaceId} 
                     position={combinedTheme.position === 'left' ? 'left' : 'right'} 
                     compact={Boolean(combinedTheme.compact)}
+                    isPreview={isPreview}
+                    sampleMessages={sampleMessages}
                   />
                 </motion.div>
               )}

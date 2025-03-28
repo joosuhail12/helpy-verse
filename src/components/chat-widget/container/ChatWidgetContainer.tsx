@@ -6,12 +6,15 @@ import HomeView from '../views/HomeView';
 import MessagesView from '../views/MessagesView';
 import ConversationView from '../components/conversation/ConversationView';
 import Navigation from '../components/navigation/Navigation';
+import SampleConversation from '../components/conversation/SampleConversation';
 
 interface ChatWidgetContainerProps {
   onClose: () => void;
   workspaceId: string;
   position?: 'left' | 'right';
   compact?: boolean;
+  isPreview?: boolean;
+  sampleMessages?: boolean;
 }
 
 export type View = 'home' | 'messages' | 'conversation';
@@ -20,7 +23,9 @@ const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({
   onClose, 
   workspaceId,
   position = 'right',
-  compact = false 
+  compact = false,
+  isPreview = false,
+  sampleMessages = false
 }) => {
   const { conversations, currentConversation, selectConversation, createNewConversation } = useChat();
   const { colors } = useThemeContext();
@@ -54,6 +59,16 @@ const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({
           <div className="animate-spin h-8 w-8 border-4 border-t-transparent rounded-full" 
             style={{ borderColor: colors.primary, borderTopColor: 'transparent' }}></div>
         </div>
+      </div>
+    );
+  }
+
+  // If this is a preview with sample messages, show a sample conversation
+  if (isPreview && sampleMessages) {
+    return (
+      <div className={`flex flex-col h-full text-gray-900 ${compact ? 'max-w-xs' : 'w-full'}`} 
+        style={{ backgroundColor: colors.background, color: colors.foreground }}>
+        <SampleConversation onClose={onClose} position={position} compact={compact} />
       </div>
     );
   }

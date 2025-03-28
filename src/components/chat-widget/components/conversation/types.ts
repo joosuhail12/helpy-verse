@@ -1,34 +1,42 @@
 
 export interface ChatMessage {
   id: string;
-  sender: 'user' | 'agent' | 'system';
   content: string;
-  timestamp: Date | string;
-  conversationId: string;
-  metadata?: Record<string, any>;
-  attachments?: FileAttachment[];
-  reactions?: Record<string, string[]>;
+  sender: 'user' | 'agent' | 'system';
+  senderName?: string;
+  timestamp: string;
+  attachments?: Attachment[];
+  reactions?: Reaction[];
+  read?: boolean;
   readBy?: string[];
+}
+
+export interface Attachment {
+  id: string;
+  type: 'image' | 'file';
+  url: string;
+  name: string;
+  size?: number;
+  thumbnailUrl?: string;
+}
+
+export interface Reaction {
+  emoji: string;
+  userId: string;
 }
 
 export interface Conversation {
   id: string;
-  title?: string;
-  lastMessage?: string;
-  lastMessageTimestamp?: string;
-  unreadCount?: number;
+  title: string;
+  lastMessage?: ChatMessage;
+  unreadCount: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
-export interface TypingStatus {
-  userId: string;
-  username: string;
-  isTyping: boolean;
-}
-
-export interface FileAttachment {
-  id: string;
-  name: string;
-  type: string;
-  url: string;
-  size: number;
+export interface MessageInputProps {
+  onSendMessage: (message: string) => void;
+  isLoading?: boolean;
+  placeholder?: string;
+  showAttachments?: boolean;
 }
