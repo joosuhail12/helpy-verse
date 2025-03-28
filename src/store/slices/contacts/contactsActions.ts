@@ -3,24 +3,25 @@ import { PayloadAction } from '@reduxjs/toolkit';
 import { Contact, ContactFilters } from '@/types/contact';
 import { ContactsState } from './contactsTypes';
 
-// Action creators for the slice
-export const setSelectedContact = (state: ContactsState, action: PayloadAction<Contact>) => {
+// These are separate implementations of the reducers defined in contactsSlice
+// Currently they are not being used directly, but defined here for potential future refactoring
+export const setSelectedContactReducer = (state: ContactsState, action: PayloadAction<Contact>) => {
   state.selectedContact = action.payload;
 };
 
-export const clearSelectedContact = (state: ContactsState) => {
+export const clearSelectedContactReducer = (state: ContactsState) => {
   state.selectedContact = null;
 };
 
-export const setFilters = (state: ContactsState, action: PayloadAction<ContactFilters>) => {
+export const setFiltersReducer = (state: ContactsState, action: PayloadAction<ContactFilters>) => {
   state.filters = action.payload;
 };
 
-export const resetFilters = (state: ContactsState, initialFilters: ContactFilters) => {
+export const resetFiltersReducer = (state: ContactsState, initialFilters: ContactFilters) => {
   state.filters = initialFilters;
 };
 
-export const toggleSelectContact = (state: ContactsState, action: PayloadAction<string>) => {
+export const toggleSelectContactReducer = (state: ContactsState, action: PayloadAction<string>) => {
   if (state.selectedContactIds.includes(action.payload)) {
     state.selectedContactIds = state.selectedContactIds.filter(id => id !== action.payload);
   } else {
@@ -28,6 +29,6 @@ export const toggleSelectContact = (state: ContactsState, action: PayloadAction<
   }
 };
 
-export const clearSelection = (state: ContactsState) => {
+export const clearSelectionReducer = (state: ContactsState) => {
   state.selectedContactIds = [];
 };
