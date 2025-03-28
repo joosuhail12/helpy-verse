@@ -23,6 +23,13 @@ const MessageList: React.FC<MessageListProps> = ({
     }
   }, [messages]);
 
+  // Helper function to safely get timestamp in milliseconds
+  const getTimestampMs = (timestamp: string | Date): number => {
+    return timestamp instanceof Date 
+      ? timestamp.getTime() 
+      : new Date(timestamp).getTime();
+  };
+
   // Group messages by sender and consecutive time (within 2 minutes)
   const groupedMessages = messages.reduce((groups: ChatMessage[][], message, index) => {
     // Start a new group if this is the first message
@@ -37,9 +44,10 @@ const MessageList: React.FC<MessageListProps> = ({
     // 1. Same sender
     // 2. Time difference less than 2 minutes (120,000 ms)
     const sameUser = lastMessage.sender === message.sender;
-    const timeDiff = typeof message.timestamp === 'string'
-      ? new Date(message.timestamp).getTime() - new Date(lastMessage.timestamp).getTime()
-      : message.timestamp.getTime() - lastMessage.timestamp.getTime();
+    
+    const lastMessageTime = getTimestampMs(lastMessage.timestamp);
+    const currentMessageTime = getTimestampMs(message.timestamp);
+    const timeDiff = currentMessageTime - lastMessageTime;
     
     const closeInTime = timeDiff < 120000; // 2 minutes
     
