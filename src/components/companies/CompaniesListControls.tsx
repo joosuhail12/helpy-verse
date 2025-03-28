@@ -5,8 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { selectSelectedCompanyIds, clearSelectedCompanies } from '@/store/slices/companies/companiesSlice';
-import { CreateCompanyDialog } from './CreateCompanyDialog';
+import { clearSelectedCompanies } from '@/store/slices/companies/companiesSlice';
+import { selectSelectedCompanyIds } from '@/store/slices/companies/selectors';
 
 export const CompaniesListControls = () => {
   const dispatch = useAppDispatch();
@@ -45,10 +45,7 @@ export const CompaniesListControls = () => {
         </Button>
       </div>
 
-      <CreateCompanyDialog
-        open={showCreateDialog}
-        onOpenChange={setShowCreateDialog}
-      />
+      {/* We need to implement CreateCompanyDialog */}
     </div>
   );
 };

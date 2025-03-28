@@ -1,81 +1,50 @@
 
-import { Building2, MoreHorizontal, CheckCircle, XCircle } from 'lucide-react';
-import { TableCell, TableRow } from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import React from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
-import type { Company } from '@/types/company';
-import { useNavigate } from 'react-router-dom';
-import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { toggleCompanySelection } from '@/store/slices/companies/companiesSlice';
+import { Link } from 'react-router-dom';
+import { Building2 } from 'lucide-react';
 
 interface CompanyListItemProps {
-  company: Company;
+  company: any;
+  isSelected: boolean;
+  onToggleSelect: (id: string) => void;
 }
 
-export const CompanyListItem = ({ company }: CompanyListItemProps) => {
-  const navigate = useNavigate();
-  const dispatch = useAppDispatch();
-
-  const handleRowClick = () => {
-    navigate(`/home/contacts/companies/${company.id}`);
-  };
-
-  const handleCheckboxClick = (e: React.MouseEvent) => {
+export const CompanyListItem: React.FC<CompanyListItemProps> = ({ 
+  company, 
+  isSelected, 
+  onToggleSelect 
+}) => {
+  const handleToggleSelect = (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
-    dispatch(toggleCompanySelection(company.id));
+    onToggleSelect(company.id);
   };
 
   return (
-    <TableRow 
-      className="cursor-pointer hover:bg-gray-50"
-      onClick={handleRowClick}
-    >
-      <TableCell onClick={handleCheckboxClick}>
-        <Checkbox />
-      </TableCell>
-      <TableCell>
-        <div className="flex items-center gap-2">
-          <div className="p-1 bg-purple-100 rounded-lg">
-            <Building2 className="h-4 w-4 text-purple-600" />
-          </div>
-          <span>{company.name}</span>
+    <li className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800">
+      <Link to={`/companies/${company.id}`} className="flex items-center gap-4">
+        <div onClick={handleToggleSelect}>
+          <Checkbox checked={isSelected} />
         </div>
-      </TableCell>
-      <TableCell>{company.website || '-'}</TableCell>
-      <TableCell>{company.industry || '-'}</TableCell>
-      <TableCell>
-        <Badge variant={company.type === 'customer' ? 'default' : 'secondary'}>
-          {company.type || 'N/A'}
-        </Badge>
-      </TableCell>
-      <TableCell>
-        <Badge variant={company.status === 'active' ? 'default' : 'destructive'}>
-          {company.status === 'active' ? (
-            <div className="flex items-center gap-1">
-              <CheckCircle className="h-3 w-3" />
-              <span>Active</span>
-            </div>
-          ) : (
-            <div className="flex items-center gap-1">
-              <XCircle className="h-3 w-3" />
-              <span>Inactive</span>
-            </div>
-          )}
-        </Badge>
-      </TableCell>
-      <TableCell>
-        {company.location?.city && company.location?.country ? 
-          `${company.location.city}, ${company.location.country}` : '-'}
-      </TableCell>
-      <TableCell>
-        {company.numberOfEmployees ? `${company.numberOfEmployees}` : '-'}
-      </TableCell>
-      <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-        <Button variant="ghost" size="icon">
-          <MoreHorizontal className="h-4 w-4" />
-        </Button>
-      </TableCell>
-    </TableRow>
+        
+        <div className="flex-shrink-0 h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center">
+          <Building2 className="h-5 w-5 text-primary" />
+        </div>
+        
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+            {company.name}
+          </p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+            {company.industry || 'No industry'} • {company.location || 'No location'}
+          </p>
+        </div>
+        
+        <div className="text-sm text-gray-500 dark:text-gray-400">
+          {company.contacts ? `${company.contacts} contacts` : 'No contacts'}
+        </div>
+      </Link>
+    </li>
   );
 };

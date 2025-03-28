@@ -1,9 +1,9 @@
 
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
-import type { RootState } from '@/store/store';
 import type { Company } from '@/types/company';
 import { companiesService } from '@/api/services/companiesService';
+import * as selectors from './selectors';
 
 export interface CompaniesState {
   companies: Company[];
@@ -27,9 +27,22 @@ export interface CompaniesResponse {
   total: number;
 }
 
-export interface CompanyResponse extends Company {}
-export interface CreateCompaniesResponse extends Company {}
-export interface UpdateCompanyPayload extends Company {}
+export interface CompanyResponse {
+  id: string;
+  name: string;
+  [key: string]: any;
+}
+
+export interface CreateCompaniesResponse {
+  id: string;
+  name: string;
+  [key: string]: any;
+}
+
+export interface UpdateCompanyPayload {
+  id: string;
+  [key: string]: any;
+}
 
 const initialState: CompaniesState = {
   companies: [],
@@ -123,7 +136,7 @@ const companiesSlice = createSlice({
       })
       .addCase(fetchCompanyById.fulfilled, (state, action) => {
         state.loading = false;
-        state.companyDetails = action.payload;
+        state.companyDetails = action.payload as unknown as Company;
       })
       .addCase(fetchCompanyById.rejected, (state, action) => {
         state.loading = false;
@@ -188,10 +201,19 @@ export const {
   setSelectedCompanyIds
 } = companiesSlice.actions;
 
-// Selectors
-export const selectAllCompanies = (state: RootState) => state.companies.companies;
-export const selectCompanyDetails = (state: RootState) => state.companies.companyDetails;
-export const selectCompaniesLoading = (state: RootState) => state.companies.loading;
-export const selectCompaniesError = (state: RootState) => state.companies.error;
+// Re-export selectors
+export {
+  selectors
+};
+
+// Export individual selectors for direct imports
+export const {
+  selectAllCompanies,
+  selectSelectedCompanyIds,
+  selectCompanyDetails,
+  selectCompaniesLoading,
+  selectCompaniesError,
+  selectSelectedCompany
+} = selectors;
 
 export default companiesSlice.reducer;

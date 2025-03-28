@@ -2,13 +2,21 @@
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { 
-  selectAllCompanies, 
-  selectCompaniesLoading, 
   toggleCompanySelection,
-  selectSelectedCompanyIds
 } from '@/store/slices/companies/companiesSlice';
+import { 
+  selectAllCompanies, 
+  selectCompaniesLoading,
+  selectSelectedCompanyIds 
+} from '@/store/slices/companies/selectors';
 import { CompanyListItem } from './CompanyListItem';
 import { LoadingState } from './LoadingState';
+
+export interface CompanyListItemProps {
+  company: any;
+  onToggleSelect: (id: string) => void;
+  isSelected: boolean;
+}
 
 export const CompaniesList = () => {
   const dispatch = useAppDispatch();

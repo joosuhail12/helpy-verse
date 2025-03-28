@@ -1,34 +1,34 @@
 
 import { useState, useEffect } from 'react';
-import type { QueryField, DataSource } from '@/types/queryBuilder';
+import { QueryField } from '@/types/queryBuilder';
 
-type ExtendedDataSource = DataSource | `custom_objects.${string}` | '';
-
-export const useSourceFields = (source: ExtendedDataSource, allFields: QueryField[]) => {
-  const [fields, setFields] = useState<QueryField[]>([]);
+/**
+ * Custom hook to filter fields by source
+ * @param fields The complete list of fields
+ * @param source The source to filter by ('contacts', 'companies', etc)
+ * @param customObject Optional custom object identifier
+ */
+export const useSourceFields = (
+  fields: QueryField[],
+  source: string,
+  customObject?: string
+) => {
+  const [filteredFields, setFilteredFields] = useState<QueryField[]>([]);
 
   useEffect(() => {
-    if (!source) {
-      setFields([]);
-      return;
-    }
+    // Filter fields by source and custom object (if applicable)
+    const filtered = fields.filter(field => {
+      if (field.dataSource && field.dataSource !== source) {
+        return false;
+      }
+      if (customObject && field.customObject && field.customObject !== customObject) {
+        return false;
+      }
+      return true;
+    });
 
-    // Handle custom objects source
-    if (source.startsWith('custom_objects.')) {
-      const customObjectName = source.split('.')[1];
-      const filteredFields = allFields.filter(
-        (field) => field.dataSource === 'custom_objects' && field.customObject === customObjectName
-      );
-      setFields(filteredFields);
-      return;
-    }
+    setFilteredFields(filtered);
+  }, [fields, source, customObject]);
 
-    // Regular data sources
-    const filteredFields = allFields.filter(
-      (field) => field.dataSource === source
-    );
-    setFields(filteredFields);
-  }, [source, allFields]);
-
-  return fields;
+  return filteredFields;
 };
