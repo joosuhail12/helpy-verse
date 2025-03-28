@@ -8,6 +8,7 @@ import { ChatMessage } from './types';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import dayjs from 'dayjs';
+import VirtualizedMessageList from './VirtualizedMessageList';
 
 interface MessageListProps {
   messages: ChatMessage[];
@@ -17,6 +18,7 @@ interface MessageListProps {
   isLoading?: boolean;
   hasMore?: boolean;
   onLoadMore?: () => void;
+  useVirtualization?: boolean;
 }
 
 const MessageList: React.FC<MessageListProps> = ({
@@ -26,8 +28,25 @@ const MessageList: React.FC<MessageListProps> = ({
   encrypted = false,
   isLoading = false,
   hasMore = false,
-  onLoadMore
+  onLoadMore,
+  useVirtualization = messages.length > 50 // Auto-enable virtualization for large message lists
 }) => {
+  // Use virtualized list for large message histories
+  if (useVirtualization) {
+    return (
+      <VirtualizedMessageList
+        messages={messages}
+        conversationId={conversationId}
+        showAvatars={showAvatars}
+        encrypted={encrypted}
+        isLoading={isLoading}
+        hasMore={hasMore}
+        onLoadMore={onLoadMore}
+      />
+    );
+  }
+  
+  // Original implementation for smaller message lists
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { colors } = useThemeContext();
   

@@ -72,6 +72,7 @@ const EnhancedConversationView: React.FC<EnhancedConversationViewProps> = ({
       content,
       sender: 'user',
       timestamp: new Date().toISOString(),
+      conversationId,
       status: offlineMode ? 'sending' : 'sent',
       attachments: attachments?.map(file => ({
         id: crypto.randomUUID(),
@@ -119,6 +120,8 @@ const EnhancedConversationView: React.FC<EnhancedConversationViewProps> = ({
         isLoading={isLoading}
         hasMore={!isSearching && hasMore}
         onLoadMore={loadMoreMessages}
+        // Auto-enable virtualization for large message lists
+        useVirtualization={messages.length > 50}
       />
       
       <MessageInput 
@@ -129,6 +132,8 @@ const EnhancedConversationView: React.FC<EnhancedConversationViewProps> = ({
         attachments={attachments}
         onFileUpload={handleFileUpload}
         onRemoveFile={handleRemoveFile}
+        isRateLimited={rateCheck => !rateCheck.allowed}
+        rateLimitTimeRemaining={rateCheck => rateCheck.retryAfterMs || 0}
       />
     </div>
   );

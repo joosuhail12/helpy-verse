@@ -112,6 +112,8 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
           messages={messages} 
           conversationId={conversationId}
           isLoading={isLoading}
+          // Auto-enable virtualization for large message lists
+          useVirtualization={messages.length > 50}
         />
         
         {typingUsers.length > 0 && (

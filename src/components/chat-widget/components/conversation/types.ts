@@ -8,6 +8,14 @@ export interface ChatMessage {
   encrypted?: boolean;
   encryptedContent?: string;
   metadata?: Record<string, any>;
+  status?: 'sending' | 'sent' | 'delivered' | 'read' | 'failed';
+  attachments?: {
+    id: string;
+    name: string;
+    url: string;
+    size: number;
+    type: string;
+  }[];
 }
 
 export interface MessageInputProps {
@@ -40,4 +48,14 @@ export interface Conversation {
   lastMessageTimestamp: string;
   unreadCount: number;
   encrypted?: boolean;
+}
+
+export interface EnhancedConversationViewProps {
+  conversationId: string;
+  showSearch?: boolean;
+  showAttachments?: boolean;
+  showReactions?: boolean;
+  showReadReceipts?: boolean;
+  encrypted?: boolean;
+  virtualized?: boolean;
 }
