@@ -13,8 +13,8 @@ export const QueryBuilder = ({ value, onChange, fields, errors = [] }: QueryBuil
   return (
     <QueryGroupComponent
       group={value}
-      onChange={onChange}
       fields={fields}
+      onChange={onChange}
       depth={0}
       maxDepth={3}
       errors={errors}
