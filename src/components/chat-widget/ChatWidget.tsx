@@ -23,41 +23,50 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(isPreview);
 
-  const combinedTheme: Partial<ThemeConfig> = {
-    ...theme,
-    position: settings?.position || theme.position,
-    compact: settings?.compact || theme.compact,
+  const combinedTheme: ThemeConfig = {
+    position: settings?.position || theme.position || 'right',
+    compact: settings?.compact || theme.compact || false,
     colors: {
-      ...theme.colors,
-      primary: settings?.primaryColor || theme.colors?.primary,
-      background: settings?.colors?.background || theme.colors?.background,
-      backgroundSecondary: settings?.colors?.backgroundSecondary || theme.colors?.backgroundSecondary,
-      foreground: settings?.colors?.foreground || theme.colors?.foreground,
-      border: settings?.colors?.border || theme.colors?.border,
-      userMessage: settings?.colors?.userMessage?.background || theme.colors?.userMessage,
-      userMessageText: settings?.colors?.userMessage?.text || theme.colors?.userMessageText,
-      agentMessage: settings?.colors?.agentMessage?.background || theme.colors?.agentMessage,
-      agentMessageText: settings?.colors?.agentMessage?.text || theme.colors?.agentMessageText,
-      inputBackground: settings?.colors?.input?.background || theme.colors?.inputBackground,
-    }
+      primary: settings?.primaryColor || theme.colors?.primary || '#9b87f5',
+      background: settings?.colors?.background || theme.colors?.background || '#ffffff',
+      backgroundSecondary: settings?.colors?.backgroundSecondary || theme.colors?.backgroundSecondary || '#f9f9f9',
+      foreground: settings?.colors?.foreground || theme.colors?.foreground || '#1A1F2C',
+      border: settings?.colors?.border || theme.colors?.border || '#eaeaea',
+      userMessage: settings?.colors?.userMessage?.background || theme.colors?.userMessage || '#9b87f5',
+      userMessageText: settings?.colors?.userMessage?.text || theme.colors?.userMessageText || '#ffffff',
+      agentMessage: settings?.colors?.agentMessage?.background || theme.colors?.agentMessage || '#f1f1f1',
+      agentMessageText: settings?.colors?.agentMessage?.text || theme.colors?.agentMessageText || '#1A1F2C',
+      inputBackground: settings?.colors?.input?.background || theme.colors?.inputBackground || '#ffffff',
+      primaryForeground: settings?.colors?.button?.text || '#ffffff',
+    },
+    typography: {
+      fontFamily: settings?.typography?.fontFamily || theme.typography?.fontFamily || '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif',
+      fontSize: {
+        small: settings?.typography?.fontSize?.small || theme.typography?.fontSize?.small || '12px',
+        medium: settings?.typography?.fontSize?.medium || theme.typography?.fontSize?.medium || '14px',
+        large: settings?.typography?.fontSize?.large || theme.typography?.fontSize?.large || '16px',
+      },
+    },
+    layout: {
+      borderRadius: {
+        small: settings?.layout?.borderRadius?.small || theme.layout?.borderRadius?.small || '4px',
+        medium: settings?.layout?.borderRadius?.medium || theme.layout?.borderRadius?.medium || '8px',
+        large: settings?.layout?.borderRadius?.large || theme.layout?.borderRadius?.large || '12px',
+      },
+      spacing: {
+        small: settings?.layout?.spacing?.small || theme.layout?.spacing?.small || '4px',
+        medium: settings?.layout?.spacing?.medium || theme.layout?.spacing?.medium || '8px',
+        large: settings?.layout?.spacing?.large || theme.layout?.spacing?.large || '16px',
+      },
+    },
+    labels: {
+      welcomeTitle: settings?.welcomeTitle || theme.labels?.welcomeTitle || 'Hello there.',
+      welcomeSubtitle: settings?.welcomeSubtitle || theme.labels?.welcomeSubtitle || 'How can we help?',
+      askQuestionButton: theme.labels?.askQuestionButton || 'Ask a question',
+      recentMessagesTitle: theme.labels?.recentMessagesTitle || 'Recent Messages',
+      noMessagesText: theme.labels?.noMessagesText || 'No messages yet',
+    },
   };
-
-  // Add typography and layout from settings if available
-  if (settings?.typography) {
-    combinedTheme.typography = {
-      ...theme.typography,
-      fontFamily: settings.typography.fontFamily || theme.typography?.fontFamily,
-      fontSize: settings.typography.fontSize || theme.typography?.fontSize,
-    };
-  }
-
-  if (settings?.layout) {
-    combinedTheme.layout = {
-      ...theme.layout,
-      borderRadius: settings.layout.borderRadius || theme.layout?.borderRadius,
-      spacing: settings.layout.spacing || theme.layout?.spacing,
-    };
-  }
 
   const toggleWidget = () => {
     setIsOpen((prev) => !prev);
@@ -103,8 +112,8 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({
                   <ChatWidgetContainer 
                     onClose={() => setIsOpen(false)} 
                     workspaceId={workspaceId} 
-                    position={combinedTheme.position === 'left' ? 'left' : 'right'} 
-                    compact={Boolean(combinedTheme.compact)}
+                    position={combinedTheme.position} 
+                    compact={combinedTheme.compact}
                   />
                 </motion.div>
               )}

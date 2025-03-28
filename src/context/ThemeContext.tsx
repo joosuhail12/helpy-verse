@@ -15,6 +15,7 @@ export interface ThemeConfig {
     agentMessage?: string;
     agentMessageText?: string;
     inputBackground?: string;
+    primaryForeground?: string; // Add this for button text color
   };
   typography?: {
     fontFamily?: string;
@@ -35,6 +36,13 @@ export interface ThemeConfig {
       medium?: string;
       large?: string;
     };
+  };
+  labels?: {
+    welcomeTitle?: string;
+    welcomeSubtitle?: string;
+    askQuestionButton?: string;
+    recentMessagesTitle?: string;
+    noMessagesText?: string;
   };
 }
 
@@ -57,6 +65,7 @@ const defaultTheme: ThemeConfig = {
     agentMessage: '#f1f1f1',
     agentMessageText: '#1A1F2C',
     inputBackground: '#ffffff',
+    primaryForeground: '#ffffff',
   },
   typography: {
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif',
@@ -78,6 +87,13 @@ const defaultTheme: ThemeConfig = {
       large: '16px',
     },
   },
+  labels: {
+    welcomeTitle: 'Hello there.',
+    welcomeSubtitle: 'How can we help?',
+    askQuestionButton: 'Ask a question',
+    recentMessagesTitle: 'Recent Messages',
+    noMessagesText: 'No messages yet',
+  },
 };
 
 export const ThemeContext = createContext<ThemeContextType>({
@@ -98,4 +114,10 @@ export const ThemeProvider: React.FC<{
   );
 };
 
-export const useThemeContext = () => useContext(ThemeContext);
+export const useThemeContext = () => {
+  const context = useContext(ThemeContext);
+  if (!context) {
+    throw new Error('useThemeContext must be used within a ThemeProvider');
+  }
+  return context;
+};

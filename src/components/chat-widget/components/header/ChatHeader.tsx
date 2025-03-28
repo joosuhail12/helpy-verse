@@ -20,7 +20,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
   workspaceId,
   conversationId 
 }) => {
-  const { colors } = useThemeContext();
+  const { theme } = useThemeContext();
   
   // Only fetch agent presence if we have workspace and conversation IDs
   const shouldFetchPresence = !!(workspaceId && conversationId);
@@ -31,13 +31,17 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
   return (
     <div 
       className="p-4 border-b flex items-center space-x-3" 
-      style={{ borderColor: colors.border, backgroundColor: colors.background, color: colors.foreground }}
+      style={{ 
+        borderColor: theme.colors?.border, 
+        backgroundColor: theme.colors?.background, 
+        color: theme.colors?.foreground 
+      }}
     >
       {onBackClick && (
         <button 
           onClick={onBackClick}
           className="rounded-full p-1 hover:bg-gray-100 transition-colors"
-          style={{ color: colors.foreground }}
+          style={{ color: theme.colors?.foreground }}
           aria-label="Go back"
         >
           <ArrowLeft size={20} />
@@ -57,7 +61,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
         <button
           onClick={onClose}
           className="rounded-full p-1 hover:bg-gray-100 transition-colors"
-          style={{ color: colors.foreground }}
+          style={{ color: theme.colors?.foreground }}
           aria-label="Close chat"
         >
           <X size={20} />

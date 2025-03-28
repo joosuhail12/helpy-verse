@@ -26,7 +26,7 @@ const EnhancedConversationView: React.FC<EnhancedConversationViewProps> = ({
   disabled = false,
   hasActiveConversation = false
 }) => {
-  const { colors } = useThemeContext();
+  const { theme } = useThemeContext();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
@@ -41,7 +41,7 @@ const EnhancedConversationView: React.FC<EnhancedConversationViewProps> = ({
   };
 
   return (
-    <div className="flex flex-col h-full" style={{ background: colors.background, color: colors.foreground }}>
+    <div className="flex flex-col h-full" style={{ background: theme.colors?.background, color: theme.colors?.foreground }}>
       <div className="flex-1 overflow-y-auto p-4">
         <MessageList messages={messages} />
         
