@@ -12,13 +12,13 @@ import {
 import { Search, Plus, Filter } from 'lucide-react';
 import { BulkActions } from './BulkActions';
 import { useAppSelector } from '@/hooks/useAppSelector';
-import { selectSelectedContactIds } from '@/store/slices/contacts/contactsSlice';
+import { selectSelectedContactIds } from '@/store/slices/contacts/contactsSelectors';
 
 interface ContactListControlsProps {}
 
 export const ContactListControls: React.FC<ContactListControlsProps> = () => {
   const selectedContactIds = useAppSelector(selectSelectedContactIds);
-  const hasSelection = selectedContactIds.length > 0;
+  const hasSelection = selectedContactIds && selectedContactIds.length > 0;
   
   const [showBulkActions, setShowBulkActions] = useState(false);
   
@@ -55,7 +55,7 @@ export const ContactListControls: React.FC<ContactListControlsProps> = () => {
           <div className="flex gap-2">
             {hasSelection && (
               <Button variant="outline" onClick={() => setShowBulkActions(true)}>
-                Actions ({selectedContactIds.length})
+                Actions ({selectedContactIds ? selectedContactIds.length : 0})
               </Button>
             )}
             <Button>

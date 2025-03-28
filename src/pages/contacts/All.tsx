@@ -7,7 +7,8 @@ import {
   selectContactsLoading, 
   selectContactsError,
   fetchCustomers
-} from '@/store/slices/contacts/contactsSlice';
+} from '@/store/slices/contacts/contactsSelectors';
+import { fetchCustomers as fetchCustomersAction } from '@/store/slices/contacts/contactsSlice';
 import { ContactList } from '@/components/contacts/ContactList';
 import { ContactsHeader } from '@/components/contacts/ContactsHeader';
 import { ContactListControls } from '@/components/contacts/ContactListControls';
@@ -22,7 +23,7 @@ const ContactsAll = () => {
   const error = useAppSelector(selectContactsError);
 
   useEffect(() => {
-    dispatch(fetchCustomers());
+    dispatch(fetchCustomersAction());
   }, [dispatch]);
 
   const renderContent = () => {
@@ -40,7 +41,7 @@ const ContactsAll = () => {
       );
     }
 
-    if (contacts.length === 0) {
+    if (!contacts || contacts.length === 0) {
       return (
         <div className="flex flex-col items-center justify-center p-8 text-center">
           <h3 className="text-xl font-medium mb-2">No contacts found</h3>

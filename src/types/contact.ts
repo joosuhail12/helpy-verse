@@ -20,6 +20,22 @@ export interface Contact {
   lastContacted?: string;
   createdAt: string;
   updatedAt: string;
+  
+  // Additional properties that were causing errors
+  notes?: string;
+  title?: string;
+  department?: string;
+  timezone?: string;
+  source?: string;
+  language?: string;
+  street?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  country?: string;
+  linkedinUrl?: string;
+  twitterUrl?: string;
+  
   socialMedia?: {
     twitter?: string;
     linkedin?: string;

@@ -6,9 +6,9 @@ import {
   fetchTags, 
   createTag,
   updateTag,
-  deleteTag,
-  selectAllTags
-} from '@/store/slices/tags/tagsSlice';
+  deleteTags
+} from '@/store/slices/tags';
+import { selectAllTags } from '@/store/slices/tags';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -31,7 +31,7 @@ const TagList = () => {
   const [editColor, setEditColor] = useState('');
   
   useEffect(() => {
-    dispatch(fetchTags());
+    dispatch(fetchTags({}));
   }, [dispatch]);
   
   const handleCreateTag = async () => {
@@ -73,7 +73,7 @@ const TagList = () => {
     }
     
     try {
-      await dispatch(updateTag({ id: tagId, name: editName, color: editColor }));
+      await dispatch(updateTag({ id: tagId, tag: { name: editName, color: editColor } }));
       setEditingTagId(null);
       toast({
         title: "Success",
@@ -90,7 +90,7 @@ const TagList = () => {
   
   const handleDeleteTag = async (tagId: string) => {
     try {
-      await dispatch(deleteTag(tagId));
+      await dispatch(deleteTags([tagId]));
       toast({
         title: "Success",
         description: "Tag deleted successfully",

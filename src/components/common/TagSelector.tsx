@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { useAppDispatch, useAppSelector } from '@/hooks';
-import { fetchTags } from '@/store/slices/tags/tagsSlice';
+import { fetchTags, selectAllTags } from '@/store/slices/tags';
 
 interface TagSelectorProps {
   selectedTags: string[];
@@ -20,7 +20,7 @@ export const TagSelector = ({ selectedTags, onChange }: TagSelectorProps) => {
   const [newTag, setNewTag] = useState('');
   const dispatch = useAppDispatch();
   
-  const allTags = useAppSelector(state => state.tags.tags) || [];
+  const allTags = useAppSelector(selectAllTags) || [];
   
   useEffect(() => {
     dispatch(fetchTags({ query: '' }));
@@ -44,9 +44,11 @@ export const TagSelector = ({ selectedTags, onChange }: TagSelectorProps) => {
   };
   
   // Filter out already selected tags
-  const availableTags = allTags
-    .filter(tag => typeof tag === 'object' && tag.name && !selectedTags.includes(tag.name))
-    .map(tag => typeof tag === 'object' ? tag.name : '');
+  const availableTags = Array.isArray(allTags) 
+    ? allTags
+        .filter(tag => typeof tag === 'object' && tag.name && !selectedTags.includes(tag.name))
+        .map(tag => typeof tag === 'object' ? tag.name : '')
+    : [];
   
   return (
     <div className="space-y-4">

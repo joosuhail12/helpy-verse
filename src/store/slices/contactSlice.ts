@@ -1,3 +1,4 @@
+
 import { createSlice } from '@reduxjs/toolkit';
 import { RootState } from '../store';
 import * as contactsSelectors from './contacts/contactsSelectors';
@@ -19,10 +20,10 @@ export {
 
 // Export selectors with the old names for backward compatibility
 export const selectContacts = contactsSelectors.selectAllContacts;
-export const selectContactsLoading = contactsSelectors.selectContactsLoading;
-export const selectContactsError = contactsSelectors.selectContactsError;
+export const selectContactsLoading = contactsSelectors.selectContactLoading;
+export const selectContactsError = contactsSelectors.selectContactError;
 export const selectContactDetails = contactsSelectors.selectContactDetails;
 export const selectSelectedContact = contactsSelectors.selectSelectedContact;
-export const selectSelectedContacts = contactsSelectors.selectSelectedContacts;
+export const selectSelectedContacts = contactsSelectors.selectSelectedContactIds;
 
 export default contactSlice.reducer;

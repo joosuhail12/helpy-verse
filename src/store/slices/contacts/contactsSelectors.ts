@@ -72,5 +72,11 @@ export const selectContactDetails = createSelector(
   (contactsState) => contactsState.contactDetails
 );
 
+// Selecting multiple contacts
+export const selectSelectedContacts = createSelector(
+  [selectAllContacts, selectSelectedContactIds],
+  (contacts, selectedIds) => contacts.filter(contact => selectedIds.includes(contact.id))
+);
+
 // For convenience in components
 export const selectContacts = selectAllContacts;

@@ -245,4 +245,7 @@ export const {
   clearSelection
 } = contactsSlice.actions;
 
+// Export the selectors
+export * from './contactsSelectors';
+
 export default contactsSlice.reducer;

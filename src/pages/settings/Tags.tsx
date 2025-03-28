@@ -10,6 +10,14 @@ import TagsErrorBoundary from '@/components/settings/tags/TagsErrorBoundary';
 
 const ITEMS_PER_PAGE = 10;
 
+// Define the props interface for TagList
+interface TagListProps {
+  searchQuery: string;
+  currentPage: number;
+  itemsPerPage: number;
+  onPageChange: (page: number) => void;
+}
+
 const Tags = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
