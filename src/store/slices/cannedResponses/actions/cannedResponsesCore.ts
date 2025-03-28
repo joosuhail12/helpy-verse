@@ -1,69 +1,53 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { CannedResponse } from '@/mock/cannedResponses';
+import { CannedResponsesState } from '../types';
+import { cannedResponsesAdapter } from '../adapter';
 
-export type CannedResponsesState = {
-  responses: CannedResponse[];
-  selectedResponse: CannedResponse | null;
-  loading: boolean;
-  error: string | null;
-};
-
-const initialState: CannedResponsesState = {
-  responses: [],
-  selectedResponse: null,
-  loading: false,
-  error: null,
-};
-
-// Create a slice for core canned response actions
+// Create the core slice with local reducers
 const cannedResponsesCoreSlice = createSlice({
   name: 'cannedResponses',
-  initialState,
+  initialState: cannedResponsesAdapter.getInitialState({
+    loading: false,
+    error: null,
+    selectedResponseId: null,
+    versionHistory: null,
+    categories: []
+  }),
   reducers: {
-    'cannedResponses/setLoading': (state, action: PayloadAction<boolean>) => {
-      state.loading = action.payload;
+    // Select a canned response
+    selectCannedResponse: (state, action: PayloadAction<string>) => {
+      state.selectedResponseId = action.payload;
     },
-    'cannedResponses/setError': (state, action: PayloadAction<string | null>) => {
-      state.error = action.payload;
+    
+    // Clear selected canned response
+    clearSelectedCannedResponse: (state) => {
+      state.selectedResponseId = null;
     },
-    'cannedResponses/setResponses': (state, action: PayloadAction<CannedResponse[]>) => {
-      state.responses = action.payload;
+    
+    // Set categories
+    setCategories: (state, action: PayloadAction<string[]>) => {
+      state.categories = action.payload;
     },
-    'cannedResponses/addResponse': (state, action: PayloadAction<CannedResponse>) => {
-      state.responses.push(action.payload);
-    },
-    'cannedResponses/updateResponse': (state, action: PayloadAction<CannedResponse>) => {
-      const index = state.responses.findIndex(response => response.id === action.payload.id);
-      if (index !== -1) {
-        state.responses[index] = action.payload;
-      }
-    },
-    'cannedResponses/deleteResponse': (state, action: PayloadAction<string>) => {
-      state.responses = state.responses.filter(response => response.id !== action.payload);
-    },
-    'cannedResponses/selectResponse': (state, action: PayloadAction<string>) => {
-      state.selectedResponse = state.responses.find(response => response.id === action.payload) || null;
-    },
-    'cannedResponses/clearSelectedResponse': (state) => {
-      state.selectedResponse = null;
+    
+    // Set version history
+    setVersionHistory: (state, action: PayloadAction<{
+      responseId: string;
+      versions: any[];
+    } | null>) => {
+      state.versionHistory = action.payload;
     }
   }
 });
 
-// Export the actions with consistent naming
+// Export the actions for direct usage
 export const {
-  'cannedResponses/setLoading': setLoading,
-  'cannedResponses/setError': setError,
-  'cannedResponses/setResponses': setResponses,
-  'cannedResponses/addResponse': addResponse,
-  'cannedResponses/updateResponse': updateResponse,
-  'cannedResponses/deleteResponse': deleteResponse,
-  'cannedResponses/selectResponse': selectResponse,
-  'cannedResponses/clearSelectedResponse': clearSelectedResponse
+  selectCannedResponse,
+  clearSelectedCannedResponse,
+  setCategories,
+  setVersionHistory
 } = cannedResponsesCoreSlice.actions;
 
-// Export the core slice for configuration
+// Export the core slice for configuration in the main slice
 export const cannedResponsesCoreSlice_ForConfiguration = {
   name: cannedResponsesCoreSlice.name,
   initialState: cannedResponsesCoreSlice.getInitialState(),

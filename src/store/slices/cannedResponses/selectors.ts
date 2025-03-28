@@ -1,7 +1,7 @@
 
-import { RootState } from '../../store';
 import { createSelector } from '@reduxjs/toolkit';
-import { selectAllCannedResponses, selectCannedResponseById } from './cannedResponsesSlice';
+import { RootState } from '../../store';
+import { selectAllCannedResponses, selectCannedResponseById } from './adapter';
 
 // Base selector to get the cannedResponses slice
 const selectCannedResponsesState = (state: RootState) => state.cannedResponses;
@@ -40,3 +40,13 @@ export const selectCannedResponseByIdSelector = (id: string) =>
     [selectCannedResponsesState],
     (state) => selectCannedResponseById(state, id)
   );
+
+export const selectCannedResponseCategories = createSelector(
+  [selectCannedResponsesState],
+  (state) => state.categories
+);
+
+export const selectVersionHistory = createSelector(
+  [selectCannedResponsesState],
+  (state) => state.versionHistory
+);

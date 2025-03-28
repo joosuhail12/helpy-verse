@@ -1,117 +1,128 @@
 
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import type { CannedResponse } from '@/mock/cannedResponses';
-import { 
-  setLoading, 
-  setError, 
-  setResponses, 
-  addResponse, 
-  updateResponse, 
-  deleteResponse 
-} from './cannedResponsesCore';
-import { mockCannedResponses } from '@/mock/cannedResponses';
+import { CannedResponse } from '@/mock/cannedResponses';
 
-// In a real app, these would make API calls to your backend
+// Mock API call function with delay to simulate server request
+const mockApiCall = async (delay: number) => {
+  return new Promise<void>(resolve => setTimeout(resolve, delay));
+};
+
+// Fetch all canned responses
 export const fetchCannedResponses = createAsyncThunk(
-  'cannedResponses/fetchAll',
-  async (_, { dispatch }) => {
+  'cannedResponses/fetchCannedResponses',
+  async (_, { rejectWithValue }) => {
     try {
-      dispatch(setLoading(true));
-      // Simulating API call with mock data
-      const responses = mockCannedResponses;
-      dispatch(setResponses(responses));
-      dispatch(setError(null));
-      return responses;
-    } catch (error) {
-      dispatch(setError(error instanceof Error ? error.message : 'Failed to fetch canned responses'));
-      throw error;
-    } finally {
-      dispatch(setLoading(false));
+      // Simulate API call latency
+      await mockApiCall(500);
+      
+      // For now, return mock data from @/mock/cannedResponses
+      // In a real app, this would be a fetch call to the backend
+      const mockResponses: CannedResponse[] = []; // Add mock data or import from mock
+      
+      return mockResponses;
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to fetch canned responses');
     }
   }
 );
 
+// Fetch a specific canned response by ID
 export const fetchCannedResponseById = createAsyncThunk(
-  'cannedResponses/fetchById',
-  async (id: string, { dispatch }) => {
+  'cannedResponses/fetchCannedResponseById',
+  async (id: string, { rejectWithValue }) => {
     try {
-      dispatch(setLoading(true));
-      // Simulating API call
-      const response = mockCannedResponses.find(r => r.id === id);
-      if (!response) {
-        throw new Error('Canned response not found');
-      }
-      dispatch(setError(null));
-      return response;
-    } catch (error) {
-      dispatch(setError(error instanceof Error ? error.message : 'Failed to fetch canned response'));
-      throw error;
-    } finally {
-      dispatch(setLoading(false));
-    }
-  }
-);
-
-export const createCannedResponse = createAsyncThunk(
-  'cannedResponses/create',
-  async (response: Omit<CannedResponse, 'id' | 'createdAt' | 'updatedAt'>, { dispatch }) => {
-    try {
-      dispatch(setLoading(true));
-      // Simulating API call
-      const newResponse: CannedResponse = {
-        ...response,
-        id: Date.now().toString(),
+      // Simulate API call latency
+      await mockApiCall(300);
+      
+      // For now, return mock data
+      // In a real app, this would be a fetch call to the backend
+      const mockResponse: CannedResponse = { 
+        id,
+        title: 'Mock Response',
+        content: 'This is a mock response',
+        shortcut: 'mock',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
+        createdBy: 'user-1',
+        updatedBy: 'user-1',
+        team: 'team-1',
+        category: 'general',
+        usageCount: 0,
+        isArchived: false,
+        versions: []
       };
-      dispatch(addResponse(newResponse));
-      dispatch(setError(null));
-      return newResponse;
-    } catch (error) {
-      dispatch(setError(error instanceof Error ? error.message : 'Failed to create canned response'));
-      throw error;
-    } finally {
-      dispatch(setLoading(false));
+      
+      return mockResponse;
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to fetch canned response');
     }
   }
 );
 
-export const updateCannedResponse = createAsyncThunk(
-  'cannedResponses/update',
-  async (response: CannedResponse, { dispatch }) => {
+// Create a new canned response
+export const createCannedResponse = createAsyncThunk(
+  'cannedResponses/createCannedResponse',
+  async (response: Omit<CannedResponse, 'id' | 'createdAt' | 'updatedAt'>, { rejectWithValue }) => {
     try {
-      dispatch(setLoading(true));
-      // Simulating API call
-      const updatedResponse = {
+      // Simulate API call latency
+      await mockApiCall(600);
+      
+      // Generate a new ID and timestamps for the mock response
+      const newResponse: CannedResponse = {
         ...response,
+        id: `canned-${Date.now()}`,
+        createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
+        usageCount: 0,
+        isArchived: false,
+        versions: []
       };
-      dispatch(updateResponse(updatedResponse));
-      dispatch(setError(null));
-      return updatedResponse;
-    } catch (error) {
-      dispatch(setError(error instanceof Error ? error.message : 'Failed to update canned response'));
-      throw error;
-    } finally {
-      dispatch(setLoading(false));
+      
+      return newResponse;
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to create canned response');
     }
   }
 );
 
-export const deleteCannedResponse = createAsyncThunk(
-  'cannedResponses/delete',
-  async (id: string, { dispatch }) => {
+// Update an existing canned response
+export const updateCannedResponse = createAsyncThunk(
+  'cannedResponses/updateCannedResponse',
+  async (
+    { id, updates }: { id: string; updates: Partial<CannedResponse> }, 
+    { rejectWithValue }
+  ) => {
     try {
-      dispatch(setLoading(true));
-      // Simulating API call
-      dispatch(deleteResponse(id));
-      dispatch(setError(null));
+      // Simulate API call latency
+      await mockApiCall(500);
+      
+      // In a real app, this would send updates to the server
+      // For mock, we just return the updated response
+      const updatedResponse: CannedResponse = {
+        ...(updates as CannedResponse),
+        id,
+        updatedAt: new Date().toISOString()
+      };
+      
+      return updatedResponse;
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to update canned response');
+    }
+  }
+);
+
+// Delete a canned response
+export const deleteCannedResponse = createAsyncThunk(
+  'cannedResponses/deleteCannedResponse',
+  async (id: string, { rejectWithValue }) => {
+    try {
+      // Simulate API call latency
+      await mockApiCall(400);
+      
+      // In a real app, this would send a delete request to the server
       return id;
-    } catch (error) {
-      dispatch(setError(error instanceof Error ? error.message : 'Failed to delete canned response'));
-      throw error;
-    } finally {
-      dispatch(setLoading(false));
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to delete canned response');
     }
   }
 );

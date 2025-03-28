@@ -4,7 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { toast } from '@/components/ui/use-toast';
-import { fetchCannedResponses, deleteCannedResponse, fetchCannedResponseById } from '@/store/slices/cannedResponses/actions';
+import { fetchCannedResponseById, deleteCannedResponse } from '@/store/slices/cannedResponses/actions';
 import { 
   selectCannedResponseByIdSelector, 
   selectCannedResponsesLoading, 
@@ -27,9 +27,6 @@ export const useCannedResponseDetail = () => {
   useEffect(() => {
     if (id) {
       dispatch(fetchCannedResponseById(id));
-    } else {
-      // Fetch all responses if no ID provided
-      dispatch(fetchCannedResponses());
     }
   }, [dispatch, id]);
   
