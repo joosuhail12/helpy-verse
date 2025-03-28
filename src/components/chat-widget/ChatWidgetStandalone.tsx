@@ -10,6 +10,9 @@ import EventDebugger from './components/events/EventDebugger';
 import { eventTracker } from '@/utils/events/eventTracker';
 import { emitEvent } from '@/utils/events/eventManager';
 import { ChatEventType } from '@/utils/events/eventTypes';
+import { useContactManagement } from '@/hooks/chat/useContactManagement';
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
+import ContactContextPanel from './components/contact-context/ContactContextPanel';
 
 // Get configuration from window object or use defaults
 const config = (window as any).PULLSE_CHAT_CONFIG || {
@@ -23,7 +26,8 @@ const config = (window as any).PULLSE_CHAT_CONFIG || {
       typingIndicator: true,
       reactions: true,
       fileAttachments: true,
-      readReceipts: true
+      readReceipts: true,
+      contactContext: true // New feature flag
     },
     // Security settings
     security: {
@@ -37,12 +41,15 @@ const config = (window as any).PULLSE_CHAT_CONFIG || {
 // Get workspace ID and security settings from configuration
 const { workspaceId } = config;
 const securitySettings = config.theme?.security || {};
+const features = config.theme?.features || {};
 
 // Initialize session with timeout from config
 const sessionTimeoutMs = (securitySettings.sessionTimeout || 30) * 60 * 1000;
 
 const ChatWidgetStandalone: React.FC = () => {
   const [showDebugger, setShowDebugger] = useState(process.env.NODE_ENV === 'development');
+  const [showContactContext, setShowContactContext] = useState(features.contactContext || false);
+  const { contactId } = useContactManagement(workspaceId);
   
   // Initialize service worker, session, and optimize resources on load
   useEffect(() => {
@@ -91,6 +98,10 @@ const ChatWidgetStandalone: React.FC = () => {
   const toggleDebugger = () => {
     setShowDebugger(prev => !prev);
   };
+
+  const toggleContactContext = () => {
+    setShowContactContext(prev => !prev);
+  };
   
   return (
     <ThemeProvider initialTheme={config.theme}>
@@ -98,14 +109,35 @@ const ChatWidgetStandalone: React.FC = () => {
         workspaceId={workspaceId} 
         requiresAuthentication={securitySettings.requireAuthentication}
       >
-        <ChatWidget 
-          workspaceId={workspaceId}
-          theme={{
-            position: config.theme?.position,
-            compact: config.theme?.compact,
-            colors: config.theme?.colors
-          }}
-        />
+        {showContactContext ? (
+          <ResizablePanelGroup direction="horizontal" className="w-full h-full">
+            <ResizablePanel defaultSize={70} minSize={50}>
+              <ChatWidget 
+                workspaceId={workspaceId}
+                theme={{
+                  position: config.theme?.position,
+                  compact: config.theme?.compact,
+                  colors: config.theme?.colors
+                }}
+              />
+            </ResizablePanel>
+            
+            <ResizableHandle />
+            
+            <ResizablePanel defaultSize={30} minSize={20}>
+              <ContactContextPanel contactId={contactId} />
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        ) : (
+          <ChatWidget 
+            workspaceId={workspaceId}
+            theme={{
+              position: config.theme?.position,
+              compact: config.theme?.compact,
+              colors: config.theme?.colors
+            }}
+          />
+        )}
         
         {process.env.NODE_ENV === 'development' && (
           <>
@@ -114,12 +146,21 @@ const ChatWidgetStandalone: React.FC = () => {
               onClose={() => setShowDebugger(false)} 
             />
             
-            <button 
-              onClick={toggleDebugger}
-              className="fixed bottom-4 left-4 z-40 bg-gray-800 text-white text-xs px-2 py-1 rounded"
-            >
-              {showDebugger ? 'Hide' : 'Show'} Event Debugger
-            </button>
+            <div className="fixed bottom-4 left-4 z-40 flex gap-2">
+              <button 
+                onClick={toggleDebugger}
+                className="bg-gray-800 text-white text-xs px-2 py-1 rounded"
+              >
+                {showDebugger ? 'Hide' : 'Show'} Event Debugger
+              </button>
+              
+              <button 
+                onClick={toggleContactContext}
+                className="bg-blue-600 text-white text-xs px-2 py-1 rounded"
+              >
+                {showContactContext ? 'Hide' : 'Show'} Contact Panel
+              </button>
+            </div>
           </>
         )}
       </ChatProvider>

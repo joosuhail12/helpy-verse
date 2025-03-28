@@ -16,7 +16,9 @@ export enum ChatEventType {
   TYPING_STARTED = 'typing_started',
   TYPING_ENDED = 'typing_ended',
   FILE_UPLOADED = 'file_uploaded',
-  THEME_CHANGED = 'theme_changed'
+  THEME_CHANGED = 'theme_changed',
+  CONTACT_LOADED = 'contact_loaded',
+  HISTORY_VIEWED = 'history_viewed'
 }
 
 /**
@@ -78,6 +80,35 @@ export interface PageNavigationEvent extends ChatEvent {
 }
 
 /**
+ * Event for when a user is identified
+ */
+export interface UserIdentifiedEvent extends ChatEvent {
+  type: ChatEventType.USER_IDENTIFIED;
+  contactId: string;
+  metadata?: {
+    email?: string;
+    name?: string;
+  };
+}
+
+/**
+ * Event for when contact information is loaded
+ */
+export interface ContactLoadedEvent extends ChatEvent {
+  type: ChatEventType.CONTACT_LOADED;
+  contactId: string;
+  success: boolean;
+}
+
+/**
+ * Event for when conversation history is viewed
+ */
+export interface HistoryViewedEvent extends ChatEvent {
+  type: ChatEventType.HISTORY_VIEWED;
+  contactId: string;
+}
+
+/**
  * Union type of all possible chat events
  */
 export type ChatEventUnion = 
@@ -86,4 +117,7 @@ export type ChatEventUnion =
   | MessageSentEvent
   | MessageReceivedEvent
   | PageNavigationEvent
+  | UserIdentifiedEvent
+  | ContactLoadedEvent
+  | HistoryViewedEvent
   | ChatEvent; // Base type for other events
