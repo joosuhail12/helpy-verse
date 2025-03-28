@@ -1,30 +1,38 @@
 
 export interface ChatMessage {
   id: string;
-  sender: 'user' | 'agent' | 'system';
   content: string;
-  timestamp: Date | string;
-  conversationId: string;
+  sender: 'user' | 'agent' | 'system';
+  timestamp: string;
   status?: 'sending' | 'sent' | 'delivered' | 'read' | 'failed';
-  readBy?: string[];
   attachments?: {
     id: string;
     name: string;
-    type: string;
     url: string;
     size: number;
+    type: string;
   }[];
-  // Encryption fields
-  encrypted?: boolean;
-  encryptedContent?: string;
+  metadata?: Record<string, any>;
 }
 
-export interface Conversation {
-  id: string;
-  title: string;
-  lastMessageTimestamp: string;
-  lastMessage?: string;
-  unreadCount: number;
-  // Encryption flag
+export interface MessageInputProps {
+  onSendMessage: (message: string, attachments?: File[]) => void;
+  onTypingStart?: () => void;
+  onTypingEnd?: () => void;
+  placeholder?: string;
+  disabled?: boolean;
+  attachments?: File[];
+  onFileUpload?: (files: File[]) => void;
+  onRemoveFile?: (file: File) => void;
+  showAttachments?: boolean;
+  compact?: boolean;
+  onHeightChange?: (height: number) => void;
   encrypted?: boolean;
+}
+
+export interface ChatAvatarProps {
+  name: string;
+  status?: 'online' | 'offline' | 'away';
+  size?: 'sm' | 'md' | 'lg';
+  src?: string;
 }

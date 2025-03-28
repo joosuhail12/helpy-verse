@@ -1,61 +1,65 @@
 
-import React, { useState, useEffect, useRef } from 'react';
-import { useThemeContext } from '@/context/ThemeContext';
-import { ChatMessage } from './types';
+import React, { useState } from 'react';
+import { useChat } from '@/hooks/chat/useChat';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
-import TypingIndicator from './TypingIndicator';
-import { v4 as uuidv4 } from 'uuid';
+import MessageSearch from './MessageSearch';
+import { ChatMessage } from './types';
 
 interface EnhancedConversationViewProps {
-  messages: ChatMessage[];
-  onSendMessage: (message: string) => void;
-  isLoading?: boolean;
-  agentName?: string;
-  isTyping?: boolean;
-  disabled?: boolean; // Changed from isDisabled to disabled for consistency
-  hasActiveConversation?: boolean;
+  conversationId: string;
+  showSearch?: boolean;
+  showAttachments?: boolean;
+  showReactions?: boolean;
+  showReadReceipts?: boolean;
+  encrypted?: boolean;
 }
 
 const EnhancedConversationView: React.FC<EnhancedConversationViewProps> = ({
-  messages,
-  onSendMessage,
-  isLoading = false,
-  agentName,
-  isTyping = false,
-  disabled = false,
-  hasActiveConversation = false
+  conversationId,
+  showSearch = false,
+  showAttachments = true,
+  showReactions = false,
+  showReadReceipts = true,
+  encrypted = false
 }) => {
-  const { colors } = useThemeContext();
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  
-  useEffect(() => {
-    // Scroll to bottom whenever messages change
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [messages, isTyping]);
+  const { messages, sendMessage, searchMessages } = useChat();
+  const [searchResults, setSearchResults] = useState<ChatMessage[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
 
-  const handleSendMessage = (content: string) => {
-    onSendMessage(content);
+  const handleSearch = (query: string) => {
+    if (!query) {
+      setIsSearching(false);
+      setSearchResults([]);
+      return;
+    }
+
+    setIsSearching(true);
+    const results = searchMessages(query);
+    setSearchResults(results);
+  };
+
+  const handleSendMessage = (content: string, attachments?: File[]) => {
+    sendMessage(conversationId, content, attachments);
   };
 
   return (
-    <div className="flex flex-col h-full" style={{ background: colors.background, color: colors.foreground }}>
-      <div className="flex-1 overflow-y-auto p-4">
-        <MessageList messages={messages} />
-        
-        {isTyping && (
-          <TypingIndicator users={[]} agentName={agentName} />
-        )}
-        
-        <div ref={messagesEndRef} />
-      </div>
+    <div className="flex flex-col h-full">
+      {showSearch && (
+        <div className="border-b p-2">
+          <MessageSearch onSearch={handleSearch} />
+        </div>
+      )}
+      
+      <MessageList 
+        messages={isSearching ? searchResults : messages} 
+        conversationId={conversationId}
+      />
       
       <MessageInput 
         onSendMessage={handleSendMessage}
-        disabled={disabled || isLoading}
-        placeholder={!hasActiveConversation ? "Start a new conversation..." : "Type a message..."}
+        showAttachments={showAttachments}
+        encrypted={encrypted}
       />
     </div>
   );

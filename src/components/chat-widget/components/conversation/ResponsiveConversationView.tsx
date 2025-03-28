@@ -1,170 +1,99 @@
+
 import React, { useState, useEffect } from 'react';
-import { useRealtimeChat } from '@/hooks/chat/useRealtimeChat';
-import { useMessageSubscription } from '@/hooks/chat/useMessageSubscription';
-import { useTypingIndicator } from '@/hooks/chat/useTypingIndicator';
-import { useConversationPersistence } from '@/hooks/chat/useConversationPersistence';
-import ChatHeader from '../header/ChatHeader';
+import { useChat } from '@/hooks/chat/useChat';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import TypingIndicator from './TypingIndicator';
+import { useMediaQuery } from '@/hooks/use-mobile';
 import { ChatMessage } from './types';
-import { useChat } from '@/hooks/chat/useChat';
-import { v4 as uuidv4 } from 'uuid';
 
-export interface ResponsiveConversationViewProps {
+interface ResponsiveConversationViewProps {
   conversationId: string;
-  workspaceId: string;
-  onBack?: () => void;
+  compact?: boolean;
 }
 
 const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
   conversationId,
-  workspaceId,
-  onBack
+  compact = false
 }) => {
-  const { messages: realtimeMessages, sendMessage, isLoading } = useRealtimeChat(conversationId, workspaceId);
-  const [typingUsers, setTypingUsers] = useState<{ clientId: string; name?: string }[]>([]);
-  const { getMessages } = useChat();
-  const [loadedMessages, setLoadedMessages] = useState<ChatMessage[]>([]);
-  const [allMessages, setAllMessages] = useState<ChatMessage[]>([]);
+  const isMobile = useMediaQuery('(max-width: 640px)');
+  const { 
+    messages, 
+    sendMessage, 
+    isLoading, 
+    typingUsers,
+    startTyping,
+    stopTyping
+  } = useChat();
+  
+  const [attachments, setAttachments] = useState<File[]>([]);
+  const [inputHeight, setInputHeight] = useState<number>(64); // Default height
 
-  useEffect(() => {
-    if (realtimeMessages.length > 0) {
-      setAllMessages(realtimeMessages);
-    } else {
-      setAllMessages(loadedMessages);
-    }
-  }, [realtimeMessages, loadedMessages]);
-
-  useEffect(() => {
-    const loadMessages = async () => {
-      const msgs = await getMessages(conversationId);
-      
-      if (msgs && msgs.length > 0) {
-        const processedMsgs = msgs.map(msg => {
-          if (msg.sender === 'user') {
-            if (msg.readBy && msg.readBy.length > 0) {
-              return { ...msg, status: 'read' as const };
-            } else {
-              return { ...msg, status: 'delivered' as const };
-            }
-          }
-          return msg;
-        });
-        
-        setLoadedMessages(processedMsgs);
-      }
-    };
-    
-    loadMessages();
-  }, [conversationId, getMessages]);
-
-  useConversationPersistence(conversationId, allMessages, {
-    onLoad: (savedMessages) => {
-      if (loadedMessages.length === 0 && realtimeMessages.length === 0) {
-        setLoadedMessages(savedMessages);
-      }
-    }
-  });
-
-  const { publishMessage } = useMessageSubscription(conversationId, workspaceId, {
-    onMessage: (message: ChatMessage) => {
-      if (message.sender === 'agent') {
-        const updatedMsg = {
-          ...message,
-          readBy: message.readBy || []
-        };
-        
-        if (!updatedMsg.readBy.includes('user')) {
-          updatedMsg.readBy.push('user');
-          setTimeout(() => {
-            publishMessage(updatedMsg);
-          }, 1000);
-        }
-      }
-    }
-  });
-
-  const { typingUsers: activeTypers, sendTypingIndicator } = useTypingIndicator(conversationId);
-
-  useEffect(() => {
-    const handleTypingStatusChanged = (typingStatuses: Record<string, boolean>) => {
-      setTypingUsers(
-        Object.entries(typingStatuses)
-          .filter(([_, isTyping]) => isTyping)
-          .map(([clientId]) => ({ clientId }))
-      );
-    };
-    
-    return () => {
-    };
-  }, []);
-
-  const handleSendMessage = async (content: string) => {
-    sendTypingIndicator(false);
-    
-    const messageId = uuidv4();
-    const messageWithStatus: ChatMessage = {
-      id: messageId,
-      sender: 'user',
-      content,
-      timestamp: new Date(),
-      conversationId,
-      status: 'sending'
-    };
-    
-    setLoadedMessages(prev => [...prev, messageWithStatus]);
-    
-    try {
-      await sendMessage(content);
-      
-      setTimeout(() => {
-        setLoadedMessages(prev => 
-          prev.map(msg => msg.id === messageId ? { ...msg, status: 'sent' as const } : msg)
-        );
-        
-        setTimeout(() => {
-          setLoadedMessages(prev => 
-            prev.map(msg => msg.id === messageId ? { ...msg, status: 'delivered' as const } : msg)
-          );
-          
-          setTimeout(() => {
-            setLoadedMessages(prev => 
-              prev.map(msg => msg.id === messageId ? { ...msg, status: 'read' as const } : msg)
-            );
-          }, 2000);
-        }, 800);
-      }, 400);
-    } catch (error) {
-      setLoadedMessages(prev => 
-        prev.map(msg => msg.id === messageId ? { ...msg, status: 'failed' as const } : msg)
-      );
-    }
+  // Calculate available height for message list
+  const calculateMessageListHeight = () => {
+    // Header (56px) + Input height + Padding
+    const usedHeight = 56 + inputHeight + 16;
+    return `calc(100% - ${usedHeight}px)`;
   };
 
-  const handleMessageInputChange = () => {
-    sendTypingIndicator(true);
+  useEffect(() => {
+    // Adjust layout when input height changes
+    const messageList = document.querySelector('.message-list-container');
+    if (messageList) {
+      (messageList as HTMLElement).style.height = calculateMessageListHeight();
+    }
+  }, [inputHeight]);
+
+  const handleSendMessage = (content: string) => {
+    sendMessage(conversationId, content, attachments);
+    setAttachments([]);
   };
+
+  const handleFileUpload = (files: File[]) => {
+    setAttachments((prev) => [...prev, ...files]);
+  };
+
+  const handleRemoveFile = (file: File) => {
+    setAttachments((prev) => prev.filter((f) => f !== file));
+  };
+
+  const handleInputResize = (height: number) => {
+    setInputHeight(height);
+  };
+
+  if (isLoading) {
+    return <div className="flex-1 flex items-center justify-center">Loading messages...</div>;
+  }
 
   return (
     <div className="flex flex-col h-full">
-      <ChatHeader 
-        title="Conversation" 
-        onBackClick={onBack} 
-      />
-      <div className="flex-1 overflow-hidden flex flex-col">
+      <div 
+        className="message-list-container flex-1 overflow-hidden"
+        style={{ height: calculateMessageListHeight() }}
+      >
         <MessageList 
-          messages={allMessages} 
+          messages={messages} 
+          conversationId={conversationId}
           showAvatars={true}
         />
-        <div className="px-4 pb-2">
-          <TypingIndicator users={activeTypers} agentName={activeTypers.length === 1 ? "Support agent" : undefined} />
-          <MessageInput 
-            onSendMessage={handleSendMessage}
-            onTyping={handleMessageInputChange}
-          />
-        </div>
       </div>
+      
+      {typingUsers.length > 0 && (
+        <div className="px-4 py-1">
+          <TypingIndicator users={typingUsers} compact={compact || isMobile} />
+        </div>
+      )}
+      
+      <MessageInput 
+        onSendMessage={handleSendMessage}
+        onTypingStart={() => startTyping(conversationId)}
+        onTypingEnd={() => stopTyping(conversationId)}
+        attachments={attachments}
+        onFileUpload={handleFileUpload}
+        onRemoveFile={handleRemoveFile}
+        compact={compact || isMobile}
+        onHeightChange={handleInputResize}
+      />
     </div>
   );
 };

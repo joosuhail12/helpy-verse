@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect } from 'react';
 import { ChatMessage } from './types';
 import { formatRelativeTime } from '@/utils/helpers/formatters';
@@ -54,7 +55,6 @@ const MessageList: React.FC<MessageListProps> = ({ messages, conversationId, sho
   return (
     <div className="flex-1 overflow-y-auto p-4">
       {groupedMessages.map((group, idx) => {
-        // Fix the className in the div
         const groupTimeFormatted = formatMessageGroupTime(new Date(group[0].timestamp));
 
         return (
@@ -79,8 +79,8 @@ const MessageList: React.FC<MessageListProps> = ({ messages, conversationId, sho
                 <div
                   className={`rounded-xl px-3 py-2 ${message.sender === 'user' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'} max-w-[75%] sm:max-w-[60%] break-words`}
                   style={{
-                    backgroundColor: message.sender === 'user' ? colors.outgoingMessage : colors.incomingMessage,
-                    color: message.sender === 'user' ? colors.outgoingMessageForeground : colors.incomingMessageForeground,
+                    backgroundColor: message.sender === 'user' ? colors.userMessage : colors.agentMessage,
+                    color: message.sender === 'user' ? colors.userMessageText : colors.agentMessageText,
                   }}
                 >
                   <p className="text-sm">{message.content}</p>

@@ -6,7 +6,7 @@ export interface ThemeConfig {
     primary: string;
     primaryForeground: string;
     background: string;
-    backgroundSecondary: string; // Added this property
+    backgroundSecondary: string;
     foreground: string;
     border: string;
     userMessage: string;
@@ -15,16 +15,8 @@ export interface ThemeConfig {
     agentMessageText: string;
     inputBackground: string;
   };
-  position: 'left' | 'right';
-  compact: boolean;
-  labels: {
-    welcomeTitle: string;
-    welcomeSubtitle: string;
-    askQuestionButton: string;
-    recentMessagesTitle: string;
-    noMessagesText: string;
-    messagePlaceholder: string;
-  };
+  position?: 'left' | 'right';
+  compact?: boolean;
 }
 
 const defaultTheme: ThemeConfig = {
@@ -32,32 +24,32 @@ const defaultTheme: ThemeConfig = {
     primary: '#9b87f5',
     primaryForeground: '#ffffff',
     background: '#ffffff',
-    backgroundSecondary: '#f9f9f9', // Added default value
-    foreground: '#1A1F2C',
-    border: '#eaeaea',
+    backgroundSecondary: '#f8f9fa',
+    foreground: '#333333',
+    border: '#e2e8f0',
     userMessage: '#9b87f5',
     userMessageText: '#ffffff',
-    agentMessage: '#f1f1f1',
+    agentMessage: '#f1f0fb',
     agentMessageText: '#1A1F2C',
-    inputBackground: '#f9f9f9'
-  },
-  position: 'right',
-  compact: false,
-  labels: {
-    welcomeTitle: 'Hello there.',
-    welcomeSubtitle: 'How can we help?',
-    askQuestionButton: 'Ask a question',
-    recentMessagesTitle: 'Recent messages',
-    noMessagesText: 'No messages yet. Start a conversation!',
-    messagePlaceholder: 'Type a message...'
+    inputBackground: '#f8f9fa',
   }
 };
 
-interface ThemeContextType extends ThemeConfig {
+interface ThemeContextType {
+  colors: ThemeConfig['colors'];
+  position: 'left' | 'right';
+  compact: boolean;
   updateTheme: (theme: Partial<ThemeConfig>) => void;
 }
 
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+const ThemeContext = createContext<ThemeContextType>({
+  colors: defaultTheme.colors,
+  position: 'right',
+  compact: false,
+  updateTheme: () => {},
+});
+
+export const useThemeContext = () => useContext(ThemeContext);
 
 interface ThemeProviderProps {
   children: React.ReactNode;
@@ -71,39 +63,30 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children, initialT
     colors: {
       ...defaultTheme.colors,
       ...(initialTheme.colors || {})
-    },
-    labels: {
-      ...defaultTheme.labels,
-      ...(initialTheme.labels || {})
     }
   });
 
   const updateTheme = (newTheme: Partial<ThemeConfig>) => {
-    setTheme(prev => ({
-      ...prev,
+    setTheme(prevTheme => ({
+      ...prevTheme,
       ...newTheme,
       colors: {
-        ...prev.colors,
+        ...prevTheme.colors,
         ...(newTheme.colors || {})
-      },
-      labels: {
-        ...prev.labels,
-        ...(newTheme.labels || {})
       }
     }));
   };
 
   return (
-    <ThemeContext.Provider value={{ ...theme, updateTheme }}>
+    <ThemeContext.Provider
+      value={{
+        colors: theme.colors,
+        position: theme.position || 'right',
+        compact: theme.compact || false,
+        updateTheme
+      }}
+    >
       {children}
     </ThemeContext.Provider>
   );
-};
-
-export const useThemeContext = () => {
-  const context = useContext(ThemeContext);
-  if (context === undefined) {
-    throw new Error('useThemeContext must be used within a ThemeProvider');
-  }
-  return context;
 };
