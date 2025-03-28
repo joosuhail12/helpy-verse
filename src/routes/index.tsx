@@ -27,8 +27,8 @@ const SignUp = lazy(() => import('../pages/SignUp'));
 const NotFound = lazy(() => import('../pages/NotFound'));
 const LandingPage = lazy(() => import('../pages/LandingPage'));
 
-// Lazy load dashboard layout
-const DashboardLayoutComponent = lazy(() => import('../layouts/DashboardLayout'));
+// Lazy load dashboard layout - make sure it's imported correctly
+const DashboardLayout = lazy(() => import('../layouts/DashboardLayout'));
 
 // Helper to wrap components with Suspense and RouteErrorBoundary
 const withSuspenseAndErrorHandling = (Component) => (
@@ -88,7 +88,7 @@ export const router = createBrowserRouter([
     element: (
       <PrivateRoute>
         <Suspense fallback={<LoadingSpinner />}>
-          <DashboardLayoutComponent />
+          <DashboardLayout />
         </Suspense>
       </PrivateRoute>
     ),
