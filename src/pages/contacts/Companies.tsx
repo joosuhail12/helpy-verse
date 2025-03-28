@@ -1,3 +1,4 @@
+
 // src/pages/contacts/Companies.tsx
 import { useEffect } from 'react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
