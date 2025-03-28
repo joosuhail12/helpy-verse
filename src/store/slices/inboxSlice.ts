@@ -41,7 +41,10 @@ const inboxSlice = createSlice({
 // Export actions and reducer
 export const { setTickets, setSelectedTicket, setLoading, setError } = inboxSlice.actions;
 
-// Export selectors from dedicated file
-export * from './inbox/selectors';
+// Selectors
+export const selectTickets = (state: RootState) => state.inbox?.tickets ?? [];
+export const selectSelectedTicket = (state: RootState) => state.inbox?.selectedTicket ?? null;
+export const selectInboxLoading = (state: RootState) => state.inbox?.loading ?? false;
+export const selectInboxError = (state: RootState) => state.inbox?.error ?? null;
 
 export default inboxSlice.reducer;

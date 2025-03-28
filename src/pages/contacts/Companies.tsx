@@ -3,12 +3,12 @@
 import { useEffect } from 'react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
-import { fetchCompanies } from '@/store/slices/companies/companiesSlice';
 import { 
+  fetchCompanies, 
   selectCompanies, 
   selectCompanyLoading, 
   selectCompanyError 
-} from '@/store/slices/companies/selectors';
+} from '@/store/slices/companies/companiesSlice';
 import { CompaniesList } from '@/components/companies/CompaniesList';
 import { CompaniesHeader } from '@/components/companies/CompaniesHeader';
 import { CompaniesListControls } from '@/components/companies/CompaniesListControls';

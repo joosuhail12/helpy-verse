@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import type { Tag, SortField, FilterEntity } from "@/types/tag";
 import { tagService, type TagParams } from "@/api/services/tagService";
+import type { RootState } from "../store";
 
 interface TagsState {
   items: Tag[];
@@ -184,7 +185,17 @@ export const {
   clearSelectedTags,
 } = tagsSlice.actions;
 
-// Export selectors from the dedicated file
-export * from './tags/selectors';
+// Export selectors
+export const selectTags = (state: RootState) => state.tags.items;
+export const selectTagsTotal = (state: RootState) => state.tags.total;
+export const selectTagsLoading = (state: RootState) => state.tags.loading;
+export const selectTagsError = (state: RootState) => state.tags.error;
+export const selectTagsCurrentPage = (state: RootState) => state.tags.currentPage;
+export const selectTagsItemsPerPage = (state: RootState) => state.tags.itemsPerPage;
+export const selectTagsSortField = (state: RootState) => state.tags.sortField;
+export const selectTagsSortDirection = (state: RootState) => state.tags.sortDirection;
+export const selectTagsFilterEntity = (state: RootState) => state.tags.filterEntity;
+export const selectTagsSearchQuery = (state: RootState) => state.tags.searchQuery;
+export const selectSelectedTags = (state: RootState) => state.tags.selectedTags;
 
 export default tagsSlice.reducer;
