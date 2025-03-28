@@ -10,6 +10,7 @@ import { ChatMessage } from './types';
 import { v4 as uuidv4 } from 'uuid';
 import TypingIndicator from './TypingIndicator';
 import { useTypingIndicator } from '@/hooks/chat/useTypingIndicator';
+import { useConversationPersistence } from '@/hooks/chat/useConversationPersistence';
 
 interface ConversationViewProps {
   conversationId: string;
@@ -36,19 +37,21 @@ const ConversationView: React.FC<ConversationViewProps> = ({ conversationId, wor
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { typingUsers, sendTypingIndicator } = useTypingIndicator(conversationId);
 
+  // Use the persistence hook to load/save messages
+  useConversationPersistence(conversationId, messages, {
+    onLoad: (savedMessages) => {
+      if (messages.length === 0) {
+        setMessages(savedMessages);
+      }
+    }
+  });
+
   // Function to update message status
   const updateMessageStatus = (messageId: string, status: ChatMessage['status']) => {
     setMessages(prev => prev.map(msg => 
       msg.id === messageId ? { ...msg, status } : msg
     ));
   };
-
-  useEffect(() => {
-    // Scroll to bottom whenever messages change
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [messages, typingUsers]);
 
   useEffect(() => {
     // Check for and send queued messages when connection is restored

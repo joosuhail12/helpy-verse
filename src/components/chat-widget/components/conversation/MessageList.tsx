@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import MessageItem from './MessageItem';
 import MessageSearch from './MessageSearch';
 import { ChatMessage } from './types';
-import { Search } from 'lucide-react';
+import { Search, ArrowDown } from 'lucide-react';
 
 interface MessageListProps {
   messages: ChatMessage[];
@@ -18,14 +18,44 @@ const MessageList: React.FC<MessageListProps> = ({
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messageRefs = useRef<Record<string, HTMLDivElement>>({});
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const [showSearch, setShowSearch] = useState(false);
+  const [isAutoScrollEnabled, setIsAutoScrollEnabled] = useState(true);
+  const [showScrollButton, setShowScrollButton] = useState(false);
 
-  useEffect(() => {
-    // Auto-scroll to bottom when new messages come in
+  // Function to handle manual scrolling
+  const handleScroll = () => {
+    if (!messagesContainerRef.current) return;
+    
+    const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
+    const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+    
+    // Update auto-scroll state based on user scroll position
+    if (isNearBottom !== isAutoScrollEnabled) {
+      setIsAutoScrollEnabled(isNearBottom);
+    }
+    
+    // Show/hide scroll button based on position
+    setShowScrollButton(!isNearBottom);
+  };
+
+  // Scroll to bottom function
+  const scrollToBottom = () => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+      setIsAutoScrollEnabled(true);
     }
-  }, [messages]);
+  };
+
+  useEffect(() => {
+    // Auto-scroll to bottom when new messages come in, if enabled
+    if (messagesEndRef.current && isAutoScrollEnabled) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    } else if (!isAutoScrollEnabled && messages.length > 0) {
+      // Show scroll button when new messages arrive but auto-scroll is disabled
+      setShowScrollButton(true);
+    }
+  }, [messages, isAutoScrollEnabled]);
 
   // Group messages by sender and consecutive time (within 2 minutes)
   const groupedMessages = messages.reduce((groups: ChatMessage[][], message, index) => {
@@ -85,7 +115,11 @@ const MessageList: React.FC<MessageListProps> = ({
         />
       )}
       
-      <div className="flex-1 overflow-y-auto">
+      <div 
+        className="flex-1 overflow-y-auto"
+        ref={messagesContainerRef}
+        onScroll={handleScroll}
+      >
         <div className="flex flex-col space-y-2 p-2 relative">
           {!showSearch && messages.length > 5 && (
             <button 
@@ -121,6 +155,17 @@ const MessageList: React.FC<MessageListProps> = ({
           <div ref={messagesEndRef} />
         </div>
       </div>
+      
+      {/* Scroll to bottom button */}
+      {showScrollButton && (
+        <button 
+          onClick={scrollToBottom}
+          className="absolute bottom-16 right-4 p-2 bg-primary text-white rounded-full shadow-md hover:bg-primary/90 transition-all z-10"
+          aria-label="Scroll to bottom"
+        >
+          <ArrowDown className="h-4 w-4" />
+        </button>
+      )}
     </div>
   );
 };

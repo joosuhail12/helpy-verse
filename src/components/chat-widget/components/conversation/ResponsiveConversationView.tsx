@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useRealtimeChat } from '@/hooks/chat/useRealtimeChat';
 import { useMessageSubscription } from '@/hooks/chat/useMessageSubscription';
 import { useTypingIndicator } from '@/hooks/chat/useTypingIndicator';
+import { useConversationPersistence } from '@/hooks/chat/useConversationPersistence';
 import ChatHeader from '../header/ChatHeader';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
@@ -22,33 +23,55 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
   workspaceId,
   onBack
 }) => {
-  const { messages, sendMessage, isLoading } = useRealtimeChat(conversationId, workspaceId);
+  const { messages: realtimeMessages, sendMessage, isLoading } = useRealtimeChat(conversationId, workspaceId);
   const [typingUsers, setTypingUsers] = useState<{ clientId: string; name?: string }[]>([]);
   const { getMessages } = useChat();
   const [loadedMessages, setLoadedMessages] = useState<ChatMessage[]>([]);
+  const [allMessages, setAllMessages] = useState<ChatMessage[]>([]);
+
+  // Combine all messages from different sources
+  useEffect(() => {
+    if (realtimeMessages.length > 0) {
+      setAllMessages(realtimeMessages);
+    } else {
+      setAllMessages(loadedMessages);
+    }
+  }, [realtimeMessages, loadedMessages]);
 
   // Load messages when component mounts
   useEffect(() => {
     const loadMessages = async () => {
+      // First try to get from Chat hook
       const msgs = await getMessages(conversationId);
       
-      // Assign status to messages based on readBy property
-      const processedMsgs = msgs.map(msg => {
-        if (msg.sender === 'user') {
-          if (msg.readBy && msg.readBy.length > 0) {
-            return { ...msg, status: 'read' as const };
-          } else {
-            return { ...msg, status: 'delivered' as const };
+      if (msgs && msgs.length > 0) {
+        // Assign status to messages based on readBy property
+        const processedMsgs = msgs.map(msg => {
+          if (msg.sender === 'user') {
+            if (msg.readBy && msg.readBy.length > 0) {
+              return { ...msg, status: 'read' as const };
+            } else {
+              return { ...msg, status: 'delivered' as const };
+            }
           }
-        }
-        return msg;
-      });
-      
-      setLoadedMessages(processedMsgs);
+          return msg;
+        });
+        
+        setLoadedMessages(processedMsgs);
+      }
     };
     
     loadMessages();
   }, [conversationId, getMessages]);
+
+  // Use persistence hook to load/save messages
+  useConversationPersistence(conversationId, allMessages, {
+    onLoad: (savedMessages) => {
+      if (loadedMessages.length === 0 && realtimeMessages.length === 0) {
+        setLoadedMessages(savedMessages);
+      }
+    }
+  });
 
   // Initialize message subscription
   const { publishMessage } = useMessageSubscription(conversationId, workspaceId, {
@@ -141,9 +164,6 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
     sendTypingIndicator(true);
   };
 
-  // Combine real-time messages with loaded messages
-  const displayMessages = messages.length > 0 ? messages : loadedMessages;
-
   return (
     <div className="flex flex-col h-full">
       <ChatHeader 
@@ -154,7 +174,7 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
       />
       <div className="flex-1 overflow-hidden flex flex-col">
         <MessageList 
-          messages={displayMessages} 
+          messages={allMessages} 
           conversationId={conversationId}
           showAvatars={true}
         />
