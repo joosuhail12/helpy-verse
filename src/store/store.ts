@@ -6,7 +6,7 @@ import contentReducer from './slices/content/contentSlice';
 import contentCenterReducer from './slices/automation/contentCenterSlice';
 import contactsReducer from './slices/contacts/contactsSlice';
 import companiesReducer from './slices/companies/companiesSlice';
-import inboxReducer from './slices/inboxSlice';
+import inboxReducer from './slices/inbox';
 import tagsReducer from './slices/tagsSlice';
 import { teammatesReducer } from './slices/teammates/teammatesSlice';
 import teamsReducer from './slices/teams/teamsSlice';

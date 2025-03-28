@@ -1,6 +1,5 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { RootState } from '../store';
 
 // Define inbox state type
 interface InboxState {
@@ -38,10 +37,7 @@ const inboxSlice = createSlice({
   },
 });
 
-// Export actions and reducer
+// Export actions
 export const { setTickets, setSelectedTicket, setLoading, setError } = inboxSlice.actions;
-
-// Export selectors from dedicated file
-export * from './inbox/selectors';
 
 export default inboxSlice.reducer;

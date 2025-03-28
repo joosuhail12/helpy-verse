@@ -1,9 +1,7 @@
-
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../store';
 import { companiesService } from '@/api/services/companiesService';
 import { Company } from '@/types/company';
-import { createSelector } from '@reduxjs/toolkit';
 
 export interface CompaniesState {
   companies: Company[];
@@ -213,23 +211,8 @@ export const {
   setSelectedCompanies 
 } = companiesSlice.actions;
 
-// Basic selectors
-export const selectCompanies = (state: RootState) => state.companies.companies;
-export const selectCompanyLoading = (state: RootState) => state.companies.loading;
-export const selectCompanyError = (state: RootState) => state.companies.error;
-export const selectCompanyDetails = (state: RootState) => state.companies.companyDetails;
-export const selectSelectedCompany = (state: RootState) => state.companies.selectedCompany;
-export const selectSelectedCompanies = (state: RootState) => state.companies.selectedCompanies;
-
-// Memoized selectors
-export const selectCompanyById = createSelector(
-  [selectCompanies, (_, companyId: string) => companyId],
-  (companies, companyId) => companies.find(company => company.id === companyId) || null
-);
-
-export const selectCompaniesByIds = createSelector(
-  [selectCompanies, (_, companyIds: string[]) => companyIds],
-  (companies, companyIds) => companies.filter(company => companyIds.includes(company.id))
-);
-
+// Export the reducer
 export default companiesSlice.reducer;
+
+// Import selectors from dedicated file
+export * from './selectors';

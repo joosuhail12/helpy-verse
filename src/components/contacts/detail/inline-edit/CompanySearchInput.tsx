@@ -8,7 +8,7 @@ import { companiesService } from '@/api/services/companiesService';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from '@/components/ui/use-toast';
 import { useAppSelector } from '@/hooks/useAppSelector';
-import { selectCompanies } from '@/store/slices/companies/companiesSlice';
+import { selectCompanies } from '@/store/slices/companies/selectors';
 
 interface CompanySearchInputProps {
   value: string;
