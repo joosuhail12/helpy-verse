@@ -1,5 +1,5 @@
 
-// Create this file if it doesn't exist
+// Define test configuration interface
 export interface TestConfig {
   paramValues: Record<string, any>;
   results?: {

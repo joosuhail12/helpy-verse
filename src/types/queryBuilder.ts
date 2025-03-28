@@ -1,86 +1,56 @@
 
-// Common type definitions for the query builder
+export interface ValidationError {
+  message: string;
+  path?: string;
+  rule?: {
+    id: string;
+  };
+}
 
-export type DataSource = 'contacts' | 'companies' | 'general';
+export interface QueryField {
+  id: string;
+  name: string;
+  label: string;
+  type: 'text' | 'number' | 'date' | 'boolean' | 'select' | 'multiselect';
+  dataSource?: DataSource;
+  customObject?: string;
+  options?: string[];
+  operators?: string[];
+}
 
-export type ComparisonOperator = 
+export type Operator = 
   | 'equals' 
-  | 'not_equals' 
+  | 'notEquals' 
   | 'contains' 
-  | 'not_contains' 
-  | 'starts_with' 
-  | 'ends_with' 
-  | 'greater_than' 
-  | 'less_than' 
-  | 'greater_than_or_equal' 
-  | 'less_than_or_equal'
-  | 'is_empty'
-  | 'is_not_empty'
-  | 'in'
-  | 'not_in'
-  | 'between'
-  | 'custom_range'
-  | 'last_n_days'
-  | 'next_n_days'
-  | 'exists'
-  | 'not_exists';
+  | 'notContains' 
+  | 'startsWith' 
+  | 'endsWith' 
+  | 'greaterThan' 
+  | 'lessThan' 
+  | 'inRange' 
+  | 'notInRange' 
+  | 'isEmpty' 
+  | 'isNotEmpty' 
+  | 'in' 
+  | 'notIn';
 
-export type CombinatorType = 'and' | 'or';
+export type DataSource = 
+  | 'contact' 
+  | 'company' 
+  | 'conversation' 
+  | 'ticket' 
+  | 'event'
+  | '';
 
 export interface QueryRule {
   id: string;
   field: string;
-  operator: ComparisonOperator;
-  value?: any;
+  operator: Operator;
+  value: any;
 }
 
 export interface QueryGroup {
   id: string;
-  combinator: CombinatorType;
-  rules: Array<QueryRule | QueryGroup>;
-}
-
-export type FieldType = 
-  | 'text' 
-  | 'number' 
-  | 'boolean' 
-  | 'date' 
-  | 'select' 
-  | 'multi-select'
-  | 'string'
-  | 'enum'
-  | 'email'
-  | 'phone'
-  | 'url';
-
-export interface QueryField {
-  id: string;
-  name?: string;
-  label: string;
-  type: FieldType;
-  dataSource?: DataSource;
-  customObject?: string;
-  options?: Array<{ label: string; value: string; } | string>;
-  placeholder?: string;
-  defaultValue?: any;
-  validation?: ValidationRule[];
-}
-
-export interface ValidationRule {
-  type: 'required' | 'regex' | 'minLength' | 'maxLength' | 'min' | 'max';
-  value?: string | number;
-  message: string;
-}
-
-export interface ValidationError {
-  message: string;
-  rule?: QueryRule;
-  group?: QueryGroup;
-  path?: string;
-  field?: string;
-}
-
-export interface ValidationResult {
-  isValid: boolean;
-  errors: ValidationError[];
+  combinator: 'and' | 'or';
+  rules: (QueryRule | QueryGroup)[];
 }
