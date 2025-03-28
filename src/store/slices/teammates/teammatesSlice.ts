@@ -134,5 +134,3 @@ const teammatesSlice = createSlice({
 });
 
 export const teammatesReducer = teammatesSlice.reducer;
-export * from './actions';
-export * from './selectors';
