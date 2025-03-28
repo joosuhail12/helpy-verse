@@ -1,4 +1,5 @@
 
+import * as React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useParams } from "react-router-dom";
 import { ArrowLeft, Database, Plus } from "lucide-react";

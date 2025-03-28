@@ -1,4 +1,5 @@
 
+import * as React from "react";
 import { Database, Plus } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -47,7 +48,7 @@ const CustomObjects = () => {
         <CreateCustomObjectDialog />
       </div>
 
-      {customObjects?.length === 0 ? (
+      {!customObjects || customObjects.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12 text-center">
             <Database className="h-12 w-12 text-gray-400 mb-4" />
@@ -59,7 +60,7 @@ const CustomObjects = () => {
         </Card>
       ) : (
         <div className="space-y-4">
-          {customObjects?.map((object) => (
+          {customObjects.map((object) => (
             <Card key={object.id}>
               <CardContent className="flex items-center justify-between py-6">
                 <div>
