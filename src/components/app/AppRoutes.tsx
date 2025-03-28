@@ -2,7 +2,6 @@
 import * as React from 'react';
 import { Routes, Route, Navigate } from "react-router-dom";
 import LoadingFallback from './LoadingFallback';
-import { lazily } from '@/utils/lazy';
 
 // Lazily import layouts and pages
 const DashboardLayout = React.lazy(() => import('@/layouts/DashboardLayout'));

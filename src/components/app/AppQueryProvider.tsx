@@ -19,10 +19,10 @@ interface AppQueryProviderProps {
 
 const AppQueryProvider: React.FC<AppQueryProviderProps> = ({ children }) => {
   // Create and memoize the QueryClient to prevent unnecessary re-renders
-  const queryClientRef = React.useRef<QueryClient>(null);
+  const queryClientRef = React.useRef<QueryClient>();
   
   // Initialize queryClient on first render
-  if (queryClientRef.current === null) {
+  if (!queryClientRef.current) {
     queryClientRef.current = createQueryClient();
   }
   
