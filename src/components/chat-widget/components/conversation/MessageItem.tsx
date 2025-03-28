@@ -10,11 +10,18 @@ import UserAvatar from '../user/UserAvatar';
 interface MessageItemProps {
   message: ChatMessage;
   showAvatar?: boolean;
+  isFirstInGroup?: boolean;
+  isLastInGroup?: boolean;
 }
 
 const COMMON_REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
 
-const MessageItem: React.FC<MessageItemProps> = ({ message, showAvatar = false }) => {
+const MessageItem: React.FC<MessageItemProps> = ({ 
+  message, 
+  showAvatar = false, 
+  isFirstInGroup = true,
+  isLastInGroup = true
+}) => {
   const { colors } = useThemeContext();
   const { clientId } = useAbly();
   const [showReactions, setShowReactions] = useState(false);
@@ -37,12 +44,33 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, showAvatar = false }
     }
   };
 
+  // Adjust border radius based on position in group
+  const getBorderRadius = () => {
+    if (isUserMessage) {
+      if (isFirstInGroup && isLastInGroup) return 'rounded-lg rounded-br-sm';
+      if (isFirstInGroup) return 'rounded-lg rounded-br-sm rounded-tr-md';
+      if (isLastInGroup) return 'rounded-lg rounded-br-sm rounded-tr-md';
+      return 'rounded-lg rounded-tr-md rounded-br-md';
+    } else {
+      if (isFirstInGroup && isLastInGroup) return 'rounded-lg rounded-bl-sm';
+      if (isFirstInGroup) return 'rounded-lg rounded-bl-sm rounded-tl-md';
+      if (isLastInGroup) return 'rounded-lg rounded-bl-sm rounded-tl-md';
+      return 'rounded-lg rounded-tl-md rounded-bl-md';
+    }
+  };
+
+  // Adjust spacing based on position in group
+  const getMarginClass = () => {
+    if (isLastInGroup) return 'mb-1';
+    return 'mb-0.5';
+  };
+
   return (
     <div 
-      className={`flex mb-4 ${isUserMessage ? 'justify-end' : 'justify-start'}`}
+      className={`flex ${getMarginClass()} ${isUserMessage ? 'justify-end' : 'justify-start'}`}
     >
-      {/* Avatar for agent messages (left side) */}
-      {showAvatar && !isUserMessage && (
+      {/* Avatar for agent messages (left side) - only shown for last message in group */}
+      {showAvatar && !isUserMessage && isLastInGroup && (
         <div className="mr-2 flex-shrink-0">
           <UserAvatar 
             name="Agent" 
@@ -51,14 +79,15 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, showAvatar = false }
           />
         </div>
       )}
+      
+      {/* Empty space for grouped messages without avatar */}
+      {!showAvatar && !isUserMessage && isLastInGroup && (
+        <div className="w-8 mr-2"></div>
+      )}
 
       <div className={`flex flex-col ${isUserMessage ? 'items-end' : 'items-start'}`}>
         <div 
-          className={`px-4 py-2 rounded-lg max-w-[85%] relative ${
-            isUserMessage 
-              ? 'bg-primary text-white' 
-              : 'bg-gray-200'
-          }`}
+          className={`px-4 py-2 max-w-[85%] relative ${getBorderRadius()}`}
           style={{
             backgroundColor: isUserMessage ? colors.userMessage : colors.agentMessage,
             color: isUserMessage ? colors.userMessageText : colors.agentMessageText,
@@ -75,13 +104,15 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, showAvatar = false }
             </div>
           )}
           
-          {/* Reaction button */}
-          <button 
-            onClick={() => setShowReactions(!showReactions)}
-            className="absolute -bottom-3 right-2 bg-white rounded-full p-1 shadow-sm hover:bg-gray-100"
-          >
-            <Smile size={14} className="text-gray-500" />
-          </button>
+          {/* Reaction button - only shown for the last message in a group */}
+          {isLastInGroup && (
+            <button 
+              onClick={() => setShowReactions(!showReactions)}
+              className="absolute -bottom-3 right-2 bg-white rounded-full p-1 shadow-sm hover:bg-gray-100"
+            >
+              <Smile size={14} className="text-gray-500" />
+            </button>
+          )}
           
           {/* Reactions display */}
           {message.reactions && Object.keys(message.reactions).length > 0 && (
@@ -112,19 +143,22 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, showAvatar = false }
           )}
         </div>
         
-        <div className="flex items-center mt-1 text-xs text-gray-500">
-          <span>
-            {typeof message.timestamp === 'string' 
-              ? new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-              : message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            }
-          </span>
-          {getReadStatus()}
-        </div>
+        {/* Timestamp and read status - only shown for last message in group */}
+        {isLastInGroup && (
+          <div className="flex items-center mt-1 text-xs text-gray-500">
+            <span>
+              {typeof message.timestamp === 'string' 
+                ? new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                : message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+              }
+            </span>
+            {getReadStatus()}
+          </div>
+        )}
       </div>
       
-      {/* Avatar for user messages (right side) */}
-      {showAvatar && isUserMessage && (
+      {/* Avatar for user messages (right side) - only shown for last message in group */}
+      {showAvatar && isUserMessage && isLastInGroup && (
         <div className="ml-2 flex-shrink-0">
           <UserAvatar 
             name="You" 
@@ -132,6 +166,11 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, showAvatar = false }
             size="sm"
           />
         </div>
+      )}
+      
+      {/* Empty space for grouped messages without avatar */}
+      {!showAvatar && isUserMessage && isLastInGroup && (
+        <div className="w-8 ml-2"></div>
       )}
     </div>
   );
