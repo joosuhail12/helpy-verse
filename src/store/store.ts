@@ -1,6 +1,5 @@
 
 import { configureStore } from '@reduxjs/toolkit';
-import authReducer from './slices/auth/authSlice';
 import { actionsReducer } from './slices/actions/actionsSlice';
 import contentReducer from './slices/content/contentSlice';
 import contentCenterReducer from './slices/automation/contentCenterSlice';
@@ -16,6 +15,7 @@ import { chatbotsReducer } from './slices/chatbots/chatbotsSlice';
 import userReducer from './slices/user/userSlice';
 import { securityReducer } from './slices/securitySlice';
 import legacyContactsReducer from './slices/contactSlice';
+import authReducer from './slices/auth/authSlice';
 
 // Define the root reducer with all slices
 const rootReducer = {
