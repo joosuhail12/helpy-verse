@@ -1,15 +1,11 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { ChatWidget } from './ChatWidget';
 import { ChatProvider } from '@/context/ChatContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { sessionManager } from '@/utils/auth/sessionManager';
 import { registerServiceWorker } from '@/utils/serviceWorker';
 import { preloadAssets, chatWidgetCriticalAssets, setupLazyLoading } from '@/utils/resourcePreloader';
-import EventDebugger from './components/events/EventDebugger';
-import { eventTracker } from '@/utils/events/eventTracker';
-import { emitEvent } from '@/utils/events/eventManager';
-import { ChatEventType } from '@/utils/events/eventTypes';
 
 // Get configuration from window object or use defaults
 const config = (window as any).PULLSE_CHAT_CONFIG || {
@@ -42,8 +38,6 @@ const securitySettings = config.theme?.security || {};
 const sessionTimeoutMs = (securitySettings.sessionTimeout || 30) * 60 * 1000;
 
 const ChatWidgetStandalone: React.FC = () => {
-  const [showDebugger, setShowDebugger] = useState(process.env.NODE_ENV === 'development');
-  
   // Initialize service worker, session, and optimize resources on load
   useEffect(() => {
     // Register service worker
@@ -73,24 +67,10 @@ const ChatWidgetStandalone: React.FC = () => {
       }
     }, 60000); // Check every minute
     
-    // Emit page load event with current URL
-    emitEvent({
-      type: ChatEventType.PAGE_NAVIGATION,
-      timestamp: new Date().toISOString(),
-      source: 'page-load',
-      previousUrl: '',
-      currentUrl: window.location.href,
-      pageUrl: window.location.href
-    });
-    
     return () => {
       clearInterval(checkSessionInterval);
     };
   }, []);
-
-  const toggleDebugger = () => {
-    setShowDebugger(prev => !prev);
-  };
   
   return (
     <ThemeProvider initialTheme={config.theme}>
@@ -106,22 +86,6 @@ const ChatWidgetStandalone: React.FC = () => {
             colors: config.theme?.colors
           }}
         />
-        
-        {process.env.NODE_ENV === 'development' && (
-          <>
-            <EventDebugger 
-              isVisible={showDebugger} 
-              onClose={() => setShowDebugger(false)} 
-            />
-            
-            <button 
-              onClick={toggleDebugger}
-              className="fixed bottom-4 left-4 z-40 bg-gray-800 text-white text-xs px-2 py-1 rounded"
-            >
-              {showDebugger ? 'Hide' : 'Show'} Event Debugger
-            </button>
-          </>
-        )}
       </ChatProvider>
     </ThemeProvider>
   );

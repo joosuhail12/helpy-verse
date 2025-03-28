@@ -1,14 +1,48 @@
 
+import { ActionType } from "@/utils/ability";
+
+export interface Permission {
+  action: ActionType | ActionType[];
+  subject: string;
+  conditions?: {
+    clineId: string;
+  };
+}
+
+export type Permissions = Permission[];
+
+export interface AuthState {
+  isAuthenticated: boolean;
+  user: {
+    status: "success" | "error";
+    message: string;
+    data: {
+      id: string;
+      accessToken: {
+        token: string;
+        expiry: number;
+        issuedAt: string;
+        userAgent: string;
+        ip: string;
+      };
+      defaultWorkspaceId: string;
+    };
+  } | null;
+  loading: boolean;
+  error: string | null;
+  permissions: Permissions;
+}
+
 export interface Credentials {
   email: string;
   password: string;
 }
 
 export interface RegistrationCredentials {
+  fullName: string;
   email: string;
   password: string;
-  firstName?: string;
-  lastName?: string;
+  companyName: string;
 }
 
 export interface PasswordResetRequest {
@@ -16,27 +50,8 @@ export interface PasswordResetRequest {
 }
 
 export interface PasswordResetConfirmation {
-  email: string;
   token: string;
-  newPassword: string;
-}
-
-export type ActionType = 'manage' | 'create' | 'read' | 'update' | 'delete';
-
-export interface Permission {
-  action: ActionType | string;
-  subject: string;
-  conditions?: Record<string, any>;
-}
-
-export type Permissions = Permission[];
-
-export interface AuthState {
-  isAuthenticated: boolean;
-  loading: boolean;
-  error: string | null;
-  user: any | null;
-  token: string | null;
-  workspaceData: any | null;
-  permissions: Permissions;
+  password: string;
+  rid?: string;
+  tenantId?: string;
 }

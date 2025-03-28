@@ -22,29 +22,10 @@ export interface ThemeConfig {
     outgoingMessageForeground: string;
     incomingMessage: string;
     incomingMessageForeground: string;
-    primaryDark: string;
-    accent: string;
-    accentForeground: string;
-    success: string;
-    successForeground: string;
-    warning: string;
-    warningForeground: string;
-    error: string;
-    errorForeground: string;
-    headerBackground: string;
-    headerForeground: string;
-    navigationBackground: string;
-    navigationForeground: string;
+    primaryDark: string; // Changed from optional to required
   };
   position?: 'left' | 'right';
   compact?: boolean;
-  radius?: 'none' | 'sm' | 'md' | 'lg' | 'full';
-  shadow?: 'none' | 'sm' | 'md' | 'lg' | 'xl';
-  fontFamily?: string;
-  animation?: {
-    speed?: 'slow' | 'normal' | 'fast';
-    type?: 'slide' | 'fade' | 'scale' | 'none';
-  };
   labels: {
     welcomeTitle: string;
     welcomeSubtitle: string;
@@ -52,20 +33,7 @@ export interface ThemeConfig {
     recentMessagesTitle: string;
     noMessagesText: string;
     messagePlaceholder: string;
-    chatTitle: string;
-    sendButtonText: string;
-    attachmentButtonLabel: string;
-    conversationStartedText: string;
-    poweredByText: string;
-    loadMoreText: string;
-    typingText: string;
-  };
-  branding?: {
-    logoUrl?: string;
-    logoWidth?: number;
-    logoHeight?: number;
-    showPoweredBy?: boolean;
-    favicon?: string;
+    chatTitle: string; // Changed from optional to required
   };
 }
 
@@ -89,19 +57,7 @@ const defaultColors = {
   outgoingMessageForeground: '#FFFFFF',
   incomingMessage: '#F3F4F6',
   incomingMessageForeground: '#111827',
-  primaryDark: '#3730A3',
-  accent: '#8B5CF6',
-  accentForeground: '#FFFFFF',
-  success: '#10B981',
-  successForeground: '#FFFFFF',
-  warning: '#F59E0B',
-  warningForeground: '#FFFFFF',
-  error: '#EF4444',
-  errorForeground: '#FFFFFF',
-  headerBackground: '#FFFFFF',
-  headerForeground: '#111827',
-  navigationBackground: '#F9FAFB',
-  navigationForeground: '#111827'
+  primaryDark: '#3730A3'
 };
 
 const defaultLabels = {
@@ -111,34 +67,12 @@ const defaultLabels = {
   recentMessagesTitle: 'Recent messages',
   noMessagesText: 'No messages yet. Start a conversation!',
   messagePlaceholder: 'Type a message...',
-  chatTitle: 'Conversation',
-  sendButtonText: 'Send',
-  attachmentButtonLabel: 'Attach file',
-  conversationStartedText: 'Conversation started',
-  poweredByText: 'Powered by',
-  loadMoreText: 'Load more',
-  typingText: 'typing...'
+  chatTitle: 'Conversation'
 };
 
 export type ThemeContextType = {
   colors: typeof defaultColors;
   labels: typeof defaultLabels;
-  position?: 'left' | 'right';
-  compact?: boolean;
-  radius?: 'none' | 'sm' | 'md' | 'lg' | 'full';
-  shadow?: 'none' | 'sm' | 'md' | 'lg' | 'xl';
-  fontFamily?: string;
-  animation?: {
-    speed?: 'slow' | 'normal' | 'fast';
-    type?: 'slide' | 'fade' | 'scale' | 'none';
-  };
-  branding?: {
-    logoUrl?: string;
-    logoWidth?: number;
-    logoHeight?: number;
-    showPoweredBy?: boolean;
-    favicon?: string;
-  };
   updateTheme: (theme: Partial<ThemeConfig>) => void;
 };
 
@@ -153,58 +87,29 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
   children, 
   initialTheme = {} 
 }) => {
-  // Ensure all required properties have default values
-  const mergedColors = { ...defaultColors, ...initialTheme.colors };
-  const mergedLabels = { ...defaultLabels, ...initialTheme.labels };
-
   const [themeState, setThemeState] = useState<ThemeConfig>({
-    colors: mergedColors,
+    colors: { ...defaultColors, ...initialTheme.colors },
     position: initialTheme.position || 'right',
     compact: initialTheme.compact || false,
-    radius: initialTheme.radius || 'md',
-    shadow: initialTheme.shadow || 'md',
-    fontFamily: initialTheme.fontFamily,
-    animation: initialTheme.animation || { speed: 'normal', type: 'fade' },
-    labels: mergedLabels,
-    branding: initialTheme.branding || { showPoweredBy: true }
+    labels: { ...defaultLabels, ...initialTheme.labels }
   });
 
   const updateTheme = (theme: Partial<ThemeConfig>) => {
-    setThemeState(prev => {
-      // Create merged values to ensure all required properties have values
-      const updatedColors = { ...prev.colors, ...theme.colors };
-      const updatedLabels = { ...prev.labels, ...theme.labels };
-      
-      return {
-        ...prev,
-        colors: updatedColors,
-        position: theme.position || prev.position,
-        compact: theme.compact !== undefined ? theme.compact : prev.compact,
-        radius: theme.radius || prev.radius,
-        shadow: theme.shadow || prev.shadow,
-        fontFamily: theme.fontFamily || prev.fontFamily,
-        animation: { ...prev.animation, ...theme.animation },
-        labels: updatedLabels,
-        branding: { ...prev.branding, ...theme.branding }
-      };
-    });
-  };
-
-  const contextValue: ThemeContextType = {
-    colors: themeState.colors,
-    labels: themeState.labels,
-    position: themeState.position,
-    compact: themeState.compact,
-    radius: themeState.radius,
-    shadow: themeState.shadow,
-    fontFamily: themeState.fontFamily,
-    animation: themeState.animation,
-    branding: themeState.branding,
-    updateTheme
+    setThemeState(prev => ({
+      ...prev,
+      colors: { ...prev.colors, ...theme.colors },
+      position: theme.position || prev.position,
+      compact: theme.compact !== undefined ? theme.compact : prev.compact,
+      labels: { ...prev.labels, ...theme.labels }
+    }));
   };
 
   return (
-    <ThemeContext.Provider value={contextValue}>
+    <ThemeContext.Provider value={{ 
+      colors: themeState.colors || defaultColors, 
+      labels: themeState.labels || defaultLabels,
+      updateTheme 
+    }}>
       {children}
     </ThemeContext.Provider>
   );
