@@ -1,14 +1,21 @@
 
-import React from "react";
-import AppProviders from "./components/app/AppProviders";
-import AppRoutes from "./components/app/AppRoutes";
+import './App.css';
+import { Provider } from 'react-redux';
+import { store } from './store/store';
+import AppRoutes from './components/app/AppRoutes';
+import AppProviders from './components/app/AppProviders';
+import AppErrorBoundary from './components/app/AppErrorBoundary';
 
-const App = () => {
+function App() {
   return (
-    <AppProviders>
-      <AppRoutes />
-    </AppProviders>
+    <Provider store={store}>
+      <AppErrorBoundary>
+        <AppProviders>
+          <AppRoutes />
+        </AppProviders>
+      </AppErrorBoundary>
+    </Provider>
   );
-};
+}
 
 export default App;
