@@ -7,12 +7,12 @@ import { sessionManager } from '@/utils/auth/sessionManager';
 import { registerServiceWorker } from '@/utils/serviceWorker';
 import { preloadAssets, chatWidgetCriticalAssets, setupLazyLoading } from '@/utils/resourcePreloader';
 import EventDebugger from './components/events/EventDebugger';
-import { eventTracker } from '@/utils/events/eventTracker';
 import { emitEvent } from '@/utils/events/eventManager';
 import { ChatEventType } from '@/utils/events/eventTypes';
 import { useContactManagement } from '@/hooks/chat/useContactManagement';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import ContactContextPanel from './components/contact-context/ContactContextPanel';
+import SessionTimeoutAlert from './components/session/SessionTimeoutAlert';
 
 // Get configuration from window object or use defaults
 const config = (window as any).PULLSE_CHAT_CONFIG || {
@@ -27,13 +27,14 @@ const config = (window as any).PULLSE_CHAT_CONFIG || {
       reactions: true,
       fileAttachments: true,
       readReceipts: true,
-      contactContext: true // New feature flag
+      contactContext: true
     },
     // Security settings
     security: {
       requireAuthentication: false,
       endToEndEncryption: false,
-      sessionTimeout: 30 // minutes
+      sessionTimeout: 30, // minutes
+      csrfProtection: true // New setting for CSRF protection
     }
   }
 };
@@ -50,6 +51,7 @@ const ChatWidgetStandalone: React.FC = () => {
   const [showDebugger, setShowDebugger] = useState(process.env.NODE_ENV === 'development');
   const [showContactContext, setShowContactContext] = useState(features.contactContext || false);
   const { contactId } = useContactManagement(workspaceId);
+  const [sessionMonitorId, setSessionMonitorId] = useState<number | null>(null);
   
   // Initialize service worker, session, and optimize resources on load
   useEffect(() => {
@@ -69,16 +71,9 @@ const ChatWidgetStandalone: React.FC = () => {
     // Initialize session
     sessionManager.initSession(sessionTimeoutMs);
     
-    // Set up interval to check session status
-    const checkSessionInterval = setInterval(() => {
-      if (!sessionManager.isSessionActive()) {
-        console.log('Chat session expired');
-        // Refresh session to start over
-        sessionManager.initSession(sessionTimeoutMs);
-      } else {
-        sessionManager.updateActivity();
-      }
-    }, 60000); // Check every minute
+    // Start session monitoring
+    const monitorId = sessionManager.startSessionMonitoring();
+    setSessionMonitorId(monitorId);
     
     // Emit page load event with current URL
     emitEvent({
@@ -91,7 +86,9 @@ const ChatWidgetStandalone: React.FC = () => {
     });
     
     return () => {
-      clearInterval(checkSessionInterval);
+      if (sessionMonitorId !== null) {
+        sessionManager.stopSessionMonitoring(sessionMonitorId);
+      }
     };
   }, []);
 
@@ -103,6 +100,15 @@ const ChatWidgetStandalone: React.FC = () => {
     setShowContactContext(prev => !prev);
   };
   
+  const handleSessionExtend = () => {
+    sessionManager.extendSession(sessionTimeoutMs);
+  };
+  
+  const handleSessionLogout = () => {
+    sessionManager.endSession();
+    window.location.reload(); // Reload the page to reset the widget
+  };
+  
   return (
     <ThemeProvider initialTheme={config.theme}>
       <ChatProvider 
@@ -112,14 +118,20 @@ const ChatWidgetStandalone: React.FC = () => {
         {showContactContext ? (
           <ResizablePanelGroup direction="horizontal" className="w-full h-full">
             <ResizablePanel defaultSize={70} minSize={50}>
-              <ChatWidget 
-                workspaceId={workspaceId}
-                theme={{
-                  position: config.theme?.position,
-                  compact: config.theme?.compact,
-                  colors: config.theme?.colors
-                }}
-              />
+              <div className="relative h-full">
+                <ChatWidget 
+                  workspaceId={workspaceId}
+                  theme={{
+                    position: config.theme?.position,
+                    compact: config.theme?.compact,
+                    colors: config.theme?.colors
+                  }}
+                />
+                <SessionTimeoutAlert 
+                  onExtend={handleSessionExtend}
+                  onLogout={handleSessionLogout}
+                />
+              </div>
             </ResizablePanel>
             
             <ResizableHandle />
@@ -129,14 +141,20 @@ const ChatWidgetStandalone: React.FC = () => {
             </ResizablePanel>
           </ResizablePanelGroup>
         ) : (
-          <ChatWidget 
-            workspaceId={workspaceId}
-            theme={{
-              position: config.theme?.position,
-              compact: config.theme?.compact,
-              colors: config.theme?.colors
-            }}
-          />
+          <div className="relative h-full">
+            <ChatWidget 
+              workspaceId={workspaceId}
+              theme={{
+                position: config.theme?.position,
+                compact: config.theme?.compact,
+                colors: config.theme?.colors
+              }}
+            />
+            <SessionTimeoutAlert 
+              onExtend={handleSessionExtend}
+              onLogout={handleSessionLogout}
+            />
+          </div>
         )}
         
         {process.env.NODE_ENV === 'development' && (

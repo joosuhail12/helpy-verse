@@ -23,7 +23,12 @@ export enum ChatEventType {
   MESSAGE_ENCRYPTED = 'message_encrypted',
   MESSAGE_DECRYPTED = 'message_decrypted',
   MESSAGE_VALIDATION_FAILED = 'message_validation_failed',
-  SUSPICIOUS_CONTENT_DETECTED = 'suspicious_content_detected'
+  SUSPICIOUS_CONTENT_DETECTED = 'suspicious_content_detected',
+  SESSION_CREATED = 'session_created',
+  SESSION_ENDED = 'session_ended',
+  SESSION_EXTENDED = 'session_extended',
+  SESSION_EXPIRED = 'session_expired',
+  CSRF_VALIDATION_FAILED = 'csrf_validation_failed'
 }
 
 /**
@@ -171,6 +176,47 @@ export interface SuspiciousContentDetectedEvent extends ChatEvent {
 }
 
 /**
+ * Event for when a session is created
+ */
+export interface SessionCreatedEvent extends ChatEvent {
+  type: ChatEventType.SESSION_CREATED;
+  sessionId: string;
+}
+
+/**
+ * Event for when a session is ended
+ */
+export interface SessionEndedEvent extends ChatEvent {
+  type: ChatEventType.SESSION_ENDED;
+  sessionId: string;
+}
+
+/**
+ * Event for when a session is extended
+ */
+export interface SessionExtendedEvent extends ChatEvent {
+  type: ChatEventType.SESSION_EXTENDED;
+  sessionId: string;
+}
+
+/**
+ * Event for when a session expires
+ */
+export interface SessionExpiredEvent extends ChatEvent {
+  type: ChatEventType.SESSION_EXPIRED;
+  sessionId: string;
+}
+
+/**
+ * Event for when CSRF validation fails
+ */
+export interface CsrfValidationFailedEvent extends ChatEvent {
+  type: ChatEventType.CSRF_VALIDATION_FAILED;
+  sessionId: string;
+  requestUrl: string;
+}
+
+/**
  * Union type of all possible chat events
  */
 export type ChatEventUnion = 
@@ -188,4 +234,9 @@ export type ChatEventUnion =
   | MessageDecryptedEvent
   | MessageValidationFailedEvent
   | SuspiciousContentDetectedEvent
+  | SessionCreatedEvent
+  | SessionEndedEvent
+  | SessionExtendedEvent
+  | SessionExpiredEvent
+  | CsrfValidationFailedEvent
   | ChatEvent; // Base type for other events
