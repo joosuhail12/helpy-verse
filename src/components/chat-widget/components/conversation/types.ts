@@ -1,4 +1,3 @@
-
 export interface ChatMessage {
   id: string;
   content: string;
@@ -13,10 +12,8 @@ export interface ChatMessage {
     type: string;
   }[];
   metadata?: Record<string, any>;
-  // Adding properties for encryption support
   encrypted?: boolean;
   encryptedContent?: string;
-  // Adding property for conversation ID
   conversationId?: string;
 }
 
@@ -71,6 +68,7 @@ export interface MessageSearchProps {
 export interface TypingIndicatorProps {
   users: string[] | TypingUser[];
   compact?: boolean;
+  agentName?: string;
 }
 
 export interface TypingUser {

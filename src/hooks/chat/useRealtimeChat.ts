@@ -1,4 +1,3 @@
-
 import { useEffect, useState, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useAbly } from '@/context/AblyContext';
@@ -185,7 +184,7 @@ export const useRealtimeChat = (conversationId: string, workspaceId: string) => 
         if ('serviceWorker' in navigator && 'SyncManager' in window) {
           try {
             const registration = await navigator.serviceWorker.ready;
-            if (registration.sync) {
+            if (registration && 'sync' in registration) {
               await registration.sync.register('sync-messages');
             }
           } catch (e) {

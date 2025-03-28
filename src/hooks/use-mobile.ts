@@ -1,31 +1,39 @@
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 
 /**
- * Custom hook to check if the current viewport matches a given media query
- * @param query Media query string to match against
+ * Hook to determine if the current device is mobile based on a media query
+ * @param query The media query to check against (default: '(max-width: 768px)')
  * @returns Boolean indicating if the media query matches
  */
-export const useMediaQuery = (query: string): boolean => {
-  const [matches, setMatches] = useState(false);
+export const useMediaQuery = (query: string = '(max-width: 768px)'): boolean => {
+  const [matches, setMatches] = useState<boolean>(
+    typeof window !== 'undefined' ? window.matchMedia(query).matches : false
+  );
 
   useEffect(() => {
-    const mediaQuery = window.matchMedia(query);
-    setMatches(mediaQuery.matches);
-
-    const handleChange = (event: MediaQueryListEvent) => {
+    if (typeof window === 'undefined') return;
+    
+    const mediaQueryList = window.matchMedia(query);
+    const listener = (event: MediaQueryListEvent) => {
       setMatches(event.matches);
     };
 
     // Modern browsers
-    if (mediaQuery.addEventListener) {
-      mediaQuery.addEventListener('change', handleChange);
-      return () => mediaQuery.removeEventListener('change', handleChange);
+    if (mediaQueryList.addEventListener) {
+      mediaQueryList.addEventListener('change', listener);
+      return () => {
+        mediaQueryList.removeEventListener('change', listener);
+      };
     } 
-    // Older browsers
-    else {
-      mediaQuery.addListener(handleChange);
-      return () => mediaQuery.removeListener(handleChange);
+    // Legacy support for older browsers
+    else if ('addListener' in mediaQueryList) {
+      // @ts-ignore - For older browsers that don't support addEventListener
+      mediaQueryList.addListener(listener);
+      return () => {
+        // @ts-ignore - For older browsers
+        mediaQueryList.removeListener(listener);
+      };
     }
   }, [query]);
 
@@ -33,54 +41,9 @@ export const useMediaQuery = (query: string): boolean => {
 };
 
 /**
- * Hook to determine if the current viewport is mobile-sized
- * @returns Boolean indicating if the viewport is mobile-sized
+ * Hook to determine if the current device is mobile
+ * @returns Boolean indicating if the device is mobile
  */
 export const useIsMobile = (): boolean => {
   return useMediaQuery('(max-width: 768px)');
-};
-
-/**
- * Hook to detect touch devices
- * @returns Boolean indicating if the device supports touch
- */
-export const useTouchDevice = (): boolean => {
-  const [isTouch, setIsTouch] = useState(false);
-  
-  useEffect(() => {
-    const checkTouch = () => {
-      return 'ontouchstart' in window || 
-        navigator.maxTouchPoints > 0 ||
-        (navigator as any).msMaxTouchPoints > 0;
-    };
-    
-    setIsTouch(checkTouch());
-  }, []);
-  
-  return isTouch;
-};
-
-/**
- * Hook to get the current viewport dimensions
- * @returns Object containing viewport width and height
- */
-export const useViewport = () => {
-  const [viewport, setViewport] = useState({
-    width: window.innerWidth,
-    height: window.innerHeight
-  });
-  
-  useEffect(() => {
-    const handleResize = () => {
-      setViewport({
-        width: window.innerWidth,
-        height: window.innerHeight
-      });
-    };
-    
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-  
-  return viewport;
 };

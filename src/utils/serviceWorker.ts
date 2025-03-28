@@ -54,7 +54,7 @@ export const registerBackgroundSync = async (): Promise<boolean> => {
     const registration = await navigator.serviceWorker.ready;
     
     // Check if SyncManager is supported
-    if ('SyncManager' in window && registration.sync) {
+    if ('SyncManager' in window && 'sync' in registration) {
       await registration.sync.register('sync-messages');
       console.log('Background sync registered successfully');
       return true;
