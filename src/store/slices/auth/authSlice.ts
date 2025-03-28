@@ -1,8 +1,26 @@
 
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { getCookie } from '@/utils/helpers/helpers';
 import { handleLogout as tokenHandleLogout } from '@/utils/auth/tokenManager';
 import { AuthState } from './types';
+
+// Import the action creators BEFORE creating the slice
+import { 
+  loginUser, 
+  registerUser, 
+  requestPasswordReset, 
+  confirmPasswordReset 
+} from './authActions';
+
+import { 
+  fetchUserData, 
+  fetchUserProfile, 
+  fetchWorkspaceData 
+} from './userActions';
+
+import { 
+  getUserPermission 
+} from './permissionActions';
 
 // Define the initial state
 const initialState: AuthState = {
@@ -29,129 +47,127 @@ const authSlice = createSlice({
       state.error = null;
     },
   },
-  // We'll configure extraReducers after importing the action creators
-  extraReducers: builder => {},
+  extraReducers: (builder) => {
+    // Login actions
+    builder
+      .addCase(loginUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(loginUser.fulfilled, (state, action) => {
+        state.loading = false;
+        state.isAuthenticated = true;
+        state.user = action.payload;
+      })
+      .addCase(loginUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Login failed';
+      })
+      
+      // Register actions
+      .addCase(registerUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(registerUser.fulfilled, (state, action) => {
+        state.loading = false;
+        state.isAuthenticated = true;
+        state.user = action.payload;
+      })
+      .addCase(registerUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Registration failed';
+      })
+      
+      // Password reset actions
+      .addCase(requestPasswordReset.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(requestPasswordReset.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(requestPasswordReset.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Password reset request failed';
+      })
+      
+      // Password reset confirmation
+      .addCase(confirmPasswordReset.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(confirmPasswordReset.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(confirmPasswordReset.rejected, (state, action: PayloadAction<any>) => {
+        state.loading = false;
+        state.error = action.payload || 'Password reset failed';
+      })
+      
+      // User data actions
+      .addCase(fetchUserData.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchUserData.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload;
+      })
+      .addCase(fetchUserData.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'User data fetch failed';
+      })
+      
+      // User profile actions
+      .addCase(fetchUserProfile.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchUserProfile.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload;
+      })
+      .addCase(fetchUserProfile.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Failed to fetch user profile';
+      })
+      
+      // Workspace data actions
+      .addCase(fetchWorkspaceData.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchWorkspaceData.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload;
+      })
+      .addCase(fetchWorkspaceData.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Failed to fetch workspace data';
+      })
+      
+      // Permission actions
+      .addCase(getUserPermission.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getUserPermission.fulfilled, (state, action) => {
+        state.loading = false;
+        state.permissions = action.payload;
+      })
+      .addCase(getUserPermission.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'User permission fetch failed';
+      });
+  }
 });
 
 // Export actions from the slice
 export const { logout, clearError } = authSlice.actions;
 
-// Import the action creators AFTER creating the slice
-import { 
-  loginUser, 
-  registerUser, 
-  requestPasswordReset, 
-  confirmPasswordReset 
-} from './authActions';
-
-import { 
-  fetchUserData, 
-  fetchUserProfile, 
-  fetchWorkspaceData 
-} from './userActions';
-
-import { 
-  getUserPermission 
-} from './permissionActions';
-
-// Now configure the extraReducers with the action creators
-const authReducerWithExtraReducers = (state = initialState, action: any) => {
-  // First try the regular reducers
-  const newState = authSlice.reducer(state, action);
-  
-  // Handle extra reducers manually
-  if (action.type === loginUser.pending.type) {
-    return { ...newState, loading: true, error: null };
-  }
-  if (action.type === loginUser.fulfilled.type) {
-    return { ...newState, loading: false, isAuthenticated: true, user: action.payload };
-  }
-  if (action.type === loginUser.rejected.type) {
-    return { ...newState, loading: false, error: action.error.message || 'Login failed' };
-  }
-  
-  // Register actions
-  if (action.type === registerUser.pending.type) {
-    return { ...newState, loading: true, error: null };
-  }
-  if (action.type === registerUser.fulfilled.type) {
-    return { ...newState, loading: false, isAuthenticated: true, user: action.payload };
-  }
-  if (action.type === registerUser.rejected.type) {
-    return { ...newState, loading: false, error: action.error.message || 'Registration failed' };
-  }
-  
-  // Password reset actions
-  if (action.type === requestPasswordReset.pending.type) {
-    return { ...newState, loading: true, error: null };
-  }
-  if (action.type === requestPasswordReset.fulfilled.type) {
-    return { ...newState, loading: false };
-  }
-  if (action.type === requestPasswordReset.rejected.type) {
-    return { ...newState, loading: false, error: action.error.message || 'Password reset request failed' };
-  }
-  
-  // Password reset confirmation
-  if (action.type === confirmPasswordReset.pending.type) {
-    return { ...newState, loading: true, error: null };
-  }
-  if (action.type === confirmPasswordReset.fulfilled.type) {
-    return { ...newState, loading: false };
-  }
-  if (action.type === confirmPasswordReset.rejected.type) {
-    return { ...newState, loading: false, error: action.payload || 'Password reset failed' };
-  }
-  
-  // User data actions
-  if (action.type === fetchUserData.pending.type) {
-    return { ...newState, loading: true, error: null };
-  }
-  if (action.type === fetchUserData.fulfilled.type) {
-    return { ...newState, loading: false, user: action.payload };
-  }
-  if (action.type === fetchUserData.rejected.type) {
-    return { ...newState, loading: false, error: action.error.message || 'User data fetch failed' };
-  }
-  
-  // User profile actions
-  if (action.type === fetchUserProfile.pending.type) {
-    return { ...newState, loading: true, error: null };
-  }
-  if (action.type === fetchUserProfile.fulfilled.type) {
-    return { ...newState, loading: false, user: action.payload };
-  }
-  if (action.type === fetchUserProfile.rejected.type) {
-    return { ...newState, loading: false, error: action.error.message || 'Failed to fetch user profile' };
-  }
-  
-  // Workspace data actions
-  if (action.type === fetchWorkspaceData.pending.type) {
-    return { ...newState, loading: true, error: null };
-  }
-  if (action.type === fetchWorkspaceData.fulfilled.type) {
-    return { ...newState, loading: false, user: action.payload };
-  }
-  if (action.type === fetchWorkspaceData.rejected.type) {
-    return { ...newState, loading: false, error: action.error.message || 'Failed to fetch workspace data' };
-  }
-  
-  // Permission actions
-  if (action.type === getUserPermission.pending.type) {
-    return { ...newState, loading: true, error: null };
-  }
-  if (action.type === getUserPermission.fulfilled.type) {
-    return { ...newState, loading: false, permissions: action.payload };
-  }
-  if (action.type === getUserPermission.rejected.type) {
-    return { ...newState, loading: false, error: action.error.message || 'User permission fetch failed' };
-  }
-  
-  return newState;
-};
-
 // Export the reducer directly
-export default authReducerWithExtraReducers;
+export default authSlice.reducer;
 
 // Re-export the action creators for use in components
 export {
