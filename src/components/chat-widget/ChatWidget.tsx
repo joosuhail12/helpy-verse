@@ -1,56 +1,23 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { X, MessageSquare } from 'lucide-react';
 import { ChatProvider } from '@/context/ChatContext';
 import { AblyProvider } from '@/context/AblyContext';
 import { ThemeProvider, ThemeConfig } from '@/context/ThemeContext';
 import ChatWidgetContainer from './container/ChatWidgetContainer';
-import { isOriginAllowed } from '@/utils/security/originValidator';
-import { toast } from 'sonner';
 
 interface ChatWidgetProps {
   workspaceId: string;
   theme?: Partial<ThemeConfig>;
-  allowedOrigins?: string[];
 }
 
-export const ChatWidget: React.FC<ChatWidgetProps> = ({ 
-  workspaceId, 
-  theme = {},
-  allowedOrigins = []
-}) => {
+export const ChatWidget: React.FC<ChatWidgetProps> = ({ workspaceId, theme = {} }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [isOriginValid, setIsOriginValid] = useState(false);
-  const [isValidating, setIsValidating] = useState(true);
-
-  useEffect(() => {
-    const validateOrigin = () => {
-      const originValid = isOriginAllowed(workspaceId, allowedOrigins);
-      setIsOriginValid(originValid);
-      setIsValidating(false);
-      
-      if (!originValid) {
-        console.error(`Chat widget blocked: Origin not authorized for workspace ${workspaceId}`);
-      }
-    };
-    
-    validateOrigin();
-  }, [workspaceId, allowedOrigins]);
 
   const toggleWidget = () => {
     setIsOpen((prev) => !prev);
   };
-
-  // If origin is invalid, don't render the widget
-  if (!isOriginValid && !isValidating) {
-    return null;
-  }
-
-  // If still validating, render a minimal placeholder to prevent layout shifts
-  if (isValidating) {
-    return <div className="hidden" aria-hidden="true"></div>;
-  }
 
   return (
     <AblyProvider workspaceId={workspaceId}>
