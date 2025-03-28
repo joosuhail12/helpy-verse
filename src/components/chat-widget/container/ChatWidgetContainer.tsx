@@ -1,6 +1,6 @@
 
-import React, { useState, useEffect } from 'react';
-import { useChat } from '@/context/ChatContext';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useChat } from '@/hooks/chat/useChat';
 import { useThemeContext } from '@/context/ThemeContext';
 import HomeView from '../views/HomeView';
 import MessagesView from '../views/MessagesView';
@@ -22,30 +22,29 @@ const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({
   position = 'right',
   compact = false 
 }) => {
-  const { 
-    conversations, 
-    currentConversation, 
-    createNewConversation: createConversation, 
-    selectConversation: setSelectedConversation
-  } = useChat();
-  
+  const { conversations, currentConversation, selectConversation, createNewConversation } = useChat();
   const { colors } = useThemeContext();
   const [isLoading, setIsLoading] = useState(false);
   const [activeView, setActiveView] = useState<View>('home');
 
+  // Modified to not create a conversation on init
+  useEffect(() => {
+    setIsLoading(false);
+  }, []);
+
   // Function to handle starting a new conversation when user sends first message
-  const handleStartConversation = async (message: string) => {
+  const handleStartConversation = useCallback(async (message: string) => {
     setIsLoading(true);
     try {
-      const newConversationId = await createConversation(`Conversation ${new Date().toLocaleString()}`);
-      setSelectedConversation(newConversationId);
-      setActiveView('conversation');
+      const newConversationId = await createNewConversation(`Conversation ${new Date().toLocaleString()}`);
+      selectConversation(newConversationId);
+      // Now we can handle the message in the conversation component
     } catch (error) {
       console.error('Failed to create conversation:', error);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [createNewConversation, selectConversation]);
 
   if (isLoading) {
     return (
@@ -66,7 +65,7 @@ const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({
         <HomeView 
           workspaceId={workspaceId} 
           onClose={onClose} 
-          setActiveView={setActiveView} 
+          setActiveView={(view: View) => setActiveView(view)} 
         />
       }
       
@@ -74,7 +73,7 @@ const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({
         <MessagesView 
           workspaceId={workspaceId} 
           onClose={onClose} 
-          setActiveView={setActiveView} 
+          setActiveView={(view: View) => setActiveView(view)} 
           onStartConversation={handleStartConversation}
         />
       }
@@ -82,6 +81,7 @@ const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({
       {activeView === 'conversation' && currentConversation && 
         <ConversationView 
           conversationId={currentConversation.id} 
+          workspaceId={workspaceId} 
           onBack={() => setActiveView('messages')} 
         />
       }

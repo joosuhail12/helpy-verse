@@ -1,7 +1,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { Conversation, ChatMessage, TypingUser } from '@/components/chat-widget/components/conversation/types';
+import { Conversation, ChatMessage } from '@/components/chat-widget/components/conversation/types';
 import { useAbly } from '@/context/AblyContext';
 import { MOCK_CONVERSATIONS } from '@/mock/chatMessages';
 
@@ -10,14 +10,10 @@ interface UseChatReturn {
   currentConversation: Conversation | null;
   createNewConversation: (title?: string, type?: string) => Promise<string>;
   selectConversation: (conversationId: string) => void;
-  sendMessage: (conversationId: string, message: string, attachments?: File[]) => Promise<void>;
+  sendMessage: (conversationId: string, message: string) => Promise<void>;
   getMessages: (conversationId: string) => Promise<ChatMessage[]>;
   loadingMessages: boolean;
   messages: ChatMessage[];
-  isLoading: boolean;
-  typingUsers: TypingUser[];
-  startTyping: (conversationId: string) => void;
-  stopTyping: (conversationId: string) => void;
 }
 
 export const useChat = (): UseChatReturn => {
@@ -25,8 +21,6 @@ export const useChat = (): UseChatReturn => {
   const [currentConversation, setCurrentConversation] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loadingMessages, setLoadingMessages] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
   const { workspaceId } = useAbly();
   const [mockConversationsInitialized, setMockConversationsInitialized] = useState(false);
 
@@ -132,13 +126,13 @@ export const useChat = (): UseChatReturn => {
   }, [conversations]);
 
   // Send a message
-  const sendMessage = useCallback(async (conversationId: string, message: string, attachments?: File[]): Promise<void> => {
+  const sendMessage = useCallback(async (conversationId: string, message: string): Promise<void> => {
     // Create a new message
     const newMessage: ChatMessage = {
       id: uuidv4(),
       sender: 'user',
       content: message,
-      timestamp: new Date().toISOString(),
+      timestamp: new Date(),
       conversationId
     };
     
@@ -147,27 +141,33 @@ export const useChat = (): UseChatReturn => {
     
     // Update the conversation with the last message
     setConversations(prev => prev.map(conv => 
-      conv.id === conversationId 
-        ? { 
-            ...conv, 
-            lastMessage: message.slice(0, 50) + (message.length > 50 ? '...' : ''),
-            lastMessageTimestamp: new Date().toISOString(),
-            unreadCount: 0
-          }
-        : conv
+      conv.id === conversationId ? {
+        ...conv,
+        lastMessage: message,
+        lastMessageTimestamp: new Date().toISOString()
+      } : conv
     ));
-    
-    // Simulate an agent response after a short delay
+
+    // Simulate an agent response
     setTimeout(() => {
-      const agentResponse: ChatMessage = {
+      const agentMessage: ChatMessage = {
         id: uuidv4(),
         sender: 'agent',
-        content: `Thank you for your message. Your question has been received and will be answered shortly.`,
-        timestamp: new Date().toISOString(),
+        content: `Thanks for your message: "${message}". How else can I assist you today?`,
+        timestamp: new Date(),
         conversationId
       };
       
-      setMessages(prev => [...prev, agentResponse]);
+      setMessages(prev => [...prev, agentMessage]);
+      
+      // Update conversation with agent's response
+      setConversations(prev => prev.map(conv => 
+        conv.id === conversationId ? {
+          ...conv,
+          lastMessage: agentMessage.content,
+          lastMessageTimestamp: new Date().toISOString()
+        } : conv
+      ));
     }, 1000);
   }, []);
 
@@ -175,28 +175,36 @@ export const useChat = (): UseChatReturn => {
   const getMessages = useCallback(async (conversationId: string): Promise<ChatMessage[]> => {
     setLoadingMessages(true);
     
-    // Simulate loading from a remote source or IndexedDB
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const filteredMessages = messages.filter(msg => msg.conversationId === conversationId);
-        setLoadingMessages(false);
-        resolve(filteredMessages);
-      }, 300);
-    });
-  }, [messages]);
-
-  // Typing indicators
-  const startTyping = useCallback((conversationId: string) => {
-    // Simulate a typing indicator
-    console.log(`User started typing in conversation ${conversationId}`);
-    // In a real app, this would send a typing event to other participants
-  }, []);
-
-  const stopTyping = useCallback((conversationId: string) => {
-    // Simulate a stopping typing indicator
-    console.log(`User stopped typing in conversation ${conversationId}`);
-    // In a real app, this would send a stopped typing event to other participants
-  }, []);
+    // Check if it's one of our mock conversations
+    const conversation = conversations.find(c => c.id === conversationId);
+    if (conversation?.type && MOCK_CONVERSATIONS[conversation.type as keyof typeof MOCK_CONVERSATIONS]) {
+      const mockMessageGenerator = MOCK_CONVERSATIONS[conversation.type as keyof typeof MOCK_CONVERSATIONS];
+      const mockMessages = mockMessageGenerator(conversationId);
+      setLoadingMessages(false);
+      return mockMessages;
+    }
+    
+    // Filter messages for this conversation
+    const conversationMessages = messages.filter(m => m.conversationId === conversationId);
+    
+    // If there are no messages yet, add a welcome message
+    let resultMessages = [...conversationMessages];
+    if (resultMessages.length === 0) {
+      const welcomeMessage: ChatMessage = {
+        id: uuidv4(),
+        sender: 'agent',
+        content: 'Hello! How can I help you today?',
+        timestamp: new Date(),
+        conversationId
+      };
+      
+      resultMessages = [welcomeMessage];
+      setMessages(prev => [...prev, welcomeMessage]);
+    }
+    
+    setLoadingMessages(false);
+    return resultMessages;
+  }, [messages, conversations]);
 
   return {
     conversations,
@@ -206,10 +214,6 @@ export const useChat = (): UseChatReturn => {
     sendMessage,
     getMessages,
     loadingMessages,
-    messages,
-    isLoading,
-    typingUsers,
-    startTyping,
-    stopTyping
+    messages
   };
 };

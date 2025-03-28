@@ -2,11 +2,11 @@
 import React, { createContext, useContext, useState } from 'react';
 
 export interface ThemeConfig {
-  colors?: {
+  colors: {
     primary: string;
     primaryForeground: string;
     background: string;
-    backgroundSecondary: string;
+    backgroundSecondary: string; // Added this property
     foreground: string;
     border: string;
     userMessage: string;
@@ -14,18 +14,9 @@ export interface ThemeConfig {
     agentMessage: string;
     agentMessageText: string;
     inputBackground: string;
-    muted: string;
-    mutedForeground: string;
-    secondary: string;
-    secondaryForeground: string;
-    outgoingMessage: string;
-    outgoingMessageForeground: string;
-    incomingMessage: string;
-    incomingMessageForeground: string;
-    primaryDark: string; // Changed from optional to required
   };
-  position?: 'left' | 'right';
-  compact?: boolean;
+  position: 'left' | 'right';
+  compact: boolean;
   labels: {
     welcomeTitle: string;
     welcomeSubtitle: string;
@@ -33,83 +24,77 @@ export interface ThemeConfig {
     recentMessagesTitle: string;
     noMessagesText: string;
     messagePlaceholder: string;
-    chatTitle: string; // Changed from optional to required
   };
 }
 
-const defaultColors = {
-  primary: '#4F46E5',
-  primaryForeground: '#FFFFFF',
-  background: '#FFFFFF',
-  backgroundSecondary: '#F9FAFB',
-  foreground: '#111827',
-  border: '#E5E7EB',
-  userMessage: '#4F46E5',
-  userMessageText: '#FFFFFF',
-  agentMessage: '#F3F4F6',
-  agentMessageText: '#111827',
-  inputBackground: '#F9FAFB',
-  muted: '#F3F4F6',
-  mutedForeground: '#6B7280',
-  secondary: '#F3F4F6',
-  secondaryForeground: '#111827',
-  outgoingMessage: '#4F46E5',
-  outgoingMessageForeground: '#FFFFFF',
-  incomingMessage: '#F3F4F6',
-  incomingMessageForeground: '#111827',
-  primaryDark: '#3730A3'
+const defaultTheme: ThemeConfig = {
+  colors: {
+    primary: '#9b87f5',
+    primaryForeground: '#ffffff',
+    background: '#ffffff',
+    backgroundSecondary: '#f9f9f9', // Added default value
+    foreground: '#1A1F2C',
+    border: '#eaeaea',
+    userMessage: '#9b87f5',
+    userMessageText: '#ffffff',
+    agentMessage: '#f1f1f1',
+    agentMessageText: '#1A1F2C',
+    inputBackground: '#f9f9f9'
+  },
+  position: 'right',
+  compact: false,
+  labels: {
+    welcomeTitle: 'Hello there.',
+    welcomeSubtitle: 'How can we help?',
+    askQuestionButton: 'Ask a question',
+    recentMessagesTitle: 'Recent messages',
+    noMessagesText: 'No messages yet. Start a conversation!',
+    messagePlaceholder: 'Type a message...'
+  }
 };
 
-const defaultLabels = {
-  welcomeTitle: 'Hello there.',
-  welcomeSubtitle: 'How can we help?',
-  askQuestionButton: 'Ask a question',
-  recentMessagesTitle: 'Recent messages',
-  noMessagesText: 'No messages yet. Start a conversation!',
-  messagePlaceholder: 'Type a message...',
-  chatTitle: 'Conversation'
-};
-
-export type ThemeContextType = {
-  colors: typeof defaultColors;
-  labels: typeof defaultLabels;
+interface ThemeContextType extends ThemeConfig {
   updateTheme: (theme: Partial<ThemeConfig>) => void;
-};
+}
 
-export const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 interface ThemeProviderProps {
   children: React.ReactNode;
   initialTheme?: Partial<ThemeConfig>;
 }
 
-export const ThemeProvider: React.FC<ThemeProviderProps> = ({ 
-  children, 
-  initialTheme = {} 
-}) => {
-  const [themeState, setThemeState] = useState<ThemeConfig>({
-    colors: { ...defaultColors, ...initialTheme.colors },
-    position: initialTheme.position || 'right',
-    compact: initialTheme.compact || false,
-    labels: { ...defaultLabels, ...initialTheme.labels }
+export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children, initialTheme = {} }) => {
+  const [theme, setTheme] = useState<ThemeConfig>({
+    ...defaultTheme,
+    ...initialTheme,
+    colors: {
+      ...defaultTheme.colors,
+      ...(initialTheme.colors || {})
+    },
+    labels: {
+      ...defaultTheme.labels,
+      ...(initialTheme.labels || {})
+    }
   });
 
-  const updateTheme = (theme: Partial<ThemeConfig>) => {
-    setThemeState(prev => ({
+  const updateTheme = (newTheme: Partial<ThemeConfig>) => {
+    setTheme(prev => ({
       ...prev,
-      colors: { ...prev.colors, ...theme.colors },
-      position: theme.position || prev.position,
-      compact: theme.compact !== undefined ? theme.compact : prev.compact,
-      labels: { ...prev.labels, ...theme.labels }
+      ...newTheme,
+      colors: {
+        ...prev.colors,
+        ...(newTheme.colors || {})
+      },
+      labels: {
+        ...prev.labels,
+        ...(newTheme.labels || {})
+      }
     }));
   };
 
   return (
-    <ThemeContext.Provider value={{ 
-      colors: themeState.colors || defaultColors, 
-      labels: themeState.labels || defaultLabels,
-      updateTheme 
-    }}>
+    <ThemeContext.Provider value={{ ...theme, updateTheme }}>
       {children}
     </ThemeContext.Provider>
   );

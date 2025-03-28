@@ -1,130 +1,190 @@
 
 import React, { useState, useEffect } from 'react';
-import { useChat } from '@/context/ChatContext';
+import { useRealtimeChat } from '@/hooks/chat/useRealtimeChat';
+import { useMessageSubscription } from '@/hooks/chat/useMessageSubscription';
+import { useTypingIndicator } from '@/hooks/chat/useTypingIndicator';
+import { useConversationPersistence } from '@/hooks/chat/useConversationPersistence';
+import ChatHeader from '../header/ChatHeader';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import TypingIndicator from './TypingIndicator';
-import ChatHeader from '../header/ChatHeader';
-import { TypingUser } from './types';
+import { ChatMessage } from './types';
+import { useChat } from '@/hooks/chat/useChat';
+import { v4 as uuidv4 } from 'uuid';
 
-interface ResponsiveConversationViewProps {
+export interface ResponsiveConversationViewProps {
   conversationId: string;
+  workspaceId: string;
   onBack?: () => void;
 }
 
 const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
   conversationId,
+  workspaceId,
   onBack
 }) => {
-  const { 
-    sendMessage, 
-    getMessages, 
-    saveMessages,
-    conversations
-  } = useChat();
-  const [messages, setMessages] = useState([]);
-  const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  
-  const currentConversation = conversations.find(c => c.id === conversationId);
-  
+  const { messages: realtimeMessages, sendMessage, isLoading } = useRealtimeChat(conversationId, workspaceId);
+  const [typingUsers, setTypingUsers] = useState<{ clientId: string; name?: string }[]>([]);
+  const { getMessages } = useChat();
+  const [loadedMessages, setLoadedMessages] = useState<ChatMessage[]>([]);
+  const [allMessages, setAllMessages] = useState<ChatMessage[]>([]);
+
+  // Combine all messages from different sources
+  useEffect(() => {
+    if (realtimeMessages.length > 0) {
+      setAllMessages(realtimeMessages);
+    } else {
+      setAllMessages(loadedMessages);
+    }
+  }, [realtimeMessages, loadedMessages]);
+
+  // Load messages when component mounts
   useEffect(() => {
     const loadMessages = async () => {
-      setIsLoading(true);
-      try {
-        const loadedMessages = await getMessages(conversationId);
-        setMessages(loadedMessages);
-      } catch (error) {
-        console.error('Failed to load messages:', error);
-      } finally {
-        setIsLoading(false);
+      // First try to get from Chat hook
+      const msgs = await getMessages(conversationId);
+      
+      if (msgs && msgs.length > 0) {
+        // Assign status to messages based on readBy property
+        const processedMsgs = msgs.map(msg => {
+          if (msg.sender === 'user') {
+            if (msg.readBy && msg.readBy.length > 0) {
+              return { ...msg, status: 'read' as const };
+            } else {
+              return { ...msg, status: 'delivered' as const };
+            }
+          }
+          return msg;
+        });
+        
+        setLoadedMessages(processedMsgs);
       }
     };
     
     loadMessages();
   }, [conversationId, getMessages]);
-  
-  const handleSendMessage = async (content: string) => {
-    if (!content.trim()) return;
-    
-    // Create a new message
-    const newMessage = {
-      id: crypto.randomUUID(),
-      content,
-      sender: 'user',
-      timestamp: new Date().toISOString(),
-      conversationId
+
+  // Use persistence hook to load/save messages
+  useConversationPersistence(conversationId, allMessages, {
+    onLoad: (savedMessages) => {
+      if (loadedMessages.length === 0 && realtimeMessages.length === 0) {
+        setLoadedMessages(savedMessages);
+      }
+    }
+  });
+
+  // Initialize message subscription
+  const { publishMessage } = useMessageSubscription(conversationId, workspaceId, {
+    onMessage: (message: ChatMessage) => {
+      // Mark agent messages as read when received by user
+      if (message.sender === 'agent') {
+        const updatedMsg = {
+          ...message,
+          readBy: message.readBy || []
+        };
+        
+        if (!updatedMsg.readBy.includes('user')) {
+          updatedMsg.readBy.push('user');
+          setTimeout(() => {
+            publishMessage(updatedMsg);
+          }, 1000);
+        }
+      }
+    }
+  });
+
+  // Initialize typing indicator
+  const { typingUsers: activeTypers, sendTypingIndicator } = useTypingIndicator(conversationId);
+
+  useEffect(() => {
+    // Subscribe to typing status updates
+    const handleTypingStatusChanged = (typingStatuses: Record<string, boolean>) => {
+      setTypingUsers(
+        Object.entries(typingStatuses)
+          .filter(([_, isTyping]) => isTyping)
+          .map(([clientId]) => ({ clientId }))
+      );
     };
     
-    // Add locally for immediate feedback
-    setMessages(prev => [...prev, newMessage]);
+    // Set up typing indicator listener
+    // This would typically be handled by the useTypingIndicator hook
+    return () => {
+      // Cleanup typing indicator listener
+    };
+  }, []);
+
+  const handleSendMessage = async (content: string) => {
+    sendTypingIndicator(false);
     
-    // Save to local storage
-    const updatedMessages = [...messages, newMessage];
-    await saveMessages(conversationId, updatedMessages);
+    // Create message with 'sending' status
+    const messageId = uuidv4();
+    const messageWithStatus: ChatMessage = {
+      id: messageId,
+      sender: 'user',
+      content,
+      timestamp: new Date(),
+      conversationId,
+      status: 'sending'
+    };
     
-    // Send to backend
-    await sendMessage(conversationId, content);
+    // We need to add the message to the local state first with 'sending' status
+    setLoadedMessages(prev => [...prev, messageWithStatus]);
     
-    // Simulate an agent response after a short delay
-    setTimeout(() => {
-      const agentResponse = {
-        id: crypto.randomUUID(),
-        sender: 'agent',
-        content: `Thank you for your message. I'll help you with that shortly!`,
-        timestamp: new Date().toISOString(),
-        conversationId
-      };
+    try {
+      await sendMessage(content);
       
-      setMessages(prev => [...prev, agentResponse]);
-      saveMessages(conversationId, [...updatedMessages, agentResponse]);
-    }, 1000);
-  };
-  
-  // Mock typing indicators for demo purposes
-  useEffect(() => {
-    if (messages.length > 0 && messages[messages.length - 1].sender === 'user') {
-      const timeout = setTimeout(() => {
-        setTypingUsers([{
-          clientId: 'agent-1',
-          name: 'Agent',
-          timestamp: Date.now()
-        }]);
+      // Update status to 'sent' then 'delivered'
+      setTimeout(() => {
+        setLoadedMessages(prev => 
+          prev.map(msg => msg.id === messageId ? { ...msg, status: 'sent' as const } : msg)
+        );
         
         setTimeout(() => {
-          setTypingUsers([]);
-        }, 3000);
-      }, 1000);
-      
-      return () => clearTimeout(timeout);
+          setLoadedMessages(prev => 
+            prev.map(msg => msg.id === messageId ? { ...msg, status: 'delivered' as const } : msg)
+          );
+          
+          // Simulate read receipt after agent reply
+          setTimeout(() => {
+            setLoadedMessages(prev => 
+              prev.map(msg => msg.id === messageId ? { ...msg, status: 'read' as const } : msg)
+            );
+          }, 2000);
+        }, 800);
+      }, 400);
+    } catch (error) {
+      // Update status to 'failed' if sending fails
+      setLoadedMessages(prev => 
+        prev.map(msg => msg.id === messageId ? { ...msg, status: 'failed' as const } : msg)
+      );
     }
-  }, [messages]);
-  
+  };
+
+  const handleMessageInputChange = () => {
+    sendTypingIndicator(true);
+  };
+
   return (
     <div className="flex flex-col h-full">
       <ChatHeader 
-        title={currentConversation?.title || 'Conversation'} 
-        onBackClick={onBack}
+        title="Conversation" 
+        onBackClick={onBack} 
+        workspaceId={workspaceId}
+        conversationId={conversationId}
       />
-      
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-hidden flex flex-col">
         <MessageList 
-          messages={messages} 
+          messages={allMessages} 
           conversationId={conversationId}
-          isLoading={isLoading}
+          showAvatars={true}
         />
-        
-        {typingUsers.length > 0 && (
-          <div className="px-4 py-2">
-            <TypingIndicator users={typingUsers} />
-          </div>
-        )}
-        
-        <MessageInput 
-          onSendMessage={handleSendMessage}
-          placeholder="Type a message..."
-          disabled={isLoading}
-        />
+        <div className="px-4 pb-2">
+          <TypingIndicator users={activeTypers} agentName={activeTypers.length === 1 ? "Support agent" : undefined} />
+          <MessageInput 
+            onSendMessage={handleSendMessage}
+            onTyping={handleMessageInputChange}
+          />
+        </div>
       </div>
     </div>
   );

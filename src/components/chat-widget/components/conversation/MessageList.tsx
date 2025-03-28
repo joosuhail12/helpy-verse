@@ -1,173 +1,171 @@
 
-import React, { useRef, useEffect } from 'react';
-import { formatRelativeTime } from '@/utils/helpers/formatters';
-import { useThemeContext } from '@/context/ThemeContext';
-import FileAttachmentItem from './FileAttachmentItem';
-import UserAvatar from '../user/UserAvatar';
+import React, { useEffect, useRef, useState } from 'react';
+import MessageItem from './MessageItem';
+import MessageSearch from './MessageSearch';
 import { ChatMessage } from './types';
-import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
-import dayjs from 'dayjs';
+import { Search, ArrowDown } from 'lucide-react';
 
 interface MessageListProps {
   messages: ChatMessage[];
-  conversationId: string;
+  conversationId?: string;
   showAvatars?: boolean;
-  encrypted?: boolean;
-  isLoading?: boolean;
-  hasMore?: boolean;
-  onLoadMore?: () => void;
 }
 
-const MessageList: React.FC<MessageListProps> = ({
+const MessageList: React.FC<MessageListProps> = ({ 
   messages,
   conversationId,
-  showAvatars = false,
-  encrypted = false,
-  isLoading = false,
-  hasMore = false,
-  onLoadMore
+  showAvatars = false
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { colors } = useThemeContext();
-  
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({
-      behavior: 'smooth'
-    });
-  };
-  
-  useEffect(() => {
-    // Only scroll to bottom on new messages, not when loading old ones
-    if (!isLoading && messages.length > 0) {
-      scrollToBottom();
+  const messageRefs = useRef<Record<string, HTMLDivElement>>({});
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const [showSearch, setShowSearch] = useState(false);
+  const [isAutoScrollEnabled, setIsAutoScrollEnabled] = useState(true);
+  const [showScrollButton, setShowScrollButton] = useState(false);
+
+  // Function to handle manual scrolling
+  const handleScroll = () => {
+    if (!messagesContainerRef.current) return;
+    
+    const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
+    const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+    
+    // Update auto-scroll state based on user scroll position
+    if (isNearBottom !== isAutoScrollEnabled) {
+      setIsAutoScrollEnabled(isNearBottom);
     }
-  }, [messages, isLoading]);
-  
-  const groupMessagesByTime = (messages: ChatMessage[]) => {
-    const groupedMessages = [];
-    let currentGroup = [];
     
-    messages.forEach((message, index) => {
-      currentGroup.push(message);
+    // Show/hide scroll button based on position
+    setShowScrollButton(!isNearBottom);
+  };
+
+  // Scroll to bottom function
+  const scrollToBottom = () => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+      setIsAutoScrollEnabled(true);
+    }
+  };
+
+  useEffect(() => {
+    // Auto-scroll to bottom when new messages come in, if enabled
+    if (messagesEndRef.current && isAutoScrollEnabled) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    } else if (!isAutoScrollEnabled && messages.length > 0) {
+      // Show scroll button when new messages arrive but auto-scroll is disabled
+      setShowScrollButton(true);
+    }
+  }, [messages, isAutoScrollEnabled]);
+
+  // Group messages by sender and consecutive time (within 2 minutes)
+  const groupedMessages = messages.reduce((groups: ChatMessage[][], message, index) => {
+    // Start a new group if this is the first message
+    if (index === 0) {
+      return [[message]];
+    }
+
+    const lastGroup = groups[groups.length - 1];
+    const lastMessage = lastGroup[lastGroup.length - 1];
+    
+    // Conditions for grouping messages together:
+    // 1. Same sender
+    // 2. Time difference less than 2 minutes (120,000 ms)
+    const sameUser = lastMessage.sender === message.sender;
+    
+    // Fixed timestamp handling to properly handle string or Date objects
+    const getTimestampMs = (timestamp: string | Date): number => {
+      return typeof timestamp === 'string' 
+        ? new Date(timestamp).getTime() 
+        : timestamp.getTime();
+    };
+    
+    const timeDiff = getTimestampMs(message.timestamp) - getTimestampMs(lastMessage.timestamp);
+    const closeInTime = timeDiff < 120000; // 2 minutes
+    
+    if (sameUser && closeInTime) {
+      // Add to existing group
+      lastGroup.push(message);
+    } else {
+      // Start new group
+      groups.push([message]);
+    }
+    
+    return groups;
+  }, []);
+
+  const scrollToMessage = (messageId: string) => {
+    if (messageRefs.current[messageId]) {
+      messageRefs.current[messageId].scrollIntoView({ behavior: 'smooth', block: 'center' });
       
-      if (index === messages.length - 1 || 
-          !dayjs(message.timestamp).isSame(dayjs(messages[index + 1].timestamp), 'day')) {
-        groupedMessages.push(currentGroup);
-        currentGroup = [];
-      }
-    });
-    
-    return groupedMessages;
+      // Highlight the message temporarily
+      messageRefs.current[messageId].classList.add('bg-yellow-100', 'transition-colors');
+      setTimeout(() => {
+        messageRefs.current[messageId]?.classList.remove('bg-yellow-100');
+      }, 2000);
+    }
   };
-  
-  const formatMessageGroupTime = (date: Date | string) => {
-    return dayjs(date).format('MMMM D, YYYY');
-  };
-  
-  const groupedMessages = groupMessagesByTime(messages);
-  
-  // Use fallback colors if theme doesn't provide them
-  const outgoingMessage = colors.outgoingMessage || colors.userMessage || colors.primary || '#4F46E5';
-  const incomingMessage = colors.incomingMessage || colors.agentMessage || colors.backgroundSecondary || '#f3f4f6';
-  const outgoingMessageForeground = colors.outgoingMessageForeground || colors.userMessageText || colors.primaryForeground || '#ffffff';
-  const incomingMessageForeground = colors.incomingMessageForeground || colors.agentMessageText || colors.foreground || '#1f2937';
-  
+
   return (
-    <div className="flex-1 overflow-y-auto p-4">
-      {hasMore && (
-        <div className="flex justify-center mb-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onLoadMore}
-            disabled={isLoading}
-            className="text-xs"
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-3 w-3 animate-spin" />
-                Loading...
-              </>
-            ) : (
-              'Load older messages'
-            )}
-          </Button>
-        </div>
+    <div className="flex flex-col flex-1 overflow-hidden">
+      {showSearch && (
+        <MessageSearch
+          messages={messages}
+          onResultSelect={scrollToMessage}
+          onClose={() => setShowSearch(false)}
+        />
       )}
       
-      {groupedMessages.map((group, idx) => {
-        const groupTimeFormatted = formatMessageGroupTime(new Date(group[0].timestamp));
-        
-        return (
-          <div 
-            key={dayjs(group[0].timestamp).format('YYYYMMDD') + idx} 
-            className="mb-4 space-y-2"
-          >
-            <div 
-              className="text-xs text-center mb-2 px-2 py-1 rounded-full bg-gray-100 inline-block mx-auto"
-              style={{ 
-                color: colors.foreground,
-                backgroundColor: colors.backgroundSecondary
-              }}
+      <div 
+        className="flex-1 overflow-y-auto"
+        ref={messagesContainerRef}
+        onScroll={handleScroll}
+      >
+        <div className="flex flex-col space-y-2 p-2 relative">
+          {!showSearch && messages.length > 5 && (
+            <button 
+              onClick={() => setShowSearch(true)}
+              className="absolute top-2 right-2 p-1.5 bg-white shadow-sm rounded-full hover:bg-gray-100 z-10"
             >
-              {groupTimeFormatted}
-            </div>
-            
-            {group.map(message => (
-              <div 
-                key={message.id} 
-                className={`flex ${message.sender === 'user' ? 'justify-end' : 'items-start'}`}
-              >
-                {message.sender !== 'user' && showAvatars && (
-                  <UserAvatar name="Support Agent" />
-                )}
-                
+              <Search className="h-4 w-4 text-gray-500" />
+            </button>
+          )}
+          
+          {groupedMessages.map((group, groupIndex) => (
+            <div 
+              key={`group-${groupIndex}`} 
+              className="message-group"
+            >
+              {group.map((message, messageIndex) => (
                 <div 
-                  className={`rounded-xl px-3 py-2 ${
-                    message.sender === 'user' 
-                      ? 'bg-blue-100 text-blue-800' 
-                      : 'bg-gray-100 text-gray-800'
-                  } max-w-[75%] sm:max-w-[60%] break-words`}
-                  style={{
-                    backgroundColor: message.sender === 'user' 
-                      ? outgoingMessage
-                      : incomingMessage,
-                    color: message.sender === 'user' 
-                      ? outgoingMessageForeground
-                      : incomingMessageForeground
+                  key={message.id}
+                  ref={el => {
+                    if (el) messageRefs.current[message.id] = el;
                   }}
                 >
-                  <p className="text-sm">{message.content}</p>
-                  
-                  {message.attachments && message.attachments.length > 0 && (
-                    <div className="mt-2">
-                      {message.attachments.map(file => (
-                        <FileAttachmentItem key={file.id} file={file} />
-                      ))}
-                    </div>
-                  )}
-                  
-                  <div className="text-xs mt-1 opacity-70">
-                    {formatRelativeTime(message.timestamp)}
-                    {message.status && (
-                      <span className="ml-1">
-                        {message.status === 'sending' && 'Sending...'}
-                        {message.status === 'sent' && 'Sent'}
-                        {message.status === 'delivered' && 'Delivered'}
-                        {message.status === 'read' && 'Read'}
-                        {message.status === 'failed' && 'Failed'}
-                      </span>
-                    )}
-                  </div>
+                  <MessageItem
+                    message={message}
+                    showAvatar={showAvatars && messageIndex === group.length - 1}
+                    isFirstInGroup={messageIndex === 0}
+                    isLastInGroup={messageIndex === group.length - 1}
+                  />
                 </div>
-              </div>
-            ))}
-          </div>
-        );
-      })}
+              ))}
+            </div>
+          ))}
+          <div ref={messagesEndRef} />
+        </div>
+      </div>
       
-      <div ref={messagesEndRef} />
+      {/* Scroll to bottom button */}
+      {showScrollButton && (
+        <button 
+          onClick={scrollToBottom}
+          className="absolute bottom-16 right-4 p-2 bg-primary text-white rounded-full shadow-md hover:bg-primary/90 transition-all z-10"
+          aria-label="Scroll to bottom"
+        >
+          <ArrowDown className="h-4 w-4" />
+        </button>
+      )}
     </div>
   );
 };

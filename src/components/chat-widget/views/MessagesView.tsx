@@ -1,9 +1,9 @@
 
 import React, { useState } from 'react';
-import { useChat } from '@/context/ChatContext';
+import { useChat } from '@/hooks/chat/useChat';
 import { useThemeContext } from '@/context/ThemeContext';
 import ChatHeader from '../components/header/ChatHeader';
-import MessageInput from '../components/conversation/MessageInput';
+import EnhancedConversationView from '../components/conversation/EnhancedConversationView';
 
 interface MessagesViewProps {
   workspaceId: string;
@@ -18,29 +18,41 @@ const MessagesView: React.FC<MessagesViewProps> = ({
   setActiveView,
   onStartConversation
 }) => {
-  const { conversations, selectConversation: setSelectedConversation } = useChat();
+  const { conversations, currentConversation, selectConversation } = useChat();
   const { labels, colors } = useThemeContext();
-  const [newMessageContent, setNewMessageContent] = useState('');
+  const [messages, setMessages] = useState<any[]>([]);
 
   const handleSendMessage = async (content: string) => {
-    if (!onStartConversation) return;
-    
-    setNewMessageContent('');
-    await onStartConversation(content);
-    
-    // Set active view to conversation (will be handled by the parent)
-    setActiveView('conversation');
+    if (!currentConversation && onStartConversation) {
+      // If no active conversation, start one
+      await onStartConversation(content);
+      
+      // Add user message to UI immediately for better UX
+      const newMessage = {
+        id: crypto.randomUUID(),
+        sender: 'user',
+        content,
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, newMessage]);
+      
+      // Set active view to conversation (will be handled by the parent)
+      setActiveView('conversation');
+    } else if (currentConversation) {
+      // If we have a conversation, view should change to that conversation
+      setActiveView('conversation');
+    }
   };
 
   const handleConversationSelect = (conversationId: string) => {
-    setSelectedConversation(conversationId);
+    selectConversation(conversationId);
     setActiveView('conversation');
   };
 
   return (
     <div className="flex flex-col h-full">
       <ChatHeader 
-        title={labels.recentMessagesTitle || 'Recent messages'} 
+        title={labels.recentMessagesTitle} 
         onClose={onClose} 
         onBackClick={() => setActiveView('home')}
       />
@@ -48,15 +60,13 @@ const MessagesView: React.FC<MessagesViewProps> = ({
       <div className="flex-1 overflow-hidden flex flex-col">
         {conversations.length === 0 ? (
           <div className="flex-1 flex flex-col items-center justify-center p-4 text-center">
-            <p className="text-gray-500 mb-4">{labels.noMessagesText || 'No messages yet. Start a conversation!'}</p>
-            
-            {/* Input to start a conversation */}
-            <div className="w-full max-w-md mt-4">
-              <MessageInput 
-                onSendMessage={handleSendMessage}
-                placeholder={labels.messagePlaceholder || "Type a message to start..."}
-              />
-            </div>
+            <p className="text-gray-500">{labels.noMessagesText}</p>
+            <EnhancedConversationView
+              messages={[]}
+              onSendMessage={handleSendMessage}
+              disabled={false}
+              hasActiveConversation={false}
+            />
           </div>
         ) : (
           <div className="flex-1 overflow-y-auto divide-y divide-gray-100" style={{ borderColor: colors.border }}>
@@ -74,7 +84,8 @@ const MessagesView: React.FC<MessagesViewProps> = ({
                 <div>
                   <h3 className="font-medium">{conversation.title}</h3>
                   <p className="text-sm text-gray-500 truncate">
-                    {conversation.lastMessage || (labels.noMessagesText || "No messages yet")}
+                    {/* Conversation preview would go here */}
+                    {labels.noMessagesText}
                   </p>
                 </div>
               </button>

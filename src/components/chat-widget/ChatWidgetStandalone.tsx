@@ -1,94 +1,31 @@
 
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useTheme } from '@/hooks/useTheme';
 import { ChatWidget } from './ChatWidget';
-import { ChatProvider } from '@/context/ChatContext';
-import { ThemeProvider } from '@/context/ThemeContext';
-import { sessionManager } from '@/utils/auth/sessionManager';
-import { registerServiceWorker } from '@/utils/serviceWorker';
-import { preloadAssets, chatWidgetCriticalAssets, setupLazyLoading } from '@/utils/resourcePreloader';
 
-// Get configuration from window object or use defaults
-const config = (window as any).PULLSE_CHAT_CONFIG || {
-  workspaceId: '6c22b22f-7bdf-43db-b7c1-9c5884125c63',
-  theme: {
-    colors: {},
-    position: 'right',
-    compact: false,
-    labels: {},
-    features: {
-      typingIndicator: true,
-      reactions: true,
-      fileAttachments: true,
-      readReceipts: true
-    },
-    // Security settings
-    security: {
-      requireAuthentication: false,
-      endToEndEncryption: false,
-      sessionTimeout: 30 // minutes
-    }
-  }
-};
-
-// Get workspace ID and security settings from configuration
-const { workspaceId } = config;
-const securitySettings = config.theme?.security || {};
-
-// Initialize session with timeout from config
-const sessionTimeoutMs = (securitySettings.sessionTimeout || 30) * 60 * 1000;
-
+/**
+ * Standalone chat widget component that can be embedded on any website
+ */
 const ChatWidgetStandalone: React.FC = () => {
-  // Initialize service worker, session, and optimize resources on load
+  const [mounted, setMounted] = useState(false);
+  const { theme, setTheme } = useTheme();
+  
+  // Initialize on mount
   useEffect(() => {
-    // Register service worker
-    registerServiceWorker().catch(err => {
-      console.warn('Service worker registration failed:', err);
-    });
+    setMounted(true);
     
-    // Preload critical assets
-    preloadAssets(chatWidgetCriticalAssets).catch(err => {
-      console.warn('Asset preloading failed:', err);
-    });
+    // Set default theme
+    if (!theme) setTheme('light');
     
-    // Setup lazy loading for images
-    setupLazyLoading();
-    
-    // Initialize session
-    sessionManager.initSession(sessionTimeoutMs);
-    
-    // Set up interval to check session status
-    const checkSessionInterval = setInterval(() => {
-      if (!sessionManager.isSessionActive()) {
-        console.log('Chat session expired');
-        // Refresh session to start over
-        sessionManager.initSession(sessionTimeoutMs);
-      } else {
-        sessionManager.updateActivity();
-      }
-    }, 60000); // Check every minute
-    
+    // Cleanup function
     return () => {
-      clearInterval(checkSessionInterval);
+      setMounted(false);
     };
   }, []);
-  
-  return (
-    <ThemeProvider initialTheme={config.theme}>
-      <ChatProvider 
-        workspaceId={workspaceId} 
-        requiresAuthentication={securitySettings.requireAuthentication}
-      >
-        <ChatWidget 
-          workspaceId={workspaceId}
-          theme={{
-            position: config.theme?.position,
-            compact: config.theme?.compact,
-            colors: config.theme?.colors
-          }}
-        />
-      </ChatProvider>
-    </ThemeProvider>
-  );
+
+  if (!mounted) return null;
+
+  return <ChatWidget workspaceId="6c22b22f-7bdf-43db-b7c1-9c5884125c63" />;
 };
 
 export default ChatWidgetStandalone;

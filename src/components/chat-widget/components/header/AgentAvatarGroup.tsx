@@ -1,40 +1,46 @@
 
 import React from 'react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import UserAvatar from '../user/UserAvatar';
+import { AgentPresence } from '@/hooks/chat/useAgentPresence';
 
-export interface AgentAvatarGroupProps {
-  agents: string[];
-  maxShown?: number;
+interface AgentAvatarGroupProps {
+  agents: AgentPresence[];
+  maxDisplayed?: number;
 }
 
 const AgentAvatarGroup: React.FC<AgentAvatarGroupProps> = ({ 
-  agents,
-  maxShown = 3 
+  agents, 
+  maxDisplayed = 3 
 }) => {
-  // Only show up to maxShown avatars
-  const visibleAgents = agents.slice(0, maxShown);
-  const extraCount = Math.max(0, agents.length - maxShown);
+  // Sort agents by status (online first)
+  const sortedAgents = [...agents].sort((a, b) => {
+    if (a.status === 'available' && b.status !== 'available') return -1;
+    if (a.status !== 'available' && b.status === 'available') return 1;
+    return 0;
+  });
+
+  // Display only the first few agents
+  const displayedAgents = sortedAgents.slice(0, maxDisplayed);
+  const remainingCount = Math.max(0, sortedAgents.length - maxDisplayed);
 
   return (
-    <div className="flex -space-x-2">
-      {visibleAgents.map((agentId, index) => (
-        <Avatar key={agentId} className="h-6 w-6 border-2 border-white">
-          <AvatarImage 
-            src={`https://avatar.vercel.sh/${agentId}.png`} 
-            alt={`Agent ${index + 1}`} 
+    <div className="flex -space-x-2 overflow-hidden">
+      {displayedAgents.map((agent) => (
+        <div key={agent.clientId} className="relative">
+          <UserAvatar 
+            name={agent.username || 'Agent'} 
+            avatarUrl={agent.avatarUrl}
+            status={agent.status} 
+            size="sm"
           />
-          <AvatarFallback className="text-[10px]">
-            {`A${index + 1}`}
-          </AvatarFallback>
-        </Avatar>
+        </div>
       ))}
       
-      {extraCount > 0 && (
-        <Avatar className="h-6 w-6 border-2 border-white bg-primary">
-          <AvatarFallback className="text-[10px] text-white">
-            +{extraCount}
-          </AvatarFallback>
-        </Avatar>
+      {/* Show remaining count if needed */}
+      {remainingCount > 0 && (
+        <div className="flex items-center justify-center h-8 w-8 rounded-full bg-gray-200 text-sm font-medium text-gray-700 border-2 border-white">
+          +{remainingCount}
+        </div>
       )}
     </div>
   );

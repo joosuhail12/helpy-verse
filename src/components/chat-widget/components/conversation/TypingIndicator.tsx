@@ -1,9 +1,19 @@
 
 import React from 'react';
 import { useThemeContext } from '@/context/ThemeContext';
-import { TypingUser, TypingIndicatorProps } from './types';
 
-const TypingIndicator: React.FC<TypingIndicatorProps> = ({ users, agentName, compact }) => {
+interface TypingUser {
+  clientId: string;
+  name?: string;
+  timestamp?: number;
+}
+
+interface TypingIndicatorProps {
+  users: TypingUser[];
+  agentName?: string;
+}
+
+const TypingIndicator: React.FC<TypingIndicatorProps> = ({ users, agentName }) => {
   const { colors } = useThemeContext();
   
   if (users.length === 0 && !agentName) return null;
@@ -15,11 +25,9 @@ const TypingIndicator: React.FC<TypingIndicatorProps> = ({ users, agentName, com
     }
     
     if (users.length === 1) {
-      return `${typeof users[0] === 'string' ? users[0] : (users[0].name || 'Someone')} is typing...`;
+      return `${users[0].name || 'Someone'} is typing...`;
     } else if (users.length === 2) {
-      const firstName = typeof users[0] === 'string' ? users[0] : (users[0].name || 'Someone');
-      const secondName = typeof users[1] === 'string' ? users[1] : (users[1].name || 'someone');
-      return `${firstName} and ${secondName} are typing...`;
+      return `${users[0].name || 'Someone'} and ${users[1].name || 'someone'} are typing...`;
     } else {
       return `${users.length} people are typing...`;
     }
@@ -27,7 +35,7 @@ const TypingIndicator: React.FC<TypingIndicatorProps> = ({ users, agentName, com
   
   return (
     <div className="flex items-center py-2">
-      <div className={`flex justify-center items-center px-3 py-1 rounded-full bg-opacity-10 ${compact ? 'text-xs' : ''}`} 
+      <div className="flex justify-center items-center px-3 py-1 rounded-full bg-opacity-10" 
         style={{ backgroundColor: `${colors.agentMessage}50` }}>
         <div className="flex space-x-1 mr-2 items-end">
           <div className="w-2 h-2 rounded-full animate-bounce" 

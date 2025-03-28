@@ -157,7 +157,7 @@ const authSlice = createSlice({
 
 export const { logout, clearError } = authSlice.actions;
 
-// Export all the auth actions for use in components
+// Re-export all the actions for use in components
 export {
   loginUser,
   registerUser,

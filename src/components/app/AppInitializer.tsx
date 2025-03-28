@@ -2,7 +2,7 @@
 import { useEffect } from 'react';
 import { HttpClient } from "@/api/services/http";
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { fetchUserData } from '@/store/slices/authSlice';
+import { fetchUserData } from '@/store/slices/auth/userActions';
 
 export const initializeApp = () => {
   // Check localStorage for token

@@ -1,95 +1,185 @@
 
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { ThemeProvider } from '@/context/ThemeContext';
+import { useNavigate } from 'react-router-dom';
+import { ChatWidget } from '@/components/chat-widget/ChatWidget';
+import { ThemeConfig } from '@/context/ThemeContext';
 
+/**
+ * Landing page that is accessible without authentication
+ * Serves as an entry point to the application for new users
+ */
 const LandingPage = () => {
-  const themeConfig = {
+  const navigate = useNavigate();
+
+  // Example of white-labeled theme
+  const chatTheme: Partial<ThemeConfig> = {
     colors: {
-      primary: '#4F46E5',
-      primaryForeground: '#FFFFFF',
-      background: '#FFFFFF',
-      backgroundSecondary: '#F9FAFB',
-      foreground: '#111827',
-      border: '#E5E7EB',
-      userMessage: '#4F46E5',
-      userMessageText: '#FFFFFF',
-      agentMessage: '#F3F4F6',
-      agentMessageText: '#111827',
-      inputBackground: '#F9FAFB',
-      muted: '#F3F4F6',
-      mutedForeground: '#6B7280',
-      secondary: '#F3F4F6',
-      secondaryForeground: '#111827',
-      outgoingMessage: '#4F46E5',
-      outgoingMessageForeground: '#FFFFFF',
-      incomingMessage: '#F3F4F6',
-      incomingMessageForeground: '#111827',
-      primaryDark: '#3730A3'
+      primary: '#9b87f5',
+      primaryForeground: '#ffffff',
+      background: '#ffffff',
+      backgroundSecondary: '#f9f9f9', // Added the missing backgroundSecondary property
+      foreground: '#1A1F2C', 
+      border: '#eaeaea',
+      userMessage: '#9b87f5',
+      userMessageText: '#ffffff',
+      agentMessage: '#f1f1f1',
+      agentMessageText: '#1A1F2C',
+      inputBackground: '#f9f9f9'
     },
-    position: 'right' as const, // Explicitly typed as 'right' instead of string
+    position: 'right',
     compact: false,
     labels: {
       welcomeTitle: 'Hello there.',
       welcomeSubtitle: 'How can we help?',
       askQuestionButton: 'Ask a question',
-      recentMessagesTitle: 'Recent messages',
+      recentMessagesTitle: 'Recent message',
       noMessagesText: 'No messages yet. Start a conversation!',
-      messagePlaceholder: 'Type a message...',
-      chatTitle: 'Conversation'
+      messagePlaceholder: 'Type a message...'
     }
   };
 
   return (
-    <ThemeProvider initialTheme={themeConfig}>
-      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex flex-col">
-        <header className="container mx-auto px-4 py-8 flex items-center justify-between">
-          <div className="flex items-center">
-            <img src="/logo.svg" alt="Logo" className="h-10 w-auto" />
-            <span className="ml-2 text-xl font-bold text-gray-900">Pullse</span>
-          </div>
-          <div>
-            <Button asChild variant="outline" className="mr-2">
-              <Link to="/sign-in">Sign In</Link>
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-purple-50">
+      {/* Direct inclusion of the ChatWidget component with custom theme */}
+      <ChatWidget 
+        workspaceId="6c22b22f-7bdf-43db-b7c1-9c5884125c63" 
+        theme={chatTheme}
+      />
+      
+      {/* Hero Section */}
+      <div className="container mx-auto px-4 py-20">
+        <div className="flex flex-col items-center text-center max-w-4xl mx-auto">
+          <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-gray-900 mb-6">
+            Customer Support Made <span className="text-purple-600">Intelligent</span>
+          </h1>
+          <p className="text-xl text-gray-600 mb-8 max-w-2xl">
+            Streamline your customer support with our AI-powered platform. Get insights, automate workflows, and deliver exceptional service.
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-4">
+            <Button 
+              size="lg" 
+              className="bg-purple-600 hover:bg-purple-700 text-white px-8"
+              onClick={() => navigate('/sign-in')}
+            >
+              Sign In
             </Button>
-            <Button asChild>
-              <Link to="/sign-up">Sign Up</Link>
+            <Button 
+              size="lg"
+              variant="outline"
+              className="border-purple-600 text-purple-600 hover:bg-purple-50 px-8"
+              onClick={() => navigate('/sign-up')}
+            >
+              Create Account
             </Button>
           </div>
-        </header>
-
-        <main className="flex-1 container mx-auto px-4 py-12 md:py-24 max-w-6xl">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div>
-              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 leading-tight">
-                Modern Customer Support Platform
-              </h1>
-              <p className="mt-6 text-lg text-gray-600">
-                Transform your customer support with Pullse's AI-powered tools. 
-                Handle conversations across channels seamlessly and deliver exceptional 
-                customer experiences.
-              </p>
-              <div className="mt-8 flex flex-wrap gap-4">
-                <Button asChild size="lg">
-                  <Link to="/sign-up">Get Started for Free</Link>
-                </Button>
-                <Button asChild variant="outline" size="lg">
-                  <Link to="/sign-in">Book a Demo</Link>
-                </Button>
-              </div>
-            </div>
-            <div className="bg-white p-6 rounded-xl shadow-lg">
-              <img 
-                src="/placeholder.svg" 
-                alt="Platform preview" 
-                className="w-full h-auto rounded"
-              />
-            </div>
-          </div>
-        </main>
+        </div>
       </div>
-    </ThemeProvider>
+
+      {/* Features Section */}
+      <div className="container mx-auto px-4 py-16">
+        <h2 className="text-3xl font-bold text-center mb-12 text-gray-900">
+          Key Features
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+            <h3 className="text-xl font-semibold mb-3 text-purple-700">Intelligent Inbox</h3>
+            <p className="text-gray-600">Prioritize, categorize, and respond to customer inquiries efficiently with AI assistance.</p>
+          </div>
+          <div className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+            <h3 className="text-xl font-semibold mb-3 text-purple-700">Workflow Automation</h3>
+            <p className="text-gray-600">Create smart workflows that automate repetitive tasks and route inquiries to the right team.</p>
+          </div>
+          <div className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+            <h3 className="text-xl font-semibold mb-3 text-purple-700">Customer Analytics</h3>
+            <p className="text-gray-600">Gain valuable insights into customer behavior and support trends with detailed analytics.</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Testimonials Section */}
+      <div className="container mx-auto px-4 py-16 bg-white rounded-xl my-16">
+        <h2 className="text-3xl font-bold text-center mb-12 text-gray-900">
+          Trusted by Teams Everywhere
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <div className="bg-gray-50 p-6 rounded-xl">
+            <p className="text-gray-700 italic mb-4">
+              "This platform has transformed how we handle customer support. Our response times have decreased by 35% while customer satisfaction is at an all-time high."
+            </p>
+            <p className="font-semibold text-gray-900">Sarah Johnson, Customer Success Manager</p>
+          </div>
+          <div className="bg-gray-50 p-6 rounded-xl">
+            <p className="text-gray-700 italic mb-4">
+              "The automation capabilities have freed up our support team to focus on complex issues while routine inquiries are handled automatically."
+            </p>
+            <p className="font-semibold text-gray-900">Michael Chen, Support Operations Director</p>
+          </div>
+        </div>
+      </div>
+
+      {/* CTA Section */}
+      <div className="container mx-auto px-4 py-16 text-center">
+        <h2 className="text-3xl font-bold mb-6 text-gray-900">
+          Ready to Transform Your Customer Support?
+        </h2>
+        <Button 
+          size="lg" 
+          className="bg-purple-600 hover:bg-purple-700 text-white px-8"
+          onClick={() => navigate('/sign-up')}
+        >
+          Get Started Today
+        </Button>
+      </div>
+
+      {/* Footer */}
+      <footer className="bg-gray-900 text-white py-12 mt-10">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div>
+              <h3 className="text-xl font-bold mb-4">Product</h3>
+              <ul className="space-y-2">
+                <li>Features</li>
+                <li>Pricing</li>
+                <li>Use Cases</li>
+                <li>Roadmap</li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-xl font-bold mb-4">Resources</h3>
+              <ul className="space-y-2">
+                <li>Documentation</li>
+                <li>API</li>
+                <li>Community</li>
+                <li>Blog</li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-xl font-bold mb-4">Company</h3>
+              <ul className="space-y-2">
+                <li>About Us</li>
+                <li>Careers</li>
+                <li>Contact</li>
+                <li>Partners</li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-xl font-bold mb-4">Legal</h3>
+              <ul className="space-y-2">
+                <li>Privacy Policy</li>
+                <li>Terms of Service</li>
+                <li>Security</li>
+                <li>Compliance</li>
+              </ul>
+            </div>
+          </div>
+          <div className="mt-12 text-center">
+            <p>© 2023 Support Platform. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
+    </div>
   );
 };
 
