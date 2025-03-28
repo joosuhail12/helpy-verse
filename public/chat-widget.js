@@ -41,7 +41,13 @@
     workspaceId: window.PULLSE_WORKSPACE_ID || '6c22b22f-7bdf-43db-b7c1-9c5884125c63',
     theme: {
       colors: window.PULLSE_THEME_COLORS || {
-        primary: storedSettings.primaryColor || '#9b87f5'
+        primary: storedSettings.primaryColor || '#9b87f5',
+        background: storedSettings.backgroundColor || '#ffffff',
+        backgroundSecondary: storedSettings.backgroundSecondary || '#f9f9f9',
+        foreground: storedSettings.foregroundColor || '#1A1F2C',
+        border: storedSettings.borderColor || '#eaeaea',
+        userMessage: storedSettings.userMessageColor || '#9b87f5',
+        agentMessage: storedSettings.agentMessageColor || '#f1f1f1'
       },
       position: window.PULLSE_POSITION || storedSettings.position || 'right',
       compact: window.PULLSE_COMPACT === true || storedSettings.compact === true,

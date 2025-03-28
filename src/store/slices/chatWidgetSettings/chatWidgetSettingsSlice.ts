@@ -11,7 +11,14 @@ const initialSettings: ChatWidgetSettings = {
   enableTypingIndicator: true,
   enableReactions: true,
   enableFileAttachments: true,
-  enableReadReceipts: true
+  enableReadReceipts: true,
+  // Default theme settings
+  backgroundColor: '#ffffff',
+  backgroundSecondary: '#f9f9f9',
+  foregroundColor: '#1A1F2C',
+  userMessageColor: '#9b87f5',
+  agentMessageColor: '#f1f1f1',
+  borderColor: '#eaeaea'
 };
 
 const initialState: ChatWidgetSettingsState = {
