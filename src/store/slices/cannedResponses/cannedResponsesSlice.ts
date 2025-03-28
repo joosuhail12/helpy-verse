@@ -1,3 +1,4 @@
+
 import { createSlice, createEntityAdapter, PayloadAction, EntityAdapter } from '@reduxjs/toolkit';
 import { CannedResponsesState } from './types';
 import { CannedResponse } from '@/mock/cannedResponses';
@@ -10,7 +11,7 @@ import {
 } from './actions';
 
 // Create the entity adapter
-const cannedResponsesAdapter: EntityAdapter<CannedResponse> = createEntityAdapter<CannedResponse>({
+const cannedResponsesAdapter: EntityAdapter<CannedResponse, string> = createEntityAdapter<CannedResponse, string>({
   // Select the id of the entity
   selectId: (response: CannedResponse) => response.id,
   // Keep the "all IDs" array sorted based on creation date (newest first)
