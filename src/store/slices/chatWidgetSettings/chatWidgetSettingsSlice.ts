@@ -30,7 +30,9 @@ export const chatWidgetSettingsSlice = createSlice({
       action: PayloadAction<{ field: keyof ChatWidgetSettings; value: string | boolean }>
     ) => {
       const { field, value } = action.payload;
-      state.settings[field] = value as any; // Type assertion needed due to union type
+      // Type assertion is needed because the 'field' can refer to either string or boolean properties
+      // This helps TypeScript understand that we're intentionally assigning the right type
+      (state.settings[field] as typeof value) = value;
     },
     
     updateSettings: (
