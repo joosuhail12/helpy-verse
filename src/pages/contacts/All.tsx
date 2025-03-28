@@ -5,10 +5,9 @@ import { useAppSelector, useAppDispatch } from '@/hooks';
 import { 
   selectAllContacts, 
   selectContactsLoading, 
-  selectContactsError,
-  fetchCustomers
+  selectContactsError
 } from '@/store/slices/contacts/contactsSelectors';
-import { fetchCustomers as fetchCustomersAction } from '@/store/slices/contacts/contactsSlice';
+import { fetchCustomers } from '@/store/slices/contacts/contactsSlice';
 import { ContactList } from '@/components/contacts/ContactList';
 import { ContactsHeader } from '@/components/contacts/ContactsHeader';
 import { ContactListControls } from '@/components/contacts/ContactListControls';
@@ -23,7 +22,7 @@ const ContactsAll = () => {
   const error = useAppSelector(selectContactsError);
 
   useEffect(() => {
-    dispatch(fetchCustomersAction());
+    dispatch(fetchCustomers());
   }, [dispatch]);
 
   const renderContent = () => {

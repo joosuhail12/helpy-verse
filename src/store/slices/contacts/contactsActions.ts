@@ -64,29 +64,29 @@ export const addContact = createContact;
 // Define the return type for update operations
 interface UpdateContactPayload {
   contactId: string;
-  data: Contact;  // This ensures data is properly typed as Contact
+  data: Partial<Contact>;
 }
 
-export const updateContact = createAsyncThunk<UpdateContactPayload, { contactId: string; data: Partial<Contact> }>(
+export const updateContact = createAsyncThunk<Contact, { contactId: string; data: Partial<Contact> }>(
   'contacts/updateContact',
   async ({ contactId, data }, { rejectWithValue }) => {
     try {
       const response = await customerService.updateCustomer(contactId, data);
-      // Return a properly typed object containing both contactId and response data
-      return { contactId, data: response.data as Contact };
+      // Return the response data as a Contact object
+      return response;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to update contact');
     }
   }
 );
 
-export const updateContactCompany = createAsyncThunk<UpdateContactPayload, { contactId: string; companyId: string | null }>(
+export const updateContactCompany = createAsyncThunk<Contact, { contactId: string; companyId: string | null }>(
   'contacts/updateContactCompany',
   async ({ contactId, companyId }, { rejectWithValue }) => {
     try {
       const response = await customerService.updateCustomer(contactId, { company: companyId });
-      // Return a properly typed object containing both contactId and response data
-      return { contactId, data: response.data as Contact };
+      // Return the response data as a Contact object
+      return response;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to update contact company');
     }

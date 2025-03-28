@@ -28,6 +28,7 @@ export interface Contact {
   timezone?: string;
   source?: string;
   language?: string;
+  preferredLanguage?: string; // Added this property
   street?: string;
   city?: string;
   state?: string;

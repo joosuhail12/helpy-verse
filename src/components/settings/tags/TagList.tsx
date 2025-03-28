@@ -1,240 +1,202 @@
 
-import { useEffect, useState } from 'react';
-import { useAppSelector } from '@/hooks/useAppSelector';
-import { useAppDispatch } from '@/hooks/useAppDispatch';
+import React, { useState, useEffect } from 'react';
+import { useAppDispatch, useAppSelector } from '@/hooks';
 import { 
   fetchTags, 
-  createTag,
-  updateTag,
-  deleteTags
-} from '@/store/slices/tags';
-import { selectAllTags } from '@/store/slices/tags';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+  updateTag, 
+  deleteTags 
+} from '@/store/slices/tags/tagsSlice';
+import { Tag, SortField } from '@/types/tag';
+import TagTable from './TagTable';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Plus, Search, Edit, Trash, Save, X } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
-import type { Tag } from '@/types/tag';
+import { Tag as TagIcon, Plus, AlertTriangle } from 'lucide-react';
+import EditTagDialog from './EditTagDialog';
+import DeleteTagDialog from './DeleteTagDialog';
+import TagPagination from './TagPagination';
+import BulkActions from './BulkActions';
+import { TagUsageStats } from './TagUsageStats';
 
-const TagList = () => {
+// Define props interface for TagList
+interface TagListProps {
+  searchQuery: string;
+  currentPage: number;
+  itemsPerPage: number;
+  onPageChange: (page: number) => void;
+}
+
+const TagList: React.FC<TagListProps> = ({ 
+  searchQuery, 
+  currentPage, 
+  itemsPerPage, 
+  onPageChange 
+}) => {
   const dispatch = useAppDispatch();
-  const tags = useAppSelector(selectAllTags);
-  const { toast } = useToast();
-  
-  const [searchTerm, setSearchTerm] = useState('');
-  const [isAdding, setIsAdding] = useState(false);
-  const [newTagName, setNewTagName] = useState('');
-  const [newTagColor, setNewTagColor] = useState('#6366F1');
-  const [editingTagId, setEditingTagId] = useState<string | null>(null);
-  const [editName, setEditName] = useState('');
-  const [editColor, setEditColor] = useState('');
-  
+  const { tags, loading, error, total } = useAppSelector(state => state.tags);
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [currentTag, setCurrentTag] = useState<Tag | null>(null);
+  const [sortField, setSortField] = useState<SortField>('name');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+
   useEffect(() => {
-    dispatch(fetchTags({}));
-  }, [dispatch]);
-  
-  const handleCreateTag = async () => {
-    if (!newTagName.trim()) {
-      toast({
-        title: "Error",
-        description: "Tag name cannot be empty",
-        variant: "destructive",
-      });
-      return;
+    dispatch(fetchTags({ page: currentPage, limit: itemsPerPage }));
+  }, [dispatch, currentPage, itemsPerPage]);
+
+  // Filter tags based on search query
+  const filteredTags = searchQuery 
+    ? tags.filter(tag => 
+        tag.name.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : tags;
+
+  // Sort the filtered tags
+  const sortedTags = [...filteredTags].sort((a, b) => {
+    if (sortField === 'name') {
+      return sortDirection === 'asc' 
+        ? a.name.localeCompare(b.name)
+        : b.name.localeCompare(a.name);
     }
-    
-    try {
-      await dispatch(createTag({ name: newTagName, color: newTagColor }));
-      setIsAdding(false);
-      setNewTagName('');
-      setNewTagColor('#6366F1');
-      toast({
-        title: "Success",
-        description: "Tag created successfully",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to create tag",
-        variant: "destructive",
-      });
+    // Add other sort fields as needed
+    return 0;
+  });
+
+  const handleEditTag = (tag: Tag) => {
+    setCurrentTag(tag);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleDeleteTag = (tag: Tag) => {
+    setCurrentTag(tag);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleUpdateTag = (id: string, tag: Partial<Tag>) => {
+    dispatch(updateTag({ id, tag }));
+    setIsEditDialogOpen(false);
+  };
+
+  const handleConfirmDelete = () => {
+    if (currentTag) {
+      dispatch(deleteTags([currentTag.id]));
     }
+    setIsDeleteDialogOpen(false);
   };
-  
-  const handleEditTag = async (tagId: string) => {
-    if (!editName.trim()) {
-      toast({
-        title: "Error",
-        description: "Tag name cannot be empty",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    try {
-      await dispatch(updateTag({ id: tagId, tag: { name: editName, color: editColor } }));
-      setEditingTagId(null);
-      toast({
-        title: "Success",
-        description: "Tag updated successfully",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update tag",
-        variant: "destructive",
-      });
-    }
-  };
-  
-  const handleDeleteTag = async (tagId: string) => {
-    try {
-      await dispatch(deleteTags([tagId]));
-      toast({
-        title: "Success",
-        description: "Tag deleted successfully",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to delete tag",
-        variant: "destructive",
-      });
-    }
-  };
-  
-  const startEditing = (tag: Tag) => {
-    setEditingTagId(tag.id);
-    setEditName(tag.name);
-    setEditColor(tag.color);
-  };
-  
-  const cancelEditing = () => {
-    setEditingTagId(null);
-  };
-  
-  const filteredTags = Array.isArray(tags) 
-    ? tags.filter(tag => tag.name.toLowerCase().includes(searchTerm.toLowerCase()))
-    : [];
-  
-  return (
-    <Card>
-      <CardHeader className="border-b pb-3">
-        <div className="flex justify-between items-center">
-          <CardTitle>Tags</CardTitle>
-          <Button size="sm" onClick={() => setIsAdding(true)} disabled={isAdding}>
-            <Plus className="h-4 w-4 mr-1" /> Add Tag
-          </Button>
+
+  const totalPages = Math.ceil(total / itemsPerPage);
+
+  if (loading && tags.length === 0) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="animate-pulse">
+          <div className="h-4 bg-gray-200 rounded w-32 mb-2.5"></div>
+          <div className="h-10 bg-gray-200 rounded w-full mb-2.5"></div>
+          <div className="h-10 bg-gray-200 rounded w-full mb-2.5"></div>
+          <div className="h-10 bg-gray-200 rounded w-full"></div>
         </div>
-      </CardHeader>
-      <CardContent className="pt-4">
-        <div className="mb-4">
-          <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search tags"
-              className="pl-8"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center p-8 text-center">
+        <AlertTriangle className="h-12 w-12 text-yellow-500 mb-4" />
+        <h3 className="text-xl font-medium mb-2">Error loading tags</h3>
+        <p className="text-muted-foreground mb-4">{error}</p>
+        <Button onClick={() => dispatch(fetchTags({ page: currentPage, limit: itemsPerPage }))}>
+          Try Again
+        </Button>
+      </div>
+    );
+  }
+
+  if (filteredTags.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center p-8 text-center">
+        <div className="bg-gray-100 p-4 rounded-full mb-4">
+          <TagIcon className="h-8 w-8 text-gray-500" />
         </div>
-        
-        {isAdding && (
-          <div className="mb-4 p-3 border rounded-lg">
-            <h3 className="text-sm font-medium mb-2">New Tag</h3>
-            <div className="flex gap-2 mb-2">
-              <Input
-                placeholder="Tag name"
-                value={newTagName}
-                onChange={(e) => setNewTagName(e.target.value)}
-                className="flex-1"
-              />
-              <Input
-                type="color"
-                value={newTagColor}
-                onChange={(e) => setNewTagColor(e.target.value)}
-                className="w-14 p-1 h-10"
-              />
-            </div>
-            <div className="flex justify-end gap-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => {
-                  setIsAdding(false);
-                  setNewTagName('');
-                  setNewTagColor('#6366F1');
-                }}
-              >
-                Cancel
-              </Button>
-              <Button size="sm" onClick={handleCreateTag}>
-                Create Tag
-              </Button>
-            </div>
-          </div>
-        )}
-        
-        {filteredTags.length === 0 ? (
-          <div className="text-center py-6 text-muted-foreground">
-            {searchTerm ? "No tags match your search" : "No tags created yet"}
-          </div>
+        {searchQuery ? (
+          <>
+            <h3 className="text-xl font-medium mb-2">No tags match your search</h3>
+            <p className="text-muted-foreground mb-4">
+              Try adjusting your search term or create a new tag.
+            </p>
+          </>
         ) : (
-          <div className="space-y-2">
-            {filteredTags.map((tag) => (
-              <div key={tag.id} className="p-2 rounded-lg border flex justify-between items-center">
-                {editingTagId === tag.id ? (
-                  <>
-                    <div className="flex gap-2 flex-1">
-                      <Input
-                        value={editName}
-                        onChange={(e) => setEditName(e.target.value)}
-                        className="flex-1"
-                      />
-                      <Input
-                        type="color"
-                        value={editColor}
-                        onChange={(e) => setEditColor(e.target.value)}
-                        className="w-14 p-1"
-                      />
-                    </div>
-                    <div className="flex ml-2">
-                      <Button size="icon" variant="ghost" onClick={() => handleEditTag(tag.id)}>
-                        <Save className="h-4 w-4" />
-                      </Button>
-                      <Button size="icon" variant="ghost" onClick={cancelEditing}>
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="flex items-center">
-                      <Badge 
-                        className="mr-2" 
-                        style={{ backgroundColor: tag.color, color: 'white' }}
-                      >
-                        {tag.name}
-                      </Badge>
-                    </div>
-                    <div>
-                      <Button size="icon" variant="ghost" onClick={() => startEditing(tag)}>
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button size="icon" variant="ghost" onClick={() => handleDeleteTag(tag.id)}>
-                        <Trash className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </>
-                )}
-              </div>
-            ))}
-          </div>
+          <>
+            <h3 className="text-xl font-medium mb-2">No tags yet</h3>
+            <p className="text-muted-foreground mb-4">
+              Create your first tag to organize your content.
+            </p>
+          </>
         )}
-      </CardContent>
-    </Card>
+        <Button onClick={() => {/* Open create tag dialog */}}>
+          <Plus className="mr-2 h-4 w-4" />
+          Create Tag
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {selectedTagIds.length > 0 ? (
+        <BulkActions 
+          selectedCount={selectedTagIds.length} 
+          onClearSelection={() => setSelectedTagIds([])} 
+        />
+      ) : (
+        <TagUsageStats />
+      )}
+      
+      <TagTable 
+        tags={sortedTags} 
+        onEdit={handleEditTag}
+        onDelete={handleDeleteTag}
+        selectedTagIds={selectedTagIds}
+        setSelectedTagIds={setSelectedTagIds}
+        sortField={sortField}
+        sortDirection={sortDirection}
+        onSortChange={(field) => {
+          if (field === sortField) {
+            setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+          } else {
+            setSortField(field);
+            setSortDirection('asc');
+          }
+        }}
+      />
+      
+      {totalPages > 1 && (
+        <TagPagination 
+          currentPage={currentPage} 
+          totalPages={totalPages} 
+          onPageChange={onPageChange}
+          totalItems={total}
+          itemsPerPage={itemsPerPage}
+        />
+      )}
+      
+      {currentTag && (
+        <>
+          <EditTagDialog 
+            open={isEditDialogOpen} 
+            onOpenChange={setIsEditDialogOpen}
+            tag={currentTag}
+            onUpdate={(data) => handleUpdateTag(currentTag.id, data)}
+          />
+          
+          <DeleteTagDialog 
+            open={isDeleteDialogOpen} 
+            onOpenChange={setIsDeleteDialogOpen}
+            tagName={currentTag.name}
+            onConfirm={handleConfirmDelete}
+          />
+        </>
+      )}
+    </div>
   );
 };
 
