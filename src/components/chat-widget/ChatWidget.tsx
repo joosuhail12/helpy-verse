@@ -12,14 +12,16 @@ interface ChatWidgetProps {
   workspaceId: string;
   theme?: Partial<ThemeConfig>;
   settings?: Partial<ChatWidgetSettings>;
+  isPreview?: boolean;
 }
 
 export const ChatWidget: React.FC<ChatWidgetProps> = ({ 
   workspaceId, 
   theme = {}, 
-  settings
+  settings,
+  isPreview = false
 }) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(isPreview);
 
   // Apply settings to theme if provided
   const combinedTheme: Partial<ThemeConfig> = {
@@ -50,14 +52,27 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({
     setIsOpen((prev) => !prev);
   };
 
+  // For preview mode, we constrain the styles
+  const previewStyles = isPreview ? {
+    position: 'relative' as const,
+    bottom: 'auto',
+    right: 'auto',
+    left: 'auto',
+    zIndex: 10,
+  } : {};
+
   return (
     <AblyProvider workspaceId={workspaceId}>
       <ChatProvider workspaceId={workspaceId}>
         <ThemeProvider initialTheme={combinedTheme}>
-          <div className={`fixed bottom-4 z-50 flex flex-col items-end`} 
+          <div 
+            className={`${isPreview ? '' : 'fixed bottom-4'} z-50 flex flex-col items-end`} 
             style={{ 
-              [combinedTheme.position === 'left' ? 'left' : 'right']: '1rem',
-              alignItems: combinedTheme.position === 'left' ? 'flex-start' : 'flex-end' 
+              [combinedTheme.position === 'left' ? 'left' : 'right']: isPreview ? 'auto' : '1rem',
+              alignItems: combinedTheme.position === 'left' ? 'flex-start' : 'flex-end',
+              ...previewStyles,
+              width: isPreview ? '100%' : 'auto',
+              height: isPreview ? '100%' : 'auto',
             }}
           >
             <AnimatePresence>
@@ -68,6 +83,10 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({
                   exit={{ opacity: 0, y: 20, scale: 0.95 }}
                   transition={{ duration: 0.2 }}
                   className={`mb-3 ${combinedTheme.compact ? 'w-72' : 'w-80 sm:w-96'} h-[600px] bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-200`}
+                  style={{ 
+                    height: isPreview ? '100%' : '600px',
+                    width: isPreview ? '100%' : combinedTheme.compact ? '18rem' : '24rem'
+                  }}
                 >
                   <ChatWidgetContainer 
                     onClose={() => setIsOpen(false)} 
@@ -79,22 +98,24 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({
               )}
             </AnimatePresence>
             
-            <button
-              onClick={toggleWidget}
-              className={`${
-                isOpen ? 'bg-red-500 hover:bg-red-600' : 'bg-primary hover:bg-primary/90'
-              } w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-colors`}
-              aria-label={isOpen ? 'Close chat' : 'Open chat'}
-              style={{ 
-                backgroundColor: isOpen ? '#ef4444' : combinedTheme.colors?.primary 
-              }}
-            >
-              {isOpen ? (
-                <X className="h-6 w-6 text-white" />
-              ) : (
-                <MessageSquare className="h-6 w-6 text-white" />
-              )}
-            </button>
+            {!isPreview && (
+              <button
+                onClick={toggleWidget}
+                className={`${
+                  isOpen ? 'bg-red-500 hover:bg-red-600' : 'bg-primary hover:bg-primary/90'
+                } w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-colors`}
+                aria-label={isOpen ? 'Close chat' : 'Open chat'}
+                style={{ 
+                  backgroundColor: isOpen ? '#ef4444' : combinedTheme.colors?.primary 
+                }}
+              >
+                {isOpen ? (
+                  <X className="h-6 w-6 text-white" />
+                ) : (
+                  <MessageSquare className="h-6 w-6 text-white" />
+                )}
+              </button>
+            )}
           </div>
         </ThemeProvider>
       </ChatProvider>

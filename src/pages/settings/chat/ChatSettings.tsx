@@ -2,7 +2,7 @@
 import { Button } from '@/components/ui/button';
 import { useChatSettings } from './hooks/useChatSettings';
 import SettingsTabs from './components/SettingsTabs';
-import ChatPreview from './components/ChatPreview';
+import LiveChatPreview from './components/LiveChatPreview';
 import HelpDocumentation from './components/HelpDocumentation';
 import { useEffect } from 'react';
 import { useAppDispatch } from '@/hooks/redux';
@@ -63,12 +63,7 @@ const ChatSettings = () => {
         </div>
 
         <div>
-          <ChatPreview
-            primaryColor={settings.primaryColor}
-            welcomeTitle={settings.welcomeTitle}
-            welcomeSubtitle={settings.welcomeSubtitle}
-            position={settings.position}
-          />
+          <LiveChatPreview />
           <HelpDocumentation />
         </div>
       </div>
