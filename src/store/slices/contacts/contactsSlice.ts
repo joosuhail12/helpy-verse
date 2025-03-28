@@ -1,7 +1,7 @@
-
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import type { Contact, ContactFilters } from '@/types/contact';
 import { mockContacts } from './mockData';
+import { updateContactInState } from './contactsReducerUtils';
 
 // Define the initial state
 export interface ContactsState {

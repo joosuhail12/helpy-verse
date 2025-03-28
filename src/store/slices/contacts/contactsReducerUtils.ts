@@ -39,6 +39,19 @@ export const updateContact = (
   }
 };
 
+// Helper function for updating a contact in non-normalized state
+export const updateContactInState = (
+  contacts: Contact[],
+  contactId: string,
+  contactData: Partial<Contact>
+): Contact[] => {
+  return contacts.map(contact => 
+    contact.id === contactId 
+      ? { ...contact, ...contactData }
+      : contact
+  );
+};
+
 // Helper function to safely delete a contact from normalized state
 export const removeContact = (
   state: { entities: Record<string, Contact>; ids: string[] },
