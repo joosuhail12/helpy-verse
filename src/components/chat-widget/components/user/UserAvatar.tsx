@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useThemeContext } from '@/context/ThemeContext';
 
@@ -11,6 +11,8 @@ export interface UserAvatarProps {
 
 const UserAvatar: React.FC<UserAvatarProps> = ({ name, color, image }) => {
   const { colors } = useThemeContext();
+  const [imageError, setImageError] = useState(false);
+  
   const initials = name
     .split(' ')
     .map(part => part[0])
@@ -22,7 +24,14 @@ const UserAvatar: React.FC<UserAvatarProps> = ({ name, color, image }) => {
   
   return (
     <Avatar className="h-8 w-8">
-      {image && <AvatarImage src={image} alt={name} />}
+      {image && !imageError && (
+        <AvatarImage 
+          src={image} 
+          alt={name} 
+          loading="lazy"
+          onError={() => setImageError(true)}
+        />
+      )}
       <AvatarFallback 
         className="text-xs" 
         style={{ 

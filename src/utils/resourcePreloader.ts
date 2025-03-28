@@ -15,6 +15,20 @@ interface AssetConfig {
 }
 
 /**
+ * Image loading configuration
+ */
+export interface ImageLoadConfig {
+  src: string;
+  placeholderSrc?: string;
+  width?: number;
+  height?: number;
+  alt?: string;
+  lazy?: boolean;
+  blurhash?: string;
+  priority?: boolean;
+}
+
+/**
  * Preload a single asset
  */
 export const preloadAsset = (config: AssetConfig): Promise<Event> => {
@@ -66,6 +80,20 @@ export const loadCriticalCSS = (url: string): Promise<Event> => {
 };
 
 /**
+ * Generate a tiny placeholder for progressive loading
+ */
+export const generatePlaceholder = (width: number, height: number, color = '#f3f4f6'): string => {
+  // Create a tiny SVG placeholder
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+      <rect width="100%" height="100%" fill="${color}" />
+    </svg>
+  `;
+  // Encode the SVG as a data URL
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg.trim())}`;
+};
+
+/**
  * Lazy load images when they come into viewport
  */
 export const setupLazyLoading = (): void => {
@@ -75,12 +103,21 @@ export const setupLazyLoading = (): void => {
         if (entry.isIntersecting) {
           const lazyImage = entry.target as HTMLImageElement;
           if (lazyImage.dataset.src) {
-            lazyImage.src = lazyImage.dataset.src;
-            lazyImage.classList.remove('lazy-load');
+            // Create a new image to preload
+            const img = new Image();
+            img.onload = () => {
+              lazyImage.src = lazyImage.dataset.src!;
+              lazyImage.classList.remove('lazy-load');
+              lazyImage.classList.add('loaded');
+            };
+            img.src = lazyImage.dataset.src!;
             imageObserver.unobserve(lazyImage);
           }
         }
       });
+    }, {
+      rootMargin: '200px 0px', // Start loading 200px before they come into view
+      threshold: 0.01
     });
     
     const lazyImages = document.querySelectorAll('img.lazy-load');
@@ -94,9 +131,24 @@ export const setupLazyLoading = (): void => {
       const img = image as HTMLImageElement;
       if (img.dataset.src) {
         img.src = img.dataset.src;
+        img.classList.remove('lazy-load');
+        img.classList.add('loaded');
       }
     });
   }
+};
+
+/**
+ * Preload critical images
+ */
+export const preloadCriticalImages = (imageUrls: string[]): void => {
+  imageUrls.forEach(url => {
+    const link = document.createElement('link');
+    link.rel = 'preload';
+    link.as = 'image';
+    link.href = url;
+    document.head.appendChild(link);
+  });
 };
 
 /**
@@ -107,3 +159,4 @@ export const chatWidgetCriticalAssets: AssetConfig[] = [
   { url: '/chat-widget-standalone.js', type: 'script', priority: 'high' },
   { url: '/favicon.ico', type: 'image', priority: 'low' }
 ];
+

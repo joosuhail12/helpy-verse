@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { ProgressiveImage } from '@/components/common/ProgressiveImage';
 
 interface ContactDetailHeaderProps {
   contact: Contact;
@@ -27,7 +28,10 @@ export const ContactDetailHeader = ({ contact }: ContactDetailHeaderProps) => {
       
       <div className="flex items-center gap-6">
         <Avatar className="h-20 w-20 ring-4 ring-purple-100/50 transition-transform duration-300 hover:scale-105">
-          <AvatarImage src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158" />
+          <AvatarImage 
+            src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158" 
+            loading="lazy"
+          />
           <AvatarFallback className="bg-gradient-to-br from-purple-500/10 to-purple-600/20">
             <User className="h-8 w-8 text-purple-600" />
           </AvatarFallback>
