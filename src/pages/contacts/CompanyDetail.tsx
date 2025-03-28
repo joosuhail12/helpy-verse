@@ -1,13 +1,12 @@
 
 import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { useAppDispatch, useAppSelector } from '@/hooks';
+import { useAppDispatch, useAppSelector } from '@/hooks/useAppDispatch';
 import { 
   fetchCompanyById,
-  selectSelectedCompany,
-  selectCompaniesLoading,
-  selectCompaniesError
+  setSelectedCompany
 } from '@/store/slices/companies/companiesSlice';
+import { selectSelectedCompany, selectCompaniesLoading, selectCompaniesError } from '@/store/slices/companies/selectors';
 import { CompanyDetailHeader } from '@/components/companies/detail/CompanyDetailHeader';
 import { CompanyDetailSidebar } from '@/components/companies/detail/CompanyDetailSidebar';
 import { CompanyDetailContent } from '@/components/companies/detail/CompanyDetailContent';
@@ -27,6 +26,11 @@ const CompanyDetail = () => {
     if (id) {
       dispatch(fetchCompanyById(id));
     }
+    
+    return () => {
+      // Clear selected company on unmount
+      dispatch(setSelectedCompany(null));
+    };
   }, [dispatch, id]);
 
   if (loading) {
@@ -34,21 +38,25 @@ const CompanyDetail = () => {
   }
 
   if (error) {
-    return <CompanyDetailError error={error} />;
+    return <CompanyDetailError message={error} />;
   }
 
   if (!companyDetails && !loading) {
-    return <CompanyNotFound id={id || ''} />;
+    return <CompanyNotFound companyId={id || ''} />;
+  }
+
+  if (!companyDetails) {
+    return null;
   }
 
   return (
     <div className="flex flex-col h-full">
-      <CompanyDetailHeader company={companyDetails!} />
+      <CompanyDetailHeader company={companyDetails} onDeleteClick={() => {}} />
       <div className="flex flex-1 overflow-hidden">
         <div className="flex-1 overflow-y-auto p-6">
-          <CompanyDetailContent company={companyDetails!} />
+          <CompanyDetailContent company={companyDetails} activities={[]} />
         </div>
-        <CompanyDetailSidebar company={companyDetails!} />
+        <CompanyDetailSidebar company={companyDetails} />
       </div>
     </div>
   );

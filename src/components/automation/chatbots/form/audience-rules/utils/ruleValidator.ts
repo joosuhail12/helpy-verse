@@ -1,30 +1,48 @@
 
 import { QueryGroup, QueryRule, ValidationError } from '@/types/queryBuilder';
 
+export interface ValidationResult {
+  isValid: boolean;
+  error?: string;
+}
+
 // Validate a query group and its rules
-export const validateQueryGroup = (group: QueryGroup): ValidationError[] => {
+export const validateQueryGroup = (group: QueryGroup): ValidationResult => {
+  if (group.rules.length === 0) {
+    return { isValid: true };
+  }
+  
   const errors: ValidationError[] = [];
   
   // Validate each rule in the group
-  group.rules.forEach(rule => {
+  for (const rule of group.rules) {
     if ('field' in rule) {
       // This is a rule, not a group
-      const ruleErrors = validateRule(rule);
-      if (ruleErrors) {
-        errors.push(ruleErrors);
+      const ruleError = validateRule(rule);
+      if (ruleError) {
+        errors.push(ruleError);
       }
     } else {
       // This is a nested group
-      const nestedErrors = validateQueryGroup(rule);
-      errors.push(...nestedErrors);
+      const nestedResult = validateQueryGroup(rule);
+      if (!nestedResult.isValid) {
+        return nestedResult;
+      }
     }
-  });
+  }
   
-  return errors;
+  if (errors.length > 0) {
+    return { 
+      isValid: false, 
+      error: errors.map(e => e.message).join(', ') 
+    };
+  }
+  
+  return { isValid: true };
 };
 
 // Validate a single rule
-const validateRule = (rule: QueryRule): ValidationError | null => {
+export const validateRule = (rule: QueryRule): ValidationError | null => {
   // Basic validation - requires a field and operator
   if (!rule.field) {
     return {
@@ -127,3 +145,5 @@ const evaluateRule = (record: any, rule: QueryRule): boolean => {
       return false;
   }
 };
+
+export type { ValidationError };

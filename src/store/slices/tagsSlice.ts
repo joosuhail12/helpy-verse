@@ -1,3 +1,4 @@
+
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import type { Tag, SortField, FilterEntity } from "@/types/tag";
 import { tagService, type TagParams } from "@/api/services/tagService";
@@ -30,73 +31,37 @@ const initialState: TagsState = {
   selectedTags: [],
 };
 
-// ✅ Fetch tags with pagination and filtering
+// Fetch tags with pagination and filtering
 export const fetchTags = createAsyncThunk(
   "tags/fetchTags",
   async (params: TagParams) => {
     const response = await tagService.fetchTags(params);
     return {
-      tags: response.data.map(tag => ({
-        id: tag.id,
-        name: tag.name,
-        color: tag.color || "#000000", // Default color
-        createdAt: tag.createdAt,
-        lastUsed: tag.lastUsed || new Date().toISOString(), // Default lastUsed
-        trend: tag.trend || "stable", // Default trend
-        counts: tag.counts || { tickets: 0, contacts: 0, companies: 0 }, // Default counts
-        history: tag.history || [], // Default empty history
-        preview: tag.preview || [], // Default empty preview
-      })),
-      total: response.data.length,
+      tags: response.data,
+      total: response.total || response.data.length
     };
   }
 );
 
-// ✅ Create a new tag
+// Create a new tag
 export const createTag = createAsyncThunk(
   "tags/createTag",
   async (tag: Partial<Tag>) => {
     const response = await tagService.createTag(tag);
-    return {
-      tags: response.data.map(tag => ({
-        id: tag.id,
-        name: tag.name,
-        color: tag.color || "#000000", // Default color
-        createdAt: tag.createdAt,
-        lastUsed: tag.lastUsed || new Date().toISOString(), // Default lastUsed
-        trend: tag.trend || "stable", // Default trend
-        counts: tag.counts || { tickets: 0, contacts: 0, companies: 0 }, // Default counts
-        history: tag.history || [], // Default empty history
-        preview: tag.preview || [], // Default empty preview
-      })),
-      total: response.data.length,
-    };
+    return response;
   }
 );
 
-// ✅ Update an existing tag
+// Update an existing tag
 export const updateTag = createAsyncThunk(
   "tags/updateTag",
   async ({ id, tag }: { id: string; tag: Partial<Tag> }) => {
     const response = await tagService.updateTag(id, tag);
-    return {
-      tags: response.data.map(tag => ({
-        id: tag.id,
-        name: tag.name,
-        color: tag.color || "#000000", // Default color
-        createdAt: tag.createdAt,
-        lastUsed: tag.lastUsed || new Date().toISOString(), // Default lastUsed
-        trend: tag.trend || "stable", // Default trend
-        counts: tag.counts || { tickets: 0, contacts: 0, companies: 0 }, // Default counts
-        history: tag.history || [], // Default empty history
-        preview: tag.preview || [], // Default empty preview
-      })),
-      total: response.data.length,
-    };
+    return response;
   }
 );
 
-// ✅ Delete multiple tags
+// Delete multiple tags
 export const deleteTags = createAsyncThunk("tags/deleteTags", async (ids: string[]) => {
   await tagService.deleteTags(ids);
   return ids;
@@ -159,16 +124,19 @@ const tagsSlice = createSlice({
         state.error = action.error.message || "Failed to fetch tags";
       })
       .addCase(createTag.fulfilled, (state, action) => {
-        state.items = action.payload.tags;
-        state.total = action.payload.total;
+        state.items.push(action.payload);
+        state.total = state.total + 1;
       })
       .addCase(updateTag.fulfilled, (state, action) => {
-        state.items = action.payload.tags;
-        state.total = action.payload.total;
+        const index = state.items.findIndex(item => item.id === action.payload.id);
+        if (index !== -1) {
+          state.items[index] = action.payload;
+        }
       })
       .addCase(deleteTags.fulfilled, (state, action) => {
         state.items = state.items.filter(tag => !action.payload.includes(tag.id));
         state.selectedTags = state.selectedTags.filter(id => !action.payload.includes(id));
+        state.total = state.total - action.payload.length;
       });
   },
 });
@@ -184,7 +152,17 @@ export const {
   clearSelectedTags,
 } = tagsSlice.actions;
 
-// Export selectors from the dedicated file
-export * from './tags/selectors';
+// Export selectors
+export const selectAllTagsItems = (state: any) => state.tags.items;
+export const selectTagsLoading = (state: any) => state.tags.loading;
+export const selectTagsError = (state: any) => state.tags.error;
+export const selectTagsTotal = (state: any) => state.tags.total;
+export const selectTagsCurrentPage = (state: any) => state.tags.currentPage;
+export const selectTagsItemsPerPage = (state: any) => state.tags.itemsPerPage;
+export const selectTagsSortField = (state: any) => state.tags.sortField;
+export const selectTagsSortDirection = (state: any) => state.tags.sortDirection;
+export const selectTagsFilterEntity = (state: any) => state.tags.filterEntity;
+export const selectTagsSearchQuery = (state: any) => state.tags.searchQuery;
+export const selectSelectedTags = (state: any) => state.tags.selectedTags;
 
 export default tagsSlice.reducer;

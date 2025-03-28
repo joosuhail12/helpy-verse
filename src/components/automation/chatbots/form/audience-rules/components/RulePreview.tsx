@@ -19,7 +19,7 @@ export const RulePreview = ({ group, fields }: RulePreviewProps) => {
       <RulesSummary group={group} fields={fields} />
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <AudienceSizeEstimator matchCount={0} queryGroup={group} />
+        <AudienceSizeEstimator queryGroup={group} />
         <DataConstraintValidator queryGroup={group} />
       </div>
       

@@ -1,103 +1,144 @@
 
 import React from 'react';
-import { Company } from '@/types/company';
-import { CompanyTags } from './CompanyTags';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Mail, Phone, Edit, Archive, Globe, Building2 } from 'lucide-react';
-import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { useNavigate } from 'react-router-dom';
+import { Plus } from 'lucide-react';
+import { useDispatch } from 'react-redux';
 import { updateCompany } from '@/store/slices/companies/companiesSlice';
+import type { Company } from '@/types/company';
 
 interface CompanyDetailSidebarProps {
   company: Company;
 }
 
-export const CompanyDetailSidebar = ({ company }: CompanyDetailSidebarProps) => {
-  const dispatch = useAppDispatch();
-  const navigate = useNavigate();
+export const CompanyDetailSidebar: React.FC<CompanyDetailSidebarProps> = ({ company }) => {
+  const dispatch = useDispatch();
 
-  const handleArchive = () => {
+  const handleUpdateCompany = (data: Partial<Company>) => {
     dispatch(updateCompany({ 
-      id: company.id, 
-      updates: { 
-        status: 'inactive' as const 
-      }
-    }))
-      .then(() => {
-        navigate('/home/contacts/companies');
-      });
+      companyId: company.id, 
+      data 
+    }));
   };
 
-  // Format the phone number if present
-  const formattedPhone = company.phone ? (
-    <Button variant="link" className="p-0 h-auto font-normal text-blue-500" asChild>
-      <a href={`tel:${company.phone}`}>{company.phone}</a>
-    </Button>
-  ) : (
-    <span className="text-gray-500 italic">No phone</span>
-  );
-
   return (
-    <Card className="bg-white">
-      <CardContent className="pt-6">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
-            <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-              <Building2 className="h-8 w-8" />
+    <div className="w-80 border-l bg-gray-50 p-4 overflow-y-auto">
+      <div className="space-y-4">
+        {/* Company Type */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Company Type</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Badge variant={company.type === 'customer' ? 'default' : 'secondary'} className="capitalize">
+              {company.type || 'Not Set'}
+            </Badge>
+          </CardContent>
+        </Card>
+
+        {/* Status */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Status</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Badge 
+              variant={company.status === 'active' ? 'default' : 'outline'}
+              className={`capitalize ${company.status === 'active' ? 'bg-green-500' : ''}`}
+            >
+              {company.status || 'Not Set'}
+            </Badge>
+          </CardContent>
+        </Card>
+
+        {/* Account Owner */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Account Owner</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {company.accountOwner ? (
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center text-xs">
+                  {company.accountOwner.charAt(0)}
+                </div>
+                <span className="text-sm">{company.accountOwner}</span>
+              </div>
+            ) : (
+              <Button variant="outline" size="sm" className="w-full">
+                <Plus className="h-3.5 w-3.5 mr-2" />
+                Assign Owner
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Tags */}
+        <Card>
+          <CardHeader className="pb-2 flex flex-row items-center justify-between">
+            <CardTitle className="text-sm font-medium">Tags</CardTitle>
+            <Button variant="ghost" size="sm">
+              <Plus className="h-3.5 w-3.5" />
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-1">
+              {company.tags && company.tags.length > 0 ? (
+                Array.isArray(company.tags) && company.tags.map((tag, index) => (
+                  <Badge key={index} variant="secondary">
+                    {typeof tag === 'string' ? tag : tag.name}
+                  </Badge>
+                ))
+              ) : (
+                <span className="text-sm text-muted-foreground">No tags</span>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Company Info */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Company Info</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm space-y-2">
+            <div>
+              <span className="text-muted-foreground">Founded:</span>{' '}
+              {company.foundedYear || 'Not available'}
             </div>
             <div>
-              <h2 className="text-xl font-semibold">
-                {company.name}
-              </h2>
-              <p className="text-muted-foreground">
-                {company.industry || 'No industry'}
-              </p>
+              <span className="text-muted-foreground">Market Segment:</span>{' '}
+              {company.marketSegment || 'Not available'}
             </div>
-          </div>
-          <Button variant="ghost" size="icon">
-            <Edit className="h-4 w-4" />
-          </Button>
-        </div>
-
-        <div className="space-y-4">
-          {company.email && (
-            <div className="flex items-center gap-2">
-              <Mail className="h-4 w-4 text-muted-foreground" />
-              <Button variant="link" className="p-0 h-auto font-normal text-blue-500" asChild>
-                <a href={`mailto:${company.email}`}>{company.email}</a>
-              </Button>
+            <div>
+              <span className="text-muted-foreground">Business Model:</span>{' '}
+              {company.businessModel || 'Not available'}
             </div>
-          )}
-          
-          <div className="flex items-center gap-2">
-            <Phone className="h-4 w-4 text-muted-foreground" />
-            {formattedPhone}
-          </div>
-
-          {company.website && (
-            <div className="flex items-center gap-2">
-              <Globe className="h-4 w-4 text-muted-foreground" />
-              <Button variant="link" className="p-0 h-auto font-normal text-blue-500" asChild>
-                <a href={company.website} target="_blank" rel="noopener noreferrer">
-                  {company.website}
-                </a>
-              </Button>
+            <div>
+              <span className="text-muted-foreground">Tier Level:</span>{' '}
+              {company.tierLevel || 'Not available'}
             </div>
-          )}
-        </div>
+          </CardContent>
+        </Card>
 
-        <div className="mt-6 pt-6 border-t">
-          <CompanyTags companyId={company.id} tags={company.tags || []} />
-        </div>
-
-        <div className="mt-6 pt-6 border-t">
-          <Button variant="destructive" size="sm" className="w-full" onClick={handleArchive}>
-            <Archive className="h-4 w-4 mr-2" />
-            Archive Company
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+        {/* Created & Updated */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Record Details</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm space-y-2">
+            <div>
+              <span className="text-muted-foreground">Created:</span>{' '}
+              {new Date(company.createdAt).toLocaleDateString()}
+            </div>
+            <div>
+              <span className="text-muted-foreground">Last Updated:</span>{' '}
+              {new Date(company.updatedAt).toLocaleDateString()}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   );
 };

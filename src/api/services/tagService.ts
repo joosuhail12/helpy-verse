@@ -196,7 +196,7 @@ export const tagService = {
         const updatedTag: Tag = {
           ...existingTag,
           ...tag,
-          updatedAt: new Date().toISOString()
+          data: existingTag.data || {}
         };
         
         return updatedTag;

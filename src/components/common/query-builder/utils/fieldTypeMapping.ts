@@ -11,26 +11,26 @@ export const mapFieldType = (type: string): FieldType => {
     case 'tel':
     case 'phone':
     case 'email':
-      return 'text';
+      return 'text' as FieldType;
     case 'number':
     case 'currency':
-      return 'number';
+      return 'number' as FieldType;
     case 'boolean':
-      return 'boolean';
+      return 'boolean' as FieldType;
     case 'date':
     case 'datetime':
     case 'timestamp':
-      return 'date';
+      return 'date' as FieldType;
     case 'select':
     case 'dropdown':
     case 'enum':
-      return 'select';
+      return 'select' as FieldType;
     case 'multi-select':
     case 'multiple':
     case 'tags':
     case 'array':
-      return 'multi-select';
+      return 'multi-select' as FieldType;
     default:
-      return 'text';
+      return 'text' as FieldType;
   }
 };

@@ -44,7 +44,7 @@ export const AudienceRules = () => {
       </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <AudienceSizeEstimator matchCount={0} queryGroup={queryGroup} />
+        <AudienceSizeEstimator queryGroup={queryGroup} />
         <SampleMatchesPreview queryGroup={queryGroup} />
       </div>
     </div>

@@ -1,13 +1,12 @@
 
-// src/pages/contacts/Companies.tsx
 import { useEffect } from 'react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { fetchCompanies } from '@/store/slices/companies/companiesSlice';
 import { 
-  selectCompanies, 
-  selectCompanyLoading, 
-  selectCompanyError 
+  selectAllCompanies, 
+  selectCompaniesLoading, 
+  selectCompaniesError 
 } from '@/store/slices/companies/selectors';
 import { CompaniesList } from '@/components/companies/CompaniesList';
 import { CompaniesHeader } from '@/components/companies/CompaniesHeader';
@@ -16,9 +15,9 @@ import { Card } from '@/components/ui/card';
 
 const Companies = () => {
   const dispatch = useAppDispatch();
-  const companies = useAppSelector(selectCompanies);
-  const loading = useAppSelector(selectCompanyLoading);
-  const error = useAppSelector(selectCompanyError);
+  const companies = useAppSelector(selectAllCompanies);
+  const loading = useAppSelector(selectCompaniesLoading);
+  const error = useAppSelector(selectCompaniesError);
 
   useEffect(() => {
     dispatch(fetchCompanies());
@@ -38,7 +37,7 @@ const Companies = () => {
     <div className="container mx-auto px-4 py-6 space-y-6">
       <CompaniesHeader />
       <CompaniesListControls />
-      <CompaniesList companies={companies} loading={loading} />
+      <CompaniesList companies={companies || []} loading={loading || false} />
     </div>
   );
 };
