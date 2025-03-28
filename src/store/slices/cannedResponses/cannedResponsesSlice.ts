@@ -1,9 +1,9 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { CannedResponsesState, CannedResponse } from './types';
+import { CannedResponsesState } from './types';
+import { CannedResponse } from '@/mock/cannedResponses';
 import { 
   fetchCannedResponses, 
-  fetchCannedResponseById, 
   createCannedResponse,
   updateCannedResponse,
   deleteCannedResponse
@@ -14,7 +14,9 @@ const initialState: CannedResponsesState = {
   responses: [],
   selectedResponse: null,
   loading: false,
-  error: null
+  error: null,
+  versionHistory: null,
+  categories: []
 };
 
 // Create cannedResponses slice
@@ -42,35 +44,14 @@ const cannedResponsesSlice = createSlice({
       })
       .addCase(fetchCannedResponses.fulfilled, (state, action) => {
         state.loading = false;
-        if (action.payload) { // Check if payload exists
+        // Check if action.payload is defined before assigning
+        if (action.payload) {
           state.responses = action.payload;
         }
       })
       .addCase(fetchCannedResponses.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || 'Failed to fetch canned responses';
-      })
-      
-      // Fetch canned response by ID
-      .addCase(fetchCannedResponseById.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(fetchCannedResponseById.fulfilled, (state, action) => {
-        state.loading = false;
-        if (action.payload) {
-          const index = state.responses.findIndex(r => r.id === action.payload.id);
-          if (index !== -1) {
-            state.responses[index] = action.payload;
-          } else {
-            state.responses.push(action.payload);
-          }
-          state.selectedResponse = action.payload;
-        }
-      })
-      .addCase(fetchCannedResponseById.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message || 'Failed to fetch canned response';
       })
       
       // Create canned response

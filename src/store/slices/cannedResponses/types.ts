@@ -12,3 +12,5 @@ export interface CannedResponsesState {
   } | null;
   categories: string[];
 }
+
+export { CannedResponse };

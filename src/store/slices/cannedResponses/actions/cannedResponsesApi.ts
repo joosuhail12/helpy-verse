@@ -21,8 +21,31 @@ export const fetchCannedResponses = createAsyncThunk(
       const responses = mockCannedResponses;
       dispatch(setResponses(responses));
       dispatch(setError(null));
+      return responses;
     } catch (error) {
       dispatch(setError(error instanceof Error ? error.message : 'Failed to fetch canned responses'));
+      throw error;
+    } finally {
+      dispatch(setLoading(false));
+    }
+  }
+);
+
+export const fetchCannedResponseById = createAsyncThunk(
+  'cannedResponses/fetchById',
+  async (id: string, { dispatch }) => {
+    try {
+      dispatch(setLoading(true));
+      // Simulating API call
+      const response = mockCannedResponses.find(r => r.id === id);
+      if (!response) {
+        throw new Error('Canned response not found');
+      }
+      dispatch(setError(null));
+      return response;
+    } catch (error) {
+      dispatch(setError(error instanceof Error ? error.message : 'Failed to fetch canned response'));
+      throw error;
     } finally {
       dispatch(setLoading(false));
     }
@@ -83,6 +106,7 @@ export const deleteCannedResponse = createAsyncThunk(
       // Simulating API call
       dispatch(deleteResponse(id));
       dispatch(setError(null));
+      return id;
     } catch (error) {
       dispatch(setError(error instanceof Error ? error.message : 'Failed to delete canned response'));
       throw error;
