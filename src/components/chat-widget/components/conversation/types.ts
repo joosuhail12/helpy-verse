@@ -4,12 +4,13 @@ export interface ChatMessage {
   content: string;
   sender: 'user' | 'agent' | 'system';
   senderName?: string;
-  timestamp: string;
+  timestamp: string | Date; // Allow both string and Date
   attachments?: Attachment[];
-  reactions?: Reaction[];
+  reactions?: Record<string, string[]>; // Changed from Reaction[] to Record<emoji, userIds[]>
   read?: boolean;
   readBy?: string[];
   conversationId?: string;
+  metadata?: Record<string, any>;
 }
 
 export interface Attachment {
@@ -21,6 +22,7 @@ export interface Attachment {
   thumbnailUrl?: string;
 }
 
+// Changed to interface
 export interface Reaction {
   emoji: string;
   userId: string;
@@ -34,6 +36,7 @@ export interface Conversation {
   unreadCount: number;
   createdAt: string;
   updatedAt: string;
+  type?: string;
 }
 
 export interface MessageInputProps {
@@ -42,4 +45,5 @@ export interface MessageInputProps {
   isLoading?: boolean;
   placeholder?: string;
   showAttachments?: boolean;
+  disabled?: boolean;
 }

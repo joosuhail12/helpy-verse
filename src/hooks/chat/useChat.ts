@@ -56,12 +56,15 @@ export const useChat = (): UseChatReturn => {
 
   // Create a new conversation
   const createNewConversation = useCallback(async (title?: string): Promise<string> => {
+    const now = new Date().toISOString();
     const conversationId = uuidv4();
     const newConversation: Conversation = {
       id: conversationId,
       title: title || `Conversation ${new Date().toLocaleString()}`,
-      lastMessageTimestamp: new Date().toISOString(),
+      lastMessageTimestamp: now,
       unreadCount: 0,
+      createdAt: now,
+      updatedAt: now
     };
 
     setConversations(prev => [...prev, newConversation]);
@@ -80,11 +83,12 @@ export const useChat = (): UseChatReturn => {
   // Send a message
   const sendMessage = useCallback(async (conversationId: string, message: string): Promise<void> => {
     // Create a new message
+    const now = new Date().toISOString();
     const newMessage: ChatMessage = {
       id: uuidv4(),
       sender: 'user',
       content: message,
-      timestamp: new Date(),
+      timestamp: now,
       conversationId
     };
     
@@ -95,22 +99,34 @@ export const useChat = (): UseChatReturn => {
     setConversations(prev => prev.map(conv => 
       conv.id === conversationId ? {
         ...conv,
-        lastMessage: message,
-        lastMessageTimestamp: new Date().toISOString()
+        lastMessage: newMessage,
+        lastMessageTimestamp: now,
+        updatedAt: now
       } : conv
     ));
 
     // Simulate an agent response
     setTimeout(() => {
+      const responseTime = new Date().toISOString();
       const agentMessage: ChatMessage = {
         id: uuidv4(),
         sender: 'agent',
         content: `Thanks for your message: "${message}". This is an automated response.`,
-        timestamp: new Date(),
+        timestamp: responseTime,
         conversationId
       };
       
       setMessages(prev => [...prev, agentMessage]);
+      
+      // Update conversation with agent response
+      setConversations(prev => prev.map(conv => 
+        conv.id === conversationId ? {
+          ...conv,
+          lastMessage: agentMessage,
+          lastMessageTimestamp: responseTime,
+          updatedAt: responseTime
+        } : conv
+      ));
     }, 1000);
   }, []);
 
@@ -124,11 +140,12 @@ export const useChat = (): UseChatReturn => {
     // If there are no messages yet, add a welcome message
     let resultMessages = [...conversationMessages];
     if (resultMessages.length === 0) {
+      const now = new Date().toISOString();
       const welcomeMessage: ChatMessage = {
         id: uuidv4(),
         sender: 'agent',
         content: 'Hello! How can I help you today?',
-        timestamp: new Date(),
+        timestamp: now,
         conversationId
       };
       
