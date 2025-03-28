@@ -3,12 +3,12 @@ import { baseApi } from '../baseApi';
 import type { Contact, ContactFilters } from '@/types/contact';
 import { mockContacts } from '@/store/slices/contacts/mockData';
 
-type ContactsResponse = {
+export type ContactsResponse = {
   data: Contact[];
   total: number;
 };
 
-type ContactsQueryParams = Partial<ContactFilters> & { 
+export type ContactsQueryParams = Partial<ContactFilters> & { 
   page?: number; 
   limit?: number;
 };
