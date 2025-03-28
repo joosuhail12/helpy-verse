@@ -13,24 +13,24 @@ import { inboxRoutes } from '@/routes/inboxRoutes';
 import { settingsRoutes } from '@/routes/settingsRoutes';
 import { automationRoutes } from '@/routes/automationRoutes';
 
-// Lazily load auth pages
-const { SignIn } = lazily(() => import('@/pages/SignIn'));
-const { ForgotPassword } = lazily(() => import('@/pages/ForgotPassword'));
-const { ResetPassword } = lazily(() => import('@/pages/ResetPassword'));
-const { SignUp } = lazily(() => import('@/pages/SignUp'));
-const { NotFound } = lazily(() => import('@/pages/NotFound'));
-const { LandingPage } = lazily(() => import('@/pages/LandingPage'));
+// Lazy load auth pages correctly
+const ForgotPasswordLazy = React.lazy(() => import('@/pages/ForgotPassword'));
+const ResetPasswordLazy = React.lazy(() => import('@/pages/ResetPassword'));
+const SignUpLazy = React.lazy(() => import('@/pages/SignUp'));
+const NotFoundLazy = React.lazy(() => import('@/pages/NotFound'));
+const LandingPageLazy = React.lazy(() => import('@/pages/LandingPage'));
+const SignInLazy = React.lazy(() => import('@/pages/SignIn'));
 
 const AppRoutes: React.FC = () => {
   return (
     <React.Suspense fallback={<LoadingFallback />}>
       <Routes>
-        <Route path="/" element={<LandingPage />} />
+        <Route path="/" element={<LandingPageLazy />} />
         <Route path="/home" element={<Navigate to="/home/inbox/all" replace />} />
-        <Route path="/sign-in" element={<SignIn />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/sign-up" element={<SignUp />} />
+        <Route path="/sign-in" element={<SignInLazy />} />
+        <Route path="/forgot-password" element={<ForgotPasswordLazy />} />
+        <Route path="/reset-password" element={<ResetPasswordLazy />} />
+        <Route path="/sign-up" element={<SignUpLazy />} />
         
         <Route path="/home" element={<DashboardLayout />}>
           {/* Add nested routes */}
@@ -40,7 +40,7 @@ const AppRoutes: React.FC = () => {
           {renderRoutes(automationRoutes)}
         </Route>
         
-        <Route path="*" element={<NotFound />} />
+        <Route path="*" element={<NotFoundLazy />} />
       </Routes>
     </React.Suspense>
   );
