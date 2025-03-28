@@ -26,9 +26,9 @@ const LandingPage = () => {
       outgoingMessageForeground: '#FFFFFF',
       incomingMessage: '#F3F4F6',
       incomingMessageForeground: '#111827',
-      primaryDark: '#3730A3' // Add the required property
+      primaryDark: '#3730A3'
     },
-    position: 'right',
+    position: 'right' as const, // Explicitly typed as 'right' instead of string
     compact: false,
     labels: {
       welcomeTitle: 'Hello there.',
@@ -37,7 +37,7 @@ const LandingPage = () => {
       recentMessagesTitle: 'Recent messages',
       noMessagesText: 'No messages yet. Start a conversation!',
       messagePlaceholder: 'Type a message...',
-      chatTitle: 'Conversation' // Add the required property
+      chatTitle: 'Conversation'
     }
   };
 
