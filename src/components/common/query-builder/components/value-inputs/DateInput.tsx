@@ -14,11 +14,16 @@ export const DateInput: React.FC<DateInputProps> = ({
   errorMessage 
 }) => {
   return (
-    <Input
-      type="date"
-      value={value || ''}
-      onChange={(e) => onChange(e.target.value)}
-      className={`w-full ${errorMessage ? 'border-red-500' : ''}`}
-    />
+    <div>
+      <Input
+        type="date"
+        value={value || ''}
+        onChange={(e) => onChange(e.target.value)}
+        className={errorMessage ? 'border-red-500' : ''}
+      />
+      {errorMessage && (
+        <p className="text-sm text-red-500 mt-1">{errorMessage}</p>
+      )}
+    </div>
   );
 };

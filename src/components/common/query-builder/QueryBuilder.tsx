@@ -1,7 +1,36 @@
 
 import React from 'react';
 import { QueryGroupComponent } from './QueryGroupComponent';
-import type { QueryGroup, QueryField, ValidationError } from '@/types/queryBuilder';
+
+// Simplified interfaces
+interface QueryRule {
+  id: string;
+  field: string;
+  operator: string;
+  value: any;
+}
+
+interface QueryGroup {
+  id: string;
+  combinator: 'and' | 'or';
+  rules: Array<QueryRule | QueryGroup>;
+}
+
+interface QueryField {
+  id: string;
+  label: string;
+  type: string;
+  name: string;
+  options?: string[];
+}
+
+interface ValidationError {
+  message: string;
+  path?: string;
+  field?: string;
+  rule?: { id: string };
+  group?: QueryGroup;
+}
 
 interface QueryBuilderProps {
   value: QueryGroup;

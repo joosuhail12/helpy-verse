@@ -1,22 +1,44 @@
 
 import { useState } from 'react';
-import type { QueryRule as QueryRuleType, QueryField, DataSource, ValidationError, Operator } from '@/types/queryBuilder';
 import { OperatorSelect } from './components/OperatorSelect';
-import { SourceSelect } from './components/SourceSelect';
 import { FieldSelect } from './components/FieldSelect';
 import { ValueInput } from './components/value-inputs/ValueInput';
+import { SourceSelect } from './components/SourceSelect';
 
-type ExtendedDataSource = DataSource | `custom_objects.${string}` | '';
+// Simplified interfaces to avoid complex type references
+interface QueryField {
+  id: string;
+  label: string;
+  type: string;
+  name: string;
+  dataSource?: string;
+  customObject?: string;
+  options?: string[];
+}
+
+interface QueryRule {
+  id: string;
+  field: string;
+  operator: string;
+  value: any;
+}
+
+interface ValidationError {
+  message: string;
+  path?: string;
+  field?: string;
+  rule?: { id: string };
+}
 
 interface QueryRuleProps {
-  rule: QueryRuleType;
-  onChange: (rule: QueryRuleType) => void;
+  rule: QueryRule;
+  onChange: (rule: QueryRule) => void;
   fields: QueryField[];
   errors?: ValidationError[];
 }
 
 export const QueryRule = ({ rule, onChange, fields, errors = [] }: QueryRuleProps) => {
-  const [selectedSource, setSelectedSource] = useState<ExtendedDataSource>('');
+  const [selectedSource, setSelectedSource] = useState<string>('');
   const selectedField = fields.find((f) => f.id === rule.field);
   const ruleErrors = errors.filter(error => error.rule?.id === rule.id);
   
@@ -30,7 +52,7 @@ export const QueryRule = ({ rule, onChange, fields, errors = [] }: QueryRuleProp
     return field.dataSource === selectedSource;
   });
 
-  const handleSourceChange = (source: ExtendedDataSource) => {
+  const handleSourceChange = (source: string) => {
     setSelectedSource(source);
     onChange({ ...rule, field: '' });
   };
@@ -49,9 +71,6 @@ export const QueryRule = ({ rule, onChange, fields, errors = [] }: QueryRuleProp
             onChange={handleSourceChange}
             errorMessage={getErrorMessage('field')}
           />
-          {getErrorMessage('field') && (
-            <p className="text-sm text-red-500">{getErrorMessage('field')}</p>
-          )}
         </div>
 
         <div className="space-y-1">
@@ -68,24 +87,20 @@ export const QueryRule = ({ rule, onChange, fields, errors = [] }: QueryRuleProp
           <OperatorSelect
             selectedField={selectedField}
             value={rule.operator}
-            onValueChange={(value) => onChange({ ...rule, operator: value as Operator })}
+            onValueChange={(value) => onChange({ ...rule, operator: value })}
             disabled={!rule.field}
           />
-          {getErrorMessage('operator') && (
-            <p className="text-sm text-red-500">{getErrorMessage('operator')}</p>
-          )}
         </div>
 
         <div className="space-y-1 relative">
-          <ValueInput
-            field={selectedField || { id: '', label: '', type: 'text', name: '' }}
-            operator={rule.operator}
-            value={rule.value}
-            onChange={(value) => onChange({ ...rule, value })}
-            errorMessage={getErrorMessage('value')}
-          />
-          {getErrorMessage('value') && (
-            <p className="text-sm text-red-500">{getErrorMessage('value')}</p>
+          {selectedField && (
+            <ValueInput
+              field={selectedField}
+              operator={rule.operator}
+              value={rule.value}
+              onChange={(value) => onChange({ ...rule, value })}
+              errorMessage={getErrorMessage('value')}
+            />
           )}
         </div>
       </div>

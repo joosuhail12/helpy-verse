@@ -14,11 +14,16 @@ export const NumberInput: React.FC<NumberInputProps> = ({
   errorMessage 
 }) => {
   return (
-    <Input
-      type="number"
-      value={value === undefined || value === null ? '' : value}
-      onChange={(e) => onChange(Number(e.target.value))}
-      className={`w-full ${errorMessage ? 'border-red-500' : ''}`}
-    />
+    <div>
+      <Input
+        type="number"
+        value={value === undefined || value === null ? '' : value}
+        onChange={(e) => onChange(Number(e.target.value))}
+        className={errorMessage ? 'border-red-500' : ''}
+      />
+      {errorMessage && (
+        <p className="text-sm text-red-500 mt-1">{errorMessage}</p>
+      )}
+    </div>
   );
 };

@@ -3,20 +3,16 @@ import React from 'react';
 import { TextInput } from './TextInput';
 import { NumberInput } from './NumberInput';
 import { DateInput } from './DateInput';
-import { BooleanInput } from './BooleanInput';
-import { SelectInput } from './SelectInput';
-import { MultiSelectInput } from './MultiSelectInput';
 
-interface SimpleField {
+// Simplified interface to avoid complex type references
+interface FieldProps {
   id: string;
-  label: string;
   type: string;
-  name: string;
-  options?: Array<string | { value: string; label: string }>;
+  options?: Array<string>;
 }
 
 interface ValueInputProps {
-  field: SimpleField;
+  field: FieldProps;
   operator: string;
   value: any;
   onChange: (value: any) => void;
@@ -39,11 +35,6 @@ export const ValueInput: React.FC<ValueInputProps> = ({
     return null;
   }
 
-  // Process options if they exist
-  const processedOptions = field.options 
-    ? field.options.map(opt => typeof opt === 'string' ? opt : opt.value) 
-    : [];
-
   switch (field.type) {
     case 'text':
       return (
@@ -57,7 +48,7 @@ export const ValueInput: React.FC<ValueInputProps> = ({
     case 'number':
       return (
         <NumberInput
-          value={value}
+          value={value || ''}
           onChange={onChange}
           errorMessage={errorMessage}
         />
@@ -72,35 +63,6 @@ export const ValueInput: React.FC<ValueInputProps> = ({
         />
       );
       
-    case 'boolean':
-      return (
-        <BooleanInput
-          value={Boolean(value)}
-          onChange={onChange}
-          errorMessage={errorMessage}
-        />
-      );
-      
-    case 'select':
-      return (
-        <SelectInput
-          value={String(value || '')}
-          onChange={onChange}
-          options={processedOptions}
-          errorMessage={errorMessage}
-        />
-      );
-      
-    case 'multiselect':
-      return (
-        <MultiSelectInput
-          value={Array.isArray(value) ? value : []}
-          onChange={onChange}
-          options={processedOptions}
-          errorMessage={errorMessage}
-        />
-      );
-    
     default:
       // Fallback to text input for any unhandled types
       return (
