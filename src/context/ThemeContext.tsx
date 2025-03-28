@@ -6,7 +6,7 @@ export interface ThemeConfig {
     primary: string;
     primaryForeground: string;
     background: string;
-    backgroundSecondary: string; // Added this property
+    backgroundSecondary: string;
     foreground: string;
     border: string;
     userMessage: string;
@@ -25,6 +25,12 @@ export interface ThemeConfig {
     noMessagesText: string;
     messagePlaceholder: string;
   };
+  features: {
+    typingIndicator: boolean;
+    reactions: boolean;
+    fileAttachments: boolean;
+    readReceipts: boolean;
+  };
 }
 
 const defaultTheme: ThemeConfig = {
@@ -32,7 +38,7 @@ const defaultTheme: ThemeConfig = {
     primary: '#9b87f5',
     primaryForeground: '#ffffff',
     background: '#ffffff',
-    backgroundSecondary: '#f9f9f9', // Added default value
+    backgroundSecondary: '#f9f9f9',
     foreground: '#1A1F2C',
     border: '#eaeaea',
     userMessage: '#9b87f5',
@@ -50,6 +56,12 @@ const defaultTheme: ThemeConfig = {
     recentMessagesTitle: 'Recent messages',
     noMessagesText: 'No messages yet. Start a conversation!',
     messagePlaceholder: 'Type a message...'
+  },
+  features: {
+    typingIndicator: true,
+    reactions: true,
+    fileAttachments: true,
+    readReceipts: true
   }
 };
 
@@ -75,6 +87,10 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children, initialT
     labels: {
       ...defaultTheme.labels,
       ...(initialTheme.labels || {})
+    },
+    features: {
+      ...defaultTheme.features,
+      ...(initialTheme.features || {})
     }
   });
 
@@ -89,6 +105,10 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children, initialT
       labels: {
         ...prev.labels,
         ...(newTheme.labels || {})
+      },
+      features: {
+        ...prev.features,
+        ...(newTheme.features || {})
       }
     }));
   };

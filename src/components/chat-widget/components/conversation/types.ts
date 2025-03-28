@@ -9,6 +9,7 @@ export interface ChatMessage {
   reactions?: Reaction[];
   read?: boolean;
   readBy?: string[];
+  conversationId?: string;
 }
 
 export interface Attachment {
@@ -29,6 +30,7 @@ export interface Conversation {
   id: string;
   title: string;
   lastMessage?: ChatMessage;
+  lastMessageTimestamp?: string;
   unreadCount: number;
   createdAt: string;
   updatedAt: string;
@@ -36,6 +38,7 @@ export interface Conversation {
 
 export interface MessageInputProps {
   onSendMessage: (message: string) => void;
+  onTyping?: () => void;
   isLoading?: boolean;
   placeholder?: string;
   showAttachments?: boolean;

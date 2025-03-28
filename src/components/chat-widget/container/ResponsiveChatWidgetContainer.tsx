@@ -58,11 +58,11 @@ const ResponsiveChatWidgetContainer: React.FC<ResponsiveChatWidgetContainerProps
                 >
                   <h4 className="font-medium">{conversation.title || "New Conversation"}</h4>
                   <p className="text-sm text-gray-500 truncate">
-                    {conversation.lastMessage || "No messages yet"}
+                    {conversation.lastMessage ? conversation.lastMessage.content : "No messages yet"}
                   </p>
                   <div className="flex justify-between items-center mt-1">
                     <span className="text-xs text-gray-400">
-                      {new Date(conversation.lastMessageTimestamp).toLocaleString()}
+                      {conversation.lastMessageTimestamp ? new Date(conversation.lastMessageTimestamp).toLocaleString() : new Date(conversation.createdAt).toLocaleString()}
                     </span>
                     {conversation.unreadCount > 0 && (
                       <span className="bg-primary text-white text-xs rounded-full px-2 py-0.5">
