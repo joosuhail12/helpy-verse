@@ -1,5 +1,7 @@
 
 import { configureStore } from '@reduxjs/toolkit';
+import { setupListeners } from '@reduxjs/toolkit/query';
+import { baseApi } from '@/api/baseApi';
 import { actionsReducer } from './slices/actions/actionsSlice';
 import contentReducer from './slices/content/contentSlice';
 import contentCenterReducer from './slices/automation/contentCenterSlice';
@@ -19,6 +21,7 @@ import authReducer from './slices/auth/authSlice';
 
 // Define the root reducer with all slices
 const rootReducer = {
+  [baseApi.reducerPath]: baseApi.reducer, // Add the API reducer
   auth: authReducer,
   actions: actionsReducer,
   content: contentReducer,
@@ -42,9 +45,12 @@ export const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: false,
-    }),
+    }).concat(baseApi.middleware), // Add the API middleware
   devTools: process.env.NODE_ENV !== 'production',
 });
+
+// Optional, but required for refetchOnFocus/refetchOnReconnect behaviors
+setupListeners(store.dispatch);
 
 export type AppDispatch = typeof store.dispatch;
 export type RootState = ReturnType<typeof store.getState>;

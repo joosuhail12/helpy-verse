@@ -1,19 +1,18 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAppSelector } from '@/hooks/useAppSelector';
-import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { Contact } from '@/types/contact';
 import { selectAllContacts } from '@/store/slices/contacts/contactsSelectors';
-import { updateContactCompany } from '@/store/slices/contacts/actions/contactsManage';
+import { useUpdateContactCompanyMutation } from '@/api/services/contactsApi';
 
 export const useAssociatedContacts = (companyId: string) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [loading, setLoading] = useState(false);
   
-  const dispatch = useAppDispatch();
+  // Get data from Redux store (will be replaced with RTK Query in future)
   const allContacts = useAppSelector(selectAllContacts);
+  
+  // Use RTK Query mutation for updating contacts
+  const [updateContactCompany, { isLoading: loading }] = useUpdateContactCompanyMutation();
   
   // Filter contacts associated with the company
   const associatedContacts = allContacts.filter(
@@ -35,25 +34,19 @@ export const useAssociatedContacts = (companyId: string) => {
     : unassociatedContacts.slice(0, 5); // Just show first 5 if no search
   
   const handleAssociateContact = async (contactId: string) => {
-    setLoading(true);
     try {
-      await dispatch(updateContactCompany({ contactId, companyId }));
+      await updateContactCompany({ contactId, companyId }).unwrap();
       setIsPopoverOpen(false);
     } catch (error) {
       console.error('Failed to associate contact:', error);
-    } finally {
-      setLoading(false);
     }
   };
   
   const handleRemoveAssociation = async (contactId: string) => {
-    setLoading(true);
     try {
-      await dispatch(updateContactCompany({ contactId, companyId: null }));
+      await updateContactCompany({ contactId, companyId: null }).unwrap();
     } catch (error) {
       console.error('Failed to remove association:', error);
-    } finally {
-      setLoading(false);
     }
   };
   
@@ -63,7 +56,7 @@ export const useAssociatedContacts = (companyId: string) => {
     associatedContacts,
     isPopoverOpen,
     setIsPopoverOpen,
-    isLoading,
+    isLoading: false, // This will be updated in future refactoring
     loading,
     filteredContacts,
     handleAssociateContact,
