@@ -25,19 +25,39 @@
   script.async = true;
   script.defer = true;
   
-  // Add configuration
+  // Try to get stored settings first
+  let storedSettings = {};
+  try {
+    const savedSettings = localStorage.getItem('chatWidgetSettings');
+    if (savedSettings) {
+      storedSettings = JSON.parse(savedSettings);
+    }
+  } catch (e) {
+    console.error('Failed to load stored settings:', e);
+  }
+  
+  // Add configuration, prioritizing window variables then falling back to stored settings
   window.PULLSE_CHAT_CONFIG = {
     workspaceId: window.PULLSE_WORKSPACE_ID || '6c22b22f-7bdf-43db-b7c1-9c5884125c63',
     theme: {
-      colors: window.PULLSE_THEME_COLORS || {},
-      position: window.PULLSE_POSITION || 'right',
-      compact: window.PULLSE_COMPACT === true,
-      labels: window.PULLSE_LABELS || {},
+      colors: window.PULLSE_THEME_COLORS || {
+        primary: storedSettings.primaryColor || '#9b87f5'
+      },
+      position: window.PULLSE_POSITION || storedSettings.position || 'right',
+      compact: window.PULLSE_COMPACT === true || storedSettings.compact === true,
+      labels: window.PULLSE_LABELS || {
+        welcomeTitle: storedSettings.welcomeTitle || 'Hello there.',
+        welcomeSubtitle: storedSettings.welcomeSubtitle || 'How can we help?'
+      },
       features: {
-        typingIndicator: window.PULLSE_FEATURES?.typingIndicator !== false,
-        reactions: window.PULLSE_FEATURES?.reactions !== false,
-        fileAttachments: window.PULLSE_FEATURES?.fileAttachments !== false,
-        readReceipts: window.PULLSE_FEATURES?.readReceipts !== false
+        typingIndicator: window.PULLSE_FEATURES?.typingIndicator !== false && 
+                         (storedSettings.enableTypingIndicator !== false),
+        reactions: window.PULLSE_FEATURES?.reactions !== false && 
+                   (storedSettings.enableReactions !== false),
+        fileAttachments: window.PULLSE_FEATURES?.fileAttachments !== false && 
+                         (storedSettings.enableFileAttachments !== false),
+        readReceipts: window.PULLSE_FEATURES?.readReceipts !== false && 
+                      (storedSettings.enableReadReceipts !== false)
       }
     }
   };
