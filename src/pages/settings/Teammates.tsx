@@ -1,6 +1,6 @@
 
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation, Outlet } from 'react-router-dom';
+import React, { Suspense } from 'react';
+import { useLocation, Outlet } from 'react-router-dom';
 import TeammatesPage from './teammates/TeammatesPage';
 import { Loader2 } from 'lucide-react';
 
@@ -37,9 +37,9 @@ const TeammatesContent = () => {
  */
 const Teammates = () => {
   return (
-    <React.Suspense fallback={<LoadingSpinner />}>
+    <Suspense fallback={<LoadingSpinner />}>
       <TeammatesContent />
-    </React.Suspense>
+    </Suspense>
   );
 };
 
