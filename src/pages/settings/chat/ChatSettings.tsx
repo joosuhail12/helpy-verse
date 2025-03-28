@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button';
 import { useChatSettings } from './hooks/useChatSettings';
 import SettingsTabs from './components/SettingsTabs';
 import LiveChatPreview from './components/LiveChatPreview';
-import HelpDocumentation from './components/HelpDocumentation';
 import { useEffect } from 'react';
 import { useAppDispatch } from '@/hooks/redux';
 import { loadChatWidgetSettings } from '@/store/slices/chatWidgetSettings';
@@ -51,8 +50,8 @@ const ChatSettings = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        <div className="lg:col-span-3">
           <SettingsTabs
             selectedTab={selectedTab}
             onTabChange={setSelectedTab}
@@ -62,9 +61,8 @@ const ChatSettings = () => {
           />
         </div>
 
-        <div>
+        <div className="lg:col-span-2 h-full">
           <LiveChatPreview />
-          <HelpDocumentation />
         </div>
       </div>
     </div>
