@@ -4,6 +4,7 @@ import { useAppDispatch, useAppSelector } from '@/hooks/redux';
 import { useToast } from '@/components/ui/use-toast';
 import { 
   updateSetting, 
+  updateSettings,
   saveChatWidgetSettings, 
   resetSettings,
   selectChatWidgetSettings,
@@ -23,8 +24,12 @@ export const useChatSettings = () => {
   const settings = useAppSelector(selectChatWidgetSettings);
   const loading = useAppSelector(selectChatWidgetLoading);
 
-  const handleChange = (field: keyof ChatWidgetSettings, value: string | boolean) => {
-    dispatch(updateSetting({ field, value }));
+  const handleChange = (field: keyof ChatWidgetSettings, value: any) => {
+    if (field === 'colors') {
+      dispatch(updateSettings({ colors: value }));
+    } else {
+      dispatch(updateSetting({ field, value }));
+    }
   };
 
   const handleSave = async () => {
@@ -59,12 +64,14 @@ export const useChatSettings = () => {
     window.PULLSE_WORKSPACE_ID = '${window.location.hostname}';
     window.PULLSE_THEME_COLORS = {
       primary: '${settings.primaryColor}',
-      background: '${settings.backgroundColor}',
-      backgroundSecondary: '${settings.backgroundSecondary}',
-      foreground: '${settings.foregroundColor}',
-      border: '${settings.borderColor}',
-      userMessage: '${settings.userMessageColor}',
-      agentMessage: '${settings.agentMessageColor}'
+      background: '${settings.colors.background}',
+      backgroundSecondary: '${settings.colors.backgroundSecondary}',
+      foreground: '${settings.colors.foreground}',
+      border: '${settings.colors.border}',
+      userMessage: '${settings.colors.userMessage.background}',
+      userMessageText: '${settings.colors.userMessage.text}',
+      agentMessage: '${settings.colors.agentMessage.background}',
+      agentMessageText: '${settings.colors.agentMessage.text}'
     };
     window.PULLSE_POSITION = '${settings.position}';
     window.PULLSE_COMPACT = ${settings.compact};

@@ -1,5 +1,7 @@
+
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { ChatWidgetSettings, ChatWidgetSettingsState } from './types';
+import { loadChatWidgetSettings } from './actions';
 
 const initialSettings: ChatWidgetSettings = {
   primaryColor: '#9b87f5',
@@ -82,7 +84,23 @@ export const chatWidgetSettingsSlice = createSlice({
       state, 
       action: PayloadAction<Partial<ChatWidgetSettings>>
     ) => {
-      state.settings = { ...state.settings, ...action.payload };
+      state.settings = { 
+        ...state.settings, 
+        ...action.payload,
+        // Handle nested objects properly
+        colors: {
+          ...state.settings.colors,
+          ...(action.payload.colors || {})
+        },
+        typography: {
+          ...state.settings.typography,
+          ...(action.payload.typography || {})
+        },
+        layout: {
+          ...state.settings.layout,
+          ...(action.payload.layout || {})
+        }
+      };
     },
     
     saveSettingsStart: (state) => {
@@ -103,6 +121,13 @@ export const chatWidgetSettingsSlice = createSlice({
     resetSettings: (state) => {
       state.settings = initialSettings;
     }
+  },
+  extraReducers: (builder) => {
+    builder.addCase(loadChatWidgetSettings.fulfilled, (state, action) => {
+      if (action.payload) {
+        state.settings = action.payload;
+      }
+    });
   }
 });
 

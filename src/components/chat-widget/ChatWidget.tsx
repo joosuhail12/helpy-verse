@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { X, MessageSquare } from 'lucide-react';
@@ -24,29 +25,39 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({
 
   const combinedTheme: Partial<ThemeConfig> = {
     ...theme,
-    ...(settings && {
-      colors: {
-        ...theme.colors,
-        background: settings.colors?.background || theme.colors?.background,
-        backgroundSecondary: settings.colors?.backgroundSecondary || theme.colors?.backgroundSecondary,
-        foreground: settings.colors?.foreground || theme.colors?.foreground,
-        border: settings.colors?.border || theme.colors?.border,
-        userMessage: settings.colors?.userMessage?.background || theme.colors?.userMessage,
-        userMessageText: settings.colors?.userMessage?.text || theme.colors?.userMessageText,
-        agentMessage: settings.colors?.agentMessage?.background || theme.colors?.agentMessage,
-        agentMessageText: settings.colors?.agentMessage?.text || theme.colors?.agentMessageText,
-        inputBackground: settings.colors?.input?.background || theme.colors?.inputBackground,
-      },
-      typography: {
-        fontFamily: settings.typography?.fontFamily || theme.typography?.fontFamily,
-        fontSize: settings.typography?.fontSize || theme.typography?.fontSize,
-      },
-      layout: {
-        borderRadius: settings.layout?.borderRadius || theme.layout?.borderRadius,
-        spacing: settings.layout?.spacing || theme.layout?.spacing,
-      }
-    })
+    position: settings?.position || theme.position,
+    compact: settings?.compact || theme.compact,
+    colors: {
+      ...theme.colors,
+      primary: settings?.primaryColor || theme.colors?.primary,
+      background: settings?.colors?.background || theme.colors?.background,
+      backgroundSecondary: settings?.colors?.backgroundSecondary || theme.colors?.backgroundSecondary,
+      foreground: settings?.colors?.foreground || theme.colors?.foreground,
+      border: settings?.colors?.border || theme.colors?.border,
+      userMessage: settings?.colors?.userMessage?.background || theme.colors?.userMessage,
+      userMessageText: settings?.colors?.userMessage?.text || theme.colors?.userMessageText,
+      agentMessage: settings?.colors?.agentMessage?.background || theme.colors?.agentMessage,
+      agentMessageText: settings?.colors?.agentMessage?.text || theme.colors?.agentMessageText,
+      inputBackground: settings?.colors?.input?.background || theme.colors?.inputBackground,
+    }
   };
+
+  // Add typography and layout from settings if available
+  if (settings?.typography) {
+    combinedTheme.typography = {
+      ...theme.typography,
+      fontFamily: settings.typography.fontFamily || theme.typography?.fontFamily,
+      fontSize: settings.typography.fontSize || theme.typography?.fontSize,
+    };
+  }
+
+  if (settings?.layout) {
+    combinedTheme.layout = {
+      ...theme.layout,
+      borderRadius: settings.layout.borderRadius || theme.layout?.borderRadius,
+      spacing: settings.layout.spacing || theme.layout?.spacing,
+    };
+  }
 
   const toggleWidget = () => {
     setIsOpen((prev) => !prev);

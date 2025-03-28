@@ -12,13 +12,13 @@ const LiveChatPreview = () => {
   const settings = useAppSelector(selectChatWidgetSettings);
   
   return (
-    <Card className="h-full">
-      <CardHeader>
+    <Card className="h-full flex flex-col">
+      <CardHeader className="flex-shrink-0">
         <CardTitle>Widget Preview</CardTitle>
         <CardDescription>See how your chat widget will appear</CardDescription>
       </CardHeader>
-      <CardContent className="p-6">
-        <div className="h-[600px] w-full border border-gray-200 rounded-lg overflow-hidden bg-white shadow-md">
+      <CardContent className="p-6 flex-grow overflow-hidden">
+        <div className="h-full w-full border border-gray-200 rounded-lg overflow-hidden bg-white shadow-md flex items-center justify-center">
           <ChatWidget 
             workspaceId="preview-workspace-id"
             settings={settings}

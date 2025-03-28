@@ -1,3 +1,4 @@
+
 export interface ChatWidgetSettings {
   primaryColor: string;
   welcomeTitle: string;
