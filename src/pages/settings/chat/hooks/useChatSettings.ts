@@ -1,38 +1,54 @@
 
 import { useState } from 'react';
+import { useAppDispatch, useAppSelector } from '@/hooks/redux';
 import { useToast } from '@/components/ui/use-toast';
+import { 
+  updateSetting, 
+  saveChatWidgetSettings, 
+  resetSettings,
+  selectChatWidgetSettings,
+  selectChatWidgetLoading
+} from '@/store/slices/chatWidgetSettings';
 
 /**
- * Hook to manage chat widget settings
+ * Hook to manage chat widget settings using Redux
  */
 export const useChatSettings = () => {
   const { toast } = useToast();
+  const dispatch = useAppDispatch();
   const [selectedTab, setSelectedTab] = useState('appearance');
   const [copied, setCopied] = useState(false);
   
-  const [settings, setSettings] = useState({
-    primaryColor: '#9b87f5',
-    welcomeTitle: 'Hello there.',
-    welcomeSubtitle: 'How can we help?',
-    position: 'right',
-    compact: false,
-    enableTypingIndicator: true,
-    enableReactions: true,
-    enableFileAttachments: true,
-    enableReadReceipts: true
-  });
+  const settings = useAppSelector(selectChatWidgetSettings);
+  const loading = useAppSelector(selectChatWidgetLoading);
 
   const handleChange = (field: string, value: any) => {
-    setSettings({
-      ...settings,
-      [field]: value
-    });
+    dispatch(updateSetting({ field, value }));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    try {
+      await dispatch(saveChatWidgetSettings()).unwrap();
+      
+      toast({
+        title: "Settings saved",
+        description: "Your chat widget settings have been saved successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error saving settings",
+        description: "There was an error saving your settings. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleReset = () => {
+    dispatch(resetSettings());
+    
     toast({
-      title: "Settings saved",
-      description: "Your chat widget settings have been saved successfully.",
+      title: "Settings reset",
+      description: "Your chat widget settings have been reset to defaults.",
     });
   };
 
@@ -68,8 +84,10 @@ export const useChatSettings = () => {
     settings,
     selectedTab,
     copied,
+    loading,
     handleChange,
     handleSave,
+    handleReset,
     getEmbedCode,
     setSelectedTab,
     setCopied

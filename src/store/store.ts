@@ -14,6 +14,7 @@ import { emailChannelsReducer } from './slices/emailChannels/emailChannelsSlice'
 import { cannedResponsesReducer } from './slices/cannedResponses/cannedResponsesSlice';
 import { chatbotsReducer } from './slices/chatbots/chatbotsSlice';
 import userReducer from './slices/user/userSlice';
+import { chatWidgetSettingsReducer } from './slices/chatWidgetSettings';
 
 // Define the root reducer with all slices
 const rootReducer = {
@@ -31,6 +32,7 @@ const rootReducer = {
   cannedResponses: cannedResponsesReducer,
   chatbots: chatbotsReducer,
   user: userReducer,
+  chatWidgetSettings: chatWidgetSettingsReducer,
 };
 
 export const store = configureStore({
