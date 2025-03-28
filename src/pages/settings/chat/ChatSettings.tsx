@@ -50,8 +50,8 @@ const ChatSettings = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[800px]">
-        <div className="lg:col-span-1 h-full overflow-auto">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        <div className="lg:col-span-3">
           <SettingsTabs
             selectedTab={selectedTab}
             onTabChange={setSelectedTab}
@@ -61,7 +61,7 @@ const ChatSettings = () => {
           />
         </div>
 
-        <div className="lg:col-span-1 h-full">
+        <div className="lg:col-span-2 h-full">
           <LiveChatPreview />
         </div>
       </div>

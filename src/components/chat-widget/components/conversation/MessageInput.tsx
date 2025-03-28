@@ -17,7 +17,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
   placeholder = "Type a message..."
 }) => {
   const [message, setMessage] = useState('');
-  const { theme } = useThemeContext();
+  const { colors } = useThemeContext();
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -52,17 +52,18 @@ const MessageInput: React.FC<MessageInputProps> = ({
     <div 
       className="border-t p-3 flex items-end gap-2"
       style={{ 
-        borderColor: theme.colors?.border,
-        backgroundColor: theme.colors?.backgroundSecondary
+        borderColor: colors.border,
+        backgroundColor: colors.backgroundSecondary
       }}
     >
       <textarea
         ref={inputRef}
         className="flex-1 resize-none rounded-lg p-2 max-h-32 min-h-[40px] focus:outline-none focus:ring-2"
         style={{ 
-          backgroundColor: theme.colors?.inputBackground,
-          color: theme.colors?.foreground,
-          borderColor: theme.colors?.border,
+          backgroundColor: colors.inputBackground,
+          color: colors.foreground,
+          borderColor: colors.border,
+          // Removed focusRing as it's not a valid CSS property
         }}
         value={message}
         onChange={handleChange}
@@ -76,8 +77,8 @@ const MessageInput: React.FC<MessageInputProps> = ({
         disabled={!message.trim() || disabled}
         className="p-2 rounded-full transition-colors flex-shrink-0"
         style={{ 
-          backgroundColor: message.trim() ? theme.colors?.primary : '#ccc',
-          color: message.trim() ? theme.colors?.primaryForeground : '#666',
+          backgroundColor: message.trim() ? colors.primary : '#ccc',
+          color: message.trim() ? colors.primaryForeground : '#666',
           opacity: disabled ? 0.5 : 1
         }}
       >

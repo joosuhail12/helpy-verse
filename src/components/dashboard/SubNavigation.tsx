@@ -6,26 +6,25 @@ import UserProfileCard from './UserProfileCard';
 import NavigationHeader from './navigation/NavigationHeader';
 import SearchInput from './navigation/SearchInput';
 import NavigationItem from './navigation/NavigationItem';
-import { useSafeNavigation } from '@/context/NavigationContext';
 
-const SubNavigation = () => {
-  const { 
-    activeMainNav, 
-    isSecondPanelCollapsed, 
-    toggleSecondPanel, 
-    expandedItems, 
-    toggleExpanded
-  } = useSafeNavigation();
-  
-  // Try to use location, but have a fallback
-  let currentPath = '';
-  try {
-    const location = useLocation();
-    currentPath = location.pathname;
-  } catch (error) {
-    currentPath = window.location.pathname;
-  }
-  
+interface SubNavigationProps {
+  activeMainNav: string;
+  isSecondPanelCollapsed: boolean;
+  toggleSecondPanel: () => void;
+  expandedItems: string[];
+  toggleExpanded: (itemTitle: string) => void;
+  navigate: (path: string) => void;
+}
+
+const SubNavigation = ({ 
+  activeMainNav, 
+  isSecondPanelCollapsed, 
+  toggleSecondPanel, 
+  expandedItems, 
+  toggleExpanded, 
+  navigate 
+}: SubNavigationProps) => {
+  const location = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
@@ -46,7 +45,7 @@ const SubNavigation = () => {
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [toggleSecondPanel]);
 
-  const isItemActive = (path: string) => currentPath === path;
+  const isItemActive = (path: string) => location.pathname === path;
   
   const hasActiveChild = (children: any[]) => {
     return children.some(child => 
@@ -101,6 +100,7 @@ const SubNavigation = () => {
               toggleExpanded={toggleExpanded}
               hasActiveChild={hasActiveChild}
               isItemActive={isItemActive}
+              navigate={navigate}
               filterMenuItems={filterMenuItems}
             />
           ))}

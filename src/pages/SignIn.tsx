@@ -31,6 +31,7 @@ export const SignIn = memo(() => {
   useEffect(() => {
     if (isAuthenticated()) {
       console.log('User is authenticated, redirecting to:', from); // Debug log
+      
       // Navigate to target location
       navigate(from, { replace: true });
     } else {

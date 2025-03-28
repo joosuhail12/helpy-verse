@@ -1,7 +1,6 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { ChatWidgetSettings, ChatWidgetSettingsState } from './types';
-import { loadChatWidgetSettings } from './actions';
 
 const initialSettings: ChatWidgetSettings = {
   primaryColor: '#9b87f5',
@@ -13,50 +12,13 @@ const initialSettings: ChatWidgetSettings = {
   enableReactions: true,
   enableFileAttachments: true,
   enableReadReceipts: true,
-  colors: {
-    background: '#ffffff',
-    backgroundSecondary: '#f9f9f9',
-    foreground: '#1A1F2C',
-    border: '#eaeaea',
-    userMessage: {
-      background: '#9b87f5',
-      text: '#ffffff'
-    },
-    agentMessage: {
-      background: '#f1f1f1',
-      text: '#1A1F2C'
-    },
-    input: {
-      background: '#ffffff',
-      text: '#1A1F2C',
-      border: '#e0e0e0'
-    },
-    button: {
-      background: '#9b87f5',
-      text: '#ffffff',
-      hover: '#7E57C2'
-    }
-  },
-  typography: {
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif',
-    fontSize: {
-      small: '12px',
-      medium: '14px',
-      large: '16px'
-    }
-  },
-  layout: {
-    borderRadius: {
-      small: '4px',
-      medium: '8px',
-      large: '12px'
-    },
-    spacing: {
-      small: '4px',
-      medium: '8px',
-      large: '16px'
-    }
-  }
+  // Default theme settings
+  backgroundColor: '#ffffff',
+  backgroundSecondary: '#f9f9f9',
+  foregroundColor: '#1A1F2C',
+  userMessageColor: '#9b87f5',
+  agentMessageColor: '#f1f1f1',
+  borderColor: '#eaeaea'
 };
 
 const initialState: ChatWidgetSettingsState = {
@@ -84,23 +46,7 @@ export const chatWidgetSettingsSlice = createSlice({
       state, 
       action: PayloadAction<Partial<ChatWidgetSettings>>
     ) => {
-      state.settings = { 
-        ...state.settings, 
-        ...action.payload,
-        // Handle nested objects properly
-        colors: {
-          ...state.settings.colors,
-          ...(action.payload.colors || {})
-        },
-        typography: {
-          ...state.settings.typography,
-          ...(action.payload.typography || {})
-        },
-        layout: {
-          ...state.settings.layout,
-          ...(action.payload.layout || {})
-        }
-      };
+      state.settings = { ...state.settings, ...action.payload };
     },
     
     saveSettingsStart: (state) => {
@@ -121,13 +67,6 @@ export const chatWidgetSettingsSlice = createSlice({
     resetSettings: (state) => {
       state.settings = initialSettings;
     }
-  },
-  extraReducers: (builder) => {
-    builder.addCase(loadChatWidgetSettings.fulfilled, (state, action) => {
-      if (action.payload) {
-        state.settings = action.payload;
-      }
-    });
   }
 });
 

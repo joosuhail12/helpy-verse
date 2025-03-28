@@ -1,7 +1,7 @@
 
 import { Button } from '@/components/ui/button';
 import { mainNavItems } from './navigationConfig';
-import { useLocation } from 'react-router-dom';
+import { NavigateFunction, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 import {
   Tooltip,
@@ -9,19 +9,15 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useSafeNavigation } from '@/context/NavigationContext';
 
-const MainNavigation = () => {
-  const { activeMainNav, setActiveMainNav, navigate } = useSafeNavigation();
-  
-  // Try to use location, but have a fallback
-  let currentPath = '';
-  try {
-    const location = useLocation();
-    currentPath = location.pathname;
-  } catch (error) {
-    currentPath = window.location.pathname;
-  }
+interface MainNavigationProps {
+  activeMainNav: string;
+  setActiveMainNav: (id: string) => void;
+  navigate: NavigateFunction;
+}
+
+const MainNavigation = ({ activeMainNav, setActiveMainNav, navigate }: MainNavigationProps) => {
+  const location = useLocation();
 
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
@@ -46,7 +42,7 @@ const MainNavigation = () => {
   return (
     <div className="flex flex-col items-center justify-center gap-3">
       {mainNavItems.map((item, index) => {
-        const isActive = activeMainNav === item.id || currentPath.startsWith(`/home/${item.id}`);
+        const isActive = activeMainNav === item.id || location.pathname.startsWith(`/home/${item.id}`);
         
         return (
           <TooltipProvider key={item.id}>

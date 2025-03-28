@@ -15,7 +15,7 @@ interface MessageItemProps {
 const COMMON_REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
 
 const MessageItem: React.FC<MessageItemProps> = ({ message, showAvatar = false }) => {
-  const { theme } = useThemeContext();
+  const { colors } = useThemeContext();
   const { clientId } = useAbly();
   const [showReactions, setShowReactions] = useState(false);
   const isUserMessage = message.sender === 'user';
@@ -60,8 +60,8 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, showAvatar = false }
               : 'bg-gray-200'
           }`}
           style={{
-            backgroundColor: isUserMessage ? theme.colors?.userMessage : theme.colors?.agentMessage,
-            color: isUserMessage ? theme.colors?.userMessageText : theme.colors?.agentMessageText,
+            backgroundColor: isUserMessage ? colors.userMessage : colors.agentMessage,
+            color: isUserMessage ? colors.userMessageText : colors.agentMessageText,
           }}
         >
           {message.content}

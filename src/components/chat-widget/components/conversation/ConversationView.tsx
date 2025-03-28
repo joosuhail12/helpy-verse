@@ -18,7 +18,7 @@ interface ConversationViewProps {
 }
 
 const ConversationView: React.FC<ConversationViewProps> = ({ conversationId, workspaceId, onBack }) => {
-  const { theme } = useThemeContext();
+  const { colors } = useThemeContext();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const { publishMessage, isSubscribed } = useMessageSubscription(conversationId, workspaceId, {
     onMessage: (message) => {
@@ -89,7 +89,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({ conversationId, wor
   };
 
   return (
-    <div className="flex flex-col h-full" style={{ background: theme.colors?.background, color: theme.colors?.foreground }}>
+    <div className="flex flex-col h-full" style={{ background: colors.background, color: colors.foreground }}>
       <ChatHeader 
         title={`Conversation ${conversationId.substring(0, 8)}`} 
         onBackClick={onBack} 

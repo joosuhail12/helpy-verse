@@ -1,17 +1,24 @@
 
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import React from 'react';
+import { ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import { useSafeNavigation } from '@/context/NavigationContext';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { NavigationItem as NavItemType } from '../types/navigation';
 
 interface NavigationItemProps {
-  item: any;
+  item: NavItemType;
   isSecondPanelCollapsed: boolean;
   expandedItems: string[];
   toggleExpanded: (itemTitle: string) => void;
-  hasActiveChild: (children: any[]) => boolean;
+  hasActiveChild?: (children: NavItemType[]) => boolean;
   isItemActive: (path: string) => boolean;
-  filterMenuItems: (items: any[]) => any[];
+  navigate: (path: string) => void;
+  filterMenuItems: (items: NavItemType[]) => NavItemType[];
 }
 
 const NavigationItem = ({
@@ -21,94 +28,130 @@ const NavigationItem = ({
   toggleExpanded,
   hasActiveChild,
   isItemActive,
-  filterMenuItems
+  navigate,
+  filterMenuItems,
 }: NavigationItemProps) => {
-  const { navigate } = useSafeNavigation();
-  
-  const isExpanded = expandedItems.includes(item.title);
-  const hasChildren = item.children && item.children.length > 0;
-  const isActive = isItemActive(item.path);
-  const hasActiveChildren = hasChildren && hasActiveChild(item.children);
-  
-  // Filter children based on search query, if available
-  const filteredChildren = hasChildren ? filterMenuItems(item.children) : [];
-  const hasFilteredChildren = filteredChildren.length > 0;
-
-  if (isSecondPanelCollapsed) {
+  // Parent items with children should toggle expansion instead of navigating
+  if (item.children) {
     return (
-      <Button
-        variant="ghost"
-        size="icon"
-        className={cn(
-          'w-8 h-8 flex justify-center items-center rounded-xl mb-1',
-          (isActive || hasActiveChildren) && 'bg-primary/10 text-primary'
+      <div>
+        <TooltipProvider delayDuration={0}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                className={`w-full flex items-center rounded-lg transition-all duration-300 group ${
+                  isSecondPanelCollapsed ? 'justify-center p-2' : 'justify-between px-4 py-2'
+                } ${hasActiveChild?.(item.children) 
+                    ? 'bg-primary/5 text-primary shadow-sm hover:shadow-md' 
+                    : 'hover:bg-primary/5'}`}
+                onClick={() => toggleExpanded(item.title)}
+              >
+                <div className={`flex items-center ${isSecondPanelCollapsed ? 'justify-center' : 'gap-3'}`}>
+                  {item.icon && (
+                    <div className="flex items-center justify-center w-5">
+                      <item.icon className="h-4 w-4 transition-transform duration-300 group-hover:scale-110" />
+                    </div>
+                  )}
+                  {!isSecondPanelCollapsed && (
+                    <span className="font-medium transition-colors group-hover:text-primary">
+                      {item.title}
+                    </span>
+                  )}
+                </div>
+                {!isSecondPanelCollapsed && (
+                  <ChevronRight className={`h-4 w-4 transition-all duration-300 ${
+                    expandedItems.includes(item.title) ? 'rotate-90' : ''
+                  } group-hover:text-primary`} />
+                )}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent 
+              side="right" 
+              className="z-[60] bg-white shadow-lg"
+              sideOffset={12}
+            >
+              <p>{item.title}</p>
+              <p className="text-xs text-muted-foreground">
+                Click to {expandedItems.includes(item.title) ? 'collapse' : 'expand'}
+              </p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        {expandedItems.includes(item.title) && !isSecondPanelCollapsed && (
+          <div className="ml-8 mt-1 space-y-1 animate-accordion-down">
+            {filterMenuItems(item.children).map((child: NavItemType) => (
+              <TooltipProvider key={child.title} delayDuration={0}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className={`w-full flex items-center justify-start text-sm px-4 py-2 rounded-lg transition-all duration-300 group
+                        ${isItemActive(child.path) 
+                          ? 'bg-primary/5 text-primary shadow-sm hover:shadow-md' 
+                          : 'hover:bg-primary/5'}`}
+                      onClick={() => navigate(child.path)}
+                    >
+                      <span className="transition-colors group-hover:text-primary">
+                        {child.title}
+                      </span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent 
+                    side="right" 
+                    className="z-[60] bg-white shadow-lg"
+                    sideOffset={12}
+                  >
+                    <p>{child.title}</p>
+                    <p className="text-xs text-muted-foreground">Click to navigate</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            ))}
+          </div>
         )}
-        onClick={() => {
-          if (!hasChildren) {
-            navigate(item.path);
-          }
-        }}
-      >
-        <item.icon className="h-4 w-4" />
-        <span className="sr-only">{item.title}</span>
-      </Button>
+      </div>
     );
   }
 
+  // Leaf items (without children) should navigate directly
   return (
-    <div>
-      <div className="flex items-center mb-1">
-        <Button
-          variant="ghost"
-          className={cn(
-            'w-full h-8 justify-start px-2 rounded-xl text-sm',
-            (isActive || hasActiveChildren) && 'bg-primary/10 text-primary font-medium'
-          )}
-          onClick={() => {
-            if (hasChildren) {
-              toggleExpanded(item.title);
-            } else {
-              navigate(item.path);
-            }
-          }}
-        >
-          <div className="flex items-center w-full">
-            <div className="h-4 w-4 mr-2">
-              <item.icon className="h-4 w-4" />
-            </div>
-            <span className="flex-1 truncate text-left">{item.title}</span>
-            {hasChildren && (
-              <div className="ml-auto">
-                {isExpanded ? (
-                  <ChevronDown className="h-4 w-4 opacity-70" />
-                ) : (
-                  <ChevronRight className="h-4 w-4 opacity-70" />
-                )}
-              </div>
-            )}
-          </div>
-        </Button>
-      </div>
-
-      {hasChildren && isExpanded && hasFilteredChildren && (
-        <div className="ml-6 pl-2 border-l border-purple-100/50 space-y-1 mb-2">
-          {filteredChildren.map((child: any) => (
-            <Button
-              key={child.title}
-              variant="ghost"
-              size="sm"
-              className={cn(
-                'w-full justify-start px-2 rounded-lg text-xs h-7',
-                isItemActive(child.path) && 'bg-primary/10 text-primary font-medium'
+    <TooltipProvider delayDuration={0}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            className={`w-full flex items-center rounded-lg transition-all duration-300 group ${
+              isSecondPanelCollapsed ? 'justify-center p-2' : 'justify-start px-4 py-2'
+            } ${isItemActive(item.path) 
+                ? 'bg-primary/5 text-primary shadow-sm hover:shadow-md' 
+                : 'hover:bg-primary/5'}`}
+            onClick={() => navigate(item.path)}
+          >
+            <div className={`flex items-center ${isSecondPanelCollapsed ? 'justify-center' : 'gap-3'}`}>
+              {item.icon && (
+                <div className="flex items-center justify-center w-5">
+                  <item.icon className="h-4 w-4 transition-transform duration-300 group-hover:scale-110" />
+                </div>
               )}
-              onClick={() => navigate(child.path)}
-            >
-              <span className="truncate">{child.title}</span>
-            </Button>
-          ))}
-        </div>
-      )}
-    </div>
+              {!isSecondPanelCollapsed && (
+                <span className="font-medium transition-colors group-hover:text-primary">
+                  {item.title}
+                </span>
+              )}
+            </div>
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent 
+          side="right" 
+          className="z-[60] bg-white shadow-lg"
+          sideOffset={12}
+        >
+          <p>{item.title}</p>
+          <p className="text-xs text-muted-foreground">Click to navigate</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 };
 

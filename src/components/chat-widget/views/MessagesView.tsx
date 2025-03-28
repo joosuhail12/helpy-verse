@@ -19,7 +19,7 @@ const MessagesView: React.FC<MessagesViewProps> = ({
   onStartConversation
 }) => {
   const { conversations, currentConversation, selectConversation } = useChat();
-  const { theme } = useThemeContext();
+  const { labels, colors } = useThemeContext();
   const [messages, setMessages] = useState<any[]>([]);
 
   const handleSendMessage = async (content: string) => {
@@ -52,7 +52,7 @@ const MessagesView: React.FC<MessagesViewProps> = ({
   return (
     <div className="flex flex-col h-full">
       <ChatHeader 
-        title={theme.labels?.recentMessagesTitle || "Recent Messages"} 
+        title={labels.recentMessagesTitle} 
         onClose={onClose} 
         onBackClick={() => setActiveView('home')}
       />
@@ -60,7 +60,7 @@ const MessagesView: React.FC<MessagesViewProps> = ({
       <div className="flex-1 overflow-hidden flex flex-col">
         {conversations.length === 0 ? (
           <div className="flex-1 flex flex-col items-center justify-center p-4 text-center">
-            <p className="text-gray-500">{theme.labels?.noMessagesText || "No messages yet"}</p>
+            <p className="text-gray-500">{labels.noMessagesText}</p>
             <EnhancedConversationView
               messages={[]}
               onSendMessage={handleSendMessage}
@@ -69,23 +69,23 @@ const MessagesView: React.FC<MessagesViewProps> = ({
             />
           </div>
         ) : (
-          <div className="flex-1 overflow-y-auto divide-y divide-gray-100" style={{ borderColor: theme.colors?.border }}>
+          <div className="flex-1 overflow-y-auto divide-y divide-gray-100" style={{ borderColor: colors.border }}>
             {conversations.map(conversation => (
               <button
                 key={conversation.id}
                 className="w-full px-4 py-3 flex items-start hover:bg-gray-50 transition-colors text-left"
                 onClick={() => handleConversationSelect(conversation.id)}
                 style={{ 
-                  backgroundColor: theme.colors?.background, 
-                  color: theme.colors?.foreground,
-                  borderColor: theme.colors?.border 
+                  backgroundColor: colors.background, 
+                  color: colors.foreground,
+                  borderColor: colors.border 
                 }}
               >
                 <div>
                   <h3 className="font-medium">{conversation.title}</h3>
                   <p className="text-sm text-gray-500 truncate">
                     {/* Conversation preview would go here */}
-                    {theme.labels?.noMessagesText || "No messages yet"}
+                    {labels.noMessagesText}
                   </p>
                 </div>
               </button>

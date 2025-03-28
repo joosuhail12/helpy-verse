@@ -57,8 +57,19 @@ const SettingsTabs = ({
 
           <TabsContent value="appearance">
             <AppearanceTab 
-              settings={settings}
-              onSettingChange={onSettingChange}
+              primaryColor={settings.primaryColor}
+              position={settings.position}
+              compact={settings.compact}
+              backgroundColor={settings.backgroundColor}
+              backgroundSecondary={settings.backgroundSecondary}
+              foregroundColor={settings.foregroundColor}
+              userMessageColor={settings.userMessageColor}
+              agentMessageColor={settings.agentMessageColor}
+              borderColor={settings.borderColor}
+              onColorChange={(value) => onSettingChange('primaryColor', value)}
+              onPositionChange={(value) => onSettingChange('position', value)}
+              onCompactChange={(value) => onSettingChange('compact', value)}
+              onThemeChange={onSettingChange}
             />
           </TabsContent>
 
