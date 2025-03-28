@@ -101,9 +101,9 @@ const MessageItem: React.FC<MessageItemProps> = ({
         
         {showReactions && message.metadata?.reactions && (
           <div className="mt-1 flex flex-wrap gap-1">
-            {Object.entries(message.metadata.reactions).map(([emoji, count]) => (
+            {Object.entries(message.metadata.reactions || {}).map(([emoji, count]) => (
               <span key={emoji} className="text-xs bg-black/5 rounded-full px-2 py-0.5">
-                {emoji} {count}
+                {emoji} {String(count)}
               </span>
             ))}
           </div>

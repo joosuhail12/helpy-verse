@@ -1,7 +1,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
-import sessionManager from '@/utils/auth/sessionManager';
-import { SessionEvents } from '@/utils/auth/sessionManager';
+import sessionManager, { SessionEvents } from '@/utils/auth/sessionManager';
 
 export const useSessionManager = () => {
   const [isActive, setIsActive] = useState<boolean>(sessionManager.isSessionActive());
@@ -9,16 +8,16 @@ export const useSessionManager = () => {
   const [showWarning, setShowWarning] = useState<boolean>(sessionManager.isSessionWarningNeeded());
   
   // Create a new session or extend the current one
-  const createSession = useCallback((duration?: number) => {
-    sessionManager.createSession(duration);
+  const createSession = useCallback(() => {
+    sessionManager.createSession();
     setIsActive(true);
     setTimeRemaining(sessionManager.getSessionTimeRemaining());
     setShowWarning(false);
   }, []);
   
   // Extend the current session
-  const extendSession = useCallback((duration?: number) => {
-    sessionManager.extendSession(duration);
+  const extendSession = useCallback(() => {
+    sessionManager.extendSession();
     setIsActive(true);
     setTimeRemaining(sessionManager.getSessionTimeRemaining());
     setShowWarning(false);

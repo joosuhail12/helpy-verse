@@ -69,12 +69,49 @@ export interface TypingIndicatorProps {
   className?: string;
 }
 
+export interface EnhancedTypingIndicatorProps {
+  typingUsers: TypingUser[];
+  agentName?: string;
+  compact?: boolean;
+  className?: string;
+}
+
 export interface MessageSearchProps {
   value: string;
   onChange: (value: string) => void;
   resultCount: number;
   currentResult: number;
   onNavigate: (direction: 'next' | 'prev') => void;
+}
+
+export interface MessageInputProps {
+  onSendMessage: (content: string, attachments?: File[]) => Promise<void>;
+  disabled?: boolean;
+  encrypted?: boolean;
+  attachments?: File[];
+  showAttachments?: boolean;
+  isRateLimited?: boolean;
+  rateLimitTimeRemaining?: number;
+  placeholder?: string;
+}
+
+export interface MessageListProps {
+  messages: ChatMessage[];
+  conversationId: string;
+  isLoading?: boolean;
+  encrypted?: boolean;
+  showAvatars?: boolean;
+  showReactions?: boolean;
+  showReadReceipts?: boolean;
+  useVirtualization?: boolean;
+  typingUsers?: TypingUser[];
+}
+
+export interface MessageItemProps {
+  message: ChatMessage;
+  encrypted?: boolean;
+  showReadReceipt?: boolean;
+  showReactions?: boolean;
 }
 
 export interface UseChatOptions {

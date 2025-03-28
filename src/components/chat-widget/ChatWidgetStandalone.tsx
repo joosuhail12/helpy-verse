@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { ChatWidget } from './ChatWidget';
 import { ChatProvider } from '@/context/ChatContext';
@@ -68,7 +69,7 @@ const ChatWidgetStandalone: React.FC = () => {
     setupLazyLoading();
     
     // Initialize session
-    sessionManager.initSession(sessionTimeoutMs);
+    sessionManager.initSession();
     
     // Start session monitoring
     const monitorId = sessionManager.startSessionMonitoring();
@@ -100,7 +101,7 @@ const ChatWidgetStandalone: React.FC = () => {
   };
   
   const handleSessionExtend = () => {
-    sessionManager.extendSession(sessionTimeoutMs);
+    sessionManager.extendSession();
   };
   
   const handleSessionLogout = () => {
@@ -161,6 +162,7 @@ const ChatWidgetStandalone: React.FC = () => {
             <EventDebugger 
               isVisible={showDebugger} 
               onClose={() => setShowDebugger(false)} 
+              maxEvents={50}
             />
             
             <div className="fixed bottom-4 left-4 z-40 flex gap-2">

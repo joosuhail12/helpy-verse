@@ -41,9 +41,10 @@ export const requestNotificationPermission = async (): Promise<boolean> => {
   }
 };
 
-// Interface for the sync property that might not be present on all ServiceWorkerRegistration objects
+// Define the SyncManager interface
 interface SyncManager {
-  register(tag: string): Promise<void>;
+  register: (tag: string) => Promise<void>;
+  getTags?: () => Promise<string[]>;  // Make getTags optional
 }
 
 // Extended ServiceWorkerRegistration interface that includes the sync property

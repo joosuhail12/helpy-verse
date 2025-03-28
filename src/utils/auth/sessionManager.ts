@@ -17,10 +17,15 @@ class SessionManager {
   private sessionWarningThreshold: number = 5 * 60 * 1000; // 5 minutes
   private maxSessionTime: number = 60 * 60 * 1000; // 1 hour
   private listeners: Record<string, Function[]> = {};
+  private monitorIntervals: Record<number, NodeJS.Timeout> = {};
+  private monitorIdCounter: number = 0;
+  private csrfToken: string = '';
   
   constructor() {
     // Initialize with default values
     this.initSession();
+    // Generate a CSRF token
+    this.regenerateCsrfToken();
   }
   
   /**
@@ -38,6 +43,32 @@ class SessionManager {
       session: this.sessionData, 
       expiry: this.sessionExpiry 
     });
+  }
+  
+  /**
+   * Create a new session with specified duration
+   */
+  createSession(duration?: number): void {
+    this.sessionData = {
+      id: `session-${Date.now()}`,
+      createdAt: new Date().toISOString(),
+      lastActivity: new Date().toISOString()
+    };
+    
+    this.sessionExpiry = Date.now() + (duration || this.maxSessionTime);
+    this.notifyListeners(SessionEvents.SESSION_CREATED, { 
+      session: this.sessionData, 
+      expiry: this.sessionExpiry 
+    });
+  }
+  
+  /**
+   * End the current session
+   */
+  endSession(): void {
+    this.sessionData = {};
+    this.sessionExpiry = 0;
+    this.notifyListeners(SessionEvents.SESSION_EXPIRED, {});
   }
   
   /**
@@ -73,8 +104,8 @@ class SessionManager {
   /**
    * Extend the session expiry time
    */
-  extendSession(): void {
-    this.sessionExpiry = Date.now() + this.maxSessionTime;
+  extendSession(duration?: number): void {
+    this.sessionExpiry = Date.now() + (duration || this.maxSessionTime);
     this.notifyListeners(SessionEvents.SESSION_EXTENDED, { 
       session: this.sessionData,
       expiry: this.sessionExpiry
@@ -135,12 +166,57 @@ class SessionManager {
   }
   
   /**
+   * Generate a new CSRF token
+   */
+  regenerateCsrfToken(): string {
+    // Generate a random token
+    this.csrfToken = Math.random().toString(36).substring(2, 15) + 
+                     Math.random().toString(36).substring(2, 15);
+    return this.csrfToken;
+  }
+  
+  /**
+   * Get the current CSRF token
+   */
+  getCsrfToken(): string {
+    return this.csrfToken;
+  }
+  
+  /**
    * Validate a CSRF token
    */
   validateCsrfToken(token: string): boolean {
     // In a real implementation, validate against a stored token
-    // For demo purposes, always return true
-    return true;
+    return token === this.csrfToken;
+  }
+  
+  /**
+   * Start session monitoring to check for expiry
+   */
+  startSessionMonitoring(): number {
+    const id = ++this.monitorIdCounter;
+    
+    this.monitorIntervals[id] = setInterval(() => {
+      if (!this.isSessionActive()) {
+        this.notifyListeners(SessionEvents.SESSION_EXPIRED, {});
+      } else if (this.isSessionWarningNeeded()) {
+        this.notifyListeners(SessionEvents.SESSION_WARNING, {
+          timeRemaining: this.getSessionTimeRemaining()
+        });
+      }
+    }, 10000); // Check every 10 seconds
+    
+    return id;
+  }
+  
+  /**
+   * Stop session monitoring
+   */
+  stopSessionMonitoring(id: number): void {
+    if (this.monitorIntervals[id]) {
+      clearInterval(this.monitorIntervals[id]);
+      delete this.monitorIntervals[id];
+    }
   }
 }
 

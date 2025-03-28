@@ -2,8 +2,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAbly } from '@/context/AblyContext';
 import { ChatMessage } from '@/components/chat-widget/components/conversation/types';
-import useOfflineMessaging from './useOfflineMessaging';
-import useEncryptedMessages from './useEncryptedMessages';
+import { useOfflineMessaging } from './useOfflineMessaging';
+import { useEncryptedMessages } from './useEncryptedMessages';
 import { useEventSystem } from '@/hooks/useEventSystem';
 import { ChatEventType } from '@/utils/events/eventTypes';
 import { useRateLimiter, RateLimiter } from '@/utils/chat/rateLimiter';
@@ -24,7 +24,7 @@ export const useRealtimeChat = ({
   const ablyContext = useAbly();
   const eventSystem = useEventSystem();
   const messageLoadedRef = useRef<boolean>(false);
-  const rateLimiterRef = useRef<RateLimiter>(new RateLimiter());
+  const rateLimiter = useRef(new RateLimiter(5, 10000, 60000));
   const [isRateLimited, setIsRateLimited] = useState<boolean>(false);
   const [rateLimitTimeRemaining, setRateLimitTimeRemaining] = useState<number>(0);
   
@@ -206,8 +206,8 @@ export const useRealtimeChat = ({
       if (!content.trim()) return;
       
       // Check rate limiting
-      if (!rateLimiterRef.current.checkAction()) {
-        const timeRemaining = rateLimiterRef.current.getRateLimitTimeRemaining();
+      if (!rateLimiter.current.checkAction()) {
+        const timeRemaining = rateLimiter.current.getRateLimitTimeRemaining();
         setIsRateLimited(true);
         setRateLimitTimeRemaining(timeRemaining);
         
@@ -276,7 +276,7 @@ export const useRealtimeChat = ({
           // Update message status
           setMessages(prev =>
             prev.map(msg =>
-              msg.id === messageId ? { ...msg, status: 'queued' } : msg
+              msg.id === messageId ? { ...msg, status: 'queued' as MessageStatus } : msg
             )
           );
           

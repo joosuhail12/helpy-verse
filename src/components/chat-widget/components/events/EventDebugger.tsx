@@ -6,9 +6,15 @@ import { ChatEventType, ChatEventUnion } from '@/utils/events/eventTypes';
 
 interface EventDebuggerProps {
   maxEvents?: number;
+  isVisible?: boolean;
+  onClose?: () => void;
 }
 
-const EventDebugger: React.FC<EventDebuggerProps> = ({ maxEvents = 50 }) => {
+const EventDebugger: React.FC<EventDebuggerProps> = ({ 
+  maxEvents = 50,
+  isVisible = true,
+  onClose
+}) => {
   const [events, setEvents] = useState<ChatEventUnion[]>([]);
   const [paused, setPaused] = useState(false);
   const [filter, setFilter] = useState('');
@@ -16,16 +22,22 @@ const EventDebugger: React.FC<EventDebuggerProps> = ({ maxEvents = 50 }) => {
 
   // Subscribe to events
   useEffect(() => {
-    if (paused) return;
+    if (paused || !isVisible) return;
     
-    const unsubscribe = eventSystem.subscribe(ChatEventType.WIDGET_OPENED as ChatEventType, (event: ChatEventUnion) => {
+    const unsubscribe = eventSystem.subscribe(ChatEventType.WIDGET_OPENED, (event: ChatEventUnion) => {
+      setEvents(prev => [event, ...prev].slice(0, maxEvents));
+    });
+    
+    // Subscribe to all events using wildcard
+    const unsubscribeAll = eventSystem.addEventListener('*', (event: ChatEventUnion) => {
       setEvents(prev => [event, ...prev].slice(0, maxEvents));
     });
     
     return () => {
       unsubscribe();
+      unsubscribeAll();
     };
-  }, [paused, maxEvents, eventSystem]);
+  }, [paused, maxEvents, eventSystem, isVisible]);
 
   // Clear events
   const clearEvents = () => {
@@ -54,6 +66,10 @@ const EventDebugger: React.FC<EventDebuggerProps> = ({ maxEvents = 50 }) => {
       )
     : events;
 
+  if (!isVisible) {
+    return null;
+  }
+
   return (
     <div className="bg-gray-800 text-gray-100 p-3 rounded-lg overflow-hidden h-full flex flex-col">
       <div className="flex items-center justify-between mb-3">
@@ -77,6 +93,14 @@ const EventDebugger: React.FC<EventDebuggerProps> = ({ maxEvents = 50 }) => {
           >
             <Download className="h-4 w-4" />
           </button>
+          {onClose && (
+            <button 
+              onClick={onClose} 
+              className="p-1 rounded hover:bg-gray-700"
+            >
+              &times;
+            </button>
+          )}
         </div>
       </div>
       
