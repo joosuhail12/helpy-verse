@@ -1,6 +1,13 @@
 
 import { lazy, Suspense } from 'react';
-import { LoadingSpinner } from '@/routes';
+import { Loader2 } from 'lucide-react';
+
+// Define LoadingSpinner component to avoid reference errors
+const LoadingSpinner = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+  </div>
+);
 
 export const automationRoutes = [
   {
