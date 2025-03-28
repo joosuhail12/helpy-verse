@@ -1,170 +1,135 @@
 
-import React, { useEffect, useRef, useState } from 'react';
-import MessageItem from './MessageItem';
-import MessageSearch from './MessageSearch';
+import React, { useRef, useEffect, useState } from 'react';
 import { ChatMessage } from './types';
-import { Search, ArrowDown } from 'lucide-react';
+import MessageItem from './MessageItem';
+import { Loader2, ArrowDown, Lock } from 'lucide-react';
+import { useThemeContext } from '@/context/ThemeContext';
+import { Button } from '@/components/ui/button';
 
 interface MessageListProps {
   messages: ChatMessage[];
-  conversationId?: string;
+  loading?: boolean;
   showAvatars?: boolean;
+  encrypted?: boolean;
 }
 
 const MessageList: React.FC<MessageListProps> = ({ 
-  messages,
-  conversationId,
-  showAvatars = false
+  messages, 
+  loading = false, 
+  showAvatars = false,
+  encrypted = false
 }) => {
+  const { colors } = useThemeContext();
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const messageRefs = useRef<Record<string, HTMLDivElement>>({});
-  const messagesContainerRef = useRef<HTMLDivElement>(null);
-  const [showSearch, setShowSearch] = useState(false);
-  const [isAutoScrollEnabled, setIsAutoScrollEnabled] = useState(true);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [showScrollButton, setShowScrollButton] = useState(false);
-
-  // Function to handle manual scrolling
-  const handleScroll = () => {
-    if (!messagesContainerRef.current) return;
-    
-    const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
-    const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
-    
-    // Update auto-scroll state based on user scroll position
-    if (isNearBottom !== isAutoScrollEnabled) {
-      setIsAutoScrollEnabled(isNearBottom);
+  const [autoScroll, setAutoScroll] = useState(true);
+  const [unreadCount, setUnreadCount] = useState(0);
+  
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    if (autoScroll && messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    } else if (!autoScroll && messages.length > 0) {
+      // If auto-scroll is disabled, increment unread count
+      const lastMessage = messages[messages.length - 1];
+      if (lastMessage.sender === 'agent') {
+        setUnreadCount(prev => prev + 1);
+      }
     }
+  }, [messages, autoScroll]);
+  
+  // Handle scroll events
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
     
-    // Show/hide scroll button based on position
-    setShowScrollButton(!isNearBottom);
-  };
-
-  // Scroll to bottom function
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+      
+      setShowScrollButton(!isNearBottom);
+      
+      // If user manually scrolled to bottom, enable auto-scroll
+      if (isNearBottom && !autoScroll) {
+        setAutoScroll(true);
+        setUnreadCount(0);
+      } 
+      // If user scrolled up, disable auto-scroll
+      else if (!isNearBottom && autoScroll) {
+        setAutoScroll(false);
+      }
+    };
+    
+    container.addEventListener('scroll', handleScroll);
+    return () => {
+      container.removeEventListener('scroll', handleScroll);
+    };
+  }, [autoScroll]);
+  
   const scrollToBottom = () => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-      setIsAutoScrollEnabled(true);
-    }
-  };
-
-  useEffect(() => {
-    // Auto-scroll to bottom when new messages come in, if enabled
-    if (messagesEndRef.current && isAutoScrollEnabled) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    } else if (!isAutoScrollEnabled && messages.length > 0) {
-      // Show scroll button when new messages arrive but auto-scroll is disabled
-      setShowScrollButton(true);
-    }
-  }, [messages, isAutoScrollEnabled]);
-
-  // Group messages by sender and consecutive time (within 2 minutes)
-  const groupedMessages = messages.reduce((groups: ChatMessage[][], message, index) => {
-    // Start a new group if this is the first message
-    if (index === 0) {
-      return [[message]];
-    }
-
-    const lastGroup = groups[groups.length - 1];
-    const lastMessage = lastGroup[lastGroup.length - 1];
-    
-    // Conditions for grouping messages together:
-    // 1. Same sender
-    // 2. Time difference less than 2 minutes (120,000 ms)
-    const sameUser = lastMessage.sender === message.sender;
-    
-    // Fixed timestamp handling to properly handle string or Date objects
-    const getTimestampMs = (timestamp: string | Date): number => {
-      return typeof timestamp === 'string' 
-        ? new Date(timestamp).getTime() 
-        : timestamp.getTime();
-    };
-    
-    const timeDiff = getTimestampMs(message.timestamp) - getTimestampMs(lastMessage.timestamp);
-    const closeInTime = timeDiff < 120000; // 2 minutes
-    
-    if (sameUser && closeInTime) {
-      // Add to existing group
-      lastGroup.push(message);
-    } else {
-      // Start new group
-      groups.push([message]);
-    }
-    
-    return groups;
-  }, []);
-
-  const scrollToMessage = (messageId: string) => {
-    if (messageRefs.current[messageId]) {
-      messageRefs.current[messageId].scrollIntoView({ behavior: 'smooth', block: 'center' });
-      
-      // Highlight the message temporarily
-      messageRefs.current[messageId].classList.add('bg-yellow-100', 'transition-colors');
-      setTimeout(() => {
-        messageRefs.current[messageId]?.classList.remove('bg-yellow-100');
-      }, 2000);
+      setAutoScroll(true);
+      setUnreadCount(0);
     }
   };
 
   return (
-    <div className="flex flex-col flex-1 overflow-hidden">
-      {showSearch && (
-        <MessageSearch
-          messages={messages}
-          onResultSelect={scrollToMessage}
-          onClose={() => setShowSearch(false)}
-        />
+    <div 
+      ref={containerRef}
+      className="flex-1 overflow-y-auto"
+      style={{ background: colors.background }}
+    >
+      {/* Encryption notice at the top */}
+      {encrypted && (
+        <div className="flex items-center justify-center p-2 text-sm text-gray-500">
+          <Lock className="h-4 w-4 mr-1" />
+          <span>Messages in this conversation are end-to-end encrypted</span>
+        </div>
       )}
       
-      <div 
-        className="flex-1 overflow-y-auto"
-        ref={messagesContainerRef}
-        onScroll={handleScroll}
-      >
-        <div className="flex flex-col space-y-2 p-2 relative">
-          {!showSearch && messages.length > 5 && (
-            <button 
-              onClick={() => setShowSearch(true)}
-              className="absolute top-2 right-2 p-1.5 bg-white shadow-sm rounded-full hover:bg-gray-100 z-10"
-            >
-              <Search className="h-4 w-4 text-gray-500" />
-            </button>
-          )}
-          
-          {groupedMessages.map((group, groupIndex) => (
-            <div 
-              key={`group-${groupIndex}`} 
-              className="message-group"
-            >
-              {group.map((message, messageIndex) => (
-                <div 
-                  key={message.id}
-                  ref={el => {
-                    if (el) messageRefs.current[message.id] = el;
-                  }}
-                >
-                  <MessageItem
-                    message={message}
-                    showAvatar={showAvatars && messageIndex === group.length - 1}
-                    isFirstInGroup={messageIndex === 0}
-                    isLastInGroup={messageIndex === group.length - 1}
-                  />
-                </div>
-              ))}
-            </div>
-          ))}
-          <div ref={messagesEndRef} />
+      {loading ? (
+        <div className="flex justify-center items-center h-full">
+          <Loader2 className="h-6 w-6 animate-spin" style={{ color: colors.primary }} />
         </div>
-      </div>
-      
-      {/* Scroll to bottom button */}
-      {showScrollButton && (
-        <button 
-          onClick={scrollToBottom}
-          className="absolute bottom-16 right-4 p-2 bg-primary text-white rounded-full shadow-md hover:bg-primary/90 transition-all z-10"
-          aria-label="Scroll to bottom"
+      ) : messages.length === 0 ? (
+        <div 
+          className="flex justify-center items-center h-full text-center text-gray-500 px-6"
+          style={{ color: colors.mutedForeground }}
         >
-          <ArrowDown className="h-4 w-4" />
-        </button>
+          <p>No messages yet. Start the conversation!</p>
+        </div>
+      ) : (
+        messages.map(message => (
+          <MessageItem 
+            key={message.id} 
+            message={message} 
+            showAvatar={showAvatars}
+            encrypted={encrypted && message.encrypted}
+          />
+        ))
+      )}
+      
+      {/* Hidden div for scroll targeting */}
+      <div ref={messagesEndRef} />
+      
+      {/* Button to scroll to the bottom */}
+      {showScrollButton && (
+        <div className="sticky bottom-4 flex justify-center">
+          <Button
+            className="rounded-full shadow-lg flex items-center gap-1 px-3 py-1 h-auto"
+            style={{ background: colors.primary, color: colors.primaryForeground }}
+            onClick={scrollToBottom}
+          >
+            {unreadCount > 0 && (
+              <span className="bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[20px]">
+                {unreadCount}
+              </span>
+            )}
+            <ArrowDown className="h-4 w-4" />
+          </Button>
+        </div>
       )}
     </div>
   );

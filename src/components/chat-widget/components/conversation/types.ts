@@ -5,39 +5,26 @@ export interface ChatMessage {
   content: string;
   timestamp: Date | string;
   conversationId: string;
-  metadata?: Record<string, any>;
-  attachments?: FileAttachment[];
-  reactions?: Record<string, string[]>;
-  readBy?: string[];
   status?: 'sending' | 'sent' | 'delivered' | 'read' | 'failed';
+  readBy?: string[];
+  attachments?: {
+    id: string;
+    name: string;
+    type: string;
+    url: string;
+    size: number;
+  }[];
+  // Encryption fields
+  encrypted?: boolean;
+  encryptedContent?: string;
 }
 
 export interface Conversation {
   id: string;
-  title?: string;
+  title: string;
+  lastMessageTimestamp: string;
   lastMessage?: string;
-  lastMessageTimestamp?: string;
-  unreadCount?: number;
-}
-
-export interface TypingStatus {
-  userId: string;
-  username: string;
-  isTyping: boolean;
-}
-
-export interface FileAttachment {
-  id: string;
-  name: string;
-  type: string;
-  url: string;
-  size: number;
-}
-
-export interface MessageSearchResult {
-  messageId: string;
-  conversationId: string;
-  snippet: string;
-  timestamp: string | Date;
-  highlight: [number, number][];
+  unreadCount: number;
+  // Encryption flag
+  encrypted?: boolean;
 }

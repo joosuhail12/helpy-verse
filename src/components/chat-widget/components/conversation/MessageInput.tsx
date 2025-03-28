@@ -1,89 +1,127 @@
 
 import React, { useState, useRef, useEffect } from 'react';
+import { Send, Paperclip, Lock } from 'lucide-react';
 import { useThemeContext } from '@/context/ThemeContext';
-import { Send } from 'lucide-react';
 
 interface MessageInputProps {
   onSendMessage: (content: string) => void;
   onTyping?: () => void;
-  disabled?: boolean;
   placeholder?: string;
+  disabled?: boolean;
+  encrypted?: boolean;
 }
 
-const MessageInput: React.FC<MessageInputProps> = ({ 
-  onSendMessage, 
-  onTyping, 
+const MessageInput: React.FC<MessageInputProps> = ({
+  onSendMessage,
+  onTyping,
+  placeholder = 'Type your message...',
   disabled = false,
-  placeholder = "Type a message..."
+  encrypted = false,
 }) => {
-  const [message, setMessage] = useState('');
   const { colors } = useThemeContext();
+  const [message, setMessage] = useState('');
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  useEffect(() => {
-    // Auto focus the input when component mounts
-    if (inputRef.current && !disabled) {
-      inputRef.current.focus();
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setMessage(e.target.value);
+    
+    // Trigger typing indicator
+    if (onTyping) {
+      // Clear any existing timeout
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      
+      // Set a new timeout
+      onTyping();
+      
+      // Set a timeout to clear the typing indicator
+      timeoutRef.current = setTimeout(() => {
+        timeoutRef.current = null;
+      }, 3000);
     }
-  }, [disabled]);
+  };
+
+  const handleSend = () => {
+    if (message.trim()) {
+      onSendMessage(message.trim());
+      setMessage('');
+      
+      // Focus the input after sending
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
+    }
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSendMessage();
+      handleSend();
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setMessage(e.target.value);
-    if (onTyping) {
-      onTyping();
+  // Auto-resize the textarea
+  useEffect(() => {
+    const textarea = inputRef.current;
+    if (textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = `${Math.min(textarea.scrollHeight, 120)}px`;
     }
-  };
-
-  const handleSendMessage = () => {
-    if (message.trim() && !disabled) {
-      onSendMessage(message.trim());
-      setMessage('');
-    }
-  };
+  }, [message]);
 
   return (
-    <div 
-      className="border-t p-3 flex items-end gap-2"
-      style={{ 
-        borderColor: colors.border,
-        backgroundColor: colors.backgroundSecondary
-      }}
+    <div
+      className="border-t p-3"
+      style={{ borderColor: colors.border, background: colors.background }}
     >
-      <textarea
-        ref={inputRef}
-        className="flex-1 resize-none rounded-lg p-2 max-h-32 min-h-[40px] focus:outline-none focus:ring-2"
-        style={{ 
-          backgroundColor: colors.inputBackground,
-          color: colors.foreground,
-          borderColor: colors.border,
-          // Removed focusRing as it's not a valid CSS property
-        }}
-        value={message}
-        onChange={handleChange}
-        onKeyDown={handleKeyDown}
-        placeholder={placeholder}
-        rows={1}
-        disabled={disabled}
-      />
-      <button
-        onClick={handleSendMessage}
-        disabled={!message.trim() || disabled}
-        className="p-2 rounded-full transition-colors flex-shrink-0"
-        style={{ 
-          backgroundColor: message.trim() ? colors.primary : '#ccc',
-          color: message.trim() ? colors.primaryForeground : '#666',
-          opacity: disabled ? 0.5 : 1
-        }}
+      {encrypted && (
+        <div className="flex items-center justify-center mb-1 text-xs text-gray-500">
+          <Lock className="h-3 w-3 mr-1" />
+          <span>End-to-end encrypted</span>
+        </div>
+      )}
+      
+      <div
+        className="flex items-end gap-2 rounded-lg p-2"
+        style={{ background: colors.inputBackground }}
       >
-        <Send size={18} />
-      </button>
+        <button
+          className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
+          aria-label="Attach file"
+          style={{ color: colors.foreground }}
+        >
+          <Paperclip className="h-5 w-5" />
+        </button>
+        
+        <textarea
+          ref={inputRef}
+          value={message}
+          onChange={handleChange}
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder}
+          rows={1}
+          className="flex-1 bg-transparent resize-none outline-none max-h-[120px] min-h-[24px]"
+          style={{ color: colors.foreground }}
+          disabled={disabled}
+        />
+        
+        <button
+          onClick={handleSend}
+          disabled={!message.trim() || disabled}
+          className={`p-1 rounded-full ${
+            message.trim() ? 'opacity-100' : 'opacity-50'
+          }`}
+          style={{ 
+            background: message.trim() ? colors.primary : 'transparent',
+            color: message.trim() ? colors.primaryForeground : colors.foreground
+          }}
+          aria-label="Send message"
+        >
+          <Send className="h-5 w-5" />
+        </button>
+      </div>
     </div>
   );
 };
