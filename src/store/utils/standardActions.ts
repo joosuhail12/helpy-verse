@@ -84,7 +84,7 @@ export const createStandardCrudThunks = <T, S>(
       async (id: string, { rejectWithValue }) => {
         try {
           await api.delete(id);
-          return id;
+          return id; // Return the ID for reducer handling
         } catch (error: any) {
           return rejectWithValue(error.message || `Failed to delete ${prefix}`);
         }
