@@ -13,6 +13,11 @@ export interface ChatMessage {
     type: string;
   }[];
   metadata?: Record<string, any>;
+  // Adding properties for encryption support
+  encrypted?: boolean;
+  encryptedContent?: string;
+  // Adding property for conversation ID
+  conversationId?: string;
 }
 
 export interface MessageInputProps {
@@ -37,6 +42,15 @@ export interface ChatAvatarProps {
   src?: string;
 }
 
+export interface UserAvatarProps {
+  name: string;
+  userId?: string;
+  color?: string;
+  size?: 'sm' | 'md' | 'lg';
+  src?: string;
+  status?: 'online' | 'offline' | 'away';
+}
+
 export interface Conversation {
   id: string;
   title: string;
@@ -45,6 +59,7 @@ export interface Conversation {
   unreadCount: number;
   participants?: string[];
   encrypted?: boolean;
+  type?: string;
 }
 
 export interface MessageSearchProps {
@@ -53,5 +68,72 @@ export interface MessageSearchProps {
 }
 
 export interface TypingIndicatorProps {
-  users: string[];
+  users: string[] | TypingUser[];
+  compact?: boolean;
+}
+
+export interface TypingUser {
+  clientId: string;
+  name?: string;
+  timestamp: number;
+}
+
+export interface ThemeConfig {
+  colors: {
+    primary: string;
+    primaryForeground: string;
+    background: string;
+    backgroundSecondary: string;
+    foreground: string;
+    border: string;
+    userMessage: string;
+    userMessageText: string;
+    agentMessage: string;
+    agentMessageText: string;
+    inputBackground: string;
+    // Adding missing color properties
+    muted: string;
+    mutedForeground: string;
+    secondary: string;
+    secondaryForeground: string;
+    outgoingMessage: string;
+    outgoingMessageForeground: string;
+    incomingMessage: string;
+    incomingMessageForeground: string;
+  };
+  position?: 'left' | 'right';
+  compact?: boolean;
+  labels?: {
+    welcomeTitle?: string;
+    welcomeSubtitle?: string;
+    askQuestionButton?: string;
+    recentMessagesTitle?: string;
+    noMessagesText?: string;
+    messagePlaceholder?: string;
+  };
+}
+
+export interface EnhancedConversationViewProps {
+  conversationId: string;
+  showSearch?: boolean;
+  showAttachments?: boolean;
+  showReactions?: boolean;
+  showReadReceipts?: boolean;
+  encrypted?: boolean;
+}
+
+export interface ConversationViewProps {
+  conversationId: string;
+  showAvatars?: boolean;
+  onSendMessage?: (content: string, attachments?: File[]) => void;
+  encrypted?: boolean;
+  workspaceId?: string;
+  onBack?: () => void;
+}
+
+export interface ResponsiveConversationViewProps {
+  conversationId: string;
+  compact?: boolean;
+  workspaceId?: string;
+  onBack?: () => void;
 }

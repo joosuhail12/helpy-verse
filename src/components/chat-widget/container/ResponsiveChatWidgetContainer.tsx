@@ -79,9 +79,8 @@ const ResponsiveChatWidgetContainer: React.FC<ResponsiveChatWidgetContainerProps
       
       {view === 'conversation' && currentConversation && (
         <ResponsiveConversationView 
-          workspaceId={workspaceId}
-          onBack={() => setView('list')}
           conversationId={currentConversation.id}
+          onBack={() => setView('list')}
         />
       )}
     </div>

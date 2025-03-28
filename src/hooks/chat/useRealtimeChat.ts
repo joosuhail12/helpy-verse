@@ -121,7 +121,7 @@ export const useRealtimeChat = (conversationId: string, workspaceId: string) => 
       id: uuidv4(),
       content,
       sender: 'user',
-      timestamp: new Date(),
+      timestamp: new Date().toISOString(),
       conversationId,
       metadata: {
         ...metadata,

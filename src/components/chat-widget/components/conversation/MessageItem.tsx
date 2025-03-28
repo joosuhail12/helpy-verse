@@ -1,9 +1,8 @@
 
 import React from 'react';
-import { ChatMessage } from './types';
+import { ChatMessage, UserAvatarProps } from './types';
 import { cn } from '@/lib/utils';
 import { CheckCheck, Check, Clock, AlertTriangle, Lock } from 'lucide-react';
-import UserAvatar from '../user/UserAvatar';
 import { format } from 'date-fns';
 import { useThemeContext } from '@/context/ThemeContext';
 
@@ -12,6 +11,25 @@ interface MessageItemProps {
   showAvatar?: boolean;
   encrypted?: boolean;
 }
+
+// Create a placeholder UserAvatar component that matches the expected props
+const UserAvatar: React.FC<UserAvatarProps> = ({ name, userId, color }) => {
+  const initials = name
+    .split(' ')
+    .map(part => part[0])
+    .join('')
+    .toUpperCase()
+    .substring(0, 2);
+
+  return (
+    <div 
+      className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium"
+      style={{ backgroundColor: color || '#4F46E5' }}
+    >
+      {initials}
+    </div>
+  );
+};
 
 const MessageItem: React.FC<MessageItemProps> = ({ 
   message, 
@@ -47,6 +65,12 @@ const MessageItem: React.FC<MessageItemProps> = ({
         return null;
     }
   };
+
+  // Use fallback colors if theme doesn't provide them
+  const mutedBg = colors.muted || colors.backgroundSecondary || '#f3f4f6';
+  const mutedFg = colors.mutedForeground || colors.foreground || '#6b7280';
+  const secondaryBg = colors.secondary || colors.backgroundSecondary || '#f3f4f6';
+  const secondaryFg = colors.secondaryForeground || colors.foreground || '#1f2937';
   
   return (
     <div
@@ -81,8 +105,8 @@ const MessageItem: React.FC<MessageItemProps> = ({
             isUser
               ? { background: colors.primary, color: colors.primaryForeground }
               : isSystem
-              ? { background: colors.muted, color: colors.mutedForeground }
-              : { background: colors.secondary, color: colors.secondaryForeground }
+              ? { background: mutedBg, color: mutedFg }
+              : { background: secondaryBg, color: secondaryFg }
           }
         >
           {message.content}

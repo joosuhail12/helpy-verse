@@ -4,20 +4,11 @@ import { useChat } from '@/hooks/chat/useChat';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import MessageSearch from './MessageSearch';
-import { ChatMessage } from './types';
+import { ChatMessage, EnhancedConversationViewProps } from './types';
 import { usePaginatedMessages } from '@/hooks/chat/usePaginatedMessages';
 import { useOfflineSyncManager } from '@/hooks/chat/useOfflineSyncManager';
 import { RateLimiter } from '@/utils/chat/rateLimiter';
 import { toast } from 'sonner';
-
-interface EnhancedConversationViewProps {
-  conversationId: string;
-  showSearch?: boolean;
-  showAttachments?: boolean;
-  showReactions?: boolean;
-  showReadReceipts?: boolean;
-  encrypted?: boolean;
-}
 
 const EnhancedConversationView: React.FC<EnhancedConversationViewProps> = ({
   conversationId,
@@ -31,6 +22,7 @@ const EnhancedConversationView: React.FC<EnhancedConversationViewProps> = ({
   const [searchResults, setSearchResults] = useState<ChatMessage[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [rateLimiter] = useState(() => new RateLimiter(conversationId));
+  const [attachments, setAttachments] = useState<File[]>([]);
 
   // Use our pagination hook
   const {
@@ -64,7 +56,7 @@ const EnhancedConversationView: React.FC<EnhancedConversationViewProps> = ({
     setSearchResults(results);
   }, [messages]);
 
-  const handleSendMessage = useCallback(async (content: string, attachments?: File[]) => {
+  const handleSendMessage = useCallback(async (content: string) => {
     // Check rate limiting
     const rateCheck = rateLimiter.canSendMessage();
     if (!rateCheck.allowed) {
@@ -100,7 +92,18 @@ const EnhancedConversationView: React.FC<EnhancedConversationViewProps> = ({
       // Send normally if online
       await sendMessage(conversationId, content, attachments);
     }
-  }, [addMessage, conversationId, offlineMode, queueMessage, rateLimiter, sendMessage]);
+    
+    // Clear attachments after sending
+    setAttachments([]);
+  }, [addMessage, attachments, conversationId, offlineMode, queueMessage, rateLimiter, sendMessage]);
+
+  const handleFileUpload = (files: File[]) => {
+    setAttachments((prev) => [...prev, ...files]);
+  };
+
+  const handleRemoveFile = (file: File) => {
+    setAttachments((prev) => prev.filter((f) => f !== file));
+  };
 
   return (
     <div className="flex flex-col h-full">
@@ -120,10 +123,12 @@ const EnhancedConversationView: React.FC<EnhancedConversationViewProps> = ({
       
       <MessageInput 
         onSendMessage={handleSendMessage}
-        showAttachments={showAttachments}
         encrypted={encrypted}
         disabled={isLoading}
         placeholder={offlineMode ? "You're offline. Messages will be sent when you reconnect." : "Type a message..."}
+        attachments={attachments}
+        onFileUpload={handleFileUpload}
+        onRemoveFile={handleRemoveFile}
       />
     </div>
   );

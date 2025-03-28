@@ -22,7 +22,7 @@ const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({
   position = 'right',
   compact = false 
 }) => {
-  const { conversations, currentConversation, selectConversation, createNewConversation } = useChat();
+  const { conversations, currentConversation, createNewConversation, selectConversation } = useChat();
   const { colors } = useThemeContext();
   const [isLoading, setIsLoading] = useState(false);
   const [activeView, setActiveView] = useState<View>('home');
@@ -81,7 +81,6 @@ const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({
       {activeView === 'conversation' && currentConversation && 
         <ConversationView 
           conversationId={currentConversation.id} 
-          workspaceId={workspaceId} 
           onBack={() => setActiveView('messages')} 
         />
       }

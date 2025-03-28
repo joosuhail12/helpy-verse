@@ -7,7 +7,7 @@ import UserAvatar from '../user/UserAvatar';
 import { ChatMessage } from './types';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
-import dayjs from 'dayjs';
+import * as dayjs from 'dayjs';
 
 interface MessageListProps {
   messages: ChatMessage[];
@@ -52,7 +52,7 @@ const MessageList: React.FC<MessageListProps> = ({
       currentGroup.push(message);
       
       if (index === messages.length - 1 || 
-          !dayjs(message.timestamp).isSame(dayjs(messages[index + 1].timestamp), 'day')) {
+          !dayjs.default(message.timestamp).isSame(dayjs.default(messages[index + 1].timestamp), 'day')) {
         groupedMessages.push(currentGroup);
         currentGroup = [];
       }
@@ -62,10 +62,16 @@ const MessageList: React.FC<MessageListProps> = ({
   };
   
   const formatMessageGroupTime = (date: Date | string) => {
-    return dayjs(date).format('MMMM D, YYYY');
+    return dayjs.default(date).format('MMMM D, YYYY');
   };
   
   const groupedMessages = groupMessagesByTime(messages);
+  
+  // Use fallback colors if theme doesn't provide them
+  const outgoingMessage = colors.outgoingMessage || colors.userMessage || colors.primary || '#4F46E5';
+  const incomingMessage = colors.incomingMessage || colors.agentMessage || colors.backgroundSecondary || '#f3f4f6';
+  const outgoingMessageForeground = colors.outgoingMessageForeground || colors.userMessageText || colors.primaryForeground || '#ffffff';
+  const incomingMessageForeground = colors.incomingMessageForeground || colors.agentMessageText || colors.foreground || '#1f2937';
   
   return (
     <div className="flex-1 overflow-y-auto p-4">
@@ -95,7 +101,7 @@ const MessageList: React.FC<MessageListProps> = ({
         
         return (
           <div 
-            key={dayjs(group[0].timestamp).format('YYYYMMDD') + idx} 
+            key={dayjs.default(group[0].timestamp).format('YYYYMMDD') + idx} 
             className="mb-4 space-y-2"
           >
             <div 
@@ -125,11 +131,11 @@ const MessageList: React.FC<MessageListProps> = ({
                   } max-w-[75%] sm:max-w-[60%] break-words`}
                   style={{
                     backgroundColor: message.sender === 'user' 
-                      ? colors.outgoingMessage 
-                      : colors.incomingMessage,
+                      ? outgoingMessage
+                      : incomingMessage,
                     color: message.sender === 'user' 
-                      ? colors.outgoingMessageForeground 
-                      : colors.incomingMessageForeground
+                      ? outgoingMessageForeground
+                      : incomingMessageForeground
                   }}
                 >
                   <p className="text-sm">{message.content}</p>

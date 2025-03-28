@@ -5,29 +5,32 @@ import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import TypingIndicator from './TypingIndicator';
 import { useMediaQuery } from '@/hooks/use-mobile';
-import { ChatMessage } from './types';
-
-interface ResponsiveConversationViewProps {
-  conversationId: string;
-  compact?: boolean;
-}
+import { ChatMessage, ResponsiveConversationViewProps } from './types';
 
 const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
   conversationId,
-  compact = false
+  compact = false,
+  workspaceId
 }) => {
   const isMobile = useMediaQuery('(max-width: 640px)');
   const { 
-    messages, 
     sendMessage, 
+    messages: chatMessages, 
     isLoading, 
-    typingUsers,
     startTyping,
     stopTyping
   } = useChat();
   
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [attachments, setAttachments] = useState<File[]>([]);
   const [inputHeight, setInputHeight] = useState<number>(64); // Default height
+  const [typingUsers, setTypingUsers] = useState<string[]>([]);
+
+  // Load messages for this conversation
+  useEffect(() => {
+    // In a real app, this would fetch messages from a service
+    setMessages(chatMessages.filter(msg => msg.conversationId === conversationId));
+  }, [conversationId, chatMessages]);
 
   // Calculate available height for message list
   const calculateMessageListHeight = () => {
@@ -80,7 +83,7 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
       
       {typingUsers.length > 0 && (
         <div className="px-4 py-1">
-          <TypingIndicator users={typingUsers} compact={compact || isMobile} />
+          <TypingIndicator users={typingUsers} />
         </div>
       )}
       

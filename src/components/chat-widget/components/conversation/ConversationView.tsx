@@ -15,6 +15,8 @@ interface ConversationViewProps {
   showAvatars?: boolean;
   onSendMessage?: (content: string, attachments?: File[]) => void;
   encrypted?: boolean;
+  workspaceId?: string;
+  onBack?: () => void;
 }
 
 const ConversationView: React.FC<ConversationViewProps> = ({
@@ -134,12 +136,12 @@ const ConversationView: React.FC<ConversationViewProps> = ({
       
       <MessageInput 
         onSendMessage={handleSendMessage}
-        attachments={attachments}
+        placeholder={offlineMode ? "You're offline. Messages will be sent when you reconnect." : "Type a message..."}
+        disabled={isLoading}
+        encrypted={encrypted}
         onFileUpload={handleFileUpload}
         onRemoveFile={handleRemoveFile}
-        encrypted={encrypted}
-        disabled={isLoading}
-        placeholder={offlineMode ? "You're offline. Messages will be sent when you reconnect." : "Type a message..."}
+        attachments={attachments}
       />
     </div>
   );

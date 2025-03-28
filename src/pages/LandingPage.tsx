@@ -1,9 +1,9 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { ChatWidget } from '@/components/chat-widget/ChatWidget';
-import { ThemeConfig } from '@/context/ThemeContext';
+import { ThemeConfig } from '@/components/chat-widget/components/conversation/types';
 
 /**
  * Landing page that is accessible without authentication
@@ -18,14 +18,22 @@ const LandingPage = () => {
       primary: '#9b87f5',
       primaryForeground: '#ffffff',
       background: '#ffffff',
-      backgroundSecondary: '#f9f9f9', // Added the missing backgroundSecondary property
+      backgroundSecondary: '#f9f9f9',
       foreground: '#1A1F2C', 
       border: '#eaeaea',
       userMessage: '#9b87f5',
       userMessageText: '#ffffff',
       agentMessage: '#f1f1f1',
       agentMessageText: '#1A1F2C',
-      inputBackground: '#f9f9f9'
+      inputBackground: '#f9f9f9',
+      muted: '#f1f1f1',
+      mutedForeground: '#6B7280',
+      secondary: '#f1f1f1',
+      secondaryForeground: '#1A1F2C',
+      outgoingMessage: '#9b87f5',
+      outgoingMessageForeground: '#ffffff',
+      incomingMessage: '#f1f1f1',
+      incomingMessageForeground: '#1A1F2C'
     },
     position: 'right',
     compact: false,
