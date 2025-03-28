@@ -1,50 +1,69 @@
 
-import React from 'react';
-import { Search, ChevronUp, ChevronDown } from 'lucide-react';
-import { MessageSearchProps } from './types';
+import React, { useState, useRef, useEffect } from 'react';
+import { Search, X } from 'lucide-react';
+import { useThemeContext } from '@/context/ThemeContext';
+
+export interface MessageSearchProps {
+  onSearch: (query: string) => void;
+  placeholder?: string;
+}
 
 const MessageSearch: React.FC<MessageSearchProps> = ({
-  value,
-  onChange,
-  resultCount,
-  currentResult,
-  onNavigate
+  onSearch,
+  placeholder = 'Search messages...'
 }) => {
+  const [query, setQuery] = useState('');
+  const [isFocused, setIsFocused] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const { colors } = useThemeContext();
+  
+  // Debounce search
+  useEffect(() => {
+    const debounceTimer = setTimeout(() => {
+      onSearch(query);
+    }, 300);
+    
+    return () => clearTimeout(debounceTimer);
+  }, [query, onSearch]);
+  
+  const handleClear = () => {
+    setQuery('');
+    onSearch('');
+    inputRef.current?.focus();
+  };
+
   return (
-    <div className="border-b p-2 flex items-center space-x-2">
-      <div className="relative flex-1">
-        <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
-          <Search className="h-4 w-4 text-gray-400" />
-        </div>
-        <input
-          type="text"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder="Search messages..."
-          className="w-full pl-8 pr-2 py-1 text-sm border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
-        />
-      </div>
+    <div 
+      className={`flex items-center gap-2 px-3 py-2 rounded-md ${
+        isFocused ? 'ring-2 ring-primary/20' : ''
+      }`}
+      style={{ 
+        backgroundColor: colors.backgroundSecondary,
+        border: `1px solid ${isFocused ? colors.primary : colors.border}`
+      }}
+    >
+      <Search className="h-4 w-4 text-gray-400" />
       
-      {resultCount > 0 && (
-        <>
-          <div className="text-xs text-gray-500">
-            {currentResult + 1} of {resultCount}
-          </div>
-          <button
-            onClick={() => onNavigate('prev')}
-            className="p-1 rounded-md hover:bg-gray-100"
-            disabled={resultCount <= 1}
-          >
-            <ChevronUp className="h-4 w-4" />
-          </button>
-          <button
-            onClick={() => onNavigate('next')}
-            className="p-1 rounded-md hover:bg-gray-100"
-            disabled={resultCount <= 1}
-          >
-            <ChevronDown className="h-4 w-4" />
-          </button>
-        </>
+      <input
+        ref={inputRef}
+        type="text"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder={placeholder}
+        className="flex-1 bg-transparent outline-none text-sm"
+        style={{ color: colors.foreground }}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
+      />
+      
+      {query && (
+        <button 
+          onClick={handleClear}
+          className="text-gray-400 hover:text-gray-600 focus:outline-none"
+          aria-label="Clear search"
+        >
+          <X className="h-4 w-4" />
+        </button>
       )}
     </div>
   );

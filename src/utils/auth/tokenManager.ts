@@ -1,112 +1,146 @@
 
-import { getCookie, setCookie, deleteCookie } from '../cookies/cookieManager';
+/**
+ * Token and authentication management utility functions
+ * Using localStorage only (no cookies)
+ */
+import { HttpClient, cookieFunctions } from "@/api/services/http";
+import { jwtDecode } from "jwt-decode";
 
-// Check if user is authenticated
+// Get storage helpers from HttpClient to avoid circular dependencies
+const { getCookie, setCookie } = cookieFunctions;
+
+// 🟢 Logout User
+export const handleLogout = async (): Promise<void> => {
+  try {
+    // Attempt to call logout endpoint if we have a token
+    const token = getAuthToken();
+    if (token) {
+      try {
+        await HttpClient.apiClient.post('/auth/logout');
+        console.log('Logout API call successful');
+      } catch (error) {
+        console.warn('Logout API call failed, proceeding with local logout', error);
+      }
+    }
+  } catch (error) {
+    console.error('Error during logout process:', error);
+  } finally {
+    // Clear all tokens and storage
+    localStorage.removeItem("token");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("role");
+    localStorage.removeItem("workspaceId");
+    sessionStorage.removeItem("token");
+    
+    console.log("User logged out - cleared all tokens and storage");
+    
+    // Force page refresh and redirect to sign-in
+    window.location.href = "/sign-in";
+  }
+};
+
+// 🟢 Set Auth Token
+export const handleSetToken = (token: string): boolean => {
+  // Check if token is valid
+  if (!token) {
+    console.error("Cannot set empty token");
+    return false;
+  }
+  
+  try {
+    console.log("Setting auth token:", token.substring(0, 10) + "...");
+    
+    // Store in localStorage only
+    localStorage.setItem("token", token);
+    
+    // Configure axios with the new token
+    if (HttpClient && HttpClient.setAxiosDefaultConfig) {
+      HttpClient.setAxiosDefaultConfig(token);
+    }
+    
+    return true;
+  } catch (error) {
+    console.error("Error setting token:", error);
+    return false;
+  }
+};
+
+// 🟢 Check if user is authenticated - check localStorage only
 export const isAuthenticated = (): boolean => {
-  return !!getCookie("customerToken");
+  try {
+    const tokenInStorage = !!localStorage.getItem("token");
+    return tokenInStorage;
+  } catch (error) {
+    console.error("Error checking authentication:", error);
+    return false;
+  }
 };
 
-// Get token
-export const getToken = (): string | null => {
-  return getCookie("customerToken");
+// 🟢 Get auth token - from localStorage only
+export const getAuthToken = (): string => {
+  const storageToken = localStorage.getItem("token");
+  return storageToken || "";
 };
 
-// Set token with optional expiration
-export const handleSetToken = (token: string, expiryDays: number = 30): void => {
-  setCookie("customerToken", token, expiryDays);
+// Check if token is expired - safer version that handles invalid tokens
+export const isTokenExpired = (): boolean => {
+  const token = getAuthToken();
+  if (!token) return true;
   
-  // Also store in localStorage for additional redundancy
   try {
-    localStorage.setItem("customerToken", token);
+    // First check if the token has the right format for JWT
+    if (!token.includes('.')) {
+      console.warn("Token does not appear to be in JWT format");
+      return true; // Consider non-JWT tokens as expired
+    }
+    
+    // Now try to decode it
+    const decoded = jwtDecode<{exp?: number}>(token);
+    if (!decoded || !decoded.exp) {
+      console.warn("Token has no expiration claim");
+      return true;
+    }
+    
+    // Check if current time is past expiration
+    const currentTime = Math.floor(Date.now() / 1000);
+    return decoded.exp < currentTime;
   } catch (error) {
-    console.error("Error storing token in localStorage:", error);
+    console.error("Error checking token expiration:", error);
+    // To be safe, we'll consider any token we can't validate as expired
+    return true;
   }
 };
 
-// Alias for getToken to maintain compatibility with other code that uses getAuthToken
-export const getAuthToken = getToken;
+// 🟢 Workspace ID Management - Use localStorage
+export const setWorkspaceId = (id: string): void => {
+  if (id) {
+    try {
+      localStorage.setItem("workspaceId", id);
+      console.log("Workspace ID set in localStorage:", id);
+    } catch (error) {
+      console.error("Error setting workspace ID in localStorage:", error);
+    }
+  }
+};
 
-// Handle logout
-export const handleLogout = (): void => {
-  // Remove auth token
-  deleteCookie("customerToken");
+export const getWorkspaceId = (): string => {
+  try {
+    const storageId = localStorage.getItem("workspaceId");
+    if (storageId) {
+      console.log("Got workspace ID from localStorage:", storageId);
+      return storageId;
+    }
+  } catch (error) {
+    console.warn("Error accessing workspace ID in localStorage:", error);
+  }
   
-  // Clear any other auth-related items from localStorage
-  localStorage.removeItem("userProfile");
-  localStorage.removeItem("permissions");
-  localStorage.removeItem("customerToken");
-  
-  // Dispatch a logout event that can be caught by other components
-  const logoutEvent = new CustomEvent('user:logout');
-  window.dispatchEvent(logoutEvent);
+  return "";
 };
 
-// Parse JWT token to get payload
-export const parseToken = (token: string): any => {
-  try {
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(
-      atob(base64)
-        .split('')
-        .map((c) => {
-          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-        })
-        .join('')
-    );
-    
-    return JSON.parse(jsonPayload);
-  } catch (error) {
-    console.error('Failed to parse token:', error);
-    return null;
-  }
-};
+// 🟢 Role Checks
+export const isOrganizationAdmin = (): boolean => localStorage.getItem("role") === "ORGANIZATION_ADMIN";
+export const isWorkspaceAdmin = (): boolean => localStorage.getItem("role") === "WORKSPACE_ADMIN";
+export const isWorkspaceAgent = (): boolean => localStorage.getItem("role") === "WORKSPACE_AGENT";
 
-// Check if token is expired
-export const isTokenExpired = (token: string): boolean => {
-  try {
-    const payload = parseToken(token);
-    if (!payload || !payload.exp) return true;
-    
-    const expirationTime = payload.exp * 1000; // Convert to milliseconds
-    return Date.now() >= expirationTime;
-  } catch (error) {
-    console.error('Error checking token expiration:', error);
-    return true; // Assume expired if there's an error
-  }
-};
-
-// Get user ID from token
-export const getUserIdFromToken = (token: string): string | null => {
-  try {
-    const payload = parseToken(token);
-    return payload?.sub || payload?.userId || null;
-  } catch (error) {
-    console.error('Error extracting user ID from token:', error);
-    return null;
-  }
-};
-
-// Get user role from token
-export const getUserRoleFromToken = (token: string): string | null => {
-  try {
-    const payload = parseToken(token);
-    return payload?.role || null;
-  } catch (error) {
-    console.error('Error extracting user role from token:', error);
-    return null;
-  }
-};
-
-// Get token expiration time
-export const getTokenExpirationTime = (token: string): number | null => {
-  try {
-    const payload = parseToken(token);
-    if (!payload || !payload.exp) return null;
-    
-    return payload.exp * 1000; // Convert to milliseconds
-  } catch (error) {
-    console.error('Error getting token expiration time:', error);
-    return null;
-  }
-};
+// 🟢 Get User ID
+export const getUserId = (): string | null => localStorage.getItem("userId");

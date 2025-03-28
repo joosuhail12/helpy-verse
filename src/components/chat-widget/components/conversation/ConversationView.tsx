@@ -78,7 +78,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
     if (onSendMessage) {
       onSendMessage(content, attachments);
     } else {
-      await sendMessage(conversationId, content);
+      await sendMessage(conversationId, content, attachments);
       
       // Simulate an agent response after a short delay
       setTimeout(() => {
@@ -138,11 +138,16 @@ const ConversationView: React.FC<ConversationViewProps> = ({
         <MessageList 
           messages={messages} 
           conversationId={conversationId}
+          showAvatars={showAvatars}
           encrypted={encrypted}
           isLoading={isLoading}
-          typingUsers={typingUsers}
-          showReadReceipts={true}
         />
+        
+        {typingUsers.length > 0 && (
+          <div className="px-4 py-2">
+            <TypingIndicator users={typingUsers} />
+          </div>
+        )}
         
         <MessageInput 
           onSendMessage={handleSendMessage}

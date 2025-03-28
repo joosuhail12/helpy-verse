@@ -1,28 +1,54 @@
 
 import { lazy, Suspense } from 'react';
-import LoadingSpinner from '@/components/shared/LoadingSpinner';
+import { Navigate } from 'react-router-dom';
+import { ProtectedRoute } from '../components/auth/ProtectedRoute';
+import { Loader2 } from 'lucide-react';
+import RouteErrorBoundary from '@/components/app/RouteErrorBoundary';
 
-// Lazy load dashboard components
-const Home = lazy(() => import('@/pages/Home'));
-const Index = lazy(() => import('@/pages/Index'));
+// Create the loading spinner component
+const LoadingSpinner = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+  </div>
+);
+
+// Lazy load dashboard pages
+const Dashboard = lazy(() => import('../pages/Dashboard'));
+const AllContacts = lazy(() => import('../pages/contacts/All'));
+const Companies = lazy(() => import('../pages/contacts/Companies'));
+const CompanyDetail = lazy(() => import('../pages/contacts/CompanyDetail'));
+const ContactDetail = lazy(() => import('../pages/contacts/Detail'));
+
+// Helper function to wrap a component with Suspense, ProtectedRoute and RouteErrorBoundary
+const withSuspenseAndProtection = (Component) => (
+  <ProtectedRoute>
+    <RouteErrorBoundary>
+      <Suspense fallback={<LoadingSpinner />}>
+        <Component />
+      </Suspense>
+    </RouteErrorBoundary>
+  </ProtectedRoute>
+);
 
 export const dashboardRoutes = [
   {
-    path: 'dashboard',
-    element: (
-      <Suspense fallback={<LoadingSpinner />}>
-        <Home />
-      </Suspense>
-    ),
-    children: [
-      {
-        index: true,
-        element: (
-          <Suspense fallback={<LoadingSpinner />}>
-            <Index />
-          </Suspense>
-        ),
-      },
-    ],
+    path: '',
+    element: withSuspenseAndProtection(Dashboard),
+  },
+  {
+    path: 'contacts/all',
+    element: withSuspenseAndProtection(AllContacts),
+  },
+  {
+    path: 'contacts/companies',
+    element: withSuspenseAndProtection(Companies),
+  },
+  {
+    path: 'contacts/companies/:id',
+    element: withSuspenseAndProtection(CompanyDetail),
+  },
+  {
+    path: 'contacts/:id',
+    element: withSuspenseAndProtection(ContactDetail),
   },
 ];

@@ -1,50 +1,89 @@
 
+/**
+ * Event types for the chat widget
+ */
 export enum ChatEventType {
-  // Widget events
-  WIDGET_OPENED = 'widget:opened',
-  WIDGET_CLOSED = 'widget:closed',
-  
-  // Message events
-  MESSAGE_SENT = 'message:sent',
-  MESSAGE_RECEIVED = 'message:received',
-  MESSAGE_DELIVERED = 'message:delivered',
-  MESSAGE_READ = 'message:read',
-  MESSAGE_FAILED = 'message:failed',
-  
-  // Typing events
-  TYPING_STARTED = 'typing:started',
-  TYPING_STOPPED = 'typing:stopped',
-  
-  // Navigation events
-  PAGE_NAVIGATION = 'navigation:page',
-  
-  // Error events
-  ERROR_OCCURRED = 'error:occurred',
-  
-  // Rate limiting events
-  RATE_LIMIT_TRIGGERED = 'rateLimit:triggered',
-  RATE_LIMIT_CLEARED = 'rateLimit:cleared',
-  
-  // Contact events
-  CONTACT_IDENTIFIED = 'contact:identified',
-  USER_IDENTIFIED = 'user:identified',
-  
-  // Agent events
-  AGENT_JOINED = 'agent:joined',
-  AGENT_LEFT = 'agent:left',
-  AGENT_PRESENCE_UPDATED = 'agent:presence:updated',
-  
-  // Session events
-  SESSION_STARTED = 'session:started',
-  SESSION_ENDED = 'session:ended',
-  
-  // Security events
-  CSRF_VALIDATION_FAILED = 'security:csrf_validation_failed'
+  WIDGET_OPENED = 'widget_opened',
+  WIDGET_CLOSED = 'widget_closed',
+  MESSAGE_SENT = 'message_sent',
+  MESSAGE_RECEIVED = 'message_received',
+  CONVERSATION_STARTED = 'conversation_started',
+  CONVERSATION_ENDED = 'conversation_ended',
+  USER_IDENTIFIED = 'user_identified',
+  ERROR_OCCURRED = 'error_occurred',
+  PAGE_NAVIGATION = 'page_navigation',
+  BUTTON_CLICKED = 'button_clicked',
+  TYPING_STARTED = 'typing_started',
+  TYPING_ENDED = 'typing_ended',
+  FILE_UPLOADED = 'file_uploaded',
+  THEME_CHANGED = 'theme_changed'
 }
 
-export type ChatEventUnion = {
+/**
+ * Base interface for all chat events
+ */
+export interface ChatEvent {
   type: ChatEventType;
   timestamp: string;
   source: string;
-  [key: string]: any;
-};
+  pageUrl?: string;
+  sessionId?: string;
+  conversationId?: string;
+  metadata?: Record<string, any>;
+}
+
+/**
+ * Event for when the widget is opened
+ */
+export interface WidgetOpenedEvent extends ChatEvent {
+  type: ChatEventType.WIDGET_OPENED;
+  trigger: 'user' | 'auto' | 'api';
+}
+
+/**
+ * Event for when the widget is closed
+ */
+export interface WidgetClosedEvent extends ChatEvent {
+  type: ChatEventType.WIDGET_CLOSED;
+  timeOpen: number; // milliseconds
+}
+
+/**
+ * Event for when a message is sent by the user
+ */
+export interface MessageSentEvent extends ChatEvent {
+  type: ChatEventType.MESSAGE_SENT;
+  messageId: string;
+  content: string;
+  attachments?: number;
+}
+
+/**
+ * Event for when a message is received from the agent
+ */
+export interface MessageReceivedEvent extends ChatEvent {
+  type: ChatEventType.MESSAGE_RECEIVED;
+  messageId: string;
+  content: string;
+  agentId?: string;
+}
+
+/**
+ * Event for when a user navigates to a different page with the widget open
+ */
+export interface PageNavigationEvent extends ChatEvent {
+  type: ChatEventType.PAGE_NAVIGATION;
+  previousUrl: string;
+  currentUrl: string;
+}
+
+/**
+ * Union type of all possible chat events
+ */
+export type ChatEventUnion = 
+  | WidgetOpenedEvent
+  | WidgetClosedEvent
+  | MessageSentEvent
+  | MessageReceivedEvent
+  | PageNavigationEvent
+  | ChatEvent; // Base type for other events

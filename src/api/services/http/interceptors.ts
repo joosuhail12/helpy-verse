@@ -4,11 +4,8 @@ import { get } from 'lodash';
 import { handleLogout } from './cookieManager';
 import { getAuthToken } from '@/utils/auth/tokenManager';
 import { store } from '@/store/store';
-import sessionManager from '@/utils/auth/sessionManager';
-import eventManager, { emitEvent } from '@/utils/events/eventManager';
-import { ChatEventType } from '@/utils/events/eventTypes';
 
-// Request Interceptor - Adds Token, Workspace ID, and CSRF token to all requests
+// Request Interceptor - Adds Token & Workspace ID to all requests
 export const requestInterceptor = async (config: InternalAxiosRequestConfig): Promise<InternalAxiosRequestConfig> => {
     // Check for network connectivity first
     if (!navigator.onLine) {
@@ -50,27 +47,6 @@ export const requestInterceptor = async (config: InternalAxiosRequestConfig): Pr
     } else {
         console.warn(`Making API request without workspace_id to: ${config.url}`);
     }
-    
-    // Add CSRF token to all mutating requests (POST, PUT, DELETE, PATCH)
-    const mutatingMethods = ['post', 'put', 'delete', 'patch'];
-    if (mutatingMethods.includes(config.method?.toLowerCase() || '')) {
-        const csrfToken = sessionManager.getCsrfToken();
-        
-        if (csrfToken) {
-            // Add as a custom header
-            config.headers.set('X-CSRF-Token', csrfToken);
-            
-            // Also add to the request body for additional security if the body is JSON
-            if (config.data && typeof config.data === 'object') {
-                config.data = {
-                    ...config.data,
-                    _csrf: csrfToken
-                };
-            }
-        } else {
-            console.warn(`Making mutating request without CSRF token to: ${config.url}`);
-        }
-    }
 
     console.log(`API Request to: ${config.url} with params:`, config.params);
     return config;
@@ -84,40 +60,6 @@ export const requestErrorInterceptor = (error: any) => {
 // Response Interceptor - Handles Successful Responses and Errors
 export const responseInterceptor = (response: AxiosResponse) => {
     console.log(`API Response from ${response.config.url}: Status ${response.status}`);
-    
-    // For mutating requests, validate the CSRF token in the response (if provided)
-    const mutatingMethods = ['post', 'put', 'delete', 'patch'];
-    if (mutatingMethods.includes(response.config.method?.toLowerCase() || '')) {
-        // If the response includes a CSRF token, ensure it matches our session
-        const responseCsrfToken = response.headers['x-csrf-token'] || 
-                               get(response.data, '_csrf') ||
-                               get(response.data, 'csrfToken');
-        
-        if (responseCsrfToken) {
-            const isValid = sessionManager.validateCsrfToken(responseCsrfToken);
-            
-            if (!isValid) {
-                console.error(`CSRF token validation failed for response from ${response.config.url}`);
-                
-                // Track the CSRF validation failure
-                emitEvent({
-                    type: ChatEventType.CSRF_VALIDATION_FAILED,
-                    timestamp: new Date().toISOString(),
-                    source: 'http-interceptor',
-                    requestUrl: response.config.url || 'unknown',
-                    pageUrl: window.location.href,
-                    sessionId: sessionManager.getSession()?.sessionId
-                });
-                
-                // Still return the response, but flag this security issue in logs
-                // In a production environment, you might want to reject this response
-            }
-        }
-    }
-    
-    // Update session activity timestamp on successful response
-    sessionManager.updateActivity();
-    
     return response;
 };
 
@@ -158,32 +100,6 @@ export const responseErrorInterceptor = (error: any) => {
         return Promise.reject({
             message: "There was a CORS error. This usually means the API server is not configured to accept requests from this origin.",
             isCorsError: true,
-            originalError: error
-        });
-    }
-
-    // Check for CSRF errors
-    const csrfError = error.response?.data?.code === 'CSRF_MISMATCH' || 
-                     error.response?.status === 403 && 
-                     (error.response?.data?.message?.includes('CSRF') || 
-                      error.response?.data?.error?.includes('CSRF'));
-    
-    if (csrfError) {
-        console.error('CSRF validation error detected:', error.message);
-        
-        // Track the CSRF validation failure
-        emitEvent({
-            type: ChatEventType.CSRF_VALIDATION_FAILED,
-            timestamp: new Date().toISOString(),
-            source: 'http-interceptor',
-            requestUrl: requestUrl || 'unknown',
-            pageUrl: window.location.href,
-            sessionId: sessionManager.getSession()?.sessionId
-        });
-        
-        return Promise.reject({
-            message: "Security validation failed. Please refresh the page and try again.",
-            isCsrfError: true,
             originalError: error
         });
     }

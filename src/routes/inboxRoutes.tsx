@@ -1,45 +1,53 @@
 
 import { lazy, Suspense } from 'react';
-import LoadingSpinner from '@/components/shared/LoadingSpinner';
+import { Navigate } from 'react-router-dom';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+import { Loader2 } from 'lucide-react';
+import RouteErrorBoundary from '@/components/app/RouteErrorBoundary';
 
-// Lazy load inbox components
-const Inbox = lazy(() => import('@/pages/Inbox'));
+// Define LoadingSpinner component at the top of the file to avoid reference errors
+const LoadingSpinner = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+  </div>
+);
+
+// Lazy load inbox pages
+const YourInbox = lazy(() => import('../pages/inbox/YourInbox'));
+const AllInbox = lazy(() => import('../pages/inbox/All'));
+const UnassignedInbox = lazy(() => import('../pages/inbox/Unassigned'));
+const MentionsInbox = lazy(() => import('../pages/inbox/Mentions'));
+
+// Helper function to wrap a component with Suspense, ProtectedRoute and RouteErrorBoundary
+const withSuspenseAndProtection = (Component) => (
+  <ProtectedRoute>
+    <RouteErrorBoundary>
+      <Suspense fallback={<LoadingSpinner />}>
+        <Component />
+      </Suspense>
+    </RouteErrorBoundary>
+  </ProtectedRoute>
+);
 
 export const inboxRoutes = [
   {
     path: 'inbox',
-    element: (
-      <Suspense fallback={<LoadingSpinner />}>
-        <Inbox />
-      </Suspense>
-    ),
-    children: [
-      {
-        path: 'all',
-        element: (
-          <Suspense fallback={<LoadingSpinner />}>
-            <div className="p-4">
-              <h1 className="text-2xl font-bold">All Messages</h1>
-              <div className="mt-4 p-8 bg-gray-50 rounded-md text-center">
-                <p className="text-gray-500">No messages to display.</p>
-              </div>
-            </div>
-          </Suspense>
-        ),
-      },
-      {
-        path: 'your-inbox',
-        element: (
-          <Suspense fallback={<LoadingSpinner />}>
-            <div className="p-4">
-              <h1 className="text-2xl font-bold">Your Inbox</h1>
-              <div className="mt-4 p-8 bg-gray-50 rounded-md text-center">
-                <p className="text-gray-500">Your inbox is empty.</p>
-              </div>
-            </div>
-          </Suspense>
-        ),
-      },
-    ],
+    element: <Navigate to="all" replace />,
+  },
+  {
+    path: 'inbox/your-inbox',
+    element: withSuspenseAndProtection(YourInbox),
+  },
+  {
+    path: 'inbox/all',
+    element: withSuspenseAndProtection(AllInbox),
+  },
+  {
+    path: 'inbox/unassigned',
+    element: withSuspenseAndProtection(UnassignedInbox),
+  },
+  {
+    path: 'inbox/mentions',
+    element: withSuspenseAndProtection(MentionsInbox),
   },
 ];

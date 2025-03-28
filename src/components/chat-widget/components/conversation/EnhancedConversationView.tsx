@@ -1,138 +1,134 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useChat } from '@/hooks/chat/useChat';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import MessageSearch from './MessageSearch';
-import { ChatMessage, TypingUser, UseChatOptions } from './types';
-import { useRateLimiter } from '@/utils/chat/rateLimiter';
-
-interface EnhancedConversationViewProps {
-  conversationId: string;
-  showSearch?: boolean;
-  showAttachments?: boolean;
-  showReactions?: boolean;
-  showReadReceipts?: boolean;
-  encrypted?: boolean;
-  virtualized?: boolean;
-}
+import { ChatMessage, EnhancedConversationViewProps } from './types';
+import { usePaginatedMessages } from '@/hooks/chat/usePaginatedMessages';
+import { useOfflineSyncManager } from '@/hooks/chat/useOfflineSyncManager';
+import { RateLimiter } from '@/utils/chat/rateLimiter';
+import { toast } from 'sonner';
 
 const EnhancedConversationView: React.FC<EnhancedConversationViewProps> = ({
   conversationId,
   showSearch = false,
   showAttachments = true,
   showReactions = false,
-  showReadReceipts = false,
-  encrypted = false,
-  virtualized = true,
+  showReadReceipts = true,
+  encrypted = false
 }) => {
-  const { messages, sendMessage, isLoading } = useChat({ conversationId });
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<number[]>([]);
-  const [currentResult, setCurrentResult] = useState(0);
-  const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
-  const messageListRef = useRef<HTMLDivElement>(null);
+  const { sendMessage } = useChat();
+  const [searchResults, setSearchResults] = useState<ChatMessage[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [rateLimiter] = useState(() => new RateLimiter(conversationId));
+  const [attachments, setAttachments] = useState<File[]>([]);
+
+  // Use our pagination hook
+  const {
+    messages,
+    isLoading,
+    hasMore,
+    loadMoreMessages,
+    addMessage
+  } = usePaginatedMessages({
+    conversationId,
+    pageSize: 15
+  });
   
-  // Rate limiter for message sending
-  const rateLimiter = useRateLimiter(5, 10000, 30000);
+  // Use offline sync manager
+  const { offlineMode, queueMessage } = useOfflineSyncManager(conversationId);
 
-  // Filter messages based on search query
-  useEffect(() => {
-    if (!searchQuery.trim()) {
+  const handleSearch = useCallback((query: string) => {
+    if (!query) {
+      setIsSearching(false);
       setSearchResults([]);
-      setCurrentResult(0);
       return;
     }
 
-    const query = searchQuery.toLowerCase();
-    const results = messages
-      .map((msg, index) => (msg.content.toLowerCase().includes(query) ? index : -1))
-      .filter(index => index !== -1);
-
+    setIsSearching(true);
+    
+    // Basic search implementation
+    const results = messages.filter(message => 
+      message.content.toLowerCase().includes(query.toLowerCase())
+    );
+    
     setSearchResults(results);
-    setCurrentResult(0);
+  }, [messages]);
 
-    // Scroll to first result if there are any
-    if (results.length > 0) {
-      scrollToMessage(results[0]);
-    }
-  }, [searchQuery, messages]);
-
-  // Handle message sending
-  const handleSendMessage = async (content: string, attachments?: File[]) => {
+  const handleSendMessage = useCallback(async (content: string) => {
     // Check rate limiting
-    if (rateLimiter.isLimited()) {
-      // Show rate limit message - we could display this in UI
-      console.warn(`Rate limit reached. Please wait ${Math.ceil(rateLimiter.getRateLimitTimeRemaining() / 1000)} seconds.`);
+    const rateCheck = rateLimiter.canSendMessage();
+    if (!rateCheck.allowed) {
+      toast.error(rateCheck.reason || 'Too many messages. Please wait before sending again.');
       return;
     }
-
-    // Register this action with the rate limiter
-    rateLimiter.checkAction();
-
-    // Send the message
-    await sendMessage(content);
-  };
-
-  // Navigate between search results
-  const navigateSearch = (direction: 'next' | 'prev') => {
-    if (searchResults.length === 0) return;
-
-    let newIndex;
-    if (direction === 'next') {
-      newIndex = (currentResult + 1) % searchResults.length;
+    
+    // Record this message with the rate limiter
+    rateLimiter.recordMessage();
+    
+    const message: ChatMessage = {
+      id: crypto.randomUUID(),
+      content,
+      sender: 'user',
+      timestamp: new Date().toISOString(),
+      status: offlineMode ? 'sending' : 'sent',
+      attachments: attachments?.map(file => ({
+        id: crypto.randomUUID(),
+        name: file.name,
+        url: URL.createObjectURL(file),
+        size: file.size,
+        type: file.type
+      }))
+    };
+    
+    // Add locally for immediate feedback
+    addMessage(message);
+    
+    if (offlineMode) {
+      // Queue for later if offline
+      await queueMessage(message);
     } else {
-      newIndex = (currentResult - 1 + searchResults.length) % searchResults.length;
+      // Send normally if online
+      await sendMessage(conversationId, content, attachments);
     }
+    
+    // Clear attachments after sending
+    setAttachments([]);
+  }, [addMessage, attachments, conversationId, offlineMode, queueMessage, rateLimiter, sendMessage]);
 
-    setCurrentResult(newIndex);
-    scrollToMessage(searchResults[newIndex]);
+  const handleFileUpload = (files: File[]) => {
+    setAttachments((prev) => [...prev, ...files]);
   };
 
-  // Scroll to a specific message
-  const scrollToMessage = (index: number) => {
-    const messageElement = document.getElementById(`message-${index}`);
-    if (messageElement && messageListRef.current) {
-      messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      
-      // Highlight the message temporarily
-      messageElement.classList.add('bg-yellow-100');
-      setTimeout(() => {
-        messageElement.classList.remove('bg-yellow-100');
-      }, 1000);
-    }
+  const handleRemoveFile = (file: File) => {
+    setAttachments((prev) => prev.filter((f) => f !== file));
   };
 
   return (
     <div className="flex flex-col h-full">
       {showSearch && (
-        <MessageSearch
-          value={searchQuery}
-          onChange={setSearchQuery}
-          resultCount={searchResults.length}
-          currentResult={currentResult}
-          onNavigate={navigateSearch}
-        />
+        <div className="border-b p-2">
+          <MessageSearch onSearch={handleSearch} />
+        </div>
       )}
       
-      <div className="flex-1 overflow-hidden" ref={messageListRef}>
-        <MessageList
-          messages={messages}
-          conversationId={conversationId}
-          typingUsers={typingUsers}
-          useVirtualization={virtualized}
-          showReactions={showReactions}
-          showReadReceipts={showReadReceipts}
-        />
-      </div>
+      <MessageList 
+        messages={isSearching ? searchResults : messages} 
+        conversationId={conversationId}
+        isLoading={isLoading}
+        hasMore={!isSearching && hasMore}
+        onLoadMore={loadMoreMessages}
+      />
       
-      <MessageInput
+      <MessageInput 
         onSendMessage={handleSendMessage}
-        disabled={isLoading}
         encrypted={encrypted}
-        attachments={showAttachments ? [] : undefined}
-        isRateLimited={rateLimiter.isLimited()}
-        rateLimitTimeRemaining={rateLimiter.getRateLimitTimeRemaining()}
+        disabled={isLoading}
+        placeholder={offlineMode ? "You're offline. Messages will be sent when you reconnect." : "Type a message..."}
+        attachments={attachments}
+        onFileUpload={handleFileUpload}
+        onRemoveFile={handleRemoveFile}
       />
     </div>
   );

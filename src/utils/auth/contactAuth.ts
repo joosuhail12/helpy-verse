@@ -1,140 +1,136 @@
 
-/**
- * Authentication utility for contacts
- */
-class ContactAuth {
-  private contactKey = 'app_contact';
-  private authStateKey = 'app_auth_state';
-  private tokenKey = 'app_auth_token';
-  
-  // Authenticate a contact
-  public async authenticate(contactId: string, token: string): Promise<boolean> {
-    // In a real app, you would verify this with your backend
-    try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      if (!contactId || !token) return false;
-      
-      // Store contact information
-      localStorage.setItem(this.contactKey, JSON.stringify({
-        id: contactId,
-        authenticated: true,
-        authenticatedAt: new Date().toISOString(),
-        token
-      }));
-      
-      // Update auth state
-      localStorage.setItem(this.authStateKey, 'authenticated');
-      localStorage.setItem(this.tokenKey, token);
-      
-      return true;
-    } catch (error) {
-      console.error('Authentication error:', error);
-      return false;
-    }
-  }
-  
-  // Check if contact is authenticated
-  public isAuthenticated(): boolean {
-    const contactStr = localStorage.getItem(this.contactKey);
-    if (!contactStr) return false;
-    
-    try {
-      const contact = JSON.parse(contactStr);
-      return contact.authenticated === true;
-    } catch (e) {
-      return false;
-    }
-  }
-  
-  // Get current contact
-  public getContact(): any {
-    const contactStr = localStorage.getItem(this.contactKey);
-    if (!contactStr) return null;
-    
-    try {
-      return JSON.parse(contactStr);
-    } catch (e) {
-      return null;
-    }
-  }
-  
-  // Get contact ID
-  public getContactId(): string | null {
-    const contact = this.getContact();
-    return contact ? contact.id : null;
-  }
-  
-  // Get auth token
-  public getToken(): string | null {
-    return localStorage.getItem(this.tokenKey);
-  }
-  
-  // Logout
-  public logout(): void {
-    localStorage.removeItem(this.contactKey);
-    localStorage.removeItem(this.authStateKey);
-    localStorage.removeItem(this.tokenKey);
-  }
-  
-  // Verify contact with verification code
-  public async verifyContact(email: string, code: string): Promise<boolean> {
-    try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      // In a real app, you would verify this with your backend
-      // For demo purposes, we'll accept any non-empty code
-      if (!email || !code) return false;
-      
-      // Simple validation: code must be 6 digits
-      if (!/^\d{6}$/.test(code)) return false;
-      
-      // Create a contact record
-      const contactId = `contact_${Date.now()}`;
-      localStorage.setItem(this.contactKey, JSON.stringify({
-        id: contactId,
-        email,
-        authenticated: true,
-        authenticatedAt: new Date().toISOString(),
-        verifiedAt: new Date().toISOString()
-      }));
-      
-      // Update auth state
-      localStorage.setItem(this.authStateKey, 'authenticated');
-      
-      return true;
-    } catch (error) {
-      console.error('Verification error:', error);
-      return false;
-    }
-  }
-  
-  // Request verification code
-  public async requestVerificationCode(email: string): Promise<boolean> {
-    try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      // In a real app, you would call your backend to send a verification code
-      if (!email || !this.isValidEmail(email)) return false;
-      
-      // For demo purposes, we'll just return success
-      console.log(`Verification code requested for: ${email}`);
-      return true;
-    } catch (error) {
-      console.error('Request verification code error:', error);
-      return false;
-    }
-  }
-  
-  // Validate email format
-  private isValidEmail(email: string): boolean {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  }
+import { HttpClient } from '@/api/services/http';
+import { jwtDecode } from 'jwt-decode';
+import { Contact } from '@/types/contact';
+import { encryptBase64, decryptBase64 } from '@/utils/helpers/helpers';
+
+interface ContactTokenPayload {
+  sub: string;
+  email: string;
+  exp: number;
+  contactId: string;
 }
 
-export const contactAuth = new ContactAuth();
-export default contactAuth;
+interface VerificationResponse {
+  status: string;
+  token: string;
+  contact: Contact;
+}
+
+/**
+ * Contact Authentication System
+ * Handles verification and authentication of contacts against the database
+ */
+export const contactAuth = {
+  // Verify a contact using email and a verification code
+  async verifyContact(email: string, verificationCode: string): Promise<boolean> {
+    try {
+      const response = await HttpClient.apiClient.post<VerificationResponse>('/contact/verify', {
+        email,
+        code: verificationCode,
+      });
+      
+      if (response.data?.token) {
+        // Store the token securely
+        localStorage.setItem('contactToken', response.data.token);
+        localStorage.setItem('contactId', response.data.contact.id);
+        
+        // Store contact email in encrypted format
+        const encryptedEmail = encryptBase64(email);
+        localStorage.setItem('contactEmail', encryptedEmail);
+        
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error verifying contact:', error);
+      return false;
+    }
+  },
+  
+  // Request a verification code to be sent to a contact's email
+  async requestVerificationCode(email: string): Promise<boolean> {
+    try {
+      await HttpClient.apiClient.post('/contact/request-verification', {
+        email,
+      });
+      return true;
+    } catch (error) {
+      console.error('Error requesting verification code:', error);
+      return false;
+    }
+  },
+  
+  // Check if contact is authenticated
+  isAuthenticated(): boolean {
+    const token = localStorage.getItem('contactToken');
+    if (!token) return false;
+    
+    try {
+      const decoded = this.decodeToken(token);
+      
+      // Check if token is expired
+      const currentTime = Math.floor(Date.now() / 1000);
+      if (decoded.exp < currentTime) {
+        this.logout();
+        return false;
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Invalid token:', error);
+      this.logout();
+      return false;
+    }
+  },
+  
+  // Get authenticated contact ID
+  getContactId(): string | null {
+    return localStorage.getItem('contactId');
+  },
+  
+  // Get authenticated contact email
+  getContactEmail(): string | null {
+    const encryptedEmail = localStorage.getItem('contactEmail');
+    if (!encryptedEmail) return null;
+    
+    try {
+      return decryptBase64(encryptedEmail);
+    } catch {
+      return null;
+    }
+  },
+  
+  // Decode JWT token
+  decodeToken(token: string): ContactTokenPayload {
+    return jwtDecode<ContactTokenPayload>(token);
+  },
+  
+  // Get the authentication token
+  getToken(): string | null {
+    return localStorage.getItem('contactToken');
+  },
+  
+  // Logout the contact
+  logout(): void {
+    localStorage.removeItem('contactToken');
+    localStorage.removeItem('contactId');
+    localStorage.removeItem('contactEmail');
+  },
+  
+  // Check if token is about to expire (within 5 minutes)
+  isTokenExpiringSoon(): boolean {
+    const token = this.getToken();
+    if (!token) return false;
+    
+    try {
+      const decoded = this.decodeToken(token);
+      const currentTime = Math.floor(Date.now() / 1000);
+      const fiveMinutesInSeconds = 5 * 60;
+      
+      return decoded.exp - currentTime < fiveMinutesInSeconds;
+    } catch {
+      return false;
+    }
+  },
+};

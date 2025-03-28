@@ -1,126 +1,126 @@
 
-import React, { useState, useRef, useEffect, FormEvent } from 'react';
-import { Send, Paperclip, X, Lock } from 'lucide-react';
-import { validateMessage } from '@/utils/validation/messageValidation';
-
-interface MessageInputProps {
-  onSendMessage: (message: string) => void;
-  placeholder?: string;
-  disabled?: boolean;
-  encrypted?: boolean;
-  onFileUpload?: (files: File[]) => void;
-  onRemoveFile?: (file: File) => void;
-  attachments?: File[];
-  maxLength?: number;
-  className?: string;
-  isRateLimited?: boolean;
-  rateLimitTimeRemaining?: number;
-}
+import React, { useState, useRef, useEffect } from 'react';
+import { Send, Paperclip, Lock } from 'lucide-react';
+import { useThemeContext } from '@/context/ThemeContext';
+import { MessageInputProps } from './types';
 
 const MessageInput: React.FC<MessageInputProps> = ({
   onSendMessage,
-  placeholder = 'Type a message...',
+  onTyping,
+  placeholder = 'Type your message...',
   disabled = false,
   encrypted = false,
+  attachments = [],
   onFileUpload,
   onRemoveFile,
-  attachments = [],
-  maxLength = 2000,
-  className = '',
-  isRateLimited = false,
-  rateLimitTimeRemaining = 0
+  onTypingStart,
+  onTypingEnd,
+  compact = false,
+  onHeightChange,
 }) => {
+  const { colors } = useThemeContext();
   const [message, setMessage] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  
-  // Auto-resize textarea based on content
-  useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
-    }
-  }, [message]);
-  
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setMessage(e.target.value);
     
-    if (!message.trim()) return;
-    
-    const result = validateMessage(message, maxLength);
-    
-    if (!result) {
-      setError('Failed to validate message');
-      return;
-    }
-    
-    if (result && result.isValid) {
-      onSendMessage(result.sanitizedContent);
-      setMessage('');
-      setError(null);
-      
-      // Reset textarea height
-      if (textareaRef.current) {
-        textareaRef.current.style.height = 'auto';
+    // Trigger typing indicator
+    if (onTyping) {
+      // Clear any existing timeout
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
       }
-    } else if (result && result.errors && result.errors.length > 0) {
-      setError(result.errors[0]);
+      
+      // Set a new timeout
+      onTyping();
+      
+      // Set a timeout to clear the typing indicator
+      timeoutRef.current = setTimeout(() => {
+        timeoutRef.current = null;
+      }, 3000);
+    }
+    
+    // For ResponsiveConversationView compatibility
+    if (onTypingStart) {
+      onTypingStart();
+      
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      
+      timeoutRef.current = setTimeout(() => {
+        if (onTypingEnd) onTypingEnd();
+        timeoutRef.current = null;
+      }, 3000);
     }
   };
-  
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+
+  const handleSend = () => {
+    if (message.trim()) {
+      onSendMessage(message.trim(), attachments);
+      setMessage('');
+      
+      // Focus the input after sending
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSubmit(e);
+      handleSend();
     }
   };
-  
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0 && onFileUpload) {
-      const filesArray = Array.from(e.target.files);
-      onFileUpload(filesArray);
-      e.target.value = ''; // Reset the input for future uploads
+
+  // Auto-resize the textarea
+  useEffect(() => {
+    const textarea = inputRef.current;
+    if (textarea) {
+      textarea.style.height = 'auto';
+      const newHeight = Math.min(textarea.scrollHeight, 120);
+      textarea.style.height = `${newHeight}px`;
+      
+      if (onHeightChange) {
+        onHeightChange(newHeight + 48); // Account for padding/borders
+      }
     }
-  };
-  
-  const triggerFileUpload = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
+  }, [message, onHeightChange]);
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && onFileUpload) {
+      onFileUpload(Array.from(e.target.files));
+      e.target.value = ''; // Reset the input
     }
   };
 
   return (
-    <div className={`p-3 border-t ${className}`}>
-      {error && (
-        <div className="mb-2 text-xs text-red-500 p-1 bg-red-50 rounded">
-          {error}
+    <div
+      className="border-t p-3"
+      style={{ borderColor: colors.border, background: colors.background }}
+    >
+      {encrypted && (
+        <div className="flex items-center justify-center mb-1 text-xs text-gray-500">
+          <Lock className="h-3 w-3 mr-1" />
+          <span>End-to-end encrypted</span>
         </div>
       )}
       
-      {isRateLimited && (
-        <div className="mb-2 text-xs text-amber-500 p-1 bg-amber-50 rounded">
-          Message rate limit reached. Please wait {Math.ceil(rateLimitTimeRemaining / 1000)} seconds.
-        </div>
-      )}
-      
+      {/* Attachment previews */}
       {attachments && attachments.length > 0 && (
-        <div className="mb-2 flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 mb-2">
           {attachments.map((file, index) => (
-            <div 
-              key={index} 
-              className="bg-gray-100 rounded px-2 py-1 text-xs flex items-center"
-            >
-              <span className="truncate max-w-[150px]">{file.name}</span>
-              <span className="ml-1 text-gray-500">
-                ({(file.size / 1024).toFixed(1)} KB)
-              </span>
+            <div key={index} className="flex items-center bg-gray-100 rounded px-2 py-1 text-xs text-gray-700">
+              <span className="truncate max-w-[120px]">{file.name}</span>
               {onRemoveFile && (
                 <button 
-                  onClick={() => onRemoveFile(file)}
-                  className="ml-1 text-gray-500 hover:text-red-500"
+                  onClick={() => onRemoveFile(file)} 
+                  className="ml-1 text-gray-500 hover:text-gray-700"
                 >
-                  <X className="h-3 w-3" />
+                  &times;
                 </button>
               )}
             </div>
@@ -128,59 +128,52 @@ const MessageInput: React.FC<MessageInputProps> = ({
         </div>
       )}
       
-      <form onSubmit={handleSubmit} className="flex items-end gap-2">
+      <div
+        className="flex items-end gap-2 rounded-lg p-2"
+        style={{ background: colors.inputBackground }}
+      >
         {onFileUpload && (
-          <>
+          <label className="cursor-pointer">
             <input
               type="file"
-              ref={fileInputRef}
               className="hidden"
               multiple
-              onChange={handleFileChange}
-              disabled={disabled || isRateLimited}
+              onChange={handleFileSelect}
+              disabled={disabled}
             />
-            <button
-              type="button"
-              onClick={triggerFileUpload}
-              disabled={disabled || isRateLimited}
-              className="p-2 rounded-full text-gray-500 hover:bg-gray-100"
-            >
-              <Paperclip className="h-5 w-5" />
-            </button>
-          </>
+            <div className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
+              <Paperclip className="h-5 w-5" style={{ color: colors.foreground }} />
+            </div>
+          </label>
         )}
         
-        <div className="flex-1 relative">
-          <textarea
-            ref={textareaRef}
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            onKeyDown={handleKeyPress}
-            placeholder={placeholder}
-            disabled={disabled || isRateLimited}
-            maxLength={maxLength}
-            rows={1}
-            className="w-full p-2 pr-8 resize-none border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"
-          />
-          {encrypted && (
-            <div className="absolute top-2 right-2 text-green-600">
-              <Lock className="h-4 w-4" />
-            </div>
-          )}
-        </div>
+        <textarea
+          ref={inputRef}
+          value={message}
+          onChange={handleChange}
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder}
+          rows={1}
+          className="flex-1 bg-transparent resize-none outline-none max-h-[120px] min-h-[24px]"
+          style={{ color: colors.foreground }}
+          disabled={disabled}
+        />
         
         <button
-          type="submit"
-          disabled={!message.trim() || disabled || isRateLimited}
-          className={`p-2 rounded-full ${
-            !message.trim() || disabled || isRateLimited
-              ? 'text-gray-400 bg-gray-100'
-              : 'text-white bg-primary hover:bg-primary/90'
+          onClick={handleSend}
+          disabled={!message.trim() || disabled}
+          className={`p-1 rounded-full ${
+            message.trim() ? 'opacity-100' : 'opacity-50'
           }`}
+          style={{ 
+            background: message.trim() ? colors.primary : 'transparent',
+            color: message.trim() ? colors.primaryForeground : colors.foreground
+          }}
+          aria-label="Send message"
         >
           <Send className="h-5 w-5" />
         </button>
-      </form>
+      </div>
     </div>
   );
 };

@@ -1,48 +1,58 @@
 
 import React from 'react';
-import { User } from 'lucide-react';
-import { cn } from '@/utils/helpers/cn';
-import { EnhancedTypingIndicatorProps, TypingUser } from './types';
+import { useThemeContext } from '@/context/ThemeContext';
+import { TypingUser, TypingIndicatorProps } from './types';
 
-const TypingIndicator: React.FC<EnhancedTypingIndicatorProps> = ({
-  typingUsers,
-  agentName = 'Agent',
-  compact = false,
-  className = ''
-}) => {
-  if (!typingUsers || typingUsers.length === 0) {
-    return null;
-  }
-
-  const getNameText = () => {
-    if (typingUsers.length === 1) {
-      return typingUsers[0].name || agentName;
-    } else if (typingUsers.length === 2) {
-      return `${typingUsers[0].name || agentName} and ${typingUsers[1].name || 'another agent'}`;
+const TypingIndicator: React.FC<TypingIndicatorProps> = ({ users, agentName, compact }) => {
+  const { colors } = useThemeContext();
+  
+  if (users.length === 0 && !agentName) return null;
+  
+  // Create a readable string of who's typing
+  const getTypingText = () => {
+    if (agentName) {
+      return `${agentName} is typing...`;
+    }
+    
+    if (users.length === 1) {
+      return `${typeof users[0] === 'string' ? users[0] : (users[0].name || 'Someone')} is typing...`;
+    } else if (users.length === 2) {
+      const firstName = typeof users[0] === 'string' ? users[0] : (users[0].name || 'Someone');
+      const secondName = typeof users[1] === 'string' ? users[1] : (users[1].name || 'someone');
+      return `${firstName} and ${secondName} are typing...`;
     } else {
-      return `${typingUsers[0].name || agentName} and ${typingUsers.length - 1} others`;
+      return `${users.length} people are typing...`;
     }
   };
-
+  
   return (
-    <div 
-      className={cn(
-        "flex items-center p-2 text-xs text-gray-500",
-        compact ? "py-1" : "py-2",
-        className
-      )}
-    >
-      <div className="mr-2 bg-gray-100 p-1 rounded-full">
-        <User className="h-3 w-3" />
-      </div>
-      
-      <div className="flex items-center">
-        <span>{getNameText()} is typing</span>
-        <span className="flex ml-1">
-          <span className="animate-bounce mx-0.5 delay-0">.</span>
-          <span className="animate-bounce mx-0.5 delay-150">.</span>
-          <span className="animate-bounce mx-0.5 delay-300">.</span>
-        </span>
+    <div className="flex items-center py-2">
+      <div className={`flex justify-center items-center px-3 py-1 rounded-full bg-opacity-10 ${compact ? 'text-xs' : ''}`} 
+        style={{ backgroundColor: `${colors.agentMessage}50` }}>
+        <div className="flex space-x-1 mr-2 items-end">
+          <div className="w-2 h-2 rounded-full animate-bounce" 
+               style={{ 
+                 backgroundColor: colors.primary, 
+                 animationDelay: '0ms',
+                 animationDuration: '0.6s' 
+               }} 
+          />
+          <div className="w-2 h-2 rounded-full animate-bounce" 
+               style={{ 
+                 backgroundColor: colors.primary, 
+                 animationDelay: '150ms',
+                 animationDuration: '0.6s' 
+               }} 
+          />
+          <div className="w-2 h-2 rounded-full animate-bounce" 
+               style={{ 
+                 backgroundColor: colors.primary, 
+                 animationDelay: '300ms',
+                 animationDuration: '0.6s' 
+               }} 
+          />
+        </div>
+        <span className="text-xs opacity-75">{getTypingText()}</span>
       </div>
     </div>
   );

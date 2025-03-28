@@ -4,79 +4,89 @@ import { useAbly } from '@/context/AblyContext';
 import { ChatMessage } from '@/components/chat-widget/components/conversation/types';
 
 interface MessageSubscriptionOptions {
-  conversationId: string;
   onMessage?: (message: ChatMessage) => void;
 }
 
-export const useMessageSubscription = ({ 
-  conversationId,
-  onMessage 
-}: MessageSubscriptionOptions) => {
-  const [lastMessage, setLastMessage] = useState<ChatMessage | null>(null);
-  const ably = useAbly();
+export const useMessageSubscription = (
+  conversationId: string, 
+  workspaceId: string,
+  options: MessageSubscriptionOptions = {}
+) => {
+  const { client, getChannelName } = useAbly();
+  const [channel, setChannel] = useState<any>(null);
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [subscription, setSubscription] = useState<any>(null);
 
-  // Subscribe to messages for this conversation
+  // Initialize channel
   useEffect(() => {
-    if (!ably.isConnected) return;
+    if (!client) return;
     
-    const channelName = ably.getChannelName(`conversation:${conversationId}`);
+    const channelName = getChannelName(conversationId);
+    const channelInstance = client.channels.get(channelName);
     
-    // Subscribe to messages
-    const unsubscribe = ably.subscribe(channelName, 'message', message => {
-      const chatMessage = message.data as ChatMessage;
-      
-      setLastMessage(chatMessage);
-      
-      if (onMessage) {
-        onMessage(chatMessage);
-      }
-    });
+    setChannel({ channel: channelInstance });
     
     return () => {
-      unsubscribe();
+      if (client && client.channels) {
+        client.channels.release(channelName);
+      }
     };
-  }, [conversationId, ably, onMessage]);
+  }, [client, conversationId, getChannelName]);
 
-  // Send a message
-  const sendMessage = useCallback(async (content: string): Promise<void> => {
-    if (!content.trim() || !ably.isConnected) return;
+  // Subscribe to messages
+  useEffect(() => {
+    if (!channel || !channel.channel) return;
     
-    const channelName = ably.getChannelName(`conversation:${conversationId}`);
-    
-    const message: ChatMessage = {
-      id: `msg-${Date.now()}`,
-      content,
-      sender: ably.clientId,
-      timestamp: new Date().toISOString(),
-      conversationId,
-      status: 'sending'
+    const handleMessage = (message: any) => {
+      const messageData = message.data as ChatMessage;
+      
+      if (options.onMessage) {
+        options.onMessage(messageData);
+      }
     };
+    
+    let sub: any = null;
     
     try {
-      await ably.publish(channelName, 'message', message);
-      
-      // Update status to sent
-      setLastMessage({
-        ...message,
-        status: 'sent'
-      });
+      // Subscribe to messages
+      sub = channel.channel.subscribe('message', handleMessage);
+      setSubscription(sub);
+      setIsSubscribed(true);
     } catch (error) {
-      console.error('Failed to send message:', error);
-      
-      // Update status to failed
-      setLastMessage({
-        ...message,
-        status: 'failed'
-      });
-      
-      throw error;
+      console.error('Error subscribing to channel:', error);
     }
-  }, [conversationId, ably]);
+    
+    return () => {
+      try {
+        // Check if channel exists before unsubscribing
+        if (channel && channel.channel) {
+          channel.channel.unsubscribe('message', handleMessage);
+        }
+      } catch (err) {
+        console.error('Error unsubscribing:', err);
+      }
+      setIsSubscribed(false);
+    };
+  }, [channel, options]);
+
+  // Function to manually publish a message
+  const publishMessage = useCallback(
+    async (message: ChatMessage): Promise<boolean> => {
+      if (!channel || !channel.channel) return false;
+      
+      try {
+        await channel.channel.publish('message', message);
+        return true;
+      } catch (error) {
+        console.error('Error publishing message:', error);
+        return false;
+      }
+    },
+    [channel]
+  );
 
   return {
-    lastMessage,
-    sendMessage
+    isSubscribed,
+    publishMessage
   };
 };
-
-export default useMessageSubscription;

@@ -1,303 +1,254 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 import { useAbly } from '@/context/AblyContext';
-import { ChatMessage, MessageStatus } from '@/components/chat-widget/components/conversation/types';
+import { ChatMessage } from '@/components/chat-widget/components/conversation/types';
 import { useOfflineMessaging } from './useOfflineMessaging';
-import { useEncryptedMessages } from './useEncryptedMessages';
-import { useEventSystem } from '@/hooks/useEventSystem';
+import { useServiceWorkerSync } from './useServiceWorkerSync';
+import { emitEvent } from '@/utils/events/eventManager';
 import { ChatEventType } from '@/utils/events/eventTypes';
-import { useRateLimiter, RateLimiter } from '@/utils/chat/rateLimiter';
 
-interface UseRealtimeChatOptions {
-  conversationId: string;
-  contactId?: string;
-  enableEncryption?: boolean;
+interface SyncManager {
+  register(tag: string): Promise<void>;
 }
 
-export const useRealtimeChat = ({
-  conversationId,
-  contactId = 'anonymous',
-  enableEncryption = false
-}: UseRealtimeChatOptions) => {
+interface ExtendedServiceWorkerRegistration extends ServiceWorkerRegistration {
+  sync?: SyncManager;
+}
+
+interface ChannelAndClient {
+  channelInstance: any;
+  clientId: string;
+}
+
+export const useRealtimeChat = (conversationId: string, workspaceId: string) => {
+  const { client, clientId, getChannelName } = useAbly();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const ablyContext = useAbly();
-  const eventSystem = useEventSystem();
-  const messageLoadedRef = useRef<boolean>(false);
-  const rateLimiter = useRef(new RateLimiter(5, 10000, 60000));
-  const [isRateLimited, setIsRateLimited] = useState<boolean>(false);
-  const [rateLimitTimeRemaining, setRateLimitTimeRemaining] = useState<number>(0);
+  const [channel, setChannel] = useState<ChannelAndClient | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
   
-  const { queueMessage, getQueuedMessages, clearQueuedMessages } = useOfflineMessaging(conversationId);
+  const { 
+    queueMessage, 
+    getQueuedMessages, 
+    clearQueuedMessages 
+  } = useOfflineMessaging(conversationId);
   
-  const {
-    isEncrypted,
-    initializeEncryption,
-    encryptMessage,
-    decryptMessages,
-    rotateKey
-  } = useEncryptedMessages({
+  const { 
+    isSyncing, 
+    hasQueuedMessages, 
+    offlineMode,
+    triggerManualSync
+  } = useServiceWorkerSync({
     conversationId,
-    enabled: enableEncryption,
-    rotationPeriod: 24 * 60 * 60 * 1000 // 24 hours
+    onSyncStarted: () => console.log(`Starting sync for conversation ${conversationId}`),
+    onSyncCompleted: () => console.log(`Sync completed for conversation ${conversationId}`),
+    onSyncFailed: (error) => console.error(`Sync failed for conversation ${conversationId}:`, error)
   });
-  
+
   useEffect(() => {
-    const loadMessages = async () => {
-      setIsLoading(true);
-      
-      try {
-        if (enableEncryption) {
-          await initializeEncryption();
-        }
-        
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        setMessages([]);
-        
-        const queuedMessages = await getQueuedMessages();
-        if (queuedMessages.length > 0) {
-          setMessages(prev => [...prev, ...queuedMessages]);
-          
-          if (ablyContext.isConnected) {
-            for (const message of queuedMessages) {
-              try {
-                await sendMessageToServer(message);
-              } catch (error) {
-                console.error('Failed to send queued message:', error);
-              }
-            }
-            
-            await clearQueuedMessages();
-          }
-        }
-        
-        messageLoadedRef.current = true;
-      } catch (error) {
-        console.error('Failed to load messages:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    if (!client) return;
     
-    loadMessages();
+    const channelName = getChannelName(conversationId);
+    const channelInstance = client.channels.get(channelName);
     
-    const rateLimitListener = (event: any) => {
-      setIsRateLimited(true);
-      setRateLimitTimeRemaining(event.duration || 30000);
-      
-      const intervalId = setInterval(() => {
-        setRateLimitTimeRemaining(prev => {
-          const newValue = Math.max(0, prev - 1000);
-          if (newValue === 0) {
-            clearInterval(intervalId);
-            setIsRateLimited(false);
-          }
-          return newValue;
-        });
-      }, 1000);
-    };
-    
-    const rateLimitClearListener = () => {
-      setIsRateLimited(false);
-      setRateLimitTimeRemaining(0);
-    };
-    
-    const unsubscribeRateLimit = eventSystem.subscribe(
-      ChatEventType.RATE_LIMIT_TRIGGERED,
-      rateLimitListener
-    );
-    
-    const unsubscribeClear = eventSystem.subscribe(
-      ChatEventType.RATE_LIMIT_CLEARED,
-      rateLimitClearListener
-    );
+    setChannel({ channelInstance, clientId });
+    setIsLoading(false);
     
     return () => {
-      unsubscribeRateLimit();
-      unsubscribeClear();
+      client.channels.release(channelName);
     };
-  }, [
-    conversationId,
-    ablyContext.isConnected,
-    enableEncryption,
-    clearQueuedMessages,
-    getQueuedMessages,
-    eventSystem,
-    initializeEncryption
-  ]);
-  
+  }, [client, clientId, conversationId, getChannelName]);
+
   useEffect(() => {
-    if (!ablyContext.isConnected || !messageLoadedRef.current) return;
+    if (!channel) return;
     
-    const channelName = ablyContext.getChannelName(conversationId);
-    
-    const unsubscribe = ablyContext.subscribe(
-      channelName,
-      'message',
-      async (message: any) => {
-        try {
-          const newMessage = message.data as ChatMessage;
-          
-          const isOwnMessage = newMessage.sender === contactId;
-          const isDuplicate = messages.some(m => m.id === newMessage.id);
-          
-          if (!isOwnMessage && !isDuplicate) {
-            let processedMessage = newMessage;
-            if (isEncrypted && newMessage.encrypted) {
-              try {
-                const decryptedMessages = await decryptMessages([newMessage]);
-                processedMessage = decryptedMessages[0];
-              } catch (error) {
-                console.error('Failed to decrypt incoming message:', error);
-              }
-            }
-            
-            setMessages(prev => [...prev, processedMessage]);
-            
-            eventSystem.emit(ChatEventType.MESSAGE_DELIVERED, {
-              messageId: newMessage.id,
-              conversationId
-            });
-          }
-        } catch (error) {
-          console.error('Error processing incoming message:', error);
-        }
-      }
-    );
-    
-    return () => {
-      unsubscribe();
-    };
-  }, [
-    ablyContext,
-    conversationId,
-    contactId,
-    messages,
-    isEncrypted,
-    decryptMessages,
-    eventSystem
-  ]);
-  
-  const sendMessage = useCallback(
-    async (content: string, shouldEncrypt: boolean = false): Promise<void> => {
-      if (!content.trim()) return;
+    const handleMessage = (message: any) => {
+      const messageData = message.data as ChatMessage;
       
-      if (!rateLimiter.current.checkAction()) {
-        const timeRemaining = rateLimiter.current.getRateLimitTimeRemaining();
-        setIsRateLimited(true);
-        setRateLimitTimeRemaining(timeRemaining);
-        
-        eventSystem.emit(ChatEventType.RATE_LIMIT_TRIGGERED, {
-          source: 'chat',
-          duration: timeRemaining
-        });
-        
-        return Promise.reject(new Error(`Rate limited. Please wait ${Math.ceil(timeRemaining / 1000)} seconds.`));
-      }
-      
-      try {
-        const messageId = `msg-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-        let newMessage: ChatMessage = {
-          id: messageId,
-          content,
-          sender: contactId,
-          timestamp: new Date().toISOString(),
-          conversationId,
-          status: 'sending'
-        };
-        
-        if (shouldEncrypt && isEncrypted) {
-          try {
-            const encrypted = await encryptMessage(content);
-            newMessage.encrypted = true;
-            newMessage.encryptedContent = encrypted.ciphertext;
-            newMessage.metadata = {
-              encryption: {
-                iv: encrypted.iv,
-                keyVersion: encrypted.keyVersion
-              }
-            };
-          } catch (error) {
-            console.error('Failed to encrypt message:', error);
-            newMessage.encrypted = false;
-          }
+      setMessages((prevMessages) => {
+        if (prevMessages.some(msg => msg.id === messageData.id)) {
+          return prevMessages;
         }
         
-        setMessages(prev => [...prev, newMessage]);
-        
-        eventSystem.emit(ChatEventType.MESSAGE_SENT, {
-          messageId,
-          conversationId
-        });
-        
-        if (ablyContext.isConnected) {
-          await sendMessageToServer(newMessage);
-          
-          setMessages(prev =>
-            prev.map(msg =>
-              msg.id === messageId ? { ...msg, status: 'sent' as MessageStatus } : msg
-            )
-          );
-        } else {
-          await queueMessage(newMessage);
-          
-          setMessages(prev =>
-            prev.map(msg =>
-              msg.id === messageId ? { ...msg, status: 'queued' as MessageStatus } : msg
-            )
-          );
-          
-          eventSystem.emit(ChatEventType.MESSAGE_FAILED, {
-            messageId,
-            reason: 'offline',
-            willRetry: true
+        if (messageData.sender !== 'user') {
+          emitEvent({
+            type: ChatEventType.MESSAGE_RECEIVED,
+            timestamp: new Date().toISOString(),
+            source: 'realtime-chat',
+            messageId: messageData.id,
+            content: messageData.content,
+            conversationId,
+            agentId: messageData.metadata?.agentId,
+            pageUrl: window.location.href
           });
         }
-      } catch (error) {
-        console.error('Error sending message:', error);
         
-        eventSystem.emit(ChatEventType.MESSAGE_FAILED, {
-          content,
-          reason: (error as Error).message || 'Unknown error'
-        });
+        return [...prevMessages, messageData];
+      });
+    };
+    
+    const subscription = channel.channelInstance.subscribe('message', handleMessage);
+    
+    const processOfflineMessages = async () => {
+      if (offlineMode) return;
+      
+      const queuedMessages = await getQueuedMessages();
+      
+      if (queuedMessages.length > 0) {
+        for (const msg of queuedMessages) {
+          try {
+            await channel.channelInstance.publish('message', msg);
+          } catch (err) {
+            console.error('Failed to send queued message:', err);
+          }
+        }
         
-        return Promise.reject(error);
+        await clearQueuedMessages();
       }
-    },
-    [
-      ablyContext.isConnected,
-      conversationId,
-      contactId,
-      isEncrypted,
-      encryptMessage,
-      queueMessage,
-      eventSystem
-    ]
-  );
-  
-  const sendMessageToServer = async (message: ChatMessage): Promise<void> => {
-    if (!ablyContext.isConnected) {
-      throw new Error('Not connected to server');
+    };
+    
+    if (!offlineMode && hasQueuedMessages) {
+      processOfflineMessages();
     }
     
-    const channelName = ablyContext.getChannelName(conversationId);
+    channel.channelInstance.history((err: Error, result: any) => {
+      if (err) {
+        console.error('Error fetching history:', err);
+        return;
+      }
+      
+      if (result && result.items) {
+        const historyMessages = result.items.map((item: any) => item.data);
+        setMessages((prevMessages) => {
+          const newMessages = [...prevMessages];
+          
+          for (const historyMsg of historyMessages) {
+            if (!newMessages.some(msg => msg.id === historyMsg.id)) {
+              newMessages.push(historyMsg);
+            }
+          }
+          
+          return newMessages.sort((a, b) => {
+            const timeA = new Date(a.timestamp).getTime();
+            const timeB = new Date(b.timestamp).getTime();
+            return timeA - timeB;
+          });
+        });
+      }
+    });
+    
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [
+    channel, 
+    getQueuedMessages, 
+    clearQueuedMessages, 
+    offlineMode, 
+    hasQueuedMessages
+  ]);
+
+  useEffect(() => {
+    const handleOnline = () => {
+      console.log('App is online, syncing queued messages...');
+      triggerManualSync();
+    };
+    
+    window.addEventListener('online', handleOnline);
+    
+    return () => {
+      window.removeEventListener('online', handleOnline);
+    };
+  }, [triggerManualSync]);
+
+  const sendMessage = useCallback(async (content: string, metadata: Record<string, any> = {}) => {
+    if (!content.trim()) return false;
+    
+    const messageId = uuidv4();
+    const message: ChatMessage = {
+      id: messageId,
+      content,
+      sender: 'user',
+      timestamp: new Date().toISOString(),
+      conversationId,
+      metadata: {
+        ...metadata,
+        clientId,
+        conversationId,
+        workspaceId,
+      },
+    };
     
     try {
-      await ablyContext.publish(channelName, 'message', message);
-    } catch (error) {
-      console.error('Failed to send message to server:', error);
-      throw error;
+      emitEvent({
+        type: ChatEventType.MESSAGE_SENT,
+        timestamp: new Date().toISOString(),
+        source: 'realtime-chat',
+        messageId,
+        content,
+        conversationId,
+        attachments: metadata.attachments?.length || 0,
+        pageUrl: window.location.href
+      });
+      
+      if (channel && channel.channelInstance && !offlineMode) {
+        await channel.channelInstance.publish('message', message);
+        return true;
+      } else {
+        await queueMessage(message);
+        
+        setMessages(prev => [...prev, message]);
+        
+        if ('serviceWorker' in navigator && 'SyncManager' in window) {
+          try {
+            const registration = await navigator.serviceWorker.ready as ExtendedServiceWorkerRegistration;
+            if (registration && registration.sync) {
+              await registration.sync.register('sync-messages');
+            }
+          } catch (e) {
+            console.warn('Background sync registration failed:', e);
+          }
+        }
+        
+        return true;
+      }
+    } catch (err) {
+      console.error('Error sending message:', err);
+      setError(err instanceof Error ? err : new Error('Failed to send message'));
+      
+      emitEvent({
+        type: ChatEventType.ERROR_OCCURRED,
+        timestamp: new Date().toISOString(),
+        source: 'realtime-chat',
+        metadata: {
+          error: err instanceof Error ? err.message : 'Unknown error sending message',
+          messageId
+        },
+        pageUrl: window.location.href
+      });
+      
+      await queueMessage(message);
+      
+      setMessages(prev => [...prev, message]);
+      return false;
     }
-  };
-  
+  }, [
+    channel, 
+    clientId, 
+    conversationId, 
+    workspaceId, 
+    queueMessage, 
+    offlineMode
+  ]);
+
   return {
     messages,
-    isLoading,
     sendMessage,
-    isEncrypted,
-    isRateLimited,
-    rateLimitTimeRemaining
+    isLoading,
+    error,
+    isOffline: offlineMode,
+    isSyncing,
+    hasQueuedMessages,
+    triggerSync: triggerManualSync
   };
 };
-
-export default useRealtimeChat;

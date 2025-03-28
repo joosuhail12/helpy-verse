@@ -4,7 +4,7 @@ import { useAppSelector } from '@/hooks/useAppSelector';
 import { useEffect, useState } from 'react';
 import { Loader2, WifiOff, AlertTriangle } from 'lucide-react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { fetchUserData } from '@/store/slices/auth/userActions';
+import { fetchUserData } from '@/store/slices/authSlice';
 import { HttpClient } from '@/api/services/http';
 import { isAuthenticated, getAuthToken } from '@/utils/auth/tokenManager';
 import { Button } from '@/components/ui/button';

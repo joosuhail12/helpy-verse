@@ -112,14 +112,11 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
           messages={messages} 
           conversationId={conversationId}
           isLoading={isLoading}
-          // Auto-enable virtualization for large message lists
-          useVirtualization={messages.length > 50}
-          typingUsers={typingUsers}
         />
         
         {typingUsers.length > 0 && (
           <div className="px-4 py-2">
-            <TypingIndicator typingUsers={typingUsers} />
+            <TypingIndicator users={typingUsers} />
           </div>
         )}
         

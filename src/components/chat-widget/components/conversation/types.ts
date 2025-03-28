@@ -1,120 +1,137 @@
+export interface ChatMessage {
+  id: string;
+  content: string;
+  sender: 'user' | 'agent' | 'system';
+  timestamp: string;
+  status?: 'sending' | 'sent' | 'delivered' | 'read' | 'failed';
+  attachments?: {
+    id: string;
+    name: string;
+    url: string;
+    size: number;
+    type: string;
+  }[];
+  metadata?: Record<string, any>;
+  encrypted?: boolean;
+  encryptedContent?: string;
+  conversationId?: string;
+}
 
-// Message sender types
-export type MessageSender = 'user' | 'agent' | 'system' | string;
+export interface MessageInputProps {
+  onSendMessage: (message: string, attachments?: File[]) => void;
+  onTypingStart?: () => void;
+  onTypingEnd?: () => void;
+  placeholder?: string;
+  disabled?: boolean;
+  attachments?: File[];
+  onFileUpload?: (files: File[]) => void;
+  onRemoveFile?: (file: File) => void;
+  showAttachments?: boolean;
+  compact?: boolean;
+  onHeightChange?: (height: number) => void;
+  encrypted?: boolean;
+  onTyping?: () => void;
+}
 
-// Message status types
-export type MessageStatus = 'sending' | 'sent' | 'delivered' | 'read' | 'failed' | 'queued';
+export interface ChatAvatarProps {
+  name: string;
+  status?: 'online' | 'offline' | 'away';
+  size?: 'sm' | 'md' | 'lg';
+  src?: string;
+}
 
-// Conversation type
+export interface UserAvatarProps {
+  name: string;
+  userId?: string;
+  color?: string;
+  size?: 'sm' | 'md' | 'lg';
+  src?: string;
+  status?: 'online' | 'offline' | 'away';
+}
+
 export interface Conversation {
   id: string;
   title: string;
   lastMessageTimestamp: string;
   lastMessage?: string;
   unreadCount: number;
-  encrypted?: boolean;
   participants?: string[];
-  metadata?: Record<string, any>;
-}
-
-// Chat message type
-export interface ChatMessage {
-  id: string;
-  content: string;
-  sender: MessageSender;
-  timestamp: string;
-  conversationId: string;
-  status?: MessageStatus;
   encrypted?: boolean;
-  encryptedContent?: string;
-  metadata?: Record<string, any>;
-  attachments?: Array<{
-    id: string;
-    name: string;
-    url: string;
-    size: number;
-    type: string;
-  }>;
+  type?: string;
 }
 
-// Typing indicator user type
+export interface MessageSearchProps {
+  onSearch: (query: string) => void;
+  placeholder?: string;
+}
+
+export interface TypingIndicatorProps {
+  users: string[] | TypingUser[];
+  compact?: boolean;
+  agentName?: string;
+}
+
 export interface TypingUser {
   clientId: string;
   name?: string;
   timestamp: number;
 }
 
-// Message reaction type
-export interface MessageReaction {
-  messageId: string;
-  userId: string;
-  username?: string;
-  emoji: string;
-  timestamp: string;
-}
-
-// Read receipt type
-export interface ReadReceipt {
-  messageId: string;
-  userId: string;
-  username?: string;
-  timestamp: string;
-}
-
-// New interfaces for component props
-export interface TypingIndicatorProps {
-  typingUsers: TypingUser[];
-  agentName?: string;
+export interface ThemeConfig {
+  colors: {
+    primary: string;
+    primaryForeground: string;
+    background: string;
+    backgroundSecondary: string;
+    foreground: string;
+    border: string;
+    userMessage: string;
+    userMessageText: string;
+    agentMessage: string;
+    agentMessageText: string;
+    inputBackground: string;
+    muted: string;
+    mutedForeground: string;
+    secondary: string;
+    secondaryForeground: string;
+    outgoingMessage: string;
+    outgoingMessageForeground: string;
+    incomingMessage: string;
+    incomingMessageForeground: string;
+  };
+  position?: 'left' | 'right';
   compact?: boolean;
-  className?: string;
+  labels?: {
+    welcomeTitle?: string;
+    welcomeSubtitle?: string;
+    askQuestionButton?: string;
+    recentMessagesTitle?: string;
+    noMessagesText?: string;
+    messagePlaceholder?: string;
+  };
 }
 
-export interface EnhancedTypingIndicatorProps {
-  typingUsers: TypingUser[];
-  agentName?: string;
-  compact?: boolean;
-  className?: string;
-}
-
-export interface MessageSearchProps {
-  value: string;
-  onChange: (value: string) => void;
-  resultCount: number;
-  currentResult: number;
-  onNavigate: (direction: 'next' | 'prev') => void;
-}
-
-export interface MessageInputProps {
-  onSendMessage: (content: string, attachments?: File[]) => Promise<void>;
-  disabled?: boolean;
-  encrypted?: boolean;
-  attachments?: File[];
-  isRateLimited?: boolean;
-  rateLimitTimeRemaining?: number;
-  placeholder?: string;
-}
-
-export interface MessageListProps {
-  messages: ChatMessage[];
+export interface EnhancedConversationViewProps {
   conversationId: string;
-  isLoading?: boolean;
-  encrypted?: boolean;
-  showAvatars?: boolean;
+  showSearch?: boolean;
+  showAttachments?: boolean;
   showReactions?: boolean;
   showReadReceipts?: boolean;
-  useVirtualization?: boolean;
-  typingUsers?: TypingUser[];
-}
-
-export interface MessageItemProps {
-  message: ChatMessage;
   encrypted?: boolean;
-  showReadReceipt?: boolean;
-  showReactions?: boolean;
 }
 
-export interface UseChatOptions {
+export interface ConversationViewProps {
   conversationId: string;
-  enableEncryption?: boolean;
+  showAvatars?: boolean;
+  onSendMessage?: (content: string, attachments?: File[]) => void;
+  encrypted?: boolean;
+  workspaceId?: string;
+  onBack?: () => void;
 }
 
+export interface ResponsiveConversationViewProps {
+  conversationId: string;
+  compact?: boolean;
+  workspaceId?: string;
+  onBack?: () => void;
+}

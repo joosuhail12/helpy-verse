@@ -1,107 +1,131 @@
 
 /**
- * Rate limiter utility for controlling message sending frequency
+ * A simple rate limiter for chat messages to prevent spam
  */
 
-// RateLimiter class for controlling API request rates
-export class RateLimiter {
-  private maxAttempts: number;
-  private timeWindow: number;
-  private attempts: number[];
-  private resetTimeout: NodeJS.Timeout | null = null;
-  private limitDuration: number;
-  private limited: boolean = false;
-  private limitEndTime: number = 0;
+interface RateLimitConfig {
+  maxMessages: number;
+  timeWindowMs: number;
+  cooldownMs: number;
+}
 
-  constructor(maxAttempts = 5, timeWindow = 10000, resetAfter = 60000) {
-    this.maxAttempts = maxAttempts;
-    this.timeWindow = timeWindow;
-    this.limitDuration = resetAfter;
-    this.attempts = [];
+interface RateLimitState {
+  messages: number;
+  lastMessageTime: number;
+  isBlocked: boolean;
+  blockUntil: number;
+}
+
+export class RateLimiter {
+  private config: RateLimitConfig;
+  private state: RateLimitState;
+  private storageKey: string;
+
+  constructor(
+    conversationId: string,
+    config: Partial<RateLimitConfig> = {}
+  ) {
+    // Default config
+    this.config = {
+      maxMessages: 10,
+      timeWindowMs: 10000, // 10 seconds
+      cooldownMs: 30000, // 30 seconds
+      ...config
+    };
+
+    this.storageKey = `rate_limit_${conversationId}`;
+    this.loadState();
   }
 
-  // Check if action is allowed
-  checkAction(): boolean {
-    if (this.isLimited()) {
-      return false;
+  private loadState(): void {
+    try {
+      const savedState = localStorage.getItem(this.storageKey);
+      if (savedState) {
+        this.state = JSON.parse(savedState);
+        
+        // If the block has expired, reset the state
+        if (this.state.isBlocked && Date.now() > this.state.blockUntil) {
+          this.resetState();
+        }
+      } else {
+        this.resetState();
+      }
+    } catch (error) {
+      console.error('Failed to load rate limit state:', error);
+      this.resetState();
+    }
+  }
+
+  private saveState(): void {
+    try {
+      localStorage.setItem(this.storageKey, JSON.stringify(this.state));
+    } catch (error) {
+      console.error('Failed to save rate limit state:', error);
+    }
+  }
+
+  private resetState(): void {
+    this.state = {
+      messages: 0,
+      lastMessageTime: 0,
+      isBlocked: false,
+      blockUntil: 0
+    };
+    this.saveState();
+  }
+
+  /**
+   * Check if the user is allowed to send a message
+   * @returns An object with allowed status and reason if not allowed
+   */
+  canSendMessage(): { allowed: boolean; reason?: string; retryAfterMs?: number } {
+    this.loadState();
+
+    // Check if user is blocked
+    if (this.state.isBlocked) {
+      const timeRemaining = this.state.blockUntil - Date.now();
+      if (timeRemaining > 0) {
+        return {
+          allowed: false,
+          reason: `You're sending too many messages. Please wait ${Math.ceil(timeRemaining / 1000)} seconds.`,
+          retryAfterMs: timeRemaining
+        };
+      } else {
+        // Reset if block period has passed
+        this.resetState();
+      }
     }
 
     const now = Date.now();
-    // Remove attempts outside of the time window
-    this.attempts = this.attempts.filter(time => now - time < this.timeWindow);
-    
-    // Check if we're over the limit
-    if (this.attempts.length >= this.maxAttempts) {
-      this.setLimited();
-      return false;
+    const timeSinceLastMessage = now - this.state.lastMessageTime;
+
+    // Check if we should reset the counter
+    if (timeSinceLastMessage > this.config.timeWindowMs) {
+      this.state.messages = 0;
     }
 
-    // Record this attempt
-    this.attempts.push(now);
-    return true;
-  }
+    // Check if user has exceeded rate limit
+    if (this.state.messages >= this.config.maxMessages) {
+      this.state.isBlocked = true;
+      this.state.blockUntil = now + this.config.cooldownMs;
+      this.saveState();
 
-  // Check if currently rate limited
-  isLimited(): boolean {
-    return this.limited && Date.now() < this.limitEndTime;
-  }
-
-  // Set the rate limit
-  private setLimited(): void {
-    this.limited = true;
-    this.limitEndTime = Date.now() + this.limitDuration;
-    
-    // Reset limit after duration
-    if (this.resetTimeout) {
-      clearTimeout(this.resetTimeout);
+      return {
+        allowed: false,
+        reason: `You've sent too many messages too quickly. Please wait ${Math.ceil(this.config.cooldownMs / 1000)} seconds.`,
+        retryAfterMs: this.config.cooldownMs
+      };
     }
-    
-    this.resetTimeout = setTimeout(() => {
-      this.resetRateLimit();
-    }, this.limitDuration);
+
+    return { allowed: true };
   }
 
-  // Reset the rate limit
-  resetRateLimit(): void {
-    this.limited = false;
-    this.attempts = [];
-    this.limitEndTime = 0;
-    
-    if (this.resetTimeout) {
-      clearTimeout(this.resetTimeout);
-      this.resetTimeout = null;
-    }
-  }
-
-  // Get remaining time of rate limit in ms
-  getRateLimitTimeRemaining(): number {
-    if (!this.isLimited()) {
-      return 0;
-    }
-    return Math.max(0, this.limitEndTime - Date.now());
-  }
-
-  // Set custom limit duration
-  setLimitDuration(duration: number): void {
-    this.limitDuration = duration;
+  /**
+   * Record a message being sent
+   */
+  recordMessage(): void {
+    this.state.messages += 1;
+    this.state.lastMessageTime = Date.now();
+    this.saveState();
   }
 }
-
-// Hook for using rate limiting in components
-export const useRateLimiter = (
-  maxAttempts = 5, 
-  timeWindow = 10000, 
-  resetAfter = 60000
-) => {
-  const rateLimiter = new RateLimiter(maxAttempts, timeWindow, resetAfter);
-  
-  return {
-    checkAction: () => rateLimiter.checkAction(),
-    getRateLimitTimeRemaining: () => rateLimiter.getRateLimitTimeRemaining(),
-    resetRateLimit: () => rateLimiter.resetRateLimit(),
-    setLimitDuration: (duration: number) => rateLimiter.setLimitDuration(duration),
-    isLimited: () => rateLimiter.isLimited()
-  };
-};
-
-export default useRateLimiter;

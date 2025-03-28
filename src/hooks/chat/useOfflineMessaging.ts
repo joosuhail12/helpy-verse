@@ -1,50 +1,58 @@
 
-import { useState, useCallback } from 'react';
+import { useCallback } from 'react';
 import { ChatMessage } from '@/components/chat-widget/components/conversation/types';
 
+// Store key prefix
+const OFFLINE_QUEUE_KEY = 'pullse_offline_messages_';
+
 export const useOfflineMessaging = (conversationId: string) => {
-  const [queueKey] = useState(`chat_queue_${conversationId}`);
-  
-  // Queue a message for sending when back online
-  const queueMessage = useCallback(async (message: ChatMessage): Promise<void> => {
+  // Queue a message for when connection is restored
+  const queueMessage = useCallback(async (message: ChatMessage) => {
     try {
-      const queueStr = localStorage.getItem(queueKey);
-      const queue: ChatMessage[] = queueStr ? JSON.parse(queueStr) : [];
-      
-      queue.push(message);
-      localStorage.setItem(queueKey, JSON.stringify(queue));
+      const key = `${OFFLINE_QUEUE_KEY}${conversationId}`;
+      const existingMessages = JSON.parse(localStorage.getItem(key) || '[]');
+      existingMessages.push(message);
+      localStorage.setItem(key, JSON.stringify(existingMessages));
+      return true;
     } catch (error) {
       console.error('Failed to queue message:', error);
-      throw error;
+      return false;
     }
-  }, [queueKey]);
+  }, [conversationId]);
   
-  // Get all queued messages
+  // Get queued messages for this conversation
   const getQueuedMessages = useCallback(async (): Promise<ChatMessage[]> => {
     try {
-      const queueStr = localStorage.getItem(queueKey);
-      return queueStr ? JSON.parse(queueStr) : [];
+      const key = `${OFFLINE_QUEUE_KEY}${conversationId}`;
+      return JSON.parse(localStorage.getItem(key) || '[]');
     } catch (error) {
       console.error('Failed to get queued messages:', error);
       return [];
     }
-  }, [queueKey]);
+  }, [conversationId]);
   
   // Clear the message queue
-  const clearQueuedMessages = useCallback(async (): Promise<void> => {
+  const clearQueuedMessages = useCallback(async () => {
     try {
-      localStorage.removeItem(queueKey);
+      const key = `${OFFLINE_QUEUE_KEY}${conversationId}`;
+      localStorage.removeItem(key);
+      return true;
     } catch (error) {
       console.error('Failed to clear queued messages:', error);
-      throw error;
+      return false;
     }
-  }, [queueKey]);
+  }, [conversationId]);
+  
+  // Check if there are queued messages
+  const hasQueuedMessages = useCallback(async (): Promise<boolean> => {
+    const messages = await getQueuedMessages();
+    return messages.length > 0;
+  }, [getQueuedMessages]);
   
   return {
     queueMessage,
     getQueuedMessages,
-    clearQueuedMessages
+    clearQueuedMessages,
+    hasQueuedMessages
   };
 };
-
-export default useOfflineMessaging;

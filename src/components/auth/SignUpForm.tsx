@@ -4,7 +4,7 @@ import { useState, memo } from "react";
 import { Link } from "react-router-dom";
 import { useAppDispatch } from "../../hooks/useAppDispatch";
 import { useAppSelector } from "../../hooks/useAppSelector";
-import { registerUser } from "../../store/slices/auth/authActions";
+import { registerUser } from "../../store/slices/authSlice";
 import { toast } from "../../components/ui/use-toast";
 
 export const SignUpForm = memo(() => {

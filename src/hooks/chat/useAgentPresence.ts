@@ -1,74 +1,187 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
+import { getAblyChannel, getWorkspaceChannelName } from '@/utils/ably';
 import { useAbly } from '@/context/AblyContext';
-import { ChatEventType } from '@/utils/events/eventTypes';
-import { eventTracker } from '@/utils/events/eventTracker';
+import { UserStatus } from '@/types/userStatus';
 
-interface AgentInfo {
-  id: string;
-  name: string;
-  status: 'online' | 'offline' | 'away';
-  lastActive?: string;
+export interface AgentPresence {
+  clientId: string;
+  username: string;
+  status: UserStatus;
+  lastSeen?: string;
+  avatarUrl?: string;
 }
 
-export const useAgentPresence = (conversationId: string) => {
-  const [agents, setAgents] = useState<AgentInfo[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const ably = useAbly();
+const mapAblyStatusToUserStatus = (status: string): UserStatus => {
+  switch (status) {
+    case 'online':
+      return 'available';
+    case 'away':
+      return 'inactive';
+    case 'typing':
+      return 'active-conversation';
+    default:
+      return 'offline';
+  }
+};
 
-  const fetchAgents = useCallback(async () => {
-    setIsLoading(true);
-
-    try {
-      const channelName = ably.getChannelName(`agent-presence:${conversationId}`);
-      const presenceData = await ably.presence.get(channelName);
-
-      const agentData: AgentInfo[] = presenceData.map(message => ({
-        id: message.clientId,
-        name: message.data?.name || 'Agent',
-        status: message.data?.status || 'online',
-        lastActive: message.data?.lastActive || new Date().toISOString()
-      }));
-
-      setAgents(agentData);
-
-      // Track agent presence event
-      eventTracker.trackEvent({
-        type: ChatEventType.AGENT_PRESENCE_UPDATED,
-        timestamp: new Date().toISOString(),
-        source: 'presence',
-        agents: agentData.map(agent => ({
-          id: agent.id,
-          status: agent.status
-        })),
-        conversationId
-      });
-    } catch (error) {
-      console.error('Failed to fetch agent presence:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [conversationId, ably]);
+export const useAgentPresence = (workspaceId: string, conversationId: string) => {
+  const [agents, setAgents] = useState<AgentPresence[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+  const { clientId } = useAbly();
 
   useEffect(() => {
-    fetchAgents();
-
-    // Subscribe to presence updates
-    const channelName = ably.getChannelName(`agent-presence:${conversationId}`);
-    
-    const unsubscribe = ably.presence.subscribe(channelName, message => {
-      fetchAgents();
-    });
-
-    return () => {
-      unsubscribe();
+    const updateAgentList = (presenceData: any[]) => {
+      const uniqueAgents: Record<string, AgentPresence> = {};
+      
+      presenceData.forEach(presence => {
+        const { clientId, data } = presence;
+        
+        // Skip if this is the current user
+        if (clientId === clientId) return;
+        
+        // Extract agent data
+        const username = data?.username || 'Anonymous Agent';
+        const status = mapAblyStatusToUserStatus(data?.status || 'offline');
+        const avatarUrl = data?.avatarUrl;
+        const lastSeen = data?.lastSeen || new Date().toISOString();
+        
+        // Add to unique agents map
+        uniqueAgents[clientId] = {
+          clientId,
+          username,
+          status,
+          lastSeen,
+          avatarUrl
+        };
+      });
+      
+      // Convert to array
+      setAgents(Object.values(uniqueAgents));
     };
-  }, [conversationId, ably, fetchAgents]);
+    
+    let enterSubscription: any = null;
+    let leaveSubscription: any = null;
+    let updateSubscription: any = null;
+    
+    const fetchAgentPresence = async () => {
+      try {
+        setIsLoading(true);
+        
+        // Get channel for this conversation
+        const channelName = getWorkspaceChannelName(workspaceId, `conversations:${conversationId}`);
+        const channel = await getAblyChannel(channelName);
+        
+        // Get presence data
+        channel.presence.get((err: Error | null, presenceData: any[]) => {
+          if (err) {
+            setError(err);
+            setIsLoading(false);
+            return;
+          }
+          
+          updateAgentList(presenceData || []);
+          setIsLoading(false);
+          
+          // Subscribe to presence updates
+          enterSubscription = channel.presence.subscribe('enter', (member: any) => {
+            setAgents(prevAgents => {
+              // Check if agent already exists
+              const exists = prevAgents.some(agent => agent.clientId === member.clientId);
+              
+              if (exists) {
+                // Update existing agent
+                return prevAgents.map(agent => 
+                  agent.clientId === member.clientId 
+                    ? {
+                        ...agent,
+                        status: mapAblyStatusToUserStatus(member.data?.status || 'online'),
+                        username: member.data?.username || agent.username,
+                        avatarUrl: member.data?.avatarUrl || agent.avatarUrl,
+                        lastSeen: new Date().toISOString()
+                      } 
+                    : agent
+                );
+              } else {
+                // Add new agent
+                return [...prevAgents, {
+                  clientId: member.clientId,
+                  username: member.data?.username || 'Anonymous Agent',
+                  status: mapAblyStatusToUserStatus(member.data?.status || 'online'),
+                  lastSeen: new Date().toISOString(),
+                  avatarUrl: member.data?.avatarUrl
+                }];
+              }
+            });
+          });
+          
+          leaveSubscription = channel.presence.subscribe('leave', (member: any) => {
+            setAgents(prevAgents => 
+              prevAgents.map(agent => 
+                agent.clientId === member.clientId 
+                  ? { ...agent, status: 'offline', lastSeen: new Date().toISOString() } 
+                  : agent
+              )
+            );
+          });
+          
+          updateSubscription = channel.presence.subscribe('update', (member: any) => {
+            setAgents(prevAgents => 
+              prevAgents.map(agent => 
+                agent.clientId === member.clientId 
+                  ? {
+                      ...agent,
+                      status: mapAblyStatusToUserStatus(member.data?.status || agent.status),
+                      username: member.data?.username || agent.username,
+                      avatarUrl: member.data?.avatarUrl || agent.avatarUrl,
+                      lastSeen: new Date().toISOString()
+                    } 
+                  : agent
+              )
+            );
+          });
+        });
+      } catch (err) {
+        console.error('Error fetching agent presence:', err);
+        setError(err instanceof Error ? err : new Error('Unknown error'));
+        setIsLoading(false);
+      }
+    };
+    
+    fetchAgentPresence();
+    
+    // Return cleanup function
+    return () => {
+      if (enterSubscription) {
+        try {
+          enterSubscription.unsubscribe();
+        } catch (e) {
+          console.error('Error unsubscribing from enter events:', e);
+        }
+      }
+      
+      if (leaveSubscription) {
+        try {
+          leaveSubscription.unsubscribe();
+        } catch (e) {
+          console.error('Error unsubscribing from leave events:', e);
+        }
+      }
+      
+      if (updateSubscription) {
+        try {
+          updateSubscription.unsubscribe();
+        } catch (e) {
+          console.error('Error unsubscribing from update events:', e);
+        }
+      }
+    };
+  }, [workspaceId, conversationId, clientId]);
 
   return {
     agents,
-    isLoading
+    isLoading,
+    error
   };
 };
-
-export default useAgentPresence;

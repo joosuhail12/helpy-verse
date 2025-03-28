@@ -7,12 +7,9 @@ import { sessionManager } from '@/utils/auth/sessionManager';
 import { registerServiceWorker } from '@/utils/serviceWorker';
 import { preloadAssets, chatWidgetCriticalAssets, setupLazyLoading } from '@/utils/resourcePreloader';
 import EventDebugger from './components/events/EventDebugger';
+import { eventTracker } from '@/utils/events/eventTracker';
 import { emitEvent } from '@/utils/events/eventManager';
 import { ChatEventType } from '@/utils/events/eventTypes';
-import { useContactManagement } from '@/hooks/chat/useContactManagement';
-import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
-import ContactContextPanel from './components/contact-context/ContactContextPanel';
-import { SessionTimeoutAlert } from './components/session/SessionTimeoutAlert';
 
 // Get configuration from window object or use defaults
 const config = (window as any).PULLSE_CHAT_CONFIG || {
@@ -26,15 +23,13 @@ const config = (window as any).PULLSE_CHAT_CONFIG || {
       typingIndicator: true,
       reactions: true,
       fileAttachments: true,
-      readReceipts: true,
-      contactContext: true
+      readReceipts: true
     },
     // Security settings
     security: {
       requireAuthentication: false,
       endToEndEncryption: false,
-      sessionTimeout: 30, // minutes
-      csrfProtection: true // New setting for CSRF protection
+      sessionTimeout: 30 // minutes
     }
   }
 };
@@ -42,16 +37,12 @@ const config = (window as any).PULLSE_CHAT_CONFIG || {
 // Get workspace ID and security settings from configuration
 const { workspaceId } = config;
 const securitySettings = config.theme?.security || {};
-const features = config.theme?.features || {};
 
 // Initialize session with timeout from config
 const sessionTimeoutMs = (securitySettings.sessionTimeout || 30) * 60 * 1000;
 
 const ChatWidgetStandalone: React.FC = () => {
   const [showDebugger, setShowDebugger] = useState(process.env.NODE_ENV === 'development');
-  const [showContactContext, setShowContactContext] = useState(features.contactContext || false);
-  const { contactId } = useContactManagement(workspaceId);
-  const [sessionMonitorId, setSessionMonitorId] = useState<number | null>(null);
   
   // Initialize service worker, session, and optimize resources on load
   useEffect(() => {
@@ -69,11 +60,18 @@ const ChatWidgetStandalone: React.FC = () => {
     setupLazyLoading();
     
     // Initialize session
-    sessionManager.initSession();
+    sessionManager.initSession(sessionTimeoutMs);
     
-    // Start session monitoring
-    const monitorId = sessionManager.startSessionMonitoring();
-    setSessionMonitorId(monitorId);
+    // Set up interval to check session status
+    const checkSessionInterval = setInterval(() => {
+      if (!sessionManager.isSessionActive()) {
+        console.log('Chat session expired');
+        // Refresh session to start over
+        sessionManager.initSession(sessionTimeoutMs);
+      } else {
+        sessionManager.updateActivity();
+      }
+    }, 60000); // Check every minute
     
     // Emit page load event with current URL
     emitEvent({
@@ -86,27 +84,12 @@ const ChatWidgetStandalone: React.FC = () => {
     });
     
     return () => {
-      if (sessionMonitorId !== null) {
-        sessionManager.stopSessionMonitoring(sessionMonitorId);
-      }
+      clearInterval(checkSessionInterval);
     };
   }, []);
 
   const toggleDebugger = () => {
     setShowDebugger(prev => !prev);
-  };
-
-  const toggleContactContext = () => {
-    setShowContactContext(prev => !prev);
-  };
-  
-  const handleSessionExtend = () => {
-    sessionManager.extendSession();
-  };
-  
-  const handleSessionLogout = () => {
-    sessionManager.endSession();
-    window.location.reload(); // Reload the page to reset the widget
   };
   
   return (
@@ -115,71 +98,28 @@ const ChatWidgetStandalone: React.FC = () => {
         workspaceId={workspaceId} 
         requiresAuthentication={securitySettings.requireAuthentication}
       >
-        {showContactContext ? (
-          <ResizablePanelGroup direction="horizontal" className="w-full h-full">
-            <ResizablePanel defaultSize={70} minSize={50}>
-              <div className="relative h-full">
-                <ChatWidget 
-                  workspaceId={workspaceId}
-                  theme={{
-                    position: config.theme?.position,
-                    compact: config.theme?.compact,
-                    colors: config.theme?.colors
-                  }}
-                />
-                <SessionTimeoutAlert 
-                  onExtend={handleSessionExtend}
-                  onLogout={handleSessionLogout}
-                />
-              </div>
-            </ResizablePanel>
-            
-            <ResizableHandle />
-            
-            <ResizablePanel defaultSize={30} minSize={20}>
-              <ContactContextPanel contactId={contactId} />
-            </ResizablePanel>
-          </ResizablePanelGroup>
-        ) : (
-          <div className="relative h-full">
-            <ChatWidget 
-              workspaceId={workspaceId}
-              theme={{
-                position: config.theme?.position,
-                compact: config.theme?.compact,
-                colors: config.theme?.colors
-              }}
-            />
-            <SessionTimeoutAlert 
-              onExtend={handleSessionExtend}
-              onLogout={handleSessionLogout}
-            />
-          </div>
-        )}
+        <ChatWidget 
+          workspaceId={workspaceId}
+          theme={{
+            position: config.theme?.position,
+            compact: config.theme?.compact,
+            colors: config.theme?.colors
+          }}
+        />
         
         {process.env.NODE_ENV === 'development' && (
           <>
             <EventDebugger 
               isVisible={showDebugger} 
               onClose={() => setShowDebugger(false)} 
-              maxEvents={50}
             />
             
-            <div className="fixed bottom-4 left-4 z-40 flex gap-2">
-              <button 
-                onClick={toggleDebugger}
-                className="bg-gray-800 text-white text-xs px-2 py-1 rounded"
-              >
-                {showDebugger ? 'Hide' : 'Show'} Event Debugger
-              </button>
-              
-              <button 
-                onClick={toggleContactContext}
-                className="bg-blue-600 text-white text-xs px-2 py-1 rounded"
-              >
-                {showContactContext ? 'Hide' : 'Show'} Contact Panel
-              </button>
-            </div>
+            <button 
+              onClick={toggleDebugger}
+              className="fixed bottom-4 left-4 z-40 bg-gray-800 text-white text-xs px-2 py-1 rounded"
+            >
+              {showDebugger ? 'Hide' : 'Show'} Event Debugger
+            </button>
           </>
         )}
       </ChatProvider>

@@ -1,102 +1,169 @@
 
-import { ChatEventType, ChatEventUnion } from './eventTypes';
+import { ChatEvent, ChatEventType, ChatEventUnion } from './eventTypes';
 
-// Global event listeners
-const listeners: { [key: string]: ((event: any) => void)[] } = {};
+type EventCallback = (event: ChatEventUnion) => void;
 
 /**
- * Emit an event to all registered listeners
- * @param event Event object to emit
+ * Manages events for the chat widget system
  */
-export const emitEvent = (event: ChatEventUnion): void => {
-  // Log events in development
-  if (process.env.NODE_ENV === 'development') {
-    console.debug(`[Event Emitted] ${event.type}`, event);
+class EventManager {
+  private listeners: Map<ChatEventType, Set<EventCallback>> = new Map();
+  private globalListeners: Set<EventCallback> = new Set();
+  private sessionId: string;
+  private pageUrl: string;
+  
+  constructor() {
+    this.sessionId = this.generateSessionId();
+    this.pageUrl = this.getCurrentPageUrl();
+    
+    // Track page navigation
+    if (typeof window !== 'undefined') {
+      this.setupPageNavigationTracking();
+    }
   }
   
-  // Notify specific event listeners
-  if (listeners[event.type]) {
-    listeners[event.type].forEach(callback => {
+  /**
+   * Subscribe to a specific event type
+   */
+  public subscribe(eventType: ChatEventType, callback: EventCallback): () => void {
+    if (!this.listeners.has(eventType)) {
+      this.listeners.set(eventType, new Set());
+    }
+    
+    this.listeners.get(eventType)?.add(callback);
+    
+    // Return an unsubscribe function
+    return () => {
+      this.listeners.get(eventType)?.delete(callback);
+    };
+  }
+  
+  /**
+   * Subscribe to all events
+   */
+  public subscribeToAll(callback: EventCallback): () => void {
+    this.globalListeners.add(callback);
+    
+    // Return an unsubscribe function
+    return () => {
+      this.globalListeners.delete(callback);
+    };
+  }
+  
+  /**
+   * Publish an event to all subscribers
+   */
+  public publish(event: ChatEventUnion): void {
+    // Ensure timestamp and add context data
+    const enrichedEvent = this.enrichEvent(event);
+    
+    // Notify specific event listeners
+    this.listeners.get(event.type)?.forEach(callback => {
       try {
-        callback(event);
+        callback(enrichedEvent);
       } catch (error) {
         console.error(`Error in event listener for ${event.type}:`, error);
       }
     });
-  }
-  
-  // Notify wildcard listeners
-  if (listeners['*']) {
-    listeners['*'].forEach(callback => {
+    
+    // Notify global listeners
+    this.globalListeners.forEach(callback => {
       try {
-        callback(event);
+        callback(enrichedEvent);
       } catch (error) {
-        console.error('Error in wildcard event listener:', error);
+        console.error(`Error in global event listener:`, error);
       }
     });
-  }
-};
-
-/**
- * Listen for specific events
- * @param eventType Event type to listen for, or * for all events
- * @param callback Function to call when event is emitted
- * @returns Unsubscribe function
- */
-export const addEventListener = (
-  eventType: ChatEventType | '*',
-  callback: (event: any) => void
-): () => void => {
-  if (!listeners[eventType]) {
-    listeners[eventType] = [];
-  }
-  
-  listeners[eventType].push(callback);
-  
-  // Return unsubscribe function
-  return () => {
-    listeners[eventType] = listeners[eventType].filter(cb => cb !== callback);
     
-    // Clean up empty listener arrays
-    if (listeners[eventType].length === 0) {
-      delete listeners[eventType];
+    // Log events in development
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[Event] ${event.type}:`, enrichedEvent);
     }
-  };
-};
-
-/**
- * Create an event of the specified type with source and timestamp automatically added
- * @param type Event type
- * @param data Additional event data
- * @returns Complete event object
- */
-export const createEvent = (type: ChatEventType, data: any = {}): ChatEventUnion => {
-  return {
-    type,
-    timestamp: new Date().toISOString(),
-    source: data.source || 'event-manager',
-    ...data
-  };
-};
-
-/**
- * Track analytics events by sending to analytics provider
- * @param event Event to track
- */
-export const trackEvent = (event: ChatEventUnion): void => {
-  // In a real app, you'd send this to your analytics provider
-  // For now, we just log it
-  if (process.env.NODE_ENV === 'development') {
-    console.log(`[Analytics] ${event.type}`, event);
   }
   
-  // This is where you'd integrate with analytics platforms like
-  // Google Analytics, Mixpanel, etc.
-};
+  /**
+   * Add metadata and ensure required fields are present
+   */
+  private enrichEvent(event: ChatEventUnion): ChatEventUnion {
+    return {
+      ...event,
+      timestamp: event.timestamp || new Date().toISOString(),
+      source: event.source || 'chat-widget',
+      sessionId: event.sessionId || this.sessionId,
+      pageUrl: event.pageUrl || this.pageUrl
+    };
+  }
+  
+  /**
+   * Generate a unique session ID
+   */
+  private generateSessionId(): string {
+    return Date.now().toString(36) + Math.random().toString(36).substring(2);
+  }
+  
+  /**
+   * Get the current page URL
+   */
+  private getCurrentPageUrl(): string {
+    return typeof window !== 'undefined' ? window.location.href : '';
+  }
+  
+  /**
+   * Setup tracking for page navigation events
+   */
+  private setupPageNavigationTracking(): void {
+    let currentUrl = window.location.href;
+    
+    // Use history API to track URL changes
+    const handleUrlChange = () => {
+      const newUrl = window.location.href;
+      if (newUrl !== currentUrl) {
+        this.publish({
+          type: ChatEventType.PAGE_NAVIGATION,
+          timestamp: new Date().toISOString(),
+          source: 'navigation',
+          previousUrl: currentUrl,
+          currentUrl: newUrl,
+          pageUrl: newUrl
+        });
+        
+        currentUrl = newUrl;
+        this.pageUrl = newUrl;
+      }
+    };
+    
+    // Track history changes
+    window.addEventListener('popstate', handleUrlChange);
+    
+    // Patch history methods to detect programmatic navigation
+    const originalPushState = history.pushState;
+    const originalReplaceState = history.replaceState;
+    
+    history.pushState = function(...args) {
+      originalPushState.apply(this, args);
+      handleUrlChange();
+    };
+    
+    history.replaceState = function(...args) {
+      originalReplaceState.apply(this, args);
+      handleUrlChange();
+    };
+  }
+  
+  /**
+   * Reset the event manager (mainly for testing)
+   */
+  public reset(): void {
+    this.listeners.clear();
+    this.globalListeners.clear();
+    this.sessionId = this.generateSessionId();
+  }
+}
 
-export default {
-  emitEvent,
-  addEventListener,
-  createEvent,
-  trackEvent
+// Create a singleton instance
+export const eventManager = new EventManager();
+
+// Create a hooks-friendly event emitter
+export const emitEvent = (event: ChatEventUnion): void => {
+  eventManager.publish(event);
 };

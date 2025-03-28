@@ -1,24 +1,14 @@
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import * as Ably from 'ably';
 import { v4 as uuidv4 } from 'uuid';
 
-// Ably API key - would normally come from environment variables
-const ABLY_API_KEY = 'X4jpaA.kKXoZg:oEr5R_kjKk06Wk0iilgK_rGAE9hbFjQMU8wYoE_BnEc';
-
 interface AblyContextValue {
-  isConnected: boolean;
-  connectionState: string;
-  getChannelName: (channelId: string) => string;
-  subscribe: (channelName: string, eventName: string, callback: (message: any) => void) => () => void;
-  publish: (channelName: string, eventName: string, data: any) => Promise<void>;
-  presence: {
-    enter: (channelName: string, data?: any) => Promise<void>;
-    leave: (channelName: string) => Promise<void>;
-    get: (channelName: string) => Promise<Ably.Types.PresenceMessage[]>;
-    subscribe: (channelName: string, callback: (presenceMessage: Ably.Types.PresenceMessage) => void) => () => void;
-  };
+  client: Ably.Realtime | null;
   clientId: string;
+  isConnected: boolean;
+  workspaceId: string;
+  getChannelName: (channelId: string) => string;
 }
 
 const AblyContext = createContext<AblyContextValue | undefined>(undefined);
@@ -28,9 +18,13 @@ interface AblyProviderProps {
   workspaceId: string;
 }
 
+// Ably API key - this is a client key which is safe to expose
+const ABLY_API_KEY = "X4jpaA.kKXoZg:oEr5R_kjKk06Wk0iilgK_rGAE9hbFjQMU8wYoE_BnEc";
+
 export const AblyProvider: React.FC<AblyProviderProps> = ({ children, workspaceId }) => {
-  const [client, setClient] = useState<Ably.Types.RealtimePromise | null>(null);
+  const [client, setClient] = useState<Ably.Realtime | null>(null);
   const [clientId] = useState<string>(() => {
+    // Generate a persistent client ID for this browser
     const savedClientId = localStorage.getItem('ably_client_id');
     if (savedClientId) return savedClientId;
     
@@ -38,171 +32,48 @@ export const AblyProvider: React.FC<AblyProviderProps> = ({ children, workspaceI
     localStorage.setItem('ably_client_id', newClientId);
     return newClientId;
   });
-  const [isConnected, setIsConnected] = useState<boolean>(false);
-  const [connectionState, setConnectionState] = useState<string>('disconnected');
-  const [channels, setChannels] = useState<Record<string, Ably.Types.RealtimeChannelPromise>>({});
+  const [isConnected, setIsConnected] = useState(false);
 
   // Initialize Ably client
   useEffect(() => {
-    const ablyClient = new Ably.Realtime.Promise({
+    const ablyClient = new Ably.Realtime({
       key: ABLY_API_KEY,
-      clientId
+      clientId,
     });
-    
-    setClient(ablyClient as Ably.Types.RealtimePromise);
-    
-    // Connection state change handler
-    const handleConnectionStateChange = (stateChange: Ably.Types.ConnectionStateChange) => {
-      setConnectionState(stateChange.current);
-      setIsConnected(stateChange.current === 'connected');
-      
-      if (stateChange.current === 'connected') {
-        console.log('Connected to Ably realtime service');
-      } else if (stateChange.current === 'failed') {
-        console.error('Failed to connect to Ably', stateChange.reason);
-      }
-    };
-    
-    ablyClient.connection.on('connected', handleConnectionStateChange);
-    ablyClient.connection.on('disconnected', handleConnectionStateChange);
-    ablyClient.connection.on('suspended', handleConnectionStateChange);
-    ablyClient.connection.on('failed', handleConnectionStateChange);
-    
+
+    ablyClient.connection.on('connected', () => {
+      console.log('Ably connected');
+      setIsConnected(true);
+    });
+
+    ablyClient.connection.on('disconnected', () => {
+      console.log('Ably disconnected');
+      setIsConnected(false);
+    });
+
+    ablyClient.connection.on('failed', (error) => {
+      console.error('Ably connection failed:', error);
+      setIsConnected(false);
+    });
+
+    setClient(ablyClient);
+
     return () => {
-      ablyClient.connection.off();
       ablyClient.close();
     };
   }, [clientId]);
 
-  // Get a channel instance with proper caching
-  const getChannel = useCallback((channelName: string): Ably.Types.RealtimeChannelPromise => {
-    if (!client) {
-      throw new Error('Ably client not initialized');
-    }
-    
-    if (channels[channelName]) {
-      return channels[channelName];
-    }
-    
-    const channel = client.channels.get(channelName);
-    
-    setChannels(prev => ({
-      ...prev,
-      [channelName]: channel as Ably.Types.RealtimeChannelPromise
-    }));
-    
-    return channel as Ably.Types.RealtimeChannelPromise;
-  }, [client, channels]);
-
-  // Get channel name with workspace prefix
-  const getChannelName = useCallback((channelId: string): string => {
-    return `workspace:${workspaceId}:${channelId}`;
-  }, [workspaceId]);
-
-  // Subscribe to a channel event
-  const subscribe = useCallback((channelName: string, eventName: string, callback: (message: any) => void): () => void => {
-    try {
-      const channel = getChannel(channelName);
-      
-      const onMessage = (message: Ably.Types.Message) => {
-        callback(message);
-      };
-      
-      channel.subscribe(eventName, onMessage);
-      
-      return () => {
-        channel.unsubscribe(eventName, onMessage);
-      };
-    } catch (error) {
-      console.error(`Failed to subscribe to ${channelName}:${eventName}`, error);
-      return () => {}; // Return no-op unsubscribe function
-    }
-  }, [getChannel]);
-
-  // Publish a message to a channel
-  const publish = useCallback(async (channelName: string, eventName: string, data: any): Promise<void> => {
-    try {
-      if (!isConnected) {
-        throw new Error('Not connected to Ably');
-      }
-      
-      const channel = getChannel(channelName);
-      await channel.publish(eventName, data);
-    } catch (error) {
-      console.error(`Failed to publish to ${channelName}:${eventName}`, error);
-      throw error;
-    }
-  }, [getChannel, isConnected]);
-
-  // Presence operations
-  const presence = {
-    enter: useCallback(async (channelName: string, data: any = {}): Promise<void> => {
-      try {
-        if (!isConnected) {
-          throw new Error('Not connected to Ably');
-        }
-        
-        const channel = getChannel(channelName);
-        await channel.presence.enter(data);
-      } catch (error) {
-        console.error(`Failed to enter presence for ${channelName}`, error);
-        throw error;
-      }
-    }, [getChannel, isConnected]),
-    
-    leave: useCallback(async (channelName: string): Promise<void> => {
-      try {
-        if (!client) return;
-        
-        const channel = getChannel(channelName);
-        await channel.presence.leave();
-      } catch (error) {
-        console.error(`Failed to leave presence for ${channelName}`, error);
-      }
-    }, [getChannel, client]),
-    
-    get: useCallback(async (channelName: string): Promise<Ably.Types.PresenceMessage[]> => {
-      try {
-        if (!isConnected) {
-          return [];
-        }
-        
-        const channel = getChannel(channelName);
-        return await channel.presence.get();
-      } catch (error) {
-        console.error(`Failed to get presence for ${channelName}`, error);
-        return [];
-      }
-    }, [getChannel, isConnected]),
-    
-    subscribe: useCallback((channelName: string, callback: (presenceMessage: Ably.Types.PresenceMessage) => void): () => void => {
-      try {
-        const channel = getChannel(channelName);
-        
-        channel.presence.subscribe('enter', callback);
-        channel.presence.subscribe('leave', callback);
-        channel.presence.subscribe('update', callback);
-        
-        return () => {
-          channel.presence.unsubscribe('enter', callback);
-          channel.presence.unsubscribe('leave', callback);
-          channel.presence.unsubscribe('update', callback);
-        };
-      } catch (error) {
-        console.error(`Failed to subscribe to presence for ${channelName}`, error);
-        return () => {}; // Return no-op unsubscribe function
-      }
-    }, [getChannel])
+  // Helper to get standardized channel names
+  const getChannelName = (channelId: string): string => {
+    return `chat:${workspaceId}:${channelId}`;
   };
 
   const value = {
+    client,
+    clientId,
     isConnected,
-    connectionState,
+    workspaceId,
     getChannelName,
-    subscribe,
-    publish,
-    presence,
-    clientId
   };
 
   return <AblyContext.Provider value={value}>{children}</AblyContext.Provider>;

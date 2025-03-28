@@ -1,101 +1,98 @@
 
 import { useState, useCallback } from 'react';
+import { HttpClient } from '@/api/services/http';
 import { contactAuth } from '@/utils/auth/contactAuth';
 
-interface ApiOptions {
-  headers?: Record<string, string>;
-  baseUrl?: string;
-  timeout?: number;
-}
+/**
+ * Hook for making secure API calls from the chat widget
+ * Automatically handles authentication and error states
+ */
+export const useSecureApi = () => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-export const useSecureApi = (options: ApiOptions = {}) => {
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [error, setError] = useState<Error | null>(null);
-  
-  const {
-    headers: additionalHeaders = {},
-    baseUrl = '/api',
-    timeout = 10000
-  } = options;
-  
-  const fetchWithAuth = useCallback(async (
-    endpoint: string,
+  // Generic API call function with authentication
+  const secureApiCall = useCallback(async <T>(
+    endpoint: string, 
     method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET',
     data?: any
-  ) => {
-    setIsLoading(true);
+  ): Promise<T | null> => {
+    setLoading(true);
     setError(null);
     
-    const token = contactAuth.getToken();
-    const contactId = contactAuth.getContactId();
-    
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), timeout);
+      // Get contact authentication token
+      const token = contactAuth.getToken();
+      const contactId = contactAuth.getContactId();
       
-      const headers = {
-        'Content-Type': 'application/json',
-        'X-Client-ID': contactId || 'anonymous',
-        ...additionalHeaders
+      if (!token || !contactId) {
+        setError('Authentication required');
+        return null;
+      }
+      
+      // Configure request with auth token
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
       };
       
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
+      let response;
+      
+      switch (method) {
+        case 'GET':
+          response = await HttpClient.apiClient.get<T>(endpoint, config);
+          break;
+        case 'POST':
+          response = await HttpClient.apiClient.post<T>(endpoint, data, config);
+          break;
+        case 'PUT':
+          response = await HttpClient.apiClient.put<T>(endpoint, data, config);
+          break;
+        case 'DELETE':
+          response = await HttpClient.apiClient.delete<T>(endpoint, config);
+          break;
       }
       
-      const response = await fetch(`${baseUrl}${endpoint}`, {
-        method,
-        headers,
-        body: data ? JSON.stringify(data) : undefined,
-        credentials: 'include',
-        signal: controller.signal
-      });
-      
-      clearTimeout(timeoutId);
-      
-      if (!response.ok) {
-        throw new Error(`API request failed with status ${response.status}`);
-      }
-      
-      const result = await response.json();
-      return result;
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error(String(err)));
-      throw err;
+      return response.data;
+    } catch (err: any) {
+      console.error('Secure API call failed:', err);
+      setError(err.message || 'Failed to complete the request');
+      return null;
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
-  }, [baseUrl, timeout, additionalHeaders]);
-  
-  const get = useCallback((endpoint: string) => {
-    return fetchWithAuth(endpoint, 'GET');
-  }, [fetchWithAuth]);
-  
-  const post = useCallback((endpoint: string, data: any) => {
-    return fetchWithAuth(endpoint, 'POST', data);
-  }, [fetchWithAuth]);
-  
-  const put = useCallback((endpoint: string, data: any) => {
-    return fetchWithAuth(endpoint, 'PUT', data);
-  }, [fetchWithAuth]);
-  
-  const del = useCallback((endpoint: string) => {
-    return fetchWithAuth(endpoint, 'DELETE');
-  }, [fetchWithAuth]);
-  
-  const isAuthenticated = useCallback(() => {
-    return contactAuth.isAuthenticated();
   }, []);
   
+  // Contact-specific API calls
+  const getContactData = useCallback(async () => {
+    const contactId = contactAuth.getContactId();
+    if (!contactId) {
+      setError('Authentication required');
+      return null;
+    }
+    
+    return secureApiCall<any>(`/contact/${contactId}`);
+  }, [secureApiCall]);
+  
+  // Get conversation history for authenticated contact
+  const getContactConversations = useCallback(async () => {
+    const contactId = contactAuth.getContactId();
+    if (!contactId) {
+      setError('Authentication required');
+      return null;
+    }
+    
+    return secureApiCall<any>(`/contact/${contactId}/conversations`);
+  }, [secureApiCall]);
+  
   return {
-    get,
-    post,
-    put,
-    del,
-    isLoading,
+    loading,
     error,
-    isAuthenticated
+    secureApiCall,
+    getContactData,
+    getContactConversations,
+    isAuthenticated: contactAuth.isAuthenticated()
   };
 };
-
-export default useSecureApi;

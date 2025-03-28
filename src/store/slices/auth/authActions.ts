@@ -1,88 +1,165 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
-import { setCookie, removeCookie } from '@/utils/helpers/helpers';
-import { handleSetToken } from '@/utils/auth/tokenManager';
+import { HttpClient } from "@/api/services/http";
+import { 
+  encryptBase64,
+  setCookie,
+  setWorkspaceId,
+  handleSetToken
+} from '@/utils/helpers/helpers';
+import { get } from "lodash";
+import { Credentials, PasswordResetConfirmation, PasswordResetRequest, RegistrationCredentials } from './types';
+import { AUTH_ENDPOINTS } from '@/api/services/http/config';
 
-// Mock API for development
-const mockSuccessfulLogin = (credentials) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
-        data: {
-          accessToken: 'mock-jwt-token',
-          user: {
-            id: '1',
-            email: credentials.email,
-            name: 'Test User',
-            role: 'user'
-          }
-        }
-      });
-    }, 800);
-  });
-};
+// Authentication actions
 
-// Login action
 export const loginUser = createAsyncThunk(
-  'auth/login',
-  async (credentials: { email: string; password: string }, { rejectWithValue }) => {
+  "auth/login",
+  async (credentials: Credentials, { rejectWithValue }) => {
     try {
-      // For development, use mock API
-      // In production, replace with your actual API endpoint
-      const response = await mockSuccessfulLogin(credentials);
-      const { accessToken, user } = response.data;
+      // Check for offline status first
+      if (HttpClient.isOffline()) {
+        console.error("Device is offline - cannot connect to authentication server");
+        return rejectWithValue({
+          message: "You are currently offline. Please check your internet connection and try again.",
+          isOfflineError: true
+        });
+      }
       
-      // Set authentication token using tokenManager
-      handleSetToken(accessToken);
+      console.log("Attempting login for:", credentials.email);
       
-      return user;
+      // Ensure we're using the consistent endpoint from config
+      const response = await HttpClient.apiClient.post(AUTH_ENDPOINTS.LOGIN, {
+        username: credentials.email,
+        password: credentials.password,
+        recaptchaId: "",
+      });
+
+      console.log("Login response received:", response.status);
+      
+      const loginData = response.data?.data;
+      if (loginData) {
+        const email = loginData?.username || credentials.email;
+        const encryptedEmail = encryptBase64(email);
+        setCookie("agent_email", encryptedEmail);
+
+        // Set the token in the cookie and Axios headers
+        const token = loginData?.accessToken?.token || "";
+        if (token) {
+          console.log("Setting token from login response");
+          handleSetToken(token);
+          
+          // Store user ID for convenience if available
+          if (loginData.id) {
+            localStorage.setItem("userId", loginData.id);
+          }
+          
+          // Store user role if available
+          if (loginData.role) {
+            localStorage.setItem("role", loginData.role);
+          }
+        } else {
+          console.error("No token received in login response");
+          return rejectWithValue("Authentication server did not provide a valid token. Please try again.");
+        }
+
+        // Set workspace ID if available - only in cookie
+        const workspaceId = get(response.data, "data.defaultWorkspaceId", "");
+        if (workspaceId) {
+          setWorkspaceId(workspaceId);
+        }
+
+        // Configure Axios with the new token
+        HttpClient.setAxiosDefaultConfig();
+      } else {
+        console.error("Login response missing data structure:", response.data);
+        return rejectWithValue("Invalid server response format");
+      }
+      
+      return response.data;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Login failed');
+      console.error("Login error:", error);
+      
+      // Check if this is an offline error
+      if (error.isOfflineError || !navigator.onLine) {
+        return rejectWithValue({
+          message: "You are currently offline. Please check your internet connection and try again.",
+          isOfflineError: true
+        });
+      }
+      
+      // Check if this is an auth error
+      if (error.isAuthError) {
+        return rejectWithValue({
+          message: "Invalid email or password. Please check your credentials and try again.",
+          isAuthError: true
+        });
+      }
+      
+      // Check if this is a server error
+      if (error.isServerError) {
+        return rejectWithValue({
+          message: "The authentication server is currently unavailable. Please try again later.",
+          isServerError: true
+        });
+      }
+      
+      // Provide more specific error messages based on the error type
+      if (error.code === 'ERR_NETWORK') {
+        return rejectWithValue({
+          message: "Cannot connect to the authentication server. Please check your network connection or try again later.",
+          isOfflineError: true
+        });
+      }
+      
+      // Log detailed error information for debugging
+      console.error("Error details:", {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message
+      });
+      
+      return rejectWithValue(error.response?.data?.message || "Login failed. Please check your credentials and try again.");
     }
   }
 );
 
-// Register action
 export const registerUser = createAsyncThunk(
   'auth/register',
-  async (userData: { fullName: string; email: string; password: string; companyName: string }, { rejectWithValue }) => {
+  async (credentials: RegistrationCredentials, { rejectWithValue }) => {
     try {
-      // This would be replaced with an actual API call
-      const response = await axios.post('/api/auth/register', userData);
-      const { token, user } = response.data;
+      const response = await HttpClient.apiClient.post(AUTH_ENDPOINTS.REGISTER, credentials);
       
-      // Set authentication token in cookie
-      setCookie('customerToken', token, 7);
+      // If registration returns a token, set it
+      const token = get(response, 'data.data.accessToken.token', '');
+      if (token) {
+        handleSetToken(token);
+      }
       
-      return user;
+      return response.data;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Registration failed');
+      return rejectWithValue(error.response?.data?.message || "Registration failed");
     }
   }
 );
 
-// Request password reset
 export const requestPasswordReset = createAsyncThunk(
   'auth/requestPasswordReset',
-  async (data: { email: string }, { rejectWithValue }) => {
+  async (credentials: PasswordResetRequest, { rejectWithValue }) => {
     try {
-      // This would be replaced with an actual API call
-      await axios.post('/api/auth/forgot-password', data);
-      return true;
+      const response = await HttpClient.apiClient.post(AUTH_ENDPOINTS.FORGOT_PASSWORD, credentials);
+      return response.data;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to send reset email');
+      return rejectWithValue(error.response?.data?.message || 'Password reset request failed');
     }
   }
 );
 
-// Confirm password reset
 export const confirmPasswordReset = createAsyncThunk(
   'auth/confirmPasswordReset',
-  async (data: { token: string; password: string; rid?: string; tenantId?: string }, { rejectWithValue }) => {
+  async (credentials: PasswordResetConfirmation, { rejectWithValue }) => {
     try {
-      // This would be replaced with an actual API call
-      await axios.post('/api/auth/reset-password', data);
-      return true;
+      const response = await HttpClient.apiClient.post(AUTH_ENDPOINTS.RESET_PASSWORD, credentials);
+      return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Password reset failed');
     }
