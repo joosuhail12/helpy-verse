@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useChat } from '@/context/ChatContextWithPlugins';
 import { useThemeContext } from '@/context/ThemeContext';
-import MessageList from './MessageList';
+import MessageList from './MessageListWithPlugins';
 import MessageInput from './MessageInput';
 import TypingIndicator from './TypingIndicator';
 import ChatHeader from '../header/ChatHeader';
@@ -110,9 +110,9 @@ const ConversationView: React.FC<ConversationViewProps> = ({
   };
   
   // Get UI extensions from plugins
-  const headerExtensions = getUiExtensions ? getUiExtensions('header', conversationId) : null;
-  const footerExtensions = getUiExtensions ? getUiExtensions('footer', conversationId) : null;
-  const messageActionExtensions = getUiExtensions ? getUiExtensions('messageActions', conversationId) : null;
+  const headerExtensions = getUiExtensions('header', conversationId);
+  const footerExtensions = getUiExtensions('footer', conversationId);
+  const messageActionExtensions = getUiExtensions('messageActions', conversationId);
   
   return (
     <div className="flex flex-col h-full">

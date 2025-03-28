@@ -11,6 +11,7 @@ export interface ChatHeaderProps {
   onBackClick?: () => void;
   showBackButton?: boolean;
   onClose?: () => void;
+  children?: React.ReactNode; // Add children prop
 }
 
 const ChatHeader: React.FC<ChatHeaderProps> = ({
@@ -19,7 +20,8 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
   agents = [],
   onBackClick,
   showBackButton = false,
-  onClose
+  onClose,
+  children // Destructure children
 }) => {
   const { colors } = useThemeContext();
   
@@ -53,6 +55,13 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
       {agents && agents.length > 0 && (
         <div className="ml-2">
           <AgentAvatarGroup agents={agents} />
+        </div>
+      )}
+      
+      {/* Add children here */}
+      {children && (
+        <div className="ml-2">
+          {children}
         </div>
       )}
 

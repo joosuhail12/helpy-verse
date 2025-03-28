@@ -25,6 +25,7 @@ interface ChatContextValue {
   unregisterPlugin: (pluginId: string) => boolean;
   getAllPlugins: () => ChatPlugin[];
   getPluginById: (pluginId: string) => ChatPlugin | undefined;
+  getUiExtensions: (location: 'header' | 'footer' | 'sidebar' | 'messageActions', conversationId: string) => React.ReactNode[];
 }
 
 const ChatContext = createContext<ChatContextValue | undefined>(undefined);
@@ -45,38 +46,31 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [endToEndEncryptionEnabled, setEndToEndEncryptionEnabled] = useState(false);
   
-  // Initialize plugins
   const plugins = usePlugins(workspaceId);
 
-  // Initialize the session
   useEffect(() => {
     sessionManager.initSession();
     
-    // Check authentication status on load
     const authStatus = contactAuth.isAuthenticated();
     setIsAuthenticated(authStatus);
     
-    // Set up session expiration check
     const checkSession = () => {
       if (!sessionManager.isSessionActive()) {
-        // If session expired, we could redirect to login or show a message
         console.log('Chat session expired');
       } else {
         sessionManager.updateActivity();
       }
     };
     
-    const interval = setInterval(checkSession, 60000); // Check every minute
+    const interval = setInterval(checkSession, 60000);
     
     return () => {
       clearInterval(interval);
     };
   }, []);
 
-  // Load conversations from local storage
   useEffect(() => {
     const loadConversations = async () => {
-      // If authentication is required but user is not authenticated, don't load conversations
       if (requiresAuthentication && !isAuthenticated) {
         return;
       }
@@ -100,7 +94,6 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
     loadConversations();
   }, [workspaceId, requiresAuthentication, isAuthenticated]);
 
-  // Save conversations to local storage
   useEffect(() => {
     if (conversations.length > 0) {
       localStorage.setItem(`chat_conversations_${workspaceId}`, JSON.stringify(conversations));
@@ -114,7 +107,6 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
   const createNewConversation = useCallback(async (title?: string): Promise<string> => {
     const conversationId = uuidv4();
     
-    // If E2E encryption is enabled, set up encryption for this conversation
     if (endToEndEncryptionEnabled) {
       await encryptionService.setupConversationEncryption(conversationId);
     }
@@ -130,7 +122,6 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
     setConversations(prev => [...prev, newConversation]);
     setCurrentConversation(newConversation);
     
-    // Track conversation creation with analytics plugins
     await plugins.trackEvent('conversation_created', { conversationId }, conversationId);
     
     return conversationId;
@@ -141,20 +132,16 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
     if (conversation) {
       setCurrentConversation(conversation);
       
-      // Track conversation selection with analytics plugins
       plugins.trackEvent('conversation_selected', { conversationId }, conversationId);
     }
   }, [conversations, plugins]);
 
   const sendMessage = useCallback(async (conversationId: string, content: string, attachments?: File[]) => {
-    // Apply message intercept plugins before sending
     const transformedContent = await plugins.interceptOutgoingMessage(content, conversationId);
     
-    // This would normally send the message to the backend
     console.log(`Sending message to conversation ${conversationId}: ${transformedContent}`);
     console.log(`Attachments: ${attachments?.length || 0}`);
     
-    // Update conversation timestamp
     setConversations(prev => 
       prev.map(conv => 
         conv.id === conversationId 
@@ -167,7 +154,6 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
       )
     );
     
-    // Track message sent with analytics plugins
     await plugins.trackEvent('message_sent', { 
       conversationId, 
       content: transformedContent,
@@ -175,7 +161,6 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
     }, conversationId);
   }, [plugins]);
 
-  // Get messages for a specific conversation
   const getMessages = useCallback(async (conversationId: string): Promise<ChatMessage[]> => {
     const storageKey = `chat_conversation_${conversationId}`;
     try {
@@ -188,7 +173,6 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
         lastUpdated: string
       };
       
-      // If the conversation is encrypted, decrypt the messages
       if (encrypted) {
         const conversationKey = await encryptionService.getConversationKey(conversationId);
         if (!conversationKey) {
@@ -196,7 +180,6 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
           return [];
         }
         
-        // Decrypt each message
         const decryptedMessages = await Promise.all(
           messages.map(async (message) => {
             if (message.encrypted && message.encryptedContent) {
@@ -215,7 +198,6 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
           })
         );
         
-        // Apply message transforms from plugins to each message
         const transformedMessages = await Promise.all(
           decryptedMessages.map(msg => plugins.applyMessageTransforms(msg, conversationId))
         );
@@ -223,7 +205,6 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
         return transformedMessages;
       }
       
-      // For unencrypted messages, just apply message transforms
       const transformedMessages = await Promise.all(
         messages.map(msg => plugins.applyMessageTransforms(msg, conversationId))
       );
@@ -235,15 +216,12 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
     }
   }, [plugins]);
 
-  // Save messages for a specific conversation
   const saveMessages = useCallback(async (conversationId: string, messages: ChatMessage[]): Promise<boolean> => {
     const storageKey = `chat_conversation_${conversationId}`;
     try {
-      // Find if this conversation is encrypted
       const conversation = conversations.find(c => c.id === conversationId);
       const isEncrypted = conversation?.encrypted || endToEndEncryptionEnabled;
       
-      // If the conversation is encrypted, encrypt the messages
       let messagesToSave = messages;
       if (isEncrypted) {
         const conversationKey = await encryptionService.getConversationKey(conversationId);
@@ -252,10 +230,8 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
           return false;
         }
         
-        // Encrypt each message
         messagesToSave = await Promise.all(
           messages.map(async (message) => {
-            // Only encrypt if not already encrypted
             if (!message.encrypted) {
               try {
                 const encryptedContent = await encryptionService.encryptMessage(
@@ -266,7 +242,6 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
                   ...message, 
                   encrypted: true,
                   encryptedContent: JSON.stringify(encryptedContent),
-                  // Keep original content for immediate display, but it won't be saved
                   content: message.content 
                 };
               } catch (error) {
@@ -287,11 +262,9 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
       
       localStorage.setItem(storageKey, JSON.stringify(data));
       
-      // Also update conversation metadata
       if (messages.length > 0) {
         const lastMessage = messages[messages.length - 1];
         
-        // Apply message intercept plugins for incoming messages
         if (lastMessage.sender !== 'user') {
           await plugins.interceptIncomingMessage(lastMessage, conversationId);
         }
@@ -333,11 +306,11 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
     toggleEncryption,
     selectConversation,
     sendMessage,
-    // Plugin-related methods
     registerPlugin: plugins.registerPlugin,
     unregisterPlugin: plugins.unregisterPlugin,
     getAllPlugins: plugins.getAllPlugins,
-    getPluginById: plugins.getPluginById
+    getPluginById: plugins.getPluginById,
+    getUiExtensions: plugins.getUiExtensions
   };
 
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;

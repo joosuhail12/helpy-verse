@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState } from 'react';
 
 export interface ThemeConfig {
@@ -22,6 +21,7 @@ export interface ThemeConfig {
     outgoingMessageForeground: string;
     incomingMessage: string;
     incomingMessageForeground: string;
+    primaryDark?: string;
   };
   position?: 'left' | 'right';
   compact?: boolean;
@@ -32,6 +32,7 @@ export interface ThemeConfig {
     recentMessagesTitle: string;
     noMessagesText: string;
     messagePlaceholder: string;
+    chatTitle?: string;
   };
 }
 
@@ -54,7 +55,8 @@ const defaultColors = {
   outgoingMessage: '#4F46E5',
   outgoingMessageForeground: '#FFFFFF',
   incomingMessage: '#F3F4F6',
-  incomingMessageForeground: '#111827'
+  incomingMessageForeground: '#111827',
+  primaryDark: '#3730A3'
 };
 
 const defaultLabels = {
@@ -63,7 +65,8 @@ const defaultLabels = {
   askQuestionButton: 'Ask a question',
   recentMessagesTitle: 'Recent messages',
   noMessagesText: 'No messages yet. Start a conversation!',
-  messagePlaceholder: 'Type a message...'
+  messagePlaceholder: 'Type a message...',
+  chatTitle: 'Conversation'
 };
 
 export type ThemeContextType = {
