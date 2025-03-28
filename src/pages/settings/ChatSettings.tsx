@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -7,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-import { Copy, Check, Code, MessageSquare, Globe, Settings as SettingsIcon, Palette } from 'lucide-react';
+import { Copy, Check, Code, MessageSquare, Globe, SettingsIcon, Palette } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -37,7 +36,6 @@ const ChatSettings = () => {
   };
 
   const handleSave = () => {
-    // Save settings logic would go here
     toast({
       title: "Settings saved",
       description: "Your chat widget settings have been saved successfully.",
@@ -128,7 +126,7 @@ const ChatSettings = () => {
                     <span>Appearance</span>
                   </TabsTrigger>
                   <TabsTrigger value="behavior" className="flex items-center gap-2">
-                    <Settings className="h-4 w-4" />
+                    <SettingsIcon className="h-4 w-4" />
                     <span>Behavior</span>
                   </TabsTrigger>
                   <TabsTrigger value="messages" className="flex items-center gap-2">

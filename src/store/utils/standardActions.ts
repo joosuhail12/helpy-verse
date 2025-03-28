@@ -92,5 +92,5 @@ export const createStandardCrudThunks = <T, S>(
     );
   }
 
-  return thunks;
+  return thunks; // Explicitly return the thunks object
 };
