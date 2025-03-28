@@ -1,5 +1,5 @@
 
-import React, { useEffect } from "react";
+import React from "react";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import { fetchUserProfile, fetchWorkspaceData } from "@/store/slices/auth/userActions";
@@ -14,7 +14,7 @@ const CaslProvider: React.FC<CaslProviderProps> = ({ children }) => {
     const auth = useAppSelector((state) => state.auth);
     const isAuthenticated = auth?.isAuthenticated || false;
 
-    useEffect(() => {
+    React.useEffect(() => {
         if (isAuthenticated) {
             dispatch(fetchUserProfile()); 
             dispatch(fetchWorkspaceData());

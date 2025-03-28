@@ -15,18 +15,20 @@ interface AppProvidersProps {
 
 const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
   return (
-    <AppErrorBoundary>
-      <ReduxProvider store={store}>
-        <AppQueryProvider>
-          <ThemeProvider attribute="class" defaultTheme="light">
-            <CaslProvider>
-              {children}
-              <Toaster />
-            </CaslProvider>
-          </ThemeProvider>
-        </AppQueryProvider>
-      </ReduxProvider>
-    </AppErrorBoundary>
+    <React.StrictMode>
+      <AppErrorBoundary>
+        <ReduxProvider store={store}>
+          <AppQueryProvider>
+            <ThemeProvider attribute="class" defaultTheme="light">
+              <CaslProvider>
+                {children}
+                <Toaster />
+              </CaslProvider>
+            </ThemeProvider>
+          </AppQueryProvider>
+        </ReduxProvider>
+      </AppErrorBoundary>
+    </React.StrictMode>
   );
 };
 
