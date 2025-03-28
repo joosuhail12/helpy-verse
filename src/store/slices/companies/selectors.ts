@@ -6,10 +6,20 @@ import type { Company } from '@/types/company';
 // Base selector
 const getCompaniesState = (state: RootState) => state.companies;
 
-// Memoized selectors
-export const selectCompanies = createSelector(
+// Memoized selectors for normalized state
+export const selectCompanyIds = createSelector(
   [getCompaniesState],
-  (companiesState) => companiesState.companies
+  (companiesState) => companiesState.ids
+);
+
+export const selectCompanyEntities = createSelector(
+  [getCompaniesState],
+  (companiesState) => companiesState.entities
+);
+
+export const selectCompanies = createSelector(
+  [selectCompanyIds, selectCompanyEntities],
+  (ids, entities) => ids.map(id => entities[id])
 );
 
 export const selectCompanyLoading = createSelector(
@@ -27,14 +37,24 @@ export const selectCompanyDetails = createSelector(
   (companiesState) => companiesState.companyDetails
 );
 
-export const selectSelectedCompany = createSelector(
+export const selectSelectedCompanyId = createSelector(
   [getCompaniesState],
-  (companiesState) => companiesState.selectedCompany
+  (companiesState) => companiesState.selectedCompanyId
+);
+
+export const selectSelectedCompany = createSelector(
+  [selectCompanyEntities, selectSelectedCompanyId],
+  (entities, selectedId) => selectedId ? entities[selectedId] : null
 );
 
 export const selectSelectedCompanies = createSelector(
   [getCompaniesState],
-  (companiesState) => companiesState.selectedCompanies
+  (companiesState) => companiesState.selectedCompanyIds
+);
+
+export const selectSelectedCompanyEntities = createSelector(
+  [selectCompanyEntities, selectSelectedCompanies],
+  (entities, selectedIds) => selectedIds.map(id => entities[id]).filter(Boolean)
 );
 
 export const selectLastFetchTime = createSelector(
@@ -44,11 +64,11 @@ export const selectLastFetchTime = createSelector(
 
 // Parameterized selectors
 export const selectCompanyById = createSelector(
-  [selectCompanies, (_, companyId: string) => companyId],
-  (companies, companyId) => companies.find(company => company.id === companyId) || null
+  [selectCompanyEntities, (_, companyId: string) => companyId],
+  (entities, companyId) => entities[companyId] || null
 );
 
 export const selectCompaniesByIds = createSelector(
-  [selectCompanies, (_, companyIds: string[]) => companyIds],
-  (companies, companyIds) => companies.filter(company => companyIds.includes(company.id))
+  [selectCompanyEntities, (_, companyIds: string[]) => companyIds],
+  (entities, companyIds) => companyIds.map(id => entities[id]).filter(Boolean)
 );

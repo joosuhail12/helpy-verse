@@ -12,14 +12,13 @@ import {
   updateContactCompany,
   deleteContact
 } from './contactsActions';
-import { updateContactInState } from './contactsReducerUtils';
 
 const initialState: ContactsState = {
-  items: [],
-  contacts: [],
+  entities: {},
+  ids: [],
   contactDetails: null,
-  selectedContact: null,
-  selectedContacts: [],
+  selectedContactId: null,
+  selectedContactIds: [],
   loading: false,
   error: null,
   lastFetchTime: null,
@@ -54,24 +53,24 @@ const contactsSlice = createSlice({
       state.filters = initialState.filters;
     },
     selectContact: (state, action: PayloadAction<string>) => {
-      state.selectedContact = state.items.find(contact => contact.id === action.payload) || null;
+      state.selectedContactId = action.payload;
     },
     toggleSelectContact: (state, action: PayloadAction<string>) => {
       const contactId = action.payload;
-      if (state.selectedContacts.includes(contactId)) {
-        state.selectedContacts = state.selectedContacts.filter(id => id !== contactId);
+      if (state.selectedContactIds.includes(contactId)) {
+        state.selectedContactIds = state.selectedContactIds.filter(id => id !== contactId);
       } else {
-        state.selectedContacts.push(contactId);
+        state.selectedContactIds.push(contactId);
       }
     },
     clearSelectedContacts: (state) => {
-      state.selectedContacts = [];
+      state.selectedContactIds = [];
     },
     clearSelection: (state) => {
-      state.selectedContacts = [];
+      state.selectedContactIds = [];
     },
     setSelectedContacts: (state, action: PayloadAction<string[]>) => {
-      state.selectedContacts = action.payload;
+      state.selectedContactIds = action.payload;
     }
   },
   extraReducers: (builder) => {
@@ -84,9 +83,18 @@ const contactsSlice = createSlice({
       .addCase(fetchCustomers.fulfilled, (state, action) => {
         state.loading = false;
         if (action.payload) {
-          state.contacts = action.payload;
-          state.items = action.payload;
-          console.log('Customers fetched:', action.payload.length);
+          // Normalize contacts data
+          const entities: Record<string, Contact> = {};
+          const ids: string[] = [];
+          
+          action.payload.forEach((contact: Contact) => {
+            entities[contact.id] = contact;
+            ids.push(contact.id);
+          });
+          
+          state.entities = entities;
+          state.ids = ids;
+          console.log('Customers fetched:', ids.length);
         }
         state.lastFetchTime = Date.now();
       })
@@ -104,6 +112,14 @@ const contactsSlice = createSlice({
       .addCase(fetchContactById.fulfilled, (state, action) => {
         state.loading = false;
         state.contactDetails = action.payload;
+        
+        // Also update the contact in the entities
+        if (action.payload) {
+          state.entities[action.payload.id] = action.payload;
+          if (!state.ids.includes(action.payload.id)) {
+            state.ids.push(action.payload.id);
+          }
+        }
       })
       .addCase(fetchContactById.rejected, (state, action) => {
         state.loading = false;
@@ -112,15 +128,25 @@ const contactsSlice = createSlice({
       
       // Handle createContact action states
       .addCase(createContact.fulfilled, (state, action) => {
-        state.contacts.push(action.payload);
-        state.items.push(action.payload);
+        const newContact = action.payload;
+        // Add to normalized store
+        state.entities[newContact.id] = newContact;
+        if (!state.ids.includes(newContact.id)) {
+          state.ids.push(newContact.id);
+        }
       })
       
       // Handle updateContact action states
       .addCase(updateContact.fulfilled, (state, action) => {
         if (action.payload) {
           const { contactId, data } = action.payload;
-          updateContactInState(state, contactId, data);
+          // Update in normalized store
+          state.entities[contactId] = { ...state.entities[contactId], ...data };
+          
+          // Update contactDetails if it's the current contact
+          if (state.contactDetails && state.contactDetails.id === contactId) {
+            state.contactDetails = { ...state.contactDetails, ...data };
+          }
         }
       })
       
@@ -128,19 +154,33 @@ const contactsSlice = createSlice({
       .addCase(updateContactCompany.fulfilled, (state, action) => {
         if (action.payload) {
           const { contactId, data } = action.payload;
-          updateContactInState(state, contactId, data);
+          // Update in normalized store
+          state.entities[contactId] = { ...state.entities[contactId], ...data };
+          
+          // Update contactDetails if it's the current contact
+          if (state.contactDetails && state.contactDetails.id === contactId) {
+            state.contactDetails = { ...state.contactDetails, ...data };
+          }
         }
       })
       
       // Handle deleteContact action states
       .addCase(deleteContact.fulfilled, (state, action) => {
         const contactId = action.payload;
-        state.contacts = state.contacts.filter(c => c.id !== contactId);
-        state.items = state.items.filter(c => c.id !== contactId);
+        // Remove from normalized store
+        delete state.entities[contactId];
+        state.ids = state.ids.filter(id => id !== contactId);
+        
+        // Clean up references
         if (state.contactDetails && state.contactDetails.id === contactId) {
           state.contactDetails = null;
         }
-        state.selectedContacts = state.selectedContacts.filter(id => id !== contactId);
+        
+        state.selectedContactIds = state.selectedContactIds.filter(id => id !== contactId);
+        
+        if (state.selectedContactId === contactId) {
+          state.selectedContactId = null;
+        }
       });
   },
 });
@@ -167,15 +207,5 @@ export {
   updateContactCompany,
   deleteContact
 };
-
-// Re-export selectors from contactsSelectors.ts
-export {
-  selectContacts,
-  selectContactsLoading,
-  selectContactsError,
-  selectContactDetails,
-  selectSelectedContact,
-  selectSelectedContacts
-} from './contactsSelectors';
 
 export default contactsSlice.reducer;

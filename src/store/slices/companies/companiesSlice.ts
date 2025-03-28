@@ -1,25 +1,28 @@
+
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../store';
 import { companiesService } from '@/api/services/companiesService';
 import { Company } from '@/types/company';
 
 export interface CompaniesState {
-  companies: Company[];
-  selectedCompany: string | null;
+  entities: Record<string, Company>;
+  ids: string[];
+  selectedCompanyId: string | null;
   loading: boolean;
   error: string | null;
   companyDetails: Company | null;
-  selectedCompanies: string[];
+  selectedCompanyIds: string[];
   lastFetchTime: number | null;
 }
 
 const initialState: CompaniesState = {
-  companies: [],
-  selectedCompany: null,
+  entities: {},
+  ids: [],
+  selectedCompanyId: null,
   loading: false,
   error: null,
   companyDetails: null,
-  selectedCompanies: [],
+  selectedCompanyIds: [],
   lastFetchTime: null
 };
 
@@ -101,24 +104,24 @@ const companiesSlice = createSlice({
   initialState,
   reducers: {
     selectCompany: (state, action: PayloadAction<string>) => {
-      state.selectedCompany = action.payload;
+      state.selectedCompanyId = action.payload;
     },
     clearSelectedCompany: (state) => {
-      state.selectedCompany = null;
+      state.selectedCompanyId = null;
     },
     toggleCompanySelection: (state, action: PayloadAction<string>) => {
       const companyId = action.payload;
-      if (state.selectedCompanies.includes(companyId)) {
-        state.selectedCompanies = state.selectedCompanies.filter(id => id !== companyId);
+      if (state.selectedCompanyIds.includes(companyId)) {
+        state.selectedCompanyIds = state.selectedCompanyIds.filter(id => id !== companyId);
       } else {
-        state.selectedCompanies.push(companyId);
+        state.selectedCompanyIds.push(companyId);
       }
     },
     clearSelectedCompanies: (state) => {
-      state.selectedCompanies = [];
+      state.selectedCompanyIds = [];
     },
     setSelectedCompanies: (state, action: PayloadAction<string[]>) => {
-      state.selectedCompanies = action.payload;
+      state.selectedCompanyIds = action.payload;
     }
   },
   extraReducers: (builder) => {
@@ -130,7 +133,17 @@ const companiesSlice = createSlice({
       .addCase(fetchCompanies.fulfilled, (state, action) => {
         state.loading = false;
         if (action.payload) { // Only update if we got new data (not using cache)
-          state.companies = action.payload;
+          // Normalize the companies data
+          const entities: Record<string, Company> = {};
+          const ids: string[] = [];
+          
+          action.payload.forEach((company: Company) => {
+            entities[company.id] = company;
+            ids.push(company.id);
+          });
+          
+          state.entities = entities;
+          state.ids = ids;
           state.lastFetchTime = Date.now();
         }
       })
@@ -145,6 +158,14 @@ const companiesSlice = createSlice({
       .addCase(fetchCompanyById.fulfilled, (state, action) => {
         state.loading = false;
         state.companyDetails = action.payload;
+        
+        // Also update the company in the entities if it exists
+        if (action.payload) {
+          state.entities[action.payload.id] = action.payload;
+          if (!state.ids.includes(action.payload.id)) {
+            state.ids.push(action.payload.id);
+          }
+        }
       })
       .addCase(fetchCompanyById.rejected, (state, action) => {
         state.loading = false;
@@ -156,7 +177,12 @@ const companiesSlice = createSlice({
       })
       .addCase(createCompany.fulfilled, (state, action) => {
         state.loading = false;
-        state.companies.push(action.payload);
+        // Add to normalized store
+        const company = action.payload;
+        state.entities[company.id] = company;
+        if (!state.ids.includes(company.id)) {
+          state.ids.push(company.id);
+        }
       })
       .addCase(createCompany.rejected, (state, action) => {
         state.loading = false;
@@ -168,12 +194,16 @@ const companiesSlice = createSlice({
       })
       .addCase(updateCompany.fulfilled, (state, action) => {
         state.loading = false;
-        const index = state.companies.findIndex(company => company.id === action.payload.id);
-        if (index !== -1) {
-          state.companies[index] = action.payload;
-        }
-        if (state.companyDetails?.id === action.payload.id) {
-          state.companyDetails = action.payload;
+        const updatedCompany = action.payload;
+        
+        // Update in normalized store
+        if (updatedCompany) {
+          state.entities[updatedCompany.id] = updatedCompany;
+          
+          // Update company details if it's the currently viewed company
+          if (state.companyDetails?.id === updatedCompany.id) {
+            state.companyDetails = updatedCompany;
+          }
         }
       })
       .addCase(updateCompany.rejected, (state, action) => {
@@ -186,13 +216,21 @@ const companiesSlice = createSlice({
       })
       .addCase(deleteCompany.fulfilled, (state, action) => {
         state.loading = false;
-        state.companies = state.companies.filter(company => company.id !== action.payload);
-        if (state.companyDetails?.id === action.payload) {
+        const deletedId = action.payload;
+        
+        // Remove from normalized store
+        delete state.entities[deletedId];
+        state.ids = state.ids.filter(id => id !== deletedId);
+        
+        // Clean up references
+        if (state.companyDetails?.id === deletedId) {
           state.companyDetails = null;
         }
-        state.selectedCompanies = state.selectedCompanies.filter(id => id !== action.payload);
-        if (state.selectedCompany === action.payload) {
-          state.selectedCompany = null;
+        
+        state.selectedCompanyIds = state.selectedCompanyIds.filter(id => id !== deletedId);
+        
+        if (state.selectedCompanyId === deletedId) {
+          state.selectedCompanyId = null;
         }
       })
       .addCase(deleteCompany.rejected, (state, action) => {
@@ -213,6 +251,3 @@ export const {
 
 // Export the reducer
 export default companiesSlice.reducer;
-
-// Import selectors from dedicated file
-export * from './selectors';
