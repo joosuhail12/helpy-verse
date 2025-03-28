@@ -4,7 +4,7 @@ import { useAppSelector } from '@/hooks/useAppSelector';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { Contact } from '@/types/contact';
 import { selectAllContacts } from '@/store/slices/contacts/contactsSelectors';
-import { updateContactCompany } from '@/store/slices/contacts/contactsSlice';
+import { updateContactCompany } from '@/store/slices/contacts/actions/contactsManage';
 
 export const useAssociatedContacts = (companyId: string) => {
   const [searchQuery, setSearchQuery] = useState('');

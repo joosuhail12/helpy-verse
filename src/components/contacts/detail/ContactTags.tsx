@@ -13,8 +13,8 @@ import {
   DialogTitle,
   DialogTrigger
 } from '@/components/ui/dialog';
-import { fetchTags } from '@/store/slices/tags/tagsSlice';
-import { updateContact } from '@/store/slices/contacts/contactsSlice';
+import { fetchTags } from '@/store/slices/tags/actions';
+import { updateContact } from '@/store/slices/contacts/actions';
 import { useToast } from '@/hooks/use-toast';
 import type { Contact } from '@/types/contact';
 import type { Tag } from '@/types/tag';
@@ -44,8 +44,8 @@ export const ContactTags = ({ contact, tags }: ContactTagsProps) => {
     setIsLoading(true);
     try {
       await dispatch(updateContact({
-        contactId: contact.id,
-        data: { tags: selectedTags }
+        id: contact.id,
+        updates: { tags: selectedTags }
       }));
       setIsOpen(false);
       toast({
@@ -69,8 +69,8 @@ export const ContactTags = ({ contact, tags }: ContactTagsProps) => {
     
     try {
       await dispatch(updateContact({
-        contactId: contact.id,
-        data: { tags: updatedTags }
+        id: contact.id,
+        updates: { tags: updatedTags }
       }));
       toast({
         title: "Tag Removed",

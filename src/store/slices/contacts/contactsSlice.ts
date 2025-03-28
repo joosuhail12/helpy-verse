@@ -1,7 +1,7 @@
 
 import { createSlice } from '@reduxjs/toolkit';
 import { ContactsState } from './contactsTypes';
-import { configureExtraReducers } from './contactsExtraReducers';
+import { buildContactsExtraReducers } from './contactsExtraReducers';
 import { contactsCoreSlice_ForConfiguration } from './actions/contactsCore';
 
 // Define the initial state
@@ -31,7 +31,7 @@ const contactsSlice = createSlice({
   reducers: {
     ...contactsCoreSlice_ForConfiguration.caseReducers,
   },
-  extraReducers: (builder) => configureExtraReducers(builder)
+  extraReducers: (builder) => buildContactsExtraReducers(builder)
 });
 
 // Export the actions from the dedicated files

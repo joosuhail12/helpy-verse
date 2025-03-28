@@ -1,10 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Send, Loader2 } from 'lucide-react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { updateContact } from '@/store/slices/contacts/contactsSlice';
+import { updateContact } from '@/store/slices/contacts/actions';
 import { useToast } from '@/hooks/use-toast';
 
 interface QuickNoteInputProps {
@@ -37,10 +36,8 @@ export const QuickNoteInput: React.FC<QuickNoteInputProps> = ({
     setIsSubmitting(true);
     try {
       await dispatch(updateContact({
-        contactId,
-        data: { 
-          notes: note // In a real app, you would append to existing notes
-        }
+        id: contactId,
+        updates: { notes: note } // In a real app, you would append to existing notes
       })).unwrap();
       
       toast({

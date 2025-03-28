@@ -4,7 +4,7 @@ import { Pencil, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { updateContact } from '@/store/slices/contacts/contactsSlice';
+import { updateContact } from '@/store/slices/contacts/actions';
 import { useOnClickOutside } from '@/hooks/useOnClickOutside';
 
 export interface InlineEditFieldProps {
@@ -75,8 +75,8 @@ export const InlineEditField = ({
       updateData[actualFieldName] = editValue;
 
       await dispatch(updateContact({
-        contactId,
-        data: updateData
+        id: contactId,
+        updates: updateData
       }));
 
       if (onSave) {

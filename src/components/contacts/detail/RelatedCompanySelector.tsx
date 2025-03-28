@@ -7,7 +7,7 @@ import { Search, X } from 'lucide-react';
 import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Contact } from '@/types/contact';
-import { updateContactCompany } from '@/store/slices/contacts/contactsSlice';
+import { updateContactCompany } from '@/store/slices/contacts/actions/contactsManage';
 import { Company } from '@/types/company';
 
 interface RelatedCompanySelectorProps {

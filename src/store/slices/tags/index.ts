@@ -6,9 +6,8 @@ import * as tagsSelectors from './selectors';
 
 export { tagsReducer, tagsActions, tagsSelectors };
 
-// Export specific selectors for convenience
+// Export specific selectors for convenience (avoiding duplications)
 export { 
-  selectAllTags,
   selectTagById,
   selectTagsByEntity,
   selectTagsLoading,
@@ -34,8 +33,10 @@ export {
   setFilter,
   setSearch,
   selectTag,
-  // selectAllTags, // Commented out to avoid duplicate
   clearSelectedTags
 } from './actions';
+
+// Add this line to export selectAllTags
+export { selectAllTags } from './selectors';
 
 export default tagsReducer;
