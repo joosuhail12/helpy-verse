@@ -37,8 +37,16 @@ const LandingPage = () => {
       primaryDark: '#7c69d6',
       accent: '#8B5CF6',
       accentForeground: '#FFFFFF',
+      success: '#10B981',
+      successForeground: '#FFFFFF',
+      warning: '#F59E0B',
+      warningForeground: '#FFFFFF',
+      error: '#EF4444',
+      errorForeground: '#FFFFFF',
       headerBackground: '#ffffff',
-      headerForeground: '#1A1F2C'
+      headerForeground: '#1A1F2C',
+      navigationBackground: '#ffffff',
+      navigationForeground: '#1A1F2C'
     },
     position: 'right',
     compact: false,
@@ -57,6 +65,10 @@ const LandingPage = () => {
       messagePlaceholder: 'Type a message...',
       chatTitle: 'Customer Support',
       sendButtonText: 'Send',
+      attachmentButtonLabel: 'Attach file',
+      conversationStartedText: 'Conversation started',
+      poweredByText: 'Powered by',
+      loadMoreText: 'Load more',
       typingText: 'Customer support is typing...'
     },
     branding: {
