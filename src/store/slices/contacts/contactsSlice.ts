@@ -2,6 +2,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { ContactsState } from './contactsTypes';
 import { configureExtraReducers } from './contactsExtraReducers';
+import { contactsCoreSlice_ForConfiguration } from './actions/contactsCore';
 
 // Define the initial state
 const initialState: ContactsState = {
@@ -23,49 +24,18 @@ const initialState: ContactsState = {
   }
 };
 
-// Create the slice
+// Create the slice by extending the core slice with async reducers
 const contactsSlice = createSlice({
   name: 'contacts',
   initialState,
   reducers: {
-    setSelectedContact: (state, action) => {
-      state.selectedContact = action.payload;
-    },
-    clearSelectedContact: (state) => {
-      state.selectedContact = null;
-    },
-    setFilters: (state, action) => {
-      state.filters = action.payload;
-    },
-    resetFilters: (state) => {
-      state.filters = initialState.filters;
-    },
-    toggleSelectContact: (state, action) => {
-      if (state.selectedContactIds.includes(action.payload)) {
-        state.selectedContactIds = state.selectedContactIds.filter(id => id !== action.payload);
-      } else {
-        state.selectedContactIds.push(action.payload);
-      }
-    },
-    clearSelection: (state) => {
-      state.selectedContactIds = [];
-    }
+    ...contactsCoreSlice_ForConfiguration.caseReducers,
   },
   extraReducers: (builder) => configureExtraReducers(builder)
 });
 
-// Export actions
-export const { 
-  setSelectedContact, 
-  clearSelectedContact,
-  setFilters,
-  resetFilters,
-  toggleSelectContact,
-  clearSelection
-} = contactsSlice.actions;
-
-// Export thunks
-export * from './contactsThunks';
+// Export the actions from the dedicated files
+export * from './actions';
 
 // Export the reducer
 export default contactsSlice.reducer;

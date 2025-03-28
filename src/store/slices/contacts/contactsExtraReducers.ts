@@ -6,8 +6,18 @@ import {
   fetchContactById, 
   updateContact, 
   addContact 
-} from './contactsThunks';
-import { updateContactInState } from './contactsReducerUtils';
+} from './actions/contactsFetch';
+
+// Utility function to update a contact in the state array
+export const updateContactInState = (
+  contacts: any[],
+  contactId: string,
+  updatedContact: any
+) => {
+  return contacts.map(contact => 
+    contact.id === contactId ? updatedContact : contact
+  );
+};
 
 // Configure extra reducers for the async thunks
 export const configureExtraReducers = (builder: ActionReducerMapBuilder<ContactsState>) => {

@@ -1,11 +1,12 @@
 
+// Export everything from the slice
 import tagsReducer from './tagsSlice';
 import * as tagsActions from './actions';
 import * as tagsSelectors from './selectors';
 
 export { tagsReducer, tagsActions, tagsSelectors };
 
-// Export specific selectors
+// Export specific selectors for convenience
 export { 
   selectAllTags,
   selectTagById,
@@ -22,23 +23,19 @@ export {
   selectSelectedTags
 } from './selectors';
 
-// Export actions
+// Export specific actions for convenience
 export {
   fetchTags,
   createTag,
   updateTag,
-  deleteTags
-} from './actions';
-
-// Export reducer actions
-export {
+  deleteTags,
   setPage,
   setSort,
   setFilter,
   setSearch,
   selectTag,
-  selectAllTags as selectAllTagsAction,
+  selectAllTags,
   clearSelectedTags
-} from './tagsSlice';
+} from './actions';
 
 export default tagsReducer;
