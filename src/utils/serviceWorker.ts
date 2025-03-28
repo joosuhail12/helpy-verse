@@ -44,13 +44,13 @@ export const requestNotificationPermission = async (): Promise<boolean> => {
 // Define the SyncManager interface
 interface SyncManager {
   register: (tag: string) => Promise<void>;
-  getTags: () => Promise<string[]>;  // Make getTags required to match where it's used
+  getTags: () => Promise<string[]>;
 }
 
-// Extended ServiceWorkerRegistration interface that includes the sync property
-interface ExtendedServiceWorkerRegistration extends ServiceWorkerRegistration {
-  sync?: SyncManager;  // Keep sync as optional in ExtendedServiceWorkerRegistration
-}
+// Instead of extending ServiceWorkerRegistration, create a type that combines it with our custom property
+type ExtendedServiceWorkerRegistration = ServiceWorkerRegistration & {
+  sync?: SyncManager;
+};
 
 /**
  * Register for background sync
