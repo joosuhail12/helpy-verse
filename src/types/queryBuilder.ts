@@ -1,20 +1,7 @@
 
 // Common type definitions for the query builder
 
-export interface QueryField {
-  id: string;
-  name: string;
-  label: string;
-  type: FieldType;
-  dataSource?: string;
-  customObject?: string;
-  options?: Array<{ label: string; value: string; }>;
-  placeholder?: string;
-  defaultValue?: any;
-  validation?: ValidationRule[];
-}
-
-export type FieldType = 'text' | 'number' | 'boolean' | 'date' | 'select' | 'multi-select';
+export type DataSource = 'contacts' | 'companies' | 'general';
 
 export type ComparisonOperator = 
   | 'equals' 
@@ -34,23 +21,53 @@ export type ComparisonOperator =
   | 'between'
   | 'custom_range'
   | 'last_n_days'
-  | 'next_n_days';
+  | 'next_n_days'
+  | 'exists'
+  | 'not_exists';
+
+export type CombinatorType = 'and' | 'or';
 
 export interface QueryRule {
   id: string;
   field: string;
   operator: ComparisonOperator;
-  value: any;
+  value?: any;
 }
 
 export interface QueryGroup {
   id: string;
-  combinator: 'and' | 'or';
+  combinator: CombinatorType;
   rules: Array<QueryRule | QueryGroup>;
 }
 
+export type FieldType = 
+  | 'text' 
+  | 'number' 
+  | 'boolean' 
+  | 'date' 
+  | 'select' 
+  | 'multi-select'
+  | 'string'
+  | 'enum'
+  | 'email'
+  | 'phone'
+  | 'url';
+
+export interface QueryField {
+  id: string;
+  name?: string;
+  label: string;
+  type: FieldType;
+  dataSource?: DataSource;
+  customObject?: string;
+  options?: Array<{ label: string; value: string; }>;
+  placeholder?: string;
+  defaultValue?: any;
+  validation?: ValidationRule[];
+}
+
 export interface ValidationRule {
-  type: 'required' | 'regex' | 'min' | 'max';
+  type: 'required' | 'regex' | 'minLength' | 'maxLength' | 'min' | 'max';
   value?: string | number;
   message: string;
 }
@@ -67,5 +84,3 @@ export interface ValidationResult {
   isValid: boolean;
   errors: ValidationError[];
 }
-
-export type DataSource = 'contacts' | 'companies' | 'general';

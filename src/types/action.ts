@@ -18,8 +18,11 @@ export interface ActionParameter {
   description: string;
   required: boolean;
   defaultValue?: string;
+  options?: string[];
+  isSecret?: boolean;
   dependencies?: ParameterDependency[];
   visible?: boolean;
+  default?: any;
 }
 
 export interface CustomAction {
@@ -36,7 +39,7 @@ export interface CustomAction {
   createdBy: {
     id: string;
     name: string;
-    avatar?: string; // Make avatar optional
+    avatar?: string;
   };
   enabled: boolean;
   category: string;

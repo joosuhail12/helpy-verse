@@ -5,7 +5,7 @@ export interface ContactsState {
   entities: Record<string, Contact>;
   ids: string[];
   contactDetails: Contact | null;
-  selectedContactId: Contact | null;
+  selectedContactId: string | null;
   selectedContactIds: string[];
   loading: boolean;
   error: string | null;

@@ -28,11 +28,6 @@ export interface Contact {
   source?: string;
   language?: string;
   preferredLanguage?: string;
-  street?: string;
-  city?: string;
-  state?: string;
-  postalCode?: string;
-  country?: string;
   linkedinUrl?: string;
   twitterUrl?: string;
   
