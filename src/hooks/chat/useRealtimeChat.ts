@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { useAbly } from '@/context/AblyContext';
 import { ChatMessage } from '@/components/chat-widget/components/conversation/types';
 import { useOfflineMessaging } from './useOfflineMessaging';
+import { useServiceWorkerSync } from './useServiceWorkerSync';
 
 interface ChannelAndClient {
   channelInstance: any;
@@ -22,6 +23,19 @@ export const useRealtimeChat = (conversationId: string, workspaceId: string) => 
     getQueuedMessages, 
     clearQueuedMessages 
   } = useOfflineMessaging(conversationId);
+  
+  // Initialize service worker sync
+  const { 
+    isSyncing, 
+    hasQueuedMessages, 
+    offlineMode,
+    triggerManualSync
+  } = useServiceWorkerSync({
+    conversationId,
+    onSyncStarted: () => console.log(`Starting sync for conversation ${conversationId}`),
+    onSyncCompleted: () => console.log(`Sync completed for conversation ${conversationId}`),
+    onSyncFailed: (error) => console.error(`Sync failed for conversation ${conversationId}:`, error)
+  });
 
   // Initialize channel once Ably client is ready
   useEffect(() => {
@@ -61,6 +75,8 @@ export const useRealtimeChat = (conversationId: string, workspaceId: string) => 
     
     // Process any messages sent while offline
     const processOfflineMessages = async () => {
+      if (offlineMode) return; // Don't process if still offline
+      
       const queuedMessages = await getQueuedMessages();
       
       if (queuedMessages.length > 0) {
@@ -78,7 +94,9 @@ export const useRealtimeChat = (conversationId: string, workspaceId: string) => 
       }
     };
     
-    processOfflineMessages();
+    if (!offlineMode && hasQueuedMessages) {
+      processOfflineMessages();
+    }
     
     // Fetch history if available
     channel.channelInstance.history((err: Error, result: any) => {
@@ -108,10 +126,31 @@ export const useRealtimeChat = (conversationId: string, workspaceId: string) => 
       }
     });
     
+    // Return cleanup function
     return () => {
       subscription.unsubscribe();
     };
-  }, [channel, getQueuedMessages, clearQueuedMessages]);
+  }, [
+    channel, 
+    getQueuedMessages, 
+    clearQueuedMessages, 
+    offlineMode, 
+    hasQueuedMessages
+  ]);
+
+  // Listen for online/offline events
+  useEffect(() => {
+    const handleOnline = () => {
+      console.log('App is online, syncing queued messages...');
+      triggerManualSync();
+    };
+    
+    window.addEventListener('online', handleOnline);
+    
+    return () => {
+      window.removeEventListener('online', handleOnline);
+    };
+  }, [triggerManualSync]);
 
   // Send message function
   const sendMessage = useCallback(async (content: string, metadata: Record<string, any> = {}) => {
@@ -132,7 +171,7 @@ export const useRealtimeChat = (conversationId: string, workspaceId: string) => 
     };
     
     try {
-      if (channel && channel.channelInstance) {
+      if (channel && channel.channelInstance && !offlineMode) {
         await channel.channelInstance.publish('message', message);
         return true;
       } else {
@@ -141,6 +180,17 @@ export const useRealtimeChat = (conversationId: string, workspaceId: string) => 
         
         // Also add to local state
         setMessages(prev => [...prev, message]);
+        
+        // Try to register background sync
+        if ('serviceWorker' in navigator && 'SyncManager' in window) {
+          try {
+            const registration = await navigator.serviceWorker.ready;
+            await registration.sync.register('sync-messages');
+          } catch (e) {
+            console.warn('Background sync registration failed:', e);
+          }
+        }
+        
         return true;
       }
     } catch (err) {
@@ -154,12 +204,23 @@ export const useRealtimeChat = (conversationId: string, workspaceId: string) => 
       setMessages(prev => [...prev, message]);
       return false;
     }
-  }, [channel, clientId, conversationId, workspaceId, queueMessage]);
+  }, [
+    channel, 
+    clientId, 
+    conversationId, 
+    workspaceId, 
+    queueMessage, 
+    offlineMode
+  ]);
 
   return {
     messages,
     sendMessage,
     isLoading,
     error,
+    isOffline: offlineMode,
+    isSyncing,
+    hasQueuedMessages,
+    triggerSync: triggerManualSync
   };
 };

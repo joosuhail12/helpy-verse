@@ -1,6 +1,39 @@
 
 import React, { createContext, useContext, useState } from 'react';
-import { ThemeConfig } from '@/components/chat-widget/components/conversation/types';
+
+export interface ThemeConfig {
+  colors?: {
+    primary: string;
+    primaryForeground: string;
+    background: string;
+    backgroundSecondary: string;
+    foreground: string;
+    border: string;
+    userMessage: string;
+    userMessageText: string;
+    agentMessage: string;
+    agentMessageText: string;
+    inputBackground: string;
+    muted: string;
+    mutedForeground: string;
+    secondary: string;
+    secondaryForeground: string;
+    outgoingMessage: string;
+    outgoingMessageForeground: string;
+    incomingMessage: string;
+    incomingMessageForeground: string;
+  };
+  position?: 'left' | 'right';
+  compact?: boolean;
+  labels?: {
+    welcomeTitle: string;
+    welcomeSubtitle: string;
+    askQuestionButton: string;
+    recentMessagesTitle: string;
+    noMessagesText: string;
+    messagePlaceholder: string;
+  };
+}
 
 const defaultColors = {
   primary: '#4F46E5',
@@ -14,7 +47,6 @@ const defaultColors = {
   agentMessage: '#F3F4F6',
   agentMessageText: '#111827',
   inputBackground: '#F9FAFB',
-  // Add additional colors with defaults
   muted: '#F3F4F6',
   mutedForeground: '#6B7280',
   secondary: '#F3F4F6',
@@ -70,7 +102,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
 
   return (
     <ThemeContext.Provider value={{ 
-      colors: themeState.colors, 
+      colors: themeState.colors || defaultColors, 
       labels: themeState.labels || defaultLabels,
       updateTheme 
     }}>

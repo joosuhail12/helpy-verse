@@ -12,11 +12,43 @@
   widgetContainer.id = WIDGET_ID;
   document.body.appendChild(widgetContainer);
   
-  // Add widget styles
-  const styleTag = document.createElement('link');
-  styleTag.rel = 'stylesheet';
-  styleTag.href = `${CDN_URL}/chat-widget.css`;
-  document.head.appendChild(styleTag);
+  // Register service worker if supported
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register(`${CDN_URL}/chat-worker.js`)
+      .then(registration => {
+        console.log('Chat widget service worker registered:', registration.scope);
+      })
+      .catch(error => {
+        console.warn('Chat widget service worker registration failed:', error);
+      });
+  }
+  
+  // Preload critical assets
+  const preloadCSS = () => {
+    const link = document.createElement('link');
+    link.rel = 'preload';
+    link.as = 'style';
+    link.href = `${CDN_URL}/chat-widget.css`;
+    link.onload = () => {
+      // Convert preload to stylesheet once loaded
+      link.rel = 'stylesheet';
+    };
+    document.head.appendChild(link);
+  };
+  
+  // Add widget styles with preloading
+  preloadCSS();
+  
+  // Preload widget script
+  const preloadScript = () => {
+    const linkPreload = document.createElement('link');
+    linkPreload.rel = 'preload';
+    linkPreload.as = 'script';
+    linkPreload.href = `${CDN_URL}/chat-widget-standalone.js`;
+    document.head.appendChild(linkPreload);
+  };
+  
+  preloadScript();
   
   // Load the widget script
   const script = document.createElement('script');

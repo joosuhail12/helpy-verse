@@ -4,6 +4,8 @@ import { ChatWidget } from './ChatWidget';
 import { ChatProvider } from '@/context/ChatContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { sessionManager } from '@/utils/auth/sessionManager';
+import { registerServiceWorker } from '@/utils/serviceWorker';
+import { preloadAssets, chatWidgetCriticalAssets, setupLazyLoading } from '@/utils/resourcePreloader';
 
 // Get configuration from window object or use defaults
 const config = (window as any).PULLSE_CHAT_CONFIG || {
@@ -36,8 +38,22 @@ const securitySettings = config.theme?.security || {};
 const sessionTimeoutMs = (securitySettings.sessionTimeout || 30) * 60 * 1000;
 
 const ChatWidgetStandalone: React.FC = () => {
-  // Initialize session on load
+  // Initialize service worker, session, and optimize resources on load
   useEffect(() => {
+    // Register service worker
+    registerServiceWorker().catch(err => {
+      console.warn('Service worker registration failed:', err);
+    });
+    
+    // Preload critical assets
+    preloadAssets(chatWidgetCriticalAssets).catch(err => {
+      console.warn('Asset preloading failed:', err);
+    });
+    
+    // Setup lazy loading for images
+    setupLazyLoading();
+    
+    // Initialize session
     sessionManager.initSession(sessionTimeoutMs);
     
     // Set up interval to check session status
@@ -57,7 +73,7 @@ const ChatWidgetStandalone: React.FC = () => {
   }, []);
   
   return (
-    <ThemeProvider initialTheme={config.theme?.colors}>
+    <ThemeProvider initialTheme={config.theme}>
       <ChatProvider 
         workspaceId={workspaceId} 
         requiresAuthentication={securitySettings.requireAuthentication}
