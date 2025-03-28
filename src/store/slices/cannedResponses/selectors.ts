@@ -1,6 +1,7 @@
 
 import { RootState } from '../../store';
 import { createSelector } from '@reduxjs/toolkit';
+import { selectAllCannedResponses, selectCannedResponseById } from './cannedResponsesSlice';
 
 // Base selector to get the cannedResponses slice
 const selectCannedResponsesState = (state: RootState) => state.cannedResponses;
@@ -8,25 +9,34 @@ const selectCannedResponsesState = (state: RootState) => state.cannedResponses;
 // Derived selectors
 export const selectCannedResponses = createSelector(
   [selectCannedResponsesState],
-  (cannedResponsesState) => cannedResponsesState.responses
+  (state) => selectAllCannedResponses(state)
 );
 
 export const selectCannedResponsesLoading = createSelector(
   [selectCannedResponsesState],
-  (cannedResponsesState) => cannedResponsesState.loading
+  (state) => state.loading
 );
 
 export const selectCannedResponsesError = createSelector(
   [selectCannedResponsesState],
-  (cannedResponsesState) => cannedResponsesState.error
+  (state) => state.error
+);
+
+export const selectSelectedCannedResponseId = createSelector(
+  [selectCannedResponsesState],
+  (state) => state.selectedResponseId
 );
 
 export const selectSelectedCannedResponse = createSelector(
-  [selectCannedResponsesState],
-  (cannedResponsesState) => cannedResponsesState.selectedResponse
+  [selectCannedResponsesState, selectSelectedCannedResponseId],
+  (state, selectedId) => {
+    if (!selectedId) return null;
+    return selectCannedResponseById(state, selectedId);
+  }
 );
 
-export const selectCannedResponseById = createSelector(
-  [selectCannedResponses, (_, id: string) => id],
-  (responses, id) => responses.find(response => response.id === id) || null
-);
+export const selectCannedResponseByIdSelector = (id: string) => 
+  createSelector(
+    [selectCannedResponsesState],
+    (state) => selectCannedResponseById(state, id)
+  );
