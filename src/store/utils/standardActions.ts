@@ -17,7 +17,7 @@ export const createStandardCrudThunks = <T, S>(
     // Add any additional API methods as needed
   }
 ) => {
-  return {
+  const thunks: Record<string, any> = {
     fetchAll: createAsyncThunk(
       `${prefix}/fetchAll`,
       async (params = {}, { rejectWithValue }) => {
@@ -28,62 +28,64 @@ export const createStandardCrudThunks = <T, S>(
           return rejectWithValue(error.message || `Failed to fetch ${prefix}`);
         }
       }
-    ),
-
-    ...(api.getById ? {
-      fetchById: createAsyncThunk(
-        `${prefix}/fetchById`,
-        async (id: string, { rejectWithValue }) => {
-          try {
-            const response = await api.getById(id);
-            return response.data;
-          } catch (error: any) {
-            return rejectWithValue(error.message || `Failed to fetch ${prefix} details`);
-          }
-        }
-      )
-    } : {}),
-
-    ...(api.create ? {
-      create: createAsyncThunk(
-        `${prefix}/create`,
-        async (data: any, { rejectWithValue }) => {
-          try {
-            const response = await api.create(data);
-            return response.data;
-          } catch (error: any) {
-            return rejectWithValue(error.message || `Failed to create ${prefix}`);
-          }
-        }
-      )
-    } : {}),
-
-    ...(api.update ? {
-      update: createAsyncThunk(
-        `${prefix}/update`,
-        async ({ id, data }: { id: string; data: any }, { rejectWithValue }) => {
-          try {
-            const response = await api.update(id, data);
-            return response.data;
-          } catch (error: any) {
-            return rejectWithValue(error.message || `Failed to update ${prefix}`);
-          }
-        }
-      )
-    } : {}),
-
-    ...(api.delete ? {
-      delete: createAsyncThunk(
-        `${prefix}/delete`,
-        async (id: string, { rejectWithValue }) => {
-          try {
-            await api.delete(id);
-            return id;
-          } catch (error: any) {
-            return rejectWithValue(error.message || `Failed to delete ${prefix}`);
-          }
-        }
-      )
-    } : {})
+    )
   };
+
+  if (api.getById) {
+    thunks.fetchById = createAsyncThunk(
+      `${prefix}/fetchById`,
+      async (id: string, { rejectWithValue }) => {
+        try {
+          const response = await api.getById(id);
+          return response.data;
+        } catch (error: any) {
+          return rejectWithValue(error.message || `Failed to fetch ${prefix} details`);
+        }
+      }
+    );
+  }
+
+  if (api.create) {
+    thunks.create = createAsyncThunk(
+      `${prefix}/create`,
+      async (data: any, { rejectWithValue }) => {
+        try {
+          const response = await api.create(data);
+          return response.data;
+        } catch (error: any) {
+          return rejectWithValue(error.message || `Failed to create ${prefix}`);
+        }
+      }
+    );
+  }
+
+  if (api.update) {
+    thunks.update = createAsyncThunk(
+      `${prefix}/update`,
+      async ({ id, data }: { id: string; data: any }, { rejectWithValue }) => {
+        try {
+          const response = await api.update(id, data);
+          return response.data;
+        } catch (error: any) {
+          return rejectWithValue(error.message || `Failed to update ${prefix}`);
+        }
+      }
+    );
+  }
+
+  if (api.delete) {
+    thunks.delete = createAsyncThunk(
+      `${prefix}/delete`,
+      async (id: string, { rejectWithValue }) => {
+        try {
+          await api.delete(id);
+          return id;
+        } catch (error: any) {
+          return rejectWithValue(error.message || `Failed to delete ${prefix}`);
+        }
+      }
+    );
+  }
+
+  return thunks;
 };

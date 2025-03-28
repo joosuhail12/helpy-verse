@@ -7,11 +7,19 @@ import { RootState } from '../store';
  */
 export const createStandardSelectors = <T extends Record<string, any>>(sliceName: keyof RootState) => {
   return {
-    selectAll: (state: RootState) => state[sliceName] as T,
-    selectLoading: (state: RootState) => (state[sliceName] as any)?.loading || false,
-    selectError: (state: RootState) => (state[sliceName] as any)?.error || null,
+    selectAll: (state: RootState) => state[sliceName] as unknown as T,
+    selectLoading: (state: RootState) => {
+      const slice = state[sliceName] as any;
+      return slice?.loading || false;
+    },
+    selectError: (state: RootState) => {
+      const slice = state[sliceName] as any;
+      return slice?.error || null;
+    },
     selectById: (state: RootState, id: string) => {
-      const items = (state[sliceName] as any)?.items || (state[sliceName] as any)?.['entities'] || [];
+      const slice = state[sliceName] as any;
+      const items = slice?.items || slice?.['entities'] || [];
+      
       return Array.isArray(items) 
         ? items.find((item: any) => item.id === id) 
         : items[id] || null;

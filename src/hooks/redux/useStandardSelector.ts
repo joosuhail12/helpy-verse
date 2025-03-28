@@ -11,10 +11,22 @@ export const useStandardSelector = <T extends Record<string, any>>(
   customSelectors: Record<string, (state: RootState) => any> = {}
 ) => {
   const all = useAppSelector(state => state[sliceName] as unknown as T);
-  const loading = useAppSelector(state => (state[sliceName] as any)?.loading || false);
-  const error = useAppSelector(state => (state[sliceName] as any)?.error || null);
-  const items = useAppSelector(state => (state[sliceName] as any)?.items || []);
-  const selected = useAppSelector(state => (state[sliceName] as any)?.selected || null);
+  const loading = useAppSelector(state => {
+    const slice = state[sliceName] as any;
+    return slice?.loading || false;
+  });
+  const error = useAppSelector(state => {
+    const slice = state[sliceName] as any;
+    return slice?.error || null;
+  });
+  const items = useAppSelector(state => {
+    const slice = state[sliceName] as any;
+    return slice?.items || [];
+  });
+  const selected = useAppSelector(state => {
+    const slice = state[sliceName] as any;
+    return slice?.selected || null;
+  });
   
   // Apply any custom selectors
   const customSelectorValues = Object.entries(customSelectors).reduce((acc, [key, selector]) => {
