@@ -1,269 +1,138 @@
 
 import { useState, useCallback, useEffect } from 'react';
-import { useEventSystem } from '@/hooks/useEventSystem';
-import { encryptionService } from '@/utils/crypto/encryptionService';
+import { useAbly } from '@/context/AblyContext';
 import { ChatMessage } from '@/components/chat-widget/components/conversation/types';
-import { ChatEventType } from '@/utils/events/eventTypes';
 import { v4 as uuidv4 } from 'uuid';
 
-interface UseEncryptedMessagesProps {
-  conversationId: string;
-  enabled: boolean;
-  rotationPeriod?: number;
-}
+// In a real app, these would be real encryption functions
+const mockEncrypt = (message: string) => {
+  return btoa(message);
+};
 
-export const useEncryptedMessages = ({
-  conversationId,
-  enabled,
-  rotationPeriod
-}: UseEncryptedMessagesProps) => {
-  const [isInitialized, setIsInitialized] = useState(false);
-  const [currentKeyVersion, setCurrentKeyVersion] = useState<number>(1);
-  const { publish } = useEventSystem();
+const mockDecrypt = (encryptedMessage: string) => {
+  try {
+    return atob(encryptedMessage);
+  } catch (error) {
+    return 'Failed to decrypt message';
+  }
+};
 
-  // Initialize encryption for the conversation
+export function useEncryptedMessages(conversationId: string, keyId: string = 'default-key') {
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [encryptionKey, setEncryptionKey] = useState<string | null>(null);
+  const { ably, connect, isConnected } = useAbly();
+
+  // Initialize connection to Ably
   useEffect(() => {
-    if (!enabled || !conversationId) return;
+    if (!isConnected) {
+      connect();
+    }
+  }, [isConnected, connect]);
 
-    const initializeEncryption = async () => {
-      try {
-        // Check if we already have a key for this conversation
-        const existingKey = await encryptionService.getConversationKey(conversationId);
-        
-        if (!existingKey) {
-          // Set up initial encryption key if none exists
-          await encryptionService.setupConversationEncryption(conversationId);
-          
-          // Publish event that encryption was enabled
-          publish({
-            type: ChatEventType.ENCRYPTION_ENABLED,
-            timestamp: new Date().toISOString(),
-            source: 'encryption-hook',
-            conversationId
-          });
-        }
-        
-        // Set up key rotation
-        await encryptionService.setupKeyRotation(conversationId, rotationPeriod);
-        
-        // Get the current key version
-        const version = encryptionService._getCurrentKeyVersion();
-        setCurrentKeyVersion(version);
-        
-        setIsInitialized(true);
-      } catch (error) {
-        console.error('Failed to initialize encryption:', error);
-      }
+  // Simulate fetching an encryption key
+  useEffect(() => {
+    const getKey = async () => {
+      // In a real app, you would fetch the key from a secure source
+      // For demo purposes, we'll use a mock key
+      setEncryptionKey('mock-encryption-key');
+      setIsLoading(false);
     };
 
-    initializeEncryption();
+    getKey();
+  }, [keyId]);
+
+  // Subscribe to new messages
+  useEffect(() => {
+    if (!ably || !encryptionKey) return;
+
+    const channel = ably.channels.get(`encrypted-chat:${conversationId}`);
     
-    // Clean up function
+    channel.subscribe('message', (msg) => {
+      const encryptedMessage = msg.data as ChatMessage;
+      
+      // If the message is encrypted, decrypt it
+      if (encryptedMessage.encrypted && encryptedMessage.encryptedContent) {
+        const decryptedContent = mockDecrypt(encryptedMessage.encryptedContent);
+        
+        const decryptedMessage: ChatMessage = {
+          ...encryptedMessage,
+          content: decryptedContent,
+        };
+        
+        setMessages((prev) => [...prev, decryptedMessage]);
+      } else {
+        // Message is not encrypted
+        setMessages((prev) => [...prev, encryptedMessage]);
+      }
+    });
+
     return () => {
-      setIsInitialized(false);
+      channel.unsubscribe();
     };
-  }, [conversationId, enabled, publish, rotationPeriod]);
+  }, [ably, encryptionKey, conversationId]);
 
-  // Force key rotation
-  const rotateKey = useCallback(async () => {
-    if (!enabled || !conversationId) return false;
-    
-    try {
-      await encryptionService.rotateConversationKey(conversationId);
-      const newVersion = encryptionService._getCurrentKeyVersion();
-      setCurrentKeyVersion(newVersion);
-      
-      // Publish event that key was rotated
-      publish({
-        type: ChatEventType.KEY_ROTATED,
-        timestamp: new Date().toISOString(),
-        source: 'encryption-hook',
-        conversationId,
-        keyVersion: newVersion
-      });
-      
-      return true;
-    } catch (error) {
-      console.error('Failed to rotate key:', error);
-      return false;
-    }
-  }, [conversationId, enabled, publish]);
+  const sendMessage = useCallback(
+    async (content: string, shouldEncrypt: boolean = true) => {
+      if (!content.trim()) return;
 
-  // Encrypt a message
-  const encryptMessage = useCallback(async (message: string): Promise<ChatMessage> => {
-    const messageId = uuidv4();
-    
-    if (!enabled || !conversationId || !isInitialized) {
-      // Return unencrypted message if encryption not enabled/initialized
-      return {
-        id: messageId,
-        content: message,
-        sender: 'user',
-        timestamp: new Date().toISOString(),
-        encrypted: false
-      };
-    }
-    
-    try {
-      // Get the latest key
-      const key = await encryptionService.getLatestConversationKey(conversationId);
-      
-      if (!key) {
-        throw new Error('Encryption key not found');
-      }
-      
-      // Encrypt the message
-      const encryptedData = await encryptionService.encryptMessage(message, key, currentKeyVersion);
-      
-      // Publish event that message was encrypted
-      publish({
-        type: ChatEventType.MESSAGE_ENCRYPTED,
-        timestamp: new Date().toISOString(),
-        source: 'encryption-hook',
-        conversationId,
-        messageId,
-        keyVersion: currentKeyVersion
-      });
-      
-      return {
-        id: messageId,
-        content: message, // Keep original content for immediate display
-        sender: 'user',
-        timestamp: new Date().toISOString(),
-        encrypted: true,
-        encryptedContent: JSON.stringify(encryptedData),
-        metadata: {
-          keyVersion: currentKeyVersion
+      if (shouldEncrypt && encryptionKey) {
+        // Encrypt the message
+        const encryptedContent = mockEncrypt(content);
+        
+        // Create a new encrypted message
+        const newMessage: ChatMessage = {
+          id: uuidv4(),
+          content: 'Encrypted Message', // Placeholder for UI
+          sender: 'user',
+          timestamp: new Date().toISOString(),
+          conversationId,
+          encrypted: true,
+          encryptedContent,
+          metadata: {
+            keyVersion: 1,
+          },
+        };
+
+        // Add message to local state immediately
+        setMessages((prev) => [...prev, {
+          ...newMessage,
+          content, // Show the real content in the UI
+        }]);
+
+        // If Ably is connected, publish the encrypted message
+        if (ably) {
+          const channel = ably.channels.get(`encrypted-chat:${conversationId}`);
+          channel.publish('message', newMessage);
         }
-      };
-    } catch (error) {
-      console.error('Failed to encrypt message:', error);
-      
-      // Return unencrypted message if encryption fails
-      return {
-        id: messageId,
-        content: message,
-        sender: 'user',
-        timestamp: new Date().toISOString(),
-        encrypted: false
-      };
-    }
-  }, [conversationId, currentKeyVersion, enabled, isInitialized, publish]);
+      } else {
+        // Send unencrypted message
+        const newMessage: ChatMessage = {
+          id: uuidv4(),
+          content,
+          sender: 'user',
+          timestamp: new Date().toISOString(),
+          conversationId,
+          encrypted: false,
+        };
 
-  // Decrypt a message
-  const decryptMessage = useCallback(async (message: ChatMessage): Promise<ChatMessage> => {
-    if (!message.encrypted || !message.encryptedContent || !enabled || !conversationId) {
-      return message;
-    }
-    
-    try {
-      const encryptedData = JSON.parse(message.encryptedContent);
-      const keyVersion = message.metadata?.keyVersion || 1;
-      
-      // Get the key with the specific version
-      const key = await encryptionService.getConversationKeyByVersion(conversationId, keyVersion);
-      
-      if (!key) {
-        throw new Error(`Decryption key version ${keyVersion} not found`);
-      }
-      
-      // Decrypt the message
-      const decryptedContent = await encryptionService.decryptMessage(encryptedData, key);
-      
-      // Publish event that message was decrypted
-      publish({
-        type: ChatEventType.MESSAGE_DECRYPTED,
-        timestamp: new Date().toISOString(),
-        source: 'encryption-hook',
-        conversationId,
-        messageId: message.id,
-        keyVersion,
-        success: true
-      });
-      
-      return {
-        ...message,
-        content: decryptedContent
-      };
-    } catch (error) {
-      console.error('Failed to decrypt message:', error);
-      
-      // Publish event that decryption failed
-      publish({
-        type: ChatEventType.MESSAGE_DECRYPTED,
-        timestamp: new Date().toISOString(),
-        source: 'encryption-hook',
-        conversationId,
-        messageId: message.id,
-        keyVersion: message.metadata?.keyVersion || 1,
-        success: false
-      });
-      
-      return {
-        ...message,
-        content: '[Encrypted message - unable to decrypt]'
-      };
-    }
-  }, [conversationId, enabled, publish]);
+        // Add message to local state immediately
+        setMessages((prev) => [...prev, newMessage]);
 
-  // Decrypt multiple messages
-  const decryptMessages = useCallback(async (messages: ChatMessage[]): Promise<ChatMessage[]> => {
-    if (!enabled || !conversationId) {
-      return messages;
-    }
-    
-    const decryptPromises = messages.map(message => decryptMessage(message));
-    return Promise.all(decryptPromises);
-  }, [conversationId, decryptMessage, enabled]);
-
-  // Re-encrypt a message with the latest key
-  const reEncryptMessage = useCallback(async (message: ChatMessage): Promise<ChatMessage> => {
-    if (!message.encrypted || !message.encryptedContent || !enabled || !conversationId) {
-      return message;
-    }
-    
-    try {
-      const encryptedData = JSON.parse(message.encryptedContent);
-      
-      // Re-encrypt with the latest key
-      const reEncryptedData = await encryptionService.reEncryptMessage(encryptedData, conversationId);
-      
-      if (!reEncryptedData) {
-        throw new Error('Re-encryption failed');
-      }
-      
-      return {
-        ...message,
-        encryptedContent: JSON.stringify(reEncryptedData),
-        metadata: {
-          ...message.metadata,
-          keyVersion: currentKeyVersion
+        // If Ably is connected, publish the message
+        if (ably) {
+          const channel = ably.channels.get(`encrypted-chat:${conversationId}`);
+          channel.publish('message', newMessage);
         }
-      };
-    } catch (error) {
-      console.error('Failed to re-encrypt message:', error);
-      return message;
-    }
-  }, [conversationId, currentKeyVersion, enabled]);
-
-  // Re-encrypt multiple messages
-  const reEncryptMessages = useCallback(async (messages: ChatMessage[]): Promise<ChatMessage[]> => {
-    if (!enabled || !conversationId) {
-      return messages;
-    }
-    
-    const reEncryptPromises = messages.map(message => reEncryptMessage(message));
-    return Promise.all(reEncryptPromises);
-  }, [conversationId, reEncryptMessage, enabled]);
+      }
+    },
+    [ably, encryptionKey, conversationId]
+  );
 
   return {
-    isInitialized,
-    currentKeyVersion,
-    rotateKey,
-    encryptMessage,
-    decryptMessage,
-    decryptMessages,
-    reEncryptMessage,
-    reEncryptMessages
+    messages,
+    isLoading,
+    sendMessage,
+    isEncrypted: !!encryptionKey,
   };
-};
+}

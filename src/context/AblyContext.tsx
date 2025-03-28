@@ -1,90 +1,99 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import * as Ably from 'ably';
-import { v4 as uuidv4 } from 'uuid';
+import Ably from 'ably';
 
-interface AblyContextValue {
-  client: Ably.Realtime | null;
-  clientId: string;
+export interface AblyContextValue {
+  ably: Ably.Realtime | null;
   isConnected: boolean;
-  workspaceId: string;
-  getChannelName: (channelId: string) => string;
+  connectionState: string;
+  connect: (clientId?: string) => void;
+  disconnect: () => void;
 }
 
-const AblyContext = createContext<AblyContextValue | undefined>(undefined);
-
-interface AblyProviderProps {
-  children: React.ReactNode;
-  workspaceId: string;
-}
-
-// Ably API key - this is a client key which is safe to expose
-const ABLY_API_KEY = "X4jpaA.kKXoZg:oEr5R_kjKk06Wk0iilgK_rGAE9hbFjQMU8wYoE_BnEc";
-
-export const AblyProvider: React.FC<AblyProviderProps> = ({ children, workspaceId }) => {
-  const [client, setClient] = useState<Ably.Realtime | null>(null);
-  const [clientId] = useState<string>(() => {
-    // Generate a persistent client ID for this browser
-    const savedClientId = localStorage.getItem('ably_client_id');
-    if (savedClientId) return savedClientId;
-    
-    const newClientId = uuidv4();
-    localStorage.setItem('ably_client_id', newClientId);
-    return newClientId;
-  });
-  const [isConnected, setIsConnected] = useState(false);
-
-  // Initialize Ably client
-  useEffect(() => {
-    const ablyClient = new Ably.Realtime({
-      key: ABLY_API_KEY,
-      clientId,
-    });
-
-    ablyClient.connection.on('connected', () => {
-      console.log('Ably connected');
-      setIsConnected(true);
-    });
-
-    ablyClient.connection.on('disconnected', () => {
-      console.log('Ably disconnected');
-      setIsConnected(false);
-    });
-
-    ablyClient.connection.on('failed', (error) => {
-      console.error('Ably connection failed:', error);
-      setIsConnected(false);
-    });
-
-    setClient(ablyClient);
-
-    return () => {
-      ablyClient.close();
-    };
-  }, [clientId]);
-
-  // Helper to get standardized channel names
-  const getChannelName = (channelId: string): string => {
-    return `chat:${workspaceId}:${channelId}`;
-  };
-
-  const value = {
-    client,
-    clientId,
-    isConnected,
-    workspaceId,
-    getChannelName,
-  };
-
-  return <AblyContext.Provider value={value}>{children}</AblyContext.Provider>;
+const defaultContextValue: AblyContextValue = {
+  ably: null,
+  isConnected: false,
+  connectionState: 'disconnected',
+  connect: () => {},
+  disconnect: () => {},
 };
 
-export const useAbly = (): AblyContextValue => {
-  const context = useContext(AblyContext);
-  
-  if (context === undefined) {
-    throw new Error('useAbly must be used within an AblyProvider');
-  }
-  
-  return context;
+const AblyContext = createContext<AblyContextValue>(defaultContextValue);
+
+export const useAbly = () => useContext(AblyContext);
+
+export const AblyProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [ably, setAbly] = useState<Ably.Realtime | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
+  const [connectionState, setConnectionState] = useState('disconnected');
+
+  const connect = (clientId?: string) => {
+    if (ably) {
+      // Already connected or connecting
+      return;
+    }
+    
+    try {
+      const clientOptions: Ably.Types.ClientOptions = {
+        authUrl: '/api/ably-token',
+        clientId: clientId || `user-${Math.random().toString(36).substring(2, 9)}`,
+      };
+
+      const ablyInstance = new Ably.Realtime(clientOptions);
+      setAbly(ablyInstance);
+
+      ablyInstance.connection.on('connected', () => {
+        setIsConnected(true);
+        setConnectionState('connected');
+        console.log('Ably connected');
+      });
+
+      ablyInstance.connection.on('disconnected', () => {
+        setIsConnected(false);
+        setConnectionState('disconnected');
+        console.log('Ably disconnected');
+      });
+
+      ablyInstance.connection.on('failed', () => {
+        setIsConnected(false);
+        setConnectionState('failed');
+        console.log('Ably connection failed');
+      });
+    } catch (error) {
+      console.error('Failed to connect to Ably:', error);
+      setConnectionState('failed');
+    }
+  };
+
+  const disconnect = () => {
+    if (ably) {
+      ably.close();
+      setAbly(null);
+      setIsConnected(false);
+      setConnectionState('disconnected');
+    }
+  };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (ably) {
+        ably.close();
+      }
+    };
+  }, [ably]);
+
+  const contextValue: AblyContextValue = {
+    ably,
+    isConnected,
+    connectionState,
+    connect,
+    disconnect,
+  };
+
+  return (
+    <AblyContext.Provider value={contextValue}>
+      {children}
+    </AblyContext.Provider>
+  );
 };

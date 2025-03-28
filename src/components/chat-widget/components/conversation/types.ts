@@ -59,3 +59,15 @@ export interface EnhancedConversationViewProps {
   encrypted?: boolean;
   virtualized?: boolean;
 }
+
+export interface UserAvatarProps {
+  name?: string;
+  avatarUrl?: string;
+  size?: 'sm' | 'md' | 'lg';
+  status?: 'online' | 'offline' | 'away' | 'busy';
+}
+
+export interface TypingIndicatorProps {
+  users: TypingUser[];
+  className?: string;
+}

@@ -2,7 +2,8 @@
 import React, { useEffect } from "react";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { useAppSelector } from "@/hooks/useAppSelector";
-import { fetchUserProfile, fetchWorkspaceData, getUserPermission } from "@/store/slices/authSlice";
+import { fetchUserProfile, fetchWorkspaceData } from "@/store/slices/auth/userActions";
+import { getUserPermission } from "@/store/slices/auth/permissionActions";
 
 interface CaslProviderProps {
     children: React.ReactNode;

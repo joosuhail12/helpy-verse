@@ -1,175 +1,144 @@
 
-import React, { useEffect, useState } from 'react';
-import { AlertTriangle, X } from 'lucide-react';
-import { sessionManager, SessionEvents } from '@/utils/auth/sessionManager';
-import { useThemeContext } from '@/context/ThemeContext';
+import React, { useState, useEffect } from 'react';
+import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { useEventSystem } from '@/hooks/useEventSystem';
+import { AlertDialog, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
 
 interface SessionTimeoutAlertProps {
-  onExtend: () => void;
-  onLogout: () => void;
+  timeoutMinutes?: number;
+  warningMinutes?: number;
+  onRenew?: () => void;
+  onTimeout?: () => void;
+  isAuthenticated?: boolean;
 }
 
-type AlertType = 'session' | 'rateLimit';
+export function SessionTimeoutAlert({
+  timeoutMinutes = 30,
+  warningMinutes = 5,
+  onRenew,
+  onTimeout,
+  isAuthenticated = false,
+}: SessionTimeoutAlertProps) {
+  const [lastActivity, setLastActivity] = useState<Date>(new Date());
+  const [showWarning, setShowWarning] = useState(false);
+  const [remainingTime, setRemainingTime] = useState(timeoutMinutes * 60);
+  const { emit } = useEventSystem();
 
-const SessionTimeoutAlert: React.FC<SessionTimeoutAlertProps> = ({ 
-  onExtend, 
-  onLogout 
-}) => {
-  const [visible, setVisible] = useState(false);
-  const [timeRemaining, setTimeRemaining] = useState(0);
-  const [alertType, setAlertType] = useState<AlertType>('session');
-  const [rateLimitMessage, setRateLimitMessage] = useState('');
-  const { colors } = useThemeContext();
-  
-  // Format remaining time in minutes and seconds
-  const formatTimeRemaining = (ms: number) => {
-    const minutes = Math.floor(ms / 60000);
-    const seconds = Math.floor((ms % 60000) / 1000);
-    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+  // Reset the timer when there's user activity
+  const updateActivity = () => {
+    setLastActivity(new Date());
+    setShowWarning(false);
   };
 
-  // Handle session events
-  const handleSessionEvent = (event: SessionEvents, remaining?: number) => {
-    if (event === SessionEvents.SESSION_WARNING && remaining) {
-      setTimeRemaining(remaining);
-      setAlertType('session');
-      setVisible(true);
-    } else if (event === SessionEvents.SESSION_EXPIRED) {
-      onLogout();
-    } else if (event === SessionEvents.SESSION_RENEWED) {
-      setVisible(false);
-    }
+  // Handle session renewal
+  const handleRenew = () => {
+    updateActivity();
+    onRenew?.();
+    emit('session:renewed', { timestamp: new Date() });
   };
 
-  // Add session event listener
+  // Handle session timeout
+  const handleTimeout = () => {
+    setShowWarning(false);
+    onTimeout?.();
+    emit('session:timeout', { timestamp: new Date() });
+  };
+
+  // Set up activity listeners
   useEffect(() => {
-    sessionManager.addEventListener(handleSessionEvent);
+    if (!isAuthenticated) return; // Only track session for authenticated users
+
+    const activityEvents = ['mousedown', 'keypress', 'scroll', 'touchstart'];
     
-    // Check immediately if warning is needed
-    if (sessionManager.isSessionWarningNeeded()) {
-      setTimeRemaining(sessionManager.getSessionTimeRemaining());
-      setAlertType('session');
-      setVisible(true);
-    }
+    // Update activity on user interaction
+    const handleUserActivity = () => {
+      updateActivity();
+    };
     
-    // Update countdown every second
-    const countdownInterval = setInterval(() => {
-      if (visible && alertType === 'session') {
-        const remaining = sessionManager.getSessionTimeRemaining();
-        setTimeRemaining(remaining);
-        
-        if (remaining <= 0) {
-          setVisible(false);
-          sessionManager.endSession();
-        }
+    // Add event listeners
+    activityEvents.forEach(event => {
+      window.addEventListener(event, handleUserActivity);
+    });
+    
+    // Clean up event listeners
+    return () => {
+      activityEvents.forEach(event => {
+        window.removeEventListener(event, handleUserActivity);
+      });
+    };
+  }, [isAuthenticated]);
+  
+  // Check session timeout
+  useEffect(() => {
+    if (!isAuthenticated) return; // Only check session for authenticated users
+    
+    const intervalId = setInterval(() => {
+      const now = new Date();
+      const timeSinceLastActivity = Math.floor((now.getTime() - lastActivity.getTime()) / 1000);
+      const timeRemaining = timeoutMinutes * 60 - timeSinceLastActivity;
+      
+      setRemainingTime(timeRemaining);
+      
+      // Show warning when approaching timeout
+      if (timeRemaining <= warningMinutes * 60 && !showWarning) {
+        setShowWarning(true);
+        emit('session:warning', { timeRemaining });
+      }
+      
+      // Handle timeout
+      if (timeRemaining <= 0) {
+        clearInterval(intervalId);
+        handleTimeout();
       }
     }, 1000);
     
-    // Custom event for rate limit warnings
-    const handleRateLimitEvent = (event: CustomEvent) => {
-      if (event.detail && event.detail.message) {
-        setRateLimitMessage(event.detail.message);
-        setAlertType('rateLimit');
-        setVisible(true);
-        
-        // Auto-hide rate limit warning after displayed time
-        if (event.detail.duration) {
-          setTimeout(() => {
-            if (alertType === 'rateLimit') {
-              setVisible(false);
-            }
-          }, event.detail.duration);
-        }
-      }
-    };
-    
-    window.addEventListener('rateLimitWarning', handleRateLimitEvent as EventListener);
-    
     return () => {
-      sessionManager.removeEventListener(handleSessionEvent);
-      window.removeEventListener('rateLimitWarning', handleRateLimitEvent as EventListener);
-      clearInterval(countdownInterval);
+      clearInterval(intervalId);
     };
-  }, [visible, onLogout, alertType]);
+  }, [isAuthenticated, lastActivity, timeoutMinutes, warningMinutes, showWarning]);
 
-  // Handle stay active button
-  const handleStayActive = () => {
-    sessionManager.extendSession();
-    onExtend();
-    setVisible(false);
-  };
-  
-  // Handle dismiss rate limit warning
-  const handleDismissRateLimit = () => {
-    setVisible(false);
+  // Format the remaining time as MM:SS
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(Math.max(0, seconds) / 60);
+    const secs = Math.max(0, seconds) % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  if (!visible) return null;
+  if (!isAuthenticated || !showWarning) {
+    return null;
+  }
 
   return (
-    <div 
-      className="absolute bottom-0 left-0 right-0 p-3 z-50"
-      style={{ background: colors.background }}
-    >
-      <div 
-        className="rounded-md p-3 flex flex-col gap-2"
-        style={{ 
-          background: alertType === 'rateLimit' ? colors.errorBackground || '#fee2e2' : colors.warningBackground || '#fffbeb',
-          borderColor: alertType === 'rateLimit' ? colors.error || '#ef4444' : colors.warningBorder || '#f59e0b',
-          borderWidth: '1px'
-        }}
-      >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <AlertTriangle 
-              size={18} 
-              className="shrink-0"
-              style={{ color: alertType === 'rateLimit' ? colors.error || '#ef4444' : colors.warning || '#f59e0b' }} 
-            />
-            <span style={{ color: colors.foreground }}>
-              {alertType === 'session' 
-                ? `Your session will expire in ${formatTimeRemaining(timeRemaining)}`
-                : rateLimitMessage}
-            </span>
+    <AlertDialog open={showWarning} onOpenChange={(open) => !open && updateActivity()}>
+      <AlertDialogContent className="bg-amber-50 border-amber-200">
+        <AlertDialogHeader>
+          <div className="flex items-center gap-3">
+            <AlertTriangle className="h-5 w-5 text-amber-500" />
+            <AlertDialogTitle>Session timeout warning</AlertDialogTitle>
           </div>
-          {alertType === 'rateLimit' && (
-            <button 
-              onClick={handleDismissRateLimit} 
-              className="text-gray-500 hover:text-gray-700"
-              aria-label="Dismiss"
-            >
-              <X size={16} />
-            </button>
-          )}
+        </AlertDialogHeader>
+        
+        <div className="py-3">
+          <p className="text-sm text-gray-700">
+            Your session will expire in <span className="font-bold">{formatTime(remainingTime)}</span> due to inactivity.
+          </p>
+          <p className="text-sm text-gray-700 mt-2">
+            Click 'Continue Session' to stay signed in.
+          </p>
         </div>
         
-        {alertType === 'session' && (
-          <div className="flex justify-end space-x-2">
-            <button
-              onClick={onLogout}
-              className="px-3 py-1 rounded text-sm"
-              style={{ 
-                background: 'transparent',
-                color: colors.mutedForeground
-              }}
-            >
-              Logout now
-            </button>
-            <button
-              onClick={handleStayActive}
-              className="px-3 py-1 rounded text-sm"
-              style={{ 
-                background: colors.primary,
-                color: colors.primaryForeground
-              }}
-            >
-              Stay active
-            </button>
-          </div>
-        )}
-      </div>
-    </div>
+        <AlertDialogFooter>
+          <Button
+            variant="outline"
+            onClick={handleRenew}
+            className="bg-white border-gray-300 hover:bg-gray-50"
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Continue Session
+          </Button>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
-};
-
-export default SessionTimeoutAlert;
+}

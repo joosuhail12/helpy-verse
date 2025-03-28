@@ -7,6 +7,7 @@ export const mockChatMessages: ChatMessage[] = [
     content: 'Hello! How can I help you today?',
     sender: 'agent',
     timestamp: new Date(Date.now() - 1000 * 60 * 60).toISOString(),
+    conversationId: 'demo-conversation',
     status: 'delivered',
   },
   {
@@ -14,6 +15,7 @@ export const mockChatMessages: ChatMessage[] = [
     content: 'I have a question about my subscription',
     sender: 'user',
     timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
+    conversationId: 'demo-conversation',
     status: 'delivered',
   },
   {
@@ -21,6 +23,7 @@ export const mockChatMessages: ChatMessage[] = [
     content: 'Sure, I\'d be happy to help with your subscription. What specifically would you like to know?',
     sender: 'agent',
     timestamp: new Date(Date.now() - 1000 * 60 * 29).toISOString(),
+    conversationId: 'demo-conversation',
     status: 'delivered',
   },
   {
@@ -28,6 +31,7 @@ export const mockChatMessages: ChatMessage[] = [
     content: 'I want to upgrade my plan',
     sender: 'user',
     timestamp: new Date(Date.now() - 1000 * 60 * 10).toISOString(),
+    conversationId: 'demo-conversation',
     status: 'delivered',
   },
   {
@@ -35,6 +39,7 @@ export const mockChatMessages: ChatMessage[] = [
     content: 'That\'s great! I can definitely help you upgrade your plan. Which plan were you interested in upgrading to?',
     sender: 'agent',
     timestamp: new Date(Date.now() - 1000 * 60 * 5).toISOString(),
+    conversationId: 'demo-conversation',
     status: 'delivered',
   }
 ];

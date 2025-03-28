@@ -8,7 +8,7 @@ import AppErrorBoundary from './AppErrorBoundary';
 import AppQueryProvider from './AppQueryProvider';
 import CaslProvider from '../CaslProvider';
 import { Provider as ReduxProvider } from 'react-redux';
-import { store } from '@/store';
+import { store } from '@/store/store';
 
 interface AppProvidersProps {
   children: React.ReactNode;
