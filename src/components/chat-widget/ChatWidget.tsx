@@ -13,13 +13,15 @@ interface ChatWidgetProps {
   theme?: Partial<ThemeConfig>;
   settings?: Partial<ChatWidgetSettings>;
   isPreview?: boolean;
+  showLauncher?: boolean;
 }
 
 export const ChatWidget: React.FC<ChatWidgetProps> = ({ 
   workspaceId, 
   theme = {}, 
   settings,
-  isPreview = false
+  isPreview = false,
+  showLauncher = false
 }) => {
   const [isOpen, setIsOpen] = useState(isPreview);
 
@@ -84,7 +86,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({
                   transition={{ duration: 0.2 }}
                   className={`mb-3 ${combinedTheme.compact ? 'w-72' : 'w-80 sm:w-96'} h-[600px] bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-200`}
                   style={{ 
-                    height: isPreview ? '100%' : '600px',
+                    height: isPreview ? '85%' : '600px',
                     width: isPreview ? '100%' : combinedTheme.compact ? '18rem' : '24rem'
                   }}
                 >
@@ -98,7 +100,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({
               )}
             </AnimatePresence>
             
-            {!isPreview && (
+            {(!isPreview || showLauncher) && (
               <button
                 onClick={toggleWidget}
                 className={`${
@@ -106,7 +108,10 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({
                 } w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-colors`}
                 aria-label={isOpen ? 'Close chat' : 'Open chat'}
                 style={{ 
-                  backgroundColor: isOpen ? '#ef4444' : combinedTheme.colors?.primary 
+                  backgroundColor: isOpen ? '#ef4444' : combinedTheme.colors?.primary,
+                  position: isPreview ? 'absolute' : 'relative',
+                  bottom: isPreview ? '1rem' : 'auto',
+                  [combinedTheme.position === 'left' ? 'left' : 'right']: isPreview ? '1rem' : 'auto'
                 }}
               >
                 {isOpen ? (

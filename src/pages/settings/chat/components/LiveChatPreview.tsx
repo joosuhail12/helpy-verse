@@ -18,11 +18,12 @@ const LiveChatPreview = () => {
         <CardDescription>See how your chat widget will appear</CardDescription>
       </CardHeader>
       <CardContent className="p-6">
-        <div className="h-[600px] w-full border border-gray-200 rounded-lg overflow-hidden bg-white shadow-md">
+        <div className="h-[600px] w-full border border-gray-200 rounded-lg overflow-hidden bg-white shadow-md relative">
           <ChatWidget 
             workspaceId="preview-workspace-id"
             settings={settings}
             isPreview={true}
+            showLauncher={true}
           />
         </div>
       </CardContent>
