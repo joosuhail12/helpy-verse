@@ -1,5 +1,5 @@
 
-import React from 'react';
+import * as React from 'react';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 // Create a client
@@ -8,6 +8,7 @@ const queryClient = new QueryClient({
     queries: {
       retry: 1,
       refetchOnWindowFocus: false,
+      staleTime: 5 * 60 * 1000, // 5 minutes
     },
   },
 });
@@ -17,8 +18,11 @@ interface AppQueryProviderProps {
 }
 
 const AppQueryProvider: React.FC<AppQueryProviderProps> = ({ children }) => {
+  // Ensure the QueryClient is instantiated only once
+  const queryClientRef = React.useRef<QueryClient>(queryClient);
+  
   return (
-    <QueryClientProvider client={queryClient}>
+    <QueryClientProvider client={queryClientRef.current}>
       {children}
     </QueryClientProvider>
   );

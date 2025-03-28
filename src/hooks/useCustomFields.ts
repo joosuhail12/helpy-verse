@@ -13,6 +13,7 @@ const fetchCustomFields = async (): Promise<CustomFields> => {
 export const useCustomFields = (table: 'tickets' | 'contacts' | 'companies') => {
   return useQuery({
     queryKey: ['customFields', table],
-    queryFn: fetchCustomFields
+    queryFn: fetchCustomFields,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };
