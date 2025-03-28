@@ -1,154 +1,98 @@
 
 import { ActionReducerMapBuilder } from '@reduxjs/toolkit';
 import { ContactsState } from './contactsTypes';
-import { 
-  fetchContacts, 
-  fetchContactById
-} from './actions/contactsFetch';
-import { 
-  createContact, 
-  updateContact, 
-  deleteContact,
-  updateContactCompany,
-  addContact
-} from './actions/contactsManage';
+import * as contactsActions from './actions';
 
-export const buildContactsExtraReducers = (
-  builder: ActionReducerMapBuilder<ContactsState>
-) => {
-  // Add fetch contacts reducers
+export const buildContactsExtraReducers = (builder: ActionReducerMapBuilder<ContactsState>) => {
+  // Fetch contacts
   builder
-    .addCase(fetchContacts.pending, (state) => {
+    .addCase(contactsActions.fetchContacts.pending, (state) => {
       state.loading = true;
       state.error = null;
     })
-    .addCase(fetchContacts.fulfilled, (state, action) => {
+    .addCase(contactsActions.fetchContacts.fulfilled, (state, action) => {
       state.loading = false;
       state.contacts = action.payload.data;
       state.total = action.payload.total;
+      state.lastFetchTime = Date.now();
     })
-    .addCase(fetchContacts.rejected, (state, action) => {
+    .addCase(contactsActions.fetchContacts.rejected, (state, action) => {
       state.loading = false;
       state.error = action.error.message || 'Failed to fetch contacts';
     });
 
-  // Add fetch contact by ID reducers
+  // Fetch contact details
   builder
-    .addCase(fetchContactById.pending, (state) => {
+    .addCase(contactsActions.fetchContactDetails.pending, (state) => {
       state.loading = true;
       state.error = null;
     })
-    .addCase(fetchContactById.fulfilled, (state, action) => {
+    .addCase(contactsActions.fetchContactDetails.fulfilled, (state, action) => {
       state.loading = false;
       state.contactDetails = action.payload;
-      if (state.selectedContactIds.includes(action.payload.id)) {
-        state.selectedContact = action.payload;
-      }
     })
-    .addCase(fetchContactById.rejected, (state, action) => {
+    .addCase(contactsActions.fetchContactDetails.rejected, (state, action) => {
       state.loading = false;
-      state.error = action.error.message || 'Failed to fetch contact';
+      state.error = action.error.message || 'Failed to fetch contact details';
     });
 
-  // Add create contact reducers
+  // Update contact
   builder
-    .addCase(createContact.pending, (state) => {
+    .addCase(contactsActions.updateContact.pending, (state) => {
       state.loading = true;
       state.error = null;
     })
-    .addCase(createContact.fulfilled, (state, action) => {
+    .addCase(contactsActions.updateContact.fulfilled, (state, action) => {
       state.loading = false;
-      state.contacts.push(action.payload);
-    })
-    .addCase(createContact.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.error.message || 'Failed to create contact';
-    });
-
-  // Handle addContact (alias for createContact)
-  builder
-    .addCase(addContact.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    })
-    .addCase(addContact.fulfilled, (state, action) => {
-      state.loading = false;
-      state.contacts.push(action.payload);
-    })
-    .addCase(addContact.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.error.message || 'Failed to add contact';
-    });
-
-  // Add update contact reducers
-  builder
-    .addCase(updateContact.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    })
-    .addCase(updateContact.fulfilled, (state, action) => {
-      state.loading = false;
-      const index = state.contacts.findIndex(contact => contact.id === action.payload.id);
-      if (index !== -1) {
-        state.contacts[index] = action.payload;
-      }
-      if (state.selectedContact && state.selectedContact.id === action.payload.id) {
-        state.selectedContact = action.payload;
-      }
+      // Update in contacts list if present
+      state.contacts = state.contacts.map(contact => 
+        contact.id === action.payload.id ? action.payload : contact
+      );
+      // Update contactDetails if it's the same contact
       if (state.contactDetails && state.contactDetails.id === action.payload.id) {
         state.contactDetails = action.payload;
       }
     })
-    .addCase(updateContact.rejected, (state, action) => {
+    .addCase(contactsActions.updateContact.rejected, (state, action) => {
       state.loading = false;
       state.error = action.error.message || 'Failed to update contact';
     });
 
-  // Handle updateContactCompany (specific update case)
+  // Create contact
   builder
-    .addCase(updateContactCompany.pending, (state) => {
+    .addCase(contactsActions.createContact.pending, (state) => {
       state.loading = true;
       state.error = null;
     })
-    .addCase(updateContactCompany.fulfilled, (state, action) => {
+    .addCase(contactsActions.createContact.fulfilled, (state, action) => {
       state.loading = false;
-      const index = state.contacts.findIndex(contact => contact.id === action.payload.id);
-      if (index !== -1) {
-        state.contacts[index] = action.payload;
-      }
-      if (state.selectedContact && state.selectedContact.id === action.payload.id) {
-        state.selectedContact = action.payload;
-      }
-      if (state.contactDetails && state.contactDetails.id === action.payload.id) {
-        state.contactDetails = action.payload;
-      }
+      state.contacts = [action.payload, ...state.contacts];
+      state.total += 1;
     })
-    .addCase(updateContactCompany.rejected, (state, action) => {
+    .addCase(contactsActions.createContact.rejected, (state, action) => {
       state.loading = false;
-      state.error = action.error.message || 'Failed to update contact company';
+      state.error = action.error.message || 'Failed to create contact';
     });
 
-  // Add delete contact reducers
+  // Delete contact
   builder
-    .addCase(deleteContact.pending, (state) => {
+    .addCase(contactsActions.deleteContact.pending, (state) => {
       state.loading = true;
       state.error = null;
     })
-    .addCase(deleteContact.fulfilled, (state, action) => {
+    .addCase(contactsActions.deleteContact.fulfilled, (state, action) => {
       state.loading = false;
-      state.contacts = state.contacts.filter(contact => contact.id !== action.meta.arg);
-      if (state.selectedContact && state.selectedContact.id === action.meta.arg) {
-        state.selectedContact = null;
-      }
-      if (state.contactDetails && state.contactDetails.id === action.meta.arg) {
+      state.contacts = state.contacts.filter(contact => contact.id !== action.payload);
+      state.total -= 1;
+      // Clear contactDetails if it's the deleted contact
+      if (state.contactDetails && state.contactDetails.id === action.payload) {
         state.contactDetails = null;
       }
-      state.selectedContactIds = state.selectedContactIds.filter(id => id !== action.meta.arg);
+      // Remove from selected contacts if present
+      state.selectedContactIds = state.selectedContactIds.filter(id => id !== action.payload);
     })
-    .addCase(deleteContact.rejected, (state, action) => {
+    .addCase(contactsActions.deleteContact.rejected, (state, action) => {
       state.loading = false;
       state.error = action.error.message || 'Failed to delete contact';
     });
 };
-
-export const configureExtraReducers = buildContactsExtraReducers;

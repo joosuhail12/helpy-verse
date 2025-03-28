@@ -17,6 +17,9 @@ export interface ContactsState {
 }
 
 export interface UpdateContactPayload {
-  contactId: string;
-  data: Partial<Contact>;
+  id: string;
+  updates: Partial<Contact>;
 }
+
+// Define cache duration for data fetching
+export const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes

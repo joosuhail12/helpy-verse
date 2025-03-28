@@ -36,6 +36,7 @@ export interface Contact {
   linkedinUrl?: string;
   twitterUrl?: string;
   
+  // More structured data
   socialMedia?: {
     twitter?: string;
     linkedin?: string;
@@ -49,6 +50,6 @@ export interface Contact {
     country?: string;
   };
   
-  // Adding an index signature to allow for dynamic custom fields
+  // Adding an index signature for dynamic custom fields
   [key: string]: any;
 }

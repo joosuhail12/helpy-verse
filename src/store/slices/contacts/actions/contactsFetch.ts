@@ -1,53 +1,61 @@
 
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import type { Contact, ContactFilters } from '@/types/contact';
-import { mockContacts } from '../mockData';
+import { RootState } from '@/store/store';
+import { ContactFilters, Contact } from '@/types/contact';
+import api from '@/api/Api';
+import { CACHE_DURATION } from '../contactsTypes';
 
-// Fetch actions - using domain/event pattern
+// Define async thunks for fetching contacts
 export const fetchContacts = createAsyncThunk(
   'contacts/fetchContacts',
-  async (filters: ContactFilters, { rejectWithValue }) => {
+  async (filters: Partial<ContactFilters> & { page?: number; limit?: number } = {}, { getState, rejectWithValue }) => {
     try {
-      // For now, using mock data
-      return {
-        data: mockContacts,
-        total: mockContacts.length
+      const state = getState() as RootState;
+      const { page, limit } = state.contacts;
+      
+      // Combine filters from state and passed filters
+      const queryParams = {
+        page: filters.page || page,
+        limit: filters.limit || limit,
+        ...state.contacts.filters,
+        ...filters
       };
+      
+      const response = await api.get('/contacts', { params: queryParams });
+      return response.data;
     } catch (error) {
-      return rejectWithValue('Failed to fetch contacts');
+      return rejectWithValue(error);
+    }
+  },
+  {
+    condition: (_, { getState }) => {
+      const state = getState() as RootState;
+      const { lastFetchTime } = state.contacts;
+      
+      // Skip if already loading
+      if (state.contacts.loading) {
+        return false;
+      }
+      
+      // Skip if data is fresh enough
+      if (lastFetchTime && Date.now() - lastFetchTime < CACHE_DURATION) {
+        return false;
+      }
+      
+      return true;
     }
   }
 );
 
-export const fetchCustomers = createAsyncThunk(
-  'contacts/fetchCustomers',
-  async (_, { dispatch }) => {
-    // We'll need to import the filters from the slice or pass them as parameters
-    const filters: ContactFilters = {
-      search: '',
-      status: [],
-      type: [],
-      tags: []
-    };
-    return dispatch(fetchContacts(filters));
-  }
-);
-
-export const fetchContactById = createAsyncThunk(
-  'contacts/fetchContactById',
+// Fetch contact details
+export const fetchContactDetails = createAsyncThunk(
+  'contacts/fetchContactDetails',
   async (contactId: string, { rejectWithValue }) => {
     try {
-      // For now, using mock data
-      const contact = mockContacts.find(c => c.id === contactId);
-      if (!contact) {
-        throw new Error('Contact not found');
-      }
-      return contact;
+      const response = await api.get(`/contacts/${contactId}`);
+      return response.data;
     } catch (error) {
-      return rejectWithValue('Failed to fetch contact');
+      return rejectWithValue(error);
     }
   }
 );
-
-// Alias for fetchContactById with consistent naming
-export const fetchContactDetails = fetchContactById;

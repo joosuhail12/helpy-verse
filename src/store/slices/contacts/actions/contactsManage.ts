@@ -1,103 +1,57 @@
 
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import type { Contact } from '@/types/contact';
-import { mockContacts } from '../mockData';
+import { Contact } from '@/types/contact';
+import { UpdateContactPayload } from '../contactsTypes';
+import api from '@/api/Api';
 
-// Create a new contact
+// Create contact
 export const createContact = createAsyncThunk(
   'contacts/createContact',
-  async (contact: Omit<Contact, 'id' | 'createdAt' | 'updatedAt'>) => {
-    // Simulating an API call
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    const newContact: Contact = {
-      ...contact,
-      id: String(Date.now()),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-    
-    return newContact;
+  async (contact: Partial<Contact>, { rejectWithValue }) => {
+    try {
+      const response = await api.post('/contacts', contact);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error);
+    }
   }
 );
 
-// Update an existing contact
+// Update contact
 export const updateContact = createAsyncThunk(
   'contacts/updateContact',
-  async ({ id, updates }: { id: string; updates: Partial<Contact> }) => {
-    // Simulating an API call
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // Find the contact
-    const contact = mockContacts.find(c => c.id === id);
-    
-    if (!contact) {
-      throw new Error('Contact not found');
+  async ({ id, updates }: UpdateContactPayload, { rejectWithValue }) => {
+    try {
+      const response = await api.patch(`/contacts/${id}`, updates);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error);
     }
-    
-    const updatedContact: Contact = {
-      ...contact,
-      ...updates,
-      updatedAt: new Date().toISOString()
-    };
-    
-    return updatedContact;
   }
 );
 
-// For supporting the existing components that use contactId parameter
-export const updateContactCompany = createAsyncThunk(
-  'contacts/updateContactCompany',
-  async ({ contactId, companyId }: { contactId: string; companyId: string | null }) => {
-    // Simulating an API call
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // Find the contact
-    const contact = mockContacts.find(c => c.id === contactId);
-    
-    if (!contact) {
-      throw new Error('Contact not found');
-    }
-    
-    const updatedContact: Contact = {
-      ...contact,
-      company: companyId,
-      updatedAt: new Date().toISOString()
-    };
-    
-    return updatedContact;
-  }
-);
-
-// Alias for addContact to support existing components
-export const addContact = createAsyncThunk(
-  'contacts/addContact',
-  async (contactData: Partial<Contact>) => {
-    // Simulating an API call
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    const newContact: Contact = {
-      ...contactData,
-      id: contactData.id || String(Date.now()),
-      firstname: contactData.firstname || '',
-      lastname: contactData.lastname || '',
-      email: contactData.email || '',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-    
-    return newContact;
-  }
-);
-
-// Delete a contact
+// Delete contact
 export const deleteContact = createAsyncThunk(
   'contacts/deleteContact',
-  async (id: string) => {
-    // Simulating an API call
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // In a real scenario, you would delete the contact from the backend
-    return id;
+  async (contactId: string, { rejectWithValue }) => {
+    try {
+      await api.delete(`/contacts/${contactId}`);
+      return contactId;
+    } catch (error) {
+      return rejectWithValue(error);
+    }
+  }
+);
+
+// Update contact's company
+export const updateContactCompany = createAsyncThunk(
+  'contacts/updateContactCompany',
+  async ({ contactId, companyId }: { contactId: string, companyId: string | null }, { rejectWithValue }) => {
+    try {
+      const response = await api.patch(`/contacts/${contactId}/company`, { companyId });
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error);
+    }
   }
 );

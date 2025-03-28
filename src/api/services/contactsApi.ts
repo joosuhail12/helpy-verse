@@ -17,8 +17,8 @@ export type ContactsQueryParams = Partial<ContactFilters> & {
 export const contactsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // Get all contacts with filtering
-    getContacts: builder.query<ContactsResponse, ContactsQueryParams>({
-      query: (filters) => ({
+    getContacts: builder.query<ContactsResponse, ContactsQueryParams | void>({
+      query: (filters = {}) => ({
         url: '/contacts',
         params: filters
       }),

@@ -1,12 +1,20 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { Contact, ContactFilters } from '@/types/contact';
 import { ContactsState } from '../contactsTypes';
+import { Contact, ContactFilters } from '@/types/contact';
 
-// Define the initial state for contact core functionality
-const initialState: Partial<ContactsState> = {
+// Define the initial state
+const initialState: ContactsState = {
+  contacts: [],
   selectedContact: null,
   selectedContactIds: [],
+  contactDetails: null,
+  loading: false,
+  error: null,
+  total: 0,
+  page: 1,
+  limit: 10,
+  lastFetchTime: null,
   filters: {
     search: '',
     status: [],
@@ -15,48 +23,50 @@ const initialState: Partial<ContactsState> = {
   }
 };
 
-// Create a slice for core contact actions
-const contactsCoreSlice = createSlice({
+// Create the slice
+export const contactsCoreSlice_ForConfiguration = createSlice({
   name: 'contacts',
-  initialState: initialState as ContactsState,
+  initialState,
   reducers: {
-    'contacts/selectContact': (state, action: PayloadAction<Contact>) => {
+    // Synchronous actions
+    setSelectedContact: (state, action: PayloadAction<Contact | null>) => {
       state.selectedContact = action.payload;
     },
-    'contacts/clearSelectedContact': (state) => {
-      state.selectedContact = null;
+    setSelectedContactIds: (state, action: PayloadAction<string[]>) => {
+      state.selectedContactIds = action.payload;
     },
-    'contacts/setFilters': (state, action: PayloadAction<ContactFilters>) => {
-      state.filters = action.payload;
+    setPage: (state, action: PayloadAction<number>) => {
+      state.page = action.payload;
     },
-    'contacts/resetFilters': (state) => {
-      state.filters = initialState.filters as ContactFilters;
+    setLimit: (state, action: PayloadAction<number>) => {
+      state.limit = action.payload;
     },
-    'contacts/toggleSelectContact': (state, action: PayloadAction<string>) => {
-      if (state.selectedContactIds.includes(action.payload)) {
-        state.selectedContactIds = state.selectedContactIds.filter(id => id !== action.payload);
-      } else {
-        state.selectedContactIds.push(action.payload);
-      }
+    setFilters: (state, action: PayloadAction<Partial<ContactFilters>>) => {
+      state.filters = { ...state.filters, ...action.payload };
     },
-    'contacts/clearSelection': (state) => {
-      state.selectedContactIds = [];
+    clearFilters: (state) => {
+      state.filters = {
+        search: '',
+        status: [],
+        type: [],
+        tags: []
+      };
+    },
+    resetContacts: (state) => {
+      state.contacts = [];
+      state.total = 0;
+      state.lastFetchTime = null;
     }
   }
 });
 
-// Export the actions with consistent naming
+// Export the actions
 export const {
-  'contacts/selectContact': selectContact,
-  'contacts/clearSelectedContact': clearSelectedContact,
-  'contacts/setFilters': setFilters,
-  'contacts/resetFilters': resetFilters,
-  'contacts/toggleSelectContact': toggleSelectContact,
-  'contacts/clearSelection': clearSelection
-} = contactsCoreSlice.actions;
-
-// Export the reducer functions for potential reuse
-export const contactsCoreReducers = contactsCoreSlice.caseReducers;
-
-// Export the slice for configuration
-export const contactsCoreSlice_ForConfiguration = contactsCoreSlice;
+  setSelectedContact,
+  setSelectedContactIds,
+  setPage,
+  setLimit,
+  setFilters,
+  clearFilters,
+  resetContacts
+} = contactsCoreSlice_ForConfiguration.actions;
