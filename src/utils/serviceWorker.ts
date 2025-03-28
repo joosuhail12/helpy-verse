@@ -44,7 +44,7 @@ export const requestNotificationPermission = async (): Promise<boolean> => {
 // Define the SyncManager interface
 interface SyncManager {
   register: (tag: string) => Promise<void>;
-  getTags?: () => Promise<string[]>;  // Make getTags optional
+  getTags: () => Promise<string[]>;  // Make getTags required to match where it's used
 }
 
 // Extended ServiceWorkerRegistration interface that includes the sync property
