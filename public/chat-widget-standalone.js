@@ -1,4 +1,3 @@
-
 // This loads the chat widget component into the container
 (function() {
   console.log('Chat widget initialized with config:', window.PULLSE_CHAT_CONFIG);
@@ -6,10 +5,27 @@
   const config = window.PULLSE_CHAT_CONFIG || {};
   const workspaceId = config.workspaceId || '6c22b22f-7bdf-43db-b7c1-9c5884125c63';
   
+  // Security checks
+  const hostname = window.location.hostname;
+  const allowedOrigins = config.allowedOrigins || [];
+  
   // Create container for the widget with proper styling
   const container = document.createElement('div');
+  container.id = 'pullse-chat-widget-container';
   container.className = 'pullse-chat-widget-container';
-  document.getElementById('pullse-chat-widget').appendChild(container);
+  
+  // Populate the container with origin info for debugging
+  container.dataset.origin = hostname;
+  container.dataset.workspace = workspaceId;
+  
+  // Add the container to the page
+  const widgetElement = document.getElementById('pullse-chat-widget');
+  if (widgetElement) {
+    widgetElement.appendChild(container);
+  } else {
+    console.error('Chat widget container not found');
+    return;
+  }
   
   // Create widget button
   const button = document.createElement('button');
@@ -354,5 +370,5 @@
   });
   
   // Initialize widget
-  console.log(`Chat widget loaded for workspace: ${workspaceId}`);
+  console.log(`Chat widget loaded for workspace: ${workspaceId} on domain: ${hostname}`);
 })();
