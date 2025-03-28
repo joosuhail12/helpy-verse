@@ -8,6 +8,7 @@ import { selectAllCompanies } from '@/store/slices/companies/companiesSlice';
 interface AudienceSizeEstimatorProps {
   matchCount: number;
   isLoading?: boolean;
+  queryGroup?: any; // Add for API compatibility with other components
 }
 
 const AudienceSizeEstimator: React.FC<AudienceSizeEstimatorProps> = ({ matchCount, isLoading = false }) => {

@@ -1,8 +1,8 @@
 
 import { QueryGroup, QueryField } from '@/types/queryBuilder';
 import { RulesSummary } from '@/components/common/query-builder/components/RulesSummary';
-import { AudienceSizeEstimator } from './AudienceSizeEstimator';
-import { SampleMatchesPreview } from './SampleMatchesPreview';
+import AudienceSizeEstimator from './AudienceSizeEstimator';
+import SampleMatchesPreview from './SampleMatchesPreview';
 import { RuleConflictDetector } from './RuleConflictDetector';
 import { DataConstraintValidator } from './DataConstraintValidator';
 
@@ -19,7 +19,7 @@ export const RulePreview = ({ group, fields }: RulePreviewProps) => {
       <RulesSummary group={group} fields={fields} />
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <AudienceSizeEstimator queryGroup={group} />
+        <AudienceSizeEstimator matchCount={0} queryGroup={group} />
         <DataConstraintValidator queryGroup={group} />
       </div>
       

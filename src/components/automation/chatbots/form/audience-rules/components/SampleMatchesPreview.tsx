@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { Rule, RuleGroup } from '@/components/common/query-builder/types';
+import { QueryGroup } from '@/types/queryBuilder';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Contact } from '@/types/contact';
@@ -12,10 +12,12 @@ import { selectAllContacts } from '@/store/slices/contacts/contactsSlice';
 import { selectAllCompanies } from '@/store/slices/companies/companiesSlice';
 
 interface SampleMatchesPreviewProps {
-  rules: RuleGroup;
+  queryGroup?: QueryGroup;
+  rules?: QueryGroup;
 }
 
-const SampleMatchesPreview: React.FC<SampleMatchesPreviewProps> = ({ rules }) => {
+const SampleMatchesPreview: React.FC<SampleMatchesPreviewProps> = ({ queryGroup, rules }) => {
+  const activeRules = queryGroup || rules;
   const contacts = useAppSelector(selectAllContacts);
   const companies = useAppSelector(selectAllCompanies);
   
@@ -24,23 +26,23 @@ const SampleMatchesPreview: React.FC<SampleMatchesPreviewProps> = ({ rules }) =>
   
   useEffect(() => {
     // Only process if we have rules and data
-    if (rules && rules.rules && rules.rules.length > 0) {
+    if (activeRules && activeRules.rules && activeRules.rules.length > 0) {
       // Filter contacts
       const filteredContacts = contacts.filter(contact => 
-        evaluateRules(contact, rules)
+        evaluateRules(contact, activeRules)
       );
       setMatchingContacts(filteredContacts.slice(0, 5));
       
       // Filter companies
       const filteredCompanies = companies.filter(company => 
-        evaluateRules(company, rules)
+        evaluateRules(company, activeRules)
       );
       setMatchingCompanies(filteredCompanies.slice(0, 5));
     } else {
       setMatchingContacts([]);
       setMatchingCompanies([]);
     }
-  }, [rules, contacts, companies]);
+  }, [activeRules, contacts, companies]);
   
   return (
     <Card className="mt-4">

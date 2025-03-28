@@ -1,71 +1,69 @@
 
 import { Contact } from '@/types/contact';
-import { ContactsState } from './types';
 
-/**
- * Updates contact in normalized state
- */
-export const updateContactInState = (
-  state: ContactsState, 
-  contactId: string, 
-  updates: Partial<Contact>
-): void => {
-  // Update in entities
-  if (state.entities[contactId]) {
-    state.entities[contactId] = {
-      ...state.entities[contactId],
-      ...updates
-    };
-  }
-
-  // Update in contactDetails if it's the current selected contact
-  if (state.contactDetails && state.contactDetails.id === contactId) {
-    state.contactDetails = {
-      ...state.contactDetails,
-      ...updates
-    };
-  }
+// Helper function to normalize an array of contacts
+export const normalizeContacts = (contacts: Contact[]) => {
+  const entities: Record<string, Contact> = {};
+  const ids: string[] = [];
+  
+  contacts.forEach(contact => {
+    entities[contact.id] = contact;
+    ids.push(contact.id);
+  });
+  
+  return { entities, ids };
 };
 
-/**
- * Adds a new contact to the normalized state
- */
-export const addContactToState = (
-  state: ContactsState,
+// Helper function to safely add contact to normalized state
+export const addContact = (
+  state: { entities: Record<string, Contact>; ids: string[] },
   contact: Contact
-): void => {
-  // Add to entities
+) => {
   state.entities[contact.id] = contact;
-  
-  // Add to ids if not already there
   if (!state.ids.includes(contact.id)) {
     state.ids.push(contact.id);
   }
 };
 
-/**
- * Removes a contact from the normalized state
- */
-export const removeContactFromState = (
-  state: ContactsState,
+// Helper function to safely update a contact in normalized state
+export const updateContact = (
+  state: { entities: Record<string, Contact>; ids: string[] },
+  contactId: string,
+  contactData: Partial<Contact>
+) => {
+  if (state.entities[contactId]) {
+    state.entities[contactId] = {
+      ...state.entities[contactId],
+      ...contactData
+    };
+  }
+};
+
+// Helper function to safely delete a contact from normalized state
+export const removeContact = (
+  state: { entities: Record<string, Contact>; ids: string[] },
   contactId: string
-): void => {
-  // Remove from entities
+) => {
   delete state.entities[contactId];
-  
-  // Remove from ids
   state.ids = state.ids.filter(id => id !== contactId);
-  
-  // Clear selection if needed
-  if (state.selectedContactId === contactId) {
-    state.selectedContactId = null;
-  }
-  
-  // Remove from selected contacts
-  state.selectedContactIds = state.selectedContactIds.filter(id => id !== contactId);
-  
-  // Clear contact details if it's the current contact
-  if (state.contactDetails && state.contactDetails.id === contactId) {
-    state.contactDetails = null;
-  }
+};
+
+// Helper function to find a contact by specific criteria
+export const findContact = (
+  state: { entities: Record<string, Contact>; ids: string[] },
+  criteria: (contact: Contact) => boolean
+) => {
+  return state.ids
+    .map(id => state.entities[id])
+    .find(contact => criteria(contact as Contact));
+};
+
+// Helper function to filter contacts by specific criteria
+export const filterContacts = (
+  state: { entities: Record<string, Contact>; ids: string[] },
+  criteria: (contact: Contact) => boolean
+) => {
+  return state.ids
+    .map(id => state.entities[id])
+    .filter(contact => criteria(contact as Contact));
 };

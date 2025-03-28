@@ -4,8 +4,10 @@ import { Link } from 'react-router-dom';
 import { Contact } from '@/types/contact';
 import { ContactActivityBadge } from './ContactActivityBadge';
 import { MoreHorizontal } from 'lucide-react';
-import { useAppDispatch, useAppSelector } from '@/hooks';
-import { toggleSelectContact, selectSelectedContactIds } from '@/store/slices/contacts/contactsSlice';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { useAppSelector } from '@/hooks/useAppSelector';
+import { toggleSelectContact } from '@/store/slices/contacts/contactsSlice';
+import { selectSelectedContactIds } from '@/store/slices/contacts/contactsSelectors';
 
 interface ContactListItemProps {
   contact: Contact;
@@ -43,7 +45,7 @@ export const ContactListItem: React.FC<ContactListItemProps> = ({ contact, isSel
         </span>
       </td>
       <td className="px-4 py-3">
-        <ContactActivityBadge date={contact.lastActivity || contact.updatedAt} />
+        <ContactActivityBadge lastActivity={contact.lastActivity || contact.updatedAt} />
       </td>
       <td className="w-12 px-4 py-3">
         <button className="text-gray-400 hover:text-gray-600">

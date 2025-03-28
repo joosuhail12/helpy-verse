@@ -1,66 +1,41 @@
 
-export type ComparisonOperator = 
-  | 'equals' 
-  | 'not_equals' 
-  | 'contains' 
-  | 'not_contains'
-  | 'starts_with'
-  | 'ends_with'
-  | 'greater_than'
-  | 'less_than'
-  | 'greater_than_equals'
-  | 'less_than_equals'
-  | 'in'
-  | 'not_in'
-  | 'is_empty'
-  | 'is_not_empty'
-  | 'between'
-  | 'not_between'
-  | 'contains_any'
-  | 'contains_all'
-  | 'has_none'
-  | 'has_any'
-  | 'has_all'
-  | 'after'
-  | 'before'
-  | 'last_n_days'
-  | 'next_n_days'
-  | 'this_week'
-  | 'this_month'
-  | 'this_year'
-  | 'last_week'
-  | 'last_month'
-  | 'last_year'
-  | 'next_week'
-  | 'next_month'
-  | 'next_year'
-  | 'rolling_days'
-  | 'rolling_months'
-  | 'rolling_years'
-  | 'custom_range';
-
-export type DataSource = 'contacts' | 'companies' | 'custom_objects';
-
-export type FieldType = 'text' | 'number' | 'boolean' | 'date' | 'select' | 'multi-select';
-
 export interface QueryField {
   id: string;
   label: string;
-  type: FieldType;
-  source: DataSource;
+  type: 'text' | 'number' | 'date' | 'boolean' | 'select' | 'multi-select';
+  source?: string;
+  source_type?: string;
   options?: string[];
-  customObject?: string;
+  placeholder?: string;
+  validation?: {
+    required?: boolean;
+    min?: number;
+    max?: number;
+    pattern?: string;
+  };
+  default?: any;
 }
+
+export type DataSource = 'contacts' | 'companies' | 'deals' | 'tickets' | 'emails' | '';
+
+export type Combinator = 'and' | 'or';
 
 export interface QueryRule {
   id: string;
   field: string;
-  operator: ComparisonOperator;
-  value: string | number | boolean | string[];
+  operator: string;
+  value: any;
 }
 
 export interface QueryGroup {
   id: string;
-  combinator: 'and' | 'or';
+  combinator: Combinator;
   rules: (QueryRule | QueryGroup)[];
+}
+
+export interface ValidationError {
+  ruleId: string;
+  field: string;
+  message: string;
+  path?: string;
 }

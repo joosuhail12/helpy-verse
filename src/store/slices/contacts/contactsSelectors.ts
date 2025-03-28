@@ -20,8 +20,11 @@ export const selectContactEntities = createSelector(
 
 export const selectAllContacts = createSelector(
   [selectContactIds, selectContactEntities],
-  (ids, entities) => ids.map(id => entities[id])
+  (ids, entities) => ids.map(id => entities[id]).filter(Boolean) as Contact[]
 );
+
+// Alias for selectAllContacts to maintain backward compatibility
+export const selectContacts = selectAllContacts;
 
 export const selectContactsLoading = createSelector(
   [getContactsState],
@@ -55,7 +58,7 @@ export const selectSelectedContactIds = createSelector(
 
 export const selectSelectedContacts = createSelector(
   [selectContactEntities, selectSelectedContactIds],
-  (entities, selectedIds) => selectedIds.map(id => entities[id]).filter(Boolean)
+  (entities, selectedIds) => selectedIds.map(id => entities[id]).filter(Boolean) as Contact[]
 );
 
 // Parameterized selectors
@@ -100,8 +103,9 @@ export const selectSortedContacts = createSelector(
   (contacts, sort) => {
     const { field, direction } = sort;
     return [...contacts].sort((a, b) => {
-      const valueA = a[field];
-      const valueB = b[field];
+      // Safe indexing using string keys for dynamic property access
+      const valueA = a[field as keyof Contact] as string | number;
+      const valueB = b[field as keyof Contact] as string | number;
       
       if (valueA < valueB) {
         return direction === 'asc' ? -1 : 1;

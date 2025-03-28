@@ -1,115 +1,118 @@
 
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { Tag, PlusCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, X } from 'lucide-react';
-import { useAppSelector } from '@/hooks/useAppSelector';
-import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { updateContact } from '@/store/slices/contacts/contactsSlice';
+import { Input } from '@/components/ui/input';
 import { 
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+  Popover, 
+  PopoverContent, 
+  PopoverTrigger 
+} from '@/components/ui/popover';
+import { useAppSelector } from '@/hooks/useAppSelector';
+import { selectAllTags } from '@/store/slices/tags/tagsSlice';
 
 interface ContactTagsProps {
-  contactId: string;
-  tags: string[];
+  contactTags: string[];
+  onAddTag: (tagId: string) => void;
+  onRemoveTag: (tagId: string) => void;
 }
 
-export const ContactTags: React.FC<ContactTagsProps> = ({ contactId, tags }) => {
-  const [open, setOpen] = useState(false);
-  const dispatch = useAppDispatch();
-  const allTags = useAppSelector((state) => state.tags.items);
+export const ContactTags = ({ contactTags, onAddTag, onRemoveTag }: ContactTagsProps) => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const tags = useAppSelector(selectAllTags) || [];
   
-  const handleAddTag = (tagId: string) => {
-    // Only add if not already in the array
-    if (!tags.includes(tagId)) {
-      dispatch(updateContact({
-        contactId,
-        data: { tags: [...tags, tagId] }
-      }));
-    }
-    setOpen(false);
-  };
+  // Filter tags that are not already assigned to the contact
+  const availableTags = tags.filter(tag => !contactTags.includes(tag.id));
   
-  const handleRemoveTag = (tagId: string) => {
-    dispatch(updateContact({
-      contactId,
-      data: { tags: tags.filter(id => id !== tagId) }
-    }));
-  };
-  
-  const getTagById = (tagId: string) => {
-    return allTags.find(tag => tag.id === tagId);
-  };
-  
-  // Filter out tags that are already assigned
-  const availableTags = allTags.filter(tag => !tags.includes(tag.id));
-  
+  // Filter available tags based on search query
+  const filteredTags = searchQuery
+    ? availableTags.filter(tag => 
+        tag.name.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : availableTags;
+
   return (
-    <div className="space-y-2">
+    <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h3 className="text-sm font-medium">Tags</h3>
+        <h3 className="text-lg font-medium">Tags</h3>
         
-        {availableTags.length > 0 && (
-          <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-8 px-2">
-                <PlusCircle className="h-4 w-4 mr-1" />
-                Add Tag
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="p-0" align="end" side="bottom">
-              <Command>
-                <CommandInput placeholder="Search tags..." />
-                <CommandList>
-                  <CommandEmpty>No tags found.</CommandEmpty>
-                  <CommandGroup>
-                    {availableTags.map((tag) => (
-                      <CommandItem
-                        key={tag.id}
-                        onSelect={() => handleAddTag(tag.id)}
-                      >
-                        {tag.name}
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-            </PopoverContent>
-          </Popover>
-        )}
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className="h-8">
+              <PlusCircle className="h-4 w-4 mr-2" />
+              Add Tag
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-80 p-0" align="end">
+            <div className="p-4 border-b">
+              <h4 className="font-medium">Add Tags</h4>
+              <p className="text-sm text-muted-foreground">
+                Select tags to add to this contact.
+              </p>
+              <Input
+                placeholder="Search tags..."
+                className="mt-2"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <div className="max-h-80 overflow-auto p-4">
+              {filteredTags.length > 0 ? (
+                filteredTags.map((tag) => (
+                  <div
+                    key={tag.id}
+                    className="flex items-center justify-between py-2 hover:bg-muted px-2 rounded cursor-pointer"
+                    onClick={() => onAddTag(tag.id)}
+                  >
+                    <div className="flex items-center">
+                      <div
+                        className="w-3 h-3 rounded-full mr-2"
+                        style={{ backgroundColor: tag.color }}
+                      />
+                      <span>{tag.name}</span>
+                    </div>
+                    <Button size="sm" variant="ghost">
+                      Add
+                    </Button>
+                  </div>
+                ))
+              ) : (
+                <div className="py-4 text-center text-muted-foreground">
+                  No tags found
+                </div>
+              )}
+            </div>
+          </PopoverContent>
+        </Popover>
       </div>
-      
+
       <div className="flex flex-wrap gap-2">
-        {tags.length > 0 ? (
-          tags.map((tagId) => {
-            const tag = getTagById(tagId);
-            return tag ? (
-              <Badge key={tagId} variant="outline" className="flex items-center gap-1 pr-1">
+        {contactTags.length > 0 ? (
+          tags
+            .filter(tag => contactTags.includes(tag.id))
+            .map((tag) => (
+              <Badge
+                key={tag.id}
+                className="flex items-center gap-1 px-3 py-1"
+                style={{ backgroundColor: tag.color, color: '#fff' }}
+              >
+                <Tag className="h-3 w-3" />
                 {tag.name}
                 <Button
                   variant="ghost"
-                  size="icon"
-                  className="h-4 w-4 p-0 hover:bg-transparent"
-                  onClick={() => handleRemoveTag(tagId)}
+                  size="sm"
+                  className="h-4 w-4 p-0 ml-1 text-white hover:bg-transparent"
+                  onClick={() => onRemoveTag(tag.id)}
                 >
-                  <X className="h-3 w-3" />
+                  &times;
                 </Button>
               </Badge>
-            ) : null;
-          })
+            ))
         ) : (
-          <p className="text-sm text-muted-foreground">No tags assigned</p>
+          <div className="text-sm text-muted-foreground">
+            No tags assigned to this contact
+          </div>
         )}
       </div>
     </div>

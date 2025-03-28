@@ -3,7 +3,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { X, Trash2, Tag, Download, UserCheck, UserMinus } from 'lucide-react';
 import { useAppSelector } from '@/hooks/useAppSelector';
-import { selectSelectedContactIds, selectAllContacts } from '@/store/slices/contacts/contactsSlice';
+import { selectSelectedContactIds } from '@/store/slices/contacts/contactsSelectors';
 
 interface BulkActionsProps {
   onCancel: () => void;
@@ -11,7 +11,6 @@ interface BulkActionsProps {
 
 export const BulkActions: React.FC<BulkActionsProps> = ({ onCancel }) => {
   const selectedContactIds = useAppSelector(selectSelectedContactIds);
-  const contacts = useAppSelector(selectAllContacts);
   
   const selectedCount = selectedContactIds.length;
   

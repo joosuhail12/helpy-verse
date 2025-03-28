@@ -142,11 +142,13 @@ const contactsSlice = createSlice({
         if (action.payload) {
           const { contactId, data } = action.payload;
           // Update in normalized store
-          state.entities[contactId] = { ...state.entities[contactId], ...data };
-          
-          // Update contactDetails if it's the current contact
-          if (state.contactDetails && state.contactDetails.id === contactId) {
-            state.contactDetails = { ...state.contactDetails, ...data };
+          if (typeof contactId === 'string') {
+            state.entities[contactId] = { ...state.entities[contactId], ...data };
+            
+            // Update contactDetails if it's the current contact
+            if (state.contactDetails && state.contactDetails.id === contactId) {
+              state.contactDetails = { ...state.contactDetails, ...data };
+            }
           }
         }
       })
@@ -156,11 +158,13 @@ const contactsSlice = createSlice({
         if (action.payload) {
           const { contactId, data } = action.payload;
           // Update in normalized store
-          state.entities[contactId] = { ...state.entities[contactId], ...data };
-          
-          // Update contactDetails if it's the current contact
-          if (state.contactDetails && state.contactDetails.id === contactId) {
-            state.contactDetails = { ...state.contactDetails, ...data };
+          if (typeof contactId === 'string') {
+            state.entities[contactId] = { ...state.entities[contactId], ...data };
+            
+            // Update contactDetails if it's the current contact
+            if (state.contactDetails && state.contactDetails.id === contactId) {
+              state.contactDetails = { ...state.contactDetails, ...data };
+            }
           }
         }
       })
@@ -169,18 +173,20 @@ const contactsSlice = createSlice({
       .addCase(deleteContact.fulfilled, (state, action) => {
         const contactId = action.payload;
         // Remove from normalized store
-        delete state.entities[contactId];
-        state.ids = state.ids.filter(id => id !== contactId);
-        
-        // Clean up references
-        if (state.contactDetails && state.contactDetails.id === contactId) {
-          state.contactDetails = null;
-        }
-        
-        state.selectedContactIds = state.selectedContactIds.filter(id => id !== contactId);
-        
-        if (state.selectedContactId === contactId) {
-          state.selectedContactId = null;
+        if (typeof contactId === 'string') {
+          delete state.entities[contactId];
+          state.ids = state.ids.filter(id => id !== contactId);
+          
+          // Clean up references
+          if (state.contactDetails && state.contactDetails.id === contactId) {
+            state.contactDetails = null;
+          }
+          
+          state.selectedContactIds = state.selectedContactIds.filter(id => id !== contactId);
+          
+          if (state.selectedContactId === contactId) {
+            state.selectedContactId = null;
+          }
         }
       });
   },
@@ -225,7 +231,9 @@ export const {
   selectContactById,
   selectContactsByCompany,
   selectFilteredContacts,
-  selectSortedContacts
+  selectSortedContacts,
+  selectSelectedContactIds,
+  selectContacts
 } = contactsSelectors;
 
 export default contactsSlice.reducer;

@@ -4,8 +4,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { QueryBuilder } from '@/components/common/query-builder/QueryBuilder';
 import { useRuleBuilder } from './hooks/useRuleBuilder';
 import { useAudienceFields } from './hooks/useAudienceFields';
-import { AudienceSizeEstimator } from './components/AudienceSizeEstimator';
-import { SampleMatchesPreview } from './components/SampleMatchesPreview';
+import AudienceSizeEstimator from './components/AudienceSizeEstimator';
+import SampleMatchesPreview from './components/SampleMatchesPreview';
 import { RuleValidationSummary } from './components/RuleValidationSummary';
 
 export const AudienceRules = () => {
@@ -44,7 +44,7 @@ export const AudienceRules = () => {
       </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <AudienceSizeEstimator queryGroup={queryGroup} />
+        <AudienceSizeEstimator matchCount={0} queryGroup={queryGroup} />
         <SampleMatchesPreview queryGroup={queryGroup} />
       </div>
     </div>

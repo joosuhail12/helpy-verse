@@ -19,18 +19,27 @@ export const selectCompanyEntities = createSelector(
 
 export const selectAllCompanies = createSelector(
   [selectCompanyIds, selectCompanyEntities],
-  (ids, entities) => ids.map(id => entities[id])
+  (ids, entities) => ids.map(id => entities[id]).filter(Boolean) as Company[]
 );
+
+// For backwards compatibility
+export const selectCompanies = selectAllCompanies;
 
 export const selectCompaniesLoading = createSelector(
   [getCompaniesState],
   (companiesState) => companiesState.loading
 );
 
+// For backwards compatibility
+export const selectCompanyLoading = selectCompaniesLoading;
+
 export const selectCompaniesError = createSelector(
   [getCompaniesState],
   (companiesState) => companiesState.error
 );
+
+// For backwards compatibility
+export const selectCompanyError = selectCompaniesError;
 
 export const selectCompanyDetails = createSelector(
   [getCompaniesState],
@@ -54,7 +63,7 @@ export const selectSelectedCompanyIds = createSelector(
 
 export const selectSelectedCompanies = createSelector(
   [selectCompanyEntities, selectSelectedCompanyIds],
-  (entities, selectedIds) => selectedIds.map(id => entities[id]).filter(Boolean)
+  (entities, selectedIds) => selectedIds.map(id => entities[id]).filter(Boolean) as Company[]
 );
 
 export const selectLastFetchTime = createSelector(
@@ -70,5 +79,5 @@ export const selectCompanyById = createSelector(
 
 export const selectCompaniesByIds = createSelector(
   [selectCompanyEntities, (_, companyIds: string[]) => companyIds],
-  (entities, companyIds) => companyIds.map(id => entities[id]).filter(Boolean)
+  (entities, companyIds) => companyIds.map(id => entities[id]).filter(Boolean) as Company[]
 );

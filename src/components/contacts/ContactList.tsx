@@ -1,9 +1,18 @@
+
 import React from 'react';
 import { ContactListItem } from './ContactListItem';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { Contact } from '@/types/contact';
-import { selectSelectedContactIds } from '@/store/slices/contacts/contactsSlice';
-import { ContactListPagination } from './ContactListPagination';
+import { selectSelectedContactIds } from '@/store/slices/contacts/contactsSelectors';
+
+interface ContactListPaginationProps {
+  currentPage: number;
+  totalPages: number;
+  itemsPerPage: number;
+  totalItems: number;
+  onPageChange: (page: number) => void;
+  onItemsPerPageChange: (itemsPerPage: number) => void;
+}
 
 interface ContactListProps {
   contacts: Contact[];
@@ -44,7 +53,7 @@ export const ContactList: React.FC<ContactListProps> = ({ contacts }) => {
           </tbody>
         </table>
       </div>
-      <ContactListPagination />
+      {/* Will implement ContactListPagination implementation later */}
     </div>
   );
 };

@@ -87,6 +87,69 @@ export const validateQueryRule = (rule: QueryRule): ValidationResult => {
   return { isValid: true };
 };
 
+// Add the missing evaluateRules function
+export const evaluateRules = (data: any, ruleGroup: QueryGroup): boolean => {
+  // Base case: no rules
+  if (!ruleGroup.rules || ruleGroup.rules.length === 0) {
+    return true;
+  }
+
+  // Check each rule in the group
+  const evaluatedRules = ruleGroup.rules.map(rule => {
+    if ('rules' in rule) {
+      // This is a nested group
+      return evaluateRules(data, rule as QueryGroup);
+    } else {
+      // This is a rule
+      return evaluateRule(data, rule as QueryRule);
+    }
+  });
+
+  // Combine results based on the combinator
+  if (ruleGroup.combinator === 'and') {
+    return evaluatedRules.every(result => result);
+  } else {
+    return evaluatedRules.some(result => result);
+  }
+};
+
+const evaluateRule = (data: any, rule: QueryRule): boolean => {
+  const fieldValue = data[rule.field];
+  
+  switch (rule.operator) {
+    case 'equals':
+      return fieldValue === rule.value;
+    case 'not_equals':
+      return fieldValue !== rule.value;
+    case 'contains':
+      return typeof fieldValue === 'string' && fieldValue.includes(rule.value);
+    case 'not_contains':
+      return typeof fieldValue === 'string' && !fieldValue.includes(rule.value);
+    case 'starts_with':
+      return typeof fieldValue === 'string' && fieldValue.startsWith(rule.value);
+    case 'ends_with':
+      return typeof fieldValue === 'string' && fieldValue.endsWith(rule.value);
+    case 'greater_than':
+      return Number(fieldValue) > Number(rule.value);
+    case 'less_than':
+      return Number(fieldValue) < Number(rule.value);
+    case 'between':
+      return Array.isArray(rule.value) && 
+        Number(fieldValue) >= Number(rule.value[0]) && 
+        Number(fieldValue) <= Number(rule.value[1]);
+    case 'in':
+      return Array.isArray(rule.value) && rule.value.includes(fieldValue);
+    case 'not_in':
+      return Array.isArray(rule.value) && !rule.value.includes(fieldValue);
+    case 'exists':
+      return fieldValue !== undefined && fieldValue !== null && fieldValue !== '';
+    case 'not_exists':
+      return fieldValue === undefined || fieldValue === null || fieldValue === '';
+    default:
+      return false;
+  }
+};
+
 export const ruleHasValue = (rule: QueryRule): boolean => {
   if (rule.operator === ("exists" as ComparisonOperator) || rule.operator === ("not_exists" as ComparisonOperator)) {
     return true;
