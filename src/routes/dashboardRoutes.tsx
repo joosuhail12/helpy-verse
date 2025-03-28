@@ -1,13 +1,6 @@
 
 import { lazy, Suspense } from 'react';
-import { Loader2 } from 'lucide-react';
-
-// Define LoadingSpinner component first before using it
-const LoadingSpinner = () => (
-  <div className="min-h-screen flex items-center justify-center">
-    <Loader2 className="h-8 w-8 animate-spin text-primary" />
-  </div>
-);
+import { LoadingSpinner } from './index'; // Import the shared LoadingSpinner
 
 // Lazy load dashboard components
 const Home = lazy(() => import('@/pages/Home'));
