@@ -49,7 +49,7 @@ interface SyncManager {
 
 // Extended ServiceWorkerRegistration interface that includes the sync property
 interface ExtendedServiceWorkerRegistration extends ServiceWorkerRegistration {
-  sync?: SyncManager;
+  sync?: SyncManager;  // Keep sync as optional in ExtendedServiceWorkerRegistration
 }
 
 /**
