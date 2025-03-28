@@ -1,3 +1,4 @@
+
 import { lazy, Suspense } from 'react';
 import { createBrowserRouter } from 'react-router-dom';
 import RootRedirect from '../components/app/RootRedirect';
@@ -10,9 +11,6 @@ import { dashboardRoutes } from './dashboardRoutes';
 import { inboxRoutes } from './inboxRoutes';
 import { settingsRoutes } from './settingsRoutes';
 import { automationRoutes } from './automationRoutes';
-
-// Re-export the LoadingSpinner for backward compatibility
-export { LoadingSpinner };
 
 // Lazy load components
 const SignIn = lazy(() => import('../pages/SignIn'));
