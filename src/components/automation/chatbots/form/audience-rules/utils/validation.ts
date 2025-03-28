@@ -30,9 +30,9 @@ export const validateRuleGroup = (
       }
     } else {
       // This is a rule
-      const ruleValidation = validateRule(rule, availableFields, currentPath);
-      if (!ruleValidation.isValid) {
-        errors.push(...ruleValidation.errors);
+      const ruleErrors = validateRule(rule, availableFields, currentPath);
+      if (ruleErrors.length > 0) {
+        errors.push(...ruleErrors);
       }
     }
   });
@@ -47,7 +47,7 @@ const validateRule = (
   rule: QueryRule,
   availableFields: QueryField[] = [],
   path: string
-): ValidationResult => {
+): ValidationError[] => {
   const errors: ValidationError[] = [];
 
   // Check if field is selected
@@ -55,18 +55,9 @@ const validateRule = (
     errors.push({
       message: 'Field is required',
       rule: { id: rule.id },
-      path: `${path}.field`
+      path: `${path}.field`,
+      field: 'field'
     });
-  } else {
-    // Check if field exists in available fields
-    const fieldExists = availableFields.some((field) => field.id === rule.field);
-    if (!fieldExists && availableFields.length > 0) {
-      errors.push({
-        message: `Field '${rule.field}' does not exist`,
-        rule: { id: rule.id },
-        path: `${path}.field`
-      });
-    }
   }
 
   // Check if operator is selected
@@ -74,7 +65,8 @@ const validateRule = (
     errors.push({
       message: 'Operator is required',
       rule: { id: rule.id },
-      path: `${path}.operator`
+      path: `${path}.operator`,
+      field: 'operator'
     });
   }
 
@@ -83,21 +75,18 @@ const validateRule = (
   
   if (
     rule.operator &&
-    !noValueOperators.includes(rule.operator)
+    !noValueOperators.includes(rule.operator) &&
+    (rule.value === undefined || rule.value === null || rule.value === '')
   ) {
-    if (rule.value === undefined || rule.value === null || rule.value === '') {
-      errors.push({
-        message: 'Value is required',
-        rule: { id: rule.id },
-        path: `${path}.value`
-      });
-    }
+    errors.push({
+      message: 'Value is required',
+      rule: { id: rule.id },
+      path: `${path}.value`,
+      field: 'value'
+    });
   }
 
-  return {
-    isValid: errors.length === 0,
-    errors
-  };
+  return errors;
 };
 
 // Add evaluateRules function for SampleMatchesPreview

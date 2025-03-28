@@ -8,7 +8,11 @@ interface NumberInputProps {
   errorMessage?: string | null;
 }
 
-export const NumberInput = ({ value, onChange, errorMessage }: NumberInputProps) => {
+export const NumberInput: React.FC<NumberInputProps> = ({ 
+  value, 
+  onChange, 
+  errorMessage 
+}) => {
   return (
     <Input
       type="number"

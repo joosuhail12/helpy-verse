@@ -14,25 +14,20 @@ export const useRuleBuilder = (initialRules?: QueryGroup) => {
   
   const availableFields = useAudienceFields();
 
+  // Store validation errors
+  const [errors, setErrors] = useState<ValidationError[]>([]);
+
   const validate = useCallback((): boolean => {
     const result = validateRuleGroup(queryGroup, availableFields);
+    setErrors(result.errors);
     return result.isValid;
   }, [queryGroup, availableFields]);
 
   const validateRules = useCallback((): ValidationResult => {
     const result = validateRuleGroup(queryGroup, availableFields);
-    if (!result.isValid) {
-      const contextualErrors: ValidationError[] = result.errors.map(error => ({
-        ...error,
-        message: `${error.message} ${error.rule ? `for rule with field ${error.field || ''}` : ''}`
-      }));
-      return { isValid: false, errors: contextualErrors };
-    }
-    return { isValid: true, errors: [] };
+    setErrors(result.errors);
+    return result;
   }, [queryGroup, availableFields]);
-
-  // Store validation errors
-  const [errors, setErrors] = useState<ValidationError[]>([]);
 
   const updateQueryGroup = useCallback((newGroup: QueryGroup) => {
     setQueryGroup(newGroup);

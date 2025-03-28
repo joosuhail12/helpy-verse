@@ -61,7 +61,7 @@ export interface QueryRule {
 export interface QueryGroup {
   id: string;
   combinator: 'and' | 'or';
-  rules: (QueryRule | QueryGroup)[];
+  rules: Array<QueryRule | QueryGroup>;
 }
 
 export interface ValidationResult {

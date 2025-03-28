@@ -1,5 +1,7 @@
 
 import React from 'react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 
 interface BooleanInputProps {
   value: boolean;
@@ -14,13 +16,13 @@ export const BooleanInput: React.FC<BooleanInputProps> = ({
 }) => {
   return (
     <div className={`flex items-center space-x-2 ${errorMessage ? 'text-red-500' : ''}`}>
-      <input
-        type="checkbox"
+      <Checkbox
+        id="boolean-input"
         checked={!!value}
-        onChange={(e) => onChange(e.target.checked)}
-        className="h-4 w-4 rounded border-gray-300"
+        onCheckedChange={(checked) => onChange(!!checked)}
+        className="h-4 w-4"
       />
-      <label className="text-sm">{value ? 'True' : 'False'}</label>
+      <Label htmlFor="boolean-input" className="text-sm">{value ? 'True' : 'False'}</Label>
     </div>
   );
 };

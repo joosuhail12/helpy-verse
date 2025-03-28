@@ -5,11 +5,14 @@ import { Input } from '@/components/ui/input';
 interface DateInputProps {
   value: string;
   onChange: (value: string) => void;
-  operator?: string;
   errorMessage?: string | null;
 }
 
-export const DateInput = ({ value, onChange, errorMessage }: DateInputProps) => {
+export const DateInput: React.FC<DateInputProps> = ({ 
+  value, 
+  onChange, 
+  errorMessage 
+}) => {
   return (
     <Input
       type="date"

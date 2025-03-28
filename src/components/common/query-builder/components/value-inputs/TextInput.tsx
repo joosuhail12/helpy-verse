@@ -8,7 +8,11 @@ interface TextInputProps {
   errorMessage?: string | null;
 }
 
-export const TextInput = ({ value, onChange, errorMessage }: TextInputProps) => {
+export const TextInput: React.FC<TextInputProps> = ({ 
+  value, 
+  onChange, 
+  errorMessage 
+}) => {
   return (
     <Input
       type="text"

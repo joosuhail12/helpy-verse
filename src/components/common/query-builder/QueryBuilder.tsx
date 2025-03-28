@@ -1,37 +1,7 @@
 
 import React from 'react';
 import { QueryGroupComponent } from './QueryGroupComponent';
-
-// Simple interfaces to avoid circular references
-interface QueryRule {
-  id: string;
-  field: string;
-  operator: string;
-  value: any;
-}
-
-interface QueryGroup {
-  id: string;
-  combinator: 'and' | 'or';
-  rules: Array<QueryRule | QueryGroup>;
-}
-
-interface QueryField {
-  id: string;
-  label: string;
-  type: string;
-  name: string;
-  dataSource?: string;
-  customObject?: string;
-  options?: Array<string | { value: string; label: string }>;
-}
-
-interface ValidationError {
-  path?: string;
-  message: string;
-  rule?: QueryRule;
-  field?: string;
-}
+import type { QueryGroup, QueryField, ValidationError } from '@/types/queryBuilder';
 
 interface QueryBuilderProps {
   value: QueryGroup;

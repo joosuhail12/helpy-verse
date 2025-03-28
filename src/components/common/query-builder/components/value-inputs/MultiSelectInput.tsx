@@ -1,5 +1,7 @@
 
 import React from 'react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 
 interface MultiSelectInputProps {
   value: string[];
@@ -14,23 +16,26 @@ export const MultiSelectInput: React.FC<MultiSelectInputProps> = ({
   options,
   errorMessage
 }) => {
-  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
-    onChange(selectedOptions);
+  const handleToggleOption = (option: string) => {
+    if (value.includes(option)) {
+      onChange(value.filter(item => item !== option));
+    } else {
+      onChange([...value, option]);
+    }
   };
 
   return (
-    <select
-      multiple
-      value={value}
-      onChange={handleChange}
-      className={`w-full h-24 rounded-md border border-input px-3 py-2 ${errorMessage ? 'border-red-500' : ''}`}
-    >
+    <div className={`space-y-2 ${errorMessage ? 'border-red-500 border rounded p-2' : ''}`}>
       {options.map((option) => (
-        <option key={option} value={option}>
-          {option}
-        </option>
+        <div key={option} className="flex items-center space-x-2">
+          <Checkbox
+            id={`option-${option}`}
+            checked={value.includes(option)}
+            onCheckedChange={() => handleToggleOption(option)}
+          />
+          <Label htmlFor={`option-${option}`} className="text-sm">{option}</Label>
+        </div>
       ))}
-    </select>
+    </div>
   );
 };

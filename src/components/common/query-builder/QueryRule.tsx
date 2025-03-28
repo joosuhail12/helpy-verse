@@ -36,7 +36,7 @@ export const QueryRule = ({ rule, onChange, fields, errors = [] }: QueryRuleProp
   };
 
   const getErrorMessage = (fieldPath: string) => {
-    const error = ruleErrors.find(err => err.path === fieldPath);
+    const error = ruleErrors.find(err => err.path === fieldPath || err.field === fieldPath);
     return error ? error.message : null;
   };
 
