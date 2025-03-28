@@ -1,11 +1,12 @@
 
 import React, { useRef, useEffect } from 'react';
-import { ChatMessage } from './types';
 import { formatRelativeTime } from '@/utils/helpers/formatters';
 import { useThemeContext } from '@/context/ThemeContext';
-import { FileIcon, Download, Paperclip } from 'lucide-react';
 import FileAttachmentItem from './FileAttachmentItem';
 import UserAvatar from '../user/UserAvatar';
+import { ChatMessage } from './types';
+import { Button } from '@/components/ui/button';
+import { Loader2 } from 'lucide-react';
 import dayjs from 'dayjs';
 
 interface MessageListProps {
@@ -13,50 +14,85 @@ interface MessageListProps {
   conversationId: string;
   showAvatars?: boolean;
   encrypted?: boolean;
+  isLoading?: boolean;
+  hasMore?: boolean;
+  onLoadMore?: () => void;
 }
 
-const MessageList: React.FC<MessageListProps> = ({ messages, conversationId, showAvatars = false, encrypted = false }) => {
+const MessageList: React.FC<MessageListProps> = ({
+  messages,
+  conversationId,
+  showAvatars = false,
+  encrypted = false,
+  isLoading = false,
+  hasMore = false,
+  onLoadMore
+}) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { colors } = useThemeContext();
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  const groupMessagesByTime = (messages: ChatMessage[]) => {
-    const groupedMessages: ChatMessage[][] = [];
-    let currentGroup: ChatMessage[] = [];
   
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({
+      behavior: 'smooth'
+    });
+  };
+  
+  useEffect(() => {
+    // Only scroll to bottom on new messages, not when loading old ones
+    if (!isLoading && messages.length > 0) {
+      scrollToBottom();
+    }
+  }, [messages, isLoading]);
+  
+  const groupMessagesByTime = (messages: ChatMessage[]) => {
+    const groupedMessages = [];
+    let currentGroup = [];
+    
     messages.forEach((message, index) => {
       currentGroup.push(message);
-  
-      if (
-        index === messages.length - 1 ||
-        !dayjs(message.timestamp).isSame(messages[index + 1].timestamp, 'day')
-      ) {
+      
+      if (index === messages.length - 1 || 
+          !dayjs(message.timestamp).isSame(dayjs(messages[index + 1].timestamp), 'day')) {
         groupedMessages.push(currentGroup);
         currentGroup = [];
       }
     });
-  
+    
     return groupedMessages;
   };
-
-  const formatMessageGroupTime = (date: Date) => {
+  
+  const formatMessageGroupTime = (date: Date | string) => {
     return dayjs(date).format('MMMM D, YYYY');
   };
-
+  
   const groupedMessages = groupMessagesByTime(messages);
-
+  
   return (
     <div className="flex-1 overflow-y-auto p-4">
+      {hasMore && (
+        <div className="flex justify-center mb-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onLoadMore}
+            disabled={isLoading}
+            className="text-xs"
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                Loading...
+              </>
+            ) : (
+              'Load older messages'
+            )}
+          </Button>
+        </div>
+      )}
+      
       {groupedMessages.map((group, idx) => {
         const groupTimeFormatted = formatMessageGroupTime(new Date(group[0].timestamp));
-
+        
         return (
           <div 
             key={dayjs(group[0].timestamp).format('YYYYMMDD') + idx} 
@@ -64,33 +100,48 @@ const MessageList: React.FC<MessageListProps> = ({ messages, conversationId, sho
           >
             <div 
               className="text-xs text-center mb-2 px-2 py-1 rounded-full bg-gray-100 inline-block mx-auto"
-              style={{ color: colors.foreground, backgroundColor: colors.backgroundSecondary }}
+              style={{ 
+                color: colors.foreground,
+                backgroundColor: colors.backgroundSecondary
+              }}
             >
               {groupTimeFormatted}
             </div>
-            {group.map((message) => (
-              <div
-                key={message.id}
+            
+            {group.map(message => (
+              <div 
+                key={message.id} 
                 className={`flex ${message.sender === 'user' ? 'justify-end' : 'items-start'}`}
               >
                 {message.sender !== 'user' && showAvatars && (
                   <UserAvatar name="Support Agent" />
                 )}
-                <div
-                  className={`rounded-xl px-3 py-2 ${message.sender === 'user' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'} max-w-[75%] sm:max-w-[60%] break-words`}
+                
+                <div 
+                  className={`rounded-xl px-3 py-2 ${
+                    message.sender === 'user' 
+                      ? 'bg-blue-100 text-blue-800' 
+                      : 'bg-gray-100 text-gray-800'
+                  } max-w-[75%] sm:max-w-[60%] break-words`}
                   style={{
-                    backgroundColor: message.sender === 'user' ? colors.userMessage : colors.agentMessage,
-                    color: message.sender === 'user' ? colors.userMessageText : colors.agentMessageText,
+                    backgroundColor: message.sender === 'user' 
+                      ? colors.outgoingMessage 
+                      : colors.incomingMessage,
+                    color: message.sender === 'user' 
+                      ? colors.outgoingMessageForeground 
+                      : colors.incomingMessageForeground
                   }}
                 >
                   <p className="text-sm">{message.content}</p>
+                  
                   {message.attachments && message.attachments.length > 0 && (
                     <div className="mt-2">
-                      {message.attachments.map((file) => (
+                      {message.attachments.map(file => (
                         <FileAttachmentItem key={file.id} file={file} />
                       ))}
                     </div>
                   )}
+                  
                   <div className="text-xs mt-1 opacity-70">
                     {formatRelativeTime(message.timestamp)}
                     {message.status && (
@@ -109,6 +160,7 @@ const MessageList: React.FC<MessageListProps> = ({ messages, conversationId, sho
           </div>
         );
       })}
+      
       <div ref={messagesEndRef} />
     </div>
   );

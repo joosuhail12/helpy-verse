@@ -36,3 +36,22 @@ export interface ChatAvatarProps {
   size?: 'sm' | 'md' | 'lg';
   src?: string;
 }
+
+export interface Conversation {
+  id: string;
+  title: string;
+  lastMessageTimestamp: string;
+  lastMessage?: string;
+  unreadCount: number;
+  participants?: string[];
+  encrypted?: boolean;
+}
+
+export interface MessageSearchProps {
+  onSearch: (query: string) => void;
+  placeholder?: string;
+}
+
+export interface TypingIndicatorProps {
+  users: string[];
+}

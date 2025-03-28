@@ -1,17 +1,19 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useChat } from '@/hooks/chat/useChat';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import TypingIndicator from './TypingIndicator';
 import { ChatMessage } from './types';
+import { usePaginatedMessages } from '@/hooks/chat/usePaginatedMessages';
+import { useOfflineSyncManager } from '@/hooks/chat/useOfflineSyncManager';
+import { RateLimiter } from '@/utils/chat/rateLimiter';
+import { toast } from 'sonner';
 
 interface ConversationViewProps {
   conversationId: string;
   showAvatars?: boolean;
   onSendMessage?: (content: string, attachments?: File[]) => void;
-  onTypingStart?: () => void;
-  onTypingEnd?: () => void;
   encrypted?: boolean;
 }
 
@@ -19,27 +21,73 @@ const ConversationView: React.FC<ConversationViewProps> = ({
   conversationId,
   showAvatars = true,
   onSendMessage,
-  onTypingStart,
-  onTypingEnd,
   encrypted = false
 }) => {
-  const { 
-    messages, 
-    sendMessage, 
-    isLoading, 
-    typingUsers,
-    startTyping,
-    stopTyping
-  } = useChat();
-  
+  const { sendMessage } = useChat();
   const [attachments, setAttachments] = useState<File[]>([]);
+  const [typingUsers, setTypingUsers] = useState<string[]>([]);
+  const [rateLimiter] = useState(() => new RateLimiter(conversationId));
+  
+  // Use our new hooks
+  const {
+    messages,
+    isLoading,
+    hasMore,
+    loadMoreMessages,
+    addMessage
+  } = usePaginatedMessages({
+    conversationId,
+    pageSize: 20
+  });
+  
+  const {
+    offlineMode,
+    queueMessage,
+    hasQueuedMessages,
+    triggerSync
+  } = useOfflineSyncManager(conversationId);
+  
+  // Check for offline messages and sync when coming online
+  useEffect(() => {
+    if (!offlineMode && hasQueuedMessages) {
+      triggerSync();
+    }
+  }, [offlineMode, hasQueuedMessages, triggerSync]);
 
-  const handleSendMessage = (content: string) => {
+  const handleSendMessage = async (content: string) => {
+    // Check rate limiting
+    const rateCheck = rateLimiter.canSendMessage();
+    if (!rateCheck.allowed) {
+      toast.error(rateCheck.reason || 'Too many messages. Please wait before sending again.');
+      return;
+    }
+    
+    // Record this message with the rate limiter
+    rateLimiter.recordMessage();
+    
     if (onSendMessage) {
       onSendMessage(content, attachments);
     } else {
-      sendMessage(conversationId, content, attachments);
+      const message: ChatMessage = {
+        id: crypto.randomUUID(),
+        content,
+        sender: 'user',
+        timestamp: new Date().toISOString(),
+        status: offlineMode ? 'sending' : 'sent'
+      };
+      
+      // Add locally for immediate feedback
+      addMessage(message);
+      
+      if (offlineMode) {
+        // Queue for later if offline
+        await queueMessage(message);
+      } else {
+        // Send normally if online
+        await sendMessage(conversationId, content);
+      }
     }
+    
     setAttachments([]);
   };
 
@@ -50,26 +98,21 @@ const ConversationView: React.FC<ConversationViewProps> = ({
   const handleRemoveFile = (file: File) => {
     setAttachments((prev) => prev.filter((f) => f !== file));
   };
-
-  const handleTypingStart = () => {
-    if (onTypingStart) {
-      onTypingStart();
-    } else {
-      startTyping(conversationId);
+  
+  // Mock typing indicators for demo purposes
+  useEffect(() => {
+    if (messages.length > 0 && messages[messages.length - 1].sender === 'user') {
+      const timeout = setTimeout(() => {
+        setTypingUsers(['Agent']);
+        
+        setTimeout(() => {
+          setTypingUsers([]);
+        }, 3000);
+      }, 1000);
+      
+      return () => clearTimeout(timeout);
     }
-  };
-
-  const handleTypingEnd = () => {
-    if (onTypingEnd) {
-      onTypingEnd();
-    } else {
-      stopTyping(conversationId);
-    }
-  };
-
-  if (isLoading) {
-    return <div className="flex-1 flex items-center justify-center">Loading messages...</div>;
-  }
+  }, [messages]);
 
   return (
     <div className="flex flex-col h-full">
@@ -78,6 +121,9 @@ const ConversationView: React.FC<ConversationViewProps> = ({
         conversationId={conversationId}
         showAvatars={showAvatars}
         encrypted={encrypted}
+        isLoading={isLoading}
+        hasMore={hasMore}
+        onLoadMore={loadMoreMessages}
       />
       
       {typingUsers.length > 0 && (
@@ -88,12 +134,12 @@ const ConversationView: React.FC<ConversationViewProps> = ({
       
       <MessageInput 
         onSendMessage={handleSendMessage}
-        onTypingStart={handleTypingStart}
-        onTypingEnd={handleTypingEnd}
         attachments={attachments}
         onFileUpload={handleFileUpload}
         onRemoveFile={handleRemoveFile}
         encrypted={encrypted}
+        disabled={isLoading}
+        placeholder={offlineMode ? "You're offline. Messages will be sent when you reconnect." : "Type a message..."}
       />
     </div>
   );
