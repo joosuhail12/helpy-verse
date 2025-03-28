@@ -1,7 +1,7 @@
 
 import { configureStore } from '@reduxjs/toolkit';
-// Import the auth reducer from the re-export file to avoid circular dependencies
-import { default as authReducer } from './slices/authSlice';
+// Import the auth reducer directly from the re-export file
+import authReducer from './slices/authSlice';
 import { actionsReducer } from './slices/actions/actionsSlice';
 import contentReducer from './slices/content/contentSlice';
 import contentCenterReducer from './slices/automation/contentCenterSlice';

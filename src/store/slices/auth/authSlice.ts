@@ -157,18 +157,8 @@ const authSlice = createSlice({
   },
 });
 
+// Export the actions
 export const { logout, clearError } = authSlice.actions;
 
-// Re-export all the actions for use in components
-export {
-  loginUser,
-  registerUser,
-  requestPasswordReset,
-  confirmPasswordReset,
-  fetchUserData,
-  fetchUserProfile,
-  fetchWorkspaceData,
-  getUserPermission
-};
-
-export default authSlice.reducer;
+// Export the reducer separately (not as default)
+export const reducer = authSlice.reducer;
