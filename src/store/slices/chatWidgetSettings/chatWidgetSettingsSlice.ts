@@ -27,10 +27,10 @@ export const chatWidgetSettingsSlice = createSlice({
   reducers: {
     updateSetting: (
       state, 
-      action: PayloadAction<{ field: keyof ChatWidgetSettings; value: any }>
+      action: PayloadAction<{ field: keyof ChatWidgetSettings; value: string | boolean }>
     ) => {
       const { field, value } = action.payload;
-      state.settings[field] = value;
+      state.settings[field] = value as any; // Type assertion needed due to union type
     },
     
     updateSettings: (

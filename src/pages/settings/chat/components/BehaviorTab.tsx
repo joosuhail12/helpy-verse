@@ -1,13 +1,14 @@
 
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { ChatWidgetSettings } from '@/store/slices/chatWidgetSettings/types';
 
 interface BehaviorTabProps {
   enableTypingIndicator: boolean;
   enableReactions: boolean;
   enableFileAttachments: boolean;
   enableReadReceipts: boolean;
-  onSettingChange: (field: string, value: boolean) => void;
+  onSettingChange: (field: keyof ChatWidgetSettings, value: boolean) => void;
 }
 
 /**

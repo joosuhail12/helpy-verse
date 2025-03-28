@@ -1,6 +1,8 @@
 
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import ColorPicker from './ColorPicker';
+import { ChatWidgetSettings } from '@/store/slices/chatWidgetSettings/types';
 
 interface AppearanceTabProps {
   primaryColor: string;
@@ -70,7 +72,5 @@ const AppearanceTab = ({
     </div>
   );
 };
-
-import { Switch } from '@/components/ui/switch';
 
 export default AppearanceTab;

@@ -6,22 +6,13 @@ import AppearanceTab from './AppearanceTab';
 import BehaviorTab from './BehaviorTab';
 import MessagesTab from './MessagesTab';
 import InstallationTab from './InstallationTab';
+import { ChatWidgetSettings } from '@/store/slices/chatWidgetSettings/types';
 
 interface SettingsTabsProps {
   selectedTab: string;
   onTabChange: (value: string) => void;
-  settings: {
-    primaryColor: string;
-    welcomeTitle: string;
-    welcomeSubtitle: string;
-    position: string;
-    compact: boolean;
-    enableTypingIndicator: boolean;
-    enableReactions: boolean;
-    enableFileAttachments: boolean;
-    enableReadReceipts: boolean;
-  };
-  onSettingChange: (field: string, value: any) => void;
+  settings: ChatWidgetSettings;
+  onSettingChange: (field: keyof ChatWidgetSettings, value: any) => void;
   getEmbedCode: () => string;
 }
 

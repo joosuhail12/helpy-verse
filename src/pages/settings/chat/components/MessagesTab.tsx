@@ -1,11 +1,12 @@
 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { ChatWidgetSettings } from '@/store/slices/chatWidgetSettings/types';
 
 interface MessagesTabProps {
   welcomeTitle: string;
   welcomeSubtitle: string;
-  onSettingChange: (field: string, value: string) => void;
+  onSettingChange: (field: keyof ChatWidgetSettings, value: string) => void;
 }
 
 /**

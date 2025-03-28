@@ -9,6 +9,7 @@ import {
   selectChatWidgetSettings,
   selectChatWidgetLoading
 } from '@/store/slices/chatWidgetSettings';
+import { ChatWidgetSettings } from '@/store/slices/chatWidgetSettings/types';
 
 /**
  * Hook to manage chat widget settings using Redux
@@ -22,7 +23,7 @@ export const useChatSettings = () => {
   const settings = useAppSelector(selectChatWidgetSettings);
   const loading = useAppSelector(selectChatWidgetLoading);
 
-  const handleChange = (field: string, value: any) => {
+  const handleChange = (field: keyof ChatWidgetSettings, value: string | boolean) => {
     dispatch(updateSetting({ field, value }));
   };
 
