@@ -20,7 +20,7 @@ export const validateQueryGroup = (queryGroup: QueryGroup): ValidationResult => 
       group: queryGroup,
       path: 'rules'
     });
-    return { isValid: errors.length ===, errors };
+    return { isValid: errors.length === 0, errors };
   }
   
   // Validate each rule/group
