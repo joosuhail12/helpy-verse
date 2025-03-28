@@ -4,6 +4,8 @@ import { useAbly } from '@/context/AblyContext';
 import { ChatMessage } from '@/components/chat-widget/components/conversation/types';
 import { useOfflineMessaging } from './useOfflineMessaging';
 import { useServiceWorkerSync } from './useServiceWorkerSync';
+import { emitEvent } from '@/utils/events/eventManager';
+import { ChatEventType } from '@/utils/events/eventTypes';
 
 interface SyncManager {
   register(tag: string): Promise<void>;
@@ -66,6 +68,19 @@ export const useRealtimeChat = (conversationId: string, workspaceId: string) => 
       setMessages((prevMessages) => {
         if (prevMessages.some(msg => msg.id === messageData.id)) {
           return prevMessages;
+        }
+        
+        if (messageData.sender !== 'user') {
+          emitEvent({
+            type: ChatEventType.MESSAGE_RECEIVED,
+            timestamp: new Date().toISOString(),
+            source: 'realtime-chat',
+            messageId: messageData.id,
+            content: messageData.content,
+            conversationId,
+            agentId: messageData.metadata?.agentId,
+            pageUrl: window.location.href
+          });
         }
         
         return [...prevMessages, messageData];
@@ -149,8 +164,9 @@ export const useRealtimeChat = (conversationId: string, workspaceId: string) => 
   const sendMessage = useCallback(async (content: string, metadata: Record<string, any> = {}) => {
     if (!content.trim()) return false;
     
+    const messageId = uuidv4();
     const message: ChatMessage = {
-      id: uuidv4(),
+      id: messageId,
       content,
       sender: 'user',
       timestamp: new Date().toISOString(),
@@ -164,6 +180,17 @@ export const useRealtimeChat = (conversationId: string, workspaceId: string) => 
     };
     
     try {
+      emitEvent({
+        type: ChatEventType.MESSAGE_SENT,
+        timestamp: new Date().toISOString(),
+        source: 'realtime-chat',
+        messageId,
+        content,
+        conversationId,
+        attachments: metadata.attachments?.length || 0,
+        pageUrl: window.location.href
+      });
+      
       if (channel && channel.channelInstance && !offlineMode) {
         await channel.channelInstance.publish('message', message);
         return true;
@@ -188,6 +215,17 @@ export const useRealtimeChat = (conversationId: string, workspaceId: string) => 
     } catch (err) {
       console.error('Error sending message:', err);
       setError(err instanceof Error ? err : new Error('Failed to send message'));
+      
+      emitEvent({
+        type: ChatEventType.ERROR_OCCURRED,
+        timestamp: new Date().toISOString(),
+        source: 'realtime-chat',
+        metadata: {
+          error: err instanceof Error ? err.message : 'Unknown error sending message',
+          messageId
+        },
+        pageUrl: window.location.href
+      });
       
       await queueMessage(message);
       

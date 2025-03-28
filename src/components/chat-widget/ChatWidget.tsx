@@ -6,6 +6,8 @@ import { ChatProvider } from '@/context/ChatContext';
 import { AblyProvider } from '@/context/AblyContext';
 import { ThemeProvider, ThemeConfig } from '@/context/ThemeContext';
 import ChatWidgetContainer from './container/ChatWidgetContainer';
+import { emitEvent } from '@/utils/events/eventManager'; 
+import { ChatEventType } from '@/utils/events/eventTypes';
 
 interface ChatWidgetProps {
   workspaceId: string;
@@ -14,6 +16,7 @@ interface ChatWidgetProps {
 
 export const ChatWidget: React.FC<ChatWidgetProps> = ({ workspaceId, theme = {} }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [openTimestamp, setOpenTimestamp] = useState<number | null>(null);
   
   // Apply theme CSS variables
   useEffect(() => {
@@ -127,7 +130,35 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ workspaceId, theme = {} 
   }, [theme]);
 
   const toggleWidget = () => {
-    setIsOpen((prev) => !prev);
+    const newIsOpen = !isOpen;
+    setIsOpen(newIsOpen);
+    
+    if (newIsOpen) {
+      // Track when the widget was opened
+      const timestamp = Date.now();
+      setOpenTimestamp(timestamp);
+      
+      // Emit widget opened event
+      emitEvent({
+        type: ChatEventType.WIDGET_OPENED,
+        timestamp: new Date().toISOString(),
+        source: 'chat-widget',
+        trigger: 'user',
+        pageUrl: window.location.href
+      });
+    } else if (openTimestamp) {
+      // Calculate how long the widget was open
+      const timeOpen = Date.now() - openTimestamp;
+      
+      // Emit widget closed event
+      emitEvent({
+        type: ChatEventType.WIDGET_CLOSED,
+        timestamp: new Date().toISOString(),
+        source: 'chat-widget',
+        timeOpen,
+        pageUrl: window.location.href
+      });
+    }
   };
 
   // Determine animation type based on theme settings
