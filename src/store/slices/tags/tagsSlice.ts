@@ -1,74 +1,90 @@
 
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { tagService } from '@/api/tagsApi';
+import type { Tag, SortField, FilterEntity } from '@/types/tag';
+import { tagService } from '@/api/services/tagService';
 import { RootState } from '@/store/store';
 
-export interface Tag {
-  id: string;
-  name: string;
-  color: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-interface TagsState {
+export interface TagsState {
   entities: Record<string, Tag>;
   ids: string[];
   loading: boolean;
   error: string | null;
+  currentPage: number;
+  itemsPerPage: number;
+  sortField: SortField;
+  sortDirection: 'asc' | 'desc';
+  filterEntity: FilterEntity;
+  searchQuery: string;
+  selectedTags: string[];
+  total: number;
 }
 
 const initialState: TagsState = {
   entities: {},
   ids: [],
   loading: false,
-  error: null
+  error: null,
+  currentPage: 1,
+  itemsPerPage: 10,
+  sortField: 'name',
+  sortDirection: 'asc',
+  filterEntity: 'all',
+  searchQuery: '',
+  selectedTags: [],
+  total: 0
 };
 
+// Fetch tags with pagination and filtering
 export const fetchTags = createAsyncThunk(
   'tags/fetchTags',
-  async (_, { rejectWithValue }) => {
+  async (params: any) => {
     try {
-      const response = await tagService.getTags();
-      return response.data;
+      const response = await tagService.fetchTags(params);
+      return {
+        tags: response.data,
+        total: response.total || response.data.length
+      };
     } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to fetch tags');
+      throw new Error(error.message || 'Failed to fetch tags');
     }
   }
 );
 
+// Create a new tag
 export const createTag = createAsyncThunk(
   'tags/createTag',
-  async (tagData: Partial<Tag>, { rejectWithValue }) => {
+  async (tag: Partial<Tag>) => {
     try {
-      const response = await tagService.createTag(tagData);
-      return response.data;
+      const response = await tagService.createTag(tag);
+      return response;
     } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to create tag');
+      throw new Error(error.message || 'Failed to create tag');
     }
   }
 );
 
+// Update an existing tag
 export const updateTag = createAsyncThunk(
   'tags/updateTag',
-  async ({ tagId, data }: { tagId: string; data: Partial<Tag> }, { rejectWithValue }) => {
+  async ({ id, tag }: { id: string; tag: Partial<Tag> }) => {
     try {
-      const response = await tagService.updateTag(tagId, data);
-      return { tagId, data: response.data };
+      const response = await tagService.updateTag(id, tag);
+      return response;
     } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to update tag');
+      throw new Error(error.message || 'Failed to update tag');
     }
   }
 );
 
-export const deleteTag = createAsyncThunk(
-  'tags/deleteTag',
-  async (tagId: string, { rejectWithValue }) => {
+// Delete multiple tags
+export const deleteTags = createAsyncThunk(
+  'tags/deleteTags', 
+  async (ids: string[]) => {
     try {
-      await tagService.deleteTag(tagId);
-      return tagId;
+      await tagService.deleteTags(ids);
+      return ids;
     } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to delete tag');
+      throw new Error(error.message || 'Failed to delete tags');
     }
   }
 );
@@ -77,14 +93,46 @@ const tagsSlice = createSlice({
   name: 'tags',
   initialState,
   reducers: {
-    clearTags: (state) => {
-      state.entities = {};
-      state.ids = [];
-    }
+    setPage: (state, action) => {
+      state.currentPage = action.payload;
+    },
+    setSort: (state, action) => {
+      const { field, direction } = action.payload;
+      state.sortField = field;
+      state.sortDirection = direction;
+    },
+    setFilter: (state, action) => {
+      state.filterEntity = action.payload;
+      state.currentPage = 1; // Reset to first page when filter changes
+    },
+    setSearch: (state, action) => {
+      state.searchQuery = action.payload;
+      state.currentPage = 1; // Reset to first page when search changes
+    },
+    selectTag: (state, action) => {
+      const tagId = action.payload;
+      const index = state.selectedTags.indexOf(tagId);
+      if (index === -1) {
+        state.selectedTags.push(tagId);
+      } else {
+        state.selectedTags.splice(index, 1);
+      }
+    },
+    selectAllTags: (state, action) => {
+      const allIds = action.payload;
+      if (state.selectedTags.length === allIds.length) {
+        state.selectedTags = [];
+      } else {
+        state.selectedTags = [...allIds];
+      }
+    },
+    clearSelectedTags: (state) => {
+      state.selectedTags = [];
+    },
   },
   extraReducers: (builder) => {
     builder
-      // Handle fetchTags
+      // Fetch tags
       .addCase(fetchTags.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -92,57 +140,62 @@ const tagsSlice = createSlice({
       .addCase(fetchTags.fulfilled, (state, action) => {
         state.loading = false;
         
-        // Normalize tags data
-        const entities: Record<string, Tag> = {};
-        const ids: string[] = [];
+        // Normalize data
+        const newEntities: Record<string, Tag> = {};
+        const newIds: string[] = [];
         
-        action.payload.forEach((tag: Tag) => {
-          entities[tag.id] = tag;
-          ids.push(tag.id);
+        action.payload.tags.forEach((tag: Tag) => {
+          newEntities[tag.id] = tag;
+          newIds.push(tag.id);
         });
         
-        state.entities = entities;
-        state.ids = ids;
+        state.entities = newEntities;
+        state.ids = newIds;
+        state.total = action.payload.total;
       })
       .addCase(fetchTags.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload as string;
+        state.error = action.error.message || 'Failed to fetch tags';
       })
       
-      // Handle createTag
+      // Create tag
       .addCase(createTag.fulfilled, (state, action) => {
         const newTag = action.payload;
         state.entities[newTag.id] = newTag;
         state.ids.push(newTag.id);
+        state.total = state.total + 1;
       })
       
-      // Handle updateTag
+      // Update tag
       .addCase(updateTag.fulfilled, (state, action) => {
-        if (action.payload) {
-          const { tagId, data } = action.payload;
-          state.entities[tagId] = { ...state.entities[tagId], ...data };
-        }
+        const updatedTag = action.payload;
+        state.entities[updatedTag.id] = {
+          ...state.entities[updatedTag.id],
+          ...updatedTag
+        };
       })
       
-      // Handle deleteTag
-      .addCase(deleteTag.fulfilled, (state, action) => {
-        const tagId = action.payload;
-        delete state.entities[tagId];
-        state.ids = state.ids.filter(id => id !== tagId);
+      // Delete tags
+      .addCase(deleteTags.fulfilled, (state, action) => {
+        const deletedIds = action.payload;
+        deletedIds.forEach(id => {
+          delete state.entities[id];
+        });
+        state.ids = state.ids.filter(id => !deletedIds.includes(id));
+        state.selectedTags = state.selectedTags.filter(id => !deletedIds.includes(id));
+        state.total = state.total - deletedIds.length;
       });
   }
 });
 
-export const { clearTags } = tagsSlice.actions;
-
-// Selectors
-export const selectAllTags = (state: RootState) => 
-  state.tags.ids.map(id => state.tags.entities[id]);
-
-export const selectTagById = (state: RootState, tagId: string) => 
-  state.tags.entities[tagId];
-
-export const selectTagsLoading = (state: RootState) => state.tags.loading;
-export const selectTagsError = (state: RootState) => state.tags.error;
+export const {
+  setPage,
+  setSort,
+  setFilter,
+  setSearch,
+  selectTag,
+  selectAllTags,
+  clearSelectedTags,
+} = tagsSlice.actions;
 
 export default tagsSlice.reducer;

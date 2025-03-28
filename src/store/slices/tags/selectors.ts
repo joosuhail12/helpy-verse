@@ -1,7 +1,7 @@
 
 import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from '@/store/store';
-import type { Tag } from '@/types/tag';
+import { Tag } from '@/types/tag';
 
 // Base selector
 const getTagsState = (state: RootState) => state.tags;
@@ -9,8 +9,10 @@ const getTagsState = (state: RootState) => state.tags;
 // Memoized selectors
 export const selectTags = createSelector(
   [getTagsState],
-  (tagsState) => tagsState.items
+  (tagsState) => tagsState.ids.map(id => tagsState.entities[id])
 );
+
+export const selectAllTags = selectTags;
 
 export const selectTagsTotal = createSelector(
   [getTagsState],

@@ -1,9 +1,8 @@
 
 import inboxReducer from './inboxSlice';
-import * as inboxActions from './actions';
 import * as inboxSelectors from './selectors';
 
-export { inboxReducer, inboxActions };
+export { inboxReducer };
 
 // Export specific selectors - avoid re-exporting the same ones
 export { 

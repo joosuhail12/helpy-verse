@@ -1,46 +1,76 @@
 
-import React, { useState, useEffect } from 'react';
-import { Progress } from '@/components/ui/progress';
-import { useAppSelector } from '@/hooks/useAppSelector';
-import { selectAllContacts } from '@/store/slices/contacts/contactsSlice';
-import { selectAllCompanies } from '@/store/slices/companies/companiesSlice';
+import React from 'react';
+import { QueryGroup } from '@/types/queryBuilder';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { CircleIcon, InfoIcon } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface AudienceSizeEstimatorProps {
   matchCount: number;
-  isLoading?: boolean;
-  queryGroup?: any; // Add for API compatibility with other components
+  queryGroup: QueryGroup;
 }
 
-const AudienceSizeEstimator: React.FC<AudienceSizeEstimatorProps> = ({ matchCount, isLoading = false }) => {
-  const contacts = useAppSelector(selectAllContacts);
-  const companies = useAppSelector(selectAllCompanies);
-  const totalPossible = contacts.length + companies.length;
+const AudienceSizeEstimator: React.FC<AudienceSizeEstimatorProps> = ({ matchCount, queryGroup }) => {
+  // Check if there are any rules defined
+  const hasRules = queryGroup.rules.length > 0;
   
-  const [progressValue, setProgressValue] = useState(0);
+  // Size category based on match count
+  const getSizeCategory = () => {
+    if (matchCount === 0) return { label: 'No matches', color: 'text-gray-400' };
+    if (matchCount < 10) return { label: 'Very Small', color: 'text-blue-400' };
+    if (matchCount < 100) return { label: 'Small', color: 'text-green-400' };
+    if (matchCount < 1000) return { label: 'Medium', color: 'text-yellow-400' };
+    if (matchCount < 10000) return { label: 'Large', color: 'text-orange-400' };
+    return { label: 'Very Large', color: 'text-red-400' };
+  };
   
-  useEffect(() => {
-    if (totalPossible > 0) {
-      setProgressValue((matchCount / totalPossible) * 100);
-    } else {
-      setProgressValue(0);
-    }
-  }, [matchCount, totalPossible]);
+  const sizeCategory = getSizeCategory();
   
   return (
-    <div className="space-y-2">
-      <div className="flex justify-between text-sm">
-        <span className="text-muted-foreground">Estimated audience size:</span>
-        <span className="font-medium">
-          {isLoading ? 'Calculating...' : `${matchCount} of ${totalPossible}`}
-        </span>
-      </div>
-      <Progress value={progressValue} className="h-2" />
-      {progressValue < 10 && !isLoading && (
-        <p className="text-xs text-amber-600">
-          Warning: Very small audience. Consider relaxing your targeting criteria.
-        </p>
-      )}
-    </div>
+    <Card>
+      <CardHeader className="pb-3">
+        <div className="flex justify-between items-center">
+          <CardTitle className="text-lg font-medium">Audience Size</CardTitle>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger>
+                <InfoIcon className="h-4 w-4 text-muted-foreground" />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="max-w-xs">
+                  This is an estimate of how many users or contacts will match your audience criteria.
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+        <CardDescription>
+          Estimated number of matching users
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        {!hasRules ? (
+          <div className="text-muted-foreground text-sm">
+            Add rules to see estimated audience size
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <div className="flex items-center">
+              <CircleIcon className={`h-3 w-3 mr-2 ${sizeCategory.color}`} />
+              <span className="font-medium">{sizeCategory.label}</span>
+            </div>
+            <div className="text-2xl font-bold">
+              {matchCount.toLocaleString()}
+            </div>
+            <div className="text-xs text-muted-foreground">
+              {matchCount === 0 
+                ? 'No users match the current criteria' 
+                : 'Users matching all conditions'}
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 
