@@ -58,13 +58,7 @@ export const useChatSettings = () => {
   (function() {
     window.PULLSE_WORKSPACE_ID = '${window.location.hostname}';
     window.PULLSE_THEME_COLORS = {
-      primary: '${settings.primaryColor}',
-      background: '${settings.backgroundColor}',
-      backgroundSecondary: '${settings.backgroundSecondary}',
-      foreground: '${settings.foregroundColor}',
-      border: '${settings.borderColor}',
-      userMessage: '${settings.userMessageColor}',
-      agentMessage: '${settings.agentMessageColor}'
+      primary: '${settings.primaryColor}'
     };
     window.PULLSE_POSITION = '${settings.position}';
     window.PULLSE_COMPACT = ${settings.compact};

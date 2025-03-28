@@ -32,13 +32,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({
       compact: settings.compact,
       colors: {
         ...theme.colors,
-        primary: settings.primaryColor,
-        background: settings.backgroundColor,
-        backgroundSecondary: settings.backgroundSecondary,
-        foreground: settings.foregroundColor,
-        border: settings.borderColor,
-        userMessage: settings.userMessageColor,
-        agentMessage: settings.agentMessageColor
+        primary: settings.primaryColor
       },
       labels: {
         ...theme.labels,
@@ -91,9 +85,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({
                   className={`mb-3 ${combinedTheme.compact ? 'w-72' : 'w-80 sm:w-96'} h-[600px] bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-200`}
                   style={{ 
                     height: isPreview ? '100%' : '600px',
-                    width: isPreview ? '100%' : combinedTheme.compact ? '18rem' : '24rem',
-                    backgroundColor: combinedTheme.colors?.background || 'white',
-                    borderColor: combinedTheme.colors?.border || '#eaeaea'
+                    width: isPreview ? '100%' : combinedTheme.compact ? '18rem' : '24rem'
                   }}
                 >
                   <ChatWidgetContainer 
