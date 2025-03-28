@@ -1,6 +1,6 @@
 
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { CannedResponse } from '@/mock/cannedResponses';
+import { CannedResponse, mockCannedResponses } from '@/mock/cannedResponses';
 
 // Mock API call function with delay to simulate server request
 const mockApiCall = async (delay: number) => {
@@ -15,11 +15,8 @@ export const fetchCannedResponses = createAsyncThunk(
       // Simulate API call latency
       await mockApiCall(500);
       
-      // For now, return mock data from @/mock/cannedResponses
-      // In a real app, this would be a fetch call to the backend
-      const mockResponses: CannedResponse[] = []; // Add mock data or import from mock
-      
-      return mockResponses;
+      // Return mock data
+      return mockCannedResponses;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to fetch canned responses');
     }
@@ -34,22 +31,24 @@ export const fetchCannedResponseById = createAsyncThunk(
       // Simulate API call latency
       await mockApiCall(300);
       
-      // For now, return mock data
-      // In a real app, this would be a fetch call to the backend
+      // Find response in mock data or return a default one
+      const existingResponse = mockCannedResponses.find(r => r.id === id);
+      
+      if (existingResponse) {
+        return existingResponse;
+      }
+      
+      // If no response found, create a mock one
       const mockResponse: CannedResponse = { 
         id,
         title: 'Mock Response',
         content: 'This is a mock response',
-        shortcut: 'mock',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        createdBy: 'user-1',
-        updatedBy: 'user-1',
-        team: 'team-1',
+        shortcut: '/mock',
         category: 'general',
-        usageCount: 0,
-        isArchived: false,
-        versions: []
+        isShared: false,
+        createdBy: 'user-1',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       };
       
       return mockResponse;
@@ -73,9 +72,6 @@ export const createCannedResponse = createAsyncThunk(
         id: `canned-${Date.now()}`,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        usageCount: 0,
-        isArchived: false,
-        versions: []
       };
       
       return newResponse;
