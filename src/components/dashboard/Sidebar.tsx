@@ -11,6 +11,7 @@ import { logout } from '@/store/slices/authSlice';
 import { toast } from '@/components/ui/use-toast';
 
 const Sidebar = () => {
+  // These hooks will work properly when Sidebar is rendered within a Router context
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useAppDispatch();
