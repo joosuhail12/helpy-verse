@@ -7,17 +7,18 @@ import { RollingPeriodInput } from './date/RollingPeriodInput';
 interface DateInputProps {
   value: string;
   onChange: (value: string) => void;
-  operator: ComparisonOperator;
+  operator?: ComparisonOperator;
+  errorMessage?: string | null;
 }
 
-export const DateInput = ({ value, onChange, operator }: DateInputProps) => {
-  if (operator === 'custom_range') {
+export const DateInput = ({ value, onChange, operator = 'equals', errorMessage }: DateInputProps) => {
+  if (operator === 'custom_range' as ComparisonOperator) {
     return <CustomRangeInput value={value} onChange={onChange} />;
   }
 
   if (operator.includes('rolling') || 
-      operator === 'last_n_days' || 
-      operator === 'next_n_days') {
+      operator === 'last_n_days' as ComparisonOperator || 
+      operator === 'next_n_days' as ComparisonOperator) {
     return <RollingPeriodInput value={value} onChange={onChange} operator={operator} />;
   }
 

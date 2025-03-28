@@ -1,159 +1,221 @@
 
-import React, { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { Plus, Save, X } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { Tag, X } from 'lucide-react';
 import { 
-  fetchTags, 
-  selectAllTagsItems,
-  selectTagsLoading
-} from '@/store/slices/tagsSlice';
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger,
+  DialogFooter 
+} from '@/components/ui/dialog';
+import { 
+  Command, 
+  CommandEmpty, 
+  CommandGroup, 
+  CommandInput, 
+  CommandItem, 
+  CommandList 
+} from '@/components/ui/command';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { useAppSelector } from '@/hooks/useAppSelector';
+import { selectAllTags, fetchTags } from '@/store/slices/tagsSlice';
 import { updateContact } from '@/store/slices/contacts/contactsSlice';
+import { Tag as TagType } from '@/types/tag';
+import { Contact } from '@/types/contact';
 
 interface ContactTagsProps {
-  contact: any;
+  contact: Contact;
+  tags: string[];
 }
 
-export const ContactTags: React.FC<ContactTagsProps> = ({ contact }) => {
-  const dispatch = useDispatch();
-  const [isEditing, setIsEditing] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedTags, setSelectedTags] = useState<string[]>(contact.tags || []);
+export const ContactTags = ({ contact, tags }: ContactTagsProps) => {
+  const [selectedTags, setSelectedTags] = useState<string[]>(tags || []);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isUpdating, setIsUpdating] = useState(false);
   
-  const allTags = useSelector(selectAllTagsItems) || [];
-  const isLoading = useSelector(selectTagsLoading);
+  const dispatch = useAppDispatch();
+  const allTags = useAppSelector(selectAllTags);
   
   useEffect(() => {
-    dispatch(fetchTags({ searchQuery }));
-  }, [dispatch, searchQuery]);
+    const loadTags = async () => {
+      try {
+        await dispatch(fetchTags());
+      } catch (error) {
+        console.error('Failed to load tags', error);
+      }
+    };
+    
+    loadTags();
+  }, [dispatch]);
   
-  const handleSaveTags = () => {
-    dispatch(updateContact({
-      id: contact.id,
-      data: { tags: selectedTags }
-    }));
-    setIsEditing(false);
+  useEffect(() => {
+    setSelectedTags(tags || []);
+  }, [tags]);
+  
+  const handleSaveTags = async () => {
+    setIsUpdating(true);
+    try {
+      await dispatch(updateContact({
+        contactId: contact.id,
+        data: { tags: selectedTags }
+      }));
+      setIsDialogOpen(false);
+    } catch (error) {
+      console.error('Failed to update tags', error);
+    } finally {
+      setIsUpdating(false);
+    }
   };
   
-  const handleAddTag = (tagId: string) => {
-    if (!selectedTags.includes(tagId)) {
+  const handleRemoveTag = async (tagId: string) => {
+    const updatedTags = selectedTags.filter(id => id !== tagId);
+    setIsUpdating(true);
+    try {
+      await dispatch(updateContact({
+        contactId: contact.id,
+        data: { tags: updatedTags }
+      }));
+    } catch (error) {
+      console.error('Failed to remove tag', error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+  
+  const handleToggleTag = (tagId: string) => {
+    if (selectedTags.includes(tagId)) {
+      setSelectedTags(selectedTags.filter(id => id !== tagId));
+    } else {
       setSelectedTags([...selectedTags, tagId]);
     }
   };
   
-  const handleRemoveTag = (tagId: string) => {
-    setSelectedTags(selectedTags.filter(id => id !== tagId));
-  };
-  
-  const filteredTags = allTags
+  const filteredTags = Array.isArray(allTags) 
     ? allTags.filter(tag => 
-        tag.name.toLowerCase().includes(searchQuery.toLowerCase()) && 
-        !selectedTags.includes(tag.id)
+        tag.name.toLowerCase().includes(searchTerm.toLowerCase())
       )
     : [];
-  
+
+  const getTagById = (tagId: string) => {
+    return Array.isArray(allTags) 
+      ? allTags.find(tag => tag.id === tagId)
+      : undefined;
+  };
+
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium text-muted-foreground">Tags</h3>
-        {!isEditing ? (
-          <Button variant="ghost" size="sm" onClick={() => setIsEditing(true)}>
-            <Plus className="h-3.5 w-3.5 mr-1" />
-            <span className="text-xs">Add</span>
-          </Button>
-        ) : (
-          <div className="flex gap-2">
-            <Button variant="ghost" size="sm" onClick={() => setIsEditing(false)}>
-              <X className="h-3.5 w-3.5 mr-1" />
-              <span className="text-xs">Cancel</span>
+        <h3 className="text-sm font-medium">Tags</h3>
+        
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button variant="ghost" size="sm" className="h-7">
+              Manage Tags
             </Button>
-            <Button variant="ghost" size="sm" onClick={handleSaveTags}>
-              <Save className="h-3.5 w-3.5 mr-1" />
-              <span className="text-xs">Save</span>
-            </Button>
-          </div>
-        )}
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Manage Tags</DialogTitle>
+            </DialogHeader>
+            
+            <Command className="border rounded-md">
+              <CommandInput 
+                placeholder="Search tags..." 
+                value={searchTerm}
+                onValueChange={setSearchTerm}
+              />
+              <CommandList className="h-64 overflow-auto">
+                <CommandEmpty>No tags found.</CommandEmpty>
+                <CommandGroup heading="Tags">
+                  {filteredTags.map(tag => (
+                    <CommandItem
+                      key={tag.id}
+                      onSelect={() => handleToggleTag(tag.id)}
+                      className={`flex items-center ${selectedTags.includes(tag.id) ? 'bg-muted' : ''}`}
+                    >
+                      <div
+                        className="w-3 h-3 rounded-full mr-2"
+                        style={{ backgroundColor: tag.color }}
+                      />
+                      <span>{tag.name}</span>
+                      {selectedTags.includes(tag.id) && (
+                        <CheckIcon className="ml-auto h-4 w-4" />
+                      )}
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </CommandList>
+            </Command>
+            
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button
+                variant="outline"
+                onClick={() => setIsDialogOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSaveTags}
+                disabled={isUpdating}
+              >
+                {isUpdating ? 'Saving...' : 'Save'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
       
-      {isEditing ? (
-        <div className="space-y-3">
-          <div className="flex flex-wrap gap-2">
-            {selectedTags.length > 0 ? (
-              selectedTags.map(tagId => {
-                const tag = allTags.find(t => t.id === tagId);
-                return tag ? (
-                  <Badge key={tag.id} style={{ backgroundColor: tag.color }} className="text-white flex items-center gap-1.5">
-                    {tag.name}
-                    <X className="h-3 w-3 cursor-pointer" onClick={() => handleRemoveTag(tag.id)} />
-                  </Badge>
-                ) : null;
-              })
-            ) : (
-              <p className="text-xs text-muted-foreground">No tags selected</p>
-            )}
-          </div>
-          
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" size="sm" className="w-full justify-start">
-                <Plus className="h-3.5 w-3.5 mr-2" />
-                <span>Add Tag</span>
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-80 p-3" align="start">
-              <div className="space-y-3">
-                <Input
-                  placeholder="Search tags..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="text-sm"
+      <div className="flex flex-wrap gap-2">
+        {selectedTags.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No tags</p>
+        ) : (
+          selectedTags.map(tagId => {
+            const tag = getTagById(tagId);
+            return tag ? (
+              <Badge 
+                key={tagId} 
+                variant="secondary"
+                style={{ backgroundColor: `${tag.color}20` }}
+                className="flex items-center gap-1"
+              >
+                <div
+                  className="w-2 h-2 rounded-full"
+                  style={{ backgroundColor: tag.color }}
                 />
-                
-                <div className="max-h-40 overflow-y-auto space-y-1">
-                  {isLoading ? (
-                    <p className="text-sm text-muted-foreground">Loading tags...</p>
-                  ) : filteredTags.length > 0 ? (
-                    filteredTags.map(tag => (
-                      <div
-                        key={tag.id}
-                        className="flex items-center gap-2 p-2 hover:bg-muted rounded-md cursor-pointer"
-                        onClick={() => handleAddTag(tag.id)}
-                      >
-                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: tag.color }} />
-                        <span className="text-sm">{tag.name}</span>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-sm text-muted-foreground">No matching tags found</p>
-                  )}
-                </div>
-              </div>
-            </PopoverContent>
-          </Popover>
-        </div>
-      ) : (
-        <div className="flex flex-wrap gap-1.5">
-          {selectedTags.length > 0 ? (
-            selectedTags.map(tagId => {
-              const tag = allTags.find(t => t.id === tagId);
-              return tag ? (
-                <Badge key={tag.id} style={{ backgroundColor: tag.color }} className="text-white">
-                  {tag.name}
-                </Badge>
-              ) : null;
-            })
-          ) : (
-            <p className="text-xs text-muted-foreground">No tags</p>
-          )}
-        </div>
-      )}
+                {tag.name}
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-4 w-4 p-0 ml-1"
+                  onClick={() => handleRemoveTag(tagId)}
+                  disabled={isUpdating}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </Badge>
+            ) : null;
+          })
+        )}
+      </div>
     </div>
   );
 };
+
+const CheckIcon = (props: any) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    {...props}
+  >
+    <polyline points="20 6 9 17 4 12" />
+  </svg>
+);

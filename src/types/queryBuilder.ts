@@ -20,6 +20,9 @@ export interface QueryField {
   description?: string;
   entity?: string;
   placeholder?: string;
+  dataSource?: DataSource;
+  source?: string;
+  customObject?: string;
 }
 
 export type ComparisonOperator =
@@ -36,7 +39,11 @@ export type ComparisonOperator =
   | 'is_empty'
   | 'is_not_empty'
   | 'in'
-  | 'not_in';
+  | 'not_in'
+  | 'custom_range'
+  | 'last_n_days'
+  | 'next_n_days'
+  | 'rolling_period';
 
 export type FieldType = 
   | 'text' 
@@ -59,4 +66,9 @@ export interface ValidationError {
   field: string;
   message: string;
   path?: string;
+}
+
+export interface ValidationResult {
+  isValid: boolean;
+  error?: string;
 }

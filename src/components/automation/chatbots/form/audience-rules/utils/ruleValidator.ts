@@ -1,10 +1,5 @@
 
-import { QueryGroup, QueryRule, ValidationError } from '@/types/queryBuilder';
-
-export interface ValidationResult {
-  isValid: boolean;
-  error?: string;
-}
+import { QueryGroup, QueryRule, ValidationError, ValidationResult } from '@/types/queryBuilder';
 
 // Validate a query group and its rules
 export const validateQueryGroup = (group: QueryGroup): ValidationResult => {
@@ -146,4 +141,4 @@ const evaluateRule = (record: any, rule: QueryRule): boolean => {
   }
 };
 
-export type { ValidationError };
+export type { ValidationError, ValidationResult };

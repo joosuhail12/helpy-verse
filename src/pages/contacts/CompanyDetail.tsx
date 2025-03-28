@@ -1,24 +1,19 @@
 
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { useAppDispatch, useAppSelector } from '@/hooks/useAppDispatch';
-import { 
-  fetchCompanyById,
-  setSelectedCompany
-} from '@/store/slices/companies/companiesSlice';
-import { selectSelectedCompany, selectCompaniesLoading, selectCompaniesError } from '@/store/slices/companies/selectors';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { useAppSelector } from '@/hooks/useAppSelector';
+import { fetchCompanyById, selectCompanyDetails, selectCompaniesLoading, selectCompaniesError } from '@/store/slices/companies/companiesSlice';
 import { CompanyDetailHeader } from '@/components/companies/detail/CompanyDetailHeader';
-import { CompanyDetailSidebar } from '@/components/companies/detail/CompanyDetailSidebar';
 import { CompanyDetailContent } from '@/components/companies/detail/CompanyDetailContent';
+import { CompanyDetailSidebar } from '@/components/companies/detail/CompanyDetailSidebar';
 import { CompanyDetailLoading } from '@/components/companies/detail/CompanyDetailLoading';
 import { CompanyDetailError } from '@/components/companies/detail/CompanyDetailError';
-import { CompanyNotFound } from '@/components/companies/detail/CompanyNotFound';
 
 const CompanyDetail = () => {
   const { id } = useParams<{ id: string }>();
   const dispatch = useAppDispatch();
-  
-  const companyDetails = useAppSelector(selectSelectedCompany);
+  const company = useAppSelector(selectCompanyDetails);
   const loading = useAppSelector(selectCompaniesLoading);
   const error = useAppSelector(selectCompaniesError);
 
@@ -26,11 +21,6 @@ const CompanyDetail = () => {
     if (id) {
       dispatch(fetchCompanyById(id));
     }
-    
-    return () => {
-      // Clear selected company on unmount
-      dispatch(setSelectedCompany(null));
-    };
   }, [dispatch, id]);
 
   if (loading) {
@@ -38,25 +28,27 @@ const CompanyDetail = () => {
   }
 
   if (error) {
-    return <CompanyDetailError message={error} />;
+    return <CompanyDetailError errorMessage={error} />;
   }
 
-  if (!companyDetails && !loading) {
-    return <CompanyNotFound companyId={id || ''} />;
+  if (!company) {
+    return <div className="text-center py-8">Company not found</div>;
   }
 
-  if (!companyDetails) {
-    return null;
-  }
+  // Mock activities for now
+  const activities = [];
 
   return (
-    <div className="flex flex-col h-full">
-      <CompanyDetailHeader company={companyDetails} onDeleteClick={() => {}} />
-      <div className="flex flex-1 overflow-hidden">
-        <div className="flex-1 overflow-y-auto p-6">
-          <CompanyDetailContent company={companyDetails} activities={[]} />
+    <div className="flex flex-col space-y-6">
+      <CompanyDetailHeader company={company} />
+      
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <CompanyDetailContent company={company} activities={activities} />
         </div>
-        <CompanyDetailSidebar company={companyDetails} />
+        <div className="lg:col-span-1">
+          <CompanyDetailSidebar company={company} />
+        </div>
       </div>
     </div>
   );

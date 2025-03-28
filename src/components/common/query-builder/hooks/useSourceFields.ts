@@ -1,49 +1,34 @@
 
-import { useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import type { QueryField, DataSource } from '@/types/queryBuilder';
-import { mockCustomObjects } from '@/mock/customObjects';
-import { mockCustomFields } from '@/mock/customFields';
-import { mapFieldType } from '../utils/fieldTypeMapping';
 
 type ExtendedDataSource = DataSource | `custom_objects.${string}` | '';
 
-export const useSourceFields = (selectedSource: ExtendedDataSource, fields: QueryField[]) => {
-  const sourceFields = useMemo(() => {
-    let selectedFields: QueryField[] = [];
-    
-    if (selectedSource?.startsWith('custom_objects.')) {
-      const slug = selectedSource.split('.')[1];
-      selectedFields = fields.filter(field => field.source === 'custom_objects' && field.customObject === slug);
-      
-      const customObject = mockCustomObjects.find(obj => obj.slug === slug);
-      if (customObject) {
-        selectedFields.push(
-          ...customObject.fields.map(field => ({
-            id: `${customObject.slug}_${field.id}`,
-            label: field.name,
-            type: mapFieldType(field.type),
-            source: 'custom_objects' as DataSource,
-            customObject: slug
-          }))
-        );
-      }
-    } else if (selectedSource) {
-      selectedFields = fields.filter(field => field.source === selectedSource);
-      
-      const customFields = mockCustomFields[selectedSource as keyof typeof mockCustomFields] || [];
-      selectedFields.push(
-        ...customFields.map(field => ({
-          id: `custom_${field.id}`,
-          label: field.name,
-          type: mapFieldType(field.type),
-          source: selectedSource as DataSource,
-          options: field.type === 'select' ? field.options : undefined
-        }))
-      );
+export const useSourceFields = (source: ExtendedDataSource, allFields: QueryField[]) => {
+  const [fields, setFields] = useState<QueryField[]>([]);
+
+  useEffect(() => {
+    if (!source) {
+      setFields([]);
+      return;
     }
 
-    return selectedFields.sort((a, b) => a.label.localeCompare(b.label));
-  }, [fields, selectedSource]);
+    // Handle custom objects source
+    if (source.startsWith('custom_objects.')) {
+      const customObjectName = source.split('.')[1];
+      const filteredFields = allFields.filter(
+        (field) => field.dataSource === 'custom_objects' && field.customObject === customObjectName
+      );
+      setFields(filteredFields);
+      return;
+    }
 
-  return sourceFields;
+    // Regular data sources
+    const filteredFields = allFields.filter(
+      (field) => field.dataSource === source
+    );
+    setFields(filteredFields);
+  }, [source, allFields]);
+
+  return fields;
 };

@@ -7,6 +7,7 @@ import { useAudienceFields } from './hooks/useAudienceFields';
 import AudienceSizeEstimator from './components/AudienceSizeEstimator';
 import SampleMatchesPreview from './components/SampleMatchesPreview';
 import { RuleValidationSummary } from './components/RuleValidationSummary';
+import { ValidationError } from '@/types/queryBuilder';
 
 export const AudienceRules = () => {
   const [isValid, setIsValid] = useState(true);
@@ -33,11 +34,11 @@ export const AudienceRules = () => {
             value={queryGroup}
             onChange={updateQueryGroup}
             fields={fields}
-            errors={errors}
+            errors={errors as ValidationError[]}
           />
           {!isValid && errors.length > 0 && (
             <div className="mt-4">
-              <RuleValidationSummary errors={errors} />
+              <RuleValidationSummary errors={errors as ValidationError[]} />
             </div>
           )}
         </CardContent>

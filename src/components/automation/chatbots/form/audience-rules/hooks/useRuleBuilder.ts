@@ -1,6 +1,6 @@
 
 import { useState, useCallback } from 'react';
-import { QueryGroup, QueryRule, ValidationError } from '@/types/queryBuilder';
+import { QueryGroup, QueryRule, ValidationError, ValidationResult } from '@/types/queryBuilder';
 import { validateQueryGroup } from '../utils/ruleValidator';
 import { generateId } from '@/lib/utils';
 
