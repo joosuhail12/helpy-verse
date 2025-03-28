@@ -23,7 +23,7 @@ export {
   selectSelectedTags
 } from './selectors';
 
-// Export specific actions for convenience
+// Export specific actions for convenience (avoiding duplicates)
 export {
   fetchTags,
   createTag,
@@ -34,7 +34,7 @@ export {
   setFilter,
   setSearch,
   selectTag,
-  selectAllTags,
+  // selectAllTags, // Commented out to avoid duplicate
   clearSelectedTags
 } from './actions';
 

@@ -3,9 +3,14 @@ import { createSlice } from '@reduxjs/toolkit';
 import { tagsCoreSlice_ForConfiguration } from './actions/tagsCore';
 import { fetchTags, createTag, updateTag, deleteTags } from './actions/tagsApi';
 
+// Get the initial state and reducers from the core slice
+const { name, initialState, reducers } = tagsCoreSlice_ForConfiguration;
+
 // Create the slice
 const tagsSlice = createSlice({
-  ...tagsCoreSlice_ForConfiguration,
+  name,
+  initialState,
+  reducers,
   extraReducers: (builder) => {
     builder
       // Fetch tags

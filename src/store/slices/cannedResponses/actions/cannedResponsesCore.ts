@@ -64,4 +64,8 @@ export const {
 } = cannedResponsesCoreSlice.actions;
 
 // Export the core slice for configuration
-export const cannedResponsesCoreSlice_ForConfiguration = cannedResponsesCoreSlice;
+export const cannedResponsesCoreSlice_ForConfiguration = {
+  name: cannedResponsesCoreSlice.name,
+  initialState: cannedResponsesCoreSlice.getInitialState(),
+  reducers: cannedResponsesCoreSlice.caseReducers
+};

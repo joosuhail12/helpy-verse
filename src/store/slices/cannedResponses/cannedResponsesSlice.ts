@@ -1,5 +1,6 @@
 
 import { createSlice } from '@reduxjs/toolkit';
+import { CannedResponsesState } from './types';
 import { cannedResponsesCoreSlice_ForConfiguration } from './actions/cannedResponsesCore';
 import {
   fetchCannedResponses,
@@ -8,9 +9,14 @@ import {
   deleteCannedResponse
 } from './actions/cannedResponsesApi';
 
+// Get the initial state and reducers from the core slice
+const { name, initialState, reducers } = cannedResponsesCoreSlice_ForConfiguration;
+
 // Create the slice
 const cannedResponsesSlice = createSlice({
-  ...cannedResponsesCoreSlice_ForConfiguration,
+  name,
+  initialState,
+  reducers,
   extraReducers: (builder) => {
     builder
       // Fetch canned responses
