@@ -13,6 +13,8 @@ interface ChatHeaderProps {
   agentIds?: string[];
   secure?: boolean;
   encrypted?: boolean;
+  workspaceId?: string;
+  conversationId?: string;
 }
 
 const ChatHeader: React.FC<ChatHeaderProps> = ({
@@ -24,13 +26,19 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
   agentIds,
   secure = false,
   encrypted = false,
+  workspaceId,
+  conversationId,
 }) => {
   const { colors } = useThemeContext();
 
   return (
     <div
       className="flex items-center justify-between px-4 py-3 border-b"
-      style={{ background: colors.headerBackground || colors.primary, color: colors.headerForeground || colors.primaryForeground, borderColor: colors.border }}
+      style={{ 
+        background: colors.primary, 
+        color: colors.primaryForeground, 
+        borderColor: colors.border 
+      }}
     >
       <div className="flex items-center">
         {onBackClick && (
@@ -48,11 +56,11 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
             <h2 className="font-medium truncate max-w-[200px]">{title}</h2>
             
             {secure && (
-              <Shield className="h-4 w-4 ml-2 text-green-400" title="Secure authenticated session" />
+              <Shield className="h-4 w-4 ml-2 text-green-400" aria-label="Secure authenticated session" />
             )}
             
             {encrypted && (
-              <Lock className="h-4 w-4 ml-2 text-green-400" title="End-to-end encrypted" />
+              <Lock className="h-4 w-4 ml-2 text-green-400" aria-label="End-to-end encrypted" />
             )}
           </div>
           
@@ -61,7 +69,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
       </div>
 
       <div className="flex items-center gap-2">
-        {agentIds && agentIds.length > 0 && <AgentAvatarGroup agentIds={agentIds} />}
+        {agentIds && agentIds.length > 0 && <AgentAvatarGroup agents={agentIds} />}
         
         {showClose && onCloseClick && (
           <button

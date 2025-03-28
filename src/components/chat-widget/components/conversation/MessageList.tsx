@@ -1,136 +1,115 @@
-
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { ChatMessage } from './types';
-import MessageItem from './MessageItem';
-import { Loader2, ArrowDown, Lock } from 'lucide-react';
+import { formatRelativeTime } from '@/utils/helpers/formatters';
 import { useThemeContext } from '@/context/ThemeContext';
-import { Button } from '@/components/ui/button';
+import { FileIcon, Download, Paperclip } from 'lucide-react';
+import FileAttachmentItem from './FileAttachmentItem';
+import UserAvatar from '../user/UserAvatar';
+import dayjs from 'dayjs';
 
 interface MessageListProps {
   messages: ChatMessage[];
-  loading?: boolean;
+  conversationId: string;
   showAvatars?: boolean;
   encrypted?: boolean;
 }
 
-const MessageList: React.FC<MessageListProps> = ({ 
-  messages, 
-  loading = false, 
-  showAvatars = false,
-  encrypted = false
-}) => {
-  const { colors } = useThemeContext();
+const MessageList: React.FC<MessageListProps> = ({ messages, conversationId, showAvatars = false, encrypted = false }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [showScrollButton, setShowScrollButton] = useState(false);
-  const [autoScroll, setAutoScroll] = useState(true);
-  const [unreadCount, setUnreadCount] = useState(0);
-  
-  // Auto-scroll to bottom when messages change
-  useEffect(() => {
-    if (autoScroll && messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    } else if (!autoScroll && messages.length > 0) {
-      // If auto-scroll is disabled, increment unread count
-      const lastMessage = messages[messages.length - 1];
-      if (lastMessage.sender === 'agent') {
-        setUnreadCount(prev => prev + 1);
-      }
-    }
-  }, [messages, autoScroll]);
-  
-  // Handle scroll events
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-    
-    const handleScroll = () => {
-      const { scrollTop, scrollHeight, clientHeight } = container;
-      const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
-      
-      setShowScrollButton(!isNearBottom);
-      
-      // If user manually scrolled to bottom, enable auto-scroll
-      if (isNearBottom && !autoScroll) {
-        setAutoScroll(true);
-        setUnreadCount(0);
-      } 
-      // If user scrolled up, disable auto-scroll
-      else if (!isNearBottom && autoScroll) {
-        setAutoScroll(false);
-      }
-    };
-    
-    container.addEventListener('scroll', handleScroll);
-    return () => {
-      container.removeEventListener('scroll', handleScroll);
-    };
-  }, [autoScroll]);
-  
+  const { colors } = useThemeContext();
+
   const scrollToBottom = () => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-      setAutoScroll(true);
-      setUnreadCount(0);
-    }
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const groupMessagesByTime = (messages: ChatMessage[]) => {
+    const groupedMessages: ChatMessage[][] = [];
+    let currentGroup: ChatMessage[] = [];
+  
+    messages.forEach((message, index) => {
+      currentGroup.push(message);
+  
+      if (
+        index === messages.length - 1 ||
+        !dayjs(message.timestamp).isSame(messages[index + 1].timestamp, 'day')
+      ) {
+        groupedMessages.push(currentGroup);
+        currentGroup = [];
+      }
+    });
+  
+    return groupedMessages;
+  };
+
+  const formatMessageGroupTime = (date: Date) => {
+    return dayjs(date).format('MMMM D, YYYY');
+  };
+
+  const groupedMessages = groupMessagesByTime(messages);
+
   return (
-    <div 
-      ref={containerRef}
-      className="flex-1 overflow-y-auto"
-      style={{ background: colors.background }}
-    >
-      {/* Encryption notice at the top */}
-      {encrypted && (
-        <div className="flex items-center justify-center p-2 text-sm text-gray-500">
-          <Lock className="h-4 w-4 mr-1" />
-          <span>Messages in this conversation are end-to-end encrypted</span>
-        </div>
-      )}
-      
-      {loading ? (
-        <div className="flex justify-center items-center h-full">
-          <Loader2 className="h-6 w-6 animate-spin" style={{ color: colors.primary }} />
-        </div>
-      ) : messages.length === 0 ? (
-        <div 
-          className="flex justify-center items-center h-full text-center text-gray-500 px-6"
-          style={{ color: colors.mutedForeground }}
-        >
-          <p>No messages yet. Start the conversation!</p>
-        </div>
-      ) : (
-        messages.map(message => (
-          <MessageItem 
-            key={message.id} 
-            message={message} 
-            showAvatar={showAvatars}
-            encrypted={encrypted && message.encrypted}
-          />
-        ))
-      )}
-      
-      {/* Hidden div for scroll targeting */}
-      <div ref={messagesEndRef} />
-      
-      {/* Button to scroll to the bottom */}
-      {showScrollButton && (
-        <div className="sticky bottom-4 flex justify-center">
-          <Button
-            className="rounded-full shadow-lg flex items-center gap-1 px-3 py-1 h-auto"
-            style={{ background: colors.primary, color: colors.primaryForeground }}
-            onClick={scrollToBottom}
+    <div className="flex-1 overflow-y-auto p-4">
+      {groupedMessages.map((group, idx) => {
+        // Fix the className in the div
+        const groupTimeFormatted = formatMessageGroupTime(new Date(group[0].timestamp));
+
+        return (
+          <div 
+            key={dayjs(group[0].timestamp).format('YYYYMMDD') + idx} 
+            className="mb-4 space-y-2"
           >
-            {unreadCount > 0 && (
-              <span className="bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[20px]">
-                {unreadCount}
-              </span>
-            )}
-            <ArrowDown className="h-4 w-4" />
-          </Button>
-        </div>
-      )}
+            <div 
+              className="text-xs text-center mb-2 px-2 py-1 rounded-full bg-gray-100 inline-block mx-auto"
+              style={{ color: colors.foreground, backgroundColor: colors.backgroundSecondary }}
+            >
+              {groupTimeFormatted}
+            </div>
+            {group.map((message) => (
+              <div
+                key={message.id}
+                className={`flex ${message.sender === 'user' ? 'justify-end' : 'items-start'}`}
+              >
+                {message.sender !== 'user' && showAvatars && (
+                  <UserAvatar name="Support Agent" />
+                )}
+                <div
+                  className={`rounded-xl px-3 py-2 ${message.sender === 'user' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'} max-w-[75%] sm:max-w-[60%] break-words`}
+                  style={{
+                    backgroundColor: message.sender === 'user' ? colors.outgoingMessage : colors.incomingMessage,
+                    color: message.sender === 'user' ? colors.outgoingMessageForeground : colors.incomingMessageForeground,
+                  }}
+                >
+                  <p className="text-sm">{message.content}</p>
+                  {message.attachments && message.attachments.length > 0 && (
+                    <div className="mt-2">
+                      {message.attachments.map((file) => (
+                        <FileAttachmentItem key={file.id} file={file} />
+                      ))}
+                    </div>
+                  )}
+                  <div className="text-xs mt-1 opacity-70">
+                    {formatRelativeTime(message.timestamp)}
+                    {message.status && (
+                      <span className="ml-1">
+                        {message.status === 'sending' && 'Sending...'}
+                        {message.status === 'sent' && 'Sent'}
+                        {message.status === 'delivered' && 'Delivered'}
+                        {message.status === 'read' && 'Read'}
+                        {message.status === 'failed' && 'Failed'}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        );
+      })}
+      <div ref={messagesEndRef} />
     </div>
   );
 };

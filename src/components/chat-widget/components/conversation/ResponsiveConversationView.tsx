@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useRealtimeChat } from '@/hooks/chat/useRealtimeChat';
 import { useMessageSubscription } from '@/hooks/chat/useMessageSubscription';
@@ -29,7 +28,6 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
   const [loadedMessages, setLoadedMessages] = useState<ChatMessage[]>([]);
   const [allMessages, setAllMessages] = useState<ChatMessage[]>([]);
 
-  // Combine all messages from different sources
   useEffect(() => {
     if (realtimeMessages.length > 0) {
       setAllMessages(realtimeMessages);
@@ -38,14 +36,11 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
     }
   }, [realtimeMessages, loadedMessages]);
 
-  // Load messages when component mounts
   useEffect(() => {
     const loadMessages = async () => {
-      // First try to get from Chat hook
       const msgs = await getMessages(conversationId);
       
       if (msgs && msgs.length > 0) {
-        // Assign status to messages based on readBy property
         const processedMsgs = msgs.map(msg => {
           if (msg.sender === 'user') {
             if (msg.readBy && msg.readBy.length > 0) {
@@ -64,7 +59,6 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
     loadMessages();
   }, [conversationId, getMessages]);
 
-  // Use persistence hook to load/save messages
   useConversationPersistence(conversationId, allMessages, {
     onLoad: (savedMessages) => {
       if (loadedMessages.length === 0 && realtimeMessages.length === 0) {
@@ -73,10 +67,8 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
     }
   });
 
-  // Initialize message subscription
   const { publishMessage } = useMessageSubscription(conversationId, workspaceId, {
     onMessage: (message: ChatMessage) => {
-      // Mark agent messages as read when received by user
       if (message.sender === 'agent') {
         const updatedMsg = {
           ...message,
@@ -93,11 +85,9 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
     }
   });
 
-  // Initialize typing indicator
   const { typingUsers: activeTypers, sendTypingIndicator } = useTypingIndicator(conversationId);
 
   useEffect(() => {
-    // Subscribe to typing status updates
     const handleTypingStatusChanged = (typingStatuses: Record<string, boolean>) => {
       setTypingUsers(
         Object.entries(typingStatuses)
@@ -106,17 +96,13 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
       );
     };
     
-    // Set up typing indicator listener
-    // This would typically be handled by the useTypingIndicator hook
     return () => {
-      // Cleanup typing indicator listener
     };
   }, []);
 
   const handleSendMessage = async (content: string) => {
     sendTypingIndicator(false);
     
-    // Create message with 'sending' status
     const messageId = uuidv4();
     const messageWithStatus: ChatMessage = {
       id: messageId,
@@ -127,13 +113,11 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
       status: 'sending'
     };
     
-    // We need to add the message to the local state first with 'sending' status
     setLoadedMessages(prev => [...prev, messageWithStatus]);
     
     try {
       await sendMessage(content);
       
-      // Update status to 'sent' then 'delivered'
       setTimeout(() => {
         setLoadedMessages(prev => 
           prev.map(msg => msg.id === messageId ? { ...msg, status: 'sent' as const } : msg)
@@ -144,7 +128,6 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
             prev.map(msg => msg.id === messageId ? { ...msg, status: 'delivered' as const } : msg)
           );
           
-          // Simulate read receipt after agent reply
           setTimeout(() => {
             setLoadedMessages(prev => 
               prev.map(msg => msg.id === messageId ? { ...msg, status: 'read' as const } : msg)
@@ -153,7 +136,6 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
         }, 800);
       }, 400);
     } catch (error) {
-      // Update status to 'failed' if sending fails
       setLoadedMessages(prev => 
         prev.map(msg => msg.id === messageId ? { ...msg, status: 'failed' as const } : msg)
       );
@@ -169,13 +151,10 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
       <ChatHeader 
         title="Conversation" 
         onBackClick={onBack} 
-        workspaceId={workspaceId}
-        conversationId={conversationId}
       />
       <div className="flex-1 overflow-hidden flex flex-col">
         <MessageList 
           messages={allMessages} 
-          conversationId={conversationId}
           showAvatars={true}
         />
         <div className="px-4 pb-2">

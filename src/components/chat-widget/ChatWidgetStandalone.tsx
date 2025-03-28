@@ -1,6 +1,6 @@
 
 import React, { useEffect } from 'react';
-import ChatWidget from './ChatWidget';
+import { ChatWidget } from './ChatWidget';
 import { ChatProvider } from '@/context/ChatContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { sessionManager } from '@/utils/auth/sessionManager';
@@ -57,17 +57,18 @@ const ChatWidgetStandalone: React.FC = () => {
   }, []);
   
   return (
-    <ThemeProvider colors={config.theme?.colors}>
+    <ThemeProvider initialTheme={config.theme?.colors}>
       <ChatProvider 
         workspaceId={workspaceId} 
         requiresAuthentication={securitySettings.requireAuthentication}
       >
         <ChatWidget 
-          compact={config.theme?.compact}
-          position={config.theme?.position}
-          labels={config.theme?.labels}
-          features={config.theme?.features}
-          security={securitySettings}
+          workspaceId={workspaceId}
+          theme={{
+            position: config.theme?.position,
+            compact: config.theme?.compact,
+            colors: config.theme?.colors
+          }}
         />
       </ChatProvider>
     </ThemeProvider>

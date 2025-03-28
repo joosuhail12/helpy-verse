@@ -12,9 +12,11 @@ import TypingIndicator from './TypingIndicator';
 import { useTypingIndicator } from '@/hooks/chat/useTypingIndicator';
 import { useConversationPersistence } from '@/hooks/chat/useConversationPersistence';
 import ContactVerification from '../verification/ContactVerification';
+import ContactInfoForm from '../contact/ContactInfoForm';
 import { useChat } from '@/context/ChatContext';
 import { contactAuth } from '@/utils/auth/contactAuth';
 import { sessionManager } from '@/utils/auth/sessionManager';
+import { useContactManagement } from '@/hooks/chat/useContactManagement';
 import { Button } from '@/components/ui/button';
 import { Shield, Lock, AlertTriangle } from 'lucide-react';
 
@@ -44,6 +46,14 @@ const ConversationView: React.FC<ConversationViewProps> = ({ conversationId, wor
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { typingUsers, sendTypingIndicator } = useTypingIndicator(conversationId);
   const [showSecurityBanner, setShowSecurityBanner] = useState(true);
+  const { 
+    contactId, 
+    contactInfo, 
+    needsContactInfo, 
+    saveContactInfo,
+    skipContactInfo,
+    isLoading: isContactLoading 
+  } = useContactManagement(workspaceId);
 
   // Use the persistence hook to load/save messages
   useConversationPersistence(conversationId, messages, {
@@ -148,6 +158,29 @@ const ConversationView: React.FC<ConversationViewProps> = ({ conversationId, wor
     sendTypingIndicator(true);
   };
 
+  const handleContactInfoSaved = (id: string) => {
+    // Stay on current view with the confirmed contactId
+    console.log('Contact info saved', id);
+  };
+
+  // If contact info is needed, show the contact form
+  if (needsContactInfo) {
+    return (
+      <div className="flex flex-col h-full" style={{ background: colors.background, color: colors.foreground }}>
+        <ChatHeader 
+          title="Welcome" 
+          subtitle="Please provide your information to continue"
+          onBackClick={onBack} 
+        />
+        <ContactInfoForm 
+          workspaceId={workspaceId}
+          onSuccess={handleContactInfoSaved}
+          onCancel={skipContactInfo}
+        />
+      </div>
+    );
+  }
+
   // If authentication is required but user is not authenticated
   if (requiresAuthentication && !isAuthenticated) {
     return (
@@ -158,7 +191,8 @@ const ConversationView: React.FC<ConversationViewProps> = ({ conversationId, wor
         />
         <ContactVerification 
           onVerified={() => {
-            setIsAuthenticated(true);
+            // Update authenticated state
+            window.location.reload();
           }} 
         />
       </div>
@@ -201,6 +235,23 @@ const ConversationView: React.FC<ConversationViewProps> = ({ conversationId, wor
           >
             ×
           </Button>
+        </div>
+      )}
+      
+      {contactInfo && (
+        <div className="px-4 py-2 bg-green-50 border-b border-green-200">
+          <div className="flex items-center">
+            <div className="flex-1">
+              <span className="text-sm font-medium text-green-800">
+                {contactInfo.name || 'Guest'}
+              </span>
+              {contactInfo.email && (
+                <span className="text-xs block text-green-700">
+                  {contactInfo.email}
+                </span>
+              )}
+            </div>
+          </div>
         </div>
       )}
       
