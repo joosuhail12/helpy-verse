@@ -1,126 +1,166 @@
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import * as Ably from 'ably';
-import { v4 as uuidv4 } from 'uuid';
 
-export interface AblyContextValue {
-  client: Ably.Realtime | null;
-  clientId: string;
-  getChannelName: (conversationId: string) => string;
+interface AblyContextValue {
   isConnected: boolean;
   connectionState: string;
-  connectionError: string | null;
+  getChannelName: (resourceId: string) => string;
+  subscribe: (channelName: string, eventName: string, callback: (message: any) => void) => () => void;
+  publish: (channelName: string, eventName: string, data: any) => Promise<void>;
+  lastEvent: { channelName: string; eventName: string; data: any } | null;
 }
 
-const AblyContext = createContext<AblyContextValue>({
-  client: null,
-  clientId: '',
-  getChannelName: () => '',
-  isConnected: false,
-  connectionState: 'initialized',
-  connectionError: null
-});
+const AblyContext = createContext<AblyContextValue | undefined>(undefined);
 
-export interface AblyProviderProps {
+interface AblyProviderProps {
   children: React.ReactNode;
+  workspaceId: string;
   clientId?: string;
-  apiKey?: string;
-  workspaceId?: string;
 }
 
-export const AblyProvider: React.FC<AblyProviderProps> = ({
-  children,
-  clientId = uuidv4(),
-  apiKey = 'your-ably-api-key', // In production, get this from ENV
-  workspaceId = 'default'
+export const AblyProvider: React.FC<AblyProviderProps> = ({ 
+  children, 
+  workspaceId,
+  clientId = 'anonymous'
 }) => {
   const [client, setClient] = useState<Ably.Realtime | null>(null);
   const [isConnected, setIsConnected] = useState(false);
-  const [connectionState, setConnectionState] = useState('initialized');
-  const [connectionError, setConnectionError] = useState<string | null>(null);
-  
-  // Create the Ably client when the component mounts
+  const [connectionState, setConnectionState] = useState('disconnected');
+  const [lastEvent, setLastEvent] = useState<{ channelName: string; eventName: string; data: any } | null>(null);
+  const [channels, setChannels] = useState<{ [key: string]: Ably.Types.RealtimeChannelPromise }>({});
+
+  // Initialize Ably client
   useEffect(() => {
-    let ablyClient: Ably.Realtime;
-    
     try {
-      // Create Ably client with client ID
-      ablyClient = new Ably.Realtime({
-        key: apiKey,
+      // For simplicity in this example, we're using an anonymous client connection
+      // In a real implementation, you'd obtain a token from your server
+      const ably = new Ably.Realtime.Promise({
+        authUrl: '/api/createAblyToken',
         clientId,
-        echoMessages: false,
-        logLevel: process.env.NODE_ENV === 'development' ? 4 : 2
       });
       
-      // Setup connection state change handler
-      ablyClient.connection.on('connected', () => {
-        console.log('Connected to Ably');
-        setIsConnected(true);
-        setConnectionState('connected');
-        setConnectionError(null);
+      setClient(ably);
+      
+      // Set up connection state change listener
+      ably.connection.on((stateChange: Ably.Types.ConnectionStateChange) => {
+        setConnectionState(stateChange.current);
+        setIsConnected(stateChange.current === 'connected');
+        
+        console.log(`Ably connection state changed to: ${stateChange.current}`, {
+          reason: stateChange.reason || 'No reason provided'
+        });
       });
       
-      ablyClient.connection.on('disconnected', () => {
-        console.log('Disconnected from Ably');
-        setIsConnected(false);
-        setConnectionState('disconnected');
-      });
-      
-      ablyClient.connection.on('suspended', () => {
-        console.warn('Ably connection suspended');
-        setIsConnected(false);
-        setConnectionState('suspended');
-      });
-      
-      ablyClient.connection.on('failed', (err) => {
-        console.error('Ably connection failed:', err);
-        setIsConnected(false);
-        setConnectionState('failed');
-        setConnectionError(err?.message || 'Connection failed');
-      });
-      
-      // Store the client
-      setClient(ablyClient);
-      
+      // Clean up
       return () => {
-        // Clean up when the component unmounts
-        ablyClient.connection.off();
-        ablyClient.close();
+        Object.values(channels).forEach(channel => {
+          channel.detach();
+        });
+        
+        ably.close();
       };
     } catch (error) {
-      console.error('Failed to initialize Ably client:', error);
-      setConnectionError('Failed to initialize Ably client');
-      return () => {};
+      console.error('Failed to initialize Ably:', error);
     }
-  }, [clientId, apiKey]);
-  
-  // Get channel name for a conversation
-  const getChannelName = (conversationId: string): string => {
-    return `chat:${workspaceId}:${conversationId}`;
-  };
-  
-  const value: AblyContextValue = {
-    client,
-    clientId,
-    getChannelName,
+  }, [workspaceId, clientId]);
+
+  // Get a channel instance (creating if needed)
+  const getChannel = useCallback((channelName: string) => {
+    if (!client) {
+      throw new Error('Ably client not initialized');
+    }
+    
+    if (!channels[channelName]) {
+      const channel = client.channels.get(channelName);
+      setChannels(prev => ({
+        ...prev,
+        [channelName]: channel
+      }));
+      return channel;
+    }
+    
+    return channels[channelName];
+  }, [client, channels]);
+
+  // Get a standard channel name based on resource ID
+  const getChannelName = useCallback((resourceId: string) => {
+    return `workspace:${workspaceId}:resource:${resourceId}`;
+  }, [workspaceId]);
+
+  // Subscribe to events on a channel
+  const subscribe = useCallback((channelName: string, eventName: string, callback: (message: any) => void) => {
+    if (!client) {
+      console.warn('Ably client not initialized, cannot subscribe');
+      return () => {}; // Return no-op unsubscribe function
+    }
+    
+    try {
+      const channel = getChannel(channelName);
+      
+      const onMessage = (message: Ably.Types.Message) => {
+        setLastEvent({
+          channelName,
+          eventName,
+          data: message.data
+        });
+        
+        callback(message);
+      };
+      
+      channel.subscribe(eventName, onMessage);
+      
+      // Return unsubscribe function
+      return () => {
+        channel.unsubscribe(eventName, onMessage);
+      };
+    } catch (error) {
+      console.error('Failed to subscribe to Ably channel:', error);
+      return () => {}; // Return no-op unsubscribe function
+    }
+  }, [client, getChannel]);
+
+  // Publish an event to a channel
+  const publish = useCallback(async (channelName: string, eventName: string, data: any) => {
+    if (!client) {
+      throw new Error('Ably client not initialized');
+    }
+    
+    try {
+      const channel = getChannel(channelName);
+      await channel.publish(eventName, data);
+      
+      setLastEvent({
+        channelName,
+        eventName,
+        data
+      });
+    } catch (error) {
+      console.error('Failed to publish to Ably channel:', error);
+      throw error;
+    }
+  }, [client, getChannel]);
+
+  const value = {
     isConnected,
     connectionState,
-    connectionError
+    getChannelName,
+    subscribe,
+    publish,
+    lastEvent
   };
-  
-  return (
-    <AblyContext.Provider value={value}>
-      {children}
-    </AblyContext.Provider>
-  );
+
+  return <AblyContext.Provider value={value}>{children}</AblyContext.Provider>;
 };
 
 export const useAbly = (): AblyContextValue => {
   const context = useContext(AblyContext);
   
-  if (!context) {
+  if (context === undefined) {
     throw new Error('useAbly must be used within an AblyProvider');
   }
   
   return context;
 };
+
+export default AblyContext;

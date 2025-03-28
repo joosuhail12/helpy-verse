@@ -1,114 +1,165 @@
 
-import { v4 as uuidv4 } from 'uuid';
-
-interface EncryptionKey {
-  id: string;
-  key: CryptoKey;
-  timestamp: number;
-  version: number;
-}
-
 class EncryptionService {
-  private keys: Map<string, EncryptionKey> = new Map();
-  private currentKeyId: string | null = null;
-  private isInitialized = false;
-  private pendingEncryption: Promise<void> | null = null;
+  private keysKey = 'crypto_keys';
+  private delimiter = '.';
   
-  /**
-   * Initialize the encryption service
-   */
-  async initialize(conversationId: string): Promise<void> {
-    if (this.isInitialized) return;
-    
+  // Initialize encryption
+  public async initialize(): Promise<boolean> {
     try {
-      // Generate a new encryption key
-      await this.generateNewKey(conversationId, 1);
-      this.isInitialized = true;
-      console.log('Encryption service initialized');
-    } catch (error) {
-      console.error('Failed to initialize encryption service:', error);
-      throw error;
-    }
-  }
-  
-  /**
-   * Generate a new encryption key for a conversation
-   */
-  async generateNewKey(conversationId: string, version: number): Promise<string> {
-    try {
-      // Generate a random key
-      const keyMaterial = await window.crypto.subtle.generateKey(
-        {
-          name: 'AES-GCM',
-          length: 256
-        },
-        true,
-        ['encrypt', 'decrypt']
-      );
-      
-      const keyId = uuidv4();
-      
-      // Store the key
-      const keyEntry: EncryptionKey = {
-        id: keyId,
-        key: keyMaterial,
-        timestamp: Date.now(),
-        version
-      };
-      
-      this.keys.set(keyId, keyEntry);
-      this.currentKeyId = keyId;
-      
-      console.log(`Generated new encryption key: ${keyId} (v${version})`);
-      return keyId;
-    } catch (error) {
-      console.error('Failed to generate encryption key:', error);
-      throw error;
-    }
-  }
-  
-  /**
-   * Encrypt a message
-   */
-  async encryptMessage(message: string): Promise<{ encryptedContent: string; keyId: string }> {
-    if (!this.isInitialized || !this.currentKeyId) {
-      throw new Error('Encryption service not initialized');
-    }
-    
-    try {
-      const keyEntry = this.keys.get(this.currentKeyId);
-      if (!keyEntry) {
-        throw new Error('Current encryption key not found');
+      // Check if crypto is available
+      if (!window.crypto || !window.crypto.subtle) {
+        console.error('Web Crypto API is not available in this browser');
+        return false;
       }
       
-      // Generate a random IV
+      return true;
+    } catch (error) {
+      console.error('Failed to initialize encryption:', error);
+      return false;
+    }
+  }
+  
+  // Generate a new encryption key
+  public async generateKey(): Promise<CryptoKey> {
+    return window.crypto.subtle.generateKey(
+      {
+        name: 'AES-GCM',
+        length: 256
+      },
+      true,
+      ['encrypt', 'decrypt']
+    );
+  }
+  
+  // Export a key to raw format
+  private async exportKey(key: CryptoKey): Promise<ArrayBuffer> {
+    return window.crypto.subtle.exportKey('raw', key);
+  }
+  
+  // Import a key from raw format
+  private async importKey(keyData: ArrayBuffer): Promise<CryptoKey> {
+    return window.crypto.subtle.importKey(
+      'raw',
+      keyData,
+      {
+        name: 'AES-GCM',
+        length: 256
+      },
+      true,
+      ['encrypt', 'decrypt']
+    );
+  }
+  
+  // Convert ArrayBuffer to Base64 string
+  private arrayBufferToBase64(buffer: ArrayBuffer): string {
+    const bytes = new Uint8Array(buffer);
+    let binary = '';
+    for (let i = 0; i < bytes.byteLength; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
+  }
+  
+  // Convert Base64 string to ArrayBuffer
+  private base64ToArrayBuffer(base64: string): ArrayBuffer {
+    const binaryString = atob(base64);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    return bytes.buffer;
+  }
+  
+  // Set up encryption for a conversation
+  public async setupConversationEncryption(conversationId: string): Promise<boolean> {
+    try {
+      // Generate a new key
+      const key = await this.generateKey();
+      
+      // Export the key to raw format
+      const keyData = await this.exportKey(key);
+      
+      // Convert to Base64 for storage
+      const keyBase64 = this.arrayBufferToBase64(keyData);
+      
+      // Store the key with version info
+      const keyInfo = {
+        key: keyBase64,
+        version: 1,
+        createdAt: new Date().toISOString()
+      };
+      
+      // Get existing keys or initialize new
+      const keysStr = localStorage.getItem(this.keysKey);
+      let keys = keysStr ? JSON.parse(keysStr) : {};
+      
+      // Add the new key
+      keys[conversationId] = {
+        keys: [keyInfo],
+        currentVersion: 1
+      };
+      
+      // Save back to storage
+      localStorage.setItem(this.keysKey, JSON.stringify(keys));
+      
+      return true;
+    } catch (error) {
+      console.error('Failed to set up conversation encryption:', error);
+      return false;
+    }
+  }
+  
+  // Get the encryption key for a conversation
+  public async getConversationKey(conversationId: string): Promise<CryptoKey | null> {
+    try {
+      // Get stored keys
+      const keysStr = localStorage.getItem(this.keysKey);
+      if (!keysStr) return null;
+      
+      const keys = JSON.parse(keysStr);
+      if (!keys[conversationId]) return null;
+      
+      // Get current key version
+      const currentVersion = keys[conversationId].currentVersion;
+      const keyInfo = keys[conversationId].keys.find((k: any) => k.version === currentVersion);
+      
+      if (!keyInfo) return null;
+      
+      // Convert Base64 back to ArrayBuffer
+      const keyData = this.base64ToArrayBuffer(keyInfo.key);
+      
+      // Import the key
+      return this.importKey(keyData);
+    } catch (error) {
+      console.error('Failed to get conversation key:', error);
+      return null;
+    }
+  }
+  
+  // Encrypt a message
+  public async encryptMessage(message: string, key: CryptoKey): Promise<any> {
+    try {
+      // Generate a random IV for each encryption
       const iv = window.crypto.getRandomValues(new Uint8Array(12));
       
-      // Convert message to ArrayBuffer
-      const encoder = new TextEncoder();
-      const data = encoder.encode(message);
+      // Encode the message as UTF-8
+      const messageData = new TextEncoder().encode(message);
       
       // Encrypt the message
-      const encryptedBuffer = await window.crypto.subtle.encrypt(
+      const ciphertext = await window.crypto.subtle.encrypt(
         {
           name: 'AES-GCM',
           iv
         },
-        keyEntry.key,
-        data
+        key,
+        messageData
       );
       
-      // Combine IV and encrypted data for storage
-      const combined = new Uint8Array(iv.length + encryptedBuffer.byteLength);
-      combined.set(iv);
-      combined.set(new Uint8Array(encryptedBuffer), iv.length);
-      
-      // Convert to Base64 for transmission and storage
-      const base64Encrypted = btoa(String.fromCharCode(...combined));
-      
+      // Return the IV and ciphertext as Base64 strings
       return {
-        encryptedContent: base64Encrypted,
-        keyId: this.currentKeyId
+        iv: this.arrayBufferToBase64(iv),
+        ciphertext: this.arrayBufferToBase64(ciphertext),
+        keyVersion: 1 // Assuming version 1 for simplicity
       };
     } catch (error) {
       console.error('Failed to encrypt message:', error);
@@ -116,96 +167,29 @@ class EncryptionService {
     }
   }
   
-  /**
-   * Decrypt a message
-   */
-  async decryptMessage(encryptedContent: string, keyId: string): Promise<string> {
-    const keyEntry = this.keys.get(keyId);
-    if (!keyEntry) {
-      throw new Error(`Encryption key not found: ${keyId}`);
-    }
-    
+  // Decrypt a message
+  public async decryptMessage(encrypted: any, key: CryptoKey): Promise<string> {
     try {
-      // Convert from Base64
-      const combined = new Uint8Array(
-        atob(encryptedContent)
-          .split('')
-          .map(char => char.charCodeAt(0))
-      );
+      // Convert Base64 strings back to ArrayBuffers
+      const iv = this.base64ToArrayBuffer(encrypted.iv);
+      const ciphertext = this.base64ToArrayBuffer(encrypted.ciphertext);
       
-      // Extract IV and encrypted data
-      const iv = combined.slice(0, 12);
-      const encryptedData = combined.slice(12);
-      
-      // Decrypt the data
-      const decryptedBuffer = await window.crypto.subtle.decrypt(
+      // Decrypt the message
+      const decrypted = await window.crypto.subtle.decrypt(
         {
           name: 'AES-GCM',
           iv
         },
-        keyEntry.key,
-        encryptedData
+        key,
+        ciphertext
       );
       
-      // Convert back to string
-      const decoder = new TextDecoder();
-      return decoder.decode(decryptedBuffer);
+      // Decode the decrypted data as UTF-8
+      return new TextDecoder().decode(decrypted);
     } catch (error) {
-      console.error(`Failed to decrypt message with key ${keyId}:`, error);
-      return '[Encrypted message - unable to decrypt]';
-    }
-  }
-  
-  /**
-   * Rotate encryption keys
-   */
-  async rotateKey(conversationId: string): Promise<string> {
-    if (!this.isInitialized) {
-      throw new Error('Encryption service not initialized');
-    }
-    
-    try {
-      // Get the current key version
-      const currentKeyEntry = this.currentKeyId ? this.keys.get(this.currentKeyId) : null;
-      const newVersion = currentKeyEntry ? currentKeyEntry.version + 1 : 1;
-      
-      // Generate a new key
-      const newKeyId = await this.generateNewKey(conversationId, newVersion);
-      console.log(`Rotated encryption key to version ${newVersion}`);
-      return newKeyId;
-    } catch (error) {
-      console.error('Failed to rotate encryption key:', error);
+      console.error('Failed to decrypt message:', error);
       throw error;
     }
-  }
-  
-  /**
-   * Get the current key version
-   */
-  getCurrentKeyVersion(): number {
-    if (!this.isInitialized || !this.currentKeyId) {
-      return 0;
-    }
-    
-    const currentKeyEntry = this.keys.get(this.currentKeyId);
-    return currentKeyEntry ? currentKeyEntry.version : 0;
-  }
-  
-  /**
-   * Check if the service is initialized
-   */
-  isInitializedState(): boolean {
-    return this.isInitialized;
-  }
-  
-  /**
-   * Clear all encryption keys
-   */
-  clearKeys(): void {
-    this.keys.clear();
-    this.currentKeyId = null;
-    this.isInitialized = false;
-    console.log('Cleared all encryption keys');
   }
 }
 

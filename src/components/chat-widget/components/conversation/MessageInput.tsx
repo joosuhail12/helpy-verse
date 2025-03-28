@@ -19,7 +19,8 @@ const MessageInput: React.FC<MessageInputProps> = ({
   compact = false,
   onHeightChange,
   isRateLimited = false,
-  rateLimitTimeRemaining = 0
+  rateLimitTimeRemaining = 0,
+  showAttachments = true
 }) => {
   const { colors } = useThemeContext();
   const [message, setMessage] = useState('');
@@ -81,20 +82,20 @@ const MessageInput: React.FC<MessageInputProps> = ({
     if (!message.trim() || isRateLimited) return;
     
     // Validate and sanitize the message before sending
-    const { isValid, sanitizedContent, errors } = validateAndSanitizeMessage(message, {
+    const validationResult = validateAndSanitizeMessage(message, {
       maxLength: 2000,
       allowHtml: false,
       allowUrls: true,
       blockWords: [] // Add blocked words here if needed
     });
     
-    if (!isValid) {
-      setValidationError(errors[0].message);
+    if (!validationResult.isValid) {
+      setValidationError(validationResult.errors[0].message);
       return;
     }
     
     // If message passes validation, send it
-    onSendMessage(sanitizedContent, attachments);
+    onSendMessage(validationResult.sanitizedContent, attachments);
     setMessage('');
     setValidationError(null);
     
@@ -199,7 +200,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
           opacity: isRateLimited ? '0.7' : '1'
         }}
       >
-        {onFileUpload && (
+        {showAttachments && onFileUpload && (
           <label className={`cursor-pointer ${isRateLimited ? 'pointer-events-none' : ''}`}>
             <input
               type="file"

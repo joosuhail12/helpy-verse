@@ -1,120 +1,93 @@
 
-import { useState, useCallback, useEffect } from 'react';
-import { v4 as uuidv4 } from 'uuid';
-import { ChatMessage, Conversation } from '@/components/chat-widget/components/conversation/types';
-import { mockChatMessages } from '@/mock/chatMessages';
+import { useState, useEffect } from 'react';
+import { ChatMessage } from '@/components/chat-widget/components/conversation/types';
 
-// This is a simplified mock implementation for the chat hook
-export const useChat = (conversationId?: string) => {
+export const useChat = (conversationId: string, encrypted: boolean = false) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [typingUsers, setTypingUsers] = useState<string[]>([]);
-  const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [currentConversation, setCurrentConversation] = useState<Conversation | null>(null);
-  
-  // Load mock data on initialization
+
+  // Load messages
   useEffect(() => {
-    const delay = setTimeout(() => {
-      if (conversationId) {
-        setMessages(mockChatMessages);
-      }
-      
-      setConversations([
+    setIsLoading(true);
+    
+    // Simulate API call
+    setTimeout(() => {
+      // Mock messages
+      const mockMessages: ChatMessage[] = [
         {
-          id: 'demo-conversation',
-          title: 'Support Conversation',
-          lastMessage: 'I want to upgrade my plan',
-          lastMessageTimestamp: new Date().toISOString(),
-          unreadCount: 0
+          id: '1',
+          content: 'Hello! How can I help you today?',
+          sender: 'agent',
+          timestamp: new Date(Date.now() - 1000 * 60 * 5).toISOString(),
+          conversationId
+        },
+        {
+          id: '2',
+          content: 'I have a question about my order',
+          sender: 'user',
+          timestamp: new Date(Date.now() - 1000 * 60 * 4).toISOString(),
+          conversationId
+        },
+        {
+          id: '3',
+          content: 'Sure, I\'d be happy to help. Could you provide your order number?',
+          sender: 'agent',
+          timestamp: new Date(Date.now() - 1000 * 60 * 3).toISOString(),
+          conversationId
         }
-      ]);
+      ];
       
+      setMessages(mockMessages);
       setIsLoading(false);
     }, 500);
-    
-    return () => clearTimeout(delay);
   }, [conversationId]);
-  
-  // Update current conversation when conversationId changes
-  useEffect(() => {
-    if (conversationId && conversations.length > 0) {
-      const conversation = conversations.find(conv => conv.id === conversationId);
-      if (conversation) {
-        setCurrentConversation(conversation);
-      }
-    }
-  }, [conversationId, conversations]);
-  
+
   // Send a message
-  const sendMessage = useCallback((content: string, attachments: File[] = []) => {
-    if (!content.trim() && attachments.length === 0) return;
+  const sendMessage = async (content: string): Promise<void> => {
+    if (!content.trim()) return;
     
+    // Create new message
     const newMessage: ChatMessage = {
-      id: uuidv4(),
+      id: `msg-${Date.now()}`,
       content,
       sender: 'user',
       timestamp: new Date().toISOString(),
-      conversationId: conversationId || 'demo-conversation',
-      status: 'sent'
+      conversationId,
+      status: 'sending'
     };
     
+    // Add message to state
     setMessages(prev => [...prev, newMessage]);
     
-    // Simulate agent response after delay
+    // Simulate sending to server
     setTimeout(() => {
-      const responseMessage: ChatMessage = {
-        id: uuidv4(),
-        content: 'Thank you for your message. An agent will respond shortly.',
-        sender: 'agent',
-        timestamp: new Date().toISOString(),
-        conversationId: conversationId || 'demo-conversation',
-        status: 'delivered'
-      };
+      setMessages(prev => 
+        prev.map(msg => 
+          msg.id === newMessage.id ? { ...msg, status: 'sent' } : msg
+        )
+      );
       
-      setMessages(prev => [...prev, responseMessage]);
-    }, 1000);
-  }, [conversationId]);
-  
-  // Notify typing
-  const notifyTyping = useCallback(() => {
-    // This would normally send a typing indicator to the server
-    console.log('User is typing...');
-  }, []);
-  
-  // Create a new conversation
-  const createNewConversation = useCallback(async (title: string): Promise<string> => {
-    const newConversationId = uuidv4();
-    
-    const newConversation: Conversation = {
-      id: newConversationId,
-      title,
-      lastMessageTimestamp: new Date().toISOString(),
-      unreadCount: 0
-    };
-    
-    setConversations(prev => [...prev, newConversation]);
-    setCurrentConversation(newConversation);
-    
-    return newConversationId;
-  }, []);
-  
-  // Select a conversation
-  const selectConversation = useCallback((id: string) => {
-    const conversation = conversations.find(conv => conv.id === id);
-    if (conversation) {
-      setCurrentConversation(conversation);
-    }
-  }, [conversations]);
-  
+      // Simulate agent response
+      setTimeout(() => {
+        const responseMessage: ChatMessage = {
+          id: `msg-${Date.now()}`,
+          content: `Thank you for your message. I'm reviewing your request.`,
+          sender: 'agent',
+          timestamp: new Date().toISOString(),
+          conversationId,
+          status: 'sent'
+        };
+        
+        setMessages(prev => [...prev, responseMessage]);
+      }, 1500);
+    }, 500);
+  };
+
   return {
     messages,
     isLoading,
-    typingUsers,
-    sendMessage,
-    notifyTyping,
-    conversations,
-    currentConversation,
-    createNewConversation,
-    selectConversation
+    sendMessage
   };
 };
+
+export default useChat;

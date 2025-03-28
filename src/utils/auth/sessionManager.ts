@@ -1,236 +1,205 @@
-import { v4 as uuidv4 } from 'uuid';
-import { emitEvent } from '../events/eventManager';
-import { ChatEventType } from '../events/eventTypes';
-import { getCookie, setCookie } from '../cookies/cookieManager';
 
-interface Session {
-  sessionId: string;
-  startTime: number;
-  lastActivity: number;
-  expiresAt: number;
-  csrfToken: string;
+// Define session events enum
+export enum SessionEvents {
+  SESSION_CREATED = 'session:created',
+  SESSION_EXPIRED = 'session:expired',
+  SESSION_WARNING = 'session:warning',
+  SESSION_EXTENDED = 'session:extended',
+  SESSION_ENDED = 'session:ended'
 }
 
 class SessionManager {
-  private session: Session | null = null;
-  private readonly SESSION_KEY = 'chat_session';
-  private readonly CSRF_TOKEN_KEY = 'chat_csrf_token';
-  private monitoringIntervals: number[] = [];
-  
-  /**
-   * Initialize a new session or resume an existing one
-   */
-  initSession(sessionTimeoutMs: number = 30 * 60 * 1000): Session {
-    // Try to restore existing session
-    const savedSession = this.getStoredSession();
-    const now = Date.now();
-    
-    if (savedSession && savedSession.expiresAt > now) {
-      // Existing valid session found
-      this.session = savedSession;
-      this.session.lastActivity = now;
-      this.updateSessionStorage();
-      
-      console.log('Resumed existing session:', this.session.sessionId);
-    } else {
-      // Create new session
-      const sessionId = uuidv4();
-      const csrfToken = this.generateCsrfToken();
-      
-      this.session = {
-        sessionId,
-        startTime: now,
-        lastActivity: now,
-        expiresAt: now + sessionTimeoutMs,
-        csrfToken
-      };
-      
-      this.updateSessionStorage();
-      
-      // Emit session start event
-      emitEvent({
-        type: ChatEventType.SESSION_STARTED,
-        timestamp: new Date().toISOString(),
-        source: 'session-manager',
-        sessionId,
-        expiresAt: new Date(now + sessionTimeoutMs).toISOString()
-      });
-      
-      console.log('Started new session:', sessionId);
+  private sessionKey = 'app_session';
+  private sessionTimeout = 30 * 60 * 1000; // 30 minutes by default
+  private warningThreshold = 5 * 60 * 1000; // 5 minutes before expiry
+  private listeners: { [event: string]: Function[] } = {};
+  private monitorIntervals: { [id: number]: NodeJS.Timeout } = {};
+  private nextIntervalId = 1;
+
+  // Initialize a session with optional timeout
+  public initSession(timeout?: number): void {
+    if (timeout) {
+      this.sessionTimeout = timeout;
+      this.warningThreshold = Math.min(5 * 60 * 1000, timeout * 0.2);
     }
     
-    return this.session;
-  }
-  
-  /**
-   * Get current session
-   */
-  getSession(): Session | null {
-    if (!this.session) {
-      // Try to restore from storage
-      const savedSession = this.getStoredSession();
-      if (savedSession && savedSession.expiresAt > Date.now()) {
-        this.session = savedSession;
-      }
+    if (!this.getSession()) {
+      this.createSession();
     }
+  }
+
+  // Create a new session
+  public createSession(duration?: number): void {
+    const session = {
+      id: this.generateSessionId(),
+      startTime: Date.now(),
+      expiryTime: Date.now() + (duration || this.sessionTimeout),
+      lastActivity: Date.now(),
+      csrfToken: this.generateCsrfToken()
+    };
     
-    return this.session;
+    this.saveSession(session);
+    this.notifyListeners(SessionEvents.SESSION_CREATED, session);
   }
-  
-  /**
-   * Update activity timestamp
-   */
-  updateActivity(): void {
-    if (this.session) {
-      this.session.lastActivity = Date.now();
-      this.updateSessionStorage();
-    }
-  }
-  
-  /**
-   * Extend session timeout
-   */
-  extendSession(sessionTimeoutMs: number = 30 * 60 * 1000): void {
-    if (this.session) {
-      const now = Date.now();
-      this.session.lastActivity = now;
-      this.session.expiresAt = now + sessionTimeoutMs;
-      this.updateSessionStorage();
-      
-      console.log('Extended session:', this.session.sessionId);
-    }
-  }
-  
-  /**
-   * End current session
-   */
-  endSession(): void {
-    if (this.session) {
-      const sessionId = this.session.sessionId;
-      
-      // Emit session end event
-      emitEvent({
-        type: ChatEventType.SESSION_ENDED,
-        timestamp: new Date().toISOString(),
-        source: 'session-manager',
-        sessionId,
-        duration: Date.now() - this.session.startTime
-      });
-      
-      this.session = null;
-      localStorage.removeItem(this.SESSION_KEY);
-      
-      // Clear any monitoring intervals
-      this.stopAllSessionMonitoring();
-      
-      console.log('Ended session:', sessionId);
-    }
-  }
-  
-  /**
-   * Start monitoring session expiry
-   */
-  startSessionMonitoring(checkIntervalMs: number = 60000): number {
-    const intervalId = window.setInterval(() => {
-      const session = this.getSession();
-      
-      if (!session) {
-        return;
-      }
-      
-      const now = Date.now();
-      const timeUntilExpiry = session.expiresAt - now;
-      
-      if (timeUntilExpiry <= 0) {
-        console.log('Session expired, ending session');
-        this.endSession();
-      } else if (timeUntilExpiry < 5 * 60 * 1000) {
-        // Emit warning when less than 5 minutes remaining
-        console.log(`Session expiring in ${Math.round(timeUntilExpiry / 1000)} seconds`);
-        
-        // Emit a custom event that UI can listen for
-        const event = new CustomEvent('session:expiring', {
-          detail: {
-            timeRemaining: timeUntilExpiry,
-            sessionId: session.sessionId
-          }
-        });
-        window.dispatchEvent(event);
-      }
-    }, checkIntervalMs);
+
+  // Get current session
+  public getSession(): any {
+    const sessionStr = localStorage.getItem(this.sessionKey);
+    if (!sessionStr) return null;
     
-    this.monitoringIntervals.push(intervalId);
-    return intervalId;
-  }
-  
-  /**
-   * Stop a specific monitoring interval
-   */
-  stopSessionMonitoring(intervalId: number): void {
-    clearInterval(intervalId);
-    this.monitoringIntervals = this.monitoringIntervals.filter(id => id !== intervalId);
-  }
-  
-  /**
-   * Stop all monitoring intervals
-   */
-  private stopAllSessionMonitoring(): void {
-    this.monitoringIntervals.forEach(id => clearInterval(id));
-    this.monitoringIntervals = [];
-  }
-  
-  /**
-   * Get the CSRF token for the current session
-   */
-  getCsrfToken(): string | null {
-    if (this.session) {
-      return this.session.csrfToken;
-    }
-    
-    // Try to get from cookies as fallback
-    return getCookie(this.CSRF_TOKEN_KEY);
-  }
-  
-  /**
-   * Validate a CSRF token against the current session
-   */
-  validateCsrfToken(token: string): boolean {
-    const currentToken = this.getCsrfToken();
-    return !!currentToken && currentToken === token;
-  }
-  
-  /**
-   * Generate a new CSRF token
-   */
-  private generateCsrfToken(): string {
-    const token = uuidv4();
-    setCookie(this.CSRF_TOKEN_KEY, token, 1); // Short expiry for CSRF tokens
-    return token;
-  }
-  
-  /**
-   * Get session from storage
-   */
-  private getStoredSession(): Session | null {
     try {
-      const sessionJson = localStorage.getItem(this.SESSION_KEY);
-      return sessionJson ? JSON.parse(sessionJson) : null;
-    } catch (error) {
-      console.error('Error retrieving session from storage:', error);
+      return JSON.parse(sessionStr);
+    } catch (e) {
       return null;
     }
   }
-  
-  /**
-   * Update session in storage
-   */
-  private updateSessionStorage(): void {
-    if (this.session) {
+
+  // Save session to storage
+  private saveSession(session: any): void {
+    localStorage.setItem(this.sessionKey, JSON.stringify(session));
+  }
+
+  // Generate a random session ID
+  private generateSessionId(): string {
+    return Math.random().toString(36).substring(2, 15) + 
+           Math.random().toString(36).substring(2, 15);
+  }
+
+  // Generate a random CSRF token
+  private generateCsrfToken(): string {
+    return Math.random().toString(36).substring(2, 15) + 
+           Math.random().toString(36).substring(2, 15);
+  }
+
+  // Check if the session is active
+  public isSessionActive(): boolean {
+    const session = this.getSession();
+    if (!session) return false;
+    
+    return Date.now() < session.expiryTime;
+  }
+
+  // Get remaining time in session
+  public getSessionTimeRemaining(): number {
+    const session = this.getSession();
+    if (!session) return 0;
+    
+    const remainingTime = session.expiryTime - Date.now();
+    return Math.max(0, remainingTime);
+  }
+
+  // Check if session warning should be shown
+  public isSessionWarningNeeded(): boolean {
+    if (!this.isSessionActive()) return false;
+    
+    const remainingTime = this.getSessionTimeRemaining();
+    return remainingTime > 0 && remainingTime <= this.warningThreshold;
+  }
+
+  // Update the last activity timestamp
+  public updateActivity(): void {
+    const session = this.getSession();
+    if (!session) return;
+    
+    session.lastActivity = Date.now();
+    this.saveSession(session);
+  }
+
+  // Extend the current session
+  public extendSession(duration?: number): void {
+    const session = this.getSession();
+    if (!session) {
+      this.createSession(duration);
+      return;
+    }
+    
+    session.expiryTime = Date.now() + (duration || this.sessionTimeout);
+    session.lastActivity = Date.now();
+    this.saveSession(session);
+    
+    this.notifyListeners(SessionEvents.SESSION_EXTENDED, session);
+  }
+
+  // End the current session
+  public endSession(): void {
+    const session = this.getSession();
+    localStorage.removeItem(this.sessionKey);
+    
+    if (session) {
+      this.notifyListeners(SessionEvents.SESSION_ENDED, session);
+    }
+  }
+
+  // Get CSRF token for the current session
+  public getCsrfToken(): string {
+    const session = this.getSession();
+    return session ? session.csrfToken : '';
+  }
+
+  // Add event listener
+  public addEventListener(event: SessionEvents, callback: Function): () => void {
+    if (!this.listeners[event]) {
+      this.listeners[event] = [];
+    }
+    
+    this.listeners[event].push(callback);
+    
+    // Return unsubscribe function
+    return () => {
+      this.listeners[event] = this.listeners[event].filter(cb => cb !== callback);
+    };
+  }
+
+  // Notify listeners of an event
+  private notifyListeners(event: SessionEvents, data: any): void {
+    if (!this.listeners[event]) return;
+    
+    for (const callback of this.listeners[event]) {
       try {
-        localStorage.setItem(this.SESSION_KEY, JSON.stringify(this.session));
-      } catch (error) {
-        console.error('Error saving session to storage:', error);
+        callback(data);
+      } catch (e) {
+        console.error(`Error in session event listener for ${event}:`, e);
       }
+    }
+  }
+
+  // Start session monitoring
+  public startSessionMonitoring(checkInterval = 60000): number {
+    const intervalId = this.nextIntervalId++;
+    
+    this.monitorIntervals[intervalId] = setInterval(() => {
+      const session = this.getSession();
+      if (!session) return;
+      
+      const currentTime = Date.now();
+      const timeRemaining = session.expiryTime - currentTime;
+      
+      // Session expired
+      if (timeRemaining <= 0) {
+        this.notifyListeners(SessionEvents.SESSION_EXPIRED, { 
+          sessionId: session.id, 
+          expiredAt: new Date(session.expiryTime) 
+        });
+        this.endSession();
+      }
+      // Session warning needed
+      else if (timeRemaining <= this.warningThreshold) {
+        this.notifyListeners(SessionEvents.SESSION_WARNING, {
+          sessionId: session.id,
+          expiresIn: timeRemaining,
+          expiryTime: new Date(session.expiryTime)
+        });
+      }
+    }, checkInterval);
+    
+    return intervalId;
+  }
+
+  // Stop session monitoring
+  public stopSessionMonitoring(intervalId: number): void {
+    if (this.monitorIntervals[intervalId]) {
+      clearInterval(this.monitorIntervals[intervalId]);
+      delete this.monitorIntervals[intervalId];
     }
   }
 }

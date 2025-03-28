@@ -4,7 +4,7 @@ import { useChat } from '@/hooks/chat/useChat';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import MessageSearch from './MessageSearch';
-import { ChatMessage } from './types';
+import { ChatMessage, TypingUser } from './types';
 import { useRateLimiter } from '@/utils/chat/rateLimiter';
 
 interface EnhancedConversationViewProps {
@@ -26,11 +26,11 @@ const EnhancedConversationView: React.FC<EnhancedConversationViewProps> = ({
   encrypted = false,
   virtualized = true,
 }) => {
-  const { messages, sendMessage, isLoading } = useChat(conversationId, encrypted);
+  const { messages, sendMessage, isLoading } = useChat(conversationId);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<number[]>([]);
   const [currentResult, setCurrentResult] = useState(0);
-  const [typingUsers, setTypingUsers] = useState<string[]>([]);
+  const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
   const messageListRef = useRef<HTMLDivElement>(null);
   
   // Rate limiter for message sending
@@ -75,7 +75,7 @@ const EnhancedConversationView: React.FC<EnhancedConversationViewProps> = ({
     rateLimiter.checkAction();
 
     // Send the message
-    await sendMessage(content, encrypted);
+    await sendMessage(content);
   };
 
   // Navigate between search results
