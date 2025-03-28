@@ -15,28 +15,11 @@ export const baseApi = createApi({
         headers.set('Authorization', `Bearer ${token}`);
       }
       
-      // Get workspace_id from localStorage
-      const workspaceId = localStorage.getItem('workspaceId');
-      
       // Set default headers
       headers.set('Content-Type', 'application/json');
       
       return headers;
     },
-    paramsSerializer: (params) => {
-      const workspaceId = localStorage.getItem('workspaceId');
-      const newParams = { ...params };
-      
-      // Add workspace_id to all requests if not already present
-      if (workspaceId && !newParams.workspace_id) {
-        newParams.workspace_id = workspaceId;
-      }
-      
-      // Convert params object to query string
-      return Object.keys(newParams)
-        .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(newParams[key])}`)
-        .join('&');
-    }
   }),
   tagTypes: [
     'Contacts', 

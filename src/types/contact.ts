@@ -21,14 +21,13 @@ export interface Contact {
   createdAt: string;
   updatedAt: string;
   
-  // Additional properties that were causing errors
   notes?: string;
   title?: string;
   department?: string;
   timezone?: string;
   source?: string;
   language?: string;
-  preferredLanguage?: string; // Added this property
+  preferredLanguage?: string;
   street?: string;
   city?: string;
   state?: string;
@@ -49,4 +48,7 @@ export interface Contact {
     zip?: string;
     country?: string;
   };
+  
+  // Adding an index signature to allow for dynamic custom fields
+  [key: string]: any;
 }

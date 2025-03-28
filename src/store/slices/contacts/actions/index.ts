@@ -4,7 +4,7 @@ export * from './contactsCore';
 export * from './contactsFetch';
 export * from './contactsManage';
 
-// Also export the new RTK Query hooks for backward compatibility
+// Export the RTK Query hooks for backward compatibility
 export { 
   useGetContactsQuery,
   useGetContactByIdQuery,

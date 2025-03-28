@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 
-type QueryResult<T> = {
+export type QueryResult<T> = {
   data?: T;
   isLoading: boolean;
   isFetching: boolean;
@@ -10,7 +10,7 @@ type QueryResult<T> = {
   refetch?: () => void;
 };
 
-type LoadingState<T> = {
+export type LoadingState<T> = {
   isInitialLoading: boolean;
   isRefreshing: boolean;
   isAnyLoading: boolean;

@@ -3,11 +3,21 @@ import { baseApi } from '../baseApi';
 import type { Contact, ContactFilters } from '@/types/contact';
 import { mockContacts } from '@/store/slices/contacts/mockData';
 
+type ContactsResponse = {
+  data: Contact[];
+  total: number;
+};
+
+type ContactsQueryParams = Partial<ContactFilters> & { 
+  page?: number; 
+  limit?: number;
+};
+
 // Define the contacts API
 export const contactsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // Get all contacts with filtering
-    getContacts: builder.query<{ data: Contact[], total: number }, Partial<ContactFilters> & { page?: number; limit?: number }>({
+    getContacts: builder.query<ContactsResponse, ContactsQueryParams>({
       query: (filters) => ({
         url: '/contacts',
         params: filters
