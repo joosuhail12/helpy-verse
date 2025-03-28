@@ -3,14 +3,19 @@ import React from 'react';
 import { TextInput } from './TextInput';
 import { NumberInput } from './NumberInput';
 import { DateInput } from './DateInput';
-import { SelectInput } from './SelectInput';
-import { MultiSelectInput } from './MultiSelectInput';
-import { BooleanInput } from './BooleanInput';
-import { QueryField, Operator } from '@/types/queryBuilder';
+
+// Simple field type definition that avoids circular references
+interface QueryField {
+  id: string;
+  label: string;
+  type: string;
+  name: string;
+  options?: Array<string | { value: string; label: string }>;
+}
 
 interface ValueInputProps {
   field: QueryField;
-  operator: Operator;
+  operator: string;
   value: any;
   onChange: (value: any) => void;
   errorMessage?: string | null;
@@ -23,7 +28,8 @@ export const ValueInput: React.FC<ValueInputProps> = ({
   onChange,
   errorMessage
 }) => {
-  const noValueOperators: Operator[] = [
+  // List of operators that don't require a value input
+  const noValueOperators = [
     'isEmpty', 'isNotEmpty', 'is_empty', 'is_not_empty'
   ];
   
@@ -53,43 +59,14 @@ export const ValueInput: React.FC<ValueInputProps> = ({
     case 'date':
       return (
         <DateInput
-          value={value}
+          value={value || ''}
           onChange={onChange}
-          operator={operator}
-          errorMessage={errorMessage}
-        />
-      );
-    
-    case 'boolean':
-      return (
-        <BooleanInput
-          value={value}
-          onChange={onChange}
-          errorMessage={errorMessage}
-        />
-      );
-    
-    case 'select':
-      return (
-        <SelectInput
-          value={value}
-          onChange={onChange}
-          options={field.options?.map(opt => typeof opt === 'string' ? opt : opt.value) || []}
-          errorMessage={errorMessage}
-        />
-      );
-    
-    case 'multiselect':
-      return (
-        <MultiSelectInput
-          value={value || []}
-          onChange={onChange}
-          options={field.options?.map(opt => typeof opt === 'string' ? opt : opt.value) || []}
           errorMessage={errorMessage}
         />
       );
     
     default:
+      // Fallback to text input for any unhandled types
       return (
         <TextInput
           value={value || ''}

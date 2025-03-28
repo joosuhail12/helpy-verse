@@ -1,4 +1,5 @@
 
+import React from 'react';
 import { Input } from '@/components/ui/input';
 
 interface TextInputProps {
@@ -11,7 +12,7 @@ export const TextInput = ({ value, onChange, errorMessage }: TextInputProps) => 
   return (
     <Input
       type="text"
-      value={value}
+      value={value || ''}
       onChange={(e) => onChange(e.target.value)}
       className={`w-full ${errorMessage ? 'border-red-500' : ''}`}
     />

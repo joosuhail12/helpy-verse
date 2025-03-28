@@ -1,35 +1,26 @@
 
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from '@/components/ui/select';
+import React from 'react';
 
 interface BooleanInputProps {
-  value: boolean | string;
+  value: boolean;
   onChange: (value: boolean) => void;
   errorMessage?: string | null;
 }
 
-export const BooleanInput = ({ value, onChange, errorMessage }: BooleanInputProps) => {
-  const boolValue = typeof value === 'string' 
-    ? value === 'true' 
-    : Boolean(value);
-
+export const BooleanInput: React.FC<BooleanInputProps> = ({
+  value,
+  onChange,
+  errorMessage
+}) => {
   return (
-    <Select 
-      value={boolValue.toString()} 
-      onValueChange={(val) => onChange(val === 'true')}
-    >
-      <SelectTrigger className={`w-full ${errorMessage ? 'border-red-500' : ''}`}>
-        <SelectValue placeholder="Select value" />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value="true">True</SelectItem>
-        <SelectItem value="false">False</SelectItem>
-      </SelectContent>
-    </Select>
+    <div className={`flex items-center space-x-2 ${errorMessage ? 'text-red-500' : ''}`}>
+      <input
+        type="checkbox"
+        checked={!!value}
+        onChange={(e) => onChange(e.target.checked)}
+        className="h-4 w-4 rounded border-gray-300"
+      />
+      <label className="text-sm">{value ? 'True' : 'False'}</label>
+    </div>
   );
 };
