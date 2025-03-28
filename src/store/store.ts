@@ -45,7 +45,7 @@ export const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: false,
-    }).concat(baseApi.middleware), // Add the API middleware
+    }).concat(baseApi.middleware),
   devTools: process.env.NODE_ENV !== 'production',
 });
 
@@ -54,5 +54,3 @@ setupListeners(store.dispatch);
 
 export type AppDispatch = typeof store.dispatch;
 export type RootState = ReturnType<typeof store.getState>;
-
-export default store;
