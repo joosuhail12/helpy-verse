@@ -70,5 +70,9 @@ export enum ComparisonOperator {
   AFTER = 'after',
   BEFORE = 'before',
   IS = 'is',
-  IS_NOT = 'is_not'
+  IS_NOT = 'is_not',
+  // Additional operators for date fields
+  CUSTOM_RANGE = 'custom_range',
+  LAST_N_DAYS = 'last_n_days',
+  NEXT_N_DAYS = 'next_n_days'
 }

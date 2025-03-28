@@ -1,7 +1,7 @@
 
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import type { Tag, SortField, FilterEntity } from '@/types/tag';
-import { tagService } from '@/api/services/tagService';
+import { tagService } from '@/api/tagsApi';
 import { RootState } from '@/store/store';
 
 export interface TagsState {

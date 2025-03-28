@@ -3,6 +3,7 @@ import React from 'react';
 import { QueryGroup } from '@/types/queryBuilder';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { evaluateRules } from '../utils/ruleValidator';
 
 interface SampleMatchesPreviewProps {
   queryGroup: QueryGroup;
