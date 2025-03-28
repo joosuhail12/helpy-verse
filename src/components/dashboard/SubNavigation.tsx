@@ -24,7 +24,15 @@ const SubNavigation = ({
   toggleExpanded, 
   navigate 
 }: SubNavigationProps) => {
-  const location = useLocation();
+  // Try to use location, but have a fallback
+  let currentPath = '';
+  try {
+    const location = useLocation();
+    currentPath = location.pathname;
+  } catch (error) {
+    currentPath = window.location.pathname;
+  }
+  
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
@@ -45,7 +53,7 @@ const SubNavigation = ({
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [toggleSecondPanel]);
 
-  const isItemActive = (path: string) => location.pathname === path;
+  const isItemActive = (path: string) => currentPath === path;
   
   const hasActiveChild = (children: any[]) => {
     return children.some(child => 

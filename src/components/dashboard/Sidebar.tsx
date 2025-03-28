@@ -2,7 +2,7 @@
 import { ChevronLeft, ChevronRight, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, NavigateFunction } from 'react-router-dom';
 import MainNavigation from './MainNavigation';
 import SubNavigation from './SubNavigation';
 import { mainNavItems, subNavItems } from './navigationConfig';
@@ -10,14 +10,37 @@ import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { logout } from '@/store/slices/authSlice';
 import { toast } from '@/components/ui/use-toast';
 
-const Sidebar = () => {
-  // These hooks will work properly when Sidebar is rendered within a Router context
-  const navigate = useNavigate();
-  const location = useLocation();
+interface SidebarProps {
+  // Optional props for when Sidebar is used in a context without Router
+  navigateOverride?: (path: string) => void;
+}
+
+const Sidebar = ({ navigateOverride }: SidebarProps = {}) => {
+  // Create safe versions of the router hooks that won't crash when not in router context
+  let navigate: NavigateFunction | ((path: string) => void);
+  let location: { pathname: string };
+  let currentPath = '';
+  
+  try {
+    // Try to use the real router hooks
+    navigate = navigateOverride || useNavigate();
+    location = useLocation();
+    currentPath = location.pathname;
+  } catch (error) {
+    // Fallback if router context is not available
+    console.warn('Router context not available, using fallback navigation');
+    navigate = navigateOverride || ((path: string) => {
+      console.warn('Navigation attempted outside router context:', path);
+      window.location.href = path; // Fallback to window location change
+    });
+    location = { pathname: window.location.pathname };
+    currentPath = window.location.pathname;
+  }
+  
   const dispatch = useAppDispatch();
   
   // Get the current route segment to determine active nav
-  const currentRoute = location.pathname.split('/');
+  const currentRoute = currentPath.split('/');
   const initialMainNav = currentRoute[1] === 'inbox' ? 'inbox' : 
                         (currentRoute[1] === 'home' && currentRoute[2] ? currentRoute[2] : 'home');
   
@@ -27,7 +50,7 @@ const Sidebar = () => {
 
   // Update activeMainNav when route changes
   useEffect(() => {
-    const currentRoute = location.pathname.split('/');
+    const currentRoute = currentPath.split('/');
     if (currentRoute[1] === 'inbox') {
       setActiveMainNav('inbox');
     } else if (currentRoute[1] === 'home' && currentRoute[2]) {
@@ -35,7 +58,7 @@ const Sidebar = () => {
     } else if (currentRoute[1] === 'home') {
       setActiveMainNav('home');
     }
-  }, [location]);
+  }, [currentPath]);
 
   const handleLogout = () => {
     // Dispatch the logout action which will handle token clearing and redirection

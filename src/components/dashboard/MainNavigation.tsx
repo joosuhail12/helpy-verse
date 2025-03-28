@@ -13,11 +13,18 @@ import {
 interface MainNavigationProps {
   activeMainNav: string;
   setActiveMainNav: (id: string) => void;
-  navigate: NavigateFunction;
+  navigate: NavigateFunction | ((path: string) => void);
 }
 
 const MainNavigation = ({ activeMainNav, setActiveMainNav, navigate }: MainNavigationProps) => {
-  const location = useLocation();
+  // Try to use location, but have a fallback
+  let currentPath = '';
+  try {
+    const location = useLocation();
+    currentPath = location.pathname;
+  } catch (error) {
+    currentPath = window.location.pathname;
+  }
 
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
@@ -42,7 +49,7 @@ const MainNavigation = ({ activeMainNav, setActiveMainNav, navigate }: MainNavig
   return (
     <div className="flex flex-col items-center justify-center gap-3">
       {mainNavItems.map((item, index) => {
-        const isActive = activeMainNav === item.id || location.pathname.startsWith(`/home/${item.id}`);
+        const isActive = activeMainNav === item.id || currentPath.startsWith(`/home/${item.id}`);
         
         return (
           <TooltipProvider key={item.id}>
