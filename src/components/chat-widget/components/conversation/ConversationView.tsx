@@ -10,7 +10,6 @@ import { ChatMessage } from './types';
 import { v4 as uuidv4 } from 'uuid';
 import TypingIndicator from './TypingIndicator';
 import { useTypingIndicator } from '@/hooks/chat/useTypingIndicator';
-import { useConversationPersistence } from '@/hooks/chat/useConversationPersistence';
 
 interface ConversationViewProps {
   conversationId: string;
@@ -24,34 +23,18 @@ const ConversationView: React.FC<ConversationViewProps> = ({ conversationId, wor
   const { publishMessage, isSubscribed } = useMessageSubscription(conversationId, workspaceId, {
     onMessage: (message) => {
       setMessages(prev => [...prev, message]);
-      
-      // Mark agent messages as read when received
-      if (message.sender === 'agent') {
-        setTimeout(() => {
-          updateMessageStatus(message.id, 'read');
-        }, 1000);
-      }
     },
   });
   const { queueMessage, getQueuedMessages, clearQueuedMessages } = useOfflineMessaging(conversationId);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { typingUsers, sendTypingIndicator } = useTypingIndicator(conversationId);
 
-  // Use the persistence hook to load/save messages
-  useConversationPersistence(conversationId, messages, {
-    onLoad: (savedMessages) => {
-      if (messages.length === 0) {
-        setMessages(savedMessages);
-      }
+  useEffect(() => {
+    // Scroll to bottom whenever messages change
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  });
-
-  // Function to update message status
-  const updateMessageStatus = (messageId: string, status: ChatMessage['status']) => {
-    setMessages(prev => prev.map(msg => 
-      msg.id === messageId ? { ...msg, status } : msg
-    ));
-  };
+  }, [messages, typingUsers]);
 
   useEffect(() => {
     // Check for and send queued messages when connection is restored
@@ -71,55 +54,33 @@ const ConversationView: React.FC<ConversationViewProps> = ({ conversationId, wor
   }, [isSubscribed, getQueuedMessages, publishMessage, clearQueuedMessages]);
 
   const handleSendMessage = async (content: string) => {
-    const messageId = uuidv4();
     const newMessage: ChatMessage = {
-      id: messageId,
+      id: uuidv4(),
       sender: 'user',
       content,
       timestamp: new Date(),
       conversationId,
-      status: 'sending'
     };
 
     setMessages(prev => [...prev, newMessage]);
 
     if (isSubscribed) {
-      try {
-        await publishMessage(newMessage);
-        
-        // Update status to sent
-        updateMessageStatus(messageId, 'sent');
-        
-        // Simulate server delivery after a slight delay
-        setTimeout(() => {
-          updateMessageStatus(messageId, 'delivered');
-        }, 500);
+      await publishMessage(newMessage);
 
-        // Simulate agent response for demonstration
-        setTimeout(() => {
-          const agentResponse: ChatMessage = {
-            id: uuidv4(),
-            sender: 'agent',
-            content: `Thanks for your message: "${content}". How can I help further?`,
-            timestamp: new Date(),
-            conversationId,
-            readBy: ['agent-1']
-          };
-          
-          publishMessage(agentResponse);
-          
-          // Simulate agent reading the message after response
-          setTimeout(() => {
-            updateMessageStatus(messageId, 'read');
-          }, 1000);
-        }, 1500);
-      } catch (error) {
-        console.error('Failed to send message', error);
-        updateMessageStatus(messageId, 'failed');
-      }
+      // Simulate agent response for demonstration
+      setTimeout(() => {
+        const agentResponse: ChatMessage = {
+          id: uuidv4(),
+          sender: 'agent',
+          content: `Thanks for your message: "${content}". How can I help further?`,
+          timestamp: new Date(),
+          conversationId,
+          readBy: ['agent-1']
+        };
+        setMessages(prev => [...prev, agentResponse]);
+      }, 1000);
     } else {
       await queueMessage(newMessage);
-      updateMessageStatus(messageId, 'sent');
     }
   };
 
@@ -134,17 +95,17 @@ const ConversationView: React.FC<ConversationViewProps> = ({ conversationId, wor
         onBackClick={onBack} 
       />
       
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-y-auto p-4">
         <MessageList 
           messages={messages} 
           showAvatars={true}
         />
         
         {typingUsers.length > 0 && (
-          <div className="px-4">
-            <TypingIndicator users={typingUsers} />
-          </div>
+          <TypingIndicator users={typingUsers} />
         )}
+        
+        <div ref={messagesEndRef} />
       </div>
       
       <MessageInput 
