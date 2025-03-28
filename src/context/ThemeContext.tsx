@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState } from 'react';
 
 export interface ThemeConfig {
@@ -21,7 +22,7 @@ export interface ThemeConfig {
     outgoingMessageForeground: string;
     incomingMessage: string;
     incomingMessageForeground: string;
-    primaryDark?: string;
+    primaryDark: string; // Changed from optional to required
   };
   position?: 'left' | 'right';
   compact?: boolean;
@@ -32,7 +33,7 @@ export interface ThemeConfig {
     recentMessagesTitle: string;
     noMessagesText: string;
     messagePlaceholder: string;
-    chatTitle?: string;
+    chatTitle: string; // Changed from optional to required
   };
 }
 
