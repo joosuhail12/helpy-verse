@@ -1,3 +1,4 @@
+
 import type { Tag, SortField, FilterEntity } from '@/types/tag';
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -95,118 +96,6 @@ export const mockTags: Tag[] = [
   }
 ];
 
-export type TagParams = {
-  searchQuery?: string;
-  filterEntity?: FilterEntity;
-  sortField?: SortField;
-  sortDirection?: 'asc' | 'desc';
-  page?: number;
-  limit?: number;
-};
-
-export type TagsResponse = {
-  data: Tag[];
-  total: number;
-};
-
-// Export tagService object with the required methods
-export const tagService = {
-  async fetchTags(params: TagParams = {}): Promise<TagsResponse> {
-    // Simulate API delay
-    await delay(500);
-    
-    const { 
-      searchQuery = '', 
-      filterEntity = 'all', 
-      sortField = 'name', 
-      sortDirection = 'asc',
-      page = 1,
-      limit = 10
-    } = params;
-
-    let filteredTags = mockTags.filter(tag =>
-      tag.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-
-    if (filterEntity !== 'all') {
-      filteredTags = filteredTags.filter(tag => tag.counts[filterEntity] > 0);
-    }
-
-    filteredTags.sort((a, b) => {
-      let valueA: any = sortField === 'name' ? a.name : 
-                        sortField === 'lastUsed' ? new Date(a.lastUsed).getTime() :
-                        sortField === 'createdAt' ? new Date(a.createdAt).getTime() :
-                        a.counts[sortField];
-      let valueB: any = sortField === 'name' ? b.name :
-                        sortField === 'lastUsed' ? new Date(b.lastUsed).getTime() :
-                        sortField === 'createdAt' ? new Date(b.createdAt).getTime() :
-                        b.counts[sortField];
-      
-      if (sortDirection === 'desc') {
-        [valueA, valueB] = [valueB, valueA];
-      }
-      
-      return valueA < valueB ? -1 : valueA > valueB ? 1 : 0;
-    });
-
-    const start = (page - 1) * limit;
-    const end = start + limit;
-    const paginatedTags = filteredTags.slice(start, end);
-
-    return {
-      data: paginatedTags,
-      total: filteredTags.length
-    };
-  },
-
-  async createTag(tag: Partial<Tag>): Promise<Tag> {
-    // Simulate API delay
-    await delay(500);
-    
-    const newTag: Tag = {
-      id: `new-${Date.now()}`,
-      name: tag.name || 'New Tag',
-      color: tag.color || '#000000',
-      createdAt: new Date().toISOString(),
-      lastUsed: new Date().toISOString(),
-      trend: 'stable',
-      counts: { tickets: 0, contacts: 0, companies: 0 },
-      history: [],
-      preview: [],
-      data: {}
-    };
-    
-    return newTag;
-  },
-
-  async updateTag(id: string, tag: Partial<Tag>): Promise<Tag> {
-    // Simulate API delay
-    await delay(500);
-    
-    const existingTag = mockTags.find(t => t.id === id);
-    
-    if (!existingTag) {
-      throw new Error('Tag not found');
-    }
-    
-    const updatedTag: Tag = {
-      ...existingTag,
-      ...tag,
-      // Don't add updatedAt as it's not in the Tag interface
-      data: existingTag.data
-    };
-    
-    return updatedTag;
-  },
-
-  async deleteTags(ids: string[]): Promise<void> {
-    // Simulate API delay
-    await delay(500);
-    return;
-  }
-};
-
-// Keep the original export for backward compatibility 
 export const fetchTags = async (
   searchQuery: string,
   filterEntity: FilterEntity,
@@ -215,18 +104,40 @@ export const fetchTags = async (
   page: number = 1,
   limit: number = 10
 ): Promise<{ tags: Tag[], total: number }> => {
-  // Use the newly defined service
-  const response = await tagService.fetchTags({
-    searchQuery,
-    filterEntity,
-    sortField,
-    sortDirection,
-    page,
-    limit
+  // Simulate API delay
+  await delay(500);
+
+  let filteredTags = mockTags.filter(tag =>
+    tag.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  if (filterEntity !== 'all') {
+    filteredTags = filteredTags.filter(tag => tag.counts[filterEntity] > 0);
+  }
+
+  filteredTags.sort((a, b) => {
+    let valueA: any = sortField === 'name' ? a.name : 
+                      sortField === 'lastUsed' ? new Date(a.lastUsed).getTime() :
+                      sortField === 'createdAt' ? new Date(a.createdAt).getTime() :
+                      a.counts[sortField];
+    let valueB: any = sortField === 'name' ? b.name :
+                      sortField === 'lastUsed' ? new Date(b.lastUsed).getTime() :
+                      sortField === 'createdAt' ? new Date(b.createdAt).getTime() :
+                      b.counts[sortField];
+    
+    if (sortDirection === 'desc') {
+      [valueA, valueB] = [valueB, valueA];
+    }
+    
+    return valueA < valueB ? -1 : valueA > valueB ? 1 : 0;
   });
-  
+
+  const start = (page - 1) * limit;
+  const end = start + limit;
+  const paginatedTags = filteredTags.slice(start, end);
+
   return {
-    tags: response.data,
-    total: response.total
+    tags: paginatedTags,
+    total: filteredTags.length
   };
 };

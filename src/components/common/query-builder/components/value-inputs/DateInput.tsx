@@ -1,29 +1,25 @@
 
-import React from 'react';
-import { Input } from '@/components/ui/input';
+import type { ComparisonOperator } from '@/types/queryBuilder';
+import { CustomRangeInput } from './date/CustomRangeInput';
+import { RelativeDateInput } from './date/RelativeDateInput';
+import { RollingPeriodInput } from './date/RollingPeriodInput';
 
 interface DateInputProps {
   value: string;
   onChange: (value: string) => void;
-  errorMessage?: string | null;
+  operator: ComparisonOperator;
 }
 
-export const DateInput: React.FC<DateInputProps> = ({ 
-  value, 
-  onChange, 
-  errorMessage 
-}) => {
-  return (
-    <div>
-      <Input
-        type="date"
-        value={value || ''}
-        onChange={(e) => onChange(e.target.value)}
-        className={errorMessage ? 'border-red-500' : ''}
-      />
-      {errorMessage && (
-        <p className="text-sm text-red-500 mt-1">{errorMessage}</p>
-      )}
-    </div>
-  );
+export const DateInput = ({ value, onChange, operator }: DateInputProps) => {
+  if (operator === 'custom_range') {
+    return <CustomRangeInput value={value} onChange={onChange} />;
+  }
+
+  if (operator.includes('rolling') || 
+      operator === 'last_n_days' || 
+      operator === 'next_n_days') {
+    return <RollingPeriodInput value={value} onChange={onChange} operator={operator} />;
+  }
+
+  return <RelativeDateInput value={value} onChange={onChange} />;
 };

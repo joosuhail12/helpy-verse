@@ -15,7 +15,7 @@ export const CompanyContactInfo = ({ company }: CompanyContactInfoProps) => {
           <p className="text-sm font-medium text-muted-foreground">Email</p>
           <InlineEditField
             value={company.email || ''}
-            company={company.id}
+            companyId={company.id}
             field="email"
             label="Email"
             type="email"
@@ -25,7 +25,7 @@ export const CompanyContactInfo = ({ company }: CompanyContactInfoProps) => {
           <p className="text-sm font-medium text-muted-foreground">Phone</p>
           <InlineEditField
             value={company.phone || ''}
-            company={company.id}
+            companyId={company.id}
             field="phone"
             label="Phone"
             type="phone"
@@ -35,7 +35,7 @@ export const CompanyContactInfo = ({ company }: CompanyContactInfoProps) => {
           <p className="text-sm font-medium text-muted-foreground">Website</p>
           <InlineEditField
             value={company.website || ''}
-            company={company.id}
+            companyId={company.id}
             field="website"
             label="Website"
             type="url"
@@ -45,7 +45,7 @@ export const CompanyContactInfo = ({ company }: CompanyContactInfoProps) => {
           <p className="text-sm font-medium text-muted-foreground">Main Contact</p>
           <InlineEditField
             value={company.mainContact || ''}
-            company={company.id}
+            companyId={company.id}
             field="mainContact"
             label="Main Contact"
           />

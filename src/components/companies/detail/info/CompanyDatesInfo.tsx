@@ -16,7 +16,7 @@ export const CompanyDatesInfo = ({ company }: CompanyDatesInfoProps) => {
           <p className="text-sm font-medium text-muted-foreground">Founded Year</p>
           <InlineEditField
             value={company.foundedYear?.toString() || ''}
-            company={company.id}
+            companyId={company.id}
             field="foundedYear"
             label="Founded Year"
             type="number"

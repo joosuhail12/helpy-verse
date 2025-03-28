@@ -3,7 +3,7 @@
  * Common utility helpers used throughout the application
  */
 import { cookieFunctions } from "@/api/services/http";
-import { handleSetToken, getAuthToken, isAuthenticated } from "@/utils/auth/tokenManager";
+import { handleSetToken as tokenManagerSetToken } from "@/utils/auth/tokenManager";
 
 // Re-export storage functions from cookieManager to avoid circular dependencies
 export const { getCookie, setCookie, handleLogout } = cookieFunctions;
@@ -32,8 +32,8 @@ export const setWorkspaceId = (workspaceId: string): void => {
   console.log(`Workspace ID set to: ${workspaceId}`);
 };
 
-// Re-export the token manager functions
-export { handleSetToken, getAuthToken, isAuthenticated };
+// Re-export the token manager's handleSetToken function
+export const handleSetToken = tokenManagerSetToken;
 
 // Format date to a readable format
 export const formatDate = (date: Date | string | number): string => {

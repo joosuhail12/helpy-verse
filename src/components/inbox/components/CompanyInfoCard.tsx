@@ -59,7 +59,7 @@ const CompanyInfoCard = ({ company, isOpen, onToggle }: CompanyInfoCardProps) =>
               <span className="text-gray-500 font-medium">Company Name</span>
               <InlineEditField
                 value={companyData.name}
-                company={mockCompanyId}
+                companyId={mockCompanyId}
                 field="name"
                 label="Company Name"
                 validation={[{ type: 'required', value: '', message: 'Company name is required' }]}
@@ -77,12 +77,12 @@ const CompanyInfoCard = ({ company, isOpen, onToggle }: CompanyInfoCardProps) =>
             </div>
             
             <div className="flex items-center justify-between py-2">
-              <span className="text-gray-500 font-medium">Domain</span>
+              <span className="text-gray-500 font-medium">Customer Since</span>
               <InlineEditField
-                value={companyData.website}
-                company={mockCompanyId}
-                field="website"
-                label="Domain"
+                value={companyData.customerSince}
+                companyId={mockCompanyId}
+                field="customerSince"
+                label="Customer Since"
               />
             </div>
             
@@ -93,7 +93,7 @@ const CompanyInfoCard = ({ company, isOpen, onToggle }: CompanyInfoCardProps) =>
               </div>
               <InlineEditField
                 value={companyData.website}
-                company={mockCompanyId}
+                companyId={mockCompanyId}
                 field="website"
                 label="Website"
                 type="url"
@@ -107,7 +107,7 @@ const CompanyInfoCard = ({ company, isOpen, onToggle }: CompanyInfoCardProps) =>
               </div>
               <InlineEditField
                 value={companyData.employees}
-                company={mockCompanyId}
+                companyId={mockCompanyId}
                 field="employees"
                 label="Employees"
               />
@@ -120,7 +120,7 @@ const CompanyInfoCard = ({ company, isOpen, onToggle }: CompanyInfoCardProps) =>
               </div>
               <InlineEditField
                 value={companyData.revenue}
-                company={mockCompanyId}
+                companyId={mockCompanyId}
                 field="revenue"
                 label="Revenue"
               />
@@ -133,22 +133,9 @@ const CompanyInfoCard = ({ company, isOpen, onToggle }: CompanyInfoCardProps) =>
               </div>
               <InlineEditField
                 value={companyData.founded}
-                company={mockCompanyId}
+                companyId={mockCompanyId}
                 field="founded"
                 label="Founded"
-              />
-            </div>
-            
-            <div className="flex items-center justify-between py-2">
-              <div className="flex items-center gap-1.5">
-                <Calendar className="h-3.5 w-3.5 text-gray-400" />
-                <span className="text-gray-500 font-medium">Customer Since</span>
-              </div>
-              <InlineEditField
-                value={companyData.customerSince}
-                company={mockCompanyId}
-                field="customerSince"
-                label="Customer Since"
               />
             </div>
           </div>

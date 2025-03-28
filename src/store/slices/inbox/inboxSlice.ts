@@ -1,36 +1,18 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import * as inboxSelectors from './selectors';
 
-// Define ticket type
-export interface Ticket {
-  id: string;
-  subject: string;
-  customer: string;
-  company: string;
-  status: string;
-  priority: string;
-  lastMessage: string;
-  lastMessageDate: string;
-  assignee?: string;
-  unread?: boolean;
-  [key: string]: any;
-}
-
-// Define normalized inbox state type
+// Define inbox state type
 interface InboxState {
-  entities: Record<string, Ticket>;
-  ids: string[];
-  selectedTicketId: string | null;
+  tickets: any[];
+  selectedTicket: any | null;
   loading: boolean;
   error: string | null;
 }
 
 // Initial state
 const initialState: InboxState = {
-  entities: {},
-  ids: [],
-  selectedTicketId: null,
+  tickets: [],
+  selectedTicket: null,
   loading: false,
   error: null,
 };
@@ -40,40 +22,11 @@ const inboxSlice = createSlice({
   name: 'inbox',
   initialState,
   reducers: {
-    setTickets: (state, action: PayloadAction<Ticket[]>) => {
-      state.entities = {};
-      state.ids = [];
-      
-      action.payload.forEach(ticket => {
-        state.entities[ticket.id] = ticket;
-        state.ids.push(ticket.id);
-      });
+    setTickets: (state, action: PayloadAction<any[]>) => {
+      state.tickets = action.payload;
     },
-    addTicket: (state, action: PayloadAction<Ticket>) => {
-      const ticket = action.payload;
-      state.entities[ticket.id] = ticket;
-      if (!state.ids.includes(ticket.id)) {
-        state.ids.push(ticket.id);
-      }
-    },
-    updateTicket: (state, action: PayloadAction<{ id: string; changes: Partial<Ticket> }>) => {
-      const { id, changes } = action.payload;
-      if (state.entities[id]) {
-        state.entities[id] = { ...state.entities[id], ...changes };
-      }
-    },
-    removeTicket: (state, action: PayloadAction<string>) => {
-      const id = action.payload;
-      delete state.entities[id];
-      state.ids = state.ids.filter(ticketId => ticketId !== id);
-      
-      // Clear selection if removed ticket was selected
-      if (state.selectedTicketId === id) {
-        state.selectedTicketId = null;
-      }
-    },
-    setSelectedTicket: (state, action: PayloadAction<string | null>) => {
-      state.selectedTicketId = action.payload;
+    setSelectedTicket: (state, action: PayloadAction<any>) => {
+      state.selectedTicket = action.payload;
     },
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
@@ -85,31 +38,6 @@ const inboxSlice = createSlice({
 });
 
 // Export actions
-export const { 
-  setTickets, 
-  addTicket, 
-  updateTicket, 
-  removeTicket, 
-  setSelectedTicket, 
-  setLoading, 
-  setError 
-} = inboxSlice.actions;
-
-// Export selectors
-export {
-  inboxSelectors
-};
-
-// For direct imports
-export const {
-  selectAllTickets,
-  selectTicketById,
-  selectSelectedTicket,
-  selectInboxLoading,
-  selectInboxError,
-  selectTicketsByStatus,
-  selectTicketsByAssignee,
-  selectUnreadTicketsCount
-} = inboxSelectors;
+export const { setTickets, setSelectedTicket, setLoading, setError } = inboxSlice.actions;
 
 export default inboxSlice.reducer;

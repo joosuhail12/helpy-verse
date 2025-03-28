@@ -1,37 +1,7 @@
 
-import React from 'react';
+import { QueryGroup, QueryField } from '@/types/queryBuilder';
 import { QueryGroupComponent } from './QueryGroupComponent';
-
-interface QueryRule {
-  id: string;
-  field: string;
-  operator: string;
-  value: any;
-}
-
-interface QueryGroup {
-  id: string;
-  combinator: 'and' | 'or';
-  rules: Array<QueryRule | QueryGroup>;
-}
-
-interface QueryField {
-  id: string;
-  label: string;
-  type: string;
-  name: string;
-  dataSource?: string;
-  customObject?: string;
-  options?: Array<string | { label: string; value: string }>;
-}
-
-interface ValidationError {
-  message: string;
-  path?: string;
-  field?: string;
-  rule?: { id: string };
-  group?: QueryGroup;
-}
+import type { ValidationError } from '@/components/automation/chatbots/form/audience-rules/utils/validation';
 
 interface QueryBuilderProps {
   value: QueryGroup;
@@ -40,17 +10,12 @@ interface QueryBuilderProps {
   errors?: ValidationError[];
 }
 
-export const QueryBuilder: React.FC<QueryBuilderProps> = ({ 
-  value, 
-  onChange, 
-  fields, 
-  errors = [] 
-}) => {
+export const QueryBuilder = ({ value, onChange, fields, errors = [] }: QueryBuilderProps) => {
   return (
     <QueryGroupComponent
       group={value}
-      fields={fields}
       onChange={onChange}
+      fields={fields}
       depth={0}
       maxDepth={3}
       errors={errors}

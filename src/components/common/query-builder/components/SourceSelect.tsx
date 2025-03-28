@@ -1,35 +1,44 @@
 
-import React from 'react';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import type { DataSource } from '@/types/queryBuilder';
+import { mockCustomObjects } from '@/mock/customObjects';
+import { cn } from '@/lib/utils';
+
+type ExtendedDataSource = DataSource | `custom_objects.${string}` | '';
 
 interface SourceSelectProps {
-  value: string;
-  onChange: (value: string) => void;
+  value: ExtendedDataSource;
+  onChange: (value: ExtendedDataSource) => void;
   errorMessage?: string | null;
 }
 
-export const SourceSelect: React.FC<SourceSelectProps> = ({ value, onChange, errorMessage }) => {
-  // Simple source options
-  const sources = [
-    { label: 'Contact', value: 'contact' },
-    { label: 'Company', value: 'company' },
-    { label: 'Conversation', value: 'conversation' }
-  ];
+export const SourceSelect = ({ value, onChange, errorMessage }: SourceSelectProps) => {
+  const availableSources = mockCustomObjects
+    .filter(obj => obj.connectionType === 'customer' || obj.connectionType === 'ticket')
+    .map(obj => `custom_objects.${obj.slug}` as ExtendedDataSource);
+
+  const getSourceLabel = (source: ExtendedDataSource) => {
+    if (source === 'contacts') return 'Contact Information';
+    if (source === 'companies') return 'Company Information';
+    if (source.startsWith('custom_objects.')) {
+      const slug = source.split('.')[1];
+      const customObject = mockCustomObjects.find(obj => obj.slug === slug);
+      return customObject?.name || slug;
+    }
+    return source;
+  };
 
   return (
     <Select value={value} onValueChange={onChange}>
-      <SelectTrigger className={`w-[130px] ${errorMessage ? 'border-red-500' : ''}`}>
-        <SelectValue placeholder="Data source" />
+      <SelectTrigger className={cn("w-[200px]", errorMessage && "border-red-500")}>
+        <SelectValue placeholder="Select data source" />
       </SelectTrigger>
       <SelectContent>
-        <SelectGroup>
-          <SelectLabel>Data Sources</SelectLabel>
-          {sources.map((source) => (
-            <SelectItem key={source.value} value={source.value}>
-              {source.label}
-            </SelectItem>
-          ))}
-        </SelectGroup>
+        {[...['contacts', 'companies'], ...availableSources].map((source) => (
+          <SelectItem key={source} value={source}>
+            {getSourceLabel(source as ExtendedDataSource)}
+          </SelectItem>
+        ))}
       </SelectContent>
     </Select>
   );

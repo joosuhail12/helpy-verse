@@ -1,21 +1,13 @@
 
-// Define test configuration interface
 export interface TestConfig {
-  paramValues?: Record<string, any>;
-  parameterValues?: Record<string, any>;
-  savedAt?: string;
+  parameterValues: Record<string, any>;
+  savedAt: string;
   responseTime?: number;
   lastResponse?: {
     status: number;
     data: any;
     headers: Record<string, string>;
   };
-  results?: {
-    success: boolean;
-    data?: any;
-    error?: string;
-  };
-  lastRun?: string;
 }
 
 export interface TestPanelProps {

@@ -1,42 +1,27 @@
 
-import React from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { cn } from '@/lib/utils';
 
 interface SelectInputProps {
   value: string;
   onChange: (value: string) => void;
-  options: Array<string | { label: string; value: string }>;
+  options: string[];
   errorMessage?: string | null;
 }
 
-export const SelectInput: React.FC<SelectInputProps> = ({ 
-  value, 
-  onChange, 
-  options,
-  errorMessage 
-}) => {
+export const SelectInput = ({ value, onChange, options, errorMessage }: SelectInputProps) => {
   return (
-    <div>
-      <Select value={value} onValueChange={onChange}>
-        <SelectTrigger className={`w-full ${errorMessage ? 'border-red-500' : ''}`}>
-          <SelectValue placeholder="Select an option" />
-        </SelectTrigger>
-        <SelectContent>
-          {options.map((option) => {
-            const optionValue = typeof option === 'string' ? option : option.value;
-            const optionLabel = typeof option === 'string' ? option : option.label;
-            
-            return (
-              <SelectItem key={optionValue} value={optionValue}>
-                {optionLabel}
-              </SelectItem>
-            );
-          })}
-        </SelectContent>
-      </Select>
-      {errorMessage && (
-        <p className="text-sm text-red-500 mt-1">{errorMessage}</p>
-      )}
-    </div>
+    <Select value={value} onValueChange={onChange}>
+      <SelectTrigger className={cn("w-[200px]", errorMessage && "border-red-500")}>
+        <SelectValue placeholder="Select value" />
+      </SelectTrigger>
+      <SelectContent>
+        {options.map((option) => (
+          <SelectItem key={option} value={option}>
+            {option}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 };

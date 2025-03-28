@@ -3,7 +3,6 @@ import type { CustomAction, ActionParameter } from '@/types/action';
 import type { UseFormReturn } from 'react-hook-form';
 import type { z } from 'zod';
 import type { actionFormSchema } from '../ActionBasicInfo';
-import type { TestConfig } from './types/testConfig';
 
 export interface ActionParameterProps {
   parameter: ActionParameter;
@@ -25,8 +24,5 @@ export interface ActionParametersProps {
 export interface ActionTestPanelProps {
   form: UseFormReturn<z.infer<typeof actionFormSchema>>;
   isTestSuccessful: boolean;
-  onTest: (paramValues: Record<string, any>) => Promise<void>;
-  parameters: ActionParameter[];
-  testConfig?: TestConfig;
-  onSaveConfig: (config: TestConfig) => void;
+  onTest: () => void;
 }

@@ -1,95 +1,98 @@
-
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import type { PayloadAction } from '@reduxjs/toolkit';
-import type { Company } from '@/types/company';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { RootState } from '../../store';
 import { companiesService } from '@/api/services/companiesService';
-import * as selectors from './selectors';
+import { Company } from '@/types/company';
 
 export interface CompaniesState {
   companies: Company[];
-  selectedCompanyIds: string[];
-  selectedCompany: Company | null;
+  selectedCompany: string | null;
   loading: boolean;
   error: string | null;
   companyDetails: Company | null;
-}
-
-export interface CompanyParams {
-  page?: number;
-  limit?: number;
-  search?: string;
-  sort?: string;
-  order?: 'asc' | 'desc';
-}
-
-export interface CompaniesResponse {
-  companies: Company[];
-  total: number;
-}
-
-export interface CompanyResponse {
-  id: string;
-  name: string;
-  [key: string]: any;
-}
-
-export interface CreateCompaniesResponse {
-  id: string;
-  name: string;
-  [key: string]: any;
-}
-
-export interface UpdateCompanyPayload {
-  id: string;
-  [key: string]: any;
+  selectedCompanies: string[];
+  lastFetchTime: number | null;
 }
 
 const initialState: CompaniesState = {
   companies: [],
-  selectedCompanyIds: [],
   selectedCompany: null,
   loading: false,
   error: null,
   companyDetails: null,
+  selectedCompanies: [],
+  lastFetchTime: null
 };
+
+// Cache duration in milliseconds (5 minutes)
+export const CACHE_DURATION = 5 * 60 * 1000;
 
 export const fetchCompanies = createAsyncThunk(
   'companies/fetchCompanies',
-  async (params?: CompanyParams) => {
-    const response = await companiesService.fetchCompanies(params);
-    return response;
+  async (_, { getState, rejectWithValue }) => {
+    try {
+      console.log('Fetching companies');
+      const state = getState() as RootState;
+      const { lastFetchTime } = state.companies;
+      
+      // Use cache if data is fresh
+      if (lastFetchTime && Date.now() - lastFetchTime < CACHE_DURATION) {
+        console.log('Using cached companies data');
+        return null;
+      }
+
+      const response = await companiesService.fetchCompanies();
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to fetch companies');
+    }
   }
 );
 
 export const fetchCompanyById = createAsyncThunk(
   'companies/fetchCompanyById',
-  async (id: string) => {
-    const response = await companiesService.getCompany(id);
-    return response;
+  async (id: string, { rejectWithValue }) => {
+    try {
+      const response = await companiesService.getCompany(id);
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to fetch company details');
+    }
   }
 );
 
 export const createCompany = createAsyncThunk(
   'companies/createCompany',
-  async (company: Partial<Company>) => {
-    const response = await companiesService.createCompany(company);
-    return response;
+  async (company: Omit<Company, 'id' | 'createdAt' | 'updatedAt'>, { rejectWithValue }) => {
+    try {
+      const response = await companiesService.createCompany(company);
+      return response.data.companyList[0];
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to create company');
+    }
   }
 );
 
 export const updateCompany = createAsyncThunk(
   'companies/updateCompany',
-  async ({ companyId, data }: { companyId: string; data: Partial<Company> }) => {
-    const response = await companiesService.updateCompany(companyId, data);
-    return response;
+  async ({ id, updates }: { id: string; updates: Partial<Company> }, { rejectWithValue }) => {
+    try {
+      const response = await companiesService.updateCompany(id, updates);
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to update company');
+    }
   }
 );
 
 export const deleteCompany = createAsyncThunk(
   'companies/deleteCompany',
-  async (id: string) => {
-    await companiesService.deleteCompany(id);
-    return id;
+  async (id: string, { rejectWithValue }) => {
+    try {
+      await companiesService.deleteCompany(id);
+      return id;
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to delete company');
+    }
   }
 );
 
@@ -97,24 +100,26 @@ const companiesSlice = createSlice({
   name: 'companies',
   initialState,
   reducers: {
-    setSelectedCompany: (state, action: PayloadAction<Company | null>) => {
+    selectCompany: (state, action: PayloadAction<string>) => {
       state.selectedCompany = action.payload;
     },
-    clearSelectedCompanies: (state) => {
-      state.selectedCompanyIds = [];
+    clearSelectedCompany: (state) => {
+      state.selectedCompany = null;
     },
     toggleCompanySelection: (state, action: PayloadAction<string>) => {
-      const id = action.payload;
-      const index = state.selectedCompanyIds.indexOf(id);
-      if (index === -1) {
-        state.selectedCompanyIds.push(id);
+      const companyId = action.payload;
+      if (state.selectedCompanies.includes(companyId)) {
+        state.selectedCompanies = state.selectedCompanies.filter(id => id !== companyId);
       } else {
-        state.selectedCompanyIds.splice(index, 1);
+        state.selectedCompanies.push(companyId);
       }
     },
-    setSelectedCompanyIds: (state, action: PayloadAction<string[]>) => {
-      state.selectedCompanyIds = action.payload;
+    clearSelectedCompanies: (state) => {
+      state.selectedCompanies = [];
     },
+    setSelectedCompanies: (state, action: PayloadAction<string[]>) => {
+      state.selectedCompanies = action.payload;
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -124,11 +129,14 @@ const companiesSlice = createSlice({
       })
       .addCase(fetchCompanies.fulfilled, (state, action) => {
         state.loading = false;
-        state.companies = action.payload.companies;
+        if (action.payload) { // Only update if we got new data (not using cache)
+          state.companies = action.payload;
+          state.lastFetchTime = Date.now();
+        }
       })
       .addCase(fetchCompanies.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Failed to fetch companies';
+        state.error = action.payload as string;
       })
       .addCase(fetchCompanyById.pending, (state) => {
         state.loading = true;
@@ -136,11 +144,11 @@ const companiesSlice = createSlice({
       })
       .addCase(fetchCompanyById.fulfilled, (state, action) => {
         state.loading = false;
-        state.companyDetails = action.payload as unknown as Company;
+        state.companyDetails = action.payload;
       })
       .addCase(fetchCompanyById.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Failed to fetch company details';
+        state.error = action.payload as string;
       })
       .addCase(createCompany.pending, (state) => {
         state.loading = true;
@@ -148,13 +156,11 @@ const companiesSlice = createSlice({
       })
       .addCase(createCompany.fulfilled, (state, action) => {
         state.loading = false;
-        // Cast the response to Company to satisfy TypeScript
-        const newCompany = action.payload as unknown as Company;
-        state.companies.push(newCompany);
+        state.companies.push(action.payload);
       })
       .addCase(createCompany.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Failed to create company';
+        state.error = action.payload as string;
       })
       .addCase(updateCompany.pending, (state) => {
         state.loading = true;
@@ -162,19 +168,17 @@ const companiesSlice = createSlice({
       })
       .addCase(updateCompany.fulfilled, (state, action) => {
         state.loading = false;
-        // Cast the response to Company to satisfy TypeScript
-        const updatedCompany = action.payload as unknown as Company;
-        const index = state.companies.findIndex(company => company.id === updatedCompany.id);
+        const index = state.companies.findIndex(company => company.id === action.payload.id);
         if (index !== -1) {
-          state.companies[index] = updatedCompany;
+          state.companies[index] = action.payload;
         }
-        if (state.companyDetails && state.companyDetails.id === updatedCompany.id) {
-          state.companyDetails = updatedCompany;
+        if (state.companyDetails?.id === action.payload.id) {
+          state.companyDetails = action.payload;
         }
       })
       .addCase(updateCompany.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Failed to update company';
+        state.error = action.payload as string;
       })
       .addCase(deleteCompany.pending, (state) => {
         state.loading = true;
@@ -183,37 +187,32 @@ const companiesSlice = createSlice({
       .addCase(deleteCompany.fulfilled, (state, action) => {
         state.loading = false;
         state.companies = state.companies.filter(company => company.id !== action.payload);
-        if (state.companyDetails && state.companyDetails.id === action.payload) {
+        if (state.companyDetails?.id === action.payload) {
           state.companyDetails = null;
+        }
+        state.selectedCompanies = state.selectedCompanies.filter(id => id !== action.payload);
+        if (state.selectedCompany === action.payload) {
+          state.selectedCompany = null;
         }
       })
       .addCase(deleteCompany.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Failed to delete company';
+        state.error = action.payload as string;
       });
   },
 });
 
+// Export action creators
 export const { 
-  setSelectedCompany, 
+  selectCompany, 
+  clearSelectedCompany, 
+  toggleCompanySelection, 
   clearSelectedCompanies, 
-  toggleCompanySelection,
-  setSelectedCompanyIds
+  setSelectedCompanies 
 } = companiesSlice.actions;
 
-// Re-export selectors
-export {
-  selectors
-};
-
-// Export individual selectors for direct imports
-export const {
-  selectAllCompanies,
-  selectSelectedCompanyIds,
-  selectCompanyDetails,
-  selectCompaniesLoading,
-  selectCompaniesError,
-  selectSelectedCompany
-} = selectors;
-
+// Export the reducer
 export default companiesSlice.reducer;
+
+// Import selectors from dedicated file
+export * from './selectors';

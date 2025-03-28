@@ -1,33 +1,14 @@
 
-import React, { useState } from 'react';
+import { useState } from 'react';
+import type { QueryRule as QueryRuleType, QueryField, DataSource } from '@/types/queryBuilder';
+import type { ValidationError } from '@/components/automation/chatbots/form/audience-rules/utils/validation';
+import { useSourceFields } from './hooks/useSourceFields';
 import { OperatorSelect } from './components/OperatorSelect';
+import { SourceSelect } from './components/SourceSelect';
 import { FieldSelect } from './components/FieldSelect';
 import { ValueInput } from './components/value-inputs/ValueInput';
-import { SourceSelect } from './components/SourceSelect';
 
-interface QueryField {
-  id: string;
-  label: string;
-  type: string;
-  name: string;
-  dataSource?: string;
-  customObject?: string;
-  options?: Array<string | { label: string; value: string }>;
-}
-
-interface QueryRuleType {
-  id: string;
-  field: string;
-  operator: string;
-  value: any;
-}
-
-interface ValidationError {
-  message: string;
-  path?: string;
-  field?: string;
-  rule?: { id: string };
-}
+type ExtendedDataSource = DataSource | `custom_objects.${string}` | '';
 
 interface QueryRuleProps {
   rule: QueryRuleType;
@@ -36,33 +17,19 @@ interface QueryRuleProps {
   errors?: ValidationError[];
 }
 
-export const QueryRule: React.FC<QueryRuleProps> = ({ 
-  rule, 
-  onChange, 
-  fields, 
-  errors = [] 
-}) => {
-  const [selectedSource, setSelectedSource] = useState<string>('');
+export const QueryRule = ({ rule, onChange, fields, errors = [] }: QueryRuleProps) => {
+  const [selectedSource, setSelectedSource] = useState<ExtendedDataSource>('');
   const selectedField = fields.find((f) => f.id === rule.field);
-  const ruleErrors = errors.filter(error => error.rule?.id === rule.id);
-  
-  // Filter fields by source
-  const sourceFields = fields.filter(field => {
-    if (!selectedSource) return true;
-    if (selectedSource.startsWith('custom_objects.')) {
-      const customObjectId = selectedSource.split('.')[1];
-      return field.customObject === customObjectId;
-    }
-    return field.dataSource === selectedSource;
-  });
+  const ruleErrors = errors.filter(error => error.ruleId === rule.id);
+  const sourceFields = useSourceFields(selectedSource, fields);
 
-  const handleSourceChange = (source: string) => {
+  const handleSourceChange = (source: ExtendedDataSource) => {
     setSelectedSource(source);
     onChange({ ...rule, field: '' });
   };
 
-  const getErrorMessage = (fieldPath: string) => {
-    const error = ruleErrors.find(err => err.path === fieldPath || err.field === fieldPath);
+  const getErrorMessage = (fieldName: string) => {
+    const error = ruleErrors.find(err => err.field === fieldName);
     return error ? error.message : null;
   };
 
@@ -75,6 +42,9 @@ export const QueryRule: React.FC<QueryRuleProps> = ({
             onChange={handleSourceChange}
             errorMessage={getErrorMessage('field')}
           />
+          {getErrorMessage('field') && (
+            <p className="text-sm text-red-500">{getErrorMessage('field')}</p>
+          )}
         </div>
 
         <div className="space-y-1">
@@ -94,17 +64,20 @@ export const QueryRule: React.FC<QueryRuleProps> = ({
             onValueChange={(value) => onChange({ ...rule, operator: value })}
             disabled={!rule.field}
           />
+          {getErrorMessage('operator') && (
+            <p className="text-sm text-red-500">{getErrorMessage('operator')}</p>
+          )}
         </div>
 
         <div className="space-y-1 relative">
-          {selectedField && (
-            <ValueInput
-              field={selectedField}
-              operator={rule.operator}
-              value={rule.value}
-              onChange={(value) => onChange({ ...rule, value })}
-              errorMessage={getErrorMessage('value')}
-            />
+          <ValueInput
+            rule={rule}
+            selectedField={selectedField}
+            onChange={onChange}
+            errorMessage={getErrorMessage('value')}
+          />
+          {getErrorMessage('value') && (
+            <p className="text-sm text-red-500">{getErrorMessage('value')}</p>
           )}
         </div>
       </div>

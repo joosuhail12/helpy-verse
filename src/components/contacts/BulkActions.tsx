@@ -1,54 +1,46 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { X, Trash2, Tag, Download, UserCheck, UserMinus } from 'lucide-react';
+import { StatusActions } from './bulk-actions/StatusActions';
+import { TagActions } from './bulk-actions/TagActions';
 import { useAppSelector } from '@/hooks/useAppSelector';
-import { selectSelectedContactIds } from '@/store/slices/contacts/contactsSelectors';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { clearSelection } from '@/store/slices/contacts/contactsSlice';
+import { Trash, X } from 'lucide-react';
 
-interface BulkActionsProps {
-  onCancel: () => void;
-}
+const BulkActions = () => {
+  const selectedContactIds = useAppSelector((state) => state.contacts?.selectedContacts || []);
+  const contacts = useAppSelector((state) => state.contacts?.contacts || []);
+  const dispatch = useAppDispatch();
 
-export const BulkActions: React.FC<BulkActionsProps> = ({ onCancel }) => {
-  const selectedContactIds = useAppSelector(selectSelectedContactIds);
-  
-  const selectedCount = selectedContactIds.length;
-  
+  const handleClearSelection = () => {
+    dispatch(clearSelection());
+  };
+
+  if (selectedContactIds.length === 0) {
+    return null;
+  }
+
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <div className="text-sm font-medium mr-2">
-        {selectedCount} {selectedCount === 1 ? 'contact' : 'contacts'} selected
+    <div className="fixed bottom-0 left-0 right-0 bg-background border-t shadow-lg z-10 p-4">
+      <div className="container mx-auto flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="sm" onClick={handleClearSelection}>
+            <X className="h-4 w-4 mr-2" />
+            Clear selection ({selectedContactIds.length})
+          </Button>
+        </div>
+        <div className="flex items-center gap-2">
+          <StatusActions selectedContactIds={selectedContactIds} />
+          <TagActions selectedContactIds={selectedContactIds} contacts={contacts} />
+          <Button variant="destructive" size="sm">
+            <Trash className="h-4 w-4 mr-2" />
+            Delete
+          </Button>
+        </div>
       </div>
-      
-      <Button variant="outline" size="sm" className="h-8">
-        <Tag className="mr-1 h-4 w-4" />
-        Add Tags
-      </Button>
-      
-      <Button variant="outline" size="sm" className="h-8">
-        <UserCheck className="mr-1 h-4 w-4" />
-        Set Status
-      </Button>
-      
-      <Button variant="outline" size="sm" className="h-8">
-        <Download className="mr-1 h-4 w-4" />
-        Export
-      </Button>
-      
-      <Button variant="outline" size="sm" className="h-8 text-red-500 hover:text-red-700 hover:bg-red-50">
-        <Trash2 className="mr-1 h-4 w-4" />
-        Delete
-      </Button>
-      
-      <Button 
-        variant="ghost" 
-        size="sm" 
-        className="ml-auto h-8" 
-        onClick={onCancel}
-      >
-        <X className="mr-1 h-4 w-4" />
-        Cancel
-      </Button>
     </div>
   );
 };
+
+export default BulkActions;

@@ -1,6 +1,6 @@
 
-import React from 'react';
 import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
 
 interface NumberInputProps {
   value: number | string;
@@ -8,22 +8,14 @@ interface NumberInputProps {
   errorMessage?: string | null;
 }
 
-export const NumberInput: React.FC<NumberInputProps> = ({ 
-  value, 
-  onChange, 
-  errorMessage 
-}) => {
+export const NumberInput = ({ value, onChange, errorMessage }: NumberInputProps) => {
   return (
-    <div>
-      <Input
-        type="number"
-        value={value === undefined || value === null ? '' : value}
-        onChange={(e) => onChange(Number(e.target.value))}
-        className={errorMessage ? 'border-red-500' : ''}
-      />
-      {errorMessage && (
-        <p className="text-sm text-red-500 mt-1">{errorMessage}</p>
-      )}
-    </div>
+    <Input
+      type="number"
+      value={value}
+      onChange={(e) => onChange(Number(e.target.value))}
+      className={cn("w-[200px]", errorMessage && "border-red-500")}
+      placeholder="Enter number"
+    />
   );
 };

@@ -2,7 +2,7 @@
 import React from 'react';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-// Create a client outside the component to prevent recreation on re-renders
+// Create a client
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

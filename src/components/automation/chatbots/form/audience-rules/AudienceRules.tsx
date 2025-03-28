@@ -1,14 +1,14 @@
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { QueryBuilder } from '@/components/common/query-builder/QueryBuilder';
 import { useRuleBuilder } from './hooks/useRuleBuilder';
 import { useAudienceFields } from './hooks/useAudienceFields';
-import AudienceSizeEstimator from './components/AudienceSizeEstimator';
-import SampleMatchesPreview from './components/SampleMatchesPreview';
+import { AudienceSizeEstimator } from './components/AudienceSizeEstimator';
+import { SampleMatchesPreview } from './components/SampleMatchesPreview';
 import { RuleValidationSummary } from './components/RuleValidationSummary';
 
-export const AudienceRules: React.FC = () => {
+export const AudienceRules = () => {
   const [isValid, setIsValid] = useState(true);
   const fields = useAudienceFields();
   const {
@@ -21,8 +21,8 @@ export const AudienceRules: React.FC = () => {
   } = useRuleBuilder();
 
   useEffect(() => {
-    const valid = validate();
-    setIsValid(valid);
+    const isValid = validate();
+    setIsValid(isValid);
   }, [queryGroup, validate]);
 
   return (

@@ -1,62 +1,66 @@
 
-export interface ValidationError {
-  message: string;
-  path?: string;
-  rule?: {
-    id: string;
-  };
-  group?: QueryGroup;
-  field?: string;
-}
+export type ComparisonOperator = 
+  | 'equals' 
+  | 'not_equals' 
+  | 'contains' 
+  | 'not_contains'
+  | 'starts_with'
+  | 'ends_with'
+  | 'greater_than'
+  | 'less_than'
+  | 'greater_than_equals'
+  | 'less_than_equals'
+  | 'in'
+  | 'not_in'
+  | 'is_empty'
+  | 'is_not_empty'
+  | 'between'
+  | 'not_between'
+  | 'contains_any'
+  | 'contains_all'
+  | 'has_none'
+  | 'has_any'
+  | 'has_all'
+  | 'after'
+  | 'before'
+  | 'last_n_days'
+  | 'next_n_days'
+  | 'this_week'
+  | 'this_month'
+  | 'this_year'
+  | 'last_week'
+  | 'last_month'
+  | 'last_year'
+  | 'next_week'
+  | 'next_month'
+  | 'next_year'
+  | 'rolling_days'
+  | 'rolling_months'
+  | 'rolling_years'
+  | 'custom_range';
+
+export type DataSource = 'contacts' | 'companies' | 'custom_objects';
+
+export type FieldType = 'text' | 'number' | 'boolean' | 'date' | 'select' | 'multi-select';
 
 export interface QueryField {
   id: string;
-  name: string;
   label: string;
-  type: 'text' | 'number' | 'date' | 'boolean' | 'select' | 'multiselect' | 'multi-select';
-  dataSource?: string;
+  type: FieldType;
+  source: DataSource;
+  options?: string[];
   customObject?: string;
-  options?: Array<{ label: string; value: string; } | string>;
-  operators?: string[];
-  placeholder?: string;
-  defaultValue?: any;
 }
-
-export type Operator = 
-  | 'equals' 
-  | 'notEquals' 
-  | 'contains' 
-  | 'notContains' 
-  | 'startsWith' 
-  | 'endsWith' 
-  | 'greaterThan' 
-  | 'lessThan' 
-  | 'inRange' 
-  | 'notInRange' 
-  | 'isEmpty' 
-  | 'isNotEmpty' 
-  | 'in' 
-  | 'notIn'
-  | 'is_empty'
-  | 'is_not_empty'
-  | 'not_equals'
-  | 'greater_than'
-  | 'less_than';
 
 export interface QueryRule {
   id: string;
   field: string;
-  operator: string;
-  value: any;
+  operator: ComparisonOperator;
+  value: string | number | boolean | string[];
 }
 
 export interface QueryGroup {
   id: string;
   combinator: 'and' | 'or';
-  rules: Array<QueryRule | QueryGroup>;
-}
-
-export interface ValidationResult {
-  isValid: boolean;
-  errors: ValidationError[];
+  rules: (QueryRule | QueryGroup)[];
 }

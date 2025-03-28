@@ -1,52 +1,9 @@
 
-import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from '../../store';
-import { selectAllCannedResponses, selectCannedResponseById } from './adapter';
 
-// Base selector to get the cannedResponses slice
-const selectCannedResponsesState = (state: RootState) => state.cannedResponses;
-
-// Derived selectors
-export const selectCannedResponses = createSelector(
-  [selectCannedResponsesState],
-  (state) => selectAllCannedResponses(state)
-);
-
-export const selectCannedResponsesLoading = createSelector(
-  [selectCannedResponsesState],
-  (state) => state.loading
-);
-
-export const selectCannedResponsesError = createSelector(
-  [selectCannedResponsesState],
-  (state) => state.error
-);
-
-export const selectSelectedCannedResponseId = createSelector(
-  [selectCannedResponsesState],
-  (state) => state.selectedResponseId
-);
-
-export const selectSelectedCannedResponse = createSelector(
-  [selectCannedResponsesState, selectSelectedCannedResponseId],
-  (state, selectedId) => {
-    if (!selectedId) return null;
-    return selectCannedResponseById(state, selectedId);
-  }
-);
-
-export const selectCannedResponseByIdSelector = (id: string) => 
-  createSelector(
-    [selectCannedResponsesState],
-    (state) => selectCannedResponseById(state, id)
-  );
-
-export const selectCannedResponseCategories = createSelector(
-  [selectCannedResponsesState],
-  (state) => state.categories
-);
-
-export const selectVersionHistory = createSelector(
-  [selectCannedResponsesState],
-  (state) => state.versionHistory
-);
+export const selectCannedResponses = (state: RootState) => state.cannedResponses?.responses || [];
+export const selectCannedResponsesLoading = (state: RootState) => state.cannedResponses?.loading || false;
+export const selectCannedResponsesError = (state: RootState) => state.cannedResponses?.error || null;
+export const selectSelectedCannedResponse = (state: RootState) => state.cannedResponses?.selectedResponse || null;
+export const selectCannedResponseById = (state: RootState, id: string) => 
+  state.cannedResponses?.responses?.find(response => response.id === id) || null;

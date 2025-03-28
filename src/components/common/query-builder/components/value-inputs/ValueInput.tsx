@@ -1,106 +1,77 @@
 
-import React from 'react';
+import type { QueryRule, QueryField } from '@/types/queryBuilder';
 import { TextInput } from './TextInput';
 import { NumberInput } from './NumberInput';
-import { DateInput } from './DateInput';
 import { BooleanInput } from './BooleanInput';
 import { SelectInput } from './SelectInput';
 import { MultiSelectInput } from './MultiSelectInput';
-
-interface SimpleField {
-  id: string;
-  type: string;
-  options?: Array<string | { label: string; value: string }>;
-}
+import { DateInput } from './DateInput';
 
 interface ValueInputProps {
-  field: SimpleField;
-  operator: string;
-  value: any;
-  onChange: (value: any) => void;
+  rule: QueryRule;
+  selectedField: QueryField | undefined;
+  onChange: (rule: QueryRule) => void;
   errorMessage?: string | null;
 }
 
-export const ValueInput: React.FC<ValueInputProps> = ({
-  field,
-  operator,
-  value,
-  onChange,
-  errorMessage
-}) => {
-  // List of operators that don't require a value input
-  const noValueOperators = [
-    'isEmpty', 'isNotEmpty', 'is_empty', 'is_not_empty'
-  ];
-  
-  if (noValueOperators.includes(operator)) {
-    return null;
-  }
+export const ValueInput = ({ rule, selectedField, onChange, errorMessage }: ValueInputProps) => {
+  if (!selectedField) return null;
 
-  switch (field.type) {
-    case 'text':
-      return (
-        <TextInput
-          value={value === null || value === undefined ? '' : String(value)}
-          onChange={onChange}
-          errorMessage={errorMessage}
-        />
-      );
-    
-    case 'number':
-      return (
-        <NumberInput
-          value={value === null || value === undefined ? '' : value}
-          onChange={onChange}
-          errorMessage={errorMessage}
-        />
-      );
-    
-    case 'date':
-      return (
-        <DateInput
-          value={value === null || value === undefined ? '' : String(value)}
-          onChange={onChange}
-          errorMessage={errorMessage}
-        />
-      );
-    
+  const handleValueChange = (value: any) => {
+    onChange({ ...rule, value });
+  };
+
+  switch (selectedField.type) {
     case 'boolean':
       return (
         <BooleanInput
-          value={!!value}
-          onChange={onChange}
-          errorMessage={errorMessage}
+          value={Boolean(rule.value)}
+          onChange={handleValueChange}
         />
       );
-      
+
+    case 'date':
+      return (
+        <DateInput
+          value={rule.value as string}
+          onChange={handleValueChange}
+          operator={rule.operator}
+        />
+      );
+
     case 'select':
       return (
         <SelectInput
-          value={value === null || value === undefined ? '' : String(value)}
-          onChange={onChange}
-          options={field.options || []}
+          value={rule.value as string}
+          onChange={handleValueChange}
+          options={selectedField.options || []}
           errorMessage={errorMessage}
         />
       );
-      
-    case 'multiselect':
+
     case 'multi-select':
       return (
         <MultiSelectInput
-          value={Array.isArray(value) ? value : []}
-          onChange={onChange}
-          options={field.options || []}
+          value={Array.isArray(rule.value) ? rule.value : []}
+          onChange={handleValueChange}
+          options={selectedField.options || []}
+        />
+      );
+
+    case 'number':
+      return (
+        <NumberInput
+          value={rule.value as number}
+          onChange={handleValueChange}
           errorMessage={errorMessage}
         />
       );
 
     default:
-      // Fallback to text input for any unhandled types
       return (
         <TextInput
-          value={value === null || value === undefined ? '' : String(value)}
-          onChange={onChange}
+          value={rule.value as string}
+          onChange={handleValueChange}
           errorMessage={errorMessage}
         />
       );

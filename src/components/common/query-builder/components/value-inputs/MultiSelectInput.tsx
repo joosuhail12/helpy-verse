@@ -1,50 +1,37 @@
 
-import React from 'react';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Check } from 'lucide-react';
 
 interface MultiSelectInputProps {
   value: string[];
   onChange: (value: string[]) => void;
-  options: Array<string | { label: string; value: string }>;
-  errorMessage?: string | null;
+  options: string[];
 }
 
-export const MultiSelectInput: React.FC<MultiSelectInputProps> = ({
-  value = [],
-  onChange,
-  options,
-  errorMessage
-}) => {
-  const handleToggleOption = (optionValue: string) => {
-    if (value.includes(optionValue)) {
-      onChange(value.filter(item => item !== optionValue));
-    } else {
-      onChange([...value, optionValue]);
-    }
+export const MultiSelectInput = ({ value, onChange, options }: MultiSelectInputProps) => {
+  const handleOptionClick = (option: string) => {
+    const newValues = value.includes(option)
+      ? value.filter((v) => v !== option)
+      : [...value, option];
+    onChange(newValues);
   };
 
   return (
-    <div className={`space-y-2 ${errorMessage ? 'border-red-500 border rounded p-2' : ''}`}>
-      {options.map((option) => {
-        const optionValue = typeof option === 'string' ? option : option.value;
-        const optionLabel = typeof option === 'string' ? option : option.label;
-        
-        return (
-          <div key={optionValue} className="flex items-center space-x-2">
-            <Checkbox
-              id={`option-${optionValue}`}
-              checked={value.includes(optionValue)}
-              onCheckedChange={() => handleToggleOption(optionValue)}
-            />
-            <Label htmlFor={`option-${optionValue}`} className="text-sm">{optionLabel}</Label>
+    <div className="space-y-2">
+      <div className="flex flex-wrap gap-2">
+        {options.map((option) => (
+          <div
+            key={option}
+            onClick={() => handleOptionClick(option)}
+            className="cursor-pointer"
+          >
+            <Badge variant={value.includes(option) ? "default" : "outline"}>
+              {option}
+              {value.includes(option) && <Check className="ml-1 h-3 w-3" />}
+            </Badge>
           </div>
-        );
-      })}
-      
-      {errorMessage && (
-        <p className="text-sm text-red-500 mt-1">{errorMessage}</p>
-      )}
+        ))}
+      </div>
     </div>
   );
 };
