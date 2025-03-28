@@ -1,48 +1,32 @@
 
-/**
- * Cookie management utility functions
- */
-import Cookies from 'js-cookie';
-
-// 🟢 Get Cookie
-export const getCookie = (cname: string): string => {
-    return Cookies.get(cname) || "";
-};
-
-// 🟢 Set Cookie
-export const setCookie = (cname: string, cvalue: string, exdays: number = 30): void => {
-    Cookies.set(cname, cvalue, {
-        expires: exdays,
-        path: '/',
-        sameSite: 'Lax'
-    });
-    
-    console.log(`Setting cookie ${cname}: ${cvalue ? (cvalue.length > 10 ? cvalue.substring(0, 10) + '...' : cvalue) : "empty"}`);
-
-    // Verify the cookie was set properly
-    const verifyCookie = getCookie(cname);
-    if (verifyCookie) {
-        console.log(`Cookie ${cname} verified successfully`);
-    } else {
-        console.error(`Failed to set cookie ${cname}`);
+// Function to get cookie by name
+export function getCookie(name: string): string | null {
+  const cookies = document.cookie.split(';');
+  for (let i = 0; i < cookies.length; i++) {
+    const cookie = cookies[i].trim();
+    if (cookie.startsWith(name + '=')) {
+      return decodeURIComponent(cookie.substring(name.length + 1));
     }
-};
+  }
+  return null;
+}
 
-// 🟢 Delete Cookie
-export const deleteCookie = (name: string): void => {
-    Cookies.remove(name, { path: '/' });
-    console.log(`Deleted cookie ${name}`);
-    
-    // Verify cookie was removed
-    const verifyCookie = getCookie(name);
-    if (!verifyCookie) {
-        console.log(`Cookie ${name} removal verified`);
-    } else {
-        console.error(`Failed to delete cookie ${name}`);
-    }
-};
+// Function to set cookie with expiry days
+export function setCookie(name: string, value: string, days: number = 7): void {
+  let expires = '';
+  if (days) {
+    const date = new Date();
+    date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+    expires = '; expires=' + date.toUTCString();
+  }
+  document.cookie = name + '=' + encodeURIComponent(value) + expires + '; path=/; samesite=lax;';
+  
+  // Log for debugging
+  console.log(`Cookie ${name} set with value ${value.substring(0, 10)}... and expiry ${days} days`);
+}
 
-// Check if cookie exists - helper function
-export const cookieExists = (name: string): boolean => {
-    return getCookie(name) !== "";
-};
+// Function to delete cookie
+export function deleteCookie(name: string): void {
+  setCookie(name, '', -1);
+  console.log(`Cookie ${name} deleted`);
+}

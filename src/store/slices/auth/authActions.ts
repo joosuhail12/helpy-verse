@@ -1,19 +1,39 @@
-
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 import { setCookie, removeCookie } from '@/utils/helpers/helpers';
+import { handleSetToken } from '@/utils/auth/tokenManager';
+
+// Mock API for development
+const mockSuccessfulLogin = (credentials) => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve({
+        data: {
+          accessToken: 'mock-jwt-token',
+          user: {
+            id: '1',
+            email: credentials.email,
+            name: 'Test User',
+            role: 'user'
+          }
+        }
+      });
+    }, 800);
+  });
+};
 
 // Login action
 export const loginUser = createAsyncThunk(
   'auth/login',
   async (credentials: { email: string; password: string }, { rejectWithValue }) => {
     try {
-      // This would be replaced with an actual API call
-      const response = await axios.post('/api/auth/login', credentials);
-      const { token, user } = response.data;
+      // For development, use mock API
+      // In production, replace with your actual API endpoint
+      const response = await mockSuccessfulLogin(credentials);
+      const { accessToken, user } = response.data;
       
-      // Set authentication token in cookie
-      setCookie('customerToken', token, 7);
+      // Set authentication token using tokenManager
+      handleSetToken(accessToken);
       
       return user;
     } catch (error: any) {

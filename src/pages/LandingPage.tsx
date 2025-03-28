@@ -1,9 +1,49 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 
 const LandingPage: React.FC = () => {
+  // Initialize the chat widget when component mounts
+  useEffect(() => {
+    // Load the chat widget script
+    const loadChatWidget = () => {
+      // Skip if already initialized
+      if (document.getElementById('pullse-chat-widget')) return;
+      
+      const script = document.createElement('script');
+      script.id = 'pullse-chat-widget-script';
+      script.src = '/chat-widget.js';
+      script.async = true;
+      script.defer = true;
+      
+      // Add configuration for the widget
+      window.PULLSE_WORKSPACE_ID = '6c22b22f-7bdf-43db-b7c1-9c5884125c63';
+      window.PULLSE_THEME_COLORS = {
+        primary: '#6366f1',
+        background: '#ffffff',
+      };
+      
+      document.body.appendChild(script);
+    };
+    
+    loadChatWidget();
+    
+    // Cleanup on component unmount
+    return () => {
+      const widgetElement = document.getElementById('pullse-chat-widget');
+      const scriptElement = document.getElementById('pullse-chat-widget-script');
+      
+      if (widgetElement) {
+        widgetElement.remove();
+      }
+      
+      if (scriptElement) {
+        scriptElement.remove();
+      }
+    };
+  }, []);
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100">
       <div className="text-center max-w-3xl px-4">
