@@ -17,7 +17,7 @@ export const CompanyLocationInfo = ({ company }: CompanyLocationInfoProps) => {
           <p className="text-sm font-medium text-muted-foreground">Street</p>
           <InlineEditField
             value={location.street || ''}
-            companyId={company.id}
+            company={company.id}
             field="location.street"
             label="Street"
           />
@@ -26,7 +26,7 @@ export const CompanyLocationInfo = ({ company }: CompanyLocationInfoProps) => {
           <p className="text-sm font-medium text-muted-foreground">City</p>
           <InlineEditField
             value={location.city || ''}
-            companyId={company.id}
+            company={company.id}
             field="location.city"
             label="City"
           />
@@ -35,7 +35,7 @@ export const CompanyLocationInfo = ({ company }: CompanyLocationInfoProps) => {
           <p className="text-sm font-medium text-muted-foreground">State</p>
           <InlineEditField
             value={location.state || ''}
-            companyId={company.id}
+            company={company.id}
             field="location.state"
             label="State"
           />
@@ -44,7 +44,7 @@ export const CompanyLocationInfo = ({ company }: CompanyLocationInfoProps) => {
           <p className="text-sm font-medium text-muted-foreground">Zipcode</p>
           <InlineEditField
             value={location.zipcode || ''}
-            companyId={company.id}
+            company={company.id}
             field="location.zipcode"
             label="Zipcode"
           />
@@ -53,7 +53,7 @@ export const CompanyLocationInfo = ({ company }: CompanyLocationInfoProps) => {
           <p className="text-sm font-medium text-muted-foreground">Country</p>
           <InlineEditField
             value={location.country || ''}
-            companyId={company.id}
+            company={company.id}
             field="location.country"
             label="Country"
           />

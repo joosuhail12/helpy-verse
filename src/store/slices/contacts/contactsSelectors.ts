@@ -55,3 +55,9 @@ export const selectContactFilters = createSelector(
   [getContactsState],
   (contactsState) => contactsState.filters
 );
+
+// Add this selector for selected contact IDs
+export const selectSelectedContactIds = createSelector(
+  [getContactsState],
+  (contactsState) => contactsState.selectedContactIds || []
+);

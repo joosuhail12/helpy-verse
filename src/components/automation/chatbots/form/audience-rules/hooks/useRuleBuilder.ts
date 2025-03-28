@@ -1,62 +1,129 @@
 
 import { useState, useCallback } from 'react';
-import { QueryGroup, QueryRule, ValidationError } from '@/types/queryBuilder';
-import { validateQueryGroup } from '../utils/ruleValidator';
-import { generateId } from '@/lib/utils';
+import { v4 as uuidv4 } from 'uuid';
+import { QueryGroup, QueryRule, ValidationResult, ValidationError } from '@/types/queryBuilder';
+import { validateRuleGroup } from '../utils/validation';
+import { useAudienceFields } from './useAudienceFields';
 
-export const useRuleBuilder = (initialGroup: QueryGroup = { id: generateId(), combinator: 'and', rules: [] }) => {
-  const [queryGroup, setQueryGroup] = useState<QueryGroup>(initialGroup);
-  const [errors, setErrors] = useState<ValidationError[]>([]);
+export const useRuleBuilder = (initialRules?: QueryGroup) => {
+  const [ruleGroup, setRuleGroup] = useState<QueryGroup>(initialRules || {
+    id: uuidv4(),
+    combinator: 'and',
+    rules: []
+  });
+  
+  const availableFields = useAudienceFields();
 
-  const validate = useCallback(() => {
-    const result = validateQueryGroup(queryGroup);
-    if (!result.isValid && result.errors.length > 0) {
-      setErrors(result.errors);
-      return false;
+  const validateRules = useCallback((): ValidationResult => {
+    const result = validateRuleGroup(ruleGroup, availableFields);
+    if (!result.isValid) {
+      // Map validation errors to include more context
+      const contextualErrors: ValidationError[] = result.errors.map(error => ({
+        ...error,
+        message: `${error.message} ${error.rule ? `for rule with field ${error.rule.field}` : ''}`
+      }));
+      return { isValid: false, errors: contextualErrors };
     }
-    setErrors([]);
-    return true;
-  }, [queryGroup]);
-
-  const updateQueryGroup = useCallback((newGroup: QueryGroup) => {
-    setQueryGroup(newGroup);
-  }, []);
+    return { isValid: true, errors: [] };
+  }, [ruleGroup, availableFields]);
 
   const addRule = useCallback(() => {
-    const newGroup = { ...queryGroup };
-    newGroup.rules = [
-      ...queryGroup.rules,
-      { id: generateId(), field: '', operator: 'equals', value: '' } as QueryRule
-    ];
-    setQueryGroup(newGroup);
-  }, [queryGroup]);
+    setRuleGroup(prev => ({
+      ...prev,
+      rules: [
+        ...prev.rules,
+        {
+          id: uuidv4(),
+          field: availableFields.length > 0 ? availableFields[0].id : '',
+          operator: 'equals',
+          value: ''
+        }
+      ]
+    }));
+  }, [availableFields]);
 
   const addGroup = useCallback(() => {
-    const newGroup = { ...queryGroup };
-    newGroup.rules = [
-      ...queryGroup.rules,
-      { id: generateId(), combinator: 'and', rules: [] } as QueryGroup
-    ];
-    setQueryGroup(newGroup);
-  }, [queryGroup]);
-
-  const handleRuleChange = useCallback((updatedGroup: QueryGroup) => {
-    setQueryGroup(updatedGroup);
+    setRuleGroup(prev => ({
+      ...prev,
+      rules: [
+        ...prev.rules,
+        {
+          id: uuidv4(),
+          combinator: 'and',
+          rules: []
+        }
+      ]
+    }));
   }, []);
 
-  const validateRules = useCallback(() => {
-    const result = validateQueryGroup(queryGroup);
-    return result.isValid;
-  }, [queryGroup]);
+  const updateRule = useCallback((id: string, updates: Partial<QueryRule>) => {
+    const updateRuleInGroup = (group: QueryGroup): QueryGroup => {
+      return {
+        ...group,
+        rules: group.rules.map(rule => {
+          if ('rules' in rule) {
+            // This is a nested group
+            return updateRuleInGroup(rule);
+          } else if (rule.id === id) {
+            // This is the rule to update
+            return { ...rule, ...updates };
+          }
+          return rule;
+        })
+      };
+    };
+
+    setRuleGroup(prev => updateRuleInGroup(prev));
+  }, []);
+
+  const removeRule = useCallback((id: string) => {
+    const removeRuleFromGroup = (group: QueryGroup): QueryGroup => {
+      return {
+        ...group,
+        rules: group.rules
+          .filter(rule => !('id' in rule) || rule.id !== id)
+          .map(rule => {
+            if ('rules' in rule) {
+              // This is a nested group
+              return removeRuleFromGroup(rule);
+            }
+            return rule;
+          })
+      };
+    };
+
+    setRuleGroup(prev => removeRuleFromGroup(prev));
+  }, []);
+
+  const updateCombinator = useCallback((id: string, combinator: 'and' | 'or') => {
+    const updateCombinatorInGroup = (group: QueryGroup): QueryGroup => {
+      if (group.id === id) {
+        return { ...group, combinator };
+      }
+      
+      return {
+        ...group,
+        rules: group.rules.map(rule => {
+          if ('rules' in rule) {
+            // This is a nested group
+            return updateCombinatorInGroup(rule);
+          }
+          return rule;
+        })
+      };
+    };
+
+    setRuleGroup(prev => updateCombinatorInGroup(prev));
+  }, []);
 
   return {
-    queryGroup,
-    updateQueryGroup,
+    ruleGroup,
+    setRuleGroup,
+    validateRules,
     addRule,
     addGroup,
-    validate,
-    errors,
-    handleRuleChange,
-    validateRules
+    updateRule,
+    removeRule,
+    updateCombinator,
   };
 };

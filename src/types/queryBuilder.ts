@@ -60,6 +60,7 @@ export interface ValidationError {
   rule?: QueryRule;
   group?: QueryGroup;
   path?: string;
+  field?: string;
 }
 
 export interface ValidationResult {

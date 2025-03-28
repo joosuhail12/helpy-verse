@@ -41,7 +41,10 @@ const CompanyDetail = () => {
 
   return (
     <div className="flex flex-col space-y-6">
-      <CompanyDetailHeader company={company} onDeleteClick={() => console.log('Delete clicked')} />
+      <CompanyDetailHeader 
+        company={company} 
+        onDeleteClick={() => console.log('Delete clicked')} 
+      />
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
