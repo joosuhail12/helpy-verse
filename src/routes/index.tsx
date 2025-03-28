@@ -1,7 +1,5 @@
-
 import { lazy, Suspense } from 'react';
 import { createBrowserRouter } from 'react-router-dom';
-import { Loader2 } from 'lucide-react';
 import RootRedirect from '../components/app/RootRedirect';
 import RouteErrorBoundary from '@/components/app/RouteErrorBoundary';
 import { PrivateRoute } from '@/utils/helpers/Routes';
