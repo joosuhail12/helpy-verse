@@ -41,6 +41,16 @@ export const requestNotificationPermission = async (): Promise<boolean> => {
   }
 };
 
+// Interface for the sync property that might not be present on all ServiceWorkerRegistration objects
+interface SyncManager {
+  register(tag: string): Promise<void>;
+}
+
+// Extended ServiceWorkerRegistration interface that includes the sync property
+interface ExtendedServiceWorkerRegistration extends ServiceWorkerRegistration {
+  sync?: SyncManager;
+}
+
 /**
  * Register for background sync
  */
@@ -51,10 +61,10 @@ export const registerBackgroundSync = async (): Promise<boolean> => {
   }
   
   try {
-    const registration = await navigator.serviceWorker.ready;
+    const registration = await navigator.serviceWorker.ready as ExtendedServiceWorkerRegistration;
     
     // Check if SyncManager is supported
-    if ('SyncManager' in window && 'sync' in registration) {
+    if ('SyncManager' in window && registration.sync) {
       await registration.sync.register('sync-messages');
       console.log('Background sync registered successfully');
       return true;

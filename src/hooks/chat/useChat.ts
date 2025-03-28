@@ -18,6 +18,9 @@ interface UseChatReturn {
   setCurrentConversation: (conversation: Conversation | null) => void;
   loading: boolean;
   error: Error | null;
+  // Add the missing methods that are being used in other components
+  createNewConversation: (title?: string, type?: string) => Promise<string>;
+  selectConversation: (conversationId: string) => void;
 }
 
 export const useChat = (props?: UseChatProps): UseChatReturn => {
@@ -121,6 +124,19 @@ export const useChat = (props?: UseChatProps): UseChatReturn => {
     }
   }, []);
 
+  // Add the missing methods to match what's being used in other components
+  const createNewConversation = useCallback(async (title?: string, type?: string): Promise<string> => {
+    const newConversation = await createConversation(title);
+    return newConversation.id;
+  }, [createConversation]);
+
+  const selectConversation = useCallback((conversationId: string) => {
+    const conversation = conversations.find(c => c.id === conversationId);
+    if (conversation) {
+      setCurrentConversation(conversation);
+    }
+  }, [conversations]);
+
   return {
     messages,
     conversations,
@@ -129,6 +145,9 @@ export const useChat = (props?: UseChatProps): UseChatReturn => {
     createConversation,
     setCurrentConversation,
     loading,
-    error
+    error,
+    // Return the new methods to satisfy the TypeScript requirements
+    createNewConversation,
+    selectConversation
   };
 };

@@ -5,6 +5,14 @@ import { ChatMessage } from '@/components/chat-widget/components/conversation/ty
 import { useOfflineMessaging } from './useOfflineMessaging';
 import { useServiceWorkerSync } from './useServiceWorkerSync';
 
+interface SyncManager {
+  register(tag: string): Promise<void>;
+}
+
+interface ExtendedServiceWorkerRegistration extends ServiceWorkerRegistration {
+  sync?: SyncManager;
+}
+
 interface ChannelAndClient {
   channelInstance: any;
   clientId: string;
@@ -23,7 +31,6 @@ export const useRealtimeChat = (conversationId: string, workspaceId: string) => 
     clearQueuedMessages 
   } = useOfflineMessaging(conversationId);
   
-  // Initialize service worker sync
   const { 
     isSyncing, 
     hasQueuedMessages, 
@@ -36,7 +43,6 @@ export const useRealtimeChat = (conversationId: string, workspaceId: string) => 
     onSyncFailed: (error) => console.error(`Sync failed for conversation ${conversationId}:`, error)
   });
 
-  // Initialize channel once Ably client is ready
   useEffect(() => {
     if (!client) return;
     
@@ -47,12 +53,10 @@ export const useRealtimeChat = (conversationId: string, workspaceId: string) => 
     setIsLoading(false);
     
     return () => {
-      // Clean up channel subscription
       client.channels.release(channelName);
     };
   }, [client, clientId, conversationId, getChannelName]);
 
-  // Subscribe to messages
   useEffect(() => {
     if (!channel) return;
     
@@ -60,7 +64,6 @@ export const useRealtimeChat = (conversationId: string, workspaceId: string) => 
       const messageData = message.data as ChatMessage;
       
       setMessages((prevMessages) => {
-        // Avoid duplicates
         if (prevMessages.some(msg => msg.id === messageData.id)) {
           return prevMessages;
         }
@@ -69,17 +72,14 @@ export const useRealtimeChat = (conversationId: string, workspaceId: string) => 
       });
     };
     
-    // Subscribe to new messages
     const subscription = channel.channelInstance.subscribe('message', handleMessage);
     
-    // Process any messages sent while offline
     const processOfflineMessages = async () => {
-      if (offlineMode) return; // Don't process if still offline
+      if (offlineMode) return;
       
       const queuedMessages = await getQueuedMessages();
       
       if (queuedMessages.length > 0) {
-        // Send queued messages
         for (const msg of queuedMessages) {
           try {
             await channel.channelInstance.publish('message', msg);
@@ -88,7 +88,6 @@ export const useRealtimeChat = (conversationId: string, workspaceId: string) => 
           }
         }
         
-        // Clear queue after processing
         await clearQueuedMessages();
       }
     };
@@ -97,7 +96,6 @@ export const useRealtimeChat = (conversationId: string, workspaceId: string) => 
       processOfflineMessages();
     }
     
-    // Fetch history if available
     channel.channelInstance.history((err: Error, result: any) => {
       if (err) {
         console.error('Error fetching history:', err);
@@ -107,7 +105,6 @@ export const useRealtimeChat = (conversationId: string, workspaceId: string) => 
       if (result && result.items) {
         const historyMessages = result.items.map((item: any) => item.data);
         setMessages((prevMessages) => {
-          // Combine with any existing messages, avoiding duplicates
           const newMessages = [...prevMessages];
           
           for (const historyMsg of historyMessages) {
@@ -125,7 +122,6 @@ export const useRealtimeChat = (conversationId: string, workspaceId: string) => 
       }
     });
     
-    // Return cleanup function
     return () => {
       subscription.unsubscribe();
     };
@@ -137,7 +133,6 @@ export const useRealtimeChat = (conversationId: string, workspaceId: string) => 
     hasQueuedMessages
   ]);
 
-  // Listen for online/offline events
   useEffect(() => {
     const handleOnline = () => {
       console.log('App is online, syncing queued messages...');
@@ -151,7 +146,6 @@ export const useRealtimeChat = (conversationId: string, workspaceId: string) => 
     };
   }, [triggerManualSync]);
 
-  // Send message function
   const sendMessage = useCallback(async (content: string, metadata: Record<string, any> = {}) => {
     if (!content.trim()) return false;
     
@@ -174,17 +168,14 @@ export const useRealtimeChat = (conversationId: string, workspaceId: string) => 
         await channel.channelInstance.publish('message', message);
         return true;
       } else {
-        // Store message for later if offline
         await queueMessage(message);
         
-        // Also add to local state
         setMessages(prev => [...prev, message]);
         
-        // Try to register background sync
         if ('serviceWorker' in navigator && 'SyncManager' in window) {
           try {
-            const registration = await navigator.serviceWorker.ready;
-            if (registration && 'sync' in registration) {
+            const registration = await navigator.serviceWorker.ready as ExtendedServiceWorkerRegistration;
+            if (registration && registration.sync) {
               await registration.sync.register('sync-messages');
             }
           } catch (e) {
@@ -198,10 +189,8 @@ export const useRealtimeChat = (conversationId: string, workspaceId: string) => 
       console.error('Error sending message:', err);
       setError(err instanceof Error ? err : new Error('Failed to send message'));
       
-      // Queue message for later if send fails
       await queueMessage(message);
       
-      // Still add to local state
       setMessages(prev => [...prev, message]);
       return false;
     }
