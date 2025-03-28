@@ -1,10 +1,7 @@
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import TicketList from '@/components/inbox/TicketList';
 import { Ticket } from '@/types/ticket';
-import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { useAppSelector } from '@/hooks/useAppSelector';
-import { setTickets, selectTickets, setLoading } from '@/store/slices/inboxSlice';
 
 const initialTickets: Ticket[] = [
   {
@@ -126,19 +123,11 @@ const initialTickets: Ticket[] = [
 ];
 
 const AllTickets = () => {
-  const dispatch = useAppDispatch();
-  const tickets = useAppSelector(selectTickets);
+  const [tickets, setTickets] = useState<Ticket[]>(initialTickets);
   const [isLoading, setIsLoading] = useState(false);
-  
-  // Initialize tickets if they're not already in the Redux store
-  React.useEffect(() => {
-    if (tickets.length === 0) {
-      dispatch(setTickets(initialTickets));
-    }
-  }, [dispatch, tickets.length]);
 
   const handleTicketCreated = (newTicket: Ticket) => {
-    dispatch(setTickets([newTicket, ...tickets]));
+    setTickets(prevTickets => [newTicket, ...prevTickets]);
   };
 
   return (
@@ -150,7 +139,7 @@ const AllTickets = () => {
       
       <div className="flex-1 overflow-hidden">
         <TicketList 
-          tickets={tickets.length > 0 ? tickets : initialTickets} 
+          tickets={tickets} 
           isLoading={isLoading}
           onTicketCreated={handleTicketCreated}
         />

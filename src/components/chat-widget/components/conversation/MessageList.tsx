@@ -23,59 +23,14 @@ const MessageList: React.FC<MessageListProps> = ({
     }
   }, [messages]);
 
-  // Helper function to safely get timestamp in milliseconds
-  const getTimestampMs = (timestamp: string | Date): number => {
-    return timestamp instanceof Date 
-      ? timestamp.getTime() 
-      : new Date(timestamp).getTime();
-  };
-
-  // Group messages by sender and consecutive time (within 2 minutes)
-  const groupedMessages = messages.reduce((groups: ChatMessage[][], message, index) => {
-    // Start a new group if this is the first message
-    if (index === 0) {
-      return [[message]];
-    }
-
-    const lastGroup = groups[groups.length - 1];
-    const lastMessage = lastGroup[lastGroup.length - 1];
-    
-    // Conditions for grouping messages together:
-    // 1. Same sender
-    // 2. Time difference less than 2 minutes (120,000 ms)
-    const sameUser = lastMessage.sender === message.sender;
-    
-    const lastMessageTime = getTimestampMs(lastMessage.timestamp);
-    const currentMessageTime = getTimestampMs(message.timestamp);
-    const timeDiff = currentMessageTime - lastMessageTime;
-    
-    const closeInTime = timeDiff < 120000; // 2 minutes
-    
-    if (sameUser && closeInTime) {
-      // Add to existing group
-      lastGroup.push(message);
-    } else {
-      // Start new group
-      groups.push([message]);
-    }
-    
-    return groups;
-  }, []);
-
   return (
-    <div className="flex flex-col space-y-2 p-2">
-      {groupedMessages.map((group, groupIndex) => (
-        <div key={`group-${groupIndex}`} className="message-group">
-          {group.map((message, messageIndex) => (
-            <MessageItem
-              key={message.id}
-              message={message}
-              showAvatar={showAvatars && messageIndex === group.length - 1}
-              isFirstInGroup={messageIndex === 0}
-              isLastInGroup={messageIndex === group.length - 1}
-            />
-          ))}
-        </div>
+    <div className="flex flex-col space-y-4 p-2">
+      {messages.map((message) => (
+        <MessageItem
+          key={message.id}
+          message={message}
+          showAvatar={showAvatars}
+        />
       ))}
       <div ref={messagesEndRef} />
     </div>

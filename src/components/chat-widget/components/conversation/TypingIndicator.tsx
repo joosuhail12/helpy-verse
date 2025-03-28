@@ -37,28 +37,10 @@ const TypingIndicator: React.FC<TypingIndicatorProps> = ({ users, agentName }) =
     <div className="flex items-center py-2">
       <div className="flex justify-center items-center px-3 py-1 rounded-full bg-opacity-10" 
         style={{ backgroundColor: `${colors.agentMessage}50` }}>
-        <div className="flex space-x-1 mr-2 items-end">
-          <div className="w-2 h-2 rounded-full animate-bounce" 
-               style={{ 
-                 backgroundColor: colors.primary, 
-                 animationDelay: '0ms',
-                 animationDuration: '0.6s' 
-               }} 
-          />
-          <div className="w-2 h-2 rounded-full animate-bounce" 
-               style={{ 
-                 backgroundColor: colors.primary, 
-                 animationDelay: '150ms',
-                 animationDuration: '0.6s' 
-               }} 
-          />
-          <div className="w-2 h-2 rounded-full animate-bounce" 
-               style={{ 
-                 backgroundColor: colors.primary, 
-                 animationDelay: '300ms',
-                 animationDuration: '0.6s' 
-               }} 
-          />
+        <div className="flex space-x-1 mr-2">
+          <div className="w-2 h-2 rounded-full animate-bounce" style={{ backgroundColor: colors.primary, animationDelay: '0ms' }} />
+          <div className="w-2 h-2 rounded-full animate-bounce" style={{ backgroundColor: colors.primary, animationDelay: '150ms' }} />
+          <div className="w-2 h-2 rounded-full animate-bounce" style={{ backgroundColor: colors.primary, animationDelay: '300ms' }} />
         </div>
         <span className="text-xs opacity-75">{getTypingText()}</span>
       </div>

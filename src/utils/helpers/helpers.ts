@@ -2,17 +2,11 @@
 /**
  * Common utility helpers used throughout the application
  */
-import { 
-  getCookie as getStorageCookie, 
-  setCookie as setStorageCookie, 
-  handleLogout as handleStorageLogout 
-} from "@/api/services/http/cookieManager";
+import { cookieFunctions } from "@/api/services/http";
 import { handleSetToken as tokenManagerSetToken } from "@/utils/auth/tokenManager";
 
 // Re-export storage functions from cookieManager to avoid circular dependencies
-export const getCookie = getStorageCookie;
-export const setCookie = setStorageCookie;
-export const handleLogout = handleStorageLogout;
+export const { getCookie, setCookie, handleLogout } = cookieFunctions;
 
 // Base64 encoding for email addresses (simple obfuscation)
 export const encryptBase64 = (text: string): string => {

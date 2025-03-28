@@ -1,5 +1,4 @@
 
-import * as React from 'react';
 import { useState } from 'react';
 import AddCustomFieldDialog from '@/components/settings/customData/AddCustomFieldDialog';
 import { useCustomFields } from '@/hooks/useCustomFields';
