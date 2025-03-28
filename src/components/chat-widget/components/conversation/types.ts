@@ -33,12 +33,36 @@ export interface MessageInputProps {
   onHeightChange?: (height: number) => void;
   isRateLimited?: boolean;
   rateLimitTimeRemaining?: number;
+  showAttachments?: boolean;
+}
+
+export interface MessageSearchProps {
+  value: string;
+  onChange: React.Dispatch<React.SetStateAction<string>>;
+  resultCount: number;
+  currentResult: number;
+  onNavigate: (direction: 'next' | 'prev') => void;
+}
+
+export interface MessageListProps {
+  messages: ChatMessage[];
+  typingUsers?: string[];
+  useVirtualization?: boolean;
+  showReactions?: boolean;
+  showReadReceipts?: boolean;
 }
 
 export interface TypingUser {
   clientId: string;
   name?: string;
   timestamp: number;
+}
+
+export interface TypingIndicatorProps {
+  users: TypingUser[];
+  className?: string;
+  agentName?: string;
+  compact?: boolean;
 }
 
 export interface Conversation {
@@ -65,12 +89,6 @@ export interface UserAvatarProps {
   avatarUrl?: string;
   size?: 'sm' | 'md' | 'lg';
   status?: 'online' | 'offline' | 'away' | 'busy';
-  userId?: string; // Add missing property
-  color?: string; // Add missing property
+  userId?: string;
+  color?: string;
 }
-
-export interface TypingIndicatorProps {
-  users: TypingUser[];
-  className?: string;
-}
-

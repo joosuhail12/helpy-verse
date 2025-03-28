@@ -11,6 +11,9 @@ export const getToken = (): string | null => {
   return getCookie("customerToken");
 };
 
+// Alias for getToken to maintain compatibility with other code that uses getAuthToken
+export const getAuthToken = getToken;
+
 // Handle logout
 export const handleLogout = (): void => {
   // Remove auth token

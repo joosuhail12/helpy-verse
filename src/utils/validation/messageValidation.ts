@@ -1,85 +1,137 @@
 
-interface ValidationOptions {
-  maxLength?: number;
-  allowHtml?: boolean;
-  allowUrls?: boolean;
-  urlMaxLength?: number;
-}
+/**
+ * Message validation utilities for detecting spam, suspicious content, etc.
+ */
 
-interface ValidationError {
-  message: string;
-  code: string;
-}
+// List of potentially suspicious patterns
+const SUSPICIOUS_PATTERNS = [
+  /\b(password|credit card|ssn|social security)\b/i,
+  /\b\d{16}\b/, // Potential credit card numbers
+  /\b\d{3}-\d{2}-\d{4}\b/, // US SSN pattern
+];
 
-interface ValidationResult {
-  isValid: boolean;
-  sanitizedContent: string;
-  errors: ValidationError[];
-}
+// List of common spam phrases
+const SPAM_PHRASES = [
+  "click here to win",
+  "buy now",
+  "limited time offer",
+  "special promotion",
+  "act now",
+  "free money",
+  "make money fast",
+  "get rich quick",
+  "lottery winner",
+];
 
-export function validateAndSanitizeMessage(
-  content: string,
-  options: ValidationOptions = {}
-): ValidationResult {
+/**
+ * Check if a message contains potentially sensitive/suspicious information
+ */
+export const detectSuspiciousContent = (message: string): boolean => {
+  if (!message || typeof message !== 'string') return false;
+  
+  return SUSPICIOUS_PATTERNS.some(pattern => pattern.test(message));
+};
+
+/**
+ * Check if a message appears to be spam
+ */
+export const isSpamMessage = (message: string): boolean => {
+  if (!message || typeof message !== 'string') return false;
+  
+  const lowerCaseMessage = message.toLowerCase();
+  
+  // Check for spam phrases
+  const containsSpamPhrase = SPAM_PHRASES.some(phrase => 
+    lowerCaseMessage.includes(phrase.toLowerCase())
+  );
+  
+  // Check for excessive capitalization (SHOUTING)
+  const uppercaseRatio = (message.match(/[A-Z]/g)?.length || 0) / message.length;
+  const excessiveCaps = uppercaseRatio > 0.7 && message.length > 10;
+  
+  // Check for excessive use of special characters
+  const specialCharsRatio = (message.match(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/g)?.length || 0) / message.length;
+  const excessiveSpecialChars = specialCharsRatio > 0.3 && message.length > 10;
+  
+  // Check for excessive repeating characters
+  const hasRepeatingChars = /(.)\1{7,}/.test(message);
+  
+  // Check for excessive URLs
+  const urlCount = (message.match(/https?:\/\/[^\s]+/g) || []).length;
+  const excessiveUrls = urlCount > 3;
+  
+  return containsSpamPhrase || excessiveCaps || excessiveSpecialChars || hasRepeatingChars || excessiveUrls;
+};
+
+/**
+ * Validate message content against various criteria
+ */
+export const validateMessage = (
+  message: string, 
+  options: {
+    maxLength?: number;
+    blockSuspicious?: boolean;
+    blockSpam?: boolean;
+    blockWords?: string[];
+  } = {}
+): { isValid: boolean; reason?: string } => {
   const {
-    maxLength = 2000,
-    allowHtml = false,
-    allowUrls = true,
-    urlMaxLength = 100
+    maxLength = 5000,
+    blockSuspicious = false,
+    blockSpam = true,
+    blockWords = [],
   } = options;
   
-  const errors: ValidationError[] = [];
-  let sanitizedContent = content;
-  
-  // Check for empty content
-  if (!content.trim()) {
-    errors.push({
-      message: 'Message cannot be empty',
-      code: 'EMPTY_MESSAGE'
-    });
-    return { isValid: false, sanitizedContent: '', errors };
+  // Check if message is empty
+  if (!message || message.trim() === '') {
+    return { 
+      isValid: false, 
+      reason: 'Message cannot be empty' 
+    };
   }
   
-  // Check length
-  if (content.length > maxLength) {
-    errors.push({
-      message: `Message exceeds maximum length of ${maxLength} characters`,
-      code: 'MESSAGE_TOO_LONG'
-    });
-    sanitizedContent = content.substring(0, maxLength);
+  // Check message length
+  if (message.length > maxLength) {
+    return { 
+      isValid: false, 
+      reason: `Message exceeds maximum length of ${maxLength} characters` 
+    };
   }
   
-  // Sanitize HTML if not allowed
-  if (!allowHtml) {
-    sanitizedContent = sanitizedContent
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
-  }
-  
-  // Check for URLs if not allowed
-  if (!allowUrls) {
-    const urlRegex = /(https?:\/\/[^\s]+)/g;
-    if (urlRegex.test(content)) {
-      errors.push({
-        message: 'URLs are not allowed in messages',
-        code: 'URLS_NOT_ALLOWED'
-      });
-      sanitizedContent = sanitizedContent.replace(urlRegex, '[URL REMOVED]');
-    }
-  } else if (urlMaxLength) {
-    // Truncate long URLs
-    const urlRegex = /(https?:\/\/[^\s]+)/g;
-    sanitizedContent = sanitizedContent.replace(urlRegex, (url) => {
-      if (url.length > urlMaxLength) {
-        return url.substring(0, urlMaxLength) + '...';
+  // Check for blocked words
+  if (blockWords.length > 0) {
+    const lowerCaseMessage = message.toLowerCase();
+    for (const word of blockWords) {
+      if (lowerCaseMessage.includes(word.toLowerCase())) {
+        return { 
+          isValid: false, 
+          reason: 'Message contains blocked words' 
+        };
       }
-      return url;
-    });
+    }
   }
   
-  return {
-    isValid: errors.length === 0,
-    sanitizedContent,
-    errors
-  };
-}
+  // Check for suspicious content
+  if (blockSuspicious && detectSuspiciousContent(message)) {
+    return { 
+      isValid: false, 
+      reason: 'Message contains potentially sensitive information' 
+    };
+  }
+  
+  // Check for spam
+  if (blockSpam && isSpamMessage(message)) {
+    return { 
+      isValid: false, 
+      reason: 'Message appears to be spam' 
+    };
+  }
+  
+  return { isValid: true };
+};
+
+export default {
+  detectSuspiciousContent,
+  isSpamMessage,
+  validateMessage
+};

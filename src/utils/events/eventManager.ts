@@ -1,96 +1,109 @@
 
 import { ChatEventType, ChatEventUnion } from './eventTypes';
 
-// Queue of events for when system is offline
-let offlineEventQueue: ChatEventUnion[] = [];
-
-// Event listeners
-type EventListener = (event: ChatEventUnion) => void;
-const listeners: Record<string, EventListener[]> = {};
-const allEventListeners: EventListener[] = [];
-
-// Emit event to all listeners
-export function emitEvent(event: ChatEventUnion): void {
-  if (!navigator.onLine) {
-    // Queue event for when we're back online
-    offlineEventQueue.push(event);
-    return;
+/**
+ * Event Manager for handling custom events throughout the application
+ */
+class EventManager {
+  // Map of event types to sets of callback functions
+  private eventListeners: Map<string, Set<(event: any) => void>> = new Map();
+  
+  // Listeners for all events
+  private globalListeners: Set<(event: any) => void> = new Set();
+  
+  /**
+   * Subscribe to a specific event type
+   */
+  subscribe(eventType: ChatEventType, callback: (event: ChatEventUnion) => void): () => void {
+    if (!this.eventListeners.has(eventType)) {
+      this.eventListeners.set(eventType, new Set());
+    }
+    
+    const listeners = this.eventListeners.get(eventType);
+    if (listeners) {
+      listeners.add(callback);
+    }
+    
+    // Return unsubscribe function
+    return () => {
+      const listenersSet = this.eventListeners.get(eventType);
+      if (listenersSet) {
+        listenersSet.delete(callback);
+      }
+    };
   }
   
-  // Process event through listeners
-  processEvent(event);
-  
-  // Log event in development environment
-  if (process.env.NODE_ENV === 'development') {
-    console.log(`[Event] ${event.type}:`, event);
+  /**
+   * Subscribe to all events
+   */
+  subscribeToAll(callback: (event: ChatEventUnion) => void): () => void {
+    this.globalListeners.add(callback);
+    
+    // Return unsubscribe function
+    return () => {
+      this.globalListeners.delete(callback);
+    };
   }
-}
-
-// Process an event through registered listeners
-function processEvent(event: ChatEventUnion): void {
-  // Call type-specific listeners
-  if (listeners[event.type]) {
-    listeners[event.type].forEach(listener => {
+  
+  /**
+   * Publish an event
+   */
+  publish(event: ChatEventUnion): void {
+    // Add timestamp if not present
+    if (!event.timestamp) {
+      event.timestamp = new Date().toISOString();
+    }
+    
+    // Call specific event listeners
+    const listeners = this.eventListeners.get(event.type);
+    if (listeners) {
+      listeners.forEach(callback => {
+        try {
+          callback(event);
+        } catch (error) {
+          console.error(`Error in event listener for ${event.type}:`, error);
+        }
+      });
+    }
+    
+    // Call global listeners
+    this.globalListeners.forEach(callback => {
       try {
-        listener(event);
+        callback(event);
       } catch (error) {
-        console.error('Error in event listener:', error);
+        console.error(`Error in global event listener:`, error);
       }
     });
-  }
-  
-  // Call global listeners that receive all events
-  allEventListeners.forEach(listener => {
-    try {
-      listener(event);
-    } catch (error) {
-      console.error('Error in global event listener:', error);
-    }
-  });
-}
-
-// Subscribe to specific event type
-export function subscribeToEvent(
-  eventType: ChatEventType,
-  callback: EventListener
-): () => void {
-  if (!listeners[eventType]) {
-    listeners[eventType] = [];
-  }
-  
-  listeners[eventType].push(callback);
-  
-  // Return unsubscribe function
-  return () => {
-    listeners[eventType] = listeners[eventType].filter(listener => listener !== callback);
-  };
-}
-
-// Subscribe to all events
-export function subscribeToAllEvents(callback: EventListener): () => void {
-  allEventListeners.push(callback);
-  
-  // Return unsubscribe function
-  return () => {
-    const index = allEventListeners.indexOf(callback);
-    if (index !== -1) {
-      allEventListeners.splice(index, 1);
-    }
-  };
-}
-
-// Process offline event queue when back online
-window.addEventListener('online', () => {
-  if (offlineEventQueue.length > 0) {
-    // Process queued events
-    const events = [...offlineEventQueue];
-    offlineEventQueue = [];
     
-    events.forEach(event => {
-      emitEvent({
-        ...event,
-        retriedAt: new Date().toISOString()
-      });
-    });
+    // Log events in development mode
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[Event] ${event.type}:`, event);
+    }
   }
-});
+  
+  /**
+   * React hook-like API for components to use events
+   */
+  useEvent<T extends ChatEventUnion>(
+    eventType: ChatEventType, 
+    callback: (event: T) => void,
+    deps: any[] = []
+  ): void {
+    // Note: This is a simplified version. In a real implementation, 
+    // you would need to use React's useEffect and possibly useCallback
+    this.subscribe(eventType, callback as (event: ChatEventUnion) => void);
+  }
+  
+  /**
+   * Clear all event listeners
+   */
+  clearListeners(): void {
+    this.eventListeners.clear();
+    this.globalListeners.clear();
+  }
+}
+
+// Export a singleton instance
+export const eventManager = new EventManager();
+
+export default eventManager;

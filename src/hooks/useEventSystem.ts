@@ -1,6 +1,8 @@
 
 import { useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import { ChatEventType, ChatEventUnion } from '@/utils/events/eventTypes';
+import eventManager from '@/utils/events/eventManager';
 
 type EventCallback = (event: any) => void;
 
@@ -11,33 +13,19 @@ interface EventSystem {
 
 export function useEventSystem(): EventSystem {
   const emit = useCallback((eventType: string, data: any = {}) => {
-    const event = new CustomEvent(eventType, {
-      detail: {
-        ...data,
-        id: uuidv4(),
-        timestamp: new Date().toISOString(),
-        eventType
-      }
-    });
+    const event = {
+      ...data,
+      id: uuidv4(),
+      timestamp: new Date().toISOString(),
+      type: eventType as ChatEventType,
+      source: data.source || 'client'
+    };
     
-    window.dispatchEvent(event);
-    
-    // Also log events in development
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`[Event] ${eventType}:`, data);
-    }
+    eventManager.publish(event as ChatEventUnion);
   }, []);
   
   const subscribe = useCallback((eventType: string, callback: EventCallback) => {
-    const handleEvent = (event: CustomEvent) => {
-      callback(event.detail);
-    };
-    
-    window.addEventListener(eventType, handleEvent as EventListener);
-    
-    return () => {
-      window.removeEventListener(eventType, handleEvent as EventListener);
-    };
+    return eventManager.subscribe(eventType as ChatEventType, callback);
   }, []);
   
   return {
@@ -45,3 +33,10 @@ export function useEventSystem(): EventSystem {
     subscribe
   };
 }
+
+// Add a hook to listen to events
+export function useEventListener(eventType: ChatEventType, callback: (event: ChatEventUnion) => void) {
+  return eventManager.subscribe(eventType, callback);
+}
+
+export default useEventSystem;
