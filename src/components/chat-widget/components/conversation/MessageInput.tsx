@@ -2,14 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Paperclip, Lock } from 'lucide-react';
 import { useThemeContext } from '@/context/ThemeContext';
-
-interface MessageInputProps {
-  onSendMessage: (content: string) => void;
-  onTyping?: () => void;
-  placeholder?: string;
-  disabled?: boolean;
-  encrypted?: boolean;
-}
+import { MessageInputProps } from './types';
 
 const MessageInput: React.FC<MessageInputProps> = ({
   onSendMessage,
@@ -17,6 +10,13 @@ const MessageInput: React.FC<MessageInputProps> = ({
   placeholder = 'Type your message...',
   disabled = false,
   encrypted = false,
+  attachments = [],
+  onFileUpload,
+  onRemoveFile,
+  onTypingStart,
+  onTypingEnd,
+  compact = false,
+  onHeightChange,
 }) => {
   const { colors } = useThemeContext();
   const [message, setMessage] = useState('');
@@ -41,11 +41,25 @@ const MessageInput: React.FC<MessageInputProps> = ({
         timeoutRef.current = null;
       }, 3000);
     }
+    
+    // For ResponsiveConversationView compatibility
+    if (onTypingStart) {
+      onTypingStart();
+      
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      
+      timeoutRef.current = setTimeout(() => {
+        if (onTypingEnd) onTypingEnd();
+        timeoutRef.current = null;
+      }, 3000);
+    }
   };
 
   const handleSend = () => {
     if (message.trim()) {
-      onSendMessage(message.trim());
+      onSendMessage(message.trim(), attachments);
       setMessage('');
       
       // Focus the input after sending
@@ -67,9 +81,21 @@ const MessageInput: React.FC<MessageInputProps> = ({
     const textarea = inputRef.current;
     if (textarea) {
       textarea.style.height = 'auto';
-      textarea.style.height = `${Math.min(textarea.scrollHeight, 120)}px`;
+      const newHeight = Math.min(textarea.scrollHeight, 120);
+      textarea.style.height = `${newHeight}px`;
+      
+      if (onHeightChange) {
+        onHeightChange(newHeight + 48); // Account for padding/borders
+      }
     }
-  }, [message]);
+  }, [message, onHeightChange]);
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && onFileUpload) {
+      onFileUpload(Array.from(e.target.files));
+      e.target.value = ''; // Reset the input
+    }
+  };
 
   return (
     <div
@@ -83,17 +109,43 @@ const MessageInput: React.FC<MessageInputProps> = ({
         </div>
       )}
       
+      {/* Attachment previews */}
+      {attachments && attachments.length > 0 && (
+        <div className="flex flex-wrap gap-2 mb-2">
+          {attachments.map((file, index) => (
+            <div key={index} className="flex items-center bg-gray-100 rounded px-2 py-1 text-xs text-gray-700">
+              <span className="truncate max-w-[120px]">{file.name}</span>
+              {onRemoveFile && (
+                <button 
+                  onClick={() => onRemoveFile(file)} 
+                  className="ml-1 text-gray-500 hover:text-gray-700"
+                >
+                  &times;
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+      
       <div
         className="flex items-end gap-2 rounded-lg p-2"
         style={{ background: colors.inputBackground }}
       >
-        <button
-          className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
-          aria-label="Attach file"
-          style={{ color: colors.foreground }}
-        >
-          <Paperclip className="h-5 w-5" />
-        </button>
+        {onFileUpload && (
+          <label className="cursor-pointer">
+            <input
+              type="file"
+              className="hidden"
+              multiple
+              onChange={handleFileSelect}
+              disabled={disabled}
+            />
+            <div className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
+              <Paperclip className="h-5 w-5" style={{ color: colors.foreground }} />
+            </div>
+          </label>
+        )}
         
         <textarea
           ref={inputRef}

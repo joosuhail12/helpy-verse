@@ -33,6 +33,7 @@ export interface MessageInputProps {
   compact?: boolean;
   onHeightChange?: (height: number) => void;
   encrypted?: boolean;
+  onTyping?: () => void;
 }
 
 export interface ChatAvatarProps {
@@ -91,7 +92,6 @@ export interface ThemeConfig {
     agentMessage: string;
     agentMessageText: string;
     inputBackground: string;
-    // Adding missing color properties
     muted: string;
     mutedForeground: string;
     secondary: string;

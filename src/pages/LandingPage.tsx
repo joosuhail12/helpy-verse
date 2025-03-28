@@ -3,7 +3,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { ChatWidget } from '@/components/chat-widget/ChatWidget';
-import { ThemeConfig } from '@/components/chat-widget/components/conversation/types';
+import { ThemeConfig } from '@/context/ThemeContext';
 
 /**
  * Landing page that is accessible without authentication

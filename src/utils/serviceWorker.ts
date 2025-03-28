@@ -45,16 +45,23 @@ export const requestNotificationPermission = async (): Promise<boolean> => {
  * Register for background sync
  */
 export const registerBackgroundSync = async (): Promise<boolean> => {
-  if (!('serviceWorker' in navigator) || !('SyncManager' in window)) {
+  if (!('serviceWorker' in navigator)) {
     console.warn('Background Sync is not supported in this browser');
     return false;
   }
   
   try {
     const registration = await navigator.serviceWorker.ready;
-    await registration.sync.register('sync-messages');
-    console.log('Background sync registered successfully');
-    return true;
+    
+    // Check if SyncManager is supported
+    if ('SyncManager' in window && registration.sync) {
+      await registration.sync.register('sync-messages');
+      console.log('Background sync registered successfully');
+      return true;
+    } else {
+      console.warn('SyncManager is not supported in this browser');
+      return false;
+    }
   } catch (error) {
     console.error('Background sync registration failed:', error);
     return false;

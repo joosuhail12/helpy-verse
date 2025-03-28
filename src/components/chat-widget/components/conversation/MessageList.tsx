@@ -7,7 +7,7 @@ import UserAvatar from '../user/UserAvatar';
 import { ChatMessage } from './types';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 
 interface MessageListProps {
   messages: ChatMessage[];
@@ -52,7 +52,7 @@ const MessageList: React.FC<MessageListProps> = ({
       currentGroup.push(message);
       
       if (index === messages.length - 1 || 
-          !dayjs.default(message.timestamp).isSame(dayjs.default(messages[index + 1].timestamp), 'day')) {
+          !dayjs(message.timestamp).isSame(dayjs(messages[index + 1].timestamp), 'day')) {
         groupedMessages.push(currentGroup);
         currentGroup = [];
       }
@@ -62,7 +62,7 @@ const MessageList: React.FC<MessageListProps> = ({
   };
   
   const formatMessageGroupTime = (date: Date | string) => {
-    return dayjs.default(date).format('MMMM D, YYYY');
+    return dayjs(date).format('MMMM D, YYYY');
   };
   
   const groupedMessages = groupMessagesByTime(messages);
@@ -101,7 +101,7 @@ const MessageList: React.FC<MessageListProps> = ({
         
         return (
           <div 
-            key={dayjs.default(group[0].timestamp).format('YYYYMMDD') + idx} 
+            key={dayjs(group[0].timestamp).format('YYYYMMDD') + idx} 
             className="mb-4 space-y-2"
           >
             <div 

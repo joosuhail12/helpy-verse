@@ -9,13 +9,15 @@ interface ChatContextValue {
   conversations: Conversation[];
   currentConversation: Conversation | null;
   setCurrentConversation: (conversation: Conversation | null) => void;
-  createNewConversation: (title?: string) => Promise<Conversation>;
+  createNewConversation: (title?: string) => Promise<string>;
   getMessages: (conversationId: string) => Promise<ChatMessage[]>;
   saveMessages: (conversationId: string, messages: ChatMessage[]) => Promise<boolean>;
   requiresAuthentication: boolean;
   isAuthenticated: boolean;
   endToEndEncryptionEnabled: boolean;
   toggleEncryption: (enabled: boolean) => void;
+  selectConversation: (conversationId: string) => void;
+  sendMessage: (conversationId: string, content: string, attachments?: File[]) => Promise<void>;
 }
 
 const ChatContext = createContext<ChatContextValue | undefined>(undefined);
@@ -99,7 +101,7 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
     }
   }, [conversations, currentConversation, workspaceId]);
 
-  const createNewConversation = useCallback(async (title?: string): Promise<Conversation> => {
+  const createNewConversation = useCallback(async (title?: string): Promise<string> => {
     const conversationId = uuidv4();
     
     // If E2E encryption is enabled, set up encryption for this conversation
@@ -118,8 +120,34 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
     setConversations(prev => [...prev, newConversation]);
     setCurrentConversation(newConversation);
     
-    return newConversation;
+    return conversationId;
   }, [endToEndEncryptionEnabled]);
+
+  const selectConversation = useCallback((conversationId: string) => {
+    const conversation = conversations.find(c => c.id === conversationId);
+    if (conversation) {
+      setCurrentConversation(conversation);
+    }
+  }, [conversations]);
+
+  const sendMessage = useCallback(async (conversationId: string, content: string, attachments?: File[]) => {
+    // This would normally send the message to the backend
+    console.log(`Sending message to conversation ${conversationId}: ${content}`);
+    console.log(`Attachments: ${attachments?.length || 0}`);
+    
+    // Update conversation timestamp
+    setConversations(prev => 
+      prev.map(conv => 
+        conv.id === conversationId 
+          ? {
+              ...conv,
+              lastMessage: content,
+              lastMessageTimestamp: new Date().toISOString()
+            }
+          : conv
+      )
+    );
+  }, []);
 
   // Get messages for a specific conversation
   const getMessages = useCallback(async (conversationId: string): Promise<ChatMessage[]> => {
@@ -232,9 +260,7 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
             return {
               ...conv,
               lastMessage: lastMessage.content.substring(0, 50) + (lastMessage.content.length > 50 ? '...' : ''),
-              lastMessageTimestamp: typeof lastMessage.timestamp === 'string' 
-                ? lastMessage.timestamp 
-                : lastMessage.timestamp.toISOString(),
+              lastMessageTimestamp: new Date().toISOString(),
               encrypted: isEncrypted
             };
           }
@@ -263,7 +289,9 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
     requiresAuthentication,
     isAuthenticated,
     endToEndEncryptionEnabled,
-    toggleEncryption
+    toggleEncryption,
+    selectConversation,
+    sendMessage
   };
 
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;

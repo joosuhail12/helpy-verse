@@ -25,7 +25,7 @@ export interface ThemeConfig {
   };
   position?: 'left' | 'right';
   compact?: boolean;
-  labels?: {
+  labels: {
     welcomeTitle: string;
     welcomeSubtitle: string;
     askQuestionButton: string;

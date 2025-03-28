@@ -4,7 +4,7 @@ import { useChat } from '@/hooks/chat/useChat';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import TypingIndicator from './TypingIndicator';
-import { ChatMessage } from './types';
+import { ChatMessage, TypingUser } from './types';
 import { usePaginatedMessages } from '@/hooks/chat/usePaginatedMessages';
 import { useOfflineSyncManager } from '@/hooks/chat/useOfflineSyncManager';
 import { RateLimiter } from '@/utils/chat/rateLimiter';
@@ -27,7 +27,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
 }) => {
   const { sendMessage } = useChat();
   const [attachments, setAttachments] = useState<File[]>([]);
-  const [typingUsers, setTypingUsers] = useState<string[]>([]);
+  const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
   const [rateLimiter] = useState(() => new RateLimiter(conversationId));
   
   // Use our new hooks
@@ -105,7 +105,11 @@ const ConversationView: React.FC<ConversationViewProps> = ({
   useEffect(() => {
     if (messages.length > 0 && messages[messages.length - 1].sender === 'user') {
       const timeout = setTimeout(() => {
-        setTypingUsers(['Agent']);
+        setTypingUsers([{
+          clientId: 'agent-1',
+          name: 'Agent',
+          timestamp: Date.now()
+        }]);
         
         setTimeout(() => {
           setTypingUsers([]);

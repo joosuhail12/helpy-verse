@@ -185,7 +185,9 @@ export const useRealtimeChat = (conversationId: string, workspaceId: string) => 
         if ('serviceWorker' in navigator && 'SyncManager' in window) {
           try {
             const registration = await navigator.serviceWorker.ready;
-            await registration.sync.register('sync-messages');
+            if (registration.sync) {
+              await registration.sync.register('sync-messages');
+            }
           } catch (e) {
             console.warn('Background sync registration failed:', e);
           }

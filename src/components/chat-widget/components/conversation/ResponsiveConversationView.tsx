@@ -5,26 +5,26 @@ import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import TypingIndicator from './TypingIndicator';
 import { useMediaQuery } from '@/hooks/use-mobile';
-import { ChatMessage, ResponsiveConversationViewProps } from './types';
+import { ChatMessage, ResponsiveConversationViewProps, TypingUser } from './types';
 
 const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
   conversationId,
   compact = false,
-  workspaceId
+  workspaceId,
+  onBack
 }) => {
   const isMobile = useMediaQuery('(max-width: 640px)');
-  const { 
-    sendMessage, 
-    messages: chatMessages, 
-    isLoading, 
-    startTyping,
-    stopTyping
-  } = useChat();
+  const { sendMessage, messages: chatMessages } = useChat();
   
+  const [isLoading, setIsLoading] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [attachments, setAttachments] = useState<File[]>([]);
   const [inputHeight, setInputHeight] = useState<number>(64); // Default height
-  const [typingUsers, setTypingUsers] = useState<string[]>([]);
+  const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
+
+  // Mock methods for typing indicators
+  const startTyping = () => console.log('Started typing');
+  const stopTyping = () => console.log('Stopped typing');
 
   // Load messages for this conversation
   useEffect(() => {
@@ -83,14 +83,14 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
       
       {typingUsers.length > 0 && (
         <div className="px-4 py-1">
-          <TypingIndicator users={typingUsers} />
+          <TypingIndicator users={typingUsers} compact={isMobile} />
         </div>
       )}
       
       <MessageInput 
         onSendMessage={handleSendMessage}
-        onTypingStart={() => startTyping(conversationId)}
-        onTypingEnd={() => stopTyping(conversationId)}
+        onTypingStart={startTyping}
+        onTypingEnd={stopTyping}
         attachments={attachments}
         onFileUpload={handleFileUpload}
         onRemoveFile={handleRemoveFile}
