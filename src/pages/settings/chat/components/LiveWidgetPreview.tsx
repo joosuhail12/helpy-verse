@@ -4,24 +4,18 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChatWidgetSettings } from '@/store/slices/chatWidgetSettings/types';
 import ConnectedChatWidget from '@/components/chat-widget/ConnectedChatWidget';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import StreamlinedPreviewControls from './preview/StreamlinedPreviewControls';
-import SampleConversation from '@/components/chat-widget/components/conversation/SampleConversation';
-import { Sparkles, ArrowDownToLine } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ThemeProvider } from '@/context/ThemeContext';
 import DeviceFrame from './preview/DeviceFrame';
 import ResponsiveControls from './preview/ResponsiveControls';
-import { useIsMobile } from '@/hooks/use-mobile';
-
-type ChatView = 'home' | 'messages' | 'conversation';
-type DeviceType = 'iphone' | 'android' | 'tablet' | 'desktop';
-type Orientation = 'portrait' | 'landscape';
+import { DeviceType, Orientation, ChatView } from '@/types/preview';
+import SampleConversation from '@/components/chat-widget/components/conversation/SampleConversation';
 
 interface LiveWidgetPreviewProps {
   settings: ChatWidgetSettings;
-  onSettingChange: (field: keyof ChatWidgetSettings, value: any) => void;
+  currentView: ChatView;
+  onViewChange: (view: ChatView) => void;
 }
 
 /**
@@ -29,38 +23,17 @@ interface LiveWidgetPreviewProps {
  */
 const LiveWidgetPreview: React.FC<LiveWidgetPreviewProps> = ({ 
   settings,
-  onSettingChange 
+  currentView,
+  onViewChange
 }) => {
-  const [background, setBackground] = useState<string>('#ffffff');
-  const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
-  const [previewSettings, setPreviewSettings] = useState<ChatWidgetSettings>(settings);
-  const [refreshPreview, setRefreshPreview] = useState<number>(Date.now());
-  const [chatWidgetOpen, setChatWidgetOpen] = useState<boolean>(true);
-  const [currentView, setCurrentView] = useState<ChatView>('conversation');
   const [deviceType, setDeviceType] = useState<DeviceType>('iphone');
   const [orientation, setOrientation] = useState<Orientation>('portrait');
-  const isMobile = useIsMobile();
+  const [chatWidgetOpen, setChatWidgetOpen] = useState<boolean>(true);
+  const [background, setBackground] = useState<string>('#ffffff');
+  const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
   
-  React.useEffect(() => {
-    setPreviewSettings(settings);
-  }, [settings]);
-  
-  const handlePreviewSettingChange = (field: keyof ChatWidgetSettings, value: any) => {
-    setPreviewSettings(prev => {
-      const newSettings = { ...prev, [field]: value };
-      setRefreshPreview(Date.now());
-      return newSettings;
-    });
-    
-    onSettingChange(field, value);
-  };
-
   const handleToggleWidget = () => {
     setChatWidgetOpen(!chatWidgetOpen);
-  };
-
-  const handleViewChange = (view: 'home' | 'messages' | 'conversation') => {
-    setCurrentView(view);
   };
 
   return (
@@ -74,35 +47,9 @@ const LiveWidgetPreview: React.FC<LiveWidgetPreviewProps> = ({
               Live
             </Badge>
           </CardTitle>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="ghost" size="sm" className="text-gray-500 hover:text-gray-700">
-                  <ArrowDownToLine className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p className="text-xs">Export Preview</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
         </div>
       </CardHeader>
       <CardContent className="p-0">
-        <StreamlinedPreviewControls 
-          background={background}
-          setBackground={setBackground}
-          backgroundImage={backgroundImage}
-          setBackgroundImage={setBackgroundImage}
-          settings={settings}
-          previewSettings={previewSettings}
-          onSettingChange={handlePreviewSettingChange}
-          onViewChange={handleViewChange}
-          currentView={currentView}
-          onToggleWidget={handleToggleWidget}
-          isWidgetOpen={chatWidgetOpen}
-        />
-
         <Tabs defaultValue="mobile" className="w-full">
           <div className="px-4 py-2 border-b bg-gray-50">
             <TabsList className="grid w-56 grid-cols-2">
@@ -126,12 +73,11 @@ const LiveWidgetPreview: React.FC<LiveWidgetPreviewProps> = ({
               }}
             >
               <ConnectedChatWidget 
-                key={refreshPreview}
                 workspaceId="preview-workspace-id" 
                 isPreview={true}
                 showLauncher={true}
                 sampleMessages={true}
-                previewSettings={previewSettings}
+                previewSettings={settings}
               />
             </div>
           </TabsContent>
@@ -166,8 +112,8 @@ const LiveWidgetPreview: React.FC<LiveWidgetPreviewProps> = ({
                     <div className="absolute bottom-8 right-6">
                       <button
                         onClick={handleToggleWidget}
-                        className={`${previewSettings.launcherStyle === 'rectangle' ? 'rounded-lg px-3 py-2' : 'rounded-full w-14 h-14'} flex items-center justify-center shadow-lg transition-transform hover:scale-105 animate-pulse`}
-                        style={{ backgroundColor: previewSettings.primaryColor }}
+                        className={`${settings.launcherStyle === 'rectangle' ? 'rounded-lg px-3 py-2' : 'rounded-full w-14 h-14'} flex items-center justify-center shadow-lg transition-transform hover:scale-105 animate-pulse`}
+                        style={{ backgroundColor: settings.primaryColor }}
                       >
                         <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
@@ -178,52 +124,52 @@ const LiveWidgetPreview: React.FC<LiveWidgetPreviewProps> = ({
                     <div className="h-full">
                       <ThemeProvider initialTheme={{
                         colors: {
-                          primary: previewSettings.primaryColor,
+                          primary: settings.primaryColor,
                           primaryForeground: '#ffffff',
                           background: '#ffffff',
                           backgroundSecondary: '#f9f9f9',
                           foreground: '#1A1F2C',
                           border: '#eaeaea',
-                          userMessage: previewSettings.userMessageColor,
+                          userMessage: settings.userMessageColor,
                           userMessageText: '#ffffff',
-                          agentMessage: previewSettings.agentMessageColor,
+                          agentMessage: settings.agentMessageColor,
                           agentMessageText: '#1A1F2C',
-                          inputBackground: previewSettings.messageBoxColor,
-                          headerBackground: previewSettings.headerColor
+                          inputBackground: settings.messageBoxColor,
+                          headerBackground: settings.headerColor
                         },
-                        position: previewSettings.position,
-                        compact: previewSettings.compact,
+                        position: settings.position,
+                        compact: settings.compact,
                         labels: {
-                          welcomeTitle: previewSettings.welcomeTitle,
-                          welcomeSubtitle: previewSettings.welcomeSubtitle,
+                          welcomeTitle: settings.welcomeTitle,
+                          welcomeSubtitle: settings.welcomeSubtitle,
                           askQuestionButton: 'Ask a question',
                           recentMessagesTitle: 'Recent messages',
                           noMessagesText: 'No messages yet. Start a conversation!',
                           messagePlaceholder: 'Type a message...',
-                          headerTitle: previewSettings.headerTitle
+                          headerTitle: settings.headerTitle
                         },
                         features: {
-                          typingIndicator: previewSettings.enableTypingIndicator,
-                          reactions: previewSettings.enableReactions,
-                          fileAttachments: previewSettings.enableFileAttachments,
-                          readReceipts: previewSettings.enableReadReceipts
+                          typingIndicator: settings.enableTypingIndicator,
+                          reactions: settings.enableReactions,
+                          fileAttachments: settings.enableFileAttachments,
+                          readReceipts: settings.enableReadReceipts
                         },
                         styles: {
-                          fontFamily: previewSettings.fontFamily,
-                          launcherStyle: previewSettings.launcherStyle
+                          fontFamily: settings.fontFamily,
+                          launcherStyle: settings.launcherStyle
                         }
                       }}>
                         <SampleConversation 
                           onClose={handleToggleWidget}
-                          position={previewSettings.position}
-                          compact={previewSettings.compact}
-                          headerTitle={previewSettings.headerTitle}
-                          headerColor={previewSettings.headerColor}
+                          position={settings.position}
+                          compact={settings.compact}
+                          headerTitle={settings.headerTitle}
+                          headerColor={settings.headerColor}
                           currentView={currentView}
-                          onChangeView={handleViewChange}
-                          userMessageColor={previewSettings.userMessageColor}
-                          agentMessageColor={previewSettings.agentMessageColor}
-                          messageBoxColor={previewSettings.messageBoxColor}
+                          onChangeView={onViewChange}
+                          userMessageColor={settings.userMessageColor}
+                          agentMessageColor={settings.agentMessageColor}
+                          messageBoxColor={settings.messageBoxColor}
                         />
                       </ThemeProvider>
                     </div>

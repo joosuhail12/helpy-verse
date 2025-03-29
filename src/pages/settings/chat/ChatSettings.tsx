@@ -3,10 +3,11 @@ import { Button } from '@/components/ui/button';
 import { useChatSettings } from './hooks/useChatSettings';
 import SettingsTabs from './components/SettingsTabs';
 import LiveWidgetPreview from './components/LiveWidgetPreview';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useAppDispatch } from '@/hooks/redux';
 import { loadChatWidgetSettings } from '@/store/slices/chatWidgetSettings';
 import { Loader2 } from 'lucide-react';
+import { ChatView } from '@/types/preview';
 
 /**
  * Main component for chat widget settings
@@ -23,6 +24,8 @@ const ChatSettings = () => {
     setSelectedTab,
     loading
   } = useChatSettings();
+  
+  const [currentView, setCurrentView] = useState<ChatView>('conversation');
 
   // Load saved settings on component mount
   useEffect(() => {
@@ -58,11 +61,17 @@ const ChatSettings = () => {
             settings={settings}
             onSettingChange={handleChange}
             getEmbedCode={getEmbedCode}
+            currentView={currentView}
+            onViewChange={setCurrentView}
           />
         </div>
 
         <div className="lg:col-span-1">
-          <LiveWidgetPreview settings={settings} onSettingChange={handleChange} />
+          <LiveWidgetPreview 
+            settings={settings} 
+            currentView={currentView}
+            onViewChange={setCurrentView}
+          />
         </div>
       </div>
     </div>
