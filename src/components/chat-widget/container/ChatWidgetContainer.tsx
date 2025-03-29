@@ -15,6 +15,7 @@ interface ChatWidgetContainerProps {
   compact?: boolean;
   isPreview?: boolean;
   sampleMessages?: boolean;
+  initialView?: 'home' | 'messages' | 'conversation';
 }
 
 export type View = 'home' | 'messages' | 'conversation';
@@ -25,12 +26,13 @@ const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({
   position = 'right',
   compact = false,
   isPreview = false,
-  sampleMessages = false
+  sampleMessages = false,
+  initialView = 'home'
 }) => {
   const { conversations, currentConversation, selectConversation, createNewConversation } = useChat();
   const { colors, features, labels, styles } = useThemeContext();
   const [isLoading, setIsLoading] = useState(false);
-  const [activeView, setActiveView] = useState<View>('home');
+  const [activeView, setActiveView] = useState<View>(initialView);
 
   // Modified to not create a conversation on init
   useEffect(() => {
@@ -74,6 +76,11 @@ const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({
           compact={compact} 
           headerTitle={labels.headerTitle}
           headerColor={colors.headerBackground}
+          currentView={activeView}
+          onChangeView={setActiveView}
+          userMessageColor={colors.userMessage}
+          agentMessageColor={colors.agentMessage}
+          messageBoxColor={colors.inputBackground}
         />
       </div>
     );

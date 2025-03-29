@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChatWidgetSettings } from '@/store/slices/chatWidgetSettings/types';
@@ -48,6 +49,10 @@ const LiveWidgetPreview: React.FC<LiveWidgetPreviewProps> = ({
     setChatWidgetOpen(!chatWidgetOpen);
   };
 
+  const handleViewChange = (view: 'home' | 'messages' | 'conversation') => {
+    setCurrentView(view);
+  };
+
   return (
     <Card className="h-full overflow-hidden border shadow-md bg-gradient-to-b from-white to-gray-50">
       <CardHeader className="pb-0 pt-4 border-b">
@@ -82,7 +87,7 @@ const LiveWidgetPreview: React.FC<LiveWidgetPreviewProps> = ({
           settings={settings}
           previewSettings={previewSettings}
           onSettingChange={handlePreviewSettingChange}
-          onViewChange={setCurrentView}
+          onViewChange={handleViewChange}
           currentView={currentView}
           onToggleWidget={handleToggleWidget}
           isWidgetOpen={chatWidgetOpen}
@@ -198,7 +203,7 @@ const LiveWidgetPreview: React.FC<LiveWidgetPreviewProps> = ({
                           headerTitle={previewSettings.headerTitle}
                           headerColor={previewSettings.headerColor}
                           currentView={currentView}
-                          onChangeView={setCurrentView}
+                          onChangeView={handleViewChange}
                           userMessageColor={previewSettings.userMessageColor}
                           agentMessageColor={previewSettings.agentMessageColor}
                           messageBoxColor={previewSettings.messageBoxColor}
