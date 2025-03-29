@@ -4,6 +4,7 @@ import { X } from 'lucide-react';
 import { useThemeContext } from '@/context/ThemeContext';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
+import { ChatMessage } from './types';
 
 interface SampleConversationProps {
   onClose: () => void;
@@ -18,12 +19,12 @@ const SampleConversation: React.FC<SampleConversationProps> = ({
 }) => {
   const { colors, labels } = useThemeContext();
   
-  // Sample messages for preview
-  const sampleMessages = [
+  // Sample messages for preview - explicitly typed as ChatMessage[]
+  const sampleMessages: ChatMessage[] = [
     {
       id: '1',
       content: 'Hi there! How can I help you today?',
-      sender: 'agent',
+      sender: 'agent', // Now explicitly using the literal type
       timestamp: new Date(Date.now() - 3600000).toISOString(),
       status: 'delivered',
       attachments: [],
@@ -31,7 +32,7 @@ const SampleConversation: React.FC<SampleConversationProps> = ({
     {
       id: '2',
       content: 'I have a question about my subscription.',
-      sender: 'user',
+      sender: 'user', // Now explicitly using the literal type
       timestamp: new Date(Date.now() - 3500000).toISOString(),
       status: 'delivered',
       attachments: [],
@@ -39,7 +40,7 @@ const SampleConversation: React.FC<SampleConversationProps> = ({
     {
       id: '3',
       content: 'Sure, I\'d be happy to help with that. Could you please provide your account number?',
-      sender: 'agent',
+      sender: 'agent', // Now explicitly using the literal type
       timestamp: new Date(Date.now() - 3400000).toISOString(),
       status: 'delivered',
       attachments: [],
