@@ -10,7 +10,7 @@ interface ContactsResponse {
 /**
  * Service for managing contacts/customers
  */
-export class ContactsService extends BaseService<Contact> {
+export class ContactsService extends BaseService<Contact, ContactsResponse> {
   protected endpoint = '/customer';
 
   /**

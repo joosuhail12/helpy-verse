@@ -4,8 +4,9 @@ import { apiClient, ApiResponse, RequestOptions } from '../client';
 /**
  * Base service class with common CRUD operations
  * @template T The entity type this service manages
+ * @template R The response type for getAll (defaults to T[])
  */
-export abstract class BaseService<T> {
+export abstract class BaseService<T, R = T[]> {
   /**
    * Base API endpoint for this service
    */
@@ -14,9 +15,9 @@ export abstract class BaseService<T> {
   /**
    * Get all entities
    */
-  async getAll(params?: Record<string, any>): Promise<T[]> {
+  async getAll(params?: Record<string, any>): Promise<R> {
     const options: RequestOptions = { params };
-    const response = await apiClient.get<T[]>(this.endpoint, options);
+    const response = await apiClient.get<R>(this.endpoint, options);
     return response.data;
   }
 
@@ -54,22 +55,22 @@ export abstract class BaseService<T> {
   /**
    * Custom method for making any API request
    */
-  protected async request<R = any>(
+  protected async request<RespType = any>(
     method: 'get' | 'post' | 'put' | 'delete' | 'patch',
     url: string,
     data?: any,
     options?: RequestOptions
-  ): Promise<ApiResponse<R>> {
+  ): Promise<ApiResponse<RespType>> {
     if (method === 'get') {
-      return apiClient.get<R>(url, options);
+      return apiClient.get<RespType>(url, options);
     } else if (method === 'post') {
-      return apiClient.post<R>(url, data, options);
+      return apiClient.post<RespType>(url, data, options);
     } else if (method === 'put') {
-      return apiClient.put<R>(url, data, options);
+      return apiClient.put<RespType>(url, data, options);
     } else if (method === 'delete') {
-      return apiClient.delete<R>(url, options);
+      return apiClient.delete<RespType>(url, options);
     } else if (method === 'patch') {
-      return apiClient.patch<R>(url, data, options);
+      return apiClient.patch<RespType>(url, data, options);
     }
     throw new Error(`Unsupported HTTP method: ${method}`);
   }

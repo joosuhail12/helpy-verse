@@ -10,7 +10,7 @@ interface CompaniesResponse {
 /**
  * Service for managing companies
  */
-export class CompaniesService extends BaseService<Company> {
+export class CompaniesService extends BaseService<Company, CompaniesResponse> {
   protected endpoint = '/company';
 
   /**

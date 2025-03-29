@@ -54,31 +54,33 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({
     setIsOpen((prev) => !prev);
   };
 
+  const position = combinedTheme.position === 'left' ? 'left' : 'right';
+
   return (
     <AblyProvider workspaceId={workspaceId}>
       <ChatProvider workspaceId={workspaceId}>
         <ThemeProvider initialTheme={combinedTheme}>
           {isOpen && (
             <Suspense fallback={
-              <div className="fixed bottom-20 right-4 rounded-xl shadow-lg bg-white p-4 z-50">
+              <div className={`fixed bottom-20 ${position === 'left' ? 'left-4' : 'right-4'} rounded-xl shadow-lg bg-white p-4 z-50`}>
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
             }>
               <ChatWidgetWrapper 
                 isOpen={isOpen}
-                position={combinedTheme.position === 'left' ? 'left' : 'right'}
+                position={position}
                 compact={Boolean(combinedTheme.compact)}
               >
                 <ChatWidgetContainer 
                   onClose={() => setIsOpen(false)} 
                   workspaceId={workspaceId} 
-                  position={combinedTheme.position === 'left' ? 'left' : 'right'} 
+                  position={position}
                   compact={Boolean(combinedTheme.compact)}
                 />
               </ChatWidgetWrapper>
             </Suspense>
           )}
-          <div className={`fixed bottom-4 z-50 ${combinedTheme.position === 'left' ? 'left-4' : 'right-4'}`}>
+          <div className={`fixed bottom-4 z-50 ${position === 'left' ? 'left-4' : 'right-4'}`}>
             <ToggleButton 
               isOpen={isOpen} 
               onClick={toggleWidget} 

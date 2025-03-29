@@ -10,7 +10,7 @@ interface TicketsResponse {
 /**
  * Service for managing tickets
  */
-export class TicketsService extends BaseService<Ticket> {
+export class TicketsService extends BaseService<Ticket, TicketsResponse> {
   protected endpoint = '/ticket';
 
   /**
