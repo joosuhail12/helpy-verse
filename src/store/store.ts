@@ -1,7 +1,8 @@
 
 import { configureStore } from '@reduxjs/toolkit';
 
-// Import all reducers using named imports to avoid circular dependencies
+// Import reducers directly from their respective slice files rather than from index files
+// to prevent circular dependencies
 import { authReducer } from './slices/auth/authSlice';
 import { actionsReducer } from './slices/actions/actionsSlice';
 import contentReducer from './slices/content/contentSlice';
