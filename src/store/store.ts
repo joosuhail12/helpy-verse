@@ -8,7 +8,7 @@ import contactsReducer from './slices/contacts/contactsSlice';
 import companiesReducer from './slices/companies/companiesSlice';
 import ticketsReducer from './slices/tickets/ticketsSlice';
 import tagsReducer from './slices/tagsSlice';
-import { teammatesReducer } from './slices/teammates/teammatesSlice';
+import { teammatesReducer } from './slices/teammates';
 import teamsReducer from './slices/teams/teamsSlice';
 import { emailChannelsReducer } from './slices/emailChannels/emailChannelsSlice';
 import { cannedResponsesReducer } from './slices/cannedResponses/cannedResponsesSlice';

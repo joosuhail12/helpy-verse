@@ -1,3 +1,4 @@
+
 import { createSlice } from '@reduxjs/toolkit';
 import { TeammatesState } from './types';
 import {
@@ -134,5 +135,3 @@ const teammatesSlice = createSlice({
 });
 
 export const teammatesReducer = teammatesSlice.reducer;
-export * from './actions';
-export * from './selectors';
