@@ -3,7 +3,6 @@
  * Common utility helpers used throughout the application
  */
 import { cookieFunctions } from "@/api/services/http";
-import { handleSetToken as tokenManagerSetToken } from "@/utils/auth/tokenManager";
 
 // Re-export storage functions from cookieManager to avoid circular dependencies
 export const { getCookie, setCookie, handleLogout } = cookieFunctions;
@@ -31,6 +30,9 @@ export const setWorkspaceId = (workspaceId: string): void => {
   localStorage.setItem("workspaceId", workspaceId);
   console.log(`Workspace ID set to: ${workspaceId}`);
 };
+
+// Import token manager functions directly to avoid circular dependencies
+import { handleSetToken as tokenManagerSetToken } from "@/utils/auth/tokenManager";
 
 // Re-export the token manager's handleSetToken function
 export const handleSetToken = tokenManagerSetToken;

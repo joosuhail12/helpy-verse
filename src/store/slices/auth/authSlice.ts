@@ -1,6 +1,5 @@
 
 import { createSlice } from '@reduxjs/toolkit';
-import { getCookie } from '@/utils/helpers/helpers';
 import { handleLogout as tokenHandleLogout } from '@/utils/auth/tokenManager';
 import { AuthState } from './types';
 import { 
@@ -16,8 +15,11 @@ import {
 } from './userActions';
 import { getUserPermission } from './permissionActions';
 
+// Import getCookie from a non-circular source
+import { getAuthToken } from '@/utils/auth/tokenManager';
+
 const initialState: AuthState = {
-  isAuthenticated: !!getCookie("customerToken"),
+  isAuthenticated: !!getAuthToken(), // Use getAuthToken instead of getCookie
   user: null,
   loading: false,
   error: null,
