@@ -22,7 +22,7 @@ const SampleConversation: React.FC<SampleConversationProps> = ({
   const sampleMessages = [
     {
       id: '1',
-      text: 'Hi there! How can I help you today?',
+      content: 'Hi there! How can I help you today?',
       sender: 'agent',
       timestamp: new Date(Date.now() - 3600000).toISOString(),
       status: 'delivered',
@@ -30,7 +30,7 @@ const SampleConversation: React.FC<SampleConversationProps> = ({
     },
     {
       id: '2',
-      text: 'I have a question about my subscription.',
+      content: 'I have a question about my subscription.',
       sender: 'user',
       timestamp: new Date(Date.now() - 3500000).toISOString(),
       status: 'delivered',
@@ -38,7 +38,7 @@ const SampleConversation: React.FC<SampleConversationProps> = ({
     },
     {
       id: '3',
-      text: 'Sure, I\'d be happy to help with that. Could you please provide your account number?',
+      content: 'Sure, I\'d be happy to help with that. Could you please provide your account number?',
       sender: 'agent',
       timestamp: new Date(Date.now() - 3400000).toISOString(),
       status: 'delivered',
@@ -51,7 +51,7 @@ const SampleConversation: React.FC<SampleConversationProps> = ({
       {/* Header */}
       <div 
         className="p-4 flex items-center justify-between" 
-        style={{ backgroundColor: colors.primary, color: colors.primaryContrast }}
+        style={{ backgroundColor: colors.primary, color: colors.primaryForeground }}
       >
         <div>
           <h3 className="font-semibold text-lg">{labels?.welcomeTitle || 'Hello there.'}</h3>
@@ -80,9 +80,9 @@ const SampleConversation: React.FC<SampleConversationProps> = ({
       <div className="p-3 border-t border-gray-200 bg-white">
         <MessageInput
           onSendMessage={() => {}}
-          isLoading={false}
+          onTyping={() => {}}
+          disabled={false}
           placeholder="Type a message..."
-          showFileAttachment={true}
         />
       </div>
     </div>
