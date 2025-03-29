@@ -2,8 +2,8 @@
 import React, { lazy, Suspense } from 'react';
 import { Loader2 } from 'lucide-react';
 
-// Lazy load the ChatWidget component with proper default import
-const ChatWidget = lazy(() => import('./ChatWidget').then(module => ({ default: module.default })));
+// Lazy load the ChatWidget component without trying to access default export
+const ChatWidget = lazy(() => import('./ChatWidget'));
 
 // Loading fallback component
 const ChatWidgetLoader = () => (

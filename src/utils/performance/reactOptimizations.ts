@@ -1,6 +1,6 @@
 
 import { memo, useMemo, useCallback } from 'react';
-import type { ComponentType } from 'react';
+import type { ComponentType, MemoExoticComponent } from 'react';
 
 /**
  * Creates a memoized version of a component to prevent unnecessary re-renders
@@ -12,8 +12,8 @@ import type { ComponentType } from 'react';
 export function createMemoizedComponent<T extends ComponentType<any>>(
   component: T,
   displayName?: string
-): T {
-  const MemoizedComponent = memo(component) as T;
+): MemoExoticComponent<T> {
+  const MemoizedComponent = memo(component);
   
   if (displayName) {
     MemoizedComponent.displayName = `Memo(${displayName})`;
