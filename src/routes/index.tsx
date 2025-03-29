@@ -59,24 +59,6 @@ const logRoutes = (routes) => {
   flattenRoutes(routes);
 };
 
-// Create an array to hold the settings routes for the children property
-// This ensures we're spreading an array even if SettingsRoutes is undefined
-const settingsRoutesArray = [];
-
-// If SettingsRoutes is a function that returns routes, we need to handle it differently
-// than if it's a direct array of routes
-if (SettingsRoutes) {
-  // For now we'll add the settings routes as a catch-all in the /settings path
-  settingsRoutesArray.push({
-    path: "settings/*",
-    element: (
-      <Suspense fallback={<LoadingSpinner />}>
-        <SettingsRoutes />
-      </Suspense>
-    )
-  });
-}
-
 export const router = createBrowserRouter([
   {
     path: '/',
@@ -115,7 +97,14 @@ export const router = createBrowserRouter([
       ...DashboardRoutes,
       ...InboxRoutes,
       ...AutomationRoutes,
-      ...settingsRoutesArray,
+      {
+        path: "settings/*",
+        element: (
+          <Suspense fallback={<LoadingSpinner />}>
+            <SettingsRoutes />
+          </Suspense>
+        )
+      }
     ],
   },
   {
