@@ -1,8 +1,8 @@
 
 import { configureStore } from '@reduxjs/toolkit';
 
-// Import all reducers with default imports to avoid initialization issues
-import authReducer from './slices/auth/authSlice';
+// Import all reducers using explicit imports to avoid initialization issues
+import authSlice from './slices/auth/authSlice';
 import { actionsReducer } from './slices/actions/actionsSlice';
 import contentReducer from './slices/content/contentSlice';
 import contentCenterReducer from './slices/automation/contentCenterSlice';
@@ -16,11 +16,11 @@ import { emailChannelsReducer } from './slices/emailChannels/emailChannelsSlice'
 import { cannedResponsesReducer } from './slices/cannedResponses/cannedResponsesSlice';
 import { chatbotsReducer } from './slices/chatbots/chatbotsSlice';
 import userReducer from './slices/user/userSlice';
-import teammatesReducer from './slices/teammates/teammatesSlice';
+import teammatesSlice from './slices/teammates/teammatesSlice';
 
 // Define the root reducer with all slices
 const rootReducer = {
-  auth: authReducer,
+  auth: authSlice,
   actions: actionsReducer,
   content: contentReducer,
   contentCenter: contentCenterReducer,
@@ -28,7 +28,7 @@ const rootReducer = {
   companies: companiesReducer,
   tickets: ticketsReducer, // Renamed from inbox to tickets for clarity
   tags: tagsReducer,
-  teammates: teammatesReducer,
+  teammates: teammatesSlice,
   teams: teamsReducer,
   emailChannels: emailChannelsReducer,
   cannedResponses: cannedResponsesReducer,

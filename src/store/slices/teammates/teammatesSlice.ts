@@ -32,7 +32,6 @@ const teammatesSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      // fetchTeammates
       .addCase(fetchTeammates.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -49,7 +48,6 @@ const teammatesSlice = createSlice({
         state.retryCount += 1;
       })
       
-      // fetchTeammateDetails
       .addCase(fetchTeammateDetails.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -58,12 +56,10 @@ const teammatesSlice = createSlice({
         state.loading = false;
         state.selectedTeammate = action.payload;
         
-        // Also update this teammate in the main teammates array if it exists
         const index = state.teammates.findIndex(t => t.id === action.payload.id);
         if (index !== -1) {
           state.teammates[index] = action.payload;
         } else {
-          // If not found in the array, add it
           state.teammates.push(action.payload);
         }
       })
@@ -72,25 +68,21 @@ const teammatesSlice = createSlice({
         state.error = action.payload as string;
       })
       
-      // fetchTeammateActivities
       .addCase(fetchTeammateActivities.fulfilled, (state, action) => {
         const { teammateId, activities } = action.payload;
         state.activities[teammateId] = activities;
       })
       
-      // fetchTeammateAssignments
       .addCase(fetchTeammateAssignments.fulfilled, (state, action) => {
         const { teammateId, assignments } = action.payload;
         state.assignments[teammateId] = assignments;
       })
       
-      // fetchTeammateSessions
       .addCase(fetchTeammateSessions.fulfilled, (state, action) => {
         const { teammateId, sessions } = action.payload;
         state.sessions[teammateId] = sessions;
       })
       
-      // updateTeammate
       .addCase(updateTeammate.fulfilled, (state, action) => {
         const updatedTeammate = action.payload;
         state.teammates = state.teammates.map(teammate => 
@@ -101,7 +93,6 @@ const teammatesSlice = createSlice({
         }
       })
       
-      // 2FA operations
       .addCase(verify2FA.fulfilled, (state, action) => {
         if (state.selectedTeammate && state.selectedTeammate.id === action.payload.teammateId) {
           state.selectedTeammate.is2FAEnabled = true;
@@ -121,7 +112,6 @@ const teammatesSlice = createSlice({
         }
       })
       
-      // Session operations
       .addCase(terminateSession.fulfilled, (state, action) => {
         const { teammateId, sessionId } = action.payload;
         if (state.sessions[teammateId]) {
@@ -133,12 +123,9 @@ const teammatesSlice = createSlice({
   },
 });
 
-// Export reducer as default export to avoid initialization issues
-const { reducer } = teammatesSlice;
-export default reducer;
+export default teammatesSlice.reducer;
 
-// Also keep named exports for backwards compatibility
-export const teammatesReducer = reducer;
+export const teammatesReducer = teammatesSlice.reducer;
 
 export * from './actions';
 export * from './selectors';
