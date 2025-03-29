@@ -6,6 +6,7 @@ import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import UserAvatar from '../user/UserAvatar';
 import { useThemeContext } from '@/context/ThemeContext';
+import { ChatMessage } from './types';
 
 // Define a sample conversation for the preview
 const createSampleMessages = () => {
@@ -16,41 +17,35 @@ const createSampleMessages = () => {
   return [
     {
       id: '1',
-      text: 'Hello! How can I help you today?',
-      sender: {
-        id: 'agent-1',
-        name: 'Support Agent',
-        avatarUrl: 'https://i.pravatar.cc/150?img=32'
-      },
+      content: 'Hello! How can I help you today?',
+      sender: 'agent',
+      senderName: 'Support Agent',
       timestamp: tenMinutesAgo.toISOString(),
-      status: 'delivered',
-      isFromCurrentUser: false
+      readBy: ['user-1'],
+      reactions: {},
+      conversationId: 'sample-conversation'
     },
     {
       id: '2',
-      text: 'I have a question about my recent order. It shows as shipped but I haven\'t received a tracking number yet.',
-      sender: {
-        id: 'user-1',
-        name: 'You',
-        avatarUrl: ''
-      },
+      content: 'I have a question about my recent order. It shows as shipped but I haven\'t received a tracking number yet.',
+      sender: 'user',
+      senderName: 'You',
       timestamp: fiveMinutesAgo.toISOString(),
-      status: 'read',
-      isFromCurrentUser: true
+      readBy: [],
+      reactions: {},
+      conversationId: 'sample-conversation'
     },
     {
       id: '3',
-      text: 'I\'m sorry to hear that. Let me check the status of your order right away. Could you please provide your order number?',
-      sender: {
-        id: 'agent-1',
-        name: 'Support Agent',
-        avatarUrl: 'https://i.pravatar.cc/150?img=32'
-      },
+      content: 'I\'m sorry to hear that. Let me check the status of your order right away. Could you please provide your order number?',
+      sender: 'agent',
+      senderName: 'Support Agent',
       timestamp: fiveMinutesAgo.toISOString(),
-      status: 'delivered',
-      isFromCurrentUser: false
+      readBy: ['user-1'],
+      reactions: {},
+      conversationId: 'sample-conversation'
     }
-  ];
+  ] as ChatMessage[];
 };
 
 interface SampleConversationProps {
@@ -80,7 +75,7 @@ const SampleConversation: React.FC<SampleConversationProps> = ({
           <UserAvatar
             name="Support Team"
             avatarUrl="https://i.pravatar.cc/150?img=32"
-            size="small"
+            size="sm"
           />
           <div className="ml-2">
             <h3 className="font-medium text-sm">{headerTitle}</h3>
