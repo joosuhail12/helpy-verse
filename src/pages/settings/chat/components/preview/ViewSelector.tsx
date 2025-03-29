@@ -27,17 +27,17 @@ const ViewSelector: React.FC<ViewSelectorProps> = ({ currentView, onViewChange }
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="flex items-center gap-1">
+        <Button variant="outline" size="sm" className="flex items-center gap-1.5 shadow-sm hover:shadow">
           {viewIcons[currentView]}
-          {viewLabels[currentView]}
+          <span>{viewLabels[currentView]}</span>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-48 p-3">
+      <PopoverContent className="w-48 p-2">
         <div className="space-y-1">
           {Object.entries(viewLabels).map(([view, label]) => (
             <Button 
               key={view}
-              variant={currentView === view ? 'default' : 'outline'} 
+              variant={currentView === view ? 'default' : 'ghost'} 
               size="sm" 
               className="w-full justify-start"
               onClick={() => onViewChange(view as ChatView)}

@@ -6,6 +6,7 @@ import ConnectedChatWidget from '@/components/chat-widget/ConnectedChatWidget';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PreviewControls from './preview/PreviewControls';
 import SampleConversation from '@/components/chat-widget/components/conversation/SampleConversation';
+import { Smartphone, Monitor } from 'lucide-react';
 
 interface LiveWidgetPreviewProps {
   settings: ChatWidgetSettings;
@@ -48,9 +49,9 @@ const LiveWidgetPreview: React.FC<LiveWidgetPreviewProps> = ({
   };
 
   return (
-    <Card className="h-full">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-lg">Widget Preview</CardTitle>
+    <Card className="h-full overflow-hidden border shadow-md">
+      <CardHeader className="pb-0 pt-4">
+        <CardTitle className="text-lg font-medium text-gray-800">Widget Preview</CardTitle>
       </CardHeader>
       <CardContent className="p-0">
         <PreviewControls 
@@ -68,16 +69,22 @@ const LiveWidgetPreview: React.FC<LiveWidgetPreviewProps> = ({
         />
 
         <Tabs defaultValue="live" className="w-full">
-          <div className="px-3 border-b">
-            <TabsList>
-              <TabsTrigger value="live">Live Preview</TabsTrigger>
-              <TabsTrigger value="mobile">Mobile View</TabsTrigger>
+          <div className="px-4 py-2 border-b bg-gray-50">
+            <TabsList className="grid w-56 grid-cols-2">
+              <TabsTrigger value="live" className="data-[state=active]:bg-white">
+                <Monitor className="h-4 w-4 mr-1.5" />
+                <span>Desktop View</span>
+              </TabsTrigger>
+              <TabsTrigger value="mobile">
+                <Smartphone className="h-4 w-4 mr-1.5" />
+                <span>Mobile View</span>
+              </TabsTrigger>
             </TabsList>
           </div>
           
           <TabsContent value="live" className="mt-0">
             <div 
-              className="h-[500px] w-full rounded-b-lg overflow-hidden shadow-sm relative"
+              className="h-[520px] w-full rounded-b-lg overflow-hidden shadow-inner relative transition-all duration-300 ease-in-out"
               style={{ 
                 backgroundColor: background,
                 backgroundImage: backgroundImage ? `url(${backgroundImage})` : 'none',
@@ -98,11 +105,14 @@ const LiveWidgetPreview: React.FC<LiveWidgetPreviewProps> = ({
           
           <TabsContent value="mobile" className="mt-0">
             <div 
-              className="h-[500px] flex items-center justify-center p-4 bg-gray-50"
+              className="h-[520px] flex items-center justify-center p-6 bg-gray-50"
             >
-              <div className="relative h-full max-w-[375px] mx-auto bg-white border border-gray-200 overflow-hidden rounded-xl shadow-md">
+              <div className="relative h-full max-w-[375px] mx-auto bg-white border border-gray-300 overflow-hidden rounded-3xl shadow-lg">
+                <div className="absolute top-0 left-0 right-0 h-6 bg-black rounded-t-3xl flex justify-center items-center">
+                  <div className="w-32 h-1 bg-gray-600 rounded-full"></div>
+                </div>
                 <div
-                  className="h-full w-full"
+                  className="h-full w-full pt-6"
                   style={{ 
                     backgroundColor: background,
                     backgroundImage: backgroundImage ? `url(${backgroundImage})` : 'none',
@@ -111,10 +121,10 @@ const LiveWidgetPreview: React.FC<LiveWidgetPreviewProps> = ({
                   }}
                 >
                   {!chatWidgetOpen ? (
-                    <div className="absolute bottom-4 right-4">
+                    <div className="absolute bottom-8 right-6">
                       <button
                         onClick={handleToggleWidget}
-                        className={`${previewSettings.launcherStyle === 'rectangle' ? 'rounded-lg px-3 py-2' : 'rounded-full w-14 h-14'} flex items-center justify-center shadow-lg transition-colors`}
+                        className={`${previewSettings.launcherStyle === 'rectangle' ? 'rounded-lg px-3 py-2' : 'rounded-full w-14 h-14'} flex items-center justify-center shadow-lg transition-transform hover:scale-105`}
                         style={{ backgroundColor: previewSettings.primaryColor }}
                       >
                         <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -139,6 +149,7 @@ const LiveWidgetPreview: React.FC<LiveWidgetPreviewProps> = ({
                     </div>
                   )}
                 </div>
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-black rounded-b-3xl"></div>
               </div>
             </div>
           </TabsContent>

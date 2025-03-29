@@ -5,7 +5,7 @@ import { ChatWidgetSettings } from '@/store/slices/chatWidgetSettings/types';
 import PreviewBackground from './PreviewBackground';
 import WidgetSettingsPopover from './WidgetSettingsPopover';
 import ViewSelector from './ViewSelector';
-import { Paintbrush, Settings, Eye, EyeOff } from 'lucide-react';
+import { Settings, Eye, EyeOff } from 'lucide-react';
 
 type ChatView = 'home' | 'messages' | 'conversation';
 
@@ -44,8 +44,8 @@ const PreviewControls: React.FC<PreviewControlsProps> = ({
   };
 
   return (
-    <div className="border-b border-gray-200 p-3 flex items-center justify-between">
-      <div className="flex items-center gap-2">
+    <div className="border-b border-gray-200 bg-white p-4 flex items-center justify-between rounded-t-lg shadow-sm">
+      <div className="flex items-center gap-3">
         <PreviewBackground 
           background={background} 
           setBackground={setBackground}
@@ -70,20 +70,20 @@ const PreviewControls: React.FC<PreviewControlsProps> = ({
       
       {onToggleWidget && (
         <Button 
-          variant="outline" 
+          variant={isWidgetOpen ? "outline" : "default"}
           size="sm"
           onClick={onToggleWidget}
-          className="flex items-center gap-1"
+          className="flex items-center gap-1.5 transition-all duration-200 hover:shadow-sm"
         >
           {isWidgetOpen ? (
             <>
-              <EyeOff className="h-4 w-4 mr-1" />
-              Hide Widget
+              <EyeOff className="h-4 w-4" />
+              <span>Hide Widget</span>
             </>
           ) : (
             <>
-              <Eye className="h-4 w-4 mr-1" />
-              Show Widget
+              <Eye className="h-4 w-4" />
+              <span>Show Widget</span>
             </>
           )}
         </Button>
