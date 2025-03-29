@@ -1,3 +1,4 @@
+
 import { createSlice, createAsyncThunk, PayloadAction, createSelector } from '@reduxjs/toolkit';
 import { RootState } from '../../store';
 import { companiesService } from '@/api/services';
@@ -38,7 +39,7 @@ export const fetchCompanies = createAsyncThunk(
         return null;
       }
 
-      const response = await companiesService.fetchCompanies();
+      const response = await companiesService.getAll();
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to fetch companies');
@@ -50,8 +51,8 @@ export const fetchCompanyById = createAsyncThunk(
   'companies/fetchCompanyById',
   async (id: string, { rejectWithValue }) => {
     try {
-      const response = await companiesService.getCompany(id);
-      return response.data;
+      const response = await companiesService.getById(id);
+      return response;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to fetch company details');
     }
@@ -62,8 +63,8 @@ export const createCompany = createAsyncThunk(
   'companies/createCompany',
   async (company: Omit<Company, 'id' | 'createdAt' | 'updatedAt'>, { rejectWithValue }) => {
     try {
-      const response = await companiesService.createCompany(company);
-      return response.data.companyList[0];
+      const response = await companiesService.create(company);
+      return response;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to create company');
     }
@@ -74,8 +75,8 @@ export const updateCompany = createAsyncThunk(
   'companies/updateCompany',
   async ({ id, updates }: { id: string; updates: Partial<Company> }, { rejectWithValue }) => {
     try {
-      const response = await companiesService.updateCompany(id, updates);
-      return response.data;
+      const response = await companiesService.update(id, updates);
+      return response;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to update company');
     }
@@ -86,7 +87,7 @@ export const deleteCompany = createAsyncThunk(
   'companies/deleteCompany',
   async (id: string, { rejectWithValue }) => {
     try {
-      await companiesService.deleteCompany(id);
+      await companiesService.delete(id);
       return id;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to delete company');
