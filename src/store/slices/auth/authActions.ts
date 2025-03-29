@@ -1,11 +1,12 @@
+
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { HttpClient } from "@/api/services/http";
 import { 
   encryptBase64,
   setCookie,
   setWorkspaceId,
-  handleSetToken
 } from '@/utils/helpers/helpers';
+import { handleSetToken } from '@/utils/auth/tokenManager';
 import { get } from "lodash";
 import { Credentials, PasswordResetConfirmation, PasswordResetRequest, RegistrationCredentials } from './types';
 import { AUTH_ENDPOINTS } from '@/api/services/http/config';
