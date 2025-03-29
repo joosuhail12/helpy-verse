@@ -1,4 +1,3 @@
-
 import { createSlice } from '@reduxjs/toolkit';
 import { AuthState } from './types';
 import { 
@@ -14,8 +13,7 @@ import {
 } from './userActions';
 import { getUserPermission } from './permissionActions';
 // Import the token check directly from tokenManager
-import { isAuthenticated } from '@/utils/auth/tokenManager';
-import { handleLogout as tokenHandleLogout } from '@/utils/auth/tokenManager';
+import { isAuthenticated, handleLogout as tokenHandleLogout } from '@/utils/auth/tokenManager';
 
 const initialState: AuthState = {
   isAuthenticated: isAuthenticated(),
