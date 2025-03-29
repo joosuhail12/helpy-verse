@@ -48,8 +48,8 @@ const FeatureSettings: React.FC<FeatureSettingsProps> = ({ settings, onSettingCh
           <SelectContent>
             <SelectItem value="instant">Instant</SelectItem>
             <SelectItem value="quick">Quick (few seconds)</SelectItem>
-            <SelectItem value="normal">Normal (< 1 minute)</SelectItem>
-            <SelectItem value="slow">Slow (> 1 minute)</SelectItem>
+            <SelectItem value="normal">Normal (&lt; 1 minute)</SelectItem>
+            <SelectItem value="slow">Slow (&gt; 1 minute)</SelectItem>
           </SelectContent>
         </Select>
       </div>
