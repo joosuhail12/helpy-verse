@@ -4,7 +4,9 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { ChatWidgetSettings } from '@/store/slices/chatWidgetSettings/types';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Paintbrush, CheckCircle2 } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
+import ThemePresetSelector from './ThemePresetSelector';
+import { ThemePreset } from './ThemePresets';
 
 interface ColorSettingsProps {
   settings: ChatWidgetSettings;
@@ -50,6 +52,14 @@ const ColorSettings: React.FC<ColorSettingsProps> = ({ settings, onSettingChange
   };
 
   const [activeTab, setActiveTab] = React.useState('main');
+
+  const handleApplyTheme = (theme: ThemePreset) => {
+    onSettingChange('primaryColor', theme.colors.primaryColor);
+    onSettingChange('headerColor', theme.colors.headerColor);
+    onSettingChange('messageBoxColor', theme.colors.messageBoxColor);
+    onSettingChange('userMessageColor', theme.colors.userMessageColor);
+    onSettingChange('agentMessageColor', theme.colors.agentMessageColor);
+  };
 
   const ColorPicker = ({ 
     id, 
@@ -108,6 +118,11 @@ const ColorSettings: React.FC<ColorSettingsProps> = ({ settings, onSettingChange
 
   return (
     <div className="space-y-4">
+      <ThemePresetSelector 
+        settings={settings} 
+        onApplyTheme={handleApplyTheme} 
+      />
+      
       <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid grid-cols-2 w-full mb-3">
           <TabsTrigger value="main" className="text-xs">Main Colors</TabsTrigger>
