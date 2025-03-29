@@ -1,5 +1,6 @@
 
 import { configureStore } from '@reduxjs/toolkit';
+// Import auth reducer directly from the slice file to avoid circular imports
 import authReducer from './slices/auth/authSlice';
 import { actionsReducer } from './slices/actions/actionsSlice';
 import contentReducer from './slices/content/contentSlice';
