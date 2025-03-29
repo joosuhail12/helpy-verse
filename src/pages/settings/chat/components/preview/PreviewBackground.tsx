@@ -1,12 +1,11 @@
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Button } from '@/components/ui/button';
+import { Palette, X, Image } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { PaintBucket, Image as ImageIcon, Palette } from 'lucide-react';
+import { Label } from '@/components/ui/label';
 
 interface PreviewBackgroundProps {
   background: string;
@@ -15,108 +14,152 @@ interface PreviewBackgroundProps {
   setBackgroundImage: (url: string | null) => void;
 }
 
-const backgroundImages = [
-  { id: 'none', url: null, name: 'None' },
-  { id: 'office', url: 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b', name: 'Office' },
-  { id: 'laptop', url: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158', name: 'Laptop' },
-  { id: 'tech', url: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5', name: 'Tech' },
-  { id: 'code', url: 'https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7', name: 'Code' },
-  { id: 'gradient1', url: 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809', name: 'Gradient' },
-  { id: 'minimal', url: 'https://images.unsplash.com/photo-1518655048521-f130df041f66', name: 'Minimal' }
-];
-
-const colorPresets = [
-  '#ffffff', // White
-  '#f3f4f6', // Light gray
-  '#e5deff', // Light purple
-  '#f1f0fb', // Very light purple
-  '#111827', // Dark gray
-  '#fef7cd', // Soft yellow
-  '#ffdee2', // Soft pink
-  '#d3e4fd', // Soft blue
-  '#f2fce2'  // Soft green
-];
-
-const PreviewBackground: React.FC<PreviewBackgroundProps> = ({
-  background,
+const PreviewBackground: React.FC<PreviewBackgroundProps> = ({ 
+  background, 
   setBackground,
   backgroundImage,
   setBackgroundImage
 }) => {
+  const [imageUrl, setImageUrl] = React.useState('');
+  
+  const presetColors = [
+    '#ffffff', '#f8f9fa', '#e9ecef', '#f5f3ff', '#f0fdf4', 
+    '#eff6ff', '#f0fdfa', '#f5f5f4', '#fafaf9', '#f8fafc'
+  ];
+  
+  const presetBackgrounds = [
+    '/placeholder.svg',
+    'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3',
+    'https://images.unsplash.com/photo-1557682224-5b8590cd9ec5?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3',
+    'https://images.unsplash.com/photo-1508739773434-c26b3d09e071?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3',
+    'https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3',
+    'https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3'
+  ];
+  
+  const handleImageUrlSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (imageUrl) {
+      setBackgroundImage(imageUrl);
+    }
+  };
+  
+  const handleClearBackground = () => {
+    setBackgroundImage(null);
+  };
+
   return (
     <Popover>
       <PopoverTrigger asChild>
         <Button variant="outline" size="sm" className="flex items-center gap-1.5 shadow-sm hover:shadow">
-          {backgroundImage ? (
-            <ImageIcon size={14} className="text-purple-500" />
-          ) : (
-            <Palette size={14} className="text-purple-500" />
-          )}
+          <Palette size={14} className="text-purple-500" />
           <span>Background</span>
+          {backgroundImage && <X size={14} className="ml-1 text-gray-400" onClick={(e) => { e.stopPropagation(); handleClearBackground(); }} />}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-64 p-3">
-        <Tabs defaultValue="color" className="w-full">
-          <TabsList className="grid grid-cols-2 mb-3 w-full">
-            <TabsTrigger value="color" className="text-sm">Color</TabsTrigger>
-            <TabsTrigger value="image" className="text-sm">Image</TabsTrigger>
+      <PopoverContent className="w-72 p-3" align="start">
+        <Tabs defaultValue="color">
+          <TabsList className="grid w-full grid-cols-2 mb-4">
+            <TabsTrigger value="color" className="text-xs">Color</TabsTrigger>
+            <TabsTrigger value="image" className="text-xs">Image</TabsTrigger>
           </TabsList>
           
-          <TabsContent value="color" className="space-y-3">
-            <div className="space-y-2">
-              <Label htmlFor="bg-color" className="text-xs font-medium">Background Color</Label>
+          <TabsContent value="color" className="space-y-4">
+            <div className="flex flex-col gap-3">
+              <Label htmlFor="color-picker" className="text-xs font-medium flex items-center justify-between">
+                Select background color
+                <div 
+                  className="w-5 h-5 rounded-full border border-gray-300 flex-shrink-0" 
+                  style={{ backgroundColor: background }}
+                />
+              </Label>
+              
               <div className="flex items-center gap-2">
                 <Input 
-                  id="bg-color" 
+                  id="color-picker"
                   type="color" 
                   value={background} 
                   onChange={(e) => setBackground(e.target.value)} 
-                  className="w-10 h-10 p-1 cursor-pointer rounded-md" 
+                  className="w-12 h-8 p-1 cursor-pointer"
                 />
                 <Input
                   value={background}
                   onChange={(e) => setBackground(e.target.value)}
-                  className="flex-1"
+                  className="flex-1 h-8 text-sm"
                 />
               </div>
-            </div>
-            <div className="pt-1">
-              <Label className="text-xs font-medium mb-2 block">Quick Colors</Label>
-              <div className="grid grid-cols-5 gap-1.5">
-                {colorPresets.map(color => (
-                  <div 
-                    key={color} 
-                    className={`w-full aspect-square rounded-md border cursor-pointer hover:scale-105 transition-transform ${background === color ? 'ring-2 ring-primary' : 'border-gray-200'}`}
+              
+              <div className="grid grid-cols-5 gap-2 mt-2">
+                {presetColors.map(color => (
+                  <button
+                    key={color}
+                    type="button"
+                    className={`w-full aspect-square rounded-md transition-transform hover:scale-110 ${
+                      background === color ? 'ring-2 ring-purple-500 ring-offset-1' : 'border border-gray-200'
+                    }`}
                     style={{ backgroundColor: color }}
                     onClick={() => setBackground(color)}
+                    aria-label={`Set background color to ${color}`}
                   />
                 ))}
               </div>
             </div>
           </TabsContent>
           
-          <TabsContent value="image" className="space-y-2">
-            <Label className="text-xs font-medium">Select Background Image</Label>
-            <ScrollArea className="h-52 w-full rounded-md border">
-              <div className="grid grid-cols-2 gap-2 p-2">
-                {backgroundImages.map(img => (
-                  <div 
-                    key={img.id}
-                    className={`relative aspect-video rounded-md overflow-hidden cursor-pointer border-2 hover:opacity-90 transition-opacity ${backgroundImage === img.url ? 'border-primary ring-1 ring-primary' : 'border-transparent'}`}
-                    onClick={() => setBackgroundImage(img.url)}
+          <TabsContent value="image" className="space-y-4">
+            <form onSubmit={handleImageUrlSubmit} className="flex flex-col gap-3">
+              <Label htmlFor="image-url" className="text-xs font-medium">
+                Enter image URL
+              </Label>
+              <div className="flex gap-2">
+                <Input
+                  id="image-url"
+                  value={imageUrl}
+                  onChange={(e) => setImageUrl(e.target.value)}
+                  placeholder="https://example.com/image.jpg"
+                  className="flex-1"
+                />
+                <Button type="submit" size="sm">
+                  Set
+                </Button>
+              </div>
+            </form>
+            
+            <div className="mt-2">
+              <Label className="text-xs font-medium block mb-2">
+                Preset backgrounds
+              </Label>
+              <div className="grid grid-cols-3 gap-2">
+                {presetBackgrounds.map((url, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    className={`w-full aspect-video rounded-md overflow-hidden transition-transform hover:scale-105 ${
+                      backgroundImage === url ? 'ring-2 ring-purple-500 ring-offset-1' : 'border border-gray-200'
+                    }`}
+                    onClick={() => setBackgroundImage(url)}
                   >
-                    {img.url ? (
-                      <img src={img.url} alt={img.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full bg-gray-100 flex items-center justify-center text-sm">None</div>
-                    )}
-                    <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1 text-center">
-                      {img.name}
-                    </div>
-                  </div>
+                    <img 
+                      src={url} 
+                      alt={`Background ${index + 1}`} 
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
                 ))}
               </div>
-            </ScrollArea>
+            </div>
+            
+            {backgroundImage && (
+              <div className="flex justify-end">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleClearBackground}
+                  className="text-xs"
+                >
+                  Clear Background Image
+                </Button>
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </PopoverContent>

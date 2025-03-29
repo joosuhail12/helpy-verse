@@ -1,10 +1,12 @@
 
 import React from 'react';
 import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Input } from '@/components/ui/input';
 import { ChatWidgetSettings } from '@/store/slices/chatWidgetSettings/types';
-import { ArrowLeft, ArrowRight, Circle, Square, Compass } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { CheckCircle, LayoutAlignLeft, LayoutAlignRight, MonitorSmartphone, ArrowRightLeft, LayoutGrid } from 'lucide-react';
 
 interface AppearanceSettingsProps {
   settings: ChatWidgetSettings;
@@ -13,135 +15,150 @@ interface AppearanceSettingsProps {
 
 const AppearanceSettings: React.FC<AppearanceSettingsProps> = ({ settings, onSettingChange }) => {
   return (
-    <div className="space-y-4">
-      <div className="space-y-2">
-        <Label className="text-xs font-medium">Widget Position</Label>
-        <div className="grid grid-cols-2 gap-2">
-          <OptionButton 
-            isSelected={settings.position === 'left'} 
-            onClick={() => onSettingChange('position', 'left')}
-            icon={<ArrowLeft className="h-4 w-4 mr-1.5" />}
-            label="Left"
-          />
-          <OptionButton 
-            isSelected={settings.position === 'right'} 
-            onClick={() => onSettingChange('position', 'right')}
-            icon={<ArrowRight className="h-4 w-4 mr-1.5" />}
-            label="Right"
-          />
+    <div className="space-y-5">
+      <div>
+        <Label className="text-xs font-medium">Welcome Message</Label>
+        <div className="space-y-2 mt-2">
+          <div>
+            <Label htmlFor="welcome-title" className="text-xs text-gray-600">Title</Label>
+            <Input
+              id="welcome-title"
+              value={settings.welcomeTitle}
+              onChange={(e) => onSettingChange('welcomeTitle', e.target.value)}
+              className="h-8 text-sm"
+            />
+          </div>
+          <div>
+            <Label htmlFor="welcome-subtitle" className="text-xs text-gray-600">Subtitle</Label>
+            <Input
+              id="welcome-subtitle"
+              value={settings.welcomeSubtitle}
+              onChange={(e) => onSettingChange('welcomeSubtitle', e.target.value)}
+              className="h-8 text-sm"
+            />
+          </div>
+          <div>
+            <Label htmlFor="header-title" className="text-xs text-gray-600">Header Title</Label>
+            <Input
+              id="header-title"
+              value={settings.headerTitle}
+              onChange={(e) => onSettingChange('headerTitle', e.target.value)}
+              className="h-8 text-sm"
+            />
+          </div>
         </div>
       </div>
-      
-      <div className="space-y-2">
-        <Label className="text-xs font-medium">Launcher Style</Label>
-        <div className="grid grid-cols-2 gap-2">
-          <OptionButton 
-            isSelected={settings.launcherStyle === 'circle'} 
-            onClick={() => onSettingChange('launcherStyle', 'circle')}
-            icon={<Circle className="h-4 w-4 mr-1.5" />}
-            label="Circle"
-          />
-          <OptionButton 
-            isSelected={settings.launcherStyle === 'rectangle'} 
-            onClick={() => onSettingChange('launcherStyle', 'rectangle')}
-            icon={<Square className="h-4 w-4 mr-1.5" />}
-            label="Rectangle"
-          />
-        </div>
-      </div>
-      
-      <div className="space-y-1.5">
-        <Label htmlFor="header-title" className="text-xs font-medium">Header Title</Label>
-        <Input
-          id="header-title"
-          value={settings.headerTitle}
-          onChange={(e) => onSettingChange('headerTitle', e.target.value)}
-          placeholder="Chat with us"
-          className="h-8 text-sm"
-        />
-      </div>
-      
-      <div className="space-y-1.5">
-        <Label htmlFor="font-family" className="text-xs font-medium">Font Family</Label>
-        <Input
-          id="font-family"
-          value={settings.fontFamily}
-          onChange={(e) => onSettingChange('fontFamily', e.target.value)}
-          placeholder="Inter, system-ui, sans-serif"
-          className="h-8 text-sm"
-        />
-      </div>
-      
-      <div className="space-y-2">
-        <h3 className="text-xs font-semibold text-gray-700">Display Options</h3>
-        <div className="space-y-2">
-          <ToggleOption
-            id="compact-mode"
-            label="Compact Mode"
-            icon={<Compass className="h-4 w-4" />}
-            checked={settings.compact}
-            onChange={(value) => onSettingChange('compact', value)}
-          />
+
+      <div className="pt-4 border-t border-gray-100">
+        <Label className="text-xs font-medium mb-3 block">Position & Layout</Label>
+        
+        <div className="mb-3">
+          <div className="flex justify-between items-center mb-1">
+            <Label className="text-sm">Widget Position</Label>
+          </div>
           
-          <ToggleOption
-            id="enable-animation"
-            label="Enable Animations"
-            icon={<Compass className="h-4 w-4" />}
-            checked={settings.enableAnimation}
-            onChange={(value) => onSettingChange('enableAnimation', value)}
+          <RadioGroup 
+            value={settings.position} 
+            onValueChange={(value) => onSettingChange('position', value)}
+            className="flex gap-3 mt-1"
+          >
+            <div className="flex flex-col items-center">
+              <div className={`p-4 rounded-md border ${settings.position === 'left' ? 'border-purple-500 bg-purple-50' : 'border-gray-200'} cursor-pointer relative`}
+                onClick={() => onSettingChange('position', 'left')}>
+                <LayoutAlignLeft className="h-5 w-5 text-gray-600" />
+                {settings.position === 'left' && (
+                  <CheckCircle className="absolute -top-2 -right-2 h-4 w-4 text-purple-500 bg-white rounded-full" />
+                )}
+              </div>
+              <Label htmlFor="position-left" className="text-xs mt-1">Left</Label>
+              <RadioGroupItem value="left" id="position-left" className="sr-only" />
+            </div>
+            
+            <div className="flex flex-col items-center">
+              <div className={`p-4 rounded-md border ${settings.position === 'right' ? 'border-purple-500 bg-purple-50' : 'border-gray-200'} cursor-pointer relative`}
+                onClick={() => onSettingChange('position', 'right')}>
+                <LayoutAlignRight className="h-5 w-5 text-gray-600" />
+                {settings.position === 'right' && (
+                  <CheckCircle className="absolute -top-2 -right-2 h-4 w-4 text-purple-500 bg-white rounded-full" />
+                )}
+              </div>
+              <Label htmlFor="position-right" className="text-xs mt-1">Right</Label>
+              <RadioGroupItem value="right" id="position-right" className="sr-only" />
+            </div>
+          </RadioGroup>
+        </div>
+        
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <MonitorSmartphone className="h-4 w-4 text-gray-500" />
+            <div>
+              <Label htmlFor="compact-mode" className="text-sm">
+                Compact Mode
+              </Label>
+              <p className="text-xs text-gray-500">
+                Use smaller size on all devices
+              </p>
+            </div>
+          </div>
+          <Switch 
+            id="compact-mode" 
+            checked={settings.compact} 
+            onCheckedChange={(checked) => onSettingChange('compact', checked)}
           />
         </div>
       </div>
-    </div>
-  );
-};
-
-interface OptionButtonProps {
-  isSelected: boolean;
-  onClick: () => void;
-  icon: React.ReactNode;
-  label: string;
-}
-
-const OptionButton = ({ isSelected, onClick, icon, label }: OptionButtonProps) => {
-  return (
-    <button 
-      onClick={onClick}
-      className={`
-        flex items-center justify-center py-1.5 px-2.5 text-xs rounded-md transition-colors
-        ${isSelected 
-          ? 'bg-purple-500 text-white hover:bg-purple-600' 
-          : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'
-        }
-      `}
-    >
-      {icon} {label}
-    </button>
-  );
-};
-
-interface ToggleOptionProps {
-  id: string;
-  label: string;
-  icon: React.ReactNode;
-  checked: boolean;
-  onChange: (value: boolean) => void;
-}
-
-const ToggleOption = ({ id, label, icon, checked, onChange }: ToggleOptionProps) => {
-  return (
-    <div className={`flex items-center justify-between p-2 rounded-md transition-colors ${checked ? 'bg-purple-50' : 'bg-gray-50'}`}>
-      <Label htmlFor={id} className="text-xs font-medium cursor-pointer flex items-center">
-        <span className={`rounded-full p-1 mr-1.5 ${checked ? 'bg-purple-100 text-purple-700' : 'bg-gray-200 text-gray-600'}`}>
-          {icon}
-        </span>
-        {label}
-      </Label>
-      <Switch
-        id={id}
-        checked={checked}
-        onCheckedChange={onChange}
-      />
+      
+      <div className="pt-4 border-t border-gray-100">
+        <Label className="text-xs font-medium mb-1 block">Launcher Style</Label>
+        <RadioGroup 
+          value={settings.launcherStyle} 
+          onValueChange={(value) => onSettingChange('launcherStyle', value)}
+          className="flex gap-3 mt-2"
+        >
+          <div className="flex flex-col items-center">
+            <div className={`p-4 rounded-md border ${settings.launcherStyle === 'circle' ? 'border-purple-500 bg-purple-50' : 'border-gray-200'} cursor-pointer relative`}
+              onClick={() => onSettingChange('launcherStyle', 'circle')}>
+              <div className="w-5 h-5 rounded-full border border-gray-400"></div>
+              {settings.launcherStyle === 'circle' && (
+                <CheckCircle className="absolute -top-2 -right-2 h-4 w-4 text-purple-500 bg-white rounded-full" />
+              )}
+            </div>
+            <Label htmlFor="launcher-circle" className="text-xs mt-1">Circle</Label>
+            <RadioGroupItem value="circle" id="launcher-circle" className="sr-only" />
+          </div>
+          
+          <div className="flex flex-col items-center">
+            <div className={`p-4 rounded-md border ${settings.launcherStyle === 'rectangle' ? 'border-purple-500 bg-purple-50' : 'border-gray-200'} cursor-pointer relative`}
+              onClick={() => onSettingChange('launcherStyle', 'rectangle')}>
+              <div className="w-6 h-4 rounded-md border border-gray-400"></div>
+              {settings.launcherStyle === 'rectangle' && (
+                <CheckCircle className="absolute -top-2 -right-2 h-4 w-4 text-purple-500 bg-white rounded-full" />
+              )}
+            </div>
+            <Label htmlFor="launcher-rectangle" className="text-xs mt-1">Rectangle</Label>
+            <RadioGroupItem value="rectangle" id="launcher-rectangle" className="sr-only" />
+          </div>
+        </RadioGroup>
+      </div>
+      
+      <div className="pt-4 border-t border-gray-100">
+        <Label className="text-xs font-medium mb-2 block">Font Family</Label>
+        <Select 
+          value={settings.fontFamily} 
+          onValueChange={(value) => onSettingChange('fontFamily', value)}
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select font family" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="Inter, system-ui, sans-serif">Inter (Modern)</SelectItem>
+            <SelectItem value="'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif">SF Pro (Apple)</SelectItem>
+            <SelectItem value="Roboto, 'Helvetica Neue', sans-serif">Roboto (Android)</SelectItem>
+            <SelectItem value="Arial, sans-serif">Arial (Classic)</SelectItem>
+            <SelectItem value="Georgia, serif">Georgia (Serif)</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
     </div>
   );
 };
