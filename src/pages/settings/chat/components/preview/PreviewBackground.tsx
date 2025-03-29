@@ -6,7 +6,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { PaintBucket, Image as ImageIcon } from 'lucide-react';
+import { PaintBucket, Image as ImageIcon, Palette } from 'lucide-react';
 
 interface PreviewBackgroundProps {
   background: string;
@@ -20,7 +20,21 @@ const backgroundImages = [
   { id: 'office', url: 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b', name: 'Office' },
   { id: 'laptop', url: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158', name: 'Laptop' },
   { id: 'tech', url: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5', name: 'Tech' },
-  { id: 'code', url: 'https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7', name: 'Code' }
+  { id: 'code', url: 'https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7', name: 'Code' },
+  { id: 'gradient1', url: 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809', name: 'Gradient' },
+  { id: 'minimal', url: 'https://images.unsplash.com/photo-1518655048521-f130df041f66', name: 'Minimal' }
+];
+
+const colorPresets = [
+  '#ffffff', // White
+  '#f3f4f6', // Light gray
+  '#e5deff', // Light purple
+  '#f1f0fb', // Very light purple
+  '#111827', // Dark gray
+  '#fef7cd', // Soft yellow
+  '#ffdee2', // Soft pink
+  '#d3e4fd', // Soft blue
+  '#f2fce2'  // Soft green
 ];
 
 const PreviewBackground: React.FC<PreviewBackgroundProps> = ({
@@ -36,7 +50,7 @@ const PreviewBackground: React.FC<PreviewBackgroundProps> = ({
           {backgroundImage ? (
             <ImageIcon size={14} className="text-purple-500" />
           ) : (
-            <PaintBucket size={14} className="text-purple-500" />
+            <Palette size={14} className="text-purple-500" />
           )}
           <span>Background</span>
         </Button>
@@ -69,10 +83,10 @@ const PreviewBackground: React.FC<PreviewBackgroundProps> = ({
             <div className="pt-1">
               <Label className="text-xs font-medium mb-2 block">Quick Colors</Label>
               <div className="grid grid-cols-5 gap-1.5">
-                {['#ffffff', '#f3f4f6', '#e5deff', '#f1f0fb', '#111827'].map(color => (
+                {colorPresets.map(color => (
                   <div 
                     key={color} 
-                    className="w-full aspect-square rounded-md border border-gray-200 cursor-pointer hover:scale-105 transition-transform" 
+                    className={`w-full aspect-square rounded-md border cursor-pointer hover:scale-105 transition-transform ${background === color ? 'ring-2 ring-primary' : 'border-gray-200'}`}
                     style={{ backgroundColor: color }}
                     onClick={() => setBackground(color)}
                   />

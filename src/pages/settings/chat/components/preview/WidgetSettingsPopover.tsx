@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Settings, Layout, PaintBucket, MessageSquare } from 'lucide-react';
+import { Settings, Layout, PaintBucket, MessageSquare, RotateCcw } from 'lucide-react';
 import { ChatWidgetSettings } from '@/store/slices/chatWidgetSettings/types';
 import AppearanceSettings from './AppearanceSettings';
 import ColorSettings from './ColorSettings';
@@ -70,11 +70,12 @@ const WidgetSettingsPopover: React.FC<WidgetSettingsPopoverProps> = ({
         
         <div className="mt-5 pt-4 border-t border-gray-200">
           <Button 
-            variant="secondary" 
-            className="w-full" 
+            variant="outline" 
+            className="w-full text-gray-600 hover:text-gray-900" 
             onClick={onResetChanges}
             size="sm"
           >
+            <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
             Reset All Changes
           </Button>
         </div>

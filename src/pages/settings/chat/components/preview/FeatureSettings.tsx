@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ChatWidgetSettings } from '@/store/slices/chatWidgetSettings/types';
+import { MessageCircle, Zap, FileText, ThumbsUp, Check } from 'lucide-react';
 
 interface FeatureSettingsProps {
   settings: ChatWidgetSettings;
@@ -54,41 +55,49 @@ const FeatureSettings: React.FC<FeatureSettingsProps> = ({ settings, onSettingCh
         </Select>
       </div>
       
-      <div className="grid grid-cols-1 gap-2 mt-4">
-        <FeatureToggle
-          id="typing-indicator"
-          label="Show Typing Indicator"
-          checked={settings.enableTypingIndicator}
-          onChange={(value) => onSettingChange('enableTypingIndicator', value)}
-        />
-        
-        <FeatureToggle
-          id="reactions"
-          label="Enable Reactions"
-          checked={settings.enableReactions}
-          onChange={(value) => onSettingChange('enableReactions', value)}
-        />
-        
-        <FeatureToggle
-          id="file-attachments"
-          label="Enable File Attachments"
-          checked={settings.enableFileAttachments}
-          onChange={(value) => onSettingChange('enableFileAttachments', value)}
-        />
-        
-        <FeatureToggle
-          id="read-receipts"
-          label="Show Read Receipts"
-          checked={settings.enableReadReceipts}
-          onChange={(value) => onSettingChange('enableReadReceipts', value)}
-        />
-        
-        <FeatureToggle
-          id="show-branding"
-          label="Show Branding"
-          checked={settings.showBranding}
-          onChange={(value) => onSettingChange('showBranding', value)}
-        />
+      <div className="mt-4">
+        <h3 className="text-xs font-semibold text-gray-700 mb-2">Features</h3>
+        <div className="grid grid-cols-1 gap-2">
+          <FeatureToggle
+            id="typing-indicator"
+            label="Typing Indicator"
+            icon={<MessageCircle className="h-3.5 w-3.5" />}
+            checked={settings.enableTypingIndicator}
+            onChange={(value) => onSettingChange('enableTypingIndicator', value)}
+          />
+          
+          <FeatureToggle
+            id="reactions"
+            label="Reactions"
+            icon={<ThumbsUp className="h-3.5 w-3.5" />}
+            checked={settings.enableReactions}
+            onChange={(value) => onSettingChange('enableReactions', value)}
+          />
+          
+          <FeatureToggle
+            id="file-attachments"
+            label="File Attachments"
+            icon={<FileText className="h-3.5 w-3.5" />}
+            checked={settings.enableFileAttachments}
+            onChange={(value) => onSettingChange('enableFileAttachments', value)}
+          />
+          
+          <FeatureToggle
+            id="read-receipts"
+            label="Read Receipts"
+            icon={<Check className="h-3.5 w-3.5" />}
+            checked={settings.enableReadReceipts}
+            onChange={(value) => onSettingChange('enableReadReceipts', value)}
+          />
+          
+          <FeatureToggle
+            id="show-branding"
+            label="Show Branding"
+            icon={<Zap className="h-3.5 w-3.5" />}
+            checked={settings.showBranding}
+            onChange={(value) => onSettingChange('showBranding', value)}
+          />
+        </div>
       </div>
     </div>
   );
@@ -97,14 +106,20 @@ const FeatureSettings: React.FC<FeatureSettingsProps> = ({ settings, onSettingCh
 interface FeatureToggleProps {
   id: string;
   label: string;
+  icon: React.ReactNode;
   checked: boolean;
   onChange: (value: boolean) => void;
 }
 
-const FeatureToggle = ({ id, label, checked, onChange }: FeatureToggleProps) => {
+const FeatureToggle = ({ id, label, icon, checked, onChange }: FeatureToggleProps) => {
   return (
-    <div className="flex items-center justify-between p-2 bg-gray-50 rounded-md">
-      <Label htmlFor={id} className="text-xs font-medium cursor-pointer">{label}</Label>
+    <div className={`flex items-center justify-between p-2 rounded-md transition-colors ${checked ? 'bg-purple-50' : 'bg-gray-50'}`}>
+      <Label htmlFor={id} className="text-xs font-medium cursor-pointer flex items-center gap-1.5">
+        <span className={`rounded-full p-1 ${checked ? 'bg-purple-100 text-purple-700' : 'bg-gray-200 text-gray-600'}`}>
+          {icon}
+        </span>
+        {label}
+      </Label>
       <Switch
         id={id}
         checked={checked}

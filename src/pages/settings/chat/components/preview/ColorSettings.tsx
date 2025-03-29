@@ -32,7 +32,13 @@ const ColorSettings: React.FC<ColorSettingsProps> = ({ settings, onSettingChange
     presets: string[];
   }) => (
     <div className="space-y-2">
-      <Label htmlFor={id} className="text-xs font-medium">{label}</Label>
+      <Label htmlFor={id} className="text-xs font-medium flex items-center justify-between">
+        {label}
+        <div 
+          className="w-4 h-4 rounded-full border border-gray-300" 
+          style={{ backgroundColor: value }}
+        />
+      </Label>
       <div className="flex items-center gap-2">
         <Input 
           id={id} 
@@ -52,7 +58,7 @@ const ColorSettings: React.FC<ColorSettingsProps> = ({ settings, onSettingChange
           <button
             key={color}
             type="button"
-            className="w-6 h-6 rounded-full border border-gray-200 transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-1"
+            className={`w-6 h-6 rounded-full border transition-transform hover:scale-110 focus:outline-none ${value === color ? 'ring-2 ring-purple-500 ring-offset-1' : 'border-gray-200'}`}
             style={{ backgroundColor: color }}
             onClick={() => onChange(color)}
             aria-label={`Set color to ${color}`}

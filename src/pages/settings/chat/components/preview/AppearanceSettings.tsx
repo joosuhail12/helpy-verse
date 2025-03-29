@@ -2,9 +2,9 @@
 import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Switch } from '@/components/ui/switch';
 import { ChatWidgetSettings } from '@/store/slices/chatWidgetSettings/types';
+import { ArrowLeft, ArrowRight, Circle, Square, Compass } from 'lucide-react';
 
 interface AppearanceSettingsProps {
   settings: ChatWidgetSettings;
@@ -17,54 +17,37 @@ const AppearanceSettings: React.FC<AppearanceSettingsProps> = ({ settings, onSet
       <div className="space-y-2">
         <Label className="text-xs font-medium">Widget Position</Label>
         <div className="grid grid-cols-2 gap-2">
-          <Button 
-            variant={settings.position === 'left' ? 'default' : 'outline'} 
-            size="sm"
+          <OptionButton 
+            isSelected={settings.position === 'left'} 
             onClick={() => onSettingChange('position', 'left')}
-            className="w-full flex-1 justify-center"
-          >
-            Left
-          </Button>
-          <Button 
-            variant={settings.position === 'right' ? 'default' : 'outline'} 
-            size="sm"
+            icon={<ArrowLeft className="h-4 w-4 mr-1.5" />}
+            label="Left"
+          />
+          <OptionButton 
+            isSelected={settings.position === 'right'} 
             onClick={() => onSettingChange('position', 'right')}
-            className="w-full flex-1 justify-center"
-          >
-            Right
-          </Button>
+            icon={<ArrowRight className="h-4 w-4 mr-1.5" />}
+            label="Right"
+          />
         </div>
       </div>
       
       <div className="space-y-2">
         <Label className="text-xs font-medium">Launcher Style</Label>
         <div className="grid grid-cols-2 gap-2">
-          <Button 
-            variant={settings.launcherStyle === 'circle' ? 'default' : 'outline'} 
-            size="sm"
+          <OptionButton 
+            isSelected={settings.launcherStyle === 'circle'} 
             onClick={() => onSettingChange('launcherStyle', 'circle')}
-            className="w-full flex-1 justify-center"
-          >
-            Circle
-          </Button>
-          <Button 
-            variant={settings.launcherStyle === 'rectangle' ? 'default' : 'outline'} 
-            size="sm"
+            icon={<Circle className="h-4 w-4 mr-1.5" />}
+            label="Circle"
+          />
+          <OptionButton 
+            isSelected={settings.launcherStyle === 'rectangle'} 
             onClick={() => onSettingChange('launcherStyle', 'rectangle')}
-            className="w-full flex-1 justify-center"
-          >
-            Rectangle
-          </Button>
+            icon={<Square className="h-4 w-4 mr-1.5" />}
+            label="Rectangle"
+          />
         </div>
-      </div>
-      
-      <div className="flex items-center justify-between space-x-2 bg-gray-50 p-2 rounded-md">
-        <Label htmlFor="compact-mode" className="text-xs font-medium cursor-pointer">Compact Mode</Label>
-        <Switch
-          id="compact-mode"
-          checked={settings.compact}
-          onCheckedChange={(value) => onSettingChange('compact', value)}
-        />
       </div>
       
       <div className="space-y-1.5">
@@ -89,43 +72,77 @@ const AppearanceSettings: React.FC<AppearanceSettingsProps> = ({ settings, onSet
         />
       </div>
       
-      <div className="flex items-center justify-between space-x-2 bg-gray-50 p-2 rounded-md">
-        <Label htmlFor="enable-animation" className="text-xs font-medium cursor-pointer">Enable Animations</Label>
-        <Switch
-          id="enable-animation"
-          checked={settings.enableAnimation}
-          onCheckedChange={(value) => onSettingChange('enableAnimation', value)}
-        />
+      <div className="space-y-2">
+        <h3 className="text-xs font-semibold text-gray-700">Display Options</h3>
+        <div className="space-y-2">
+          <ToggleOption
+            id="compact-mode"
+            label="Compact Mode"
+            icon={<Compass className="h-4 w-4" />}
+            checked={settings.compact}
+            onChange={(value) => onSettingChange('compact', value)}
+          />
+          
+          <ToggleOption
+            id="enable-animation"
+            label="Enable Animations"
+            icon={<Compass className="h-4 w-4" />}
+            checked={settings.enableAnimation}
+            onChange={(value) => onSettingChange('enableAnimation', value)}
+          />
+        </div>
       </div>
     </div>
   );
 };
 
-// Helper Button component for this module only
-const Button = ({ 
-  children, 
-  variant, 
-  size, 
-  className, 
-  onClick 
-}: { 
-  children: React.ReactNode; 
-  variant: 'default' | 'outline'; 
-  size: 'sm'; 
-  className?: string;
+interface OptionButtonProps {
+  isSelected: boolean;
   onClick: () => void;
-}) => {
+  icon: React.ReactNode;
+  label: string;
+}
+
+const OptionButton = ({ isSelected, onClick, icon, label }: OptionButtonProps) => {
   return (
     <button 
       onClick={onClick}
       className={`
-        ${variant === 'default' ? 'bg-purple-500 text-white hover:bg-purple-600' : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'} 
-        ${size === 'sm' ? 'text-xs py-1.5 px-2.5' : ''} 
-        rounded-md transition-colors ${className}
+        flex items-center justify-center py-1.5 px-2.5 text-xs rounded-md transition-colors
+        ${isSelected 
+          ? 'bg-purple-500 text-white hover:bg-purple-600' 
+          : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'
+        }
       `}
     >
-      {children}
+      {icon} {label}
     </button>
+  );
+};
+
+interface ToggleOptionProps {
+  id: string;
+  label: string;
+  icon: React.ReactNode;
+  checked: boolean;
+  onChange: (value: boolean) => void;
+}
+
+const ToggleOption = ({ id, label, icon, checked, onChange }: ToggleOptionProps) => {
+  return (
+    <div className={`flex items-center justify-between p-2 rounded-md transition-colors ${checked ? 'bg-purple-50' : 'bg-gray-50'}`}>
+      <Label htmlFor={id} className="text-xs font-medium cursor-pointer flex items-center">
+        <span className={`rounded-full p-1 mr-1.5 ${checked ? 'bg-purple-100 text-purple-700' : 'bg-gray-200 text-gray-600'}`}>
+          {icon}
+        </span>
+        {label}
+      </Label>
+      <Switch
+        id={id}
+        checked={checked}
+        onCheckedChange={onChange}
+      />
+    </div>
   );
 };
 

@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { LayoutDashboard, List, MessageCircle } from 'lucide-react';
+import { LayoutDashboard, List, MessageCircle, Layers } from 'lucide-react';
 
 type ChatView = 'home' | 'messages' | 'conversation';
 
@@ -28,8 +28,8 @@ const ViewSelector: React.FC<ViewSelectorProps> = ({ currentView, onViewChange }
     <Popover>
       <PopoverTrigger asChild>
         <Button variant="outline" size="sm" className="flex items-center gap-1.5 shadow-sm hover:shadow">
-          {viewIcons[currentView]}
-          <span>{viewLabels[currentView]}</span>
+          <Layers size={14} className="text-purple-500" />
+          <span>Change View</span>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-48 p-2">

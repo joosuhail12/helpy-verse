@@ -5,7 +5,8 @@ import { ChatWidgetSettings } from '@/store/slices/chatWidgetSettings/types';
 import PreviewBackground from './PreviewBackground';
 import WidgetSettingsPopover from './WidgetSettingsPopover';
 import ViewSelector from './ViewSelector';
-import { Settings, Eye, EyeOff } from 'lucide-react';
+import { Settings, Eye, EyeOff, Palette, MessageCircle, Layers } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 type ChatView = 'home' | 'messages' | 'conversation';
 
@@ -44,28 +45,57 @@ const PreviewControls: React.FC<PreviewControlsProps> = ({
   };
 
   return (
-    <div className="border-b border-gray-200 bg-white p-4 flex items-center justify-between rounded-t-lg shadow-sm">
-      <div className="flex items-center gap-3">
-        <PreviewBackground 
-          background={background} 
-          setBackground={setBackground}
-          backgroundImage={backgroundImage}
-          setBackgroundImage={setBackgroundImage}
-        />
+    <div className="border-b border-gray-200 bg-white p-3 flex items-center justify-between rounded-t-lg">
+      <div className="flex items-center gap-2">
+        <TooltipProvider delayDuration={300}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div>
+                <PreviewBackground 
+                  background={background} 
+                  setBackground={setBackground}
+                  backgroundImage={backgroundImage}
+                  setBackgroundImage={setBackgroundImage}
+                />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="text-xs">Change preview background</p>
+            </TooltipContent>
+          </Tooltip>
         
-        <WidgetSettingsPopover 
-          settings={previewSettings}
-          originalSettings={settings}
-          onSettingChange={onSettingChange}
-          onResetChanges={handleResetChanges}
-        />
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div>
+                <WidgetSettingsPopover 
+                  settings={previewSettings}
+                  originalSettings={settings}
+                  onSettingChange={onSettingChange}
+                  onResetChanges={handleResetChanges}
+                />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="text-xs">Customize widget settings</p>
+            </TooltipContent>
+          </Tooltip>
 
-        {onViewChange && currentView && (
-          <ViewSelector 
-            currentView={currentView} 
-            onViewChange={onViewChange} 
-          />
-        )}
+          {onViewChange && currentView && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div>
+                  <ViewSelector 
+                    currentView={currentView} 
+                    onViewChange={onViewChange} 
+                  />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="text-xs">Change widget view</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
+        </TooltipProvider>
       </div>
       
       {onToggleWidget && (
