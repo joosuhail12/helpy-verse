@@ -24,25 +24,25 @@ const SampleConversation: React.FC<SampleConversationProps> = ({
     {
       id: '1',
       content: 'Hi there! How can I help you today?',
-      sender: 'agent', // Now explicitly using the literal type
+      sender: 'agent',
       timestamp: new Date(Date.now() - 3600000).toISOString(),
-      status: 'delivered',
+      // Removed status property as it doesn't exist in ChatMessage type
       attachments: [],
     },
     {
       id: '2',
       content: 'I have a question about my subscription.',
-      sender: 'user', // Now explicitly using the literal type
+      sender: 'user',
       timestamp: new Date(Date.now() - 3500000).toISOString(),
-      status: 'delivered',
+      // Removed status property as it doesn't exist in ChatMessage type
       attachments: [],
     },
     {
       id: '3',
       content: 'Sure, I\'d be happy to help with that. Could you please provide your account number?',
-      sender: 'agent', // Now explicitly using the literal type
+      sender: 'agent',
       timestamp: new Date(Date.now() - 3400000).toISOString(),
-      status: 'delivered',
+      // Removed status property as it doesn't exist in ChatMessage type
       attachments: [],
     }
   ];
@@ -71,7 +71,7 @@ const SampleConversation: React.FC<SampleConversationProps> = ({
       <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
         <MessageList 
           messages={sampleMessages} 
-          isLoading={false} 
+          // Removed isLoading prop as it's not in MessageListProps
           conversationId="sample"
           showReadReceipts={true}
         />
