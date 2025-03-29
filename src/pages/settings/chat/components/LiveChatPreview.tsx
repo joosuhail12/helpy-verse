@@ -15,6 +15,7 @@ const LiveChatPreview = () => {
   const [background, setBackground] = useState<string>('#ffffff');
   const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
   const [previewSettings, setPreviewSettings] = useState<ChatWidgetSettings>(settings);
+  const [refreshPreview, setRefreshPreview] = useState<number>(Date.now());
   
   // Update preview settings when redux settings change
   useEffect(() => {
@@ -23,10 +24,16 @@ const LiveChatPreview = () => {
   
   // Handle real-time setting changes without saving
   const handlePreviewSettingChange = (field: keyof ChatWidgetSettings, value: any) => {
-    setPreviewSettings(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    setPreviewSettings(prev => {
+      const newSettings = {
+        ...prev,
+        [field]: value
+      };
+      
+      // Force a refresh of the preview when settings change
+      setRefreshPreview(Date.now());
+      return newSettings;
+    });
   };
   
   return (
@@ -55,6 +62,7 @@ const LiveChatPreview = () => {
           }}
         >
           <ConnectedChatWidget 
+            key={refreshPreview} // Force re-render when settings change
             workspaceId="preview-workspace-id" 
             isPreview={true}
             showLauncher={true}

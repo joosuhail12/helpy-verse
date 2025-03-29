@@ -9,6 +9,13 @@ export interface ChatWidgetSettings {
   enableReactions: boolean;
   enableFileAttachments: boolean;
   enableReadReceipts: boolean;
+  headerTitle: string;
+  headerColor: string;
+  launcherStyle: 'circle' | 'rectangle';
+  messageBoxColor: string;
+  userMessageColor: string;
+  agentMessageColor: string;
+  fontFamily: string;
 }
 
 export interface ChatWidgetSettingsState {

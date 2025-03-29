@@ -28,7 +28,7 @@ const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({
   sampleMessages = false
 }) => {
   const { conversations, currentConversation, selectConversation, createNewConversation } = useChat();
-  const { colors, features } = useThemeContext();
+  const { colors, features, labels, styles } = useThemeContext();
   const [isLoading, setIsLoading] = useState(false);
   const [activeView, setActiveView] = useState<View>('home');
 
@@ -53,8 +53,8 @@ const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({
 
   if (isLoading) {
     return (
-      <div className={`flex flex-col h-full text-gray-900 ${compact ? 'max-w-xs' : 'w-full'}`} 
-        style={{ backgroundColor: colors.background, color: colors.foreground }}>
+      <div className="flex flex-col h-full text-gray-900 w-full" 
+        style={{ backgroundColor: colors.background, color: colors.foreground, fontFamily: styles?.fontFamily }}>
         <div className="flex-1 flex items-center justify-center">
           <div className="animate-spin h-8 w-8 border-4 border-t-transparent rounded-full" 
             style={{ borderColor: colors.primary, borderTopColor: 'transparent' }}></div>
@@ -66,16 +66,22 @@ const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({
   // If this is a preview with sample messages, show a sample conversation
   if (isPreview && sampleMessages) {
     return (
-      <div className={`flex flex-col h-full text-gray-900 ${compact ? 'max-w-xs' : 'w-full'}`} 
-        style={{ backgroundColor: colors.background, color: colors.foreground }}>
-        <SampleConversation onClose={onClose} position={position} compact={compact} />
+      <div className="flex flex-col h-full text-gray-900 w-full" 
+        style={{ backgroundColor: colors.background, color: colors.foreground, fontFamily: styles?.fontFamily }}>
+        <SampleConversation 
+          onClose={onClose} 
+          position={position} 
+          compact={compact} 
+          headerTitle={labels.headerTitle}
+          headerColor={colors.headerBackground}
+        />
       </div>
     );
   }
 
   return (
-    <div className={`flex flex-col h-full text-gray-900 ${compact ? 'max-w-xs' : 'w-full'}`} 
-      style={{ backgroundColor: colors.background, color: colors.foreground }}>
+    <div className="flex flex-col h-full text-gray-900 w-full" 
+      style={{ backgroundColor: colors.background, color: colors.foreground, fontFamily: styles?.fontFamily }}>
       {activeView === 'home' && 
         <HomeView 
           workspaceId={workspaceId} 

@@ -11,7 +11,14 @@ const initialSettings: ChatWidgetSettings = {
   enableTypingIndicator: true,
   enableReactions: true,
   enableFileAttachments: true,
-  enableReadReceipts: true
+  enableReadReceipts: true,
+  headerTitle: 'Chat with us',
+  headerColor: '#9b87f5',
+  launcherStyle: 'circle',
+  messageBoxColor: '#f9f9f9',
+  userMessageColor: '#9b87f5',
+  agentMessageColor: '#f1f1f1',
+  fontFamily: 'Inter, system-ui, sans-serif'
 };
 
 const initialState: ChatWidgetSettingsState = {

@@ -43,18 +43,28 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({
       compact: settings.compact,
       colors: {
         ...theme.colors,
-        primary: settings.primaryColor
+        primary: settings.primaryColor,
+        userMessage: settings.userMessageColor,
+        agentMessage: settings.agentMessageColor,
+        inputBackground: settings.messageBoxColor,
+        background: '#ffffff',
+        headerBackground: settings.headerColor
       },
       labels: {
         ...theme.labels,
         welcomeTitle: settings.welcomeTitle,
-        welcomeSubtitle: settings.welcomeSubtitle
+        welcomeSubtitle: settings.welcomeSubtitle,
+        headerTitle: settings.headerTitle
       },
       features: {
         typingIndicator: settings.enableTypingIndicator,
         reactions: settings.enableReactions,
         fileAttachments: settings.enableFileAttachments,
         readReceipts: settings.enableReadReceipts
+      },
+      styles: {
+        fontFamily: settings.fontFamily,
+        launcherStyle: settings.launcherStyle
       }
     })
   };
@@ -71,6 +81,11 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({
     left: 'auto',
     zIndex: 10,
   } : {};
+  
+  // Determine launcher classes based on style setting
+  const launcherClasses = combinedTheme.styles?.launcherStyle === 'rectangle' 
+    ? 'rounded-lg px-3 py-2' 
+    : 'rounded-full w-14 h-14';
 
   return (
     <AblyProvider workspaceId={workspaceId}>
@@ -84,6 +99,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({
               ...previewStyles,
               width: isPreview ? '100%' : 'auto',
               height: isPreview ? '100%' : 'auto',
+              fontFamily: combinedTheme.styles?.fontFamily
             }}
           >
             <AnimatePresence>
@@ -93,7 +109,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 20, scale: 0.95 }}
                   transition={{ duration: 0.2 }}
-                  className={`mb-3 ${combinedTheme.compact ? 'w-72' : 'w-80 sm:w-96'} h-[600px] bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-200`}
+                  className="mb-3 bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-200"
                   style={{ 
                     height: isPreview ? '85%' : '600px',
                     width: isPreview ? '100%' : combinedTheme.compact ? '18rem' : '24rem'
@@ -116,7 +132,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({
                 onClick={toggleWidget}
                 className={`${
                   isOpen ? 'bg-red-500 hover:bg-red-600' : 'bg-primary hover:bg-primary/90'
-                } w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-colors`}
+                } ${launcherClasses} flex items-center justify-center shadow-lg transition-colors`}
                 aria-label={isOpen ? 'Close chat' : 'Open chat'}
                 style={{ 
                   backgroundColor: isOpen ? '#ef4444' : combinedTheme.colors?.primary,

@@ -1,84 +1,115 @@
 
 import React from 'react';
 import { X } from 'lucide-react';
-import { useThemeContext } from '@/context/ThemeContext';
+import { formatDistance } from 'date-fns';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
-import { ChatMessage } from './types';
+import UserAvatar from '../user/UserAvatar';
+import { useThemeContext } from '@/context/ThemeContext';
+
+// Define a sample conversation for the preview
+const createSampleMessages = () => {
+  const now = new Date();
+  const fiveMinutesAgo = new Date(now.getTime() - 5 * 60000);
+  const tenMinutesAgo = new Date(now.getTime() - 10 * 60000);
+  
+  return [
+    {
+      id: '1',
+      text: 'Hello! How can I help you today?',
+      sender: {
+        id: 'agent-1',
+        name: 'Support Agent',
+        avatarUrl: 'https://i.pravatar.cc/150?img=32'
+      },
+      timestamp: tenMinutesAgo.toISOString(),
+      status: 'delivered',
+      isFromCurrentUser: false
+    },
+    {
+      id: '2',
+      text: 'I have a question about my recent order. It shows as shipped but I haven\'t received a tracking number yet.',
+      sender: {
+        id: 'user-1',
+        name: 'You',
+        avatarUrl: ''
+      },
+      timestamp: fiveMinutesAgo.toISOString(),
+      status: 'read',
+      isFromCurrentUser: true
+    },
+    {
+      id: '3',
+      text: 'I\'m sorry to hear that. Let me check the status of your order right away. Could you please provide your order number?',
+      sender: {
+        id: 'agent-1',
+        name: 'Support Agent',
+        avatarUrl: 'https://i.pravatar.cc/150?img=32'
+      },
+      timestamp: fiveMinutesAgo.toISOString(),
+      status: 'delivered',
+      isFromCurrentUser: false
+    }
+  ];
+};
 
 interface SampleConversationProps {
   onClose: () => void;
   position?: 'left' | 'right';
   compact?: boolean;
+  headerTitle?: string;
+  headerColor?: string;
 }
 
 const SampleConversation: React.FC<SampleConversationProps> = ({ 
   onClose, 
   position = 'right',
-  compact = false 
+  compact = false,
+  headerTitle = 'Chat with us',
+  headerColor
 }) => {
-  const { colors, labels } = useThemeContext();
+  const { colors, features } = useThemeContext();
+  const sampleMessages = createSampleMessages();
   
-  // Sample messages for preview - explicitly typed as ChatMessage[]
-  const sampleMessages: ChatMessage[] = [
-    {
-      id: '1',
-      content: 'Hi there! How can I help you today?',
-      sender: 'agent',
-      timestamp: new Date(Date.now() - 3600000).toISOString(),
-      attachments: [],
-    },
-    {
-      id: '2',
-      content: 'I have a question about my subscription.',
-      sender: 'user',
-      timestamp: new Date(Date.now() - 3500000).toISOString(),
-      attachments: [],
-    },
-    {
-      id: '3',
-      content: 'Sure, I\'d be happy to help with that. Could you please provide your account number?',
-      sender: 'agent',
-      timestamp: new Date(Date.now() - 3400000).toISOString(),
-      attachments: [],
-    }
-  ];
-
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div 
-        className="p-4 flex items-center justify-between" 
-        style={{ backgroundColor: colors.primary, color: colors.primaryForeground }}
-      >
-        <div>
-          <h3 className="font-semibold text-lg">{labels?.welcomeTitle || 'Hello there.'}</h3>
-          <p className="text-sm opacity-90">{labels?.welcomeSubtitle || 'How can we help?'}</p>
+      <div className="px-4 py-3 flex justify-between items-center" 
+        style={{ backgroundColor: headerColor || colors.primary, color: '#ffffff' }}>
+        <div className="flex items-center">
+          <UserAvatar
+            name="Support Team"
+            avatarUrl="https://i.pravatar.cc/150?img=32"
+            size="small"
+          />
+          <div className="ml-2">
+            <h3 className="font-medium text-sm">{headerTitle}</h3>
+            <p className="text-xs opacity-90">Online now</p>
+          </div>
         </div>
-        <button
+        <button 
           onClick={onClose}
-          className="text-current p-1 rounded-full hover:bg-black/10"
-          aria-label="Close chat"
+          className="text-white p-1 hover:bg-white/10 rounded-full transition-colors"
+          aria-label="Close conversation"
         >
           <X className="h-5 w-5" />
         </button>
       </div>
       
-      {/* Message List */}
-      <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
-        <MessageList 
-          messages={sampleMessages} 
-          conversationId="sample"
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto px-4 pt-2 pb-4">
+        <MessageList
+          messages={sampleMessages}
+          conversationId="sample-conversation"
         />
       </div>
       
-      {/* Message Input */}
-      <div className="p-3 border-t border-gray-200 bg-white">
-        <MessageInput
-          onSendMessage={() => {}}
-          onTyping={() => {}}
-          disabled={false}
-          placeholder="Type a message..."
+      {/* Input */}
+      <div className="border-t border-gray-200 px-4 py-2">
+        <MessageInput 
+          onSendMessage={() => {}} 
+          disabled={false} 
+          placeholder="Type a message..." 
         />
       </div>
     </div>

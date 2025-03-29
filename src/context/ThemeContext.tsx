@@ -14,6 +14,7 @@ export interface ThemeConfig {
     agentMessage: string;
     agentMessageText: string;
     inputBackground: string;
+    headerBackground: string;
   };
   position: 'left' | 'right';
   compact: boolean;
@@ -24,12 +25,17 @@ export interface ThemeConfig {
     recentMessagesTitle: string;
     noMessagesText: string;
     messagePlaceholder: string;
+    headerTitle: string;
   };
   features: {
     typingIndicator: boolean;
     reactions: boolean;
     fileAttachments: boolean;
     readReceipts: boolean;
+  };
+  styles?: {
+    fontFamily: string;
+    launcherStyle: 'circle' | 'rectangle';
   };
 }
 
@@ -45,7 +51,8 @@ const defaultTheme: ThemeConfig = {
     userMessageText: '#ffffff',
     agentMessage: '#f1f1f1',
     agentMessageText: '#1A1F2C',
-    inputBackground: '#f9f9f9'
+    inputBackground: '#f9f9f9',
+    headerBackground: '#9b87f5'
   },
   position: 'right',
   compact: false,
@@ -55,13 +62,18 @@ const defaultTheme: ThemeConfig = {
     askQuestionButton: 'Ask a question',
     recentMessagesTitle: 'Recent messages',
     noMessagesText: 'No messages yet. Start a conversation!',
-    messagePlaceholder: 'Type a message...'
+    messagePlaceholder: 'Type a message...',
+    headerTitle: 'Chat with us'
   },
   features: {
     typingIndicator: true,
     reactions: true,
     fileAttachments: true,
     readReceipts: true
+  },
+  styles: {
+    fontFamily: 'Inter, system-ui, sans-serif',
+    launcherStyle: 'circle'
   }
 };
 
@@ -91,6 +103,10 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children, initialT
     features: {
       ...defaultTheme.features,
       ...(initialTheme.features || {})
+    },
+    styles: {
+      ...defaultTheme.styles,
+      ...(initialTheme.styles || {})
     }
   });
 
@@ -109,6 +125,10 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children, initialT
       features: {
         ...prev.features,
         ...(newTheme.features || {})
+      },
+      styles: {
+        ...prev.styles,
+        ...(newTheme.styles || {})
       }
     }));
   };

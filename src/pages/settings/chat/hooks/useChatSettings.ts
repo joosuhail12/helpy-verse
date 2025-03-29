@@ -58,19 +58,28 @@ export const useChatSettings = () => {
   (function() {
     window.PULLSE_WORKSPACE_ID = '${window.location.hostname}';
     window.PULLSE_THEME_COLORS = {
-      primary: '${settings.primaryColor}'
+      primary: '${settings.primaryColor}',
+      headerBackground: '${settings.headerColor}',
+      userMessage: '${settings.userMessageColor}',
+      agentMessage: '${settings.agentMessageColor}',
+      messageBoxColor: '${settings.messageBoxColor}'
     };
     window.PULLSE_POSITION = '${settings.position}';
     window.PULLSE_COMPACT = ${settings.compact};
     window.PULLSE_LABELS = {
       welcomeTitle: '${settings.welcomeTitle}',
-      welcomeSubtitle: '${settings.welcomeSubtitle}'
+      welcomeSubtitle: '${settings.welcomeSubtitle}',
+      headerTitle: '${settings.headerTitle}'
     };
     window.PULLSE_FEATURES = {
       typingIndicator: ${settings.enableTypingIndicator},
       reactions: ${settings.enableReactions},
       fileAttachments: ${settings.enableFileAttachments},
       readReceipts: ${settings.enableReadReceipts}
+    };
+    window.PULLSE_STYLES = {
+      fontFamily: '${settings.fontFamily}',
+      launcherStyle: '${settings.launcherStyle}'
     };
     
     const script = document.createElement('script');
