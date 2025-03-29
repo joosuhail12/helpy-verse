@@ -1,3 +1,4 @@
+
 import { createSlice } from '@reduxjs/toolkit';
 import { TeammatesState } from './types';
 import {
@@ -133,6 +134,11 @@ const teammatesSlice = createSlice({
   },
 });
 
+// Export the reducer directly
+export const reducer = teammatesSlice.reducer;
+
+// Export the old export name for backwards compatibility
 export const teammatesReducer = teammatesSlice.reducer;
+
 export * from './actions';
 export * from './selectors';

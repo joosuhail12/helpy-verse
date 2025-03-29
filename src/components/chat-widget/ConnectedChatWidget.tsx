@@ -1,9 +1,9 @@
 
 import React, { useEffect } from 'react';
-import { useAppSelector, useAppDispatch } from '@/hooks/redux';
+import { useAppSelector, useAppDispatch } from '../../hooks/redux';
 import { ChatWidget } from './ChatWidget';
-import { selectChatWidgetSettings } from '@/store/slices/chatWidgetSettings';
-import { loadChatWidgetSettings } from '@/store/slices/chatWidgetSettings';
+import { selectChatWidgetSettings } from '../../store/slices/chatWidgetSettings/selectors';
+import { loadChatWidgetSettings } from '../../store/slices/chatWidgetSettings/actions';
 
 interface ConnectedChatWidgetProps {
   workspaceId: string;

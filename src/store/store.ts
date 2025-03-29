@@ -8,13 +8,14 @@ import contactsReducer from './slices/contacts/contactsSlice';
 import companiesReducer from './slices/companies/companiesSlice';
 import ticketsReducer from './slices/tickets/ticketsSlice';
 import tagsReducer from './slices/tagsSlice';
-import { teammatesReducer } from './slices/teammates/teammatesSlice';
 import teamsReducer from './slices/teams/teamsSlice';
+import { chatWidgetSettingsReducer } from './slices/chatWidgetSettings';
 import { emailChannelsReducer } from './slices/emailChannels/emailChannelsSlice';
 import { cannedResponsesReducer } from './slices/cannedResponses/cannedResponsesSlice';
 import { chatbotsReducer } from './slices/chatbots/chatbotsSlice';
 import userReducer from './slices/user/userSlice';
-import { chatWidgetSettingsReducer } from './slices/chatWidgetSettings';
+// Import reducers directly from their files to avoid circular imports
+import { reducer as teammatesReducer } from './slices/teammates/teammatesSlice';
 
 // Define the root reducer with all slices
 const rootReducer = {
