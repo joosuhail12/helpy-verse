@@ -5,7 +5,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Input } from '@/components/ui/input';
 import { ChatWidgetSettings } from '@/store/slices/chatWidgetSettings/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CheckCircle, LayoutPanelLeft, LayoutPanelRight, MonitorSmartphone, ArrowRightLeft, LayoutGrid } from 'lucide-react';
+import { CheckCircle, SidebarLeft, SidebarRight, MonitorSmartphone, ArrowRightLeft, LayoutGrid } from 'lucide-react';
 
 interface AppearanceSettingsProps {
   settings: ChatWidgetSettings;
@@ -64,7 +64,7 @@ const AppearanceSettings: React.FC<AppearanceSettingsProps> = ({ settings, onSet
             <div className="flex flex-col items-center">
               <div className={`p-4 rounded-md border ${settings.position === 'left' ? 'border-purple-500 bg-purple-50' : 'border-gray-200'} cursor-pointer relative`}
                 onClick={() => onSettingChange('position', 'left')}>
-                <LayoutPanelLeft className="h-5 w-5 text-gray-600" />
+                <SidebarLeft className="h-5 w-5 text-gray-600" />
                 {settings.position === 'left' && (
                   <CheckCircle className="absolute -top-2 -right-2 h-4 w-4 text-purple-500 bg-white rounded-full" />
                 )}
@@ -76,7 +76,7 @@ const AppearanceSettings: React.FC<AppearanceSettingsProps> = ({ settings, onSet
             <div className="flex flex-col items-center">
               <div className={`p-4 rounded-md border ${settings.position === 'right' ? 'border-purple-500 bg-purple-50' : 'border-gray-200'} cursor-pointer relative`}
                 onClick={() => onSettingChange('position', 'right')}>
-                <LayoutPanelRight className="h-5 w-5 text-gray-600" />
+                <SidebarRight className="h-5 w-5 text-gray-600" />
                 {settings.position === 'right' && (
                   <CheckCircle className="absolute -top-2 -right-2 h-4 w-4 text-purple-500 bg-white rounded-full" />
                 )}
