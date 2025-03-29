@@ -5,11 +5,13 @@ import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Settings, Image, PaintBucket, Layout, Type, MessageSquare } from 'lucide-react';
+import { Settings, Image, PaintBucket, Layout, Type, MessageSquare, LayoutDashboard, List, MessageCircle } from 'lucide-react';
 import { ChatWidgetSettings } from '@/store/slices/chatWidgetSettings/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Switch } from '@/components/ui/switch';
+
+type ChatView = 'home' | 'messages' | 'conversation';
 
 const backgroundImages = [
   { id: 'none', url: null, name: 'None' },
@@ -27,6 +29,10 @@ interface PreviewControlsProps {
   settings: ChatWidgetSettings;
   previewSettings: ChatWidgetSettings;
   onSettingChange: (field: keyof ChatWidgetSettings, value: any) => void;
+  onViewChange?: (view: ChatView) => void;
+  currentView?: ChatView;
+  onToggleWidget?: () => void;
+  isWidgetOpen?: boolean;
 }
 
 const PreviewControls: React.FC<PreviewControlsProps> = ({
@@ -36,7 +42,11 @@ const PreviewControls: React.FC<PreviewControlsProps> = ({
   setBackgroundImage,
   settings,
   previewSettings,
-  onSettingChange
+  onSettingChange,
+  onViewChange,
+  currentView = 'conversation',
+  onToggleWidget,
+  isWidgetOpen = true
 }) => {
   const [activeTab, setActiveTab] = useState('appearance');
 
@@ -351,6 +361,64 @@ const PreviewControls: React.FC<PreviewControlsProps> = ({
             </div>
           </PopoverContent>
         </Popover>
+
+        {onViewChange && (
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className="flex items-center gap-1">
+                {currentView === 'home' ? (
+                  <><LayoutDashboard size={14} /> Home</>
+                ) : currentView === 'messages' ? (
+                  <><List size={14} /> Messages</>
+                ) : (
+                  <><MessageCircle size={14} /> Conversation</>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-48 p-3">
+              <div className="space-y-2">
+                <Label>Current View</Label>
+                <div className="space-y-1">
+                  <Button 
+                    variant={currentView === 'home' ? 'default' : 'outline'} 
+                    size="sm" 
+                    className="w-full justify-start"
+                    onClick={() => onViewChange('home')}
+                  >
+                    <LayoutDashboard className="h-4 w-4 mr-2" /> Home
+                  </Button>
+                  <Button 
+                    variant={currentView === 'messages' ? 'default' : 'outline'} 
+                    size="sm" 
+                    className="w-full justify-start"
+                    onClick={() => onViewChange('messages')}
+                  >
+                    <List className="h-4 w-4 mr-2" /> Messages
+                  </Button>
+                  <Button 
+                    variant={currentView === 'conversation' ? 'default' : 'outline'} 
+                    size="sm" 
+                    className="w-full justify-start"
+                    onClick={() => onViewChange('conversation')}
+                  >
+                    <MessageCircle className="h-4 w-4 mr-2" /> Conversation
+                  </Button>
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
+        )}
+
+        {onToggleWidget && (
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={onToggleWidget}
+            className="flex items-center gap-1"
+          >
+            {isWidgetOpen ? 'Close Widget' : 'Open Widget'}
+          </Button>
+        )}
       </div>
     </div>
   );

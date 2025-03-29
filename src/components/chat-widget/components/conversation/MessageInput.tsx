@@ -1,88 +1,88 @@
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, KeyboardEvent } from 'react';
+import { Send, Paperclip } from 'lucide-react';
 import { useThemeContext } from '@/context/ThemeContext';
-import { Send } from 'lucide-react';
 
 interface MessageInputProps {
-  onSendMessage: (content: string) => void;
-  onTyping?: () => void;
+  onSendMessage: (message: string) => void;
   disabled?: boolean;
   placeholder?: string;
+  value?: string;
+  onChange?: (value: string) => void;
 }
 
 const MessageInput: React.FC<MessageInputProps> = ({ 
   onSendMessage, 
-  onTyping, 
   disabled = false,
-  placeholder = "Type a message..."
+  placeholder = 'Type a message...',
+  value,
+  onChange
 }) => {
+  const { colors, features } = useThemeContext();
   const [message, setMessage] = useState('');
-  const { colors } = useThemeContext();
-  const inputRef = useRef<HTMLTextAreaElement>(null);
-
-  useEffect(() => {
-    // Auto focus the input when component mounts
-    if (inputRef.current && !disabled) {
-      inputRef.current.focus();
-    }
-  }, [disabled]);
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
-    }
-  };
-
+  
+  // Determine if we're using controlled or uncontrolled input
+  const isControlled = value !== undefined && onChange !== undefined;
+  const currentValue = isControlled ? value : message;
+  
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setMessage(e.target.value);
-    if (onTyping) {
-      onTyping();
+    if (isControlled) {
+      onChange(e.target.value);
+    } else {
+      setMessage(e.target.value);
     }
   };
-
-  const handleSendMessage = () => {
-    if (message.trim() && !disabled) {
-      onSendMessage(message.trim());
+  
+  const handleSend = () => {
+    if (!currentValue.trim() || disabled) return;
+    
+    onSendMessage(currentValue);
+    
+    if (!isControlled) {
       setMessage('');
     }
   };
-
+  
+  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+  
   return (
-    <div 
-      className="border-t p-3 flex items-end gap-2"
-      style={{ 
-        borderColor: colors.border,
-        backgroundColor: colors.backgroundSecondary
-      }}
-    >
-      <textarea
-        ref={inputRef}
-        className="flex-1 resize-none rounded-lg p-2 max-h-32 min-h-[40px] focus:outline-none focus:ring-2"
-        style={{ 
-          backgroundColor: colors.inputBackground,
-          color: colors.foreground,
-          borderColor: colors.border,
-          // Removed focusRing as it's not a valid CSS property
-        }}
-        value={message}
-        onChange={handleChange}
-        onKeyDown={handleKeyDown}
-        placeholder={placeholder}
-        rows={1}
-        disabled={disabled}
-      />
+    <div className="flex items-end gap-2">
+      {features.fileAttachments && (
+        <button
+          className="p-2 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+          disabled={disabled}
+        >
+          <Paperclip className="h-5 w-5" />
+        </button>
+      )}
+      <div className="flex-1 relative">
+        <textarea
+          className="w-full p-3 pr-10 rounded-lg resize-none min-h-[45px] max-h-[120px] overflow-auto focus:outline-none"
+          placeholder={placeholder}
+          rows={1}
+          value={currentValue}
+          onChange={handleChange}
+          onKeyDown={handleKeyDown}
+          disabled={disabled}
+          style={{ 
+            backgroundColor: colors.inputBackground || '#f9f9f9',
+            borderColor: colors.border
+          }}
+        />
+      </div>
       <button
-        onClick={handleSendMessage}
-        disabled={!message.trim() || disabled}
-        className="p-2 rounded-full transition-colors flex-shrink-0"
-        style={{ 
-          backgroundColor: message.trim() ? colors.primary : '#ccc',
-          color: message.trim() ? colors.primaryForeground : '#666',
-          opacity: disabled ? 0.5 : 1
-        }}
+        onClick={handleSend}
+        disabled={!currentValue.trim() || disabled}
+        className={`p-2 rounded-full ${!currentValue.trim() || disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+        style={{ backgroundColor: colors.primary, color: colors.primaryForeground }}
+        aria-label="Send message"
       >
-        <Send size={18} />
+        <Send className="h-5 w-5" />
       </button>
     </div>
   );
