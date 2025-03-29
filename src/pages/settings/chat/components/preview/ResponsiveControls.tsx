@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Smartphone, Tablet, Monitor, ArrowsMaximize } from 'lucide-react';
+import { Smartphone, Tablet, Monitor, Maximize2 } from 'lucide-react'; // Changed ArrowsMaximize to Maximize2
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -86,7 +86,7 @@ const ResponsiveControls: React.FC<ResponsiveControlsProps> = ({
       
       {showFullScreen && onFullScreenToggle && (
         <Button variant="outline" size="sm" onClick={onFullScreenToggle}>
-          <ArrowsMaximize className="h-4 w-4 mr-2" />
+          <Maximize2 className="h-4 w-4 mr-2" /> {/* Changed ArrowsMaximize to Maximize2 */}
           Full Screen
         </Button>
       )}
