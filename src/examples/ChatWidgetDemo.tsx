@@ -1,176 +1,224 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import chatWidgetApi from '@/api/chat-widget';
-import type { ChatMessage, FileAttachment } from '@/api/chat-widget/types';
+import { ChatWidgetConfig } from '@/api/chat-widget/types';
+import chatWidgetAPI from '@/api/chat-widget';
 
 /**
  * Demo component showing how to use the Chat Widget API
  */
 const ChatWidgetDemo: React.FC = () => {
   const [initialized, setInitialized] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<any[]>([]);
   const [messageText, setMessageText] = useState('');
-  const [attachments, setAttachments] = useState<FileAttachment[]>([]);
+  const [fileUrl, setFileUrl] = useState('');
+  const [primaryColor, setPrimaryColor] = useState('#9b87f5');
   
-  // Initialize chat widget on mount
+  // Initialize the chat widget on component mount
   useEffect(() => {
-    const initializeWidget = async () => {
-      const success = await chatWidgetApi.initialize({
+    const initWidget = async () => {
+      // Configure the widget
+      const config: ChatWidgetConfig = {
         workspaceId: '6c22b22f-7bdf-43db-b7c1-9c5884125c63',
         theme: {
           colors: {
-            primary: '#4f46e5'
-          }
+            primary: primaryColor
+          },
+          position: 'right',
+          compact: false
+        },
+        labels: {
+          welcomeTitle: 'Welcome to Demo Chat',
+          welcomeSubtitle: 'Try out the chat widget API'
+        },
+        features: {
+          typingIndicator: true,
+          fileAttachments: true
         },
         events: {
           onMessageReceived: (message) => {
-            console.log('Message received:', message);
-            setMessages(prev => [...prev, message]);
+            console.log('New message received:', message);
           }
         }
-      });
+      };
       
-      if (success) {
-        setInitialized(true);
-        loadMessages();
-      }
+      // Initialize the widget
+      const success = await chatWidgetAPI.initialize(config);
+      setInitialized(success);
     };
     
-    initializeWidget();
-    
-    return () => {
-      // Clean up attachments on unmount
-      attachments.forEach(attachment => {
-        if (attachment.url.startsWith('blob:')) {
-          URL.revokeObjectURL(attachment.url);
-        }
-      });
-    };
+    initWidget();
   }, []);
   
   // Load messages
-  const loadMessages = async () => {
-    const loadedMessages = await chatWidgetApi.getMessages();
-    setMessages(loadedMessages);
-  };
-  
-  // Handle sending messages
-  const handleSendMessage = async () => {
-    if (!messageText.trim() && attachments.length === 0) return;
-    
-    // Send message
-    const message = await chatWidgetApi.sendMessage(
-      messageText,
-      attachments.map(a => a.url),
-      { demo: true }
-    );
-    
-    if (message) {
-      setMessages(prev => [...prev, message]);
-      setMessageText('');
-      setAttachments([]);
+  const handleLoadMessages = async () => {
+    try {
+      const fetchedMessages = await chatWidgetAPI.message.getAll();
+      setMessages(fetchedMessages);
+    } catch (error) {
+      console.error('Failed to load messages:', error);
     }
   };
   
-  // Handle file input
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const newFiles = Array.from(e.target.files);
-      
-      newFiles.forEach(file => {
-        const attachment = chatWidgetApi.addAttachment(file);
-        if (attachment) {
-          setAttachments(prev => [...prev, attachment]);
+  // Send a message
+  const handleSendMessage = async () => {
+    if (!messageText.trim()) return;
+    
+    try {
+      await chatWidgetAPI.message.send(messageText);
+      setMessageText('');
+      // Refresh messages
+      handleLoadMessages();
+    } catch (error) {
+      console.error('Failed to send message:', error);
+    }
+  };
+  
+  // Add attachment
+  const handleAddAttachment = async () => {
+    if (!fileUrl.trim()) return;
+    
+    try {
+      await chatWidgetAPI.attachments.add({
+        id: Date.now().toString(),
+        name: fileUrl.split('/').pop() || 'file',
+        type: 'image/jpeg',
+        url: fileUrl,
+        size: 0
+      });
+      setFileUrl('');
+    } catch (error) {
+      console.error('Failed to add attachment:', error);
+    }
+  };
+  
+  // Remove all attachments
+  const handleRemoveAttachments = async () => {
+    try {
+      const attachments = await chatWidgetAPI.attachments.getAll();
+      for (const attachment of attachments) {
+        await chatWidgetAPI.attachments.remove(attachment.id);
+      }
+    } catch (error) {
+      console.error('Failed to remove attachments:', error);
+    }
+  };
+  
+  // Toggle widget visibility
+  const handleToggleWidget = async () => {
+    try {
+      await chatWidgetAPI.widget.toggle();
+    } catch (error) {
+      console.error('Failed to toggle widget:', error);
+    }
+  };
+  
+  // Update theme
+  const handleUpdateTheme = async () => {
+    try {
+      await chatWidgetAPI.theme.update({
+        colors: {
+          primary: primaryColor
         }
       });
+    } catch (error) {
+      console.error('Failed to update theme:', error);
     }
-  };
-  
-  // Remove attachment
-  const handleRemoveAttachment = (id: string) => {
-    chatWidgetApi.removeAttachment(id);
-    setAttachments(prev => prev.filter(a => a.id !== id));
   };
   
   return (
-    <div className="max-w-md mx-auto p-4 border rounded-lg shadow-sm">
-      <h2 className="text-lg font-semibold mb-4">Chat Widget API Demo</h2>
-      
-      <div className="space-y-2 mb-4">
-        <Button onClick={() => chatWidgetApi.toggleWidget()}>
-          Toggle Widget
-        </Button>
-        <span className="ml-2">
-          Status: {initialized ? 'Initialized' : 'Not initialized'}
-        </span>
-      </div>
-      
-      <div className="border rounded-md p-3 h-60 overflow-y-auto mb-4">
-        {messages.map(message => (
-          <div key={message.id} className={`mb-2 p-2 rounded ${
-            message.sender === 'user' ? 'bg-blue-100 ml-8' : 'bg-gray-100 mr-8'
-          }`}>
-            <div className="text-sm font-medium">
-              {message.sender === 'user' ? 'You' : 'Agent'}
-            </div>
-            <div>{message.content}</div>
-            {message.attachments && message.attachments.length > 0 && (
-              <div className="mt-1 text-xs text-gray-500">
-                {message.attachments.length} attachment(s)
+    <Card className="w-full max-w-3xl mx-auto">
+      <CardHeader>
+        <CardTitle>Chat Widget API Demo</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Tabs defaultValue="control">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="control">Controls</TabsTrigger>
+            <TabsTrigger value="messaging">Messaging</TabsTrigger>
+            <TabsTrigger value="files">Files</TabsTrigger>
+            <TabsTrigger value="theme">Theme</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="control" className="space-y-4 py-4">
+            <div>
+              <p className="mb-2">Widget Status: {initialized ? 'Initialized' : 'Not Initialized'}</p>
+              <div className="flex gap-2">
+                <Button onClick={handleToggleWidget}>Toggle Widget</Button>
+                <Button variant="outline" onClick={() => chatWidgetAPI.widget.open()}>Open Widget</Button>
+                <Button variant="outline" onClick={() => chatWidgetAPI.widget.close()}>Close Widget</Button>
               </div>
-            )}
-          </div>
-        ))}
-      </div>
-      
-      {attachments.length > 0 && (
-        <div className="flex flex-wrap gap-2 mb-2">
-          {attachments.map(attachment => (
-            <div key={attachment.id} className="border rounded p-1 text-xs flex items-center">
-              {attachment.name}
-              <button 
-                className="ml-1 text-red-500" 
-                onClick={() => handleRemoveAttachment(attachment.id)}
-              >
-                ×
-              </button>
             </div>
-          ))}
-        </div>
-      )}
-      
-      <div className="flex items-end gap-2">
-        <Textarea
-          value={messageText}
-          onChange={(e) => setMessageText(e.target.value)}
-          placeholder="Type a message..."
-          className="flex-1"
-          rows={3}
-        />
-        <div className="space-y-2">
-          <Button 
-            type="button" 
-            size="icon"
-            variant="outline"
-            className="rounded-full"
-            onClick={() => document.getElementById('file-upload')?.click()}
-          >
-            +
-          </Button>
-          <Button onClick={handleSendMessage}>Send</Button>
-        </div>
-      </div>
-      
-      <input
-        id="file-upload"
-        type="file"
-        multiple
-        className="hidden"
-        onChange={handleFileChange}
-      />
-    </div>
+          </TabsContent>
+          
+          <TabsContent value="messaging" className="space-y-4 py-4">
+            <div>
+              <Button onClick={handleLoadMessages} className="mb-4">Load Messages</Button>
+              <div className="border rounded-md p-4 h-40 overflow-y-auto mb-4">
+                {messages.length > 0 ? (
+                  messages.map((msg, idx) => (
+                    <div key={idx} className="mb-2">
+                      <strong>{msg.sender}:</strong> {msg.content}
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-gray-500">No messages yet</p>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <Input 
+                  value={messageText}
+                  onChange={(e) => setMessageText(e.target.value)}
+                  placeholder="Type a message" 
+                />
+                <Button onClick={handleSendMessage}>Send</Button>
+              </div>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="files" className="space-y-4 py-4">
+            <div>
+              <p className="mb-2">Add Attachment</p>
+              <div className="flex gap-2 mb-4">
+                <Input 
+                  value={fileUrl}
+                  onChange={(e) => setFileUrl(e.target.value)}
+                  placeholder="File URL" 
+                />
+                <Button onClick={handleAddAttachment}>Add</Button>
+              </div>
+              <Button variant="outline" onClick={handleRemoveAttachments}>
+                Remove All Attachments
+              </Button>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="theme" className="space-y-4 py-4">
+            <div>
+              <p className="mb-2">Change Primary Color</p>
+              <div className="flex gap-2">
+                <Input 
+                  type="color"
+                  value={primaryColor}
+                  onChange={(e) => setPrimaryColor(e.target.value)}
+                  className="w-20"
+                />
+                <Input 
+                  value={primaryColor}
+                  onChange={(e) => setPrimaryColor(e.target.value)}
+                  placeholder="#9b87f5" 
+                />
+                <Button onClick={handleUpdateTheme}>Update Theme</Button>
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </CardContent>
+    </Card>
   );
 };
 
