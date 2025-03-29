@@ -1,4 +1,5 @@
 
 // Direct exports to avoid circular dependencies
-export { useAppDispatch } from './useAppDispatch';
-export { useAppSelector } from './useAppSelector';
+// Point to the actual file locations
+export { useAppDispatch } from '../useAppDispatch';
+export { useAppSelector } from '../useAppSelector';

@@ -15,7 +15,7 @@ import {
 } from './userActions';
 import { getUserPermission } from './permissionActions';
 
-// Import getCookie from a non-circular source
+// Import getAuthToken directly from tokenManager to avoid circular imports
 import { getAuthToken } from '@/utils/auth/tokenManager';
 
 const initialState: AuthState = {
