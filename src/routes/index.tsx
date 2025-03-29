@@ -19,16 +19,16 @@ import { inboxRoutes } from './inboxRoutes';
 import { settingsRoutes } from './settingsRoutes';
 import { automationRoutes } from './automationRoutes';
 
-// Lazy load components
-const SignIn = lazy(() => import('../pages/SignIn'));
-const ForgotPassword = lazy(() => import('../pages/ForgotPassword'));
-const ResetPassword = lazy(() => import('../pages/ResetPassword'));
-const SignUp = lazy(() => import('../pages/SignUp'));
-const NotFound = lazy(() => import('../pages/NotFound'));
-const LandingPage = lazy(() => import('../pages/LandingPage'));
+// Lazy load components with explicit named chunks for better error handling
+const SignIn = lazy(() => import(/* webpackChunkName: "sign-in" */ '../pages/SignIn'));
+const ForgotPassword = lazy(() => import(/* webpackChunkName: "forgot-password" */ '../pages/ForgotPassword'));
+const ResetPassword = lazy(() => import(/* webpackChunkName: "reset-password" */ '../pages/ResetPassword'));
+const SignUp = lazy(() => import(/* webpackChunkName: "sign-up" */ '../pages/SignUp'));
+const NotFound = lazy(() => import(/* webpackChunkName: "not-found" */ '../pages/NotFound'));
+const LandingPage = lazy(() => import(/* webpackChunkName: "landing-page" */ '../pages/LandingPage'));
 
-// Lazy load dashboard layout - make sure it's imported correctly
-const DashboardLayout = lazy(() => import('../layouts/DashboardLayout'));
+// Lazy load dashboard layout
+const DashboardLayout = lazy(() => import(/* webpackChunkName: "dashboard-layout" */ '../layouts/DashboardLayout'));
 
 // Helper to wrap components with Suspense and RouteErrorBoundary
 const withSuspenseAndErrorHandling = (Component) => (
@@ -106,7 +106,9 @@ export const router = createBrowserRouter([
 ]);
 
 // Log the routes for debugging
-logRoutes(router.routes);
-console.log('Routes initialized:', router.routes);
+if (process.env.NODE_ENV === 'development') {
+  logRoutes(router.routes);
+  console.log('Routes initialized:', router.routes);
+}
 
 export default router;

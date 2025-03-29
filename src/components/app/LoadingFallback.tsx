@@ -1,15 +1,12 @@
 
 import React from 'react';
+import { Loader2 } from 'lucide-react';
 
 const LoadingFallback: React.FC = () => (
-  <div className="min-h-screen w-full gradient-background flex items-center justify-center">
-    <div className="w-full max-w-3xl p-6 md:p-8">
-      <div className="auth-card opacity-40">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 w-48 bg-gray-200 rounded"></div>
-          <div className="h-64 bg-gray-200 rounded"></div>
-        </div>
-      </div>
+  <div className="min-h-screen w-full bg-gradient-to-b from-gray-50 to-gray-100 flex items-center justify-center">
+    <div className="bg-white p-8 rounded-lg shadow-md flex flex-col items-center">
+      <Loader2 className="h-10 w-10 animate-spin text-primary mb-4" />
+      <p className="text-gray-600">Loading application...</p>
     </div>
   </div>
 );
