@@ -169,4 +169,5 @@ export {
   getUserPermission
 };
 
+// Export the reducer as default export to avoid initialization issues
 export default authSlice.reducer;
