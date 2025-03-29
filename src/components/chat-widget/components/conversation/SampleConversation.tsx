@@ -159,7 +159,7 @@ const SampleConversation: React.FC<SampleConversationProps> = ({
             <ArrowLeft className="h-5 w-5" />
           </button>
         ) : (
-          <div className="w-5" /> {/* Empty div for spacing */}
+          <div className="w-5" /> 
         )}
         
         <h2 className="font-semibold text-center flex-1">{headerTitle}</h2>
