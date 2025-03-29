@@ -17,7 +17,7 @@ export const LoadingSpinner = () => (
 import { DashboardRoutes } from './dashboardRoutes';
 import { InboxRoutes } from './inboxRoutes';
 import { AutomationRoutes } from './automationRoutes';
-// Import settings as default export
+// Import settings routes correctly
 import SettingsRoutes from './settingsRoutes';
 
 // Lazy load components
@@ -31,7 +31,7 @@ const LandingPage = lazy(() => import('../pages/LandingPage'));
 // Lazy load dashboard layout - make sure it's imported correctly
 const DashboardLayout = lazy(() => import('../layouts/DashboardLayout'));
 
-// Helper to wrap components with Suspense and RouteErrorBoundary
+// Helper to wrap components with Suspense and RouteErrorHandling
 const withSuspenseAndErrorHandling = (Component) => (
   <RouteErrorBoundary>
     <Suspense fallback={<LoadingSpinner />}>
@@ -58,6 +58,24 @@ const logRoutes = (routes) => {
   
   flattenRoutes(routes);
 };
+
+// Create an array to hold the settings routes for the children property
+// This ensures we're spreading an array even if SettingsRoutes is undefined
+const settingsRoutesArray = [];
+
+// If SettingsRoutes is a function that returns routes, we need to handle it differently
+// than if it's a direct array of routes
+if (SettingsRoutes) {
+  // For now we'll add the settings routes as a catch-all in the /settings path
+  settingsRoutesArray.push({
+    path: "settings/*",
+    element: (
+      <Suspense fallback={<LoadingSpinner />}>
+        <SettingsRoutes />
+      </Suspense>
+    )
+  });
+}
 
 export const router = createBrowserRouter([
   {
@@ -97,7 +115,7 @@ export const router = createBrowserRouter([
       ...DashboardRoutes,
       ...InboxRoutes,
       ...AutomationRoutes,
-      ...(SettingsRoutes || []), // Handle case where SettingsRoutes might be undefined
+      ...settingsRoutesArray,
     ],
   },
   {
