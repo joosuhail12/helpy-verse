@@ -4,13 +4,20 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChatWidgetSettings } from '@/store/slices/chatWidgetSettings/types';
 import ConnectedChatWidget from '@/components/chat-widget/ConnectedChatWidget';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import PreviewControls from './preview/PreviewControls';
+import StreamlinedPreviewControls from './preview/StreamlinedPreviewControls';
 import SampleConversation from '@/components/chat-widget/components/conversation/SampleConversation';
-import { Smartphone, Monitor, Sparkles, ArrowDownToLine } from 'lucide-react';
+import { Sparkles, ArrowDownToLine } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ThemeProvider } from '@/context/ThemeContext';
+import DeviceFrame from './preview/DeviceFrame';
+import ResponsiveControls from './preview/ResponsiveControls';
+import { useIsMobile } from '@/hooks/use-mobile';
+
+type ChatView = 'home' | 'messages' | 'conversation';
+type DeviceType = 'iphone' | 'android' | 'tablet' | 'desktop';
+type Orientation = 'portrait' | 'landscape';
 
 interface LiveWidgetPreviewProps {
   settings: ChatWidgetSettings;
@@ -29,7 +36,10 @@ const LiveWidgetPreview: React.FC<LiveWidgetPreviewProps> = ({
   const [previewSettings, setPreviewSettings] = useState<ChatWidgetSettings>(settings);
   const [refreshPreview, setRefreshPreview] = useState<number>(Date.now());
   const [chatWidgetOpen, setChatWidgetOpen] = useState<boolean>(true);
-  const [currentView, setCurrentView] = useState<'home' | 'messages' | 'conversation'>('conversation');
+  const [currentView, setCurrentView] = useState<ChatView>('conversation');
+  const [deviceType, setDeviceType] = useState<DeviceType>('iphone');
+  const [orientation, setOrientation] = useState<Orientation>('portrait');
+  const isMobile = useIsMobile();
   
   React.useEffect(() => {
     setPreviewSettings(settings);
@@ -79,7 +89,7 @@ const LiveWidgetPreview: React.FC<LiveWidgetPreviewProps> = ({
         </div>
       </CardHeader>
       <CardContent className="p-0">
-        <PreviewControls 
+        <StreamlinedPreviewControls 
           background={background}
           setBackground={setBackground}
           backgroundImage={backgroundImage}
@@ -93,21 +103,19 @@ const LiveWidgetPreview: React.FC<LiveWidgetPreviewProps> = ({
           isWidgetOpen={chatWidgetOpen}
         />
 
-        <Tabs defaultValue="live" className="w-full">
+        <Tabs defaultValue="mobile" className="w-full">
           <div className="px-4 py-2 border-b bg-gray-50">
             <TabsList className="grid w-56 grid-cols-2">
-              <TabsTrigger value="live" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
-                <Monitor className="h-4 w-4 mr-1.5" />
+              <TabsTrigger value="desktop" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
                 <span>Desktop View</span>
               </TabsTrigger>
               <TabsTrigger value="mobile" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
-                <Smartphone className="h-4 w-4 mr-1.5" />
                 <span>Mobile View</span>
               </TabsTrigger>
             </TabsList>
           </div>
           
-          <TabsContent value="live" className="mt-0">
+          <TabsContent value="desktop" className="mt-0">
             <div 
               className="h-[520px] w-full rounded-b-lg overflow-hidden shadow-inner relative transition-all duration-300 ease-in-out"
               style={{ 
@@ -129,15 +137,24 @@ const LiveWidgetPreview: React.FC<LiveWidgetPreviewProps> = ({
           </TabsContent>
           
           <TabsContent value="mobile" className="mt-0">
+            <ResponsiveControls 
+              deviceType={deviceType}
+              setDeviceType={setDeviceType}
+              orientation={orientation}
+              setOrientation={setOrientation}
+            />
+            
             <div 
-              className="h-[520px] flex items-center justify-center p-6 bg-gradient-to-b from-gray-50 to-gray-100"
+              className={`h-[520px] flex items-center justify-center p-6 bg-gradient-to-b from-gray-50 to-gray-100 ${
+                orientation === 'landscape' ? 'landscape-container' : ''
+              }`}
             >
-              <div className="relative h-full max-w-[375px] mx-auto bg-white border border-gray-300 overflow-hidden rounded-3xl shadow-xl">
-                <div className="absolute top-0 left-0 right-0 h-6 bg-black rounded-t-3xl flex justify-center items-center">
-                  <div className="w-32 h-1 bg-gray-600 rounded-full"></div>
-                </div>
+              <DeviceFrame 
+                deviceType={deviceType} 
+                className={orientation === 'landscape' ? 'transform -rotate-90 scale-75' : ''}
+              >
                 <div
-                  className="h-full w-full pt-6"
+                  className={`h-full w-full ${orientation === 'landscape' ? 'transform rotate-90' : ''}`}
                   style={{ 
                     backgroundColor: background,
                     backgroundImage: backgroundImage ? `url(${backgroundImage})` : 'none',
@@ -212,8 +229,7 @@ const LiveWidgetPreview: React.FC<LiveWidgetPreviewProps> = ({
                     </div>
                   )}
                 </div>
-                <div className="absolute bottom-0 left-0 right-0 h-1 bg-black rounded-b-3xl"></div>
-              </div>
+              </DeviceFrame>
             </div>
           </TabsContent>
         </Tabs>

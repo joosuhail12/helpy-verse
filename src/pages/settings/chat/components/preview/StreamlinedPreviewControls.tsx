@@ -5,8 +5,7 @@ import { ChatWidgetSettings } from '@/store/slices/chatWidgetSettings/types';
 import PreviewBackground from './PreviewBackground';
 import WidgetSettingsPopover from './WidgetSettingsPopover';
 import ViewSelector from './ViewSelector';
-
-type ChatView = 'home' | 'messages' | 'conversation';
+import { ChatView } from '@/types/preview';
 
 interface StreamlinedPreviewControlsProps {
   background: string;

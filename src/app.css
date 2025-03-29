@@ -1,0 +1,12 @@
+
+/* Add to the end of your app.css or another appropriate CSS file */
+.landscape-container {
+  perspective: 1000px;
+}
+
+@media (max-width: 768px) {
+  /* Make device frames responsive for smaller screens */
+  .landscape-container > div {
+    transform: scale(0.6) !important;
+  }
+}
