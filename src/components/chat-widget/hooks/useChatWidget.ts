@@ -121,22 +121,42 @@ export const useChatWidget = ({
   }));
   
   // Map typing users to string array
-  const typingUserNames: string[] = messaging.typingUsers.map(user => 
-    typeof user === 'string' ? user : user.username || user.userId || 'Unknown user'
-  );
+  const typingUserNames: string[] = messaging.typingUsers.map(user => {
+    if (typeof user === 'string') return user;
+    // Handle different possible structures based on the error message
+    if ('name' in user) return user.name || 'Unknown user';
+    if ('username' in user) return (user as any).username || 'Unknown user';
+    if ('clientId' in user) return (user as any).clientId || 'Unknown user';
+    return 'Unknown user';
+  });
   
   // Create a notification clearer that accepts string IDs
   const clearNotificationById = (id: string) => {
-    const index = presenceNotifications.notifications.findIndex(n => n.id === id);
+    if (!Array.isArray(presenceNotifications.notifications)) {
+      console.error('Notifications is not an array:', presenceNotifications.notifications);
+      return;
+    }
+    
+    const index = presenceNotifications.notifications.findIndex(n => {
+      if (typeof n === 'string') return n === id;
+      if (n && typeof n === 'object') return (n as any).id === id;
+      return false;
+    });
+    
     if (index !== -1) {
       presenceNotifications.clearNotification(index);
     }
   };
   
   return {
-    // Destructured APIs from individual hooks
-    ...appearance,
-    ...widgetStatus,
+    // Widget appearance
+    theme: appearance.colors,
+    updateTheme: appearance.updateColors,
+    
+    // Widget status
+    isConnected: widgetStatus.isConnected,
+    isReconnecting: widgetStatus.isReconnecting,
+    connectionError: widgetStatus.error,
     
     // Access to all original hooks
     appearance,

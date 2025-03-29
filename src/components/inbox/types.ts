@@ -3,7 +3,13 @@ import type { Ticket } from '@/types/ticket';
 import { BaseMessage, UserPresence as CoreUserPresence } from '@/types/chat';
 
 // Export UserPresence for use in other components
-export interface UserPresence extends CoreUserPresence {
+export interface UserPresence {
+  id?: string;
+  userId: string;
+  name?: string;
+  lastActive: string | Date;
+  status?: 'online' | 'offline' | 'away' | 'busy';
+  isTyping?: boolean;
   location?: {
     ticketId: string;
     area: string;

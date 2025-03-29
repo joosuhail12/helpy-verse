@@ -3,20 +3,20 @@ import React from 'react';
 import { useThemeContext } from '@/context/ThemeContext';
 
 interface TypingUser {
-  clientId: string;
+  clientId?: string;
   name?: string;
   timestamp?: number;
 }
 
 interface TypingIndicatorProps {
-  users: TypingUser[];
+  users: TypingUser[] | string[];
   agentName?: string;
 }
 
 const TypingIndicator: React.FC<TypingIndicatorProps> = ({ users, agentName }) => {
   const { colors } = useThemeContext();
   
-  if (users.length === 0 && !agentName) return null;
+  if ((users.length === 0 && !agentName) || !users) return null;
   
   // Create a readable string of who's typing
   const getTypingText = () => {
@@ -25,9 +25,15 @@ const TypingIndicator: React.FC<TypingIndicatorProps> = ({ users, agentName }) =
     }
     
     if (users.length === 1) {
-      return `${users[0].name || 'Someone'} is typing...`;
+      const user = users[0];
+      const name = typeof user === 'string' ? user : user.name || 'Someone';
+      return `${name} is typing...`;
     } else if (users.length === 2) {
-      return `${users[0].name || 'Someone'} and ${users[1].name || 'someone'} are typing...`;
+      const user1 = users[0];
+      const user2 = users[1];
+      const name1 = typeof user1 === 'string' ? user1 : user1.name || 'Someone';
+      const name2 = typeof user2 === 'string' ? user2 : user2.name || 'someone';
+      return `${name1} and ${name2} are typing...`;
     } else {
       return `${users.length} people are typing...`;
     }
