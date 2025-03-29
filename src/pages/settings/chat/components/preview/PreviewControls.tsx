@@ -36,6 +36,13 @@ const PreviewControls: React.FC<PreviewControlsProps> = ({
   onToggleWidget,
   isWidgetOpen = true
 }) => {
+  // Function to reset preview settings to match original settings
+  const handleResetChanges = () => {
+    Object.keys(settings).forEach(key => {
+      onSettingChange(key as keyof ChatWidgetSettings, settings[key as keyof ChatWidgetSettings]);
+    });
+  };
+
   return (
     <div className="border-b border-gray-200 p-3 flex items-center justify-between">
       <div className="flex items-center gap-2">
@@ -50,6 +57,7 @@ const PreviewControls: React.FC<PreviewControlsProps> = ({
           settings={previewSettings}
           originalSettings={settings}
           onSettingChange={onSettingChange}
+          onResetChanges={handleResetChanges}
         />
 
         {onViewChange && currentView && (

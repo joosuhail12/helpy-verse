@@ -1,4 +1,3 @@
-
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { ChatWidgetSettings, ChatWidgetSettingsState } from './types';
 
@@ -18,7 +17,10 @@ const initialSettings: ChatWidgetSettings = {
   messageBoxColor: '#f9f9f9',
   userMessageColor: '#9b87f5',
   agentMessageColor: '#f1f1f1',
-  fontFamily: 'Inter, system-ui, sans-serif'
+  fontFamily: 'Inter, system-ui, sans-serif',
+  enableAnimation: true,
+  responseTime: 'quick',
+  showBranding: true
 };
 
 const initialState: ChatWidgetSettingsState = {
@@ -37,8 +39,6 @@ export const chatWidgetSettingsSlice = createSlice({
       action: PayloadAction<{ field: keyof ChatWidgetSettings; value: string | boolean }>
     ) => {
       const { field, value } = action.payload;
-      // Type assertion is needed because the 'field' can refer to either string or boolean properties
-      // This helps TypeScript understand that we're intentionally assigning the right type
       (state.settings[field] as typeof value) = value;
     },
     
