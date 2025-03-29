@@ -17,7 +17,9 @@ const ChatSettings = () => {
   const { 
     settings, 
     selectedTab, 
-    handleChange, 
+    handleAppearanceChange,
+    handleContentChange,
+    handleFeatureChange, 
     handleSave, 
     handleReset,
     getEmbedCode, 
@@ -57,17 +59,19 @@ const ChatSettings = () => {
             selectedTab={selectedTab}
             onTabChange={setSelectedTab}
             settings={settings}
-            onSettingChange={handleChange}
+            onAppearanceChange={handleAppearanceChange}
+            onContentChange={handleContentChange}
+            onFeatureChange={handleFeatureChange}
             getEmbedCode={getEmbedCode}
           />
         </div>
 
         <div>
           <ChatPreview
-            primaryColor={settings.primaryColor}
-            welcomeTitle={settings.welcomeTitle}
-            welcomeSubtitle={settings.welcomeSubtitle}
-            position={settings.position}
+            primaryColor={settings.appearance.primaryColor}
+            welcomeTitle={settings.content.welcomeTitle}
+            welcomeSubtitle={settings.content.welcomeSubtitle}
+            position={settings.appearance.position}
           />
           <HelpDocumentation />
         </div>

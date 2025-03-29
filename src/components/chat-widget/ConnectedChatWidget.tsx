@@ -1,9 +1,12 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, Suspense, lazy } from 'react';
 import { useAppSelector, useAppDispatch } from '../../hooks/redux';
-import { ChatWidget } from './ChatWidget';
 import { selectChatWidgetSettings } from '../../store/slices/chatWidgetSettings/selectors';
 import { loadChatWidgetSettings } from '../../store/slices/chatWidgetSettings/actions';
+import { Loader2 } from 'lucide-react';
+
+// Lazy load ChatWidget component
+const ChatWidget = lazy(() => import('./ChatWidget').then(module => ({ default: module.ChatWidget })));
 
 interface ConnectedChatWidgetProps {
   workspaceId: string;
@@ -19,10 +22,16 @@ const ConnectedChatWidget: React.FC<ConnectedChatWidgetProps> = ({ workspaceId }
   }, [dispatch]);
 
   return (
-    <ChatWidget 
-      workspaceId={workspaceId} 
-      settings={settings}
-    />
+    <Suspense fallback={
+      <div className="flex items-center justify-center p-4">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    }>
+      <ChatWidget 
+        workspaceId={workspaceId} 
+        settings={settings}
+      />
+    </Suspense>
   );
 };
 

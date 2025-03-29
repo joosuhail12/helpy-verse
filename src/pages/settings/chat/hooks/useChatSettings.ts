@@ -25,7 +25,7 @@ export const useChatSettings = () => {
   const [selectedTab, setSelectedTab] = useState('appearance');
   const [copied, setCopied] = useState(false);
   
-  const settings = useAppSelector(selectChatWidgetSettings);
+  const settingsState = useAppSelector(selectChatWidgetSettings);
   const loading = useAppSelector(selectChatWidgetLoading);
 
   const handleAppearanceChange = (field: keyof ChatWidgetSettings['appearance'], value: string | boolean) => {
@@ -38,6 +38,17 @@ export const useChatSettings = () => {
 
   const handleFeatureChange = (field: keyof ChatWidgetSettings['features'], value: boolean) => {
     dispatch(updateFeatureSetting({ field, value }));
+  };
+
+  // Generic handler for when field path is unknown
+  const handleChange = (field: string, value: string | boolean) => {
+    if (field in settingsState.appearance) {
+      handleAppearanceChange(field as keyof ChatWidgetSettings['appearance'], value);
+    } else if (field in settingsState.content) {
+      handleContentChange(field as keyof ChatWidgetSettings['content'], value as string);
+    } else if (field in settingsState.features) {
+      handleFeatureChange(field as keyof ChatWidgetSettings['features'], value as boolean);
+    }
   };
 
   const handleSave = async () => {
@@ -71,19 +82,19 @@ export const useChatSettings = () => {
   (function() {
     window.PULLSE_WORKSPACE_ID = '${window.location.hostname}';
     window.PULLSE_THEME_COLORS = {
-      primary: '${settings.appearance.primaryColor}'
+      primary: '${settingsState.appearance.primaryColor}'
     };
-    window.PULLSE_POSITION = '${settings.appearance.position}';
-    window.PULLSE_COMPACT = ${settings.appearance.compact};
+    window.PULLSE_POSITION = '${settingsState.appearance.position}';
+    window.PULLSE_COMPACT = ${settingsState.appearance.compact};
     window.PULLSE_LABELS = {
-      welcomeTitle: '${settings.content.welcomeTitle}',
-      welcomeSubtitle: '${settings.content.welcomeSubtitle}'
+      welcomeTitle: '${settingsState.content.welcomeTitle}',
+      welcomeSubtitle: '${settingsState.content.welcomeSubtitle}'
     };
     window.PULLSE_FEATURES = {
-      typingIndicator: ${settings.features.enableTypingIndicator},
-      reactions: ${settings.features.enableReactions},
-      fileAttachments: ${settings.features.enableFileAttachments},
-      readReceipts: ${settings.features.enableReadReceipts}
+      typingIndicator: ${settingsState.features.enableTypingIndicator},
+      reactions: ${settingsState.features.enableReactions},
+      fileAttachments: ${settingsState.features.enableFileAttachments},
+      readReceipts: ${settingsState.features.enableReadReceipts}
     };
     
     const script = document.createElement('script');
@@ -95,13 +106,14 @@ export const useChatSettings = () => {
   };
 
   return {
-    settings,
+    settings: settingsState,
     selectedTab,
     copied,
     loading,
     handleAppearanceChange,
     handleContentChange,
     handleFeatureChange,
+    handleChange,
     handleSave,
     handleReset,
     getEmbedCode,

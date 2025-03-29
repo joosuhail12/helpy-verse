@@ -12,7 +12,9 @@ interface SettingsTabsProps {
   selectedTab: string;
   onTabChange: (value: string) => void;
   settings: ChatWidgetSettings;
-  onSettingChange: (field: keyof ChatWidgetSettings, value: any) => void;
+  onAppearanceChange: (field: keyof ChatWidgetSettings['appearance'], value: any) => void;
+  onContentChange: (field: keyof ChatWidgetSettings['content'], value: string) => void;
+  onFeatureChange: (field: keyof ChatWidgetSettings['features'], value: boolean) => void;
   getEmbedCode: () => string;
 }
 
@@ -23,7 +25,9 @@ const SettingsTabs = ({
   selectedTab, 
   onTabChange, 
   settings, 
-  onSettingChange, 
+  onAppearanceChange,
+  onContentChange,
+  onFeatureChange,
   getEmbedCode 
 }: SettingsTabsProps) => {
   return (
@@ -57,30 +61,30 @@ const SettingsTabs = ({
 
           <TabsContent value="appearance">
             <AppearanceTab 
-              primaryColor={settings.primaryColor}
-              position={settings.position}
-              compact={settings.compact}
-              onColorChange={(value) => onSettingChange('primaryColor', value)}
-              onPositionChange={(value) => onSettingChange('position', value)}
-              onCompactChange={(value) => onSettingChange('compact', value)}
+              primaryColor={settings.appearance.primaryColor}
+              position={settings.appearance.position}
+              compact={settings.appearance.compact}
+              onColorChange={(value) => onAppearanceChange('primaryColor', value)}
+              onPositionChange={(value) => onAppearanceChange('position', value)}
+              onCompactChange={(value) => onAppearanceChange('compact', value)}
             />
           </TabsContent>
 
           <TabsContent value="behavior">
             <BehaviorTab 
-              enableTypingIndicator={settings.enableTypingIndicator}
-              enableReactions={settings.enableReactions}
-              enableFileAttachments={settings.enableFileAttachments}
-              enableReadReceipts={settings.enableReadReceipts}
-              onSettingChange={onSettingChange}
+              enableTypingIndicator={settings.features.enableTypingIndicator}
+              enableReactions={settings.features.enableReactions}
+              enableFileAttachments={settings.features.enableFileAttachments}
+              enableReadReceipts={settings.features.enableReadReceipts}
+              onSettingChange={onFeatureChange}
             />
           </TabsContent>
 
           <TabsContent value="messages">
             <MessagesTab 
-              welcomeTitle={settings.welcomeTitle}
-              welcomeSubtitle={settings.welcomeSubtitle}
-              onSettingChange={onSettingChange}
+              welcomeTitle={settings.content.welcomeTitle}
+              welcomeSubtitle={settings.content.welcomeSubtitle}
+              onSettingChange={onContentChange}
             />
           </TabsContent>
 

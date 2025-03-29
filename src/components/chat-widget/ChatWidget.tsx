@@ -1,12 +1,15 @@
 
-import React, { useState } from 'react';
+import React, { useState, Suspense, lazy } from 'react';
 import { ChatProvider } from '@/context/ChatContext';
 import { AblyProvider } from '@/context/AblyContext';
 import { ThemeProvider, ThemeConfig } from '@/context/ThemeContext';
-import ChatWidgetContainer from './container/ChatWidgetContainer';
 import { ChatWidgetSettings } from '@/store/slices/chatWidgetSettings/types';
 import ToggleButton from './components/button/ToggleButton';
-import ChatWidgetWrapper from './components/wrapper/ChatWidgetWrapper';
+import { Loader2 } from 'lucide-react';
+
+// Lazy load the widget container
+const ChatWidgetWrapper = lazy(() => import('./components/wrapper/ChatWidgetWrapper'));
+const ChatWidgetContainer = lazy(() => import('./container/ChatWidgetContainer'));
 
 interface ChatWidgetProps {
   workspaceId: string;
@@ -25,23 +28,23 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({
   const combinedTheme: Partial<ThemeConfig> = {
     ...theme,
     // Override with settings if provided
-    ...(settings && {
-      position: settings.position,
-      compact: settings.compact,
+    ...(settings?.appearance && {
+      position: settings.appearance.position,
+      compact: settings.appearance.compact,
       colors: {
         ...theme.colors,
-        primary: settings.primaryColor
+        primary: settings.appearance.primaryColor
       },
       labels: {
         ...theme.labels,
-        welcomeTitle: settings.welcomeTitle,
-        welcomeSubtitle: settings.welcomeSubtitle
+        welcomeTitle: settings.content?.welcomeTitle,
+        welcomeSubtitle: settings.content?.welcomeSubtitle
       },
       features: {
-        typingIndicator: settings.enableTypingIndicator,
-        reactions: settings.enableReactions,
-        fileAttachments: settings.enableFileAttachments,
-        readReceipts: settings.enableReadReceipts
+        typingIndicator: settings.features?.enableTypingIndicator,
+        reactions: settings.features?.enableReactions,
+        fileAttachments: settings.features?.enableFileAttachments,
+        readReceipts: settings.features?.enableReadReceipts
       }
     })
   };
@@ -54,18 +57,26 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({
     <AblyProvider workspaceId={workspaceId}>
       <ChatProvider workspaceId={workspaceId}>
         <ThemeProvider initialTheme={combinedTheme}>
-          <ChatWidgetWrapper 
-            isOpen={isOpen}
-            position={combinedTheme.position === 'left' ? 'left' : 'right'}
-            compact={Boolean(combinedTheme.compact)}
-          >
-            <ChatWidgetContainer 
-              onClose={() => setIsOpen(false)} 
-              workspaceId={workspaceId} 
-              position={combinedTheme.position === 'left' ? 'left' : 'right'} 
-              compact={Boolean(combinedTheme.compact)}
-            />
-          </ChatWidgetWrapper>
+          {isOpen && (
+            <Suspense fallback={
+              <div className="fixed bottom-20 right-4 rounded-xl shadow-lg bg-white p-4 z-50">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            }>
+              <ChatWidgetWrapper 
+                isOpen={isOpen}
+                position={combinedTheme.position === 'left' ? 'left' : 'right'}
+                compact={Boolean(combinedTheme.compact)}
+              >
+                <ChatWidgetContainer 
+                  onClose={() => setIsOpen(false)} 
+                  workspaceId={workspaceId} 
+                  position={combinedTheme.position === 'left' ? 'left' : 'right'} 
+                  compact={Boolean(combinedTheme.compact)}
+                />
+              </ChatWidgetWrapper>
+            </Suspense>
+          )}
           <div className={`fixed bottom-4 z-50`} 
             style={{ 
               [combinedTheme.position === 'left' ? 'left' : 'right']: '1rem'

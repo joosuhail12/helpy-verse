@@ -1,10 +1,10 @@
 
 import React from 'react';
 import { View } from '../../container/ChatWidgetContainer';
-import HomeView from '../../views/HomeView';
-import MessagesView from '../../views/MessagesView';
-import ConversationView from '../conversation/ConversationView';
 import { useChat } from '@/hooks/chat/useChat';
+import LazyHomeView from '../../views/LazyHomeView';
+import LazyMessagesView from '../../views/LazyMessagesView';
+import LazyConversationView from '../conversation/LazyConversationView';
 
 interface ViewManagerProps {
   activeView: View;
@@ -16,6 +16,7 @@ interface ViewManagerProps {
 
 /**
  * Component to manage which view is currently displayed in the chat widget
+ * Uses lazy-loaded components for better initial load performance
  */
 const ViewManager: React.FC<ViewManagerProps> = ({
   activeView,
@@ -29,7 +30,7 @@ const ViewManager: React.FC<ViewManagerProps> = ({
   return (
     <>
       {activeView === 'home' && (
-        <HomeView 
+        <LazyHomeView 
           workspaceId={workspaceId} 
           onClose={onClose} 
           setActiveView={(view: View) => setActiveView(view)} 
@@ -37,7 +38,7 @@ const ViewManager: React.FC<ViewManagerProps> = ({
       )}
       
       {activeView === 'messages' && (
-        <MessagesView 
+        <LazyMessagesView 
           workspaceId={workspaceId} 
           onClose={onClose} 
           setActiveView={(view: View) => setActiveView(view)} 
@@ -46,7 +47,7 @@ const ViewManager: React.FC<ViewManagerProps> = ({
       )}
       
       {activeView === 'conversation' && currentConversation && (
-        <ConversationView 
+        <LazyConversationView 
           conversationId={currentConversation.id} 
           workspaceId={workspaceId} 
           onBack={() => setActiveView('messages')} 
