@@ -1,7 +1,9 @@
-
 import React, { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import LoadingFallback from './components/app/LoadingFallback';
+
+// Replace LandingPage import with Index
+const Index = lazy(() => import('./pages/Index'));
 
 // Correctly lazy load route components by importing the component exports
 const DashboardRoutes = lazy(() => import('./routes/dashboardRoutes').then(module => ({ default: () => <module.DashboardRoutesComponent /> })));
