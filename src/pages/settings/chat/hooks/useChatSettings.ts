@@ -1,6 +1,7 @@
 
 import { useState } from 'react';
-import { useAppDispatch, useAppSelector } from '@/hooks/useAppDispatch';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { useAppSelector } from '@/hooks/useAppSelector';
 import { useToast } from '@/components/ui/use-toast';
 import { 
   updateSetting, 
@@ -96,3 +97,5 @@ export const useChatSettings = () => {
     setCopied
   };
 };
+
+export default useChatSettings;
