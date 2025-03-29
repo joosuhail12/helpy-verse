@@ -4,9 +4,9 @@ import { useMessaging } from '@/hooks/chat/useMessaging';
 import { useFileAttachments } from '@/hooks/chat/useFileAttachments';
 import { usePresenceNotifications } from '@/hooks/chat/usePresenceNotifications';
 import { useWidgetStatus } from '@/hooks/chat/useWidgetStatus';
-import { ThemeConfig, ChatMessage, FileAttachment as ChatFileAttachment } from '@/types/chat';
+import { ChatMessage, FileAttachment as ChatFileAttachment } from '@/types/chat';
 import { ChatWidgetSettings } from '@/store/slices/chatWidgetSettings/types';
-import { useThemeContext } from '@/context/ThemeContext';
+import { useThemeContext, ThemeConfig } from '@/context/ThemeContext';
 
 interface ChatWidgetOptions {
   workspaceId: string;
@@ -152,27 +152,53 @@ export const useChatWidget = ({
     }
   };
   
+  // Map external ThemeConfig to internal ThemeConfig
+  const updateTheme = (updates: Partial<ThemeConfig>) => {
+    // Create a properly structured ThemeConfig object that matches the expected type
+    const themeUpdates: Partial<ThemeConfig> = {};
+    
+    // Apply colors if provided
+    if (updates.colors) {
+      themeUpdates.colors = {
+        ...themeContext.colors, // Keep existing colors as base
+        ...updates.colors, // Apply any new color values
+      };
+    }
+    
+    // Apply position if provided
+    if (updates.position) {
+      themeUpdates.position = updates.position;
+    }
+    
+    // Apply compact mode if provided
+    if (updates.compact !== undefined) {
+      themeUpdates.compact = updates.compact;
+    }
+    
+    // Apply labels if provided
+    if (updates.labels) {
+      themeUpdates.labels = {
+        ...themeContext.labels, // Keep existing labels as base
+        ...updates.labels, // Apply any new label values
+      };
+    }
+    
+    // Apply features if provided
+    if (updates.features) {
+      themeUpdates.features = {
+        ...themeContext.features, // Keep existing features as base
+        ...updates.features, // Apply any new feature values
+      };
+    }
+    
+    // Update the theme context with our properly structured updates
+    themeContext.setTheme(themeUpdates);
+  };
+  
   return {
     // Widget appearance
     theme: themeContext.colors,
-    updateTheme: (updates: Partial<ThemeConfig>) => {
-      if (updates.colors) {
-        themeContext.setColors(updates.colors);
-      }
-      
-      if (updates.position) {
-        themeContext.setPosition(updates.position);
-      }
-      
-      if (updates.compact !== undefined) {
-        themeContext.setCompact(updates.compact);
-      }
-      
-      // Full theme update if needed
-      if (Object.keys(updates).length > 0) {
-        themeContext.setTheme(updates);
-      }
-    },
+    updateTheme,
     
     // Widget status
     isConnected: widgetStatus.isConnected,
