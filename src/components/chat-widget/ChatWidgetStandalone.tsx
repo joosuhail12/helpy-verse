@@ -5,16 +5,6 @@ import IsolatedChatWidget from './IsolatedChatWidget';
 import { useChatWidgetInitializer } from '@/hooks/chat/useChatWidgetInitializer';
 import { ChatWidgetProvider } from '@/context/ChatWidgetContext';
 
-// Expose API for external apps
-declare global {
-  interface Window {
-    PULLSE?: {
-      initializeWidget: (config: any) => void;
-    };
-    PULLSE_CHAT_CONFIG?: any;
-  }
-}
-
 /**
  * Standalone chat widget component that can be embedded on any website
  */

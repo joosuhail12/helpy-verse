@@ -37,6 +37,9 @@ export interface ThemeConfig {
     foreground?: string;
     userMessage?: string;
     agentMessage?: string;
+    error?: string;
+    success?: string;
+    warning?: string;
   };
   position?: 'left' | 'right';
   compact?: boolean;

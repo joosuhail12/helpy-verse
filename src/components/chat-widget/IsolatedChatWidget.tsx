@@ -4,8 +4,7 @@ import { ChatProvider } from '@/context/ChatContext';
 import { AblyProvider } from '@/context/AblyContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { ChatWidgetProvider, useChatWidget } from '@/context/ChatWidgetContext';
-import { ChatWidgetConfig } from '@/api/chat-widget/types';
-import ToggleButton from './components/button/ToggleButton';
+import { adaptApiThemeToContextTheme } from '@/utils/themeAdapter';
 import { Loader2 } from 'lucide-react';
 import '@/styles/chat-widget-theme.css';
 
@@ -15,7 +14,7 @@ const ChatWidgetContainer = lazy(() => import('./container/ChatWidgetContainer')
 
 interface IsolatedChatWidgetProps {
   workspaceId: string;
-  config?: Partial<ChatWidgetConfig>;
+  config?: any;
 }
 
 // Inner component that has access to context
@@ -80,7 +79,7 @@ export const IsolatedChatWidget: React.FC<IsolatedChatWidgetProps> = ({
     return null;
   }
 
-  const defaultConfig: ChatWidgetConfig = {
+  const defaultConfig = {
     workspaceId,
     theme: {
       colors: {
@@ -100,7 +99,7 @@ export const IsolatedChatWidget: React.FC<IsolatedChatWidgetProps> = ({
   };
 
   // Merge default config with provided config
-  const mergedConfig: ChatWidgetConfig = {
+  const mergedConfig = {
     ...defaultConfig,
     ...config,
     theme: {
@@ -121,11 +120,14 @@ export const IsolatedChatWidget: React.FC<IsolatedChatWidgetProps> = ({
     }
   };
 
+  // Adapt the API theme to context theme
+  const adaptedTheme = adaptApiThemeToContextTheme(mergedConfig.theme);
+
   return (
     <ChatWidgetProvider>
       <AblyProvider workspaceId={workspaceId}>
         <ChatProvider workspaceId={workspaceId}>
-          <ThemeProvider initialTheme={mergedConfig.theme}>
+          <ThemeProvider initialTheme={adaptedTheme}>
             <ChatWidgetInner />
           </ThemeProvider>
         </ChatProvider>
@@ -133,5 +135,8 @@ export const IsolatedChatWidget: React.FC<IsolatedChatWidgetProps> = ({
     </ChatWidgetProvider>
   );
 };
+
+// Import ToggleButton here to avoid circular dependencies
+import ToggleButton from './components/button/ToggleButton';
 
 export default IsolatedChatWidget;

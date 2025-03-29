@@ -72,13 +72,13 @@
   window.PULLSE_CHAT_CONFIG = {
     workspaceId: window.PULLSE_WORKSPACE_ID || '6c22b22f-7bdf-43db-b7c1-9c5884125c63',
     theme: {
-      colors: window.PULLSE_THEME_COLORS || {
+      colors: {
         primary: storedSettings.primaryColor || '#9b87f5'
       },
       position: window.PULLSE_POSITION || storedSettings.position || 'right',
       compact: window.PULLSE_COMPACT === true || storedSettings.compact === true,
     },
-    labels: window.PULLSE_LABELS || {
+    labels: {
       welcomeTitle: storedSettings.welcomeTitle || 'Hello there.',
       welcomeSubtitle: storedSettings.welcomeSubtitle || 'How can we help?'
     },
