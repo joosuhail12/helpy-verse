@@ -2,11 +2,7 @@
 import React from 'react';
 import { X, MessageSquare } from 'lucide-react';
 import { useThemeContext } from '@/context/ThemeContext';
-
-interface ToggleButtonProps {
-  isOpen: boolean;
-  onClick: () => void;
-}
+import { ToggleButtonProps } from '../../types';
 
 /**
  * Button component to toggle the chat widget open/closed

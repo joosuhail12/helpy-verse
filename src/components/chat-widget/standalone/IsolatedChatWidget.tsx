@@ -1,0 +1,138 @@
+
+import React, { useState, Suspense, lazy, useEffect } from 'react';
+import { ChatProvider } from '@/context/ChatContext';
+import { AblyProvider } from '@/context/AblyContext';
+import { ThemeProvider } from '@/context/ThemeContext';
+import { ChatWidgetProvider, useChatWidget } from '@/context/ChatWidgetContext';
+import { adaptApiThemeToContextTheme } from '../utils/themeAdapter';
+import { IsolatedChatWidgetProps } from '../types';
+import { Loader2 } from 'lucide-react';
+import '@/styles/chat-widget-theme.css';
+
+// Lazy load the widget container and wrapper
+const ChatWidgetWrapper = lazy(() => import('../components/wrapper/ChatWidgetWrapper'));
+const ChatWidgetContainer = lazy(() => import('../container/ChatWidgetContainer'));
+
+// Inner component that has access to context
+const ChatWidgetInner: React.FC = () => {
+  const { state, dispatch } = useChatWidget();
+  
+  const toggleWidget = () => {
+    dispatch({ type: 'TOGGLE_WIDGET' });
+  };
+
+  const position = state.theme.position;
+  const compact = state.theme.compact;
+
+  return (
+    <>
+      {state.isOpen && (
+        <Suspense fallback={
+          <div className={`fixed bottom-20 ${position === 'left' ? 'left-4' : 'right-4'} rounded-xl shadow-lg bg-white p-4 z-50`}>
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        }>
+          <ChatWidgetWrapper 
+            isOpen={state.isOpen}
+            position={position}
+            compact={compact}
+          >
+            <ChatWidgetContainer 
+              onClose={() => dispatch({ type: 'CLOSE_WIDGET' })} 
+              workspaceId={state.config?.workspaceId || ''} 
+              position={position}
+              compact={compact}
+            />
+          </ChatWidgetWrapper>
+        </Suspense>
+      )}
+      <div className={`fixed bottom-4 z-50 ${position === 'left' ? 'left-4' : 'right-4'}`}>
+        <ToggleButton 
+          isOpen={state.isOpen} 
+          onClick={toggleWidget} 
+        />
+      </div>
+    </>
+  );
+};
+
+// Main component that provides context
+export const IsolatedChatWidget: React.FC<IsolatedChatWidgetProps> = ({ 
+  workspaceId, 
+  config 
+}) => {
+  const [initialized, setInitialized] = useState(false);
+
+  // Initialize configuration on mount
+  useEffect(() => {
+    if (!initialized && workspaceId) {
+      setInitialized(true);
+    }
+  }, [workspaceId, initialized]);
+
+  if (!workspaceId) {
+    console.error('Chat widget requires a workspace ID');
+    return null;
+  }
+
+  const defaultConfig = {
+    workspaceId,
+    theme: {
+      colors: {
+        primary: '#9b87f5',
+      },
+      position: 'right',
+      compact: false
+    },
+    labels: {
+      welcomeTitle: 'Hello there',
+      welcomeSubtitle: 'How can we help you today?'
+    },
+    features: {
+      typingIndicator: true,
+      fileAttachments: true
+    }
+  };
+
+  // Merge default config with provided config
+  const mergedConfig = {
+    ...defaultConfig,
+    ...config,
+    theme: {
+      ...defaultConfig.theme,
+      ...(config?.theme || {}),
+      colors: {
+        ...(defaultConfig.theme?.colors || {}),
+        ...(config?.theme?.colors || {})
+      }
+    },
+    labels: {
+      ...(defaultConfig.labels || {}),
+      ...(config?.labels || {})
+    },
+    features: {
+      ...(defaultConfig.features || {}),
+      ...(config?.features || {})
+    }
+  };
+
+  // Adapt the API theme to context theme
+  const adaptedTheme = adaptApiThemeToContextTheme(mergedConfig.theme);
+
+  return (
+    <ChatWidgetProvider>
+      <AblyProvider workspaceId={workspaceId}>
+        <ChatProvider workspaceId={workspaceId}>
+          <ThemeProvider initialTheme={adaptedTheme}>
+            <ChatWidgetInner />
+          </ThemeProvider>
+        </ChatProvider>
+      </AblyProvider>
+    </ChatWidgetProvider>
+  );
+};
+
+// Import ToggleButton here to avoid circular dependencies
+import ToggleButton from '../components/button/ToggleButton';
+
+export default IsolatedChatWidget;
