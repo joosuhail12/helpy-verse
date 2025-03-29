@@ -1,6 +1,6 @@
 
 import { lazy, Suspense, ReactNode } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute } from '../components/auth/ProtectedRoute';
 import { Loader2 } from 'lucide-react';
 import RouteErrorBoundary from '@/components/app/RouteErrorBoundary';
@@ -53,35 +53,16 @@ const withSuspenseAndProtection = (component: ReactNode) => (
   </ProtectedRoute>
 );
 
-export const automationRoutes = [
-  {
-    path: 'automation',
-    element: withSuspenseAndProtection(<Automation />),
-    children: [
-      {
-        path: 'ai/action-center',
-        element: <RouteErrorBoundary><Suspense fallback={<LoadingSpinner />}><ActionCenter /></Suspense></RouteErrorBoundary>,
-      },
-      {
-        path: 'ai/action-center/create',
-        element: <RouteErrorBoundary><Suspense fallback={<LoadingSpinner />}><CreateAction /></Suspense></RouteErrorBoundary>,
-      },
-      {
-        path: 'ai/chatbot-profiles',
-        element: <RouteErrorBoundary><Suspense fallback={<LoadingSpinner />}><ChatbotProfiles /></Suspense></RouteErrorBoundary>,
-      },
-      {
-        path: 'ai/chatbot-profiles/create',
-        element: <RouteErrorBoundary><Suspense fallback={<LoadingSpinner />}><CreateChatbot /></Suspense></RouteErrorBoundary>,
-      },
-      {
-        path: 'ai/chatbot-profiles/:id',
-        element: <RouteErrorBoundary><Suspense fallback={<LoadingSpinner />}><ChatbotDetail /></Suspense></RouteErrorBoundary>,
-      },
-      {
-        path: 'ai/content-center',
-        element: <RouteErrorBoundary><Suspense fallback={<LoadingSpinner />}><ContentCenter /></Suspense></RouteErrorBoundary>,
-      },
-    ],
-  },
-];
+export const AutomationRoutes = () => {
+  return (
+    <Routes>
+      <Route path="" element={withSuspenseAndProtection(<Automation />)} />
+      <Route path="ai/action-center" element={withSuspenseAndProtection(<ActionCenter />)} />
+      <Route path="ai/action-center/create" element={withSuspenseAndProtection(<CreateAction />)} />
+      <Route path="ai/chatbot-profiles" element={withSuspenseAndProtection(<ChatbotProfiles />)} />
+      <Route path="ai/chatbot-profiles/create" element={withSuspenseAndProtection(<CreateChatbot />)} />
+      <Route path="ai/chatbot-profiles/:id" element={withSuspenseAndProtection(<ChatbotDetail />)} />
+      <Route path="ai/content-center" element={withSuspenseAndProtection(<ContentCenter />)} />
+    </Routes>
+  );
+};

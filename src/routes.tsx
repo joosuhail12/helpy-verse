@@ -3,11 +3,11 @@ import React, { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import LoadingFallback from './components/app/LoadingFallback';
 
-// Lazy load main route components
-const DashboardRoutes = lazy(() => import('./routes/dashboardRoutes'));
-const InboxRoutes = lazy(() => import('./routes/inboxRoutes'));
+// Correctly lazy load route components with default exports
+const DashboardRoutes = lazy(() => import('./routes/dashboardRoutes').then(module => ({ default: () => <module.DashboardRoutes /> })));
+const InboxRoutes = lazy(() => import('./routes/inboxRoutes').then(module => ({ default: () => <module.InboxRoutes /> })));
 const SettingsRoutes = lazy(() => import('./routes/settingsRoutes'));
-const AutomationRoutes = lazy(() => import('./routes/automationRoutes'));
+const AutomationRoutes = lazy(() => import('./routes/automationRoutes').then(module => ({ default: () => <module.AutomationRoutes /> })));
 
 // Auth pages
 const SignIn = lazy(() => import('./pages/SignIn'));

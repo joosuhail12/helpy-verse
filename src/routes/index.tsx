@@ -13,11 +13,12 @@ export const LoadingSpinner = () => (
   </div>
 );
 
-// Import route modules
+// Import route modules as objects, not as default exports
 import { dashboardRoutes } from './dashboardRoutes';
 import { inboxRoutes } from './inboxRoutes';
-import { settingsRoutes } from './settingsRoutes';
 import { automationRoutes } from './automationRoutes';
+// Import settings as default export
+import SettingsRoutes from './settingsRoutes';
 
 // Lazy load components
 const SignIn = lazy(() => import('../pages/SignIn'));
@@ -95,7 +96,6 @@ export const router = createBrowserRouter([
     children: [
       ...dashboardRoutes,
       ...inboxRoutes,
-      ...settingsRoutes, 
       ...automationRoutes,
     ],
   },
