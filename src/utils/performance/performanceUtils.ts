@@ -38,3 +38,31 @@ export const throttle = <T extends (...args: any[]) => void>(
         }
     };
 };
+
+// 🟢 Measures execution time of a function
+export const measureExecutionTime = <T extends (...args: any[]) => any>(
+    func: T,
+    label: string
+): ((...args: Parameters<T>) => ReturnType<T>) => {
+    return function (...args: Parameters<T>): ReturnType<T> {
+        const start = performance.now();
+        const result = func(...args);
+        const end = performance.now();
+        
+        if (process.env.NODE_ENV === 'development') {
+            console.log(`[Performance] ${label}: ${(end - start).toFixed(2)}ms`);
+        }
+        
+        return result;
+    };
+};
+
+// 🟢 Prevents too many renders by skipping some based on time
+export const skipRendersByTime = (lastRenderTime: React.MutableRefObject<number>, minInterval: number = 100): boolean => {
+    const now = performance.now();
+    if (now - lastRenderTime.current < minInterval) {
+        return true; // Skip this render
+    }
+    lastRenderTime.current = now;
+    return false; // Don't skip
+};

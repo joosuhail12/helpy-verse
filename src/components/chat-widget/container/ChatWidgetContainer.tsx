@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, memo, useMemo } from 'react';
 import { useChat } from '@/hooks/chat/useChat';
 import { useThemeContext } from '@/context/ThemeContext';
 import HomeView from '../views/HomeView';
@@ -7,6 +7,7 @@ import MessagesView from '../views/MessagesView';
 import ConversationView from '../components/conversation/ConversationView';
 import Navigation from '../components/navigation/Navigation';
 import SampleConversation from '../components/conversation/SampleConversation';
+import { useRenderTime } from '@/hooks/usePerformanceOptimization';
 
 interface ChatWidgetContainerProps {
   onClose: () => void;
@@ -20,6 +21,13 @@ interface ChatWidgetContainerProps {
 
 export type View = 'home' | 'messages' | 'conversation';
 
+// Memoize child components
+const MemoizedHomeView = memo(HomeView);
+const MemoizedMessagesView = memo(MessagesView);
+const MemoizedConversationView = memo(ConversationView);
+const MemoizedNavigation = memo(Navigation);
+const MemoizedSampleConversation = memo(SampleConversation);
+
 const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({ 
   onClose, 
   workspaceId,
@@ -29,6 +37,9 @@ const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({
   sampleMessages = false,
   initialView = 'home'
 }) => {
+  // Track render time in development
+  useRenderTime('ChatWidgetContainer');
+  
   const { conversations, currentConversation, selectConversation, createNewConversation } = useChat();
   const { colors, features, labels, styles } = useThemeContext();
   const [isLoading, setIsLoading] = useState(false);
@@ -53,10 +64,21 @@ const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({
     }
   }, [createNewConversation, selectConversation]);
 
+  // Memoize view change handler
+  const handleViewChange = useCallback((view: View) => {
+    setActiveView(view);
+  }, []);
+
+  // Memoize the container background style
+  const containerStyle = useMemo(() => ({ 
+    backgroundColor: colors.background, 
+    color: colors.foreground, 
+    fontFamily: styles?.fontFamily 
+  }), [colors.background, colors.foreground, styles?.fontFamily]);
+
   if (isLoading) {
     return (
-      <div className="flex flex-col h-full text-gray-900 w-full" 
-        style={{ backgroundColor: colors.background, color: colors.foreground, fontFamily: styles?.fontFamily }}>
+      <div className="flex flex-col h-full text-gray-900 w-full" style={containerStyle}>
         <div className="flex-1 flex items-center justify-center">
           <div className="animate-spin h-8 w-8 border-4 border-t-transparent rounded-full" 
             style={{ borderColor: colors.primary, borderTopColor: 'transparent' }}></div>
@@ -68,16 +90,15 @@ const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({
   // If this is a preview with sample messages, show a sample conversation
   if (isPreview && sampleMessages) {
     return (
-      <div className="flex flex-col h-full text-gray-900 w-full" 
-        style={{ backgroundColor: colors.background, color: colors.foreground, fontFamily: styles?.fontFamily }}>
-        <SampleConversation 
+      <div className="flex flex-col h-full text-gray-900 w-full" style={containerStyle}>
+        <MemoizedSampleConversation 
           onClose={onClose} 
           position={position} 
           compact={compact} 
           headerTitle={labels.headerTitle}
           headerColor={colors.headerBackground}
           currentView={activeView}
-          onChangeView={setActiveView}
+          onChangeView={handleViewChange}
           userMessageColor={colors.userMessage}
           agentMessageColor={colors.agentMessage}
           messageBoxColor={colors.inputBackground}
@@ -87,36 +108,35 @@ const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({
   }
 
   return (
-    <div className="flex flex-col h-full text-gray-900 w-full" 
-      style={{ backgroundColor: colors.background, color: colors.foreground, fontFamily: styles?.fontFamily }}>
+    <div className="flex flex-col h-full text-gray-900 w-full" style={containerStyle}>
       {activeView === 'home' && 
-        <HomeView 
+        <MemoizedHomeView 
           workspaceId={workspaceId} 
           onClose={onClose} 
-          setActiveView={(view: View) => setActiveView(view)} 
+          setActiveView={handleViewChange} 
         />
       }
       
       {activeView === 'messages' && 
-        <MessagesView 
+        <MemoizedMessagesView 
           workspaceId={workspaceId} 
           onClose={onClose} 
-          setActiveView={(view: View) => setActiveView(view)} 
+          setActiveView={handleViewChange} 
           onStartConversation={handleStartConversation}
         />
       }
       
       {activeView === 'conversation' && currentConversation && 
-        <ConversationView 
+        <MemoizedConversationView 
           conversationId={currentConversation.id} 
           workspaceId={workspaceId} 
-          onBack={() => setActiveView('messages')} 
+          onBack={() => handleViewChange('messages')} 
         />
       }
       
-      <Navigation activeView={activeView} setActiveView={setActiveView} />
+      <MemoizedNavigation activeView={activeView} setActiveView={handleViewChange} />
     </div>
   );
 };
 
-export default ChatWidgetContainer;
+export default memo(ChatWidgetContainer);
