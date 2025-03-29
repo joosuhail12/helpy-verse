@@ -5,6 +5,7 @@ import { useAppSelector } from '@/hooks/redux';
 import { selectChatWidgetSettings } from '@/store/slices/chatWidgetSettings';
 import { ChatWidget } from '@/components/chat-widget/ChatWidget';
 import PreviewControls from './PreviewControls';
+import { ChatWidgetSettings } from '@/store/slices/chatWidgetSettings/types';
 
 /**
  * Live preview of the chat widget that shows the actual widget with current settings
@@ -13,10 +14,10 @@ const LiveChatPreview = () => {
   const settings = useAppSelector(selectChatWidgetSettings);
   const [background, setBackground] = useState<string>('#ffffff');
   const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
-  const [previewSettings, setPreviewSettings] = useState(settings);
+  const [previewSettings, setPreviewSettings] = useState<ChatWidgetSettings>(settings);
   
   // Handle real-time setting changes without saving
-  const handlePreviewSettingChange = (field: string, value: any) => {
+  const handlePreviewSettingChange = (field: keyof ChatWidgetSettings, value: any) => {
     setPreviewSettings(prev => ({
       ...prev,
       [field]: value
