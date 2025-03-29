@@ -13,7 +13,8 @@ export const LoadingSpinner = () => (
   </div>
 );
 
-// Import route modules
+// Import route modules - these will be evaluated at runtime
+// but we'll only load the actual route components when needed
 import { dashboardRoutes } from './dashboardRoutes';
 import { inboxRoutes } from './inboxRoutes';
 import { settingsRoutes } from './settingsRoutes';

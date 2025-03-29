@@ -1,8 +1,21 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import ChatWidgetStandalone from './components/chat-widget/ChatWidgetStandalone';
+import { lazy, Suspense } from 'react';
+import { Loader2 } from 'lucide-react';
 import './index.css';
+
+// Lazy load the standalone chat widget component
+const ChatWidgetStandalone = lazy(() => 
+  import('./components/chat-widget/ChatWidgetStandalone')
+);
+
+// Loading indicator component
+const LoadingIndicator = () => (
+  <div className="flex h-full w-full items-center justify-center bg-transparent">
+    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+  </div>
+);
 
 // Create a shadow DOM for the widget to isolate its styles
 const createWidgetContainer = () => {
@@ -42,7 +55,9 @@ const renderTarget = createWidgetContainer();
 if (renderTarget) {
   ReactDOM.createRoot(renderTarget).render(
     <React.StrictMode>
-      <ChatWidgetStandalone />
+      <Suspense fallback={<LoadingIndicator />}>
+        <ChatWidgetStandalone />
+      </Suspense>
     </React.StrictMode>
   );
 }
