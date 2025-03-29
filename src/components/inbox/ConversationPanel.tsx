@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
@@ -9,6 +8,7 @@ import MessageList from './components/MessageList';
 import CustomerContextPanel from './CustomerContextPanel';
 import { useConversation } from './hooks/useConversation';
 import { cn } from "@/lib/utils";
+import AblyConnectionTest from '@/components/AblyConnectionTest';
 
 const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
   const {
@@ -38,19 +38,23 @@ const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
   return (
     <div className="h-full flex">
       <div className="flex-1 flex flex-col bg-white">
-        <ConversationHeader 
-          ticket={ticket} 
-          onClose={onClose} 
+        <ConversationHeader
+          ticket={ticket}
+          onClose={onClose}
           activeUsers={activeUsers}
         />
-        
+
         {error ? (
-          <Alert variant="destructive" className="m-4">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              {error}
-            </AlertDescription>
-          </Alert>
+          <div className="m-4 space-y-4">
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                {error}
+              </AlertDescription>
+            </Alert>
+
+            <AblyConnectionTest />
+          </div>
         ) : (
           <MessageList
             messages={messages}
@@ -71,7 +75,7 @@ const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
           disabled={!!error}
         />
       </div>
-      
+
       <div className="w-80 border-l">
         <CustomerContextPanel ticket={ticket} />
       </div>

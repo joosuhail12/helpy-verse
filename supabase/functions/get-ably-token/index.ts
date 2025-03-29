@@ -1,6 +1,5 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import * as Ably from "npm:ably"
+import * as Ably from "npm:ably@1.2.39"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,9 +11,8 @@ serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
-
   try {
-    const ABLY_API_KEY = Deno.env.get('ABLY_API_KEY')
+    const ABLY_API_KEY = process.env.ABLY_API_KEY
     if (!ABLY_API_KEY) {
       throw new Error('ABLY_API_KEY is not set')
     }
@@ -24,7 +22,7 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({ token: tokenRequest }),
-      { 
+      {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       },
     )
@@ -32,7 +30,7 @@ serve(async (req) => {
     console.error('Error:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
-      { 
+      {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       },

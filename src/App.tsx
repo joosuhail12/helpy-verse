@@ -9,6 +9,7 @@ import { Suspense, lazy, useEffect } from 'react';
 import { useAppSelector } from "./hooks/useAppSelector";
 import CaslProvider from "./components/CaslProvider";
 import { getCookie } from "./utils/helpers/helpers";
+import AblyTest from './pages/AblyTest';
 
 // Lazy load components with explicit chunk names
 const SignIn = lazy(() => import(/* webpackChunkName: "signin" */ "./pages/SignIn"));
@@ -139,6 +140,7 @@ const App = () => (
                     <Route path="automation/ai/content-center" element={<ContentCenter />} />
                     <Route path="automation/ai/content-center/create" element={<CreateContent />} />
                   </Route>
+                  <Route path="/ably-test" element={<AblyTest />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </Suspense>

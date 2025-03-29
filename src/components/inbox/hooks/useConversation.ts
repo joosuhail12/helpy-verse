@@ -1,24 +1,21 @@
-
-import { useMessages } from './useMessages';
-import { useTypingIndicator } from './useTypingIndicator';
-import { usePresence } from './usePresence';
+import { useAblyRoom } from './useAblyRoom';
 import type { Ticket } from '@/types/ticket';
 
 export const useConversation = (ticket: Ticket) => {
   const {
     messages,
-    setMessages,
     newMessage,
     setNewMessage,
-    isSending,
-    isInternalNote,
-    setIsInternalNote,
+    typingUsers,
+    activeUsers,
     handleSendMessage,
-    initializeMessages
-  } = useMessages(ticket);
-
-  const { handleTyping } = useTypingIndicator(ticket);
-  const { typingUsers, activeUsers, isLoading, error } = usePresence(ticket, setMessages);
+    handleTyping,
+    isLoading,
+    isSending,
+    error,
+    isInternalNote,
+    setIsInternalNote
+  } = useAblyRoom(ticket);
 
   return {
     messages,

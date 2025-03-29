@@ -13,10 +13,10 @@ import { Badge } from '@/components/ui/badge';
 interface ConversationHeaderProps {
   ticket: Ticket;
   onClose: () => void;
-  activeUsers: UserPresence[];
+  activeUsers?: UserPresence[];
 }
 
-const ConversationHeader = ({ ticket, onClose, activeUsers }: ConversationHeaderProps) => {
+const ConversationHeader = ({ ticket, onClose, activeUsers = [] }: ConversationHeaderProps) => {
   // Get customer details from Redux store
   const { contactDetails, loading } = useAppSelector(
     (state: RootState) => state.contacts || {
@@ -40,7 +40,7 @@ const ConversationHeader = ({ ticket, onClose, activeUsers }: ConversationHeader
     // Fallback to ticket data if no contact details available
     return {
       name: ticket.customer,
-      initials: ticket.customer ?? '',
+      initials: ticket.customer ? ticket.customer[0] : '?',
       company: ticket.company,
       id: ticket.customer
     };
@@ -89,7 +89,7 @@ const ConversationHeader = ({ ticket, onClose, activeUsers }: ConversationHeader
                 <div className="flex -space-x-2">
                   {activeUsers.slice(0, 3).map((user) => (
                     <Avatar key={user.userId} className="h-6 w-6 border-2 border-white">
-                      <span className="text-xs">{user.name[0]}</span>
+                      <span className="text-xs">{user.name && user.name.length > 0 ? user.name[0] : '?'}</span>
                     </Avatar>
                   ))}
                   {activeUsers.length > 3 && (
@@ -105,7 +105,7 @@ const ConversationHeader = ({ ticket, onClose, activeUsers }: ConversationHeader
                 {activeUsers.map((user) => (
                   <div key={user.userId} className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-green-500" />
-                    <span className="font-medium">{user.name}</span>
+                    <span className="font-medium">{user.name || 'Unknown'}</span>
                     <span className="text-xs text-muted-foreground">
                       {user.location ? (
                         <>

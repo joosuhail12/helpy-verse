@@ -1,9 +1,9 @@
-import { 
-  Home, 
-  Inbox, 
-  Users, 
-  Bot, 
-  BarChart, 
+import {
+  Home,
+  Inbox,
+  Users,
+  Bot,
+  BarChart,
   Settings,
   AtSign,
   ListFilter,
@@ -24,7 +24,8 @@ import {
   Brain,
   Activity,
   MessageSquare,
-  Globe
+  Globe,
+  MessageCircleCode
 } from 'lucide-react';
 
 export const mainNavItems = [
@@ -33,7 +34,8 @@ export const mainNavItems = [
   { id: 'contacts', title: 'Contacts', icon: Users, path: '/home/contacts' },
   { id: 'automation', title: 'AI & Automation', icon: Bot, path: '/home/automation' },
   { id: 'reporting', title: 'Reporting', icon: BarChart, path: '/home/reporting' },
-  { id: 'settings', title: 'Settings', icon: Settings, path: '/home/settings' }
+  { id: 'settings', title: 'Settings', icon: Settings, path: '/home/settings' },
+  { id: 'ably-test', title: 'Chat Test', icon: MessageCircleCode, path: '/ably-test' }
 ];
 
 export const subNavItems = {
