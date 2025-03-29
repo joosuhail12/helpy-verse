@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAppSelector } from '@/hooks/redux';
 import { selectChatWidgetSettings } from '@/store/slices/chatWidgetSettings';
-import { ChatWidget } from '@/components/chat-widget/ChatWidget';
+import ConnectedChatWidget from '@/components/chat-widget/ConnectedChatWidget';
 import PreviewControls from './PreviewControls';
 import { ChatWidgetSettings } from '@/store/slices/chatWidgetSettings/types';
 
@@ -49,12 +49,12 @@ const LiveChatPreview = () => {
             backgroundPosition: 'center'
           }}
         >
-          <ChatWidget 
-            workspaceId="preview-workspace-id"
-            settings={previewSettings}
+          <ConnectedChatWidget 
+            workspaceId="preview-workspace-id" 
             isPreview={true}
             showLauncher={true}
             sampleMessages={true}
+            previewSettings={previewSettings}
           />
         </div>
       </CardContent>
