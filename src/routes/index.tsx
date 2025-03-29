@@ -97,6 +97,7 @@ export const router = createBrowserRouter([
       ...DashboardRoutes,
       ...InboxRoutes,
       ...AutomationRoutes,
+      ...(SettingsRoutes || []), // Handle case where SettingsRoutes might be undefined
     ],
   },
   {

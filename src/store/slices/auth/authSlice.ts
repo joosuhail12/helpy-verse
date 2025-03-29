@@ -1,7 +1,5 @@
 
 import { createSlice } from '@reduxjs/toolkit';
-import { getCookie } from '@/utils/helpers/helpers';
-import { handleLogout as tokenHandleLogout } from '@/utils/auth/tokenManager';
 import { AuthState } from './types';
 import { 
   loginUser, 
@@ -15,9 +13,12 @@ import {
   fetchWorkspaceData 
 } from './userActions';
 import { getUserPermission } from './permissionActions';
+// Import the token check directly from tokenManager
+import { isAuthenticated } from '@/utils/auth/tokenManager';
+import { handleLogout as tokenHandleLogout } from '@/utils/auth/tokenManager';
 
 const initialState: AuthState = {
-  isAuthenticated: !!getCookie("customerToken"),
+  isAuthenticated: isAuthenticated(),
   user: null,
   loading: false,
   error: null,
