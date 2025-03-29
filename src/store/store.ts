@@ -1,7 +1,7 @@
 
 import { configureStore } from '@reduxjs/toolkit';
 
-// Import reducers using dynamic imports to avoid circular dependencies
+// Import all reducers using named imports to avoid circular dependencies
 import { authReducer } from './slices/auth/authSlice';
 import { actionsReducer } from './slices/actions/actionsSlice';
 import contentReducer from './slices/content/contentSlice';

@@ -25,6 +25,7 @@ const initialState: AuthState = {
   permissions: [],
 };
 
+// Create the auth slice with all reducers
 const authSlice = createSlice({
   name: 'auth',
   initialState,
@@ -156,12 +157,13 @@ const authSlice = createSlice({
   },
 });
 
+// Export actions directly from the slice
 export const { logout, clearError } = authSlice.actions;
 
-// Export the reducer directly
+// Export the reducer as a named export to avoid circular dependencies
 export const authReducer = authSlice.reducer;
 
-// Re-export all the actions for use in components
+// Export all the async actions for use in components
 export {
   loginUser,
   registerUser,
@@ -173,5 +175,4 @@ export {
   getUserPermission
 };
 
-// Export the reducer as default export to avoid initialization issues
-export default authSlice.reducer;
+// Remove the default export completely to prevent circular dependencies
