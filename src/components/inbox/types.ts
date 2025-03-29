@@ -1,17 +1,15 @@
 
 import type { Ticket } from '@/types/ticket';
+import { BaseMessage, UserPresence } from '@/types/chat';
 
-export interface UserPresence {
-  userId: string;
-  name: string;
-  lastActive: string;
+export interface UserPresenceExtended extends UserPresence {
   location?: {
     ticketId: string;
     area: string;
   };
 }
 
-export interface Message {
+export interface Message extends BaseMessage {
   id: string;
   content: string;
   sender: string;
@@ -25,4 +23,34 @@ export interface Message {
 export interface ConversationPanelProps {
   ticket: Ticket;
   onClose: () => void;
+}
+
+export interface MessageListProps {
+  messages: Message[];
+  typingUsers: string[];
+  ticket: Ticket;
+  onReply: (content: string) => void;
+  isLoading?: boolean;
+}
+
+export interface MessageItemProps {
+  message: Message;
+  ticket: Ticket;
+  onReply: (content: string) => void;
+}
+
+export interface MessageToolbarProps {
+  editor: any; // Replace with proper TipTap editor type
+  onInsertPlaceholder: (type: 'customer' | 'company' | 'ticket') => void;
+  ticket: Ticket;
+  disabled?: boolean;
+  isInternalNote: boolean;
+  setIsInternalNote: (value: boolean) => void;
+  onEmojiSelect: (emojiData: any) => void;
+  onFilesAdded: (files: File[]) => void;
+  uploadProgress: Record<string, number>;
+  onRemoveFile: (file: File) => void;
+  files: File[];
+  isAttachmentSheetOpen: boolean;
+  setIsAttachmentSheetOpen: (value: boolean) => void;
 }

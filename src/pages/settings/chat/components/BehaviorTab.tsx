@@ -4,7 +4,10 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { ChatWidgetSettings } from '@/store/slices/chatWidgetSettings/types';
 
-interface BehaviorTabProps {
+/**
+ * Props for the behavior tab
+ */
+export interface BehaviorTabProps {
   enableTypingIndicator: boolean;
   enableReactions: boolean;
   enableFileAttachments: boolean;

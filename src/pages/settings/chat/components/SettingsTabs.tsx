@@ -8,7 +8,10 @@ import MessagesTab from './MessagesTab';
 import InstallationTab from './InstallationTab';
 import { ChatWidgetSettings } from '@/store/slices/chatWidgetSettings/types';
 
-interface SettingsTabsProps {
+/**
+ * Props for the SettingsTabs component
+ */
+export interface SettingsTabsProps {
   selectedTab: string;
   onTabChange: (value: string) => void;
   settings: ChatWidgetSettings;

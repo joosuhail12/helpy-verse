@@ -17,9 +17,28 @@ import {
 import { ChatWidgetSettings } from '@/store/slices/chatWidgetSettings/types';
 
 /**
+ * Return type for the useChatSettings hook
+ */
+export interface UseChatSettingsReturn {
+  settings: ChatWidgetSettings;
+  selectedTab: string;
+  copied: boolean;
+  loading: boolean;
+  handleAppearanceChange: (field: keyof ChatWidgetSettings['appearance'], value: string | boolean) => void;
+  handleContentChange: (field: keyof ChatWidgetSettings['content'], value: string) => void;
+  handleFeatureChange: (field: keyof ChatWidgetSettings['features'], value: boolean) => void;
+  handleChange: (field: string, value: string | boolean) => void;
+  handleSave: () => Promise<void>;
+  handleReset: () => void;
+  getEmbedCode: () => string;
+  setSelectedTab: (tab: string) => void;
+  setCopied: (copied: boolean) => void;
+}
+
+/**
  * Hook to manage chat widget settings using Redux
  */
-export const useChatSettings = () => {
+export const useChatSettings = (): UseChatSettingsReturn => {
   const { toast } = useToast();
   const dispatch = useAppDispatch();
   const [selectedTab, setSelectedTab] = useState('appearance');

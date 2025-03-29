@@ -1,64 +1,47 @@
 
 import React, { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import LoadingFallback from '../components/app/LoadingFallback';
+import { Loader2 } from 'lucide-react';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import RouteErrorBoundary from '@/components/app/RouteErrorBoundary';
 
-// Lazy-load settings pages
-const Tags = lazy(() => import('../pages/settings/Tags'));
-const Teams = lazy(() => import('../pages/settings/Teams'));
-const TeamDetail = lazy(() => import('../pages/settings/TeamDetail'));
-const CreateTeam = lazy(() => import('../pages/settings/CreateTeam'));
-const EditTeam = lazy(() => import('../pages/settings/EditTeam'));
-const Teammates = lazy(() => import('../pages/settings/teammates/TeammatesPage'));
-const TeammateDetail = lazy(() => import('../pages/settings/teammates/TeammateDetail'));
-const CannedResponses = lazy(() => import('../pages/settings/CannedResponses'));
-const CannedResponseDetail = lazy(() => import('../pages/settings/CannedResponseDetail'));
-const CreateCannedResponse = lazy(() => import('../pages/settings/CreateCannedResponse'));
-const CustomData = lazy(() => import('../pages/settings/CustomData'));
-const CustomObjects = lazy(() => import('../pages/settings/CustomObjects'));
-const CustomObjectDetail = lazy(() => import('../pages/settings/CustomObjectDetail'));
-const AutoReply = lazy(() => import('../pages/settings/AutoReply'));
-const AutoQA = lazy(() => import('../pages/settings/AutoQA'));
-const Topics = lazy(() => import('../pages/settings/Topics'));
-const Sentiment = lazy(() => import('../pages/settings/Sentiment'));
-const ChatSettings = lazy(() => import('../pages/settings/chat/ChatSettings'));
+// Loading spinner component
+const LoadingSpinner = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+  </div>
+);
 
-// Helper function to wrap a component with protection and error boundary
-const withProtection = (Component: React.ReactNode) => (
+// Lazy load settings pages
+const Settings = lazy(() => import('../pages/Settings'));
+const ChatSettings = lazy(() => import('../pages/settings/ChatSettings'));
+const Profile = lazy(() => import('../pages/settings/Profile'));
+const TeamSettings = lazy(() => import('../pages/settings/TeamSettings'));
+const AccountSettings = lazy(() => import('../pages/settings/AccountSettings'));
+
+// Helper function to wrap a component with Suspense, ProtectedRoute and RouteErrorBoundary
+const withSuspenseAndProtection = (Component: React.ReactNode) => (
   <ProtectedRoute>
     <RouteErrorBoundary>
-      {Component}
+      <Suspense fallback={<LoadingSpinner />}>
+        {Component}
+      </Suspense>
     </RouteErrorBoundary>
   </ProtectedRoute>
 );
 
+// Settings Routes component
 const SettingsRoutes = () => {
   return (
-    <Suspense fallback={<LoadingFallback />}>
-      <Routes>
-        <Route path="/" element={<Navigate to="/settings/tags" replace />} />
-        <Route path="/tags" element={withProtection(<Tags />)} />
-        <Route path="/teams" element={withProtection(<Teams />)} />
-        <Route path="/teams/create" element={withProtection(<CreateTeam />)} />
-        <Route path="/teams/:teamId" element={withProtection(<TeamDetail />)} />
-        <Route path="/teams/:teamId/edit" element={withProtection(<EditTeam />)} />
-        <Route path="/teammates" element={withProtection(<Teammates />)} />
-        <Route path="/teammates/:teammateId" element={withProtection(<TeammateDetail />)} />
-        <Route path="/canned-responses" element={withProtection(<CannedResponses />)} />
-        <Route path="/canned-responses/create" element={withProtection(<CreateCannedResponse />)} />
-        <Route path="/canned-responses/:responseId" element={withProtection(<CannedResponseDetail />)} />
-        <Route path="/custom-data" element={withProtection(<CustomData />)} />
-        <Route path="/custom-objects" element={withProtection(<CustomObjects />)} />
-        <Route path="/custom-objects/:objectId" element={withProtection(<CustomObjectDetail />)} />
-        <Route path="/auto-reply" element={withProtection(<AutoReply />)} />
-        <Route path="/auto-qa" element={withProtection(<AutoQA />)} />
-        <Route path="/topics" element={withProtection(<Topics />)} />
-        <Route path="/sentiment" element={withProtection(<Sentiment />)} />
-        <Route path="/chat" element={withProtection(<ChatSettings />)} />
-      </Routes>
-    </Suspense>
+    <Routes>
+      <Route path="" element={<Settings />}>
+        <Route path="" element={<Navigate to="chat" replace />} />
+        <Route path="chat" element={withSuspenseAndProtection(<ChatSettings />)} />
+        <Route path="profile" element={withSuspenseAndProtection(<Profile />)} />
+        <Route path="team" element={withSuspenseAndProtection(<TeamSettings />)} />
+        <Route path="account" element={withSuspenseAndProtection(<AccountSettings />)} />
+      </Route>
+    </Routes>
   );
 };
 

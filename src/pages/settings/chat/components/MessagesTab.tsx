@@ -4,7 +4,10 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { ChatWidgetSettings } from '@/store/slices/chatWidgetSettings/types';
 
-interface MessagesTabProps {
+/**
+ * Props for the messages tab
+ */
+export interface MessagesTabProps {
   welcomeTitle: string;
   welcomeSubtitle: string;
   onSettingChange: (field: keyof ChatWidgetSettings['content'], value: string) => void;

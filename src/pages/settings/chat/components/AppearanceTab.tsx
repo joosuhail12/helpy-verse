@@ -4,12 +4,15 @@ import { Switch } from '@/components/ui/switch';
 import ColorPicker from './ColorPicker';
 import { ChatWidgetSettings } from '@/store/slices/chatWidgetSettings/types';
 
-interface AppearanceTabProps {
+/**
+ * Props for the appearance tab
+ */
+export interface AppearanceTabProps {
   primaryColor: string;
-  position: string;
+  position: 'right' | 'left';
   compact: boolean;
   onColorChange: (color: string) => void;
-  onPositionChange: (position: string) => void;
+  onPositionChange: (position: 'right' | 'left') => void;
   onCompactChange: (compact: boolean) => void;
 }
 

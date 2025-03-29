@@ -4,6 +4,7 @@ import { useMessaging } from '@/hooks/chat/useMessaging';
 import { useFileAttachments } from '@/hooks/chat/useFileAttachments';
 import { usePresenceNotifications } from '@/hooks/chat/usePresenceNotifications';
 import { useWidgetStatus } from '@/hooks/chat/useWidgetStatus';
+import { ThemeConfig, ChatMessage, FileAttachment } from '@/types/chat';
 import { ChatWidgetSettings } from '@/store/slices/chatWidgetSettings/types';
 
 interface ChatWidgetOptions {
@@ -14,6 +15,45 @@ interface ChatWidgetOptions {
 }
 
 /**
+ * Return type for the useChatWidget hook
+ */
+export interface UseChatWidgetReturn {
+  // Widget appearance
+  theme: ThemeConfig;
+  updateTheme: (updates: Partial<ThemeConfig>) => void;
+  
+  // Widget status
+  isConnected: boolean;
+  isReconnecting: boolean;
+  connectionError: Error | null;
+  
+  // Messages
+  messages: ChatMessage[];
+  isLoading: boolean;
+  newMessageText: string;
+  setNewMessageText: (text: string) => void;
+  sendMessage: (content: string, metadata?: Record<string, any>) => Promise<boolean>;
+  
+  // Attachments
+  attachments: FileAttachment[];
+  addAttachments: (files: File[]) => void;
+  removeAttachment: (id: string) => void;
+  
+  // Presence
+  agents: any[]; // Replace with proper agent type
+  typingUsers: string[];
+  notifications: any[]; // Replace with proper notification type
+  clearNotification: (id: string) => void;
+  
+  // Access to underlying hooks for advanced usage
+  appearance: ReturnType<typeof useWidgetAppearance>;
+  messaging: ReturnType<typeof useMessaging>;
+  fileAttachments: ReturnType<typeof useFileAttachments>;
+  presenceNotifications: ReturnType<typeof usePresenceNotifications>;
+  widgetStatus: ReturnType<typeof useWidgetStatus>;
+}
+
+/**
  * Main hook that combines all chat widget functionality
  */
 export const useChatWidget = ({
@@ -21,7 +61,7 @@ export const useChatWidget = ({
   conversationId,
   settings,
   userName
-}: ChatWidgetOptions) => {
+}: ChatWidgetOptions): UseChatWidgetReturn => {
   // Widget appearance
   const appearance = useWidgetAppearance({ initialSettings: settings });
   
@@ -42,7 +82,7 @@ export const useChatWidget = ({
   const widgetStatus = useWidgetStatus();
   
   // Combined send message function that handles files
-  const sendMessageWithAttachments = async (content: string) => {
+  const sendMessageWithAttachments = async (content: string, metadata: Record<string, any> = {}): Promise<boolean> => {
     // Don't send empty messages
     if (!content.trim() && fileAttachments.attachments.length === 0) {
       return false;
@@ -54,7 +94,8 @@ export const useChatWidget = ({
       
       // Then send the message with file URLs
       const success = await messaging.sendMessage(content, {
-        files: fileUrls.length > 0 ? fileUrls : undefined
+        files: fileUrls.length > 0 ? fileUrls : undefined,
+        ...metadata
       });
       
       // Clear attachments if successful
