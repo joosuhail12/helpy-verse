@@ -83,13 +83,16 @@ const ChatWidgetDemo: React.FC = () => {
     if (!fileUrl.trim()) return;
     
     try {
-      await chatWidgetAPI.attachments.add({
-        id: Date.now().toString(),
-        name: fileUrl.split('/').pop() || 'file',
-        type: 'image/jpeg',
-        url: fileUrl,
-        size: 0
-      });
+      // Create a fetch request to get the file
+      const response = await fetch(fileUrl);
+      const blob = await response.blob();
+      const fileName = fileUrl.split('/').pop() || 'file';
+      
+      // Create a File object from the blob
+      const file = new File([blob], fileName, { type: blob.type });
+      
+      // Add the file as an attachment using the API
+      await chatWidgetAPI.attachments.add(file);
       setFileUrl('');
     } catch (error) {
       console.error('Failed to add attachment:', error);
