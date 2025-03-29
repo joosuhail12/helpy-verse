@@ -6,8 +6,8 @@ import {
   FileAttachment 
 } from '@/types/chat';
 
-// Re-export types from the core definitions
-export { 
+// Re-export types from the core definitions using 'export type'
+export type { 
   ChatMessage, 
   Conversation, 
   TypingStatus, 

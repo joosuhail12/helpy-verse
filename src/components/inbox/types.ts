@@ -1,8 +1,9 @@
 
 import type { Ticket } from '@/types/ticket';
-import { BaseMessage, UserPresence } from '@/types/chat';
+import { BaseMessage, UserPresence as CoreUserPresence } from '@/types/chat';
 
-export interface UserPresenceExtended extends UserPresence {
+// Export UserPresence for use in other components
+export interface UserPresence extends CoreUserPresence {
   location?: {
     ticketId: string;
     area: string;

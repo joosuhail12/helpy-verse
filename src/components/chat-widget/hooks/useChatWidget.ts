@@ -4,7 +4,7 @@ import { useMessaging } from '@/hooks/chat/useMessaging';
 import { useFileAttachments } from '@/hooks/chat/useFileAttachments';
 import { usePresenceNotifications } from '@/hooks/chat/usePresenceNotifications';
 import { useWidgetStatus } from '@/hooks/chat/useWidgetStatus';
-import { ThemeConfig, ChatMessage, FileAttachment } from '@/types/chat';
+import { ThemeConfig, ChatMessage, FileAttachment as ChatFileAttachment } from '@/types/chat';
 import { ChatWidgetSettings } from '@/store/slices/chatWidgetSettings/types';
 
 interface ChatWidgetOptions {
@@ -35,7 +35,7 @@ export interface UseChatWidgetReturn {
   sendMessage: (content: string, metadata?: Record<string, any>) => Promise<boolean>;
   
   // Attachments
-  attachments: FileAttachment[];
+  attachments: ChatFileAttachment[];
   addAttachments: (files: File[]) => void;
   removeAttachment: (id: string) => void;
   
@@ -110,6 +110,29 @@ export const useChatWidget = ({
     }
   };
   
+  // Map useFileAttachment's attachments to ChatFileAttachment format
+  const mappedAttachments: ChatFileAttachment[] = fileAttachments.attachments.map(attachment => ({
+    id: attachment.id,
+    name: attachment.file.name,
+    type: attachment.file.type,
+    size: attachment.file.size,
+    url: attachment.previewUrl || '',
+    uploadProgress: attachment.uploadProgress
+  }));
+  
+  // Map typing users to string array
+  const typingUserNames: string[] = messaging.typingUsers.map(user => 
+    typeof user === 'string' ? user : user.username || user.userId || 'Unknown user'
+  );
+  
+  // Create a notification clearer that accepts string IDs
+  const clearNotificationById = (id: string) => {
+    const index = presenceNotifications.notifications.findIndex(n => n.id === id);
+    if (index !== -1) {
+      presenceNotifications.clearNotification(index);
+    }
+  };
+  
   return {
     // Destructured APIs from individual hooks
     ...appearance,
@@ -129,15 +152,15 @@ export const useChatWidget = ({
     setNewMessageText: messaging.setNewMessageText,
     sendMessage: sendMessageWithAttachments,
     
-    // Attachments
-    attachments: fileAttachments.attachments,
+    // Attachments (properly mapped to expected type)
+    attachments: mappedAttachments,
     addAttachments: fileAttachments.addAttachments,
     removeAttachment: fileAttachments.removeAttachment,
     
-    // Presence
+    // Presence (properly mapped to expected types)
     agents: presenceNotifications.agents,
-    typingUsers: messaging.typingUsers,
+    typingUsers: typingUserNames,
     notifications: presenceNotifications.notifications,
-    clearNotification: presenceNotifications.clearNotification
+    clearNotification: clearNotificationById
   };
 };
