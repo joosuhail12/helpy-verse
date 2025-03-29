@@ -2,9 +2,9 @@
 // Export all HTTP client related modules
 export * from './client';
 export * from './cookieManager';
-export * from './interceptors';
 
-// Re-export the main HttpClient for backward compatibility
+// Don't re-export interceptors if they're already in client.ts
+// Only explicitly re-export the HttpClient and cookieFunctions
 import { HttpClient } from './client';
 export { HttpClient };
 

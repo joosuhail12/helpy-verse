@@ -5,7 +5,7 @@ import { cookieFunctions } from './cookieManager';
 
 // Define interceptors first before they're used
 // Request Interceptor - Adds Token & Workspace ID to all requests
-export const requestInterceptor = async (config) => {
+const requestInterceptor = async (config) => {
     // Check for network connectivity first
     if (!navigator.onLine) {
         console.error("Network is offline - request will likely fail");
@@ -42,18 +42,18 @@ export const requestInterceptor = async (config) => {
     return config;
 };
 
-export const requestErrorInterceptor = (error) => {
+const requestErrorInterceptor = (error) => {
     console.error("Request interceptor error:", error);
     return Promise.reject(error);
 };
 
 // Response Interceptor - Handles Successful Responses and Errors
-export const responseInterceptor = (response) => {
+const responseInterceptor = (response) => {
     console.log(`API Response from ${response.config.url}: Status ${response.status}`);
     return response;
 };
 
-export const responseErrorInterceptor = (error) => {
+const responseErrorInterceptor = (error) => {
     // Extract the meaningful error information
     const status = error.response?.status;
     const errorMessage = error.response?.data?.message || "Unknown error occurred";
@@ -184,6 +184,14 @@ const checkApiConnection = async () => {
 // Offline check utility
 export const isOffline = (): boolean => {
   return !navigator.onLine;
+};
+
+// Export the interceptors for potential reuse
+export {
+  requestInterceptor,
+  requestErrorInterceptor,
+  responseInterceptor,
+  responseErrorInterceptor
 };
 
 // ✅ API Call Wrapper
