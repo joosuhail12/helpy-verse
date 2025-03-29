@@ -158,6 +158,9 @@ const authSlice = createSlice({
 
 export const { logout, clearError } = authSlice.actions;
 
+// Export the reducer directly
+export const authReducer = authSlice.reducer;
+
 // Re-export all the actions for use in components
 export {
   loginUser,
