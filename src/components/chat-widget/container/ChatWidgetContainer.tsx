@@ -2,10 +2,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useChat } from '@/hooks/chat/useChat';
 import { useThemeContext } from '@/context/ThemeContext';
-import HomeView from '../views/HomeView';
-import MessagesView from '../views/MessagesView';
-import ConversationView from '../components/conversation/ConversationView';
 import Navigation from '../components/navigation/Navigation';
+import ViewManager from '../components/navigation/ViewManager';
+import LoadingState from '../components/states/LoadingState';
 
 interface ChatWidgetContainerProps {
   onClose: () => void;
@@ -47,44 +46,21 @@ const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({
   }, [createNewConversation, selectConversation]);
 
   if (isLoading) {
-    return (
-      <div className={`flex flex-col h-full text-gray-900 ${compact ? 'max-w-xs' : 'w-full'}`} 
-        style={{ backgroundColor: colors.background, color: colors.foreground }}>
-        <div className="flex-1 flex items-center justify-center">
-          <div className="animate-spin h-8 w-8 border-4 border-t-transparent rounded-full" 
-            style={{ borderColor: colors.primary, borderTopColor: 'transparent' }}></div>
-        </div>
-      </div>
-    );
+    return <LoadingState compact={compact} />;
   }
 
   return (
-    <div className={`flex flex-col h-full text-gray-900 ${compact ? 'max-w-xs' : 'w-full'}`} 
-      style={{ backgroundColor: colors.background, color: colors.foreground }}>
-      {activeView === 'home' && 
-        <HomeView 
-          workspaceId={workspaceId} 
-          onClose={onClose} 
-          setActiveView={(view: View) => setActiveView(view)} 
-        />
-      }
-      
-      {activeView === 'messages' && 
-        <MessagesView 
-          workspaceId={workspaceId} 
-          onClose={onClose} 
-          setActiveView={(view: View) => setActiveView(view)} 
-          onStartConversation={handleStartConversation}
-        />
-      }
-      
-      {activeView === 'conversation' && currentConversation && 
-        <ConversationView 
-          conversationId={currentConversation.id} 
-          workspaceId={workspaceId} 
-          onBack={() => setActiveView('messages')} 
-        />
-      }
+    <div 
+      className={`flex flex-col h-full text-gray-900 ${compact ? 'max-w-xs' : 'w-full'}`} 
+      style={{ backgroundColor: colors.background, color: colors.foreground }}
+    >
+      <ViewManager
+        activeView={activeView}
+        setActiveView={setActiveView}
+        workspaceId={workspaceId}
+        onClose={onClose}
+        onStartConversation={handleStartConversation}
+      />
       
       <Navigation activeView={activeView} setActiveView={setActiveView} />
     </div>
