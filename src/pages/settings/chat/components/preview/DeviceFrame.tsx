@@ -21,7 +21,7 @@ const DeviceFrame: React.FC<DeviceFrameProps> = ({
   return (
     <div className={cn("relative mx-auto", className)}>
       {deviceType === 'iphone' && (
-        <div className="relative max-w-[375px] mx-auto bg-black rounded-[3rem] overflow-hidden shadow-xl border-[14px] border-black">
+        <div className="relative mx-auto bg-black rounded-[3rem] overflow-hidden shadow-xl border-[14px] border-black max-w-[320px]">
           {/* Notch */}
           <div className="absolute top-0 left-0 right-0 h-7 bg-black z-10 flex justify-center items-end pb-1">
             <div className="w-36 h-[1.1rem] bg-black rounded-b-2xl flex justify-center items-center">
@@ -42,7 +42,7 @@ const DeviceFrame: React.FC<DeviceFrameProps> = ({
       )}
 
       {deviceType === 'android' && (
-        <div className="relative max-w-[375px] mx-auto bg-black rounded-[1.5rem] overflow-hidden shadow-xl border-[8px] border-black">
+        <div className="relative mx-auto bg-black rounded-[1.5rem] overflow-hidden shadow-xl border-[8px] border-black max-w-[320px]">
           {/* Status Bar */}
           <div className="h-5 bg-gray-900 flex justify-end items-center px-3 space-x-1">
             <div className="w-3 h-3 rounded-full bg-gray-700"></div>
@@ -63,9 +63,9 @@ const DeviceFrame: React.FC<DeviceFrameProps> = ({
       )}
 
       {deviceType === 'tablet' && (
-        <div className="relative max-w-[768px] mx-auto bg-gray-800 rounded-[2rem] overflow-hidden shadow-xl border-[12px] border-gray-800">
+        <div className="relative mx-auto bg-gray-800 rounded-[2rem] overflow-hidden shadow-xl border-[12px] border-gray-800 max-w-[500px]">
           {/* Content */}
-          <div className="w-full overflow-hidden bg-white">
+          <div className="w-full overflow-hidden bg-white h-full">
             {children}
           </div>
         </div>

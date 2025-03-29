@@ -27,7 +27,7 @@ const ViewSelector: React.FC<ViewSelectorProps> = ({ currentView, onViewChange }
           <ChevronDown className="h-4 w-4 ml-1" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start">
+      <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={() => onViewChange('home')} className="flex items-center">
           <Home className="h-4 w-4 mr-2" />
           Home View

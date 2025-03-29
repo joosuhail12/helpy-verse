@@ -37,8 +37,8 @@ const LiveWidgetPreview: React.FC<LiveWidgetPreviewProps> = ({
   };
 
   return (
-    <Card className="h-full overflow-hidden border shadow-md bg-gradient-to-b from-white to-gray-50">
-      <CardHeader className="pb-0 pt-4 border-b">
+    <Card className="h-full overflow-hidden border shadow-md">
+      <CardHeader className="pb-3 pt-4 border-b bg-gradient-to-b from-white to-gray-50">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg font-semibold text-gray-800 flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-purple-500" />
@@ -91,16 +91,14 @@ const LiveWidgetPreview: React.FC<LiveWidgetPreviewProps> = ({
             />
             
             <div 
-              className={`h-[520px] flex items-center justify-center p-6 bg-gradient-to-b from-gray-50 to-gray-100 ${
-                orientation === 'landscape' ? 'landscape-container' : ''
-              }`}
+              className="h-[520px] flex items-center justify-center p-6 bg-gradient-to-b from-gray-50 to-gray-100"
             >
               <DeviceFrame 
                 deviceType={deviceType} 
                 className={orientation === 'landscape' ? 'transform -rotate-90 scale-75' : ''}
               >
                 <div
-                  className={`h-full w-full ${orientation === 'landscape' ? 'transform rotate-90' : ''}`}
+                  className="h-full w-full"
                   style={{ 
                     backgroundColor: background,
                     backgroundImage: backgroundImage ? `url(${backgroundImage})` : 'none',
