@@ -32,7 +32,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({
     ...theme,
     // Override with settings if provided
     ...(settings && {
-      position: settings.position,
+      position: settings.position as 'left' | 'right',
       compact: settings.compact,
       colors: {
         ...theme.colors,

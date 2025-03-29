@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useThemeContext } from '@/context/ThemeContext';
-import { X, MessageSquare, Send, Paperclip, ThumbsUp, Image } from 'lucide-react';
+import { X, MessageSquare, Send, Paperclip, ThumbsUp } from 'lucide-react';
 import { ChatMessage } from './types';
 import MessageInput from './MessageInput';
 import { ScrollArea } from '@/components/ui/scroll-area';
