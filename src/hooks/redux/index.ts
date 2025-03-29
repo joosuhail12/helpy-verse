@@ -1,3 +1,3 @@
 
-export { useAppDispatch } from './useStandardDispatch';
-export { useAppSelector } from './useStandardSelector';
+export { useStandardDispatch as useAppDispatch } from './useStandardDispatch';
+export { useStandardSelector as useAppSelector } from './useStandardSelector';
