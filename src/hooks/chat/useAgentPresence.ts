@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAbly } from '@/context/AblyContext';
+import { UserStatus } from '@/types/userStatus';
 
 export interface AgentPresence {
   id: string;
@@ -8,12 +9,14 @@ export interface AgentPresence {
   avatar?: string;
   lastActive: Date;
   status: 'online' | 'offline' | 'away' | 'busy';
+  clientId?: string;
+  username?: string;
 }
 
 /**
  * Hook to track agent presence in a conversation
  */
-export const useAgentPresence = (conversationId: string) => {
+export const useAgentPresence = (conversationId: string, workspaceId?: string) => {
   const [agents, setAgents] = useState<AgentPresence[]>([]);
   const { client, isConnected } = useAbly();
 
@@ -28,7 +31,9 @@ export const useAgentPresence = (conversationId: string) => {
         name: 'Support Agent',
         avatar: 'https://i.pravatar.cc/150?img=1',
         lastActive: new Date(),
-        status: 'online'
+        status: 'online',
+        clientId: 'agent-1',
+        username: 'Support Agent'
       }
     ];
 

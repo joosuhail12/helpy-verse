@@ -4,11 +4,16 @@ import React, { createContext, useContext, useState, ReactNode } from 'react';
 export interface ThemeConfig {
   colors: {
     primary: string;
+    primaryForeground: string;
     background: string;
+    backgroundSecondary: string;
+    inputBackground: string;
     foreground: string;
     border: string;
     userMessage: string;
+    userMessageText: string;
     agentMessage: string;
+    agentMessageText: string;
     error: string;
     success: string;
   };
@@ -19,6 +24,9 @@ export interface ThemeConfig {
     welcomeSubtitle: string;
     sendButton: string;
     placeholder: string;
+    recentMessagesTitle?: string;
+    askQuestionButton?: string;
+    noMessagesText?: string;
   };
   features: {
     typingIndicator: boolean;
@@ -31,11 +39,16 @@ export interface ThemeConfig {
 const defaultTheme: ThemeConfig = {
   colors: {
     primary: '#9b87f5',
+    primaryForeground: '#ffffff',
     background: '#ffffff',
+    backgroundSecondary: '#f9f9f9',
+    inputBackground: '#ffffff',
     foreground: '#000000',
     border: '#e5e7eb',
     userMessage: '#9b87f5',
+    userMessageText: '#ffffff',
     agentMessage: '#f3f4f6',
+    agentMessageText: '#000000',
     error: '#ef4444',
     success: '#10b981'
   },
@@ -45,7 +58,10 @@ const defaultTheme: ThemeConfig = {
     welcomeTitle: 'Hello there.',
     welcomeSubtitle: 'How can we help?',
     sendButton: 'Send',
-    placeholder: 'Type a message...'
+    placeholder: 'Type a message...',
+    recentMessagesTitle: 'Recent Messages',
+    askQuestionButton: 'Ask a question',
+    noMessagesText: 'No messages yet'
   },
   features: {
     typingIndicator: true,

@@ -14,8 +14,8 @@ const AgentAvatarGroup: React.FC<AgentAvatarGroupProps> = ({
 }) => {
   // Sort agents by status (online first)
   const sortedAgents = [...agents].sort((a, b) => {
-    if (a.status === 'available' && b.status !== 'available') return -1;
-    if (a.status !== 'available' && b.status === 'available') return 1;
+    if (a.status === 'online' && b.status !== 'online') return -1;
+    if (a.status !== 'online' && b.status === 'online') return 1;
     return 0;
   });
 
@@ -26,11 +26,11 @@ const AgentAvatarGroup: React.FC<AgentAvatarGroupProps> = ({
   return (
     <div className="flex -space-x-2 overflow-hidden">
       {displayedAgents.map((agent) => (
-        <div key={agent.clientId} className="relative">
+        <div key={agent.id} className="relative">
           <UserAvatar 
-            name={agent.username || 'Agent'} 
-            avatarUrl={agent.avatarUrl}
-            status={agent.status} 
+            name={agent.name} 
+            avatarUrl={agent.avatar}
+            status={agent.status as any} 
             size="sm"
           />
         </div>

@@ -11,7 +11,7 @@ interface ChannelAndClient {
 }
 
 export const useRealtimeChat = (conversationId: string, workspaceId: string) => {
-  const { client, clientId, getChannelName } = useAbly();
+  const { client, clientId } = useAbly();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [channel, setChannel] = useState<ChannelAndClient | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -27,7 +27,7 @@ export const useRealtimeChat = (conversationId: string, workspaceId: string) => 
   useEffect(() => {
     if (!client) return;
     
-    const channelName = getChannelName(conversationId);
+    const channelName = `workspace:${workspaceId}:conversation:${conversationId}`;
     const channelInstance = client.channels.get(channelName);
     
     setChannel({ channelInstance, clientId });
@@ -35,9 +35,11 @@ export const useRealtimeChat = (conversationId: string, workspaceId: string) => 
     
     return () => {
       // Clean up channel subscription
-      client.channels.release(channelName);
+      if (client.channels.get) {
+        client.channels.release(channelName);
+      }
     };
-  }, [client, clientId, conversationId, getChannelName]);
+  }, [client, clientId, conversationId, workspaceId]);
 
   // Subscribe to messages
   useEffect(() => {
@@ -57,7 +59,11 @@ export const useRealtimeChat = (conversationId: string, workspaceId: string) => 
     };
     
     // Subscribe to new messages
-    const subscription = channel.channelInstance.subscribe('message', handleMessage);
+    const subscription = { unsubscribe: () => {} };
+    
+    if (channel.channelInstance && channel.channelInstance.subscribe) {
+      channel.channelInstance.subscribe('message', handleMessage);
+    }
     
     // Process any messages sent while offline
     const processOfflineMessages = async () => {
@@ -67,7 +73,9 @@ export const useRealtimeChat = (conversationId: string, workspaceId: string) => 
         // Send queued messages
         for (const msg of queuedMessages) {
           try {
-            await channel.channelInstance.publish('message', msg);
+            if (channel.channelInstance && channel.channelInstance.publish) {
+              await channel.channelInstance.publish('message', msg);
+            }
           } catch (err) {
             console.error('Failed to send queued message:', err);
           }
@@ -80,36 +88,10 @@ export const useRealtimeChat = (conversationId: string, workspaceId: string) => 
     
     processOfflineMessages();
     
-    // Fetch history if available
-    channel.channelInstance.history((err: Error, result: any) => {
-      if (err) {
-        console.error('Error fetching history:', err);
-        return;
-      }
-      
-      if (result && result.items) {
-        const historyMessages = result.items.map((item: any) => item.data);
-        setMessages((prevMessages) => {
-          // Combine with any existing messages, avoiding duplicates
-          const newMessages = [...prevMessages];
-          
-          for (const historyMsg of historyMessages) {
-            if (!newMessages.some(msg => msg.id === historyMsg.id)) {
-              newMessages.push(historyMsg);
-            }
-          }
-          
-          return newMessages.sort((a, b) => {
-            const timeA = new Date(a.timestamp).getTime();
-            const timeB = new Date(b.timestamp).getTime();
-            return timeA - timeB;
-          });
-        });
-      }
-    });
-    
     return () => {
-      subscription.unsubscribe();
+      if (subscription && subscription.unsubscribe) {
+        subscription.unsubscribe();
+      }
     };
   }, [channel, getQueuedMessages, clearQueuedMessages]);
 
@@ -132,7 +114,7 @@ export const useRealtimeChat = (conversationId: string, workspaceId: string) => 
     };
     
     try {
-      if (channel && channel.channelInstance) {
+      if (channel && channel.channelInstance && channel.channelInstance.publish) {
         await channel.channelInstance.publish('message', message);
         return true;
       } else {

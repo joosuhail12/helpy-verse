@@ -25,7 +25,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
   // Only fetch agent presence if we have workspace and conversation IDs
   const shouldFetchPresence = !!(workspaceId && conversationId);
   const { agents } = shouldFetchPresence 
-    ? useAgentPresence(workspaceId, conversationId)
+    ? useAgentPresence(conversationId)
     : { agents: [] };
 
   return (
