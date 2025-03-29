@@ -1,5 +1,5 @@
 
-import React, { useState, Suspense, lazy, useEffect } from 'react';
+import React, { useState, Suspense, lazy } from 'react';
 import { ChatProvider } from '@/context/ChatContext';
 import { AblyProvider } from '@/context/AblyContext';
 import { ThemeProvider, ThemeConfig } from '@/context/ThemeContext';
@@ -16,12 +16,14 @@ interface ChatWidgetProps {
   workspaceId: string;
   theme?: Partial<ThemeConfig>;
   settings?: Partial<ChatWidgetSettings>;
+  standalone?: boolean;
 }
 
 export const ChatWidget: React.FC<ChatWidgetProps> = ({ 
   workspaceId, 
   theme = {}, 
-  settings
+  settings,
+  standalone = false
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -51,10 +53,33 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({
   };
 
   const toggleWidget = () => {
-    setIsOpen((prev) => !prev);
+    const newState = !isOpen;
+    setIsOpen(newState);
+    
+    // Dispatch event for external listeners
+    window.dispatchEvent(new CustomEvent(
+      newState ? 'chat-widget-open' : 'chat-widget-close'
+    ));
   };
 
   const position = combinedTheme.position === 'left' ? 'left' : 'right';
+
+  // Setup event listeners for external control
+  React.useEffect(() => {
+    const handleOpen = () => setIsOpen(true);
+    const handleClose = () => setIsOpen(false);
+    const handleToggle = () => setIsOpen(prev => !prev);
+    
+    window.addEventListener('chat-widget-open', handleOpen);
+    window.addEventListener('chat-widget-close', handleClose);
+    window.addEventListener('chat-widget-toggle', handleToggle);
+    
+    return () => {
+      window.removeEventListener('chat-widget-open', handleOpen);
+      window.removeEventListener('chat-widget-close', handleClose);
+      window.removeEventListener('chat-widget-toggle', handleToggle);
+    };
+  }, []);
 
   return (
     <AblyProvider workspaceId={workspaceId}>

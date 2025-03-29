@@ -1,6 +1,11 @@
 
-// Barrel exports for the chat widget
+// Public API
+export * from './api';
+
+// Entry points
+export { default as StandaloneChatWidget } from './standalone/StandaloneChatWidget';
+export { default as EmbeddedChatWidget } from './embedded/EmbeddedChatWidget';
 export { ChatWidget } from './ChatWidget';
-export { default as ChatWidgetStandalone } from './standalone/ChatWidgetStandalone';
-export { default as IsolatedChatWidget } from './standalone/IsolatedChatWidget';
+
+// Type exports
 export * from './types';
