@@ -1,7 +1,6 @@
-
 import { createSlice, createAsyncThunk, PayloadAction, createSelector } from '@reduxjs/toolkit';
 import { RootState } from '../../store';
-import { companiesService } from '@/api/services/companiesService';
+import { companiesService } from '@/api/services';
 import { Company } from '@/types/company';
 
 export interface CompaniesState {
@@ -24,7 +23,6 @@ const initialState: CompaniesState = {
   lastFetchTime: null
 };
 
-// Cache duration in milliseconds (5 minutes)
 export const CACHE_DURATION = 5 * 60 * 1000;
 
 export const fetchCompanies = createAsyncThunk(
@@ -35,7 +33,6 @@ export const fetchCompanies = createAsyncThunk(
       const state = getState() as RootState;
       const { lastFetchTime } = state.companies;
       
-      // Use cache if data is fresh
       if (lastFetchTime && Date.now() - lastFetchTime < CACHE_DURATION) {
         console.log('Using cached companies data');
         return null;
@@ -130,7 +127,7 @@ const companiesSlice = createSlice({
       })
       .addCase(fetchCompanies.fulfilled, (state, action) => {
         state.loading = false;
-        if (action.payload) { // Only update if we got new data (not using cache)
+        if (action.payload) {
           state.companies = action.payload;
           state.lastFetchTime = Date.now();
         }
@@ -203,7 +200,6 @@ const companiesSlice = createSlice({
   },
 });
 
-// Export action creators
 export const { 
   selectCompany, 
   clearSelectedCompany, 
@@ -212,10 +208,8 @@ export const {
   setSelectedCompanies 
 } = companiesSlice.actions;
 
-// Base selector
 const getCompaniesState = (state: RootState) => state.companies;
 
-// Memoized selectors using createSelector
 export const selectCompanies = createSelector(
   [getCompaniesState],
   (state) => state.companies
