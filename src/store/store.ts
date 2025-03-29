@@ -1,9 +1,11 @@
 
 import { configureStore } from '@reduxjs/toolkit';
 
+// Import the auth reducer directly to avoid circular dependencies
+import authSlice from './slices/auth/authSlice';
+
 // Import reducers directly from their respective slice files rather than from index files
 // to prevent circular dependencies
-import { authReducer } from './slices/auth/authSlice';
 import { actionsReducer } from './slices/actions/actionsSlice';
 import contentReducer from './slices/content/contentSlice';
 import contentCenterReducer from './slices/automation/contentCenterSlice';
@@ -21,7 +23,7 @@ import teammatesSlice from './slices/teammates/teammatesSlice';
 
 // Define the root reducer with all slices
 const rootReducer = {
-  auth: authReducer,
+  auth: authSlice,
   actions: actionsReducer,
   content: contentReducer,
   contentCenter: contentCenterReducer,
