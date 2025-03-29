@@ -81,7 +81,8 @@ interface ThemeContextType extends ThemeConfig {
   updateTheme: (theme: Partial<ThemeConfig>) => void;
 }
 
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+// Create a context with a specific name to avoid conflicts
+const ChatWidgetThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 interface ThemeProviderProps {
   children: React.ReactNode;
@@ -134,14 +135,16 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children, initialT
   };
 
   return (
-    <ThemeContext.Provider value={{ ...theme, updateTheme }}>
-      {children}
-    </ThemeContext.Provider>
+    <ChatWidgetThemeContext.Provider value={{ ...theme, updateTheme }}>
+      <div className="chat-widget-theme-scope">
+        {children}
+      </div>
+    </ChatWidgetThemeContext.Provider>
   );
 };
 
 export const useThemeContext = () => {
-  const context = useContext(ThemeContext);
+  const context = useContext(ChatWidgetThemeContext);
   if (context === undefined) {
     throw new Error('useThemeContext must be used within a ThemeProvider');
   }
