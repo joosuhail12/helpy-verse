@@ -15,7 +15,7 @@
   // Add widget styles with preload
   const styleTag = document.createElement('link');
   styleTag.rel = 'stylesheet';
-  styleTag.href = `${CDN_URL}/chat-widget.css`;
+  styleTag.href = `${CDN_URL}/widget.css`;
   document.head.appendChild(styleTag);
   
   // Add loading indicator while script loads
@@ -88,25 +88,16 @@
     }
   };
   
+  // Set the widget URL
+  window.PULLSE_WIDGET_URL = `${CDN_URL}/widget.js`;
+  window.PULLSE_WIDGET_CSS = `${CDN_URL}/widget.css`;
+  
   // Load script with dynamic import technique
   const script = document.createElement('script');
   script.id = SCRIPT_ID;
   script.src = `${CDN_URL}/chat-widget-standalone.js`;
   script.async = true;
   script.defer = true;
-  
-  // Show loading indicator when loading widget
-  const chatButton = document.querySelector('.pullse-chat-widget-button');
-  if (chatButton) {
-    chatButton.addEventListener('click', function() {
-      loadingIndicator.style.display = 'block';
-      
-      // Hide loading indicator after a timeout (in case widget loads quickly)
-      setTimeout(function() {
-        loadingIndicator.style.display = 'none';
-      }, 2000);
-    });
-  }
   
   document.body.appendChild(script);
 })();
