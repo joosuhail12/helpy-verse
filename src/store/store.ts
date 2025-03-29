@@ -1,5 +1,6 @@
 
 import { configureStore } from '@reduxjs/toolkit';
+// Import reducers using default imports where possible to avoid initialization issues
 import authReducer from './slices/auth/authSlice';
 import { actionsReducer } from './slices/actions/actionsSlice';
 import contentReducer from './slices/content/contentSlice';
@@ -14,8 +15,7 @@ import { emailChannelsReducer } from './slices/emailChannels/emailChannelsSlice'
 import { cannedResponsesReducer } from './slices/cannedResponses/cannedResponsesSlice';
 import { chatbotsReducer } from './slices/chatbots/chatbotsSlice';
 import userReducer from './slices/user/userSlice';
-// Import reducers directly from their files to avoid circular imports
-import { reducer as teammatesReducer } from './slices/teammates/teammatesSlice';
+import teammatesReducer from './slices/teammates/teammatesSlice';
 
 // Define the root reducer with all slices
 const rootReducer = {
