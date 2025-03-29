@@ -30,7 +30,17 @@ const withSuspenseAndProtection = (Component: ReactNode) => (
   </ProtectedRoute>
 );
 
-export const DashboardRoutes = () => {
+// Export the DashboardRoutes component
+export const DashboardRoutes = [
+  { path: "dashboard", element: withSuspenseAndProtection(<Dashboard />) },
+  { path: "contacts/all", element: withSuspenseAndProtection(<AllContacts />) },
+  { path: "contacts/companies", element: withSuspenseAndProtection(<Companies />) },
+  { path: "contacts/companies/:id", element: withSuspenseAndProtection(<CompanyDetail />) },
+  { path: "contacts/:id", element: withSuspenseAndProtection(<ContactDetail />) }
+];
+
+// Also export as a component for direct usage
+export const DashboardRoutesComponent = () => {
   return (
     <Routes>
       <Route path="" element={withSuspenseAndProtection(<Dashboard />)} />

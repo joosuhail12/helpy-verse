@@ -53,7 +53,19 @@ const withSuspenseAndProtection = (component: ReactNode) => (
   </ProtectedRoute>
 );
 
-export const AutomationRoutes = () => {
+// Export routes array for use in router configuration
+export const AutomationRoutes = [
+  { path: "automation", element: withSuspenseAndProtection(<Automation />) },
+  { path: "automation/ai/action-center", element: withSuspenseAndProtection(<ActionCenter />) },
+  { path: "automation/ai/action-center/create", element: withSuspenseAndProtection(<CreateAction />) },
+  { path: "automation/ai/chatbot-profiles", element: withSuspenseAndProtection(<ChatbotProfiles />) },
+  { path: "automation/ai/chatbot-profiles/create", element: withSuspenseAndProtection(<CreateChatbot />) },
+  { path: "automation/ai/chatbot-profiles/:id", element: withSuspenseAndProtection(<ChatbotDetail />) },
+  { path: "automation/ai/content-center", element: withSuspenseAndProtection(<ContentCenter />) }
+];
+
+// Also export as a component for direct usage
+export const AutomationRoutesComponent = () => {
   return (
     <Routes>
       <Route path="" element={withSuspenseAndProtection(<Automation />)} />

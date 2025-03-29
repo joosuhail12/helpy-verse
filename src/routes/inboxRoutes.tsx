@@ -29,7 +29,17 @@ const withSuspenseAndProtection = (Component: ReactNode) => (
   </ProtectedRoute>
 );
 
-export const InboxRoutes = () => {
+// Export routes array for use in router configuration
+export const InboxRoutes = [
+  { path: "inbox", element: <Navigate to="all" replace /> },
+  { path: "inbox/your-inbox", element: withSuspenseAndProtection(<YourInbox />) },
+  { path: "inbox/all", element: withSuspenseAndProtection(<AllInbox />) },
+  { path: "inbox/unassigned", element: withSuspenseAndProtection(<UnassignedInbox />) },
+  { path: "inbox/mentions", element: withSuspenseAndProtection(<MentionsInbox />) }
+];
+
+// Also export as a component for direct usage
+export const InboxRoutesComponent = () => {
   return (
     <Routes>
       <Route path="" element={<Navigate to="all" replace />} />

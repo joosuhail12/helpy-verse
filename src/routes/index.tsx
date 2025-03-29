@@ -13,10 +13,10 @@ export const LoadingSpinner = () => (
   </div>
 );
 
-// Import route modules as objects, not as default exports
-import { dashboardRoutes } from './dashboardRoutes';
-import { inboxRoutes } from './inboxRoutes';
-import { automationRoutes } from './automationRoutes';
+// Import route components - fixing the imports to match the exported names
+import { DashboardRoutes } from './dashboardRoutes';
+import { InboxRoutes } from './inboxRoutes';
+import { AutomationRoutes } from './automationRoutes';
 // Import settings as default export
 import SettingsRoutes from './settingsRoutes';
 
@@ -94,9 +94,9 @@ export const router = createBrowserRouter([
       </PrivateRoute>
     ),
     children: [
-      ...dashboardRoutes,
-      ...inboxRoutes,
-      ...automationRoutes,
+      ...DashboardRoutes,
+      ...InboxRoutes,
+      ...AutomationRoutes,
     ],
   },
   {
