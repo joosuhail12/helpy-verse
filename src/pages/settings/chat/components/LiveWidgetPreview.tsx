@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { ThemeProvider } from '@/context/ThemeContext';
 import DeviceFrame from './preview/DeviceFrame';
 import ResponsiveControls from './preview/ResponsiveControls';
+import ViewSelector from './preview/ViewSelector';
 import { DeviceType, Orientation, ChatView } from '@/types/preview';
 import SampleConversation from '@/components/chat-widget/components/conversation/SampleConversation';
 
@@ -47,6 +48,7 @@ const LiveWidgetPreview: React.FC<LiveWidgetPreviewProps> = ({
               Live
             </Badge>
           </CardTitle>
+          <ViewSelector currentView={currentView} onViewChange={onViewChange} />
         </div>
       </CardHeader>
       <CardContent className="p-0">
@@ -90,12 +92,10 @@ const LiveWidgetPreview: React.FC<LiveWidgetPreviewProps> = ({
               setOrientation={setOrientation}
             />
             
-            <div 
-              className="h-[520px] flex items-center justify-center p-6 bg-gradient-to-b from-gray-50 to-gray-100"
-            >
+            <div className="h-[520px] flex items-center justify-center p-6 bg-gradient-to-b from-gray-50 to-gray-100">
               <DeviceFrame 
-                deviceType={deviceType} 
-                className={orientation === 'landscape' ? 'transform -rotate-90 scale-75' : ''}
+                deviceType={deviceType}
+                orientation={orientation}
               >
                 <div
                   className="h-full w-full"

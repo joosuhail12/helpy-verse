@@ -8,6 +8,7 @@ interface DeviceFrameProps {
   children: ReactNode;
   deviceType: DeviceType;
   className?: string;
+  orientation?: 'portrait' | 'landscape';
 }
 
 /**
@@ -16,10 +17,20 @@ interface DeviceFrameProps {
 const DeviceFrame: React.FC<DeviceFrameProps> = ({ 
   children, 
   deviceType = 'iphone',
-  className 
+  className,
+  orientation = 'portrait'
 }) => {
+  const isLandscape = orientation === 'landscape';
+  
+  // Apply landscape specific styles
+  const landscapeStyles = isLandscape ? {
+    transform: 'rotate(-90deg)',
+    width: deviceType === 'tablet' ? '600px' : '500px',
+    height: deviceType === 'tablet' ? '400px' : '280px',
+  } : {};
+  
   return (
-    <div className={cn("relative mx-auto", className)}>
+    <div className={cn("relative mx-auto", className)} style={landscapeStyles}>
       {deviceType === 'iphone' && (
         <div className="relative mx-auto bg-black rounded-[3rem] overflow-hidden shadow-xl border-[14px] border-black max-w-[320px]">
           {/* Notch */}
