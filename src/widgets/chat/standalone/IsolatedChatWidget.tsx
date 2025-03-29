@@ -5,7 +5,7 @@ import { AblyProvider } from '@/context/AblyContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { ChatWidgetProvider, useChatWidget } from '@/context/ChatWidgetContext';
 import { adaptApiThemeToContextTheme } from '../utils/themeAdapter';
-import { IsolatedChatWidgetProps } from '../types';
+import { IsolatedChatWidgetProps } from '../types/widget';
 import { Loader2 } from 'lucide-react';
 import '@/styles/chat-widget-theme.css';
 

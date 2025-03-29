@@ -2,6 +2,7 @@
 import React from 'react';
 import { ChatWidget } from '../ChatWidget';
 import { ThemeConfig, ChatWidgetSettings } from '../types';
+import { adaptApiThemeToContextTheme } from '../utils/themeAdapter';
 
 interface EmbeddedChatWidgetProps {
   /**
@@ -77,10 +78,13 @@ const EmbeddedChatWidget: React.FC<EmbeddedChatWidgetProps> = ({
     };
   }, [onOpen, onClose, onMessageSent]);
 
+  // Convert API theme to context theme
+  const contextTheme = adaptApiThemeToContextTheme(theme);
+
   return (
     <ChatWidget 
       workspaceId={workspaceId}
-      theme={theme}
+      theme={contextTheme}
       settings={settings}
       standalone={false}
     />

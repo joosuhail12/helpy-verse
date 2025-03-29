@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { ChatWidget } from '../ChatWidget';
 import { ThemeConfig, WidgetOptions } from '../types';
+import { adaptApiThemeToContextTheme } from '../utils/themeAdapter';
 
 /**
  * Standalone Chat Widget component designed for website embedding via script tag
@@ -31,7 +32,7 @@ const StandaloneChatWidget: React.FC = () => {
     // Expose global API method for external initialization
     window.PULLSE = {
       ...window.PULLSE,
-      initializeChatWidget: (widgetOptions: WidgetOptions) => {
+      initializeWidget: (widgetOptions: WidgetOptions) => {
         setOptions(widgetOptions);
       }
     };
@@ -48,10 +49,13 @@ const StandaloneChatWidget: React.FC = () => {
   // Default workspaceId if not provided
   const workspaceId = options?.workspaceId || '6c22b22f-7bdf-43db-b7c1-9c5884125c63';
   
+  // Convert API theme to context theme
+  const contextTheme = adaptApiThemeToContextTheme(options?.theme);
+  
   return (
     <ChatWidget 
       workspaceId={workspaceId}
-      theme={options?.theme as Partial<ThemeConfig>}
+      theme={contextTheme}
       settings={options?.settings}
       standalone={true}
     />
@@ -64,7 +68,7 @@ export default StandaloneChatWidget;
 declare global {
   interface Window {
     PULLSE?: {
-      initializeChatWidget: (options: WidgetOptions) => void;
+      initializeWidget: (options: WidgetOptions) => void;
       [key: string]: any;
     };
     PULLSE_CHAT_CONFIG?: WidgetOptions;
