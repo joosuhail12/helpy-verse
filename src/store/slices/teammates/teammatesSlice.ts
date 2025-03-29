@@ -13,7 +13,7 @@ import {
   disable2FA,
   terminateSession,
   resetPassword
-} from './actions';
+} from './thunks';
 
 const initialState: TeammatesState = {
   teammates: [],

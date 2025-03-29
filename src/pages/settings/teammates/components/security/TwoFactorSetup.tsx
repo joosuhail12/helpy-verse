@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
-import { enable2FA, verify2FA, disable2FA } from '@/store/slices/teammates/teammatesSlice';
+import { enable2FA, verify2FA, disable2FA } from '@/store/slices/teammates/actions';
 import { useToast } from '@/hooks/use-toast';
 import { ShieldCheck, ShieldOff, QrCode } from 'lucide-react';
 
