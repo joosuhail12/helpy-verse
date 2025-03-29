@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAppSelector } from '@/hooks/redux';
 import { selectChatWidgetSettings } from '@/store/slices/chatWidgetSettings';
@@ -15,6 +15,11 @@ const LiveChatPreview = () => {
   const [background, setBackground] = useState<string>('#ffffff');
   const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
   const [previewSettings, setPreviewSettings] = useState<ChatWidgetSettings>(settings);
+  
+  // Update preview settings when redux settings change
+  useEffect(() => {
+    setPreviewSettings(settings);
+  }, [settings]);
   
   // Handle real-time setting changes without saving
   const handlePreviewSettingChange = (field: keyof ChatWidgetSettings, value: any) => {

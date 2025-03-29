@@ -28,7 +28,7 @@ const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({
   sampleMessages = false
 }) => {
   const { conversations, currentConversation, selectConversation, createNewConversation } = useChat();
-  const { colors } = useThemeContext();
+  const { colors, features } = useThemeContext();
   const [isLoading, setIsLoading] = useState(false);
   const [activeView, setActiveView] = useState<View>('home');
 

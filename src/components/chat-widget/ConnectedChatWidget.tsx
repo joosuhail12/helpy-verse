@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { useAppSelector, useAppDispatch } from '@/hooks/redux';
 import { ChatWidget } from './ChatWidget';
@@ -23,10 +24,12 @@ const ConnectedChatWidget: React.FC<ConnectedChatWidgetProps> = ({
   const dispatch = useAppDispatch();
   const settings = useAppSelector(selectChatWidgetSettings);
   
-  // Load settings from localStorage on mount
+  // Load settings from localStorage on mount (if not in preview mode)
   useEffect(() => {
-    dispatch(loadChatWidgetSettings());
-  }, [dispatch]);
+    if (!isPreview) {
+      dispatch(loadChatWidgetSettings());
+    }
+  }, [dispatch, isPreview]);
 
   // Use previewSettings if provided (for the preview in settings page)
   // Otherwise use the actual settings from Redux store

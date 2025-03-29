@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { X, MessageSquare } from 'lucide-react';
 import { ChatProvider } from '@/context/ChatContext';
@@ -26,6 +26,13 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({
   sampleMessages = false
 }) => {
   const [isOpen, setIsOpen] = useState(isPreview);
+
+  // Reopen the widget when preview settings change
+  useEffect(() => {
+    if (isPreview && !isOpen) {
+      setIsOpen(true);
+    }
+  }, [settings, isPreview, isOpen]);
 
   // Apply settings to theme if provided
   const combinedTheme: Partial<ThemeConfig> = {
