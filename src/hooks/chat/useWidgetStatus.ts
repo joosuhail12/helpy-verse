@@ -1,6 +1,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
+import { useAgentPresence, AgentPresence } from '@/hooks/chat/useAgentPresence';
 import { useAbly } from '@/context/AblyContext';
+import { Types } from 'ably';
 
 type ConnectionStatus = 'connected' | 'connecting' | 'disconnected' | 'failed';
 
@@ -16,7 +18,7 @@ export const useWidgetStatus = () => {
   useEffect(() => {
     if (!client) return;
     
-    const handleStateChange = (stateChange: any) => {
+    const handleStateChange = (stateChange: Types.ConnectionStateChange) => {
       console.log('Connection state changed:', stateChange.current);
       
       switch (stateChange.current) {
@@ -52,10 +54,14 @@ export const useWidgetStatus = () => {
     }
     
     // Subscribe to connection state changes
-    client.connection.on('statechange', handleStateChange);
+    client.connection.on(stateChange => {
+      handleStateChange(stateChange);
+    });
     
     return () => {
-      client.connection.off('statechange', handleStateChange);
+      client.connection.off(stateChange => {
+        handleStateChange(stateChange);
+      });
     };
   }, [client]);
   

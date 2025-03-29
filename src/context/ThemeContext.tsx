@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState } from 'react';
 
 export interface ThemeConfig {
@@ -27,6 +26,13 @@ export interface ThemeConfig {
   };
 }
 
+interface ThemeContextType extends ThemeConfig {
+  updateTheme: (theme: Partial<ThemeConfig>) => void;
+  setColors: (colors: ThemeConfig['colors']) => void;
+  setPosition: (position: ThemeConfig['position']) => void;
+  setCompact: (compact: boolean) => void;
+}
+
 const defaultTheme: ThemeConfig = {
   colors: {
     primary: '#9b87f5',
@@ -52,10 +58,6 @@ const defaultTheme: ThemeConfig = {
     messagePlaceholder: 'Type a message...'
   }
 };
-
-interface ThemeContextType extends ThemeConfig {
-  updateTheme: (theme: Partial<ThemeConfig>) => void;
-}
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
@@ -93,8 +95,38 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children, initialT
     }));
   };
 
+  const setColors = (colors: ThemeConfig['colors']) => {
+    setTheme(prev => ({
+      ...prev,
+      colors: {
+        ...prev.colors,
+        ...colors
+      }
+    }));
+  };
+
+  const setPosition = (position: ThemeConfig['position']) => {
+    setTheme(prev => ({
+      ...prev,
+      position
+    }));
+  };
+
+  const setCompact = (compact: boolean) => {
+    setTheme(prev => ({
+      ...prev,
+      compact
+    }));
+  };
+
   return (
-    <ThemeContext.Provider value={{ ...theme, updateTheme }}>
+    <ThemeContext.Provider value={{ 
+      ...theme, 
+      updateTheme,
+      setColors,
+      setPosition,
+      setCompact
+    }}>
       {children}
     </ThemeContext.Provider>
   );
