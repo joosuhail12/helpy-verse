@@ -1,23 +1,8 @@
 
-/* Isolated chat widget styles - contained within #pullse-chat-widget */
 #pullse-chat-widget {
   --primary: 265 89% 60%;
   --primary-foreground: 210 40% 98%;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  /* Create an isolated stacking context */
-  isolation: isolate;
-  /* Make sure our styles don't leak out */
-  all: initial;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  color: initial;
-  font-size: 16px;
-}
-
-/* Reset styles for specific elements inside the widget */
-#pullse-chat-widget *,
-#pullse-chat-widget *::before,
-#pullse-chat-widget *::after {
-  box-sizing: border-box;
 }
 
 .pullse-chat-widget-container {

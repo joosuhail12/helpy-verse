@@ -10,13 +10,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import ErrorBoundary from "@/components/common/ErrorBoundary";
 import { isAuthenticated } from "@/utils/auth/tokenManager";
-import { useStableCallback } from "@/utils/performance/reactOptimizations";
-import { useRenderTime } from "@/hooks/usePerformanceOptimization";
 
 export const SignIn = memo(() => {
-  // Track render time in development
-  useRenderTime('SignIn');
-  
   console.log('SignIn component rendering'); // Debug log
   const navigate = useNavigate();
   const location = useLocation();
@@ -32,20 +27,17 @@ export const SignIn = memo(() => {
     },
   });
 
-  // Create a stable callback for navigation that only changes when 'from' or 'navigate' changes
-  const handleAuthenticated = useStableCallback(() => {
-    console.log('User is authenticated, redirecting to:', from); // Debug log
-    navigate(from, { replace: true });
-  }, [from, navigate]);
-
   // Redirect if already authenticated - using tokenManager's isAuthenticated
   useEffect(() => {
     if (isAuthenticated()) {
-      handleAuthenticated();
+      console.log('User is authenticated, redirecting to:', from); // Debug log
+      
+      // Navigate to target location
+      navigate(from, { replace: true });
     } else {
       console.log('User is NOT authenticated, staying on login page');
     }
-  }, [handleAuthenticated]);
+  }, [from, navigate]);
 
   console.log('Auth state:', auth); // Debug log
 

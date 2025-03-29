@@ -2,7 +2,6 @@
 // This file re-exports everything from the refactored auth slice
 // for backward compatibility
 
-import authReducer from './auth/authSlice';
 import { 
   logout, 
   clearError,
@@ -33,5 +32,5 @@ export {
 export type { Permission, Permissions, AuthState } from './auth/types';
 export type { ActionType } from '@/utils/ability';
 
-// Export the reducer for backward compatibility
-export default authReducer;
+// Do not re-export the default export to avoid the circular dependency
+// Instead, consumers should import the reducer directly from './auth/authSlice'

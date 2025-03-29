@@ -10,15 +10,9 @@
   // Create widget container
   const widgetContainer = document.createElement('div');
   widgetContainer.id = WIDGET_ID;
-  
-  // Apply style isolation
-  widgetContainer.style.isolation = 'isolate';
-  widgetContainer.style.all = 'initial';
-  widgetContainer.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-  
   document.body.appendChild(widgetContainer);
   
-  // Add widget styles - use a separate stylesheet for isolation
+  // Add widget styles
   const styleTag = document.createElement('link');
   styleTag.rel = 'stylesheet';
   styleTag.href = `${CDN_URL}/chat-widget.css`;

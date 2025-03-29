@@ -1,7 +1,5 @@
 
-// src/hooks/useAppDispatch.ts
 import { useDispatch } from 'react-redux';
-import type { AppDispatch } from '@/store/store';
+import type { AppDispatch } from '../store/store';
 
-// Use throughout your app instead of plain `useDispatch`
 export const useAppDispatch = () => useDispatch<AppDispatch>();

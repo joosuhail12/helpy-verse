@@ -87,72 +87,70 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({
     ? 'rounded-lg px-3 py-2' 
     : 'rounded-full w-14 h-14';
 
-  // Add a wrapper class to scope the widget and prevent it from affecting the rest of the app
   return (
-    <div className="pullse-chat-widget-wrapper" style={{ isolation: 'isolate' }}>
-      <AblyProvider workspaceId={workspaceId}>
-        <ChatProvider workspaceId={workspaceId}>
-          <ThemeProvider initialTheme={combinedTheme}>
-            <div 
-              className={`${isPreview ? '' : 'fixed bottom-4'} z-50 flex flex-col items-end`} 
-              style={{ 
-                [combinedTheme.position === 'left' ? 'left' : 'right']: isPreview ? 'auto' : '1rem',
-                alignItems: combinedTheme.position === 'left' ? 'flex-start' : 'flex-end',
-                ...previewStyles,
-                width: isPreview ? '100%' : 'auto',
-                height: isPreview ? '100%' : 'auto',
-              }}
-            >
-              <AnimatePresence>
-                {isOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                    transition={{ duration: 0.2 }}
-                    className="mb-3 bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-200"
-                    style={{ 
-                      height: isPreview ? '85%' : '600px',
-                      width: isPreview ? '100%' : combinedTheme.compact ? '18rem' : '24rem'
-                    }}
-                  >
-                    <ChatWidgetContainer 
-                      onClose={() => setIsOpen(false)} 
-                      workspaceId={workspaceId} 
-                      position={combinedTheme.position === 'left' ? 'left' : 'right'} 
-                      compact={Boolean(combinedTheme.compact)}
-                      isPreview={isPreview}
-                      sampleMessages={sampleMessages}
-                    />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-              
-              {(!isPreview || showLauncher) && (
-                <button
-                  onClick={toggleWidget}
-                  className={`${
-                    isOpen ? 'bg-red-500 hover:bg-red-600' : 'bg-primary hover:bg-primary/90'
-                  } ${launcherClasses} flex items-center justify-center shadow-lg transition-colors`}
-                  aria-label={isOpen ? 'Close chat' : 'Open chat'}
+    <AblyProvider workspaceId={workspaceId}>
+      <ChatProvider workspaceId={workspaceId}>
+        <ThemeProvider initialTheme={combinedTheme}>
+          <div 
+            className={`${isPreview ? '' : 'fixed bottom-4'} z-50 flex flex-col items-end`} 
+            style={{ 
+              [combinedTheme.position === 'left' ? 'left' : 'right']: isPreview ? 'auto' : '1rem',
+              alignItems: combinedTheme.position === 'left' ? 'flex-start' : 'flex-end',
+              ...previewStyles,
+              width: isPreview ? '100%' : 'auto',
+              height: isPreview ? '100%' : 'auto',
+              fontFamily: combinedTheme.styles?.fontFamily
+            }}
+          >
+            <AnimatePresence>
+              {isOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                  transition={{ duration: 0.2 }}
+                  className="mb-3 bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-200"
                   style={{ 
-                    backgroundColor: isOpen ? '#ef4444' : combinedTheme.colors?.primary,
-                    position: isPreview ? 'absolute' : 'relative',
-                    bottom: isPreview ? '1rem' : 'auto',
-                    [combinedTheme.position === 'left' ? 'left' : 'right']: isPreview ? '1rem' : 'auto'
+                    height: isPreview ? '85%' : '600px',
+                    width: isPreview ? '100%' : combinedTheme.compact ? '18rem' : '24rem'
                   }}
                 >
-                  {isOpen ? (
-                    <X className="h-6 w-6 text-white" />
-                  ) : (
-                    <MessageSquare className="h-6 w-6 text-white" />
-                  )}
-                </button>
+                  <ChatWidgetContainer 
+                    onClose={() => setIsOpen(false)} 
+                    workspaceId={workspaceId} 
+                    position={combinedTheme.position === 'left' ? 'left' : 'right'} 
+                    compact={Boolean(combinedTheme.compact)}
+                    isPreview={isPreview}
+                    sampleMessages={sampleMessages}
+                  />
+                </motion.div>
               )}
-            </div>
-          </ThemeProvider>
-        </ChatProvider>
-      </AblyProvider>
-    </div>
+            </AnimatePresence>
+            
+            {(!isPreview || showLauncher) && (
+              <button
+                onClick={toggleWidget}
+                className={`${
+                  isOpen ? 'bg-red-500 hover:bg-red-600' : 'bg-primary hover:bg-primary/90'
+                } ${launcherClasses} flex items-center justify-center shadow-lg transition-colors`}
+                aria-label={isOpen ? 'Close chat' : 'Open chat'}
+                style={{ 
+                  backgroundColor: isOpen ? '#ef4444' : combinedTheme.colors?.primary,
+                  position: isPreview ? 'absolute' : 'relative',
+                  bottom: isPreview ? '1rem' : 'auto',
+                  [combinedTheme.position === 'left' ? 'left' : 'right']: isPreview ? '1rem' : 'auto'
+                }}
+              >
+                {isOpen ? (
+                  <X className="h-6 w-6 text-white" />
+                ) : (
+                  <MessageSquare className="h-6 w-6 text-white" />
+                )}
+              </button>
+            )}
+          </div>
+        </ThemeProvider>
+      </ChatProvider>
+    </AblyProvider>
   );
 };

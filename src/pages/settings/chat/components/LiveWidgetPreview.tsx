@@ -10,7 +10,6 @@ import { Smartphone, Monitor, Sparkles, ArrowDownToLine } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { ThemeProvider } from '@/context/ThemeContext';
 
 interface LiveWidgetPreviewProps {
   settings: ChatWidgetSettings;
@@ -31,10 +30,12 @@ const LiveWidgetPreview: React.FC<LiveWidgetPreviewProps> = ({
   const [chatWidgetOpen, setChatWidgetOpen] = useState<boolean>(true);
   const [currentView, setCurrentView] = useState<'home' | 'messages' | 'conversation'>('conversation');
   
+  // Update preview settings when redux settings change
   React.useEffect(() => {
     setPreviewSettings(settings);
   }, [settings]);
   
+  // Handle real-time setting changes without saving
   const handlePreviewSettingChange = (field: keyof ChatWidgetSettings, value: any) => {
     setPreviewSettings(prev => {
       const newSettings = { ...prev, [field]: value };
@@ -42,15 +43,12 @@ const LiveWidgetPreview: React.FC<LiveWidgetPreviewProps> = ({
       return newSettings;
     });
     
+    // Pass changes to parent
     onSettingChange(field, value);
   };
 
   const handleToggleWidget = () => {
     setChatWidgetOpen(!chatWidgetOpen);
-  };
-
-  const handleViewChange = (view: 'home' | 'messages' | 'conversation') => {
-    setCurrentView(view);
   };
 
   return (
@@ -87,7 +85,7 @@ const LiveWidgetPreview: React.FC<LiveWidgetPreviewProps> = ({
           settings={settings}
           previewSettings={previewSettings}
           onSettingChange={handlePreviewSettingChange}
-          onViewChange={handleViewChange}
+          onViewChange={setCurrentView}
           currentView={currentView}
           onToggleWidget={handleToggleWidget}
           isWidgetOpen={chatWidgetOpen}
@@ -159,56 +157,18 @@ const LiveWidgetPreview: React.FC<LiveWidgetPreviewProps> = ({
                     </div>
                   ) : (
                     <div className="h-full">
-                      <ThemeProvider initialTheme={{
-                        colors: {
-                          primary: previewSettings.primaryColor,
-                          primaryForeground: '#ffffff',
-                          background: '#ffffff',
-                          backgroundSecondary: '#f9f9f9',
-                          foreground: '#1A1F2C',
-                          border: '#eaeaea',
-                          userMessage: previewSettings.userMessageColor,
-                          userMessageText: '#ffffff',
-                          agentMessage: previewSettings.agentMessageColor,
-                          agentMessageText: '#1A1F2C',
-                          inputBackground: previewSettings.messageBoxColor,
-                          headerBackground: previewSettings.headerColor
-                        },
-                        position: previewSettings.position,
-                        compact: previewSettings.compact,
-                        labels: {
-                          welcomeTitle: previewSettings.welcomeTitle,
-                          welcomeSubtitle: previewSettings.welcomeSubtitle,
-                          askQuestionButton: 'Ask a question',
-                          recentMessagesTitle: 'Recent messages',
-                          noMessagesText: 'No messages yet. Start a conversation!',
-                          messagePlaceholder: 'Type a message...',
-                          headerTitle: previewSettings.headerTitle
-                        },
-                        features: {
-                          typingIndicator: previewSettings.enableTypingIndicator,
-                          reactions: previewSettings.enableReactions,
-                          fileAttachments: previewSettings.enableFileAttachments,
-                          readReceipts: previewSettings.enableReadReceipts
-                        },
-                        styles: {
-                          fontFamily: previewSettings.fontFamily,
-                          launcherStyle: previewSettings.launcherStyle
-                        }
-                      }}>
-                        <SampleConversation 
-                          onClose={handleToggleWidget}
-                          position={previewSettings.position}
-                          compact={previewSettings.compact}
-                          headerTitle={previewSettings.headerTitle}
-                          headerColor={previewSettings.headerColor}
-                          currentView={currentView}
-                          onChangeView={handleViewChange}
-                          userMessageColor={previewSettings.userMessageColor}
-                          agentMessageColor={previewSettings.agentMessageColor}
-                          messageBoxColor={previewSettings.messageBoxColor}
-                        />
-                      </ThemeProvider>
+                      <SampleConversation 
+                        onClose={handleToggleWidget}
+                        position={previewSettings.position}
+                        compact={previewSettings.compact}
+                        headerTitle={previewSettings.headerTitle}
+                        headerColor={previewSettings.headerColor}
+                        currentView={currentView}
+                        onChangeView={setCurrentView}
+                        userMessageColor={previewSettings.userMessageColor}
+                        agentMessageColor={previewSettings.agentMessageColor}
+                        messageBoxColor={previewSettings.messageBoxColor}
+                      />
                     </div>
                   )}
                 </div>

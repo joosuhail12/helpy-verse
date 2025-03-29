@@ -49,11 +49,6 @@ body {
   font-feature-settings: "rlig" 1, "calt" 1;
 }
 
-/* Isolate chat widget styles within the chat-widget-theme-scope class */
-.chat-widget-theme-scope {
-  /* These styles only apply to elements within the chat widget */
-}
-
 .gradient-background {
   background: linear-gradient(135deg, #a78bfa 0%, #60a5fa 100%);
 }
@@ -64,73 +59,4 @@ body {
   overflow: hidden;
   backdrop-filter: blur(10px);
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-}
-
-/* Custom button styles */
-@layer components {
-  .btn-primary {
-    @apply w-full bg-primary hover:bg-primary/90 text-white font-medium 
-           py-2.5 px-4 rounded-lg transition-all duration-300 ease-in-out 
-           flex items-center justify-center gap-2 hover:shadow-lg 
-           active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed;
-  }
-  
-  .input-field {
-    @apply w-full px-4 py-2.5 rounded-lg bg-white/70 border border-gray-200 
-           focus:border-primary/30 focus:ring-2 focus:ring-primary/20 
-           hover:border-primary/30 transition-all duration-300 ease-in-out
-           placeholder:text-gray-400 text-gray-800;
-  }
-  
-  .input-label {
-    @apply block text-gray-700 font-medium text-sm transition-colors duration-300;
-  }
-}
-
-/* Animation classes */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes slideInRight {
-  from { transform: translateX(-10px); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.3s ease-out forwards;
-}
-
-.animate-slide-in-right {
-  animation: slideInRight 0.3s ease-out forwards;
-}
-
-/* Chat widget specific styles - isolated from the rest of the app */
-.chat-widget-theme-scope {
-  /* Base container styling - ensures isolation */
-  --chat-primary: #9b87f5;
-  --chat-bg: #ffffff;
-  --chat-text: #1A1F2C;
-  --chat-border: #eaeaea;
-  --chat-message-user: #9b87f5;
-  --chat-message-agent: #f1f1f1;
-  --chat-header: #9b87f5;
-  
-  /* Reset font family to prevent inheriting from the parent app */
-  font-family: var(--chat-font-family, 'Inter, system-ui, sans-serif');
-  
-  /* Override all color inheritance */
-  color: var(--chat-text);
-  background-color: var(--chat-bg);
-  
-  /* Ensure proper isolation */
-  box-sizing: border-box;
-}
-
-/* Ensure the widget components use their own variables rather than the app's */
-.chat-widget-theme-scope button,
-.chat-widget-theme-scope input,
-.chat-widget-theme-scope textarea {
-  font-family: inherit;
 }

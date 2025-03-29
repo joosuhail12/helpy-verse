@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef, memo, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRealtimeChat } from '@/hooks/chat/useRealtimeChat';
 import { useMessageSubscription } from '@/hooks/chat/useMessageSubscription';
 import { useTypingIndicator } from '@/hooks/chat/useTypingIndicator';
@@ -10,8 +10,6 @@ import TypingIndicator from './TypingIndicator';
 import { ChatMessage } from './types';
 import { useChat } from '@/hooks/chat/useChat';
 import UserAvatar from '../user/UserAvatar';
-import { useStableCallback, useStableValue } from '@/utils/performance/reactOptimizations';
-import { useRenderTime } from '@/hooks/usePerformanceOptimization';
 
 export interface ResponsiveConversationViewProps {
   conversationId: string;
@@ -19,26 +17,15 @@ export interface ResponsiveConversationViewProps {
   onBack?: () => void;
 }
 
-// Memoize the inner components to avoid unnecessary re-renders
-const MemoizedMessageList = memo(MessageList);
-const MemoizedTypingIndicator = memo(TypingIndicator);
-const MemoizedMessageInput = memo(MessageInput);
-
 const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
   conversationId,
   workspaceId,
   onBack
 }) => {
-  // Track render time in development
-  useRenderTime('ResponsiveConversationView');
-  
   const { messages, sendMessage, isLoading } = useRealtimeChat(conversationId, workspaceId);
   const [typingUsers, setTypingUsers] = useState<{ clientId: string; name?: string }[]>([]);
   const { getMessages } = useChat();
   const [loadedMessages, setLoadedMessages] = useState<ChatMessage[]>([]);
-
-  // Reference to scroll container
-  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Load messages when component mounts
   useEffect(() => {
@@ -52,9 +39,9 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
 
   // Initialize message subscription
   const { publishMessage } = useMessageSubscription(conversationId, workspaceId, {
-    onMessage: useStableCallback((message: ChatMessage) => {
+    onMessage: (message: ChatMessage) => {
       // Handle new messages if needed
-    }, [])
+    }
   });
 
   // Initialize typing indicator
@@ -77,55 +64,35 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
     };
   }, []);
 
-  // Scroll to bottom when messages change
-  useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [messages, activeTypers]);
-
-  // Create stable callbacks for message actions
-  const handleSendMessage = useStableCallback(async (content: string) => {
+  const handleSendMessage = async (content: string) => {
     sendTypingIndicator(false);
     await sendMessage(content);
-  }, [sendMessage, sendTypingIndicator]);
+  };
 
-  const handleMessageInputChange = useStableCallback(() => {
+  const handleMessageInputChange = () => {
     sendTypingIndicator(true);
-  }, [sendTypingIndicator]);
+  };
 
-  // Combine real-time messages with loaded messages - only recompute when necessary
-  const displayMessages = useStableValue(() => {
-    return messages.length > 0 ? messages : loadedMessages;
-  }, [messages, loadedMessages]);
-
-  // Memoize the title to prevent unnecessary re-renders
-  const headerTitle = useMemo(() => 
-    `Conversation ${conversationId.substring(0, 8)}`, 
-    [conversationId]
-  );
+  // Combine real-time messages with loaded messages
+  const displayMessages = messages.length > 0 ? messages : loadedMessages;
 
   return (
     <div className="flex flex-col h-full">
       <ChatHeader 
-        title={headerTitle} 
+        title="Conversation" 
         onBackClick={onBack} 
         workspaceId={workspaceId}
         conversationId={conversationId}
       />
       <div className="flex-1 overflow-hidden flex flex-col">
-        <MemoizedMessageList 
+        <MessageList 
           messages={displayMessages} 
           conversationId={conversationId}
           showAvatars={true}
         />
         <div className="px-4 pb-2">
-          <MemoizedTypingIndicator 
-            users={activeTypers} 
-            agentName={activeTypers.length === 1 ? "Support agent" : undefined} 
-          />
-          <div ref={messagesEndRef} />
-          <MemoizedMessageInput 
+          <TypingIndicator users={activeTypers} agentName={activeTypers.length === 1 ? "Support agent" : undefined} />
+          <MessageInput 
             onSendMessage={handleSendMessage}
             onTyping={handleMessageInputChange}
           />
@@ -135,4 +102,4 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
   );
 };
 
-export default memo(ResponsiveConversationView);
+export default ResponsiveConversationView;

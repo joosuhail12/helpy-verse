@@ -6,9 +6,6 @@ import { useAppDispatch } from "../../hooks/useAppDispatch";
 import { useAppSelector } from "../../hooks/useAppSelector";
 import { requestPasswordReset } from "../../store/slices/authSlice";
 import { toast } from "../../components/ui/use-toast";
-import { Input } from "../ui/input";
-import { Button } from "../ui/button";
-import { Label } from "../ui/label";
 
 export const ForgotPasswordForm = () => {
   const [email, setEmail] = useState("");
@@ -45,10 +42,10 @@ export const ForgotPasswordForm = () => {
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <div className="space-y-2 animate-fade-in" style={{ animationDelay: "0.4s" }}>
-          <Label htmlFor="email" className="block text-gray-700 font-medium text-sm transition-colors duration-300">
+          <label htmlFor="email" className="block text-gray-700 font-medium text-sm transition-colors duration-300">
             Email
-          </Label>
-          <Input
+          </label>
+          <input
             id="email"
             type="email"
             value={email}
@@ -63,14 +60,17 @@ export const ForgotPasswordForm = () => {
           />
         </div>
 
-        <Button 
+        <button 
           type="submit" 
-          className="btn-primary"
+          className="w-full bg-primary hover:bg-primary/90 text-white font-medium 
+                   py-2.5 px-4 rounded-lg transition-all duration-300 ease-in-out 
+                   flex items-center justify-center gap-2 hover:shadow-lg 
+                   active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
           disabled={loading}
         >
           {loading ? 'Sending...' : 'Send Instructions'}
           {!loading && <ArrowRight className="w-4 h-4 animate-slide-in-right" />}
-        </Button>
+        </button>
       </form>
 
       <div className="flex items-center justify-center pt-2 text-sm animate-fade-in" style={{ animationDelay: "0.5s" }}>

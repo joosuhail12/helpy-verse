@@ -1,4 +1,3 @@
-
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { HttpClient } from "@/api/services/http";
 import { 
@@ -41,9 +40,9 @@ export const loginUser = createAsyncThunk(
       if (loginData) {
         const email = loginData?.username || credentials.email;
         const encryptedEmail = encryptBase64(email);
-        localStorage.setItem("agent_email", encryptedEmail);
+        setCookie("agent_email", encryptedEmail);
 
-        // Set the token in localStorage and Axios headers
+        // Set the token in the cookie and Axios headers
         const token = loginData?.accessToken?.token || "";
         if (token) {
           console.log("Setting token from login response");
@@ -63,7 +62,7 @@ export const loginUser = createAsyncThunk(
           return rejectWithValue("Authentication server did not provide a valid token. Please try again.");
         }
 
-        // Set workspace ID if available - only in localStorage
+        // Set workspace ID if available - only in cookie
         const workspaceId = get(response.data, "data.defaultWorkspaceId", "");
         if (workspaceId) {
           setWorkspaceId(workspaceId);
