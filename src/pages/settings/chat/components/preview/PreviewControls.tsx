@@ -7,7 +7,6 @@ import WidgetSettingsPopover from './WidgetSettingsPopover';
 import ViewSelector from './ViewSelector';
 import { Settings, Eye, EyeOff, Palette, MessageCircle, Layers } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Separator } from '@/components/ui/separator';
 
 type ChatView = 'home' | 'messages' | 'conversation';
 
@@ -47,7 +46,7 @@ const PreviewControls: React.FC<PreviewControlsProps> = ({
 
   return (
     <div className="border-b border-gray-200 bg-white p-3 flex items-center justify-between rounded-t-lg">
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2">
         <TooltipProvider delayDuration={300}>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -60,13 +59,11 @@ const PreviewControls: React.FC<PreviewControlsProps> = ({
                 />
               </div>
             </TooltipTrigger>
-            <TooltipContent side="bottom" className="bg-gray-800 text-white">
+            <TooltipContent>
               <p className="text-xs">Change preview background</p>
             </TooltipContent>
           </Tooltip>
-          
-          <Separator orientation="vertical" className="h-6 mx-1" />
-          
+        
           <Tooltip>
             <TooltipTrigger asChild>
               <div>
@@ -78,28 +75,25 @@ const PreviewControls: React.FC<PreviewControlsProps> = ({
                 />
               </div>
             </TooltipTrigger>
-            <TooltipContent side="bottom" className="bg-gray-800 text-white">
+            <TooltipContent>
               <p className="text-xs">Customize widget settings</p>
             </TooltipContent>
           </Tooltip>
 
           {onViewChange && currentView && (
-            <>
-              <Separator orientation="vertical" className="h-6 mx-1" />
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div>
-                    <ViewSelector 
-                      currentView={currentView} 
-                      onViewChange={onViewChange} 
-                    />
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" className="bg-gray-800 text-white">
-                  <p className="text-xs">Change widget view</p>
-                </TooltipContent>
-              </Tooltip>
-            </>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div>
+                  <ViewSelector 
+                    currentView={currentView} 
+                    onViewChange={onViewChange} 
+                  />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="text-xs">Change widget view</p>
+              </TooltipContent>
+            </Tooltip>
           )}
         </TooltipProvider>
       </div>

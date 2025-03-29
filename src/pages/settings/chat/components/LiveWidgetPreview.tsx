@@ -6,10 +6,8 @@ import ConnectedChatWidget from '@/components/chat-widget/ConnectedChatWidget';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PreviewControls from './preview/PreviewControls';
 import SampleConversation from '@/components/chat-widget/components/conversation/SampleConversation';
-import { Smartphone, Monitor, Sparkles, ArrowDownToLine } from 'lucide-react';
+import { Smartphone, Monitor, Sparkles } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface LiveWidgetPreviewProps {
   settings: ChatWidgetSettings;
@@ -52,28 +50,14 @@ const LiveWidgetPreview: React.FC<LiveWidgetPreviewProps> = ({
   };
 
   return (
-    <Card className="h-full overflow-hidden border shadow-md bg-gradient-to-b from-white to-gray-50">
+    <Card className="h-full overflow-hidden border shadow-md bg-white">
       <CardHeader className="pb-0 pt-4 border-b">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-purple-500" />
+            <Sparkles className="h-5 w-5 text-primary" />
             Widget Preview
-            <Badge variant="outline" className="ml-2 font-normal text-xs bg-purple-50 text-purple-700 border-purple-200">
-              Live
-            </Badge>
+            <Badge variant="outline" className="ml-2 font-normal text-xs">Live</Badge>
           </CardTitle>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="ghost" size="sm" className="text-gray-500 hover:text-gray-700">
-                  <ArrowDownToLine className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p className="text-xs">Export Preview</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
         </div>
       </CardHeader>
       <CardContent className="p-0">
@@ -128,7 +112,7 @@ const LiveWidgetPreview: React.FC<LiveWidgetPreviewProps> = ({
           
           <TabsContent value="mobile" className="mt-0">
             <div 
-              className="h-[520px] flex items-center justify-center p-6 bg-gradient-to-b from-gray-50 to-gray-100"
+              className="h-[520px] flex items-center justify-center p-6 bg-gray-50"
             >
               <div className="relative h-full max-w-[375px] mx-auto bg-white border border-gray-300 overflow-hidden rounded-3xl shadow-xl">
                 <div className="absolute top-0 left-0 right-0 h-6 bg-black rounded-t-3xl flex justify-center items-center">
@@ -147,7 +131,7 @@ const LiveWidgetPreview: React.FC<LiveWidgetPreviewProps> = ({
                     <div className="absolute bottom-8 right-6">
                       <button
                         onClick={handleToggleWidget}
-                        className={`${previewSettings.launcherStyle === 'rectangle' ? 'rounded-lg px-3 py-2' : 'rounded-full w-14 h-14'} flex items-center justify-center shadow-lg transition-transform hover:scale-105 animate-pulse`}
+                        className={`${previewSettings.launcherStyle === 'rectangle' ? 'rounded-lg px-3 py-2' : 'rounded-full w-14 h-14'} flex items-center justify-center shadow-lg transition-transform hover:scale-105`}
                         style={{ backgroundColor: previewSettings.primaryColor }}
                       >
                         <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
