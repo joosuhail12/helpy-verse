@@ -1,10 +1,11 @@
 
-import React, { useState, KeyboardEvent } from 'react';
+import React, { useState, KeyboardEvent, useEffect, useRef } from 'react';
 import { Send, Paperclip } from 'lucide-react';
 import { useThemeContext } from '@/context/ThemeContext';
 
 interface MessageInputProps {
   onSendMessage: (message: string) => void;
+  onTyping?: () => void;
   disabled?: boolean;
   placeholder?: string;
   value?: string;
@@ -13,6 +14,7 @@ interface MessageInputProps {
 
 const MessageInput: React.FC<MessageInputProps> = ({ 
   onSendMessage, 
+  onTyping,
   disabled = false,
   placeholder = 'Type a message...',
   value,
@@ -20,18 +22,46 @@ const MessageInput: React.FC<MessageInputProps> = ({
 }) => {
   const { colors, features } = useThemeContext();
   const [message, setMessage] = useState('');
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
   // Determine if we're using controlled or uncontrolled input
   const isControlled = value !== undefined && onChange !== undefined;
   const currentValue = isControlled ? value : message;
   
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newValue = e.target.value;
+    
     if (isControlled) {
-      onChange(e.target.value);
+      onChange(newValue);
     } else {
-      setMessage(e.target.value);
+      setMessage(newValue);
+    }
+    
+    // Trigger onTyping event when user types
+    if (onTyping) {
+      // Clear previous timeout
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+      
+      // Call onTyping
+      onTyping();
+      
+      // Set a timeout to stop triggering typing events if user stops typing
+      typingTimeoutRef.current = setTimeout(() => {
+        typingTimeoutRef.current = null;
+      }, 2000);
     }
   };
+  
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+    };
+  }, []);
   
   const handleSend = () => {
     if (!currentValue.trim() || disabled) return;
