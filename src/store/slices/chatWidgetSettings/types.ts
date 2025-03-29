@@ -16,10 +16,9 @@ export interface ChatWidgetSettings {
   userMessageColor: string;
   agentMessageColor: string;
   fontFamily: string;
-  // Added new properties
-  enableAnimation?: boolean;
-  responseTime?: string;
-  showBranding?: boolean;
+  enableAnimation: boolean;
+  responseTime: string;
+  showBranding: boolean;
 }
 
 export interface ChatWidgetSettingsState {

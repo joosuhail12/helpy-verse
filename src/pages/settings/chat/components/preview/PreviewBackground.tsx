@@ -1,25 +1,20 @@
 
 import React from 'react';
+import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
+import { Paintbrush, Image } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { PaintBucket, Image } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
-interface BackgroundImage {
-  id: string;
-  url: string | null;
-  name: string;
-}
+const backgroundColors = ['#ffffff', '#f3f4f6', '#d1d5db', '#111827', '#000000'];
 
-const backgroundImages: BackgroundImage[] = [
+const backgroundImages = [
   { id: 'none', url: null, name: 'None' },
   { id: 'office', url: 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b', name: 'Office' },
   { id: 'laptop', url: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158', name: 'Laptop' },
-  { id: 'tech', url: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5', name: 'Tech' },
-  { id: 'code', url: 'https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7', name: 'Code' }
+  { id: 'tech', url: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5', name: 'Tech' }
 ];
 
 interface PreviewBackgroundProps {
@@ -39,26 +34,28 @@ const PreviewBackground: React.FC<PreviewBackgroundProps> = ({
     <Popover>
       <PopoverTrigger asChild>
         <Button variant="outline" size="sm" className="flex items-center gap-1">
-          <PaintBucket size={14} />
+          <Paintbrush className="h-4 w-4 mr-1" />
           Background
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-64 p-3">
         <Tabs defaultValue="color">
           <TabsList className="mb-2 w-full">
-            <TabsTrigger value="color" className="flex-1">Color</TabsTrigger>
-            <TabsTrigger value="image" className="flex-1">Image</TabsTrigger>
+            <TabsTrigger value="color" className="flex-1">
+              <Paintbrush className="h-4 w-4 mr-1" /> Color
+            </TabsTrigger>
+            <TabsTrigger value="image" className="flex-1">
+              <Image className="h-4 w-4 mr-1" /> Image
+            </TabsTrigger>
           </TabsList>
           
           <TabsContent value="color" className="space-y-2">
-            <Label htmlFor="bg-color">Background Color</Label>
             <div className="flex items-center gap-2">
               <Input 
-                id="bg-color" 
                 type="color" 
                 value={background} 
                 onChange={(e) => setBackground(e.target.value)} 
-                className="w-10 h-10 p-1 cursor-pointer" 
+                className="w-10 h-10 p-1 cursor-pointer rounded-md" 
               />
               <Input
                 value={background}
@@ -67,20 +64,20 @@ const PreviewBackground: React.FC<PreviewBackgroundProps> = ({
               />
             </div>
             <div className="grid grid-cols-5 gap-1 mt-2">
-              {['#ffffff', '#f3f4f6', '#d1d5db', '#111827', '#000000'].map(color => (
-                <div 
+              {backgroundColors.map(color => (
+                <button 
                   key={color} 
-                  className="w-full aspect-square rounded border border-gray-300 cursor-pointer" 
+                  className="w-full aspect-square rounded border border-gray-300 cursor-pointer"
                   style={{ backgroundColor: color }}
                   onClick={() => setBackground(color)}
+                  aria-label={`Set background to ${color}`}
                 />
               ))}
             </div>
           </TabsContent>
           
           <TabsContent value="image" className="space-y-2">
-            <Label>Select Background Image</Label>
-            <ScrollArea className="h-52">
+            <ScrollArea className="h-48">
               <div className="grid grid-cols-2 gap-2">
                 {backgroundImages.map(img => (
                   <div 
