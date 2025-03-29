@@ -2,7 +2,6 @@
 import { useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { initializeApp } from './AppInitializer';
-import { getCookie } from '@/utils/helpers/helpers';
 
 const RootRedirect: React.FC = () => {
   const location = useLocation();
@@ -12,7 +11,7 @@ const RootRedirect: React.FC = () => {
     initializeApp();
   }, []);
 
-  const token = getCookie("customerToken") || localStorage.getItem("token");
+  const token = localStorage.getItem("customerToken") || localStorage.getItem("token");
   console.log('RootRedirect - token exists:', !!token, 'Current path:', location.pathname);
   
   // If we're already on a specific path, don't redirect
