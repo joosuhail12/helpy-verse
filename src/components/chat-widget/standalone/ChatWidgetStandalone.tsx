@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useTheme } from '@/hooks/useTheme';
 import IsolatedChatWidget from './IsolatedChatWidget';
 import { ChatWidgetProvider } from '@/context/ChatWidgetContext';
-import { adaptApiThemeToContextTheme } from '../utils/themeAdapter';
+import { adaptApiThemeToContextTheme } from '@/utils/themeAdapter';
 
 /**
  * Standalone chat widget component that can be embedded on any website

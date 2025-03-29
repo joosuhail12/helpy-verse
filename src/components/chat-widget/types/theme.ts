@@ -5,7 +5,7 @@
 import { ThemeConfig as ContextThemeConfig } from '@/context/ThemeContext';
 import { ThemeConfig as ApiThemeConfig } from '@/api/chat-widget/types';
 
-export { ContextThemeConfig, ApiThemeConfig };
+export type { ContextThemeConfig, ApiThemeConfig };
 
 export interface WidgetThemeProps {
   position?: 'left' | 'right';
