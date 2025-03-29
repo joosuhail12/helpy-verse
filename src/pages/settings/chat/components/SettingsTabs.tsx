@@ -8,8 +8,6 @@ import MessagesTab from './MessagesTab';
 import InstallationTab from './InstallationTab';
 import ColorsTab from './ColorsTab';
 import { ChatWidgetSettings } from '@/store/slices/chatWidgetSettings/types';
-import ViewSelector from './preview/ViewSelector';
-import { ChatView } from '@/types/preview';
 
 interface SettingsTabsProps {
   selectedTab: string;
@@ -17,8 +15,6 @@ interface SettingsTabsProps {
   settings: ChatWidgetSettings;
   onSettingChange: (field: keyof ChatWidgetSettings, value: any) => void;
   getEmbedCode: () => string;
-  currentView?: ChatView;
-  onViewChange?: (view: ChatView) => void;
 }
 
 /**
@@ -29,29 +25,17 @@ const SettingsTabs = ({
   onTabChange, 
   settings, 
   onSettingChange, 
-  getEmbedCode,
-  currentView,
-  onViewChange
+  getEmbedCode 
 }: SettingsTabsProps) => {
   return (
     <Card>
-      <CardHeader className="pb-0 flex flex-row items-center justify-between">
-        <div>
-          <CardTitle>Configure Your Chat Widget</CardTitle>
-          <CardDescription>
-            Customize how your chat widget appears and behaves on your website.
-          </CardDescription>
-        </div>
-        {currentView && onViewChange && (
-          <div className="ml-auto">
-            <ViewSelector 
-              currentView={currentView} 
-              onViewChange={onViewChange} 
-            />
-          </div>
-        )}
+      <CardHeader>
+        <CardTitle>Configure Your Chat Widget</CardTitle>
+        <CardDescription>
+          Customize how your chat widget appears and behaves on your website.
+        </CardDescription>
       </CardHeader>
-      <CardContent className="pt-6">
+      <CardContent>
         <Tabs defaultValue="appearance" value={selectedTab} onValueChange={onTabChange}>
           <TabsList className="mb-4">
             <TabsTrigger value="appearance" className="flex items-center gap-2">

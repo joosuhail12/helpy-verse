@@ -3,23 +3,6 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import type { NewTeammate } from '@/types/teammate';
 import { createTeammate as createTeammateApi } from '@/api/services/teammatesService';
 
-// Import thunks directly from the thunks file to avoid circular dependencies
-import {
-  fetchTeammates,
-  fetchTeammateDetails,
-  fetchTeammateActivities,
-  fetchTeammateAssignments,
-  fetchTeammateSessions,
-  updateTeammate,
-  updateTeammatesRole,
-  updateTeammatePermissions,
-  enable2FA,
-  verify2FA,
-  disable2FA,
-  resetPassword,
-  terminateSession
-} from '../thunks';
-
 // Re-export the thunks
 export {
   fetchTeammates,
@@ -35,7 +18,7 @@ export {
   disable2FA,
   resetPassword,
   terminateSession
-};
+} from '../thunks';
 
 // Add new teammates
 export const addTeammate = createAsyncThunk(
