@@ -10,6 +10,13 @@ export const adaptApiThemeToContextTheme = (
 ): Partial<ContextThemeConfig> => {
   if (!apiTheme) return {};
   
+  const defaultLabels = {
+    welcomeTitle: 'Hello there.',
+    welcomeSubtitle: 'How can we help?',
+    sendButton: 'Send',
+    placeholder: 'Type a message...'
+  };
+  
   return {
     colors: apiTheme.colors ? {
       primary: apiTheme.colors.primary || '#9b87f5',
@@ -28,7 +35,10 @@ export const adaptApiThemeToContextTheme = (
     } : undefined,
     position: apiTheme.position,
     compact: apiTheme.compact,
-    labels: apiTheme.labels,
+    labels: apiTheme.labels ? {
+      ...defaultLabels,
+      ...(apiTheme.labels || {})
+    } : undefined,
     features: apiTheme.features ? {
       typingIndicator: apiTheme.features.typingIndicator,
       reactions: apiTheme.features.reactions,
@@ -58,7 +68,12 @@ export const adaptContextThemeToApiTheme = (
     } : undefined,
     position: contextTheme.position,
     compact: contextTheme.compact,
-    labels: contextTheme.labels,
+    labels: contextTheme.labels ? {
+      welcomeTitle: contextTheme.labels.welcomeTitle,
+      welcomeSubtitle: contextTheme.labels.welcomeSubtitle,
+      sendButton: contextTheme.labels.sendButton,
+      placeholder: contextTheme.labels.placeholder
+    } : undefined,
     features: contextTheme.features ? {
       typingIndicator: contextTheme.features.typingIndicator,
       reactions: contextTheme.features.reactions,

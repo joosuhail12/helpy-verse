@@ -18,7 +18,7 @@ const StandaloneChatWidget: React.FC = () => {
     
     // Check if configuration exists in window object (set by the script tag)
     if (window.PULLSE_CHAT_CONFIG) {
-      setOptions(window.PULLSE_CHAT_CONFIG);
+      setOptions(window.PULLSE_CHAT_CONFIG as unknown as WidgetOptions);
     }
     
     // Listen for initialization events
@@ -30,12 +30,20 @@ const StandaloneChatWidget: React.FC = () => {
     window.addEventListener('chat-widget-initialize', handleInitialize as EventListener);
     
     // Expose global API method for external initialization
-    window.PULLSE = {
-      ...window.PULLSE,
-      initializeWidget: (widgetOptions: WidgetOptions) => {
-        setOptions(widgetOptions);
-      }
-    };
+    if (window.PULLSE) {
+      window.PULLSE = {
+        ...window.PULLSE,
+        initializeWidget: (widgetOptions: WidgetOptions) => {
+          setOptions(widgetOptions);
+        }
+      };
+    } else {
+      window.PULLSE = {
+        initializeWidget: (widgetOptions: WidgetOptions) => {
+          setOptions(widgetOptions);
+        }
+      };
+    }
     
     // Cleanup
     return () => {
@@ -63,14 +71,3 @@ const StandaloneChatWidget: React.FC = () => {
 };
 
 export default StandaloneChatWidget;
-
-// Add these type declarations to make TypeScript happy with our window object augmentation
-declare global {
-  interface Window {
-    PULLSE?: {
-      initializeWidget: (options: WidgetOptions) => void;
-      [key: string]: any;
-    };
-    PULLSE_CHAT_CONFIG?: WidgetOptions;
-  }
-}
