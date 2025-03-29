@@ -1,17 +1,16 @@
 
 import React from 'react';
 import { File, Download } from 'lucide-react';
-import { Attachment } from './types';
+import { FileAttachment } from './types';
 
 interface FileAttachmentItemProps {
-  attachment: Attachment;
+  attachment: FileAttachment;
 }
 
 const FileAttachmentItem: React.FC<FileAttachmentItemProps> = ({ attachment }) => {
-  const isImage = attachment.type === 'image';
+  const isImage = attachment.type.startsWith('image/');
   
-  const formatFileSize = (bytes?: number): string => {
-    if (!bytes) return '0 B';
+  const formatFileSize = (bytes: number): string => {
     if (bytes < 1024) return bytes + ' B';
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';

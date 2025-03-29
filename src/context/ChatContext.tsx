@@ -27,18 +27,14 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children, workspaceI
     const savedCurrentId = localStorage.getItem(`chat_current_conversation_${workspaceId}`);
     
     if (savedConversations) {
-      try {
-        const parsedConversations = JSON.parse(savedConversations) as Conversation[];
-        setConversations(parsedConversations);
-        
-        if (savedCurrentId) {
-          const current = parsedConversations.find(c => c.id === savedCurrentId);
-          if (current) {
-            setCurrentConversation(current);
-          }
+      const parsedConversations = JSON.parse(savedConversations) as Conversation[];
+      setConversations(parsedConversations);
+      
+      if (savedCurrentId) {
+        const current = parsedConversations.find(c => c.id === savedCurrentId);
+        if (current) {
+          setCurrentConversation(current);
         }
-      } catch (error) {
-        console.error('Error parsing saved conversations:', error);
       }
     }
   }, [workspaceId]);
@@ -55,14 +51,11 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children, workspaceI
   }, [conversations, currentConversation, workspaceId]);
 
   const createNewConversation = useCallback(async (title?: string): Promise<Conversation> => {
-    const now = new Date().toISOString();
     const newConversation: Conversation = {
       id: uuidv4(),
       title: title || `Conversation ${new Date().toLocaleString()}`,
-      lastMessageTimestamp: now,
-      unreadCount: 0,
-      createdAt: now,
-      updatedAt: now
+      lastMessageTimestamp: new Date().toISOString(),
+      unreadCount: 0
     };
     
     setConversations(prev => [...prev, newConversation]);

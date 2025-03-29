@@ -17,11 +17,11 @@ const createMessage = (
     id: uuidv4(),
     content,
     sender,
-    timestamp: timestamp.toISOString(), // Converted to string
+    timestamp,
     conversationId,
     attachments,
     readBy: sender === 'user' ? ['agent-1'] : [],
-    reactions: {} // Empty record
+    reactions: {}
   };
 };
 

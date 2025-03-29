@@ -2,7 +2,8 @@
 import { Button } from '@/components/ui/button';
 import { useChatSettings } from './hooks/useChatSettings';
 import SettingsTabs from './components/SettingsTabs';
-import LiveWidgetPreview from './components/LiveWidgetPreview';
+import ChatPreview from './components/ChatPreview';
+import HelpDocumentation from './components/HelpDocumentation';
 import { useEffect } from 'react';
 import { useAppDispatch } from '@/hooks/redux';
 import { loadChatWidgetSettings } from '@/store/slices/chatWidgetSettings';
@@ -30,9 +31,9 @@ const ChatSettings = () => {
   }, [dispatch]);
 
   return (
-    <div className="container mx-auto px-4 py-6">
-      <div className="flex justify-between items-center mb-5">
-        <h1 className="text-2xl font-bold">Chat Widget Settings</h1>
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Chat Widget Settings</h1>
         <div className="flex gap-2">
           <Button variant="outline" onClick={handleReset} disabled={loading}>
             Reset Defaults
@@ -61,8 +62,14 @@ const ChatSettings = () => {
           />
         </div>
 
-        <div className="lg:col-span-1">
-          <LiveWidgetPreview settings={settings} onSettingChange={handleChange} />
+        <div>
+          <ChatPreview
+            primaryColor={settings.primaryColor}
+            welcomeTitle={settings.welcomeTitle}
+            welcomeSubtitle={settings.welcomeSubtitle}
+            position={settings.position}
+          />
+          <HelpDocumentation />
         </div>
       </div>
     </div>

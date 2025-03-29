@@ -6,7 +6,6 @@ import AppearanceTab from './AppearanceTab';
 import BehaviorTab from './BehaviorTab';
 import MessagesTab from './MessagesTab';
 import InstallationTab from './InstallationTab';
-import ColorsTab from './ColorsTab';
 import { ChatWidgetSettings } from '@/store/slices/chatWidgetSettings/types';
 
 interface SettingsTabsProps {
@@ -40,15 +39,11 @@ const SettingsTabs = ({
           <TabsList className="mb-4">
             <TabsTrigger value="appearance" className="flex items-center gap-2">
               <Palette className="h-4 w-4" />
-              <span>Layout</span>
-            </TabsTrigger>
-            <TabsTrigger value="colors" className="flex items-center gap-2">
-              <Palette className="h-4 w-4" />
-              <span>Colors</span>
+              <span>Appearance</span>
             </TabsTrigger>
             <TabsTrigger value="behavior" className="flex items-center gap-2">
               <SettingsIcon className="h-4 w-4" />
-              <span>Features</span>
+              <span>Behavior</span>
             </TabsTrigger>
             <TabsTrigger value="messages" className="flex items-center gap-2">
               <MessageSquare className="h-4 w-4" />
@@ -68,13 +63,6 @@ const SettingsTabs = ({
               onColorChange={(value) => onSettingChange('primaryColor', value)}
               onPositionChange={(value) => onSettingChange('position', value)}
               onCompactChange={(value) => onSettingChange('compact', value)}
-            />
-          </TabsContent>
-          
-          <TabsContent value="colors">
-            <ColorsTab 
-              settings={settings}
-              onSettingChange={onSettingChange}
             />
           </TabsContent>
 

@@ -23,7 +23,7 @@ const ChatWidgetStandalone: React.FC = () => {
     return () => {
       setMounted(false);
     };
-  }, [theme, setTheme]);
+  }, []);
 
   if (!mounted) return null;
 

@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Check, CheckCheck, Smile, Paperclip } from 'lucide-react';
 import { useThemeContext } from '@/context/ThemeContext';
 import { useAbly } from '@/context/AblyContext';
-import { ChatMessage, Attachment } from './types';
+import { ChatMessage, FileAttachment } from './types';
 import FileAttachmentItem from './FileAttachmentItem';
 import UserAvatar from '../user/UserAvatar';
 
@@ -35,16 +35,6 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, showAvatar = false }
     } else {
       return <Check size={14} className="ml-1 text-gray-400" />;
     }
-  };
-
-  // Format timestamp for display
-  const formatTime = (timestamp: string | Date) => {
-    if (typeof timestamp === 'string') {
-      return new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    } else if (timestamp instanceof Date) {
-      return timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    }
-    return '';
   };
 
   return (
@@ -98,7 +88,7 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, showAvatar = false }
             <div className="mt-1 flex flex-wrap gap-1">
               {Object.entries(message.reactions).map(([emoji, users]) => (
                 <div key={emoji} className="bg-white rounded-full px-2 py-0.5 text-xs shadow-sm">
-                  {emoji} {Array.isArray(users) ? users.length : 0}
+                  {emoji} {users.length}
                 </div>
               ))}
             </div>
@@ -124,7 +114,10 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, showAvatar = false }
         
         <div className="flex items-center mt-1 text-xs text-gray-500">
           <span>
-            {formatTime(message.timestamp)}
+            {typeof message.timestamp === 'string' 
+              ? new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+              : message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            }
           </span>
           {getReadStatus()}
         </div>

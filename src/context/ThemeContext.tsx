@@ -6,7 +6,7 @@ export interface ThemeConfig {
     primary: string;
     primaryForeground: string;
     background: string;
-    backgroundSecondary: string;
+    backgroundSecondary: string; // Added this property
     foreground: string;
     border: string;
     userMessage: string;
@@ -14,7 +14,6 @@ export interface ThemeConfig {
     agentMessage: string;
     agentMessageText: string;
     inputBackground: string;
-    headerBackground: string;
   };
   position: 'left' | 'right';
   compact: boolean;
@@ -25,17 +24,6 @@ export interface ThemeConfig {
     recentMessagesTitle: string;
     noMessagesText: string;
     messagePlaceholder: string;
-    headerTitle: string;
-  };
-  features: {
-    typingIndicator: boolean;
-    reactions: boolean;
-    fileAttachments: boolean;
-    readReceipts: boolean;
-  };
-  styles?: {
-    fontFamily: string;
-    launcherStyle: 'circle' | 'rectangle';
   };
 }
 
@@ -44,15 +32,14 @@ const defaultTheme: ThemeConfig = {
     primary: '#9b87f5',
     primaryForeground: '#ffffff',
     background: '#ffffff',
-    backgroundSecondary: '#f9f9f9',
+    backgroundSecondary: '#f9f9f9', // Added default value
     foreground: '#1A1F2C',
     border: '#eaeaea',
     userMessage: '#9b87f5',
     userMessageText: '#ffffff',
     agentMessage: '#f1f1f1',
     agentMessageText: '#1A1F2C',
-    inputBackground: '#f9f9f9',
-    headerBackground: '#9b87f5'
+    inputBackground: '#f9f9f9'
   },
   position: 'right',
   compact: false,
@@ -62,18 +49,7 @@ const defaultTheme: ThemeConfig = {
     askQuestionButton: 'Ask a question',
     recentMessagesTitle: 'Recent messages',
     noMessagesText: 'No messages yet. Start a conversation!',
-    messagePlaceholder: 'Type a message...',
-    headerTitle: 'Chat with us'
-  },
-  features: {
-    typingIndicator: true,
-    reactions: true,
-    fileAttachments: true,
-    readReceipts: true
-  },
-  styles: {
-    fontFamily: 'Inter, system-ui, sans-serif',
-    launcherStyle: 'circle'
+    messagePlaceholder: 'Type a message...'
   }
 };
 
@@ -99,14 +75,6 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children, initialT
     labels: {
       ...defaultTheme.labels,
       ...(initialTheme.labels || {})
-    },
-    features: {
-      ...defaultTheme.features,
-      ...(initialTheme.features || {})
-    },
-    styles: {
-      ...defaultTheme.styles,
-      ...(initialTheme.styles || {})
     }
   });
 
@@ -121,14 +89,6 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children, initialT
       labels: {
         ...prev.labels,
         ...(newTheme.labels || {})
-      },
-      features: {
-        ...prev.features,
-        ...(newTheme.features || {})
-      },
-      styles: {
-        ...prev.styles,
-        ...(newTheme.styles || {})
       }
     }));
   };

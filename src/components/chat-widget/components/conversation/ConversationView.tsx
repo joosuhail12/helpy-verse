@@ -58,7 +58,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({ conversationId, wor
       id: uuidv4(),
       sender: 'user',
       content,
-      timestamp: new Date().toISOString(), // Convert Date to string
+      timestamp: new Date(),
       conversationId,
     };
 
@@ -73,7 +73,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({ conversationId, wor
           id: uuidv4(),
           sender: 'agent',
           content: `Thanks for your message: "${content}". How can I help further?`,
-          timestamp: new Date().toISOString(), // Convert Date to string
+          timestamp: new Date(),
           conversationId,
           readBy: ['agent-1']
         };

@@ -1,118 +1,88 @@
 
-import React, { useState, KeyboardEvent, useEffect, useRef } from 'react';
-import { Send, Paperclip } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useThemeContext } from '@/context/ThemeContext';
+import { Send } from 'lucide-react';
 
 interface MessageInputProps {
-  onSendMessage: (message: string) => void;
+  onSendMessage: (content: string) => void;
   onTyping?: () => void;
   disabled?: boolean;
   placeholder?: string;
-  value?: string;
-  onChange?: (value: string) => void;
 }
 
 const MessageInput: React.FC<MessageInputProps> = ({ 
   onSendMessage, 
-  onTyping,
+  onTyping, 
   disabled = false,
-  placeholder = 'Type a message...',
-  value,
-  onChange
+  placeholder = "Type a message..."
 }) => {
-  const { colors, features } = useThemeContext();
   const [message, setMessage] = useState('');
-  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  
-  // Determine if we're using controlled or uncontrolled input
-  const isControlled = value !== undefined && onChange !== undefined;
-  const currentValue = isControlled ? value : message;
-  
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const newValue = e.target.value;
-    
-    if (isControlled) {
-      onChange(newValue);
-    } else {
-      setMessage(newValue);
+  const { colors } = useThemeContext();
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    // Auto focus the input when component mounts
+    if (inputRef.current && !disabled) {
+      inputRef.current.focus();
     }
-    
-    // Trigger onTyping event when user types
-    if (onTyping) {
-      // Clear previous timeout
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
-      }
-      
-      // Call onTyping
-      onTyping();
-      
-      // Set a timeout to stop triggering typing events if user stops typing
-      typingTimeoutRef.current = setTimeout(() => {
-        typingTimeoutRef.current = null;
-      }, 2000);
+  }, [disabled]);
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
     }
   };
-  
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
-      }
-    };
-  }, []);
-  
-  const handleSend = () => {
-    if (!currentValue.trim() || disabled) return;
-    
-    onSendMessage(currentValue);
-    
-    if (!isControlled) {
+
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setMessage(e.target.value);
+    if (onTyping) {
+      onTyping();
+    }
+  };
+
+  const handleSendMessage = () => {
+    if (message.trim() && !disabled) {
+      onSendMessage(message.trim());
       setMessage('');
     }
   };
-  
-  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  };
-  
+
   return (
-    <div className="flex items-end gap-2">
-      {features.fileAttachments && (
-        <button
-          className="p-2 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
-          disabled={disabled}
-        >
-          <Paperclip className="h-5 w-5" />
-        </button>
-      )}
-      <div className="flex-1 relative">
-        <textarea
-          className="w-full p-3 pr-10 rounded-lg resize-none min-h-[45px] max-h-[120px] overflow-auto focus:outline-none"
-          placeholder={placeholder}
-          rows={1}
-          value={currentValue}
-          onChange={handleChange}
-          onKeyDown={handleKeyDown}
-          disabled={disabled}
-          style={{ 
-            backgroundColor: colors.inputBackground || '#f9f9f9',
-            borderColor: colors.border
-          }}
-        />
-      </div>
+    <div 
+      className="border-t p-3 flex items-end gap-2"
+      style={{ 
+        borderColor: colors.border,
+        backgroundColor: colors.backgroundSecondary
+      }}
+    >
+      <textarea
+        ref={inputRef}
+        className="flex-1 resize-none rounded-lg p-2 max-h-32 min-h-[40px] focus:outline-none focus:ring-2"
+        style={{ 
+          backgroundColor: colors.inputBackground,
+          color: colors.foreground,
+          borderColor: colors.border,
+          // Removed focusRing as it's not a valid CSS property
+        }}
+        value={message}
+        onChange={handleChange}
+        onKeyDown={handleKeyDown}
+        placeholder={placeholder}
+        rows={1}
+        disabled={disabled}
+      />
       <button
-        onClick={handleSend}
-        disabled={!currentValue.trim() || disabled}
-        className={`p-2 rounded-full ${!currentValue.trim() || disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-        style={{ backgroundColor: colors.primary, color: colors.primaryForeground }}
-        aria-label="Send message"
+        onClick={handleSendMessage}
+        disabled={!message.trim() || disabled}
+        className="p-2 rounded-full transition-colors flex-shrink-0"
+        style={{ 
+          backgroundColor: message.trim() ? colors.primary : '#ccc',
+          color: message.trim() ? colors.primaryForeground : '#666',
+          opacity: disabled ? 0.5 : 1
+        }}
       >
-        <Send className="h-5 w-5" />
+        <Send size={18} />
       </button>
     </div>
   );
