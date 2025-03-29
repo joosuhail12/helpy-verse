@@ -2,7 +2,7 @@
 import { Button } from '@/components/ui/button';
 import { useChatSettings } from './hooks/useChatSettings';
 import SettingsTabs from './components/SettingsTabs';
-import LiveChatPreview from './components/LiveChatPreview';
+import StreamlinedLivePreview from './components/StreamlinedLivePreview';
 import { useEffect } from 'react';
 import { useAppDispatch } from '@/hooks/redux';
 import { loadChatWidgetSettings } from '@/store/slices/chatWidgetSettings';
@@ -62,7 +62,7 @@ const ChatSettings = () => {
         </div>
 
         <div className="lg:col-span-2 h-full">
-          <LiveChatPreview />
+          <StreamlinedLivePreview />
         </div>
       </div>
     </div>
