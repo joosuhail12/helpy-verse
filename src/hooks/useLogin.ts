@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from './useAppDispatch';
 import { useAppSelector } from './useAppSelector';
-import { loginUser } from '../store/slices/auth/authSlice';
+import { loginUser } from '../store/slices/authSlice';
 import { toast } from '../components/ui/use-toast';
 import { handleSetToken, isAuthenticated } from '@/utils/auth/tokenManager';
 import { HttpClient } from '@/api/services/http';

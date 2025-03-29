@@ -9,7 +9,6 @@ import AppQueryProvider from './AppQueryProvider';
 import AppErrorBoundary from './AppErrorBoundary';
 import CaslProvider from "@/components/CaslProvider";
 import AppInitializer from './AppInitializer';
-import { ThemeProvider } from '@/context/ThemeContext';
 
 interface AppProvidersProps {
   children: React.ReactNode;
@@ -25,15 +24,13 @@ const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
       <Provider store={store}>
         <AppQueryProvider>
           <TooltipProvider>
-            <ThemeProvider>
-              <Toaster />
-              <Sonner />
-              <CaslProvider>
-                <AppInitializer>
-                  {children}
-                </AppInitializer>
-              </CaslProvider>
-            </ThemeProvider>
+            <Toaster />
+            <Sonner />
+            <CaslProvider>
+              <AppInitializer>
+                {children}
+              </AppInitializer>
+            </CaslProvider>
           </TooltipProvider>
         </AppQueryProvider>
       </Provider>
