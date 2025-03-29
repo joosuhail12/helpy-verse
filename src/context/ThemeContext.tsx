@@ -1,68 +1,51 @@
 
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 export interface ThemeConfig {
   colors: {
     primary: string;
-    primaryForeground: string;
     background: string;
-    backgroundSecondary: string;
     foreground: string;
     border: string;
     userMessage: string;
-    userMessageText: string;
     agentMessage: string;
-    agentMessageText: string;
-    inputBackground: string;
+    error: string;
+    success: string;
   };
   position: 'left' | 'right';
   compact: boolean;
   labels: {
     welcomeTitle: string;
     welcomeSubtitle: string;
-    askQuestionButton: string;
-    recentMessagesTitle: string;
-    noMessagesText: string;
-    messagePlaceholder: string;
+    sendButton: string;
+    placeholder: string;
   };
-  features?: {
-    typingIndicator?: boolean;
-    reactions?: boolean;
-    fileAttachments?: boolean;
-    readReceipts?: boolean;
+  features: {
+    typingIndicator: boolean;
+    reactions: boolean;
+    fileAttachments: boolean;
+    readReceipts: boolean;
   };
-}
-
-interface ThemeContextValue extends ThemeConfig {
-  setTheme: (theme: Partial<ThemeConfig>) => void;
-  setColors: (colors: Partial<ThemeConfig['colors']>) => void;
-  setPosition: (position: ThemeConfig['position']) => void;
-  setCompact: (compact: boolean) => void;
 }
 
 const defaultTheme: ThemeConfig = {
   colors: {
     primary: '#9b87f5',
-    primaryForeground: '#ffffff',
     background: '#ffffff',
-    backgroundSecondary: '#f9f9f9',
-    foreground: '#1A1F2C',
-    border: '#eaeaea',
+    foreground: '#000000',
+    border: '#e5e7eb',
     userMessage: '#9b87f5',
-    userMessageText: '#ffffff',
-    agentMessage: '#f1f1f1',
-    agentMessageText: '#1A1F2C',
-    inputBackground: '#f9f9f9'
+    agentMessage: '#f3f4f6',
+    error: '#ef4444',
+    success: '#10b981'
   },
   position: 'right',
   compact: false,
   labels: {
     welcomeTitle: 'Hello there.',
     welcomeSubtitle: 'How can we help?',
-    askQuestionButton: 'Ask a question',
-    recentMessagesTitle: 'Recent messages',
-    noMessagesText: 'No messages yet. Start a conversation!',
-    messagePlaceholder: 'Type a message...'
+    sendButton: 'Send',
+    placeholder: 'Type a message...'
   },
   features: {
     typingIndicator: true,
@@ -72,14 +55,41 @@ const defaultTheme: ThemeConfig = {
   }
 };
 
-const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
+type ThemeContextType = {
+  colors: ThemeConfig['colors'];
+  position: ThemeConfig['position'];
+  compact: ThemeConfig['compact'];
+  labels: ThemeConfig['labels'];
+  features: ThemeConfig['features'];
+  setTheme: (theme: Partial<ThemeConfig>) => void;
+  setColors: (colors: Partial<ThemeConfig['colors']>) => void;
+  setPosition: (position: ThemeConfig['position']) => void;
+  setCompact: (compact: boolean) => void;
+  setLabels: (labels: Partial<ThemeConfig['labels']>) => void;
+  setFeatures: (features: Partial<ThemeConfig['features']>) => void;
+};
+
+const ThemeContext = createContext<ThemeContextType>({
+  ...defaultTheme,
+  setTheme: () => {},
+  setColors: () => {},
+  setPosition: () => {},
+  setCompact: () => {},
+  setLabels: () => {},
+  setFeatures: () => {}
+});
+
+export const useThemeContext = () => useContext(ThemeContext);
 
 interface ThemeProviderProps {
-  children: React.ReactNode;
+  children: ReactNode;
   initialTheme?: Partial<ThemeConfig>;
 }
 
-export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children, initialTheme = {} }) => {
+export const ThemeProvider: React.FC<ThemeProviderProps> = ({
+  children,
+  initialTheme = {}
+}) => {
   const [theme, setThemeState] = useState<ThemeConfig>({
     ...defaultTheme,
     ...initialTheme,
@@ -140,23 +150,43 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children, initialT
     }));
   };
 
+  const setLabels = (labels: Partial<ThemeConfig['labels']>) => {
+    setThemeState(prev => ({
+      ...prev,
+      labels: {
+        ...prev.labels,
+        ...labels
+      }
+    }));
+  };
+
+  const setFeatures = (features: Partial<ThemeConfig['features']>) => {
+    setThemeState(prev => ({
+      ...prev,
+      features: {
+        ...prev.features,
+        ...features
+      }
+    }));
+  };
+
   return (
-    <ThemeContext.Provider value={{ 
-      ...theme, 
-      setTheme,
-      setColors,
-      setPosition,
-      setCompact
-    }}>
+    <ThemeContext.Provider
+      value={{
+        colors: theme.colors,
+        position: theme.position,
+        compact: theme.compact,
+        labels: theme.labels,
+        features: theme.features,
+        setTheme,
+        setColors,
+        setPosition,
+        setCompact,
+        setLabels,
+        setFeatures
+      }}
+    >
       {children}
     </ThemeContext.Provider>
   );
-};
-
-export const useThemeContext = () => {
-  const context = useContext(ThemeContext);
-  if (context === undefined) {
-    throw new Error('useThemeContext must be used within a ThemeProvider');
-  }
-  return context;
 };

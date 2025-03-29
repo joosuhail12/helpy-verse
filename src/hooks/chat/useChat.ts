@@ -1,153 +1,94 @@
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useContext, createContext, ReactNode } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { Conversation, ChatMessage } from '@/components/chat-widget/components/conversation/types';
 
-interface UseChatReturn {
-  conversations: Conversation[];
-  currentConversation: Conversation | null;
-  createNewConversation: (title?: string) => Promise<string>;
-  selectConversation: (conversationId: string) => void;
-  sendMessage: (conversationId: string, message: string) => Promise<void>;
-  getMessages: (conversationId: string) => Promise<ChatMessage[]>;
-  loadingMessages: boolean;
-  messages: ChatMessage[];
+// Context type definitions
+interface Conversation {
+  id: string;
+  title: string;
+  createdAt: Date;
+  lastMessage?: string;
+  lastMessageTimestamp?: Date;
 }
 
-export const useChat = (): UseChatReturn => {
+interface ChatContextType {
+  conversations: Conversation[];
+  currentConversation: Conversation | null;
+  isLoading: boolean;
+  error: Error | null;
+  createNewConversation: (title: string) => Promise<string>;
+  selectConversation: (id: string) => void;
+  clearCurrentConversation: () => void;
+}
+
+// Create the context with a default value
+const ChatContext = createContext<ChatContextType | null>(null);
+
+// Provider component
+export const ChatProvider: React.FC<{ children: ReactNode; workspaceId: string }> = ({ 
+  children, 
+  workspaceId 
+}) => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [currentConversation, setCurrentConversation] = useState<Conversation | null>(null);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [loadingMessages, setLoadingMessages] = useState(false);
-  const workspaceId = "default";
-
-  // Load conversations from local storage
-  useEffect(() => {
-    const savedConversations = localStorage.getItem(`chat_conversations_${workspaceId}`);
-    const savedCurrentId = localStorage.getItem(`chat_current_conversation_${workspaceId}`);
-    
-    if (savedConversations) {
-      try {
-        const parsedConversations = JSON.parse(savedConversations) as Conversation[];
-        setConversations(parsedConversations);
-        
-        if (savedCurrentId) {
-          const current = parsedConversations.find(c => c.id === savedCurrentId);
-          if (current) {
-            setCurrentConversation(current);
-          }
-        }
-      } catch (error) {
-        console.error('Error parsing saved conversations:', error);
-      }
-    }
-  }, [workspaceId]);
-
-  // Save conversations to local storage
-  useEffect(() => {
-    if (conversations.length > 0) {
-      localStorage.setItem(`chat_conversations_${workspaceId}`, JSON.stringify(conversations));
-    }
-    
-    if (currentConversation) {
-      localStorage.setItem(`chat_current_conversation_${workspaceId}`, currentConversation.id);
-    }
-  }, [conversations, currentConversation, workspaceId]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
 
   // Create a new conversation
-  const createNewConversation = useCallback(async (title?: string): Promise<string> => {
-    const conversationId = uuidv4();
-    const newConversation: Conversation = {
-      id: conversationId,
-      title: title || `Conversation ${new Date().toLocaleString()}`,
-      lastMessageTimestamp: new Date().toISOString(),
-      unreadCount: 0,
-    };
+  const createNewConversation = async (title: string): Promise<string> => {
+    setIsLoading(true);
+    try {
+      const newConversation: Conversation = {
+        id: uuidv4(),
+        title,
+        createdAt: new Date(),
+      };
+      
+      setConversations(prev => [...prev, newConversation]);
+      setCurrentConversation(newConversation);
+      return newConversation.id;
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error('Failed to create conversation');
+      setError(error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    setConversations(prev => [...prev, newConversation]);
-    setCurrentConversation(newConversation);
-    return conversationId;
-  }, []);
-
-  // Select a conversation
-  const selectConversation = useCallback((conversationId: string) => {
-    const conversation = conversations.find(c => c.id === conversationId);
+  // Select a conversation by ID
+  const selectConversation = (id: string) => {
+    const conversation = conversations.find(conv => conv.id === id);
     if (conversation) {
       setCurrentConversation(conversation);
+    } else {
+      console.warn(`Conversation with ID ${id} not found`);
     }
-  }, [conversations]);
+  };
 
-  // Send a message
-  const sendMessage = useCallback(async (conversationId: string, message: string): Promise<void> => {
-    // Create a new message
-    const newMessage: ChatMessage = {
-      id: uuidv4(),
-      sender: 'user',
-      content: message,
-      timestamp: new Date(),
-      conversationId
-    };
-    
-    // Add the message to the local state
-    setMessages(prev => [...prev, newMessage]);
-    
-    // Update the conversation with the last message
-    setConversations(prev => prev.map(conv => 
-      conv.id === conversationId ? {
-        ...conv,
-        lastMessage: message,
-        lastMessageTimestamp: new Date().toISOString()
-      } : conv
-    ));
+  // Clear current conversation
+  const clearCurrentConversation = () => {
+    setCurrentConversation(null);
+  };
 
-    // Simulate an agent response
-    setTimeout(() => {
-      const agentMessage: ChatMessage = {
-        id: uuidv4(),
-        sender: 'agent',
-        content: `Thanks for your message: "${message}". This is an automated response.`,
-        timestamp: new Date(),
-        conversationId
-      };
-      
-      setMessages(prev => [...prev, agentMessage]);
-    }, 1000);
-  }, []);
-
-  // Get messages for a conversation
-  const getMessages = useCallback(async (conversationId: string): Promise<ChatMessage[]> => {
-    setLoadingMessages(true);
-    
-    // Filter messages for this conversation
-    const conversationMessages = messages.filter(m => m.conversationId === conversationId);
-    
-    // If there are no messages yet, add a welcome message
-    let resultMessages = [...conversationMessages];
-    if (resultMessages.length === 0) {
-      const welcomeMessage: ChatMessage = {
-        id: uuidv4(),
-        sender: 'agent',
-        content: 'Hello! How can I help you today?',
-        timestamp: new Date(),
-        conversationId
-      };
-      
-      resultMessages = [welcomeMessage];
-      setMessages(prev => [...prev, welcomeMessage]);
-    }
-    
-    setLoadingMessages(false);
-    return resultMessages;
-  }, [messages]);
-
-  return {
+  const value: ChatContextType = {
     conversations,
     currentConversation,
+    isLoading,
+    error,
     createNewConversation,
     selectConversation,
-    sendMessage,
-    getMessages,
-    loadingMessages,
-    messages
+    clearCurrentConversation
   };
+
+  return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;
+};
+
+// Hook to use the chat context
+export const useChat = (): ChatContextType => {
+  const context = useContext(ChatContext);
+  if (!context) {
+    throw new Error('useChat must be used within a ChatProvider');
+  }
+  return context;
 };

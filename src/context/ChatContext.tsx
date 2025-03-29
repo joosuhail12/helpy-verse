@@ -1,85 +1,85 @@
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { Conversation } from '@/components/chat-widget/components/conversation/types';
+import React, { createContext, useState, ReactNode } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
-interface ChatContextValue {
+// Context type definitions
+interface Conversation {
+  id: string;
+  title: string;
+  createdAt: Date;
+  lastMessage?: string;
+  lastMessageTimestamp?: Date;
+}
+
+interface ChatContextType {
   conversations: Conversation[];
   currentConversation: Conversation | null;
-  setCurrentConversation: (conversation: Conversation | null) => void;
-  createNewConversation: (title?: string) => Promise<Conversation>;
+  isLoading: boolean;
+  error: Error | null;
+  createNewConversation: (title: string) => Promise<string>;
+  selectConversation: (id: string) => void;
+  clearCurrentConversation: () => void;
 }
 
-const ChatContext = createContext<ChatContextValue | undefined>(undefined);
+// Create the context
+export const ChatContext = createContext<ChatContextType | null>(null);
 
-interface ChatProviderProps {
-  children: React.ReactNode;
-  workspaceId: string;
-}
-
-export const ChatProvider: React.FC<ChatProviderProps> = ({ children, workspaceId }) => {
+// Create the provider component
+export const ChatProvider: React.FC<{ children: ReactNode; workspaceId: string }> = ({ 
+  children, 
+  workspaceId 
+}) => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [currentConversation, setCurrentConversation] = useState<Conversation | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
 
-  // Load conversations from local storage
-  useEffect(() => {
-    const savedConversations = localStorage.getItem(`chat_conversations_${workspaceId}`);
-    const savedCurrentId = localStorage.getItem(`chat_current_conversation_${workspaceId}`);
-    
-    if (savedConversations) {
-      const parsedConversations = JSON.parse(savedConversations) as Conversation[];
-      setConversations(parsedConversations);
+  // Create a new conversation
+  const createNewConversation = async (title: string): Promise<string> => {
+    setIsLoading(true);
+    try {
+      const newConversation: Conversation = {
+        id: uuidv4(),
+        title,
+        createdAt: new Date(),
+      };
       
-      if (savedCurrentId) {
-        const current = parsedConversations.find(c => c.id === savedCurrentId);
-        if (current) {
-          setCurrentConversation(current);
-        }
-      }
+      setConversations(prev => [...prev, newConversation]);
+      setCurrentConversation(newConversation);
+      return newConversation.id;
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error('Failed to create conversation');
+      setError(error);
+      throw error;
+    } finally {
+      setIsLoading(false);
     }
-  }, [workspaceId]);
+  };
 
-  // Save conversations to local storage
-  useEffect(() => {
-    if (conversations.length > 0) {
-      localStorage.setItem(`chat_conversations_${workspaceId}`, JSON.stringify(conversations));
+  // Select a conversation by ID
+  const selectConversation = (id: string) => {
+    const conversation = conversations.find(conv => conv.id === id);
+    if (conversation) {
+      setCurrentConversation(conversation);
+    } else {
+      console.warn(`Conversation with ID ${id} not found`);
     }
-    
-    if (currentConversation) {
-      localStorage.setItem(`chat_current_conversation_${workspaceId}`, currentConversation.id);
-    }
-  }, [conversations, currentConversation, workspaceId]);
+  };
 
-  const createNewConversation = useCallback(async (title?: string): Promise<Conversation> => {
-    const newConversation: Conversation = {
-      id: uuidv4(),
-      title: title || `Conversation ${new Date().toLocaleString()}`,
-      lastMessageTimestamp: new Date().toISOString(),
-      unreadCount: 0
-    };
-    
-    setConversations(prev => [...prev, newConversation]);
-    setCurrentConversation(newConversation);
-    
-    return newConversation;
-  }, []);
+  // Clear current conversation
+  const clearCurrentConversation = () => {
+    setCurrentConversation(null);
+  };
 
-  const value = {
+  const value: ChatContextType = {
     conversations,
     currentConversation,
-    setCurrentConversation,
+    isLoading,
+    error,
     createNewConversation,
+    selectConversation,
+    clearCurrentConversation
   };
 
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;
-};
-
-export const useChat = (): ChatContextValue => {
-  const context = useContext(ChatContext);
-  
-  if (context === undefined) {
-    throw new Error('useChat must be used within a ChatProvider');
-  }
-  
-  return context;
 };
