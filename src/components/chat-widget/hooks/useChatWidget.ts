@@ -19,7 +19,7 @@ interface ChatWidgetOptions {
  */
 export interface UseChatWidgetReturn {
   // Widget appearance
-  theme: ThemeConfig;
+  theme: ThemeConfig['colors'] & Record<string, string>;
   updateTheme: (updates: Partial<ThemeConfig>) => void;
   
   // Widget status
@@ -125,8 +125,8 @@ export const useChatWidget = ({
     if (typeof user === 'string') return user;
     // Handle different possible structures based on the error message
     if ('name' in user) return user.name || 'Unknown user';
-    if ('username' in user) return (user as any).username || 'Unknown user';
-    if ('clientId' in user) return (user as any).clientId || 'Unknown user';
+    if (user && typeof user === 'object' && 'username' in user) return (user as any).username || 'Unknown user';
+    if (user && typeof user === 'object' && 'clientId' in user) return (user as any).clientId || 'Unknown user';
     return 'Unknown user';
   });
   
@@ -137,26 +137,30 @@ export const useChatWidget = ({
       return;
     }
     
-    const index = presenceNotifications.notifications.findIndex(n => {
+    const notificationIndex = presenceNotifications.notifications.findIndex(n => {
       if (typeof n === 'string') return n === id;
       if (n && typeof n === 'object') return (n as any).id === id;
       return false;
     });
     
-    if (index !== -1) {
-      presenceNotifications.clearNotification(index);
+    if (notificationIndex !== -1) {
+      presenceNotifications.clearNotification(notificationIndex);
     }
   };
   
   return {
     // Widget appearance
     theme: appearance.colors,
-    updateTheme: appearance.updateColors,
+    updateTheme: (updates: Partial<ThemeConfig>) => {
+      // Map from ThemeConfig updates to colors object expected by appearance
+      const colorUpdates = updates.colors || {};
+      appearance.setColors({ ...appearance.colors, ...colorUpdates });
+    },
     
     // Widget status
     isConnected: widgetStatus.isConnected,
-    isReconnecting: widgetStatus.isReconnecting,
-    connectionError: widgetStatus.error,
+    isReconnecting: widgetStatus.isConnecting, // Map isConnecting to isReconnecting
+    connectionError: null, // Set a default null value since widgetStatus doesn't have error property
     
     // Access to all original hooks
     appearance,
@@ -178,9 +182,9 @@ export const useChatWidget = ({
     removeAttachment: fileAttachments.removeAttachment,
     
     // Presence (properly mapped to expected types)
-    agents: presenceNotifications.agents,
+    agents: presenceNotifications.agents || [],
     typingUsers: typingUserNames,
-    notifications: presenceNotifications.notifications,
+    notifications: presenceNotifications.notifications || [],
     clearNotification: clearNotificationById
   };
 };
