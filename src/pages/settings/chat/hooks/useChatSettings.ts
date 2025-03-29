@@ -1,14 +1,16 @@
 
 import { useState } from 'react';
-import { useAppDispatch, useAppSelector } from '@/hooks/redux';
+import { useAppDispatch, useAppSelector } from '@/hooks/useAppDispatch';
 import { useToast } from '@/components/ui/use-toast';
 import { 
   updateSetting, 
   saveChatWidgetSettings, 
-  resetSettings,
+  resetSettings
+} from '@/store/slices/chatWidgetSettings';
+import { 
   selectChatWidgetSettings,
   selectChatWidgetLoading
-} from '@/store/slices/chatWidgetSettings';
+} from '@/store/slices/chatWidgetSettings/selectors';
 import { ChatWidgetSettings } from '@/store/slices/chatWidgetSettings/types';
 
 /**
