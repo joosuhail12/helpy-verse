@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState } from 'react';
 
 export interface ThemeConfig {
@@ -5,7 +6,7 @@ export interface ThemeConfig {
     primary: string;
     primaryForeground: string;
     background: string;
-    backgroundSecondary: string; // Added this property
+    backgroundSecondary: string;
     foreground: string;
     border: string;
     userMessage: string;
@@ -24,11 +25,17 @@ export interface ThemeConfig {
     noMessagesText: string;
     messagePlaceholder: string;
   };
+  features?: {
+    typingIndicator?: boolean;
+    reactions?: boolean;
+    fileAttachments?: boolean;
+    readReceipts?: boolean;
+  };
 }
 
-interface ThemeContextType extends ThemeConfig {
-  updateTheme: (theme: Partial<ThemeConfig>) => void;
-  setColors: (colors: ThemeConfig['colors']) => void;
+interface ThemeContextValue extends ThemeConfig {
+  setTheme: (theme: Partial<ThemeConfig>) => void;
+  setColors: (colors: Partial<ThemeConfig['colors']>) => void;
   setPosition: (position: ThemeConfig['position']) => void;
   setCompact: (compact: boolean) => void;
 }
@@ -38,7 +45,7 @@ const defaultTheme: ThemeConfig = {
     primary: '#9b87f5',
     primaryForeground: '#ffffff',
     background: '#ffffff',
-    backgroundSecondary: '#f9f9f9', // Added default value
+    backgroundSecondary: '#f9f9f9',
     foreground: '#1A1F2C',
     border: '#eaeaea',
     userMessage: '#9b87f5',
@@ -56,10 +63,16 @@ const defaultTheme: ThemeConfig = {
     recentMessagesTitle: 'Recent messages',
     noMessagesText: 'No messages yet. Start a conversation!',
     messagePlaceholder: 'Type a message...'
+  },
+  features: {
+    typingIndicator: true,
+    reactions: true,
+    fileAttachments: true,
+    readReceipts: true
   }
 };
 
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
 interface ThemeProviderProps {
   children: React.ReactNode;
@@ -67,7 +80,7 @@ interface ThemeProviderProps {
 }
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children, initialTheme = {} }) => {
-  const [theme, setTheme] = useState<ThemeConfig>({
+  const [theme, setThemeState] = useState<ThemeConfig>({
     ...defaultTheme,
     ...initialTheme,
     colors: {
@@ -77,11 +90,15 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children, initialT
     labels: {
       ...defaultTheme.labels,
       ...(initialTheme.labels || {})
+    },
+    features: {
+      ...defaultTheme.features,
+      ...(initialTheme.features || {})
     }
   });
 
-  const updateTheme = (newTheme: Partial<ThemeConfig>) => {
-    setTheme(prev => ({
+  const setTheme = (newTheme: Partial<ThemeConfig>) => {
+    setThemeState(prev => ({
       ...prev,
       ...newTheme,
       colors: {
@@ -91,12 +108,16 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children, initialT
       labels: {
         ...prev.labels,
         ...(newTheme.labels || {})
+      },
+      features: {
+        ...prev.features,
+        ...(newTheme.features || {})
       }
     }));
   };
 
-  const setColors = (colors: ThemeConfig['colors']) => {
-    setTheme(prev => ({
+  const setColors = (colors: Partial<ThemeConfig['colors']>) => {
+    setThemeState(prev => ({
       ...prev,
       colors: {
         ...prev.colors,
@@ -106,14 +127,14 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children, initialT
   };
 
   const setPosition = (position: ThemeConfig['position']) => {
-    setTheme(prev => ({
+    setThemeState(prev => ({
       ...prev,
       position
     }));
   };
 
   const setCompact = (compact: boolean) => {
-    setTheme(prev => ({
+    setThemeState(prev => ({
       ...prev,
       compact
     }));
@@ -122,7 +143,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children, initialT
   return (
     <ThemeContext.Provider value={{ 
       ...theme, 
-      updateTheme,
+      setTheme,
       setColors,
       setPosition,
       setCompact

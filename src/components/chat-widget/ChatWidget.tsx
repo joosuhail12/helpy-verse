@@ -1,11 +1,12 @@
 
-import React, { useState, Suspense, lazy } from 'react';
+import React, { useState, Suspense, lazy, useEffect } from 'react';
 import { ChatProvider } from '@/context/ChatContext';
 import { AblyProvider } from '@/context/AblyContext';
 import { ThemeProvider, ThemeConfig } from '@/context/ThemeContext';
 import { ChatWidgetSettings } from '@/store/slices/chatWidgetSettings/types';
 import ToggleButton from './components/button/ToggleButton';
 import { Loader2 } from 'lucide-react';
+import '@/styles/chat-widget-theme.css';
 
 // Lazy load the widget container
 const ChatWidgetWrapper = lazy(() => import('./components/wrapper/ChatWidgetWrapper'));
@@ -77,11 +78,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({
               </ChatWidgetWrapper>
             </Suspense>
           )}
-          <div className={`fixed bottom-4 z-50`} 
-            style={{ 
-              [combinedTheme.position === 'left' ? 'left' : 'right']: '1rem'
-            }}
-          >
+          <div className={`fixed bottom-4 z-50 ${combinedTheme.position === 'left' ? 'left-4' : 'right-4'}`}>
             <ToggleButton 
               isOpen={isOpen} 
               onClick={toggleWidget} 

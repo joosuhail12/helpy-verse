@@ -6,6 +6,7 @@ import { usePresenceNotifications } from '@/hooks/chat/usePresenceNotifications'
 import { useWidgetStatus } from '@/hooks/chat/useWidgetStatus';
 import { ThemeConfig, ChatMessage, FileAttachment as ChatFileAttachment } from '@/types/chat';
 import { ChatWidgetSettings } from '@/store/slices/chatWidgetSettings/types';
+import { useThemeContext } from '@/context/ThemeContext';
 
 interface ChatWidgetOptions {
   workspaceId: string;
@@ -19,7 +20,7 @@ interface ChatWidgetOptions {
  */
 export interface UseChatWidgetReturn {
   // Widget appearance
-  theme: ThemeConfig['colors'] & Record<string, string>;
+  theme: ThemeConfig['colors'];
   updateTheme: (updates: Partial<ThemeConfig>) => void;
   
   // Widget status
@@ -64,6 +65,7 @@ export const useChatWidget = ({
 }: ChatWidgetOptions): UseChatWidgetReturn => {
   // Widget appearance
   const appearance = useWidgetAppearance({ initialSettings: settings });
+  const themeContext = useThemeContext();
   
   // Messaging functionality
   const messaging = useMessaging({
@@ -123,10 +125,12 @@ export const useChatWidget = ({
   // Map typing users to string array
   const typingUserNames: string[] = messaging.typingUsers.map(user => {
     if (typeof user === 'string') return user;
-    // Handle different possible structures based on the error message
-    if ('name' in user) return user.name || 'Unknown user';
-    if (user && typeof user === 'object' && 'username' in user) return (user as any).username || 'Unknown user';
-    if (user && typeof user === 'object' && 'clientId' in user) return (user as any).clientId || 'Unknown user';
+    // Handle different possible structures
+    if (user && typeof user === 'object') {
+      if ('name' in user) return (user as any).name || 'Unknown user';
+      if ('username' in user) return (user as any).username || 'Unknown user';
+      if ('clientId' in user) return (user as any).clientId || 'Unknown user';
+    }
     return 'Unknown user';
   });
   
@@ -150,21 +154,23 @@ export const useChatWidget = ({
   
   return {
     // Widget appearance
-    theme: appearance.colors,
+    theme: themeContext.colors,
     updateTheme: (updates: Partial<ThemeConfig>) => {
-      // Map from ThemeConfig updates to colors object expected by appearance
-      const colorUpdates = updates.colors || {};
-      // Access the ThemeContext's setColors function from the appearance hook
-      if (appearance && typeof updates === 'object') {
-        // Since setColors doesn't exist directly, we'll use the context method that does exist
-        const { colors } = appearance;
-        // We'll need to update the theme through the context rather than directly
-        // This has to match how the ThemeContext updates colors
-        // Since we can't use setColors directly, use a method that is available
-        if (updates.colors) {
-          // Just update our local colors - the parent component will need to handle actual updates
-          console.log('Theme colors updated:', { ...colors, ...colorUpdates });
-        }
+      if (updates.colors) {
+        themeContext.setColors(updates.colors);
+      }
+      
+      if (updates.position) {
+        themeContext.setPosition(updates.position);
+      }
+      
+      if (updates.compact !== undefined) {
+        themeContext.setCompact(updates.compact);
+      }
+      
+      // Full theme update if needed
+      if (Object.keys(updates).length > 0) {
+        themeContext.setTheme(updates);
       }
     },
     

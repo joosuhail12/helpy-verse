@@ -40,13 +40,16 @@ const TypingIndicator: React.FC<TypingIndicatorProps> = ({ users, agentName }) =
   };
   
   return (
-    <div className="flex items-center py-2">
-      <div className="flex justify-center items-center px-3 py-1 rounded-full bg-opacity-10" 
+    <div className="typing-indicator">
+      <div className="typing-indicator-bubble" 
         style={{ backgroundColor: `${colors.agentMessage}50` }}>
-        <div className="flex space-x-1 mr-2">
-          <div className="w-2 h-2 rounded-full animate-bounce" style={{ backgroundColor: colors.primary, animationDelay: '0ms' }} />
-          <div className="w-2 h-2 rounded-full animate-bounce" style={{ backgroundColor: colors.primary, animationDelay: '150ms' }} />
-          <div className="w-2 h-2 rounded-full animate-bounce" style={{ backgroundColor: colors.primary, animationDelay: '300ms' }} />
+        <div className="typing-indicator-dots">
+          <div className="typing-indicator-dot" 
+            style={{ backgroundColor: colors.primary, animationDelay: '0ms' }} />
+          <div className="typing-indicator-dot" 
+            style={{ backgroundColor: colors.primary, animationDelay: '150ms' }} />
+          <div className="typing-indicator-dot" 
+            style={{ backgroundColor: colors.primary, animationDelay: '300ms' }} />
         </div>
         <span className="text-xs opacity-75">{getTypingText()}</span>
       </div>

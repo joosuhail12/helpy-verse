@@ -23,11 +23,9 @@ const ChatWidgetWrapper: React.FC<ChatWidgetWrapperProps> = ({
 
   return (
     <div 
-      className={`fixed bottom-4 z-50 flex flex-col items-end`} 
-      style={{ 
-        [position === 'left' ? 'left' : 'right']: '1rem',
-        alignItems: position === 'left' ? 'flex-start' : 'flex-end' 
-      }}
+      className={`chat-widget-container ${position === 'left' 
+        ? 'chat-widget-container-left' 
+        : 'chat-widget-container-right'}`}
     >
       <AnimatePresence>
         {isOpen && (
@@ -36,7 +34,7 @@ const ChatWidgetWrapper: React.FC<ChatWidgetWrapperProps> = ({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className={`mb-3 ${compact ? 'w-72' : 'w-80 sm:w-96'} h-[600px] bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-200`}
+            className={`chat-widget-main ${compact ? 'chat-widget-main-compact' : 'chat-widget-main-full'}`}
             style={{ borderColor: colors?.border }}
           >
             {children}

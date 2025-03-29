@@ -17,9 +17,7 @@ const ToggleButton: React.FC<ToggleButtonProps> = ({ isOpen, onClick }) => {
   return (
     <button
       onClick={onClick}
-      className={`${
-        isOpen ? 'bg-red-500 hover:bg-red-600' : 'bg-primary hover:bg-primary/90'
-      } w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-colors`}
+      className={`chat-toggle-button ${isOpen ? 'chat-toggle-button-open' : 'chat-toggle-button-closed'}`}
       aria-label={isOpen ? 'Close chat' : 'Open chat'}
       style={{ 
         backgroundColor: isOpen ? '#ef4444' : colors?.primary 

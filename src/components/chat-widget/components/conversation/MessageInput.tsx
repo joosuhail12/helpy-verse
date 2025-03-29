@@ -50,7 +50,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
 
   return (
     <div 
-      className="border-t p-3 flex items-end gap-2"
+      className="chat-input-container"
       style={{ 
         borderColor: colors.border,
         backgroundColor: colors.backgroundSecondary
@@ -58,12 +58,11 @@ const MessageInput: React.FC<MessageInputProps> = ({
     >
       <textarea
         ref={inputRef}
-        className="flex-1 resize-none rounded-lg p-2 max-h-32 min-h-[40px] focus:outline-none focus:ring-2"
+        className="chat-input-textarea"
         style={{ 
           backgroundColor: colors.inputBackground,
           color: colors.foreground,
           borderColor: colors.border,
-          // Removed focusRing as it's not a valid CSS property
         }}
         value={message}
         onChange={handleChange}
@@ -75,7 +74,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
       <button
         onClick={handleSendMessage}
         disabled={!message.trim() || disabled}
-        className="p-2 rounded-full transition-colors flex-shrink-0"
+        className="chat-input-button"
         style={{ 
           backgroundColor: message.trim() ? colors.primary : '#ccc',
           color: message.trim() ? colors.primaryForeground : '#666',
