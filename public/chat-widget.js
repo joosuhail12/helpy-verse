@@ -3,6 +3,12 @@
   const SCRIPT_ID = 'pullse-chat-widget-script';
   const WIDGET_ID = 'pullse-chat-widget';
   const CDN_URL = window.location.origin;
+  const WIDGET_EVENTS = {
+    INITIALIZE: 'chat-widget-initialize',
+    OPEN: 'chat-widget-open',
+    CLOSE: 'chat-widget-close',
+    TOGGLE: 'chat-widget-toggle'
+  };
 
   // Skip if already initialized
   if (document.getElementById(WIDGET_ID)) return;
@@ -62,7 +68,7 @@
     console.error('Failed to load stored settings:', e);
   }
   
-  // Add configuration, prioritizing window variables then falling back to stored settings
+  // Build configuration object from window variables or fallback to stored settings
   window.PULLSE_CHAT_CONFIG = {
     workspaceId: window.PULLSE_WORKSPACE_ID || '6c22b22f-7bdf-43db-b7c1-9c5884125c63',
     theme: {
@@ -71,22 +77,38 @@
       },
       position: window.PULLSE_POSITION || storedSettings.position || 'right',
       compact: window.PULLSE_COMPACT === true || storedSettings.compact === true,
-      labels: window.PULLSE_LABELS || {
-        welcomeTitle: storedSettings.welcomeTitle || 'Hello there.',
-        welcomeSubtitle: storedSettings.welcomeSubtitle || 'How can we help?'
-      },
-      features: {
-        typingIndicator: window.PULLSE_FEATURES?.typingIndicator !== false && 
-                         (storedSettings.enableTypingIndicator !== false),
-        reactions: window.PULLSE_FEATURES?.reactions !== false && 
-                   (storedSettings.enableReactions !== false),
-        fileAttachments: window.PULLSE_FEATURES?.fileAttachments !== false && 
-                         (storedSettings.enableFileAttachments !== false),
-        readReceipts: window.PULLSE_FEATURES?.readReceipts !== false && 
-                      (storedSettings.enableReadReceipts !== false)
-      }
+    },
+    labels: window.PULLSE_LABELS || {
+      welcomeTitle: storedSettings.welcomeTitle || 'Hello there.',
+      welcomeSubtitle: storedSettings.welcomeSubtitle || 'How can we help?'
+    },
+    features: {
+      typingIndicator: window.PULLSE_FEATURES?.typingIndicator !== false && 
+                       (storedSettings.enableTypingIndicator !== false),
+      reactions: window.PULLSE_FEATURES?.reactions !== false && 
+                 (storedSettings.enableReactions !== false),
+      fileAttachments: window.PULLSE_FEATURES?.fileAttachments !== false && 
+                       (storedSettings.enableFileAttachments !== false),
+      readReceipts: window.PULLSE_FEATURES?.readReceipts !== false && 
+                    (storedSettings.enableReadReceipts !== false)
     }
   };
+  
+  // Setup event listeners for controlling the widget
+  window.addEventListener(WIDGET_EVENTS.OPEN, function() {
+    // This will be handled by the widget internally
+    console.log('Chat widget: open event received');
+  });
+  
+  window.addEventListener(WIDGET_EVENTS.CLOSE, function() {
+    // This will be handled by the widget internally
+    console.log('Chat widget: close event received');
+  });
+  
+  window.addEventListener(WIDGET_EVENTS.TOGGLE, function() {
+    // This will be handled by the widget internally
+    console.log('Chat widget: toggle event received');
+  });
   
   // Load script with dynamic import technique
   const script = document.createElement('script');
@@ -96,17 +118,15 @@
   script.defer = true;
   
   // Show loading indicator when loading widget
-  const chatButton = document.querySelector('.pullse-chat-widget-button');
-  if (chatButton) {
-    chatButton.addEventListener('click', function() {
-      loadingIndicator.style.display = 'block';
-      
-      // Hide loading indicator after a timeout (in case widget loads quickly)
-      setTimeout(function() {
-        loadingIndicator.style.display = 'none';
-      }, 2000);
-    });
-  }
+  script.onload = function() {
+    // Hide loading indicator when script loads
+    loadingIndicator.style.display = 'none';
+    
+    // Initialize widget with config
+    if (window.PULLSE && window.PULLSE.initializeWidget) {
+      window.PULLSE.initializeWidget(window.PULLSE_CHAT_CONFIG);
+    }
+  };
   
   document.body.appendChild(script);
 })();

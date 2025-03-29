@@ -1,23 +1,47 @@
 
 import React, { useState, useEffect } from 'react';
 import { useTheme } from '@/hooks/useTheme';
-import ConnectedChatWidget from './ConnectedChatWidget';
-import { Provider } from 'react-redux';
-import { store } from '@/store/store';
+import IsolatedChatWidget from './IsolatedChatWidget';
+import { useChatWidgetInitializer } from '@/hooks/chat/useChatWidgetInitializer';
+import { ChatWidgetProvider } from '@/context/ChatWidgetContext';
+
+// Expose API for external apps
+declare global {
+  interface Window {
+    PULLSE?: {
+      initializeWidget: (config: any) => void;
+    };
+    PULLSE_CHAT_CONFIG?: any;
+  }
+}
 
 /**
  * Standalone chat widget component that can be embedded on any website
  */
 const ChatWidgetStandalone: React.FC = () => {
   const [mounted, setMounted] = useState(false);
+  const [config, setConfig] = useState<any>(null);
   const { theme, setTheme } = useTheme();
   
-  // Initialize on mount
+  // Initialize widget with config from window
   useEffect(() => {
     setMounted(true);
     
     // Set default theme
     if (!theme) setTheme('light');
+    
+    // Expose initialization method
+    window.PULLSE = {
+      ...window.PULLSE,
+      initializeWidget: (widgetConfig: any) => {
+        setConfig(widgetConfig);
+      }
+    };
+    
+    // Check if there's already a config in the window
+    if (window.PULLSE_CHAT_CONFIG) {
+      setConfig(window.PULLSE_CHAT_CONFIG);
+    }
     
     // Cleanup function
     return () => {
@@ -27,11 +51,16 @@ const ChatWidgetStandalone: React.FC = () => {
 
   if (!mounted) return null;
 
-  // Wrap in Redux provider to access settings
+  const workspaceId = config?.workspaceId || '6c22b22f-7bdf-43db-b7c1-9c5884125c63';
+
+  // Use isolated context-based widget
   return (
-    <Provider store={store}>
-      <ConnectedChatWidget workspaceId="6c22b22f-7bdf-43db-b7c1-9c5884125c63" />
-    </Provider>
+    <ChatWidgetProvider>
+      <IsolatedChatWidget 
+        workspaceId={workspaceId} 
+        config={config}
+      />
+    </ChatWidgetProvider>
   );
 };
 

@@ -5,10 +5,14 @@
 import { getAblyChannel } from '@/utils/ably';
 import type { ChatWidgetConfig } from './types';
 import { updateWidgetTheme } from './appearance';
+import { getWidgetEvents } from './controls';
 
 // Store the configuration globally
 let widgetConfig: ChatWidgetConfig | null = null;
 let isInitialized = false;
+
+// Event name for initialization
+const INITIALIZE_EVENT = 'chat-widget-initialize';
 
 /**
  * Initialize the chat widget with configuration
@@ -34,6 +38,11 @@ export const initializeChatWidget = async (config: ChatWidgetConfig): Promise<bo
       const channelName = `workspace:${config.workspaceId}:system`;
       await getAblyChannel(channelName);
     }
+    
+    // Dispatch an initialization event with the config
+    window.dispatchEvent(new CustomEvent(INITIALIZE_EVENT, { 
+      detail: { config } 
+    }));
     
     // Mark as initialized
     isInitialized = true;
@@ -67,3 +76,6 @@ export const resetChatWidget = (): void => {
 export const isWidgetInitialized = (): boolean => {
   return isInitialized;
 };
+
+// Export event name for listeners
+export const getInitializeEvent = () => INITIALIZE_EVENT;

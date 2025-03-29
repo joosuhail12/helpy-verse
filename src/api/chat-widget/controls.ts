@@ -2,76 +2,35 @@
 /**
  * Widget controls for opening, closing, and toggling the chat widget
  */
-import { isWidgetInitialized, getWidgetConfig } from './initialize';
+import { getWidgetConfig, isWidgetInitialized } from './initialize';
 
-// Widget state
-let widgetOpen = false;
-let widgetElement: HTMLElement | null = null;
-let toggleButtonElement: HTMLElement | null = null;
-
-/**
- * Initialize the widget DOM elements
- */
-const initializeWidgetElements = (): void => {
-  if (!widgetElement) {
-    widgetElement = document.getElementById('chat-widget-container');
-  }
-  
-  if (!toggleButtonElement) {
-    toggleButtonElement = document.getElementById('chat-widget-toggle');
-  }
-  
-  // Create elements if they don't exist
-  if (!widgetElement) {
-    widgetElement = document.createElement('div');
-    widgetElement.id = 'chat-widget-container';
-    widgetElement.style.display = 'none';
-    document.body.appendChild(widgetElement);
-  }
-  
-  if (!toggleButtonElement) {
-    toggleButtonElement = document.createElement('button');
-    toggleButtonElement.id = 'chat-widget-toggle';
-    toggleButtonElement.setAttribute('aria-label', widgetOpen ? 'Close chat' : 'Open chat');
-    document.body.appendChild(toggleButtonElement);
-    
-    // Add event listener
-    toggleButtonElement.addEventListener('click', toggleWidget);
-  }
+// Use window events for cross-context communication
+const WIDGET_EVENTS = {
+  OPEN: 'chat-widget-open',
+  CLOSE: 'chat-widget-close',
+  TOGGLE: 'chat-widget-toggle'
 };
+
+// Track widget state
+let isOpen = false;
 
 /**
  * Open the chat widget
  */
-export const openWidget = (): boolean => {
+export const openWidget = async (): Promise<boolean> => {
   try {
     if (!isWidgetInitialized()) {
       console.warn('Chat widget not initialized. Call initializeChatWidget() first.');
       return false;
     }
     
-    initializeWidgetElements();
+    // Dispatch a custom event that the widget can listen for
+    window.dispatchEvent(new CustomEvent(WIDGET_EVENTS.OPEN));
+    isOpen = true;
     
-    if (widgetElement) {
-      widgetElement.style.display = 'block';
-      widgetOpen = true;
-      
-      if (toggleButtonElement) {
-        toggleButtonElement.setAttribute('aria-label', 'Close chat');
-      }
-      
-      // Trigger event if provided
-      const config = getWidgetConfig();
-      if (config?.events?.onWidgetOpened) {
-        config.events.onWidgetOpened();
-      }
-      
-      return true;
-    }
-    
-    return false;
+    return true;
   } catch (error) {
-    console.error('Failed to open widget:', error);
+    console.error('Failed to open chat widget:', error);
     return false;
   }
 };
@@ -79,63 +38,51 @@ export const openWidget = (): boolean => {
 /**
  * Close the chat widget
  */
-export const closeWidget = (): boolean => {
+export const closeWidget = async (): Promise<boolean> => {
   try {
     if (!isWidgetInitialized()) {
       console.warn('Chat widget not initialized. Call initializeChatWidget() first.');
       return false;
     }
     
-    initializeWidgetElements();
+    // Dispatch a custom event that the widget can listen for
+    window.dispatchEvent(new CustomEvent(WIDGET_EVENTS.CLOSE));
+    isOpen = false;
     
-    if (widgetElement) {
-      widgetElement.style.display = 'none';
-      widgetOpen = false;
-      
-      if (toggleButtonElement) {
-        toggleButtonElement.setAttribute('aria-label', 'Open chat');
-      }
-      
-      // Trigger event if provided
-      const config = getWidgetConfig();
-      if (config?.events?.onWidgetClosed) {
-        config.events.onWidgetClosed();
-      }
-      
-      return true;
-    }
-    
-    return false;
+    return true;
   } catch (error) {
-    console.error('Failed to close widget:', error);
+    console.error('Failed to close chat widget:', error);
     return false;
   }
 };
 
 /**
- * Toggle the chat widget open/closed
+ * Toggle the chat widget state
  */
-export const toggleWidget = (): boolean => {
-  return widgetOpen ? closeWidget() : openWidget();
+export const toggleWidget = async (): Promise<boolean> => {
+  try {
+    if (!isWidgetInitialized()) {
+      console.warn('Chat widget not initialized. Call initializeChatWidget() first.');
+      return false;
+    }
+    
+    // Dispatch a custom event that the widget can listen for
+    window.dispatchEvent(new CustomEvent(WIDGET_EVENTS.TOGGLE));
+    isOpen = !isOpen;
+    
+    return true;
+  } catch (error) {
+    console.error('Failed to toggle chat widget:', error);
+    return false;
+  }
 };
 
 /**
  * Check if the widget is currently open
  */
 export const isWidgetOpen = (): boolean => {
-  return widgetOpen;
+  return isOpen;
 };
 
-/**
- * Set up a custom toggle button
- */
-export const setCustomToggleButton = (element: HTMLElement): void => {
-  // Remove listener from old button if it exists
-  if (toggleButtonElement) {
-    toggleButtonElement.removeEventListener('click', toggleWidget);
-  }
-  
-  // Use the new element
-  toggleButtonElement = element;
-  toggleButtonElement.addEventListener('click', toggleWidget);
-};
+// Export event names for listeners
+export const getWidgetEvents = () => WIDGET_EVENTS;
