@@ -1,6 +1,8 @@
 
 // Export the reducer directly
-export { default } from './teammatesSlice';
+import teammatesReducer from './teammatesSlice';
+
+export default teammatesReducer;
 export * from './actions';
 export * from './selectors';
 export * from './types';
