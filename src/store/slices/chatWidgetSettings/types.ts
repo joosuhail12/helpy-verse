@@ -1,14 +1,20 @@
 
 export interface ChatWidgetSettings {
-  primaryColor: string;
-  welcomeTitle: string;
-  welcomeSubtitle: string;
-  position: 'right' | 'left';
-  compact: boolean;
-  enableTypingIndicator: boolean;
-  enableReactions: boolean;
-  enableFileAttachments: boolean;
-  enableReadReceipts: boolean;
+  appearance: {
+    primaryColor: string;
+    position: 'right' | 'left';
+    compact: boolean;
+  };
+  content: {
+    welcomeTitle: string;
+    welcomeSubtitle: string;
+  };
+  features: {
+    enableTypingIndicator: boolean;
+    enableReactions: boolean;
+    enableFileAttachments: boolean;
+    enableReadReceipts: boolean;
+  };
 }
 
 export interface ChatWidgetSettingsState {

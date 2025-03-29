@@ -24,28 +24,65 @@ export const selectChatWidgetLastSaved = createSelector(
   (state) => state.lastSaved
 );
 
-// Selectors for individual settings
+// Appearance selectors
+export const selectAppearanceSettings = createSelector(
+  selectChatWidgetSettings,
+  (settings) => settings.appearance
+);
+
 export const selectPrimaryColor = createSelector(
-  selectChatWidgetSettings,
-  (settings) => settings.primaryColor
-);
-
-export const selectWelcomeTitle = createSelector(
-  selectChatWidgetSettings,
-  (settings) => settings.welcomeTitle
-);
-
-export const selectWelcomeSubtitle = createSelector(
-  selectChatWidgetSettings,
-  (settings) => settings.welcomeSubtitle
+  selectAppearanceSettings,
+  (appearance) => appearance.primaryColor
 );
 
 export const selectPosition = createSelector(
-  selectChatWidgetSettings,
-  (settings) => settings.position
+  selectAppearanceSettings,
+  (appearance) => appearance.position
 );
 
 export const selectCompactMode = createSelector(
+  selectAppearanceSettings,
+  (appearance) => appearance.compact
+);
+
+// Content selectors
+export const selectContentSettings = createSelector(
   selectChatWidgetSettings,
-  (settings) => settings.compact
+  (settings) => settings.content
+);
+
+export const selectWelcomeTitle = createSelector(
+  selectContentSettings,
+  (content) => content.welcomeTitle
+);
+
+export const selectWelcomeSubtitle = createSelector(
+  selectContentSettings,
+  (content) => content.welcomeSubtitle
+);
+
+// Feature selectors
+export const selectFeatureSettings = createSelector(
+  selectChatWidgetSettings,
+  (settings) => settings.features
+);
+
+export const selectTypingIndicatorEnabled = createSelector(
+  selectFeatureSettings,
+  (features) => features.enableTypingIndicator
+);
+
+export const selectReactionsEnabled = createSelector(
+  selectFeatureSettings,
+  (features) => features.enableReactions
+);
+
+export const selectFileAttachmentsEnabled = createSelector(
+  selectFeatureSettings,
+  (features) => features.enableFileAttachments
+);
+
+export const selectReadReceiptsEnabled = createSelector(
+  selectFeatureSettings,
+  (features) => features.enableReadReceipts
 );

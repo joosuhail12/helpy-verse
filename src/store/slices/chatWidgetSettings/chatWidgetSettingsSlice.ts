@@ -3,15 +3,21 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { ChatWidgetSettings, ChatWidgetSettingsState } from './types';
 
 const initialSettings: ChatWidgetSettings = {
-  primaryColor: '#9b87f5',
-  welcomeTitle: 'Hello there.',
-  welcomeSubtitle: 'How can we help?',
-  position: 'right',
-  compact: false,
-  enableTypingIndicator: true,
-  enableReactions: true,
-  enableFileAttachments: true,
-  enableReadReceipts: true
+  appearance: {
+    primaryColor: '#9b87f5',
+    position: 'right',
+    compact: false,
+  },
+  content: {
+    welcomeTitle: 'Hello there.',
+    welcomeSubtitle: 'How can we help?',
+  },
+  features: {
+    enableTypingIndicator: true,
+    enableReactions: true,
+    enableFileAttachments: true,
+    enableReadReceipts: true,
+  }
 };
 
 const initialState: ChatWidgetSettingsState = {
@@ -25,21 +31,50 @@ export const chatWidgetSettingsSlice = createSlice({
   name: 'chatWidgetSettings',
   initialState,
   reducers: {
-    updateSetting: (
+    updateAppearanceSetting: (
       state, 
-      action: PayloadAction<{ field: keyof ChatWidgetSettings; value: string | boolean }>
+      action: PayloadAction<{ field: keyof ChatWidgetSettings['appearance']; value: string | boolean }>
     ) => {
       const { field, value } = action.payload;
-      // Type assertion is needed because the 'field' can refer to either string or boolean properties
-      // This helps TypeScript understand that we're intentionally assigning the right type
-      (state.settings[field] as typeof value) = value;
+      (state.settings.appearance[field] as typeof value) = value;
+    },
+    
+    updateContentSetting: (
+      state, 
+      action: PayloadAction<{ field: keyof ChatWidgetSettings['content']; value: string }>
+    ) => {
+      const { field, value } = action.payload;
+      state.settings.content[field] = value;
+    },
+    
+    updateFeatureSetting: (
+      state, 
+      action: PayloadAction<{ field: keyof ChatWidgetSettings['features']; value: boolean }>
+    ) => {
+      const { field, value } = action.payload;
+      state.settings.features[field] = value;
     },
     
     updateSettings: (
       state, 
       action: PayloadAction<Partial<ChatWidgetSettings>>
     ) => {
-      state.settings = { ...state.settings, ...action.payload };
+      state.settings = { 
+        ...state.settings, 
+        ...action.payload,
+        appearance: {
+          ...state.settings.appearance,
+          ...(action.payload.appearance || {})
+        },
+        content: {
+          ...state.settings.content,
+          ...(action.payload.content || {})
+        },
+        features: {
+          ...state.settings.features,
+          ...(action.payload.features || {})
+        }
+      };
     },
     
     saveSettingsStart: (state) => {
@@ -64,7 +99,9 @@ export const chatWidgetSettingsSlice = createSlice({
 });
 
 export const {
-  updateSetting,
+  updateAppearanceSetting,
+  updateContentSetting,
+  updateFeatureSetting,
   updateSettings,
   saveSettingsStart,
   saveSettingsSuccess,

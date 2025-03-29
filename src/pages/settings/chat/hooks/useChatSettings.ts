@@ -4,7 +4,9 @@ import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { useToast } from '@/components/ui/use-toast';
 import { 
-  updateSetting, 
+  updateAppearanceSetting, 
+  updateContentSetting,
+  updateFeatureSetting,
   saveChatWidgetSettings, 
   resetSettings
 } from '@/store/slices/chatWidgetSettings';
@@ -26,8 +28,16 @@ export const useChatSettings = () => {
   const settings = useAppSelector(selectChatWidgetSettings);
   const loading = useAppSelector(selectChatWidgetLoading);
 
-  const handleChange = (field: keyof ChatWidgetSettings, value: string | boolean) => {
-    dispatch(updateSetting({ field, value }));
+  const handleAppearanceChange = (field: keyof ChatWidgetSettings['appearance'], value: string | boolean) => {
+    dispatch(updateAppearanceSetting({ field, value }));
+  };
+
+  const handleContentChange = (field: keyof ChatWidgetSettings['content'], value: string) => {
+    dispatch(updateContentSetting({ field, value }));
+  };
+
+  const handleFeatureChange = (field: keyof ChatWidgetSettings['features'], value: boolean) => {
+    dispatch(updateFeatureSetting({ field, value }));
   };
 
   const handleSave = async () => {
@@ -61,19 +71,19 @@ export const useChatSettings = () => {
   (function() {
     window.PULLSE_WORKSPACE_ID = '${window.location.hostname}';
     window.PULLSE_THEME_COLORS = {
-      primary: '${settings.primaryColor}'
+      primary: '${settings.appearance.primaryColor}'
     };
-    window.PULLSE_POSITION = '${settings.position}';
-    window.PULLSE_COMPACT = ${settings.compact};
+    window.PULLSE_POSITION = '${settings.appearance.position}';
+    window.PULLSE_COMPACT = ${settings.appearance.compact};
     window.PULLSE_LABELS = {
-      welcomeTitle: '${settings.welcomeTitle}',
-      welcomeSubtitle: '${settings.welcomeSubtitle}'
+      welcomeTitle: '${settings.content.welcomeTitle}',
+      welcomeSubtitle: '${settings.content.welcomeSubtitle}'
     };
     window.PULLSE_FEATURES = {
-      typingIndicator: ${settings.enableTypingIndicator},
-      reactions: ${settings.enableReactions},
-      fileAttachments: ${settings.enableFileAttachments},
-      readReceipts: ${settings.enableReadReceipts}
+      typingIndicator: ${settings.features.enableTypingIndicator},
+      reactions: ${settings.features.enableReactions},
+      fileAttachments: ${settings.features.enableFileAttachments},
+      readReceipts: ${settings.features.enableReadReceipts}
     };
     
     const script = document.createElement('script');
@@ -89,7 +99,9 @@ export const useChatSettings = () => {
     selectedTab,
     copied,
     loading,
-    handleChange,
+    handleAppearanceChange,
+    handleContentChange,
+    handleFeatureChange,
     handleSave,
     handleReset,
     getEmbedCode,

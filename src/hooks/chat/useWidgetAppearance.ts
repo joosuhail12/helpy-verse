@@ -17,19 +17,19 @@ export const useWidgetAppearance = (options: WidgetAppearanceOptions = {}) => {
   // Apply initial settings if provided
   useEffect(() => {
     if (options.initialSettings) {
-      if (options.initialSettings.primaryColor) {
+      if (options.initialSettings.appearance?.primaryColor) {
         setColors({ 
           ...colors, 
-          primary: options.initialSettings.primaryColor 
+          primary: options.initialSettings.appearance.primaryColor 
         });
       }
       
-      if (options.initialSettings.position) {
-        setPosition(options.initialSettings.position);
+      if (options.initialSettings.appearance?.position) {
+        setPosition(options.initialSettings.appearance.position);
       }
       
-      if (options.initialSettings.compact !== undefined) {
-        setCompact(options.initialSettings.compact);
+      if (options.initialSettings.appearance?.compact !== undefined) {
+        setCompact(options.initialSettings.appearance.compact);
       }
     }
   }, [options.initialSettings]);
