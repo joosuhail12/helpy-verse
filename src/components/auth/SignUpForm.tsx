@@ -6,6 +6,9 @@ import { useAppDispatch } from "../../hooks/useAppDispatch";
 import { useAppSelector } from "../../hooks/useAppSelector";
 import { registerUser } from "../../store/slices/authSlice";
 import { toast } from "../../components/ui/use-toast";
+import { Input } from "../ui/input";
+import { Button } from "../ui/button";
+import { Label } from "../ui/label";
 
 export const SignUpForm = memo(() => {
   const [fullName, setFullName] = useState("");
@@ -45,10 +48,10 @@ export const SignUpForm = memo(() => {
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <div className="space-y-1">
-          <label htmlFor="fullName" className="input-label">
+          <Label htmlFor="fullName" className="input-label">
             Full Name
-          </label>
-          <input
+          </Label>
+          <Input
             id="fullName"
             type="text"
             value={fullName}
@@ -61,10 +64,10 @@ export const SignUpForm = memo(() => {
         </div>
 
         <div className="space-y-1">
-          <label htmlFor="email" className="input-label">
+          <Label htmlFor="email" className="input-label">
             Email
-          </label>
-          <input
+          </Label>
+          <Input
             id="email"
             type="email"
             value={email}
@@ -77,10 +80,10 @@ export const SignUpForm = memo(() => {
         </div>
 
         <div className="space-y-1">
-          <label htmlFor="password" className="input-label">
+          <Label htmlFor="password" className="input-label">
             Password
-          </label>
-          <input
+          </Label>
+          <Input
             id="password"
             type="password"
             value={password}
@@ -94,10 +97,10 @@ export const SignUpForm = memo(() => {
         </div>
 
         <div className="space-y-1">
-          <label htmlFor="companyName" className="input-label">
+          <Label htmlFor="companyName" className="input-label">
             Company Name
-          </label>
-          <input
+          </Label>
+          <Input
             id="companyName"
             type="text"
             value={companyName}
@@ -109,14 +112,14 @@ export const SignUpForm = memo(() => {
           />
         </div>
 
-        <button 
+        <Button 
           type="submit" 
           className="btn-primary"
           disabled={loading}
         >
           {loading ? 'Creating account...' : 'Create Account'}
           {!loading && <ArrowRight className="w-4 h-4" />}
-        </button>
+        </Button>
       </form>
 
       <div className="flex items-center justify-center pt-2 text-sm">

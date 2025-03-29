@@ -1,5 +1,7 @@
 
 import React from 'react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 interface EmailInputProps {
   value: string;
@@ -7,31 +9,25 @@ interface EmailInputProps {
   disabled?: boolean;
 }
 
-export const EmailInput: React.FC<EmailInputProps> = ({ 
-  value, 
-  onChange, 
-  disabled = false 
+export const EmailInput: React.FC<EmailInputProps> = ({
+  value,
+  onChange,
+  disabled
 }) => {
   return (
     <div className="space-y-2">
-      <label 
-        htmlFor="email" 
-        className="block text-gray-700 font-medium text-sm transition-colors duration-300"
-      >
+      <Label htmlFor="email" className="text-sm font-medium text-gray-700">
         Email
-      </label>
-      <input
+      </Label>
+      <Input
         id="email"
         type="email"
         value={value}
         onChange={onChange}
         placeholder="hello@example.com"
-        className="w-full px-4 py-2.5 rounded-lg bg-white/70 border border-gray-200 
-                 focus:border-primary/30 focus:ring-2 focus:ring-primary/20 
-                 hover:border-primary/30 transition-all duration-300 ease-in-out
-                 placeholder:text-gray-400 text-gray-800"
-        required
         disabled={disabled}
+        required
+        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary"
       />
     </div>
   );
