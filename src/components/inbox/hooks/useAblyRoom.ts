@@ -11,11 +11,9 @@ export const useAblyRoom = (ticket: Ticket) => {
     const [newMessage, setNewMessage] = useState('');
     const [isSending, setIsSending] = useState(false);
     const [isInternalNote, setIsInternalNote] = useState(false);
-    // Comment out typing and presence state
-    /* 
+    // Uncomment typing and presence state
     const [typingUsers, setTypingUsers] = useState<string[]>([]);
     const [activeUsers, setActiveUsers] = useState<UserPresence[]>([]);
-    */
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const { toast } = useToast();
@@ -119,14 +117,12 @@ export const useAblyRoom = (ticket: Ticket) => {
                 setMessages(prev => [...prev, newMsg]);
             });
 
-            // Comment out presence setup
-            /*
+            // Uncomment presence setup
             // Handle presence
             setupPresence(room).catch(err => console.error('Error setting up presence:', err));
-            */
         };
 
-        /* 
+
         const setupPresence = async (room: any) => {
             try {
                 console.log('Setting up presence');
@@ -214,7 +210,7 @@ export const useAblyRoom = (ticket: Ticket) => {
                 console.error('Error setting up presence:', error);
             }
         };
-        */
+
 
         setupRoom();
 
@@ -223,10 +219,8 @@ export const useAblyRoom = (ticket: Ticket) => {
             if (roomInstance) {
                 try {
                     console.log('Cleaning up room');
-                    // Comment out presence leave
-                    /*
+                    // Uncomment presence leave
                     roomInstance.presence.leave();
-                    */
                     roomInstance.detach();
                 } catch (error) {
                     console.error('Error cleaning up room:', error);
@@ -235,8 +229,7 @@ export const useAblyRoom = (ticket: Ticket) => {
         };
     }, [ticket.id, toast]);
 
-    // Comment out typing indicator functionality
-    /*
+    // Uncomment typing indicator functionality
     // Typing indicator functionality
     const debouncedStopTyping = useCallback(
         debounce(async (room) => {
@@ -262,7 +255,6 @@ export const useAblyRoom = (ticket: Ticket) => {
             console.error('Error updating typing status:', error);
         }
     };
-    */
 
     // Send message functionality
     const handleSendMessage = async () => {
@@ -307,16 +299,12 @@ export const useAblyRoom = (ticket: Ticket) => {
         messages,
         newMessage,
         setNewMessage,
-        // Comment out returned presence and typing values
-        /*
+        // Uncomment returned presence and typing values
         typingUsers,
         activeUsers,
-        */
         handleSendMessage,
-        // Comment out handleTyping
-        /*
+        // Uncomment handleTyping
         handleTyping,
-        */
         isLoading,
         isSending,
         error,

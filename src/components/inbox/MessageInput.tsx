@@ -1,6 +1,6 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
+import useCustomer from '@/hooks/use-customer';
 import type { Ticket } from '@/types/ticket';
 import MessageToolbar from './components/MessageToolbar';
 import AttachmentList from './components/AttachmentList';
@@ -17,10 +17,10 @@ interface MessageInputProps {
   disabled?: boolean;
 }
 
-const MessageInput = ({ 
-  newMessage, 
-  onMessageChange, 
-  onKeyPress, 
+const MessageInput = ({
+  newMessage,
+  onMessageChange,
+  onKeyPress,
   onSendMessage,
   ticket,
   isSending = false,
@@ -31,11 +31,36 @@ const MessageInput = ({
   const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
   const [isAttachmentSheetOpen, setIsAttachmentSheetOpen] = useState(false);
 
-  const editor = useEditor(
-    createEditorConfig(newMessage, (editor) => {
-      onMessageChange(editor.getHTML());
-    }, ticket)
-  );
+  // Get customer name for better editor placeholders
+  const { customerName } = useCustomer(ticket.customerId);
+
+  // Create the editor with proper configuration
+  const editor = useEditor({
+    extensions: createEditorConfig(newMessage, (editor) => {
+      if (editor && typeof editor.getHTML === 'function') {
+        onMessageChange(editor.getHTML());
+      }
+    }, ticket, customerName).extensions,
+    content: newMessage,
+    editorProps: {
+      attributes: {
+        class: 'prose focus:outline-none w-full max-w-full',
+        spellcheck: 'true',
+      },
+    },
+    onUpdate: ({ editor }) => {
+      if (editor && typeof editor.getHTML === 'function') {
+        onMessageChange(editor.getHTML());
+      }
+    }
+  });
+
+  // Update editor content when newMessage changes from outside
+  useEffect(() => {
+    if (editor && editor.commands && typeof editor.commands.setContent === 'function' && newMessage !== editor.getHTML()) {
+      editor.commands.setContent(newMessage);
+    }
+  }, [newMessage, editor]);
 
   const handleEmojiSelect = (emojiData: any) => {
     editor?.commands.insertContent(emojiData.emoji);
@@ -43,7 +68,7 @@ const MessageInput = ({
 
   const handleFilesAdded = (newFiles: File[]) => {
     setFiles(prev => [...prev, ...newFiles]);
-    
+
     // Simulate upload progress for each file
     newFiles.forEach(file => {
       let progress = 0;
@@ -72,7 +97,7 @@ const MessageInput = ({
     let content = '';
     switch (type) {
       case 'customer':
-        content = `@${ticket.customer}`;
+        content = `@${customerName || ticket.customer || 'Customer'}`;
         break;
       case 'company':
         content = `@${ticket.company}`;
@@ -90,7 +115,7 @@ const MessageInput = ({
         "border rounded-lg mb-3",
         isInternalNote && "border-yellow-400 bg-yellow-50"
       )}>
-        <MessageToolbar 
+        <MessageToolbar
           editor={editor}
           onInsertPlaceholder={insertPlaceholder}
           ticket={ticket}
@@ -105,12 +130,12 @@ const MessageInput = ({
           isAttachmentSheetOpen={isAttachmentSheetOpen}
           setIsAttachmentSheetOpen={setIsAttachmentSheetOpen}
         />
-        <div 
+        <div
           className={`cursor-text ${disabled ? 'opacity-50 pointer-events-none' : ''}`}
           onClick={() => editor?.commands.focus()}
         >
-          <EditorContent 
-            editor={editor} 
+          <EditorContent
+            editor={editor}
             className="p-3"
             onKeyDown={onKeyPress}
           />

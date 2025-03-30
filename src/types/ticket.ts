@@ -1,8 +1,8 @@
-
 export interface Ticket {
   id: string;
   subject: string;
-  customer: string;
+  customer?: string;
+  customerId?: string;
   lastMessage: string;
   assignee: string | null;
   company: string;

@@ -9,6 +9,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { RootState } from '@/store/store';
 import { Badge } from '@/components/ui/badge';
+import useCustomer from '@/hooks/use-customer';
 
 interface ConversationHeaderProps {
   ticket: Ticket;
@@ -17,7 +18,7 @@ interface ConversationHeaderProps {
 }
 
 const ConversationHeader = ({ ticket, onClose, activeUsers = [] }: ConversationHeaderProps) => {
-  // Get customer details from Redux store
+  // Get customer details from Redux store (legacy approach)
   const { contactDetails, loading } = useAppSelector(
     (state: RootState) => state.contacts || {
       contactDetails: null,
@@ -25,15 +26,23 @@ const ConversationHeader = ({ ticket, onClose, activeUsers = [] }: ConversationH
     }
   );
 
+  // Use our customer hook for customerId-based approach
+  const { customer: customerFromCache, isLoading: isCustomerLoading } = useCustomer(ticket.customerId);
+
+  // Determine which data source to use
+  const isUsingCustomerId = !!ticket.customerId;
+  const customerData = isUsingCustomerId ? customerFromCache : contactDetails;
+  const isLoadingCustomer = isUsingCustomerId ? isCustomerLoading : loading;
+
   // Memoize customer display information
   const customerInfo = useMemo(() => {
-    if (contactDetails) {
+    if (customerData) {
       return {
-        name: `${contactDetails.firstname} ${contactDetails.lastname}`,
-        initials: `${contactDetails.firstname[0]}${contactDetails.lastname[0]}`,
-        company: contactDetails.company,
-        email: contactDetails.email,
-        id: contactDetails.id
+        name: `${customerData.firstname} ${customerData.lastname}`,
+        initials: `${customerData.firstname[0]}${customerData.lastname[0]}`,
+        company: customerData.company,
+        email: customerData.email,
+        id: customerData.id
       };
     }
 
@@ -42,9 +51,9 @@ const ConversationHeader = ({ ticket, onClose, activeUsers = [] }: ConversationH
       name: ticket.customer,
       initials: ticket.customer ? ticket.customer[0] : '?',
       company: ticket.company,
-      id: ticket.customer
+      id: ticket.customer || ticket.customerId
     };
-  }, [contactDetails, ticket]);
+  }, [customerData, ticket]);
 
   // Prioritize contact info if available, otherwise fall back to ticket info
   const displayName = customerInfo.name;
@@ -61,7 +70,7 @@ const ConversationHeader = ({ ticket, onClose, activeUsers = [] }: ConversationH
           </Badge>
         </div>
         <div className="flex items-center gap-2 mt-1">
-          {loading ? (
+          {isLoadingCustomer ? (
             <div className="h-5 w-5 rounded-full bg-muted animate-pulse"></div>
           ) : (
             <Avatar className="h-5 w-5">
@@ -69,7 +78,7 @@ const ConversationHeader = ({ ticket, onClose, activeUsers = [] }: ConversationH
             </Avatar>
           )}
           <p className="text-sm text-muted-foreground">
-            {loading ? (
+            {isLoadingCustomer ? (
               <span className="inline-block h-4 w-32 bg-muted animate-pulse rounded"></span>
             ) : (
               <>

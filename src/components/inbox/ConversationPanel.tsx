@@ -29,9 +29,15 @@ const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
   const handleKeyPress = async (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSendMessage();
+      await handleSendMessage();
     } else {
-      handleTyping();
+      if (typeof handleTyping === 'function') {
+        try {
+          await handleTyping();
+        } catch (err) {
+          console.error('Error handling typing indicator:', err);
+        }
+      }
     }
   };
 

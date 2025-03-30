@@ -1,4 +1,3 @@
-
 import { Loader2, Bell, AtSign, UserPlus, MessageCircle } from 'lucide-react';
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -69,7 +68,7 @@ const getNotificationColor = (type: string) => {
 
 const getCardBackground = (type: string | undefined) => {
   if (!type) return '';
-  
+
   switch (type) {
     case 'mention':
       return 'bg-gradient-to-br from-blue-50/50 to-white border-blue-100/50';
@@ -102,29 +101,29 @@ const TicketListItem = ({
           className="h-3.5 w-3.5 rounded-[4px] border-gray-300"
         />
       </div>
-      
-      <div 
+
+      <div
         className={`pl-8 group relative rounded-xl border shadow-sm hover:shadow-md transition-all duration-200 
           ${ticket.isUnread ? 'bg-gradient-to-br from-blue-50/30 to-white border-blue-100/50' : 'border-gray-100'}
           ${ticket.hasNotification ? getCardBackground(ticket.notificationType) : 'bg-white border-gray-100'}
           focus-within:ring-1 focus-within:ring-primary/50`}
         tabIndex={0}
         role="article"
-        aria-label={`Ticket from ${ticket.customer}: ${ticket.subject}`}
+        aria-label={`Ticket: ${ticket.subject}`}
       >
         {isLoading && (
           <div className="absolute inset-0 bg-white/50 backdrop-blur-sm flex items-center justify-center rounded-xl z-20">
             <Loader2 className="h-3 w-3 animate-spin text-primary" />
           </div>
         )}
-        
+
         <div className="relative">
-          <TicketCard 
-            ticket={ticket} 
+          <TicketCard
+            ticket={ticket}
             viewMode={viewMode}
             onCopyId={() => onCopyId(ticket.id)}
           />
-          
+
           {ticket.hasNotification && ticket.notificationType && (
             <div className="absolute right-3 top-3">
               <TooltipProvider>
