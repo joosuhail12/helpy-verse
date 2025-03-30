@@ -2,8 +2,8 @@
 import React, { useState } from 'react';
 import { useChat } from '@/hooks/chat/useChat';
 import { useThemeContext } from '@/context/ThemeContext';
-import ChatHeader from '../components/header/ChatHeader';
-import EnhancedConversationView from '../components/conversation/EnhancedConversationView';
+import ChatHeader from '@/components/chat-widget/components/header/ChatHeader';
+import EnhancedConversationView from '@/components/chat-widget/components/conversation/EnhancedConversationView';
 
 interface MessagesViewProps {
   onClose: () => void;
