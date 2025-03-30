@@ -137,7 +137,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
         <MessageInput 
           onSendMessage={handleSendMessage} 
           disabled={isLoading}
-          placeholder={labels?.messagePlaceholder || "Type a message..."}
+          placeholder={labels?.placeholder || "Type a message..."}
         />
       </div>
     </div>
