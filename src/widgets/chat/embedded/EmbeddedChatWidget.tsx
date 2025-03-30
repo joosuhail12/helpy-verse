@@ -1,8 +1,10 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChatWidget } from '../ChatWidget';
 import { ThemeConfig, ChatWidgetSettings } from '../types';
 import { adaptApiThemeToContextTheme } from '../utils/themeAdapter';
+import { WidgetStateProvider } from '../context/WidgetStateContext';
+import { v4 as uuidv4 } from 'uuid';
 
 interface EmbeddedChatWidgetProps {
   /**
@@ -48,46 +50,54 @@ const EmbeddedChatWidget: React.FC<EmbeddedChatWidgetProps> = ({
   onClose,
   onMessageSent
 }) => {
+  // Generate a unique ID for this widget instance to ensure state isolation
+  const [instanceId] = useState(() => `widget-${uuidv4()}`);
+  
   // Set up event listeners for callbacks if provided
   React.useEffect(() => {
-    if (onOpen) {
-      window.addEventListener('chat-widget-open', onOpen);
-    }
+    // Create namespaced event names to prevent cross-widget interference
+    const openEventName = `chat-widget-open-${instanceId}`;
+    const closeEventName = `chat-widget-close-${instanceId}`;
+    const messageSentEventName = `chat-message-sent-${instanceId}`;
     
-    if (onClose) {
-      window.addEventListener('chat-widget-close', onClose);
-    }
-    
-    if (onMessageSent) {
-      const handleMessageSent = (e: CustomEvent<{ message: { content: string } }>) => {
-        onMessageSent(e.detail.message.content);
-      };
-      
-      window.addEventListener('chat-message-sent', handleMessageSent as EventListener);
-      
-      return () => {
-        window.removeEventListener('chat-message-sent', handleMessageSent as EventListener);
-        if (onOpen) window.removeEventListener('chat-widget-open', onOpen);
-        if (onClose) window.removeEventListener('chat-widget-close', onClose);
-      };
-    }
-    
-    return () => {
-      if (onOpen) window.removeEventListener('chat-widget-open', onOpen);
-      if (onClose) window.removeEventListener('chat-widget-close', onClose);
+    const handleOpen = () => {
+      if (onOpen) onOpen();
     };
-  }, [onOpen, onClose, onMessageSent]);
+    
+    const handleClose = () => {
+      if (onClose) onClose();
+    };
+    
+    const handleMessageSent = (e: CustomEvent<{ message: { content: string } }>) => {
+      if (onMessageSent) onMessageSent(e.detail.message.content);
+    };
+    
+    // Add event listeners
+    window.addEventListener(openEventName, handleOpen);
+    window.addEventListener(closeEventName, handleClose);
+    window.addEventListener(messageSentEventName, handleMessageSent as EventListener);
+    
+    // Clean up event listeners
+    return () => {
+      window.removeEventListener(openEventName, handleOpen);
+      window.removeEventListener(closeEventName, handleClose);
+      window.removeEventListener(messageSentEventName, handleMessageSent as EventListener);
+    };
+  }, [instanceId, onOpen, onClose, onMessageSent]);
 
   // Convert API theme to context theme
   const contextTheme = adaptApiThemeToContextTheme(theme);
 
   return (
-    <ChatWidget 
-      workspaceId={workspaceId}
-      theme={contextTheme}
-      settings={settings}
-      standalone={false}
-    />
+    <WidgetStateProvider id={instanceId}>
+      <ChatWidget 
+        workspaceId={workspaceId}
+        theme={contextTheme}
+        settings={settings}
+        standalone={false}
+        instanceId={instanceId}
+      />
+    </WidgetStateProvider>
   );
 };
 

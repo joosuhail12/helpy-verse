@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { ChatWidget } from '../ChatWidget';
 import { ThemeConfig, WidgetOptions } from '../types';
 import { adaptApiThemeToContextTheme } from '../utils/themeAdapter';
+import { WidgetStateProvider } from '../context/WidgetStateContext';
 
 /**
  * Standalone Chat Widget component designed for website embedding via script tag
@@ -11,6 +12,8 @@ import { adaptApiThemeToContextTheme } from '../utils/themeAdapter';
 const StandaloneChatWidget: React.FC = () => {
   const [options, setOptions] = useState<WidgetOptions | null>(null);
   const [mounted, setMounted] = useState(false);
+  // Use a fixed instance ID for standalone mode since there will only be one per page
+  const instanceId = 'standalone-widget';
 
   useEffect(() => {
     // Mark component as mounted
@@ -61,12 +64,15 @@ const StandaloneChatWidget: React.FC = () => {
   const contextTheme = adaptApiThemeToContextTheme(options?.theme);
   
   return (
-    <ChatWidget 
-      workspaceId={workspaceId}
-      theme={contextTheme}
-      settings={options?.settings}
-      standalone={true}
-    />
+    <WidgetStateProvider id={instanceId}>
+      <ChatWidget 
+        workspaceId={workspaceId}
+        theme={contextTheme}
+        settings={options?.settings}
+        standalone={true}
+        instanceId={instanceId}
+      />
+    </WidgetStateProvider>
   );
 };
 
