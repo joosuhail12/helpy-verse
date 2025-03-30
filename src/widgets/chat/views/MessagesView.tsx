@@ -1,11 +1,11 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useChat } from '@/hooks/chat/useChat';
 import { useThemeContext } from '@/context/ThemeContext';
 import ChatHeader from '@/components/chat-widget/components/header/ChatHeader';
-import EnhancedConversationView from '@/components/chat-widget/components/conversation/EnhancedConversationView';
+import MessageInput from '@/components/chat-widget/components/conversation/MessageInput';
 import { formatDistanceToNow } from 'date-fns';
-import { MessageSquare, User, Clock } from 'lucide-react';
+import { MessageSquare, User, Clock, ArrowRight } from 'lucide-react';
 
 interface MessagesViewProps {
   onClose: () => void;
@@ -18,9 +18,14 @@ const MessagesView: React.FC<MessagesViewProps> = ({
   onSelectConversation,
   onStartConversation
 }) => {
-  const { conversations, selectConversation } = useChat();
+  const { conversations, selectConversation, getMessages } = useChat();
   const { labels, colors } = useThemeContext();
-  const [newMessageText, setNewMessageText] = useState('');
+
+  // Load conversations data when component mounts
+  useEffect(() => {
+    // This would typically fetch conversations from an API
+    // For now we're using the mock data from the useChat hook
+  }, []);
 
   const handleSendMessage = async (content: string) => {
     if (content.trim()) {
@@ -42,7 +47,7 @@ const MessagesView: React.FC<MessagesViewProps> = ({
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full" style={{ backgroundColor: colors.background }}>
       <ChatHeader 
         title={labels?.recentMessagesTitle || "Recent Conversations"} 
         onClose={onClose} 
@@ -56,17 +61,24 @@ const MessagesView: React.FC<MessagesViewProps> = ({
               <MessageSquare size={24} className="text-primary" />
             </div>
             <p className="text-gray-500 mb-4">{labels?.noMessagesText || "You don't have any conversations yet"}</p>
-            <div className="w-full">
-              <EnhancedConversationView
-                messages={[]}
-                onSendMessage={handleSendMessage}
-                disabled={false}
-                hasActiveConversation={false}
-              />
+            
+            {/* Input to start a new conversation when there are no existing ones */}
+            <div className="w-full max-w-md mx-auto mt-4">
+              <div className="p-4 bg-gray-50 rounded-lg">
+                <h3 className="text-sm font-medium mb-2">Start a new conversation</h3>
+                <MessageInput 
+                  onSendMessage={handleSendMessage}
+                  disabled={false}
+                  placeholder={labels?.placeholder || "Type a message..."}
+                />
+              </div>
             </div>
           </div>
         ) : (
-          <div className="flex-1 overflow-y-auto divide-y divide-gray-100" style={{ borderColor: colors.border }}>
+          <div 
+            className="flex-1 overflow-y-auto divide-y"
+            style={{ borderColor: colors.border }}
+          >
             {conversations.map(conversation => (
               <button
                 key={conversation.id}
@@ -85,7 +97,7 @@ const MessagesView: React.FC<MessagesViewProps> = ({
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-start">
-                    <h3 className="font-medium truncate">
+                    <h3 className="font-medium truncate" style={{ color: colors.foreground }}>
                       {conversation.title || "New Conversation"}
                     </h3>
                     <span className="text-xs text-gray-400 flex items-center ml-2 whitespace-nowrap">
@@ -93,19 +105,33 @@ const MessagesView: React.FC<MessagesViewProps> = ({
                       {formatTimestamp(conversation.lastMessageTimestamp)}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-500 truncate mt-1">
+                  <p className="text-sm truncate mt-1" style={{ color: 'rgb(107 114 128)' }}>
                     {conversation.lastMessage || labels?.noMessagesText || "No messages yet"}
                   </p>
-                  {conversation.unreadCount > 0 && (
-                    <div className="mt-1 flex justify-end">
+                  <div className="mt-1 flex justify-between items-center">
+                    {conversation.unreadCount > 0 && (
                       <span className="bg-primary text-white text-xs rounded-full px-2 py-0.5">
                         {conversation.unreadCount}
                       </span>
-                    </div>
-                  )}
+                    )}
+                    <span className="text-primary text-xs flex items-center ml-auto">
+                      View conversation <ArrowRight size={12} className="ml-1" />
+                    </span>
+                  </div>
                 </div>
               </button>
             ))}
+          </div>
+        )}
+        
+        {/* Input at the bottom to start a new conversation when there are existing ones */}
+        {conversations.length > 0 && (
+          <div className="p-3 border-t" style={{ borderColor: colors.border }}>
+            <MessageInput 
+              onSendMessage={handleSendMessage}
+              disabled={false}
+              placeholder={labels?.placeholder || "Start a new conversation..."}
+            />
           </div>
         )}
       </div>
