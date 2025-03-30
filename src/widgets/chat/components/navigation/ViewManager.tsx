@@ -2,11 +2,12 @@
 import React, { lazy, Suspense } from 'react';
 import { View } from '../../types';
 import { Loader2 } from 'lucide-react';
+import { useChat } from '@/hooks/chat/useChat';
 
 // Lazy loaded views
 const LazyHomeView = lazy(() => import('../../views/LazyHomeView'));
 const LazyMessagesView = lazy(() => import('../../views/LazyMessagesView'));
-const LazyConversationView = lazy(() => import('../../components/conversation/LazyConversationView'));
+const LazyConversationView = lazy(() => import('../../views/LazyConversationView'));
 
 interface ViewManagerProps {
   activeView: View;
@@ -23,6 +24,8 @@ const ViewManager: React.FC<ViewManagerProps> = ({
   onClose,
   onStartConversation
 }) => {
+  const { currentConversation } = useChat();
+  
   return (
     <div className="flex-1 overflow-hidden">
       <Suspense fallback={
@@ -48,7 +51,6 @@ const ViewManager: React.FC<ViewManagerProps> = ({
         
         {activeView === 'conversation' && (
           <LazyConversationView 
-            workspaceId={workspaceId}
             onBack={() => setActiveView('messages')}
             onClose={onClose}
           />
