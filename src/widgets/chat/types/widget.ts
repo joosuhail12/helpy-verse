@@ -1,6 +1,6 @@
 
 import { ChatWidgetSettings } from '@/store/slices/chatWidgetSettings/types';
-import { ThemeConfig } from './theme';
+import { ApiThemeConfig as ThemeConfig } from './theme';
 
 export interface WidgetOptions {
   workspaceId: string;
