@@ -42,6 +42,7 @@ const ViewManager: React.FC<ViewManagerProps> = ({
           <LazyMessagesView 
             onSelectConversation={() => setActiveView('conversation')}
             onClose={onClose}
+            onStartConversation={onStartConversation}
           />
         )}
         

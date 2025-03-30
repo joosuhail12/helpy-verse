@@ -37,3 +37,6 @@ export interface WidgetState {
     compact: boolean;
   };
 }
+
+// Define the View type for navigation
+export type View = 'home' | 'messages' | 'conversation';
