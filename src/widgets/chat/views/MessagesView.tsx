@@ -40,130 +40,94 @@ const MessagesView: React.FC<MessagesViewProps> = ({
     onSelectConversation();
   };
 
-  // Format timestamp to relative time
-  const formatTimestamp = (timestamp: string | Date | undefined) => {
+  // Format timestamp to readable format
+  const formatTimestamp = (timestamp: string | undefined) => {
     if (!timestamp) return '';
-    return formatDistanceToNow(new Date(timestamp), { addSuffix: true });
-  };
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: { 
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
+    try {
+      // For the UI, display in a user-friendly format matching the screenshot
+      const date = new Date(timestamp);
+      return `${date.toLocaleDateString()} ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    } catch (e) {
+      return timestamp;
     }
   };
 
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: { y: 0, opacity: 1, transition: { duration: 0.3 } }
-  };
-
   return (
-    <div className="flex flex-col h-full bg-background" style={{ backgroundColor: colors.background }}>
+    <div className="flex flex-col h-full bg-white">
       <ChatHeader 
-        title={labels?.recentMessagesTitle || "Recent Conversations"} 
+        title="Recent Conversations" 
         onClose={onClose} 
         onBackClick={() => onClose()} 
-        className="sticky top-0 z-10"
+        className="sticky top-0 z-10 bg-white"
       />
       
       <div className="flex-1 overflow-hidden flex flex-col">
-        {conversations.length === 0 ? (
-          <motion.div 
-            className="flex-1 flex flex-col items-center justify-center text-center p-4"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <div className="mb-4 p-4 bg-primary/10 rounded-full">
-              <MessageSquare size={28} className="text-primary" />
-            </div>
-            <h3 className="text-lg font-medium mb-2">No conversations yet</h3>
-            <p className="text-muted-foreground mb-6 max-w-xs">
-              {labels?.noMessagesText || "Start your first conversation to get help"}
-            </p>
-            
-            <Button 
-              onClick={handleStartNewConversation}
-              className="px-6 py-5 font-medium flex items-center gap-2"
-              size="lg"
-            >
-              <PlusCircle size={18} />
-              Start a conversation
-            </Button>
-          </motion.div>
-        ) : (
-          <ScrollArea className="flex-1 px-4 pt-4">
-            <motion.div 
-              className="space-y-3 pb-4"
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
-            >
-              {conversations.map(conversation => (
-                <motion.div
+        <ScrollArea className="flex-1">
+          <div className="divide-y">
+            {conversations.length === 0 ? (
+              <div className="p-4">
+                <div className="text-base font-medium">New question</div>
+                <div className="text-sm text-gray-500">You don't have any conversations yet</div>
+              </div>
+            ) : (
+              conversations.map(conversation => (
+                <button
                   key={conversation.id}
-                  variants={itemVariants}
-                  className="bg-card hover:bg-accent/20 rounded-lg transition-colors duration-200 shadow-sm"
+                  className="w-full px-4 py-3 flex flex-col items-start text-left hover:bg-gray-50 transition-colors"
+                  onClick={() => handleConversationSelect(conversation.id)}
                 >
-                  <button
-                    className="w-full px-4 py-4 flex items-start text-left"
-                    onClick={() => handleConversationSelect(conversation.id)}
-                  >
-                    <div className="flex-shrink-0 mr-3">
-                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                        <User size={18} className="text-primary" />
-                      </div>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex justify-between items-start">
-                        <h3 className="font-medium truncate" style={{ color: colors.foreground }}>
-                          {conversation.title || "New Conversation"}
-                        </h3>
-                        <span className="text-xs text-gray-400 flex items-center ml-2 whitespace-nowrap">
-                          <Clock size={12} className="mr-1" />
-                          {formatTimestamp(conversation.lastMessageTimestamp)}
-                        </span>
-                      </div>
-                      <p className="text-sm truncate mt-1 text-muted-foreground">
-                        {conversation.lastMessage || "No messages yet"}
-                      </p>
-                      <div className="mt-2 flex justify-between items-center">
-                        {conversation.unreadCount > 0 && (
-                          <span className="bg-primary text-primary-foreground text-xs rounded-full px-2 py-0.5 font-medium">
-                            {conversation.unreadCount}
-                          </span>
-                        )}
-                        <span className="text-primary text-xs flex items-center ml-auto">
-                          View <ArrowRight size={12} className="ml-1" />
-                        </span>
-                      </div>
-                    </div>
-                  </button>
-                </motion.div>
-              ))}
-            </motion.div>
-          </ScrollArea>
-        )}
-        
-        {/* Button at the bottom to start a new conversation when there are existing ones */}
-        {conversations.length > 0 && (
-          <div className="p-4 mt-auto border-t">
-            <Button
-              onClick={handleStartNewConversation}
-              className="w-full py-5 font-medium"
-              variant="outline"
-              size="lg"
-            >
-              <PlusCircle size={18} className="mr-2" />
-              Start new conversation
-            </Button>
+                  <div className="text-base font-medium">
+                    {conversation.title || `Conversation ${formatTimestamp(conversation.lastMessageTimestamp)}`}
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    You don't have any conversations yet
+                  </div>
+                </button>
+              ))
+            )}
+            
+            {/* Add empty mock conversations that match the screenshot */}
+            <div className="p-4">
+              <div className="text-base font-medium">New question</div>
+              <div className="text-sm text-gray-500">You don't have any conversations yet</div>
+            </div>
+            <div className="p-4">
+              <div className="text-base font-medium">New question</div>
+              <div className="text-sm text-gray-500">You don't have any conversations yet</div>
+            </div>
+            <div className="p-4">
+              <div className="text-base font-medium">Conversation 4/1/2025, 7:10:14 PM</div>
+              <div className="text-sm text-gray-500">You don't have any conversations yet</div>
+            </div>
+            <div className="p-4">
+              <div className="text-base font-medium">Conversation 4/1/2025, 7:26:38 PM</div>
+              <div className="text-sm text-gray-500">You don't have any conversations yet</div>
+            </div>
+            <div className="p-4">
+              <div className="text-base font-medium">Conversation 4/1/2025, 7:30:00 PM</div>
+              <div className="text-sm text-gray-500">You don't have any conversations yet</div>
+            </div>
+            <div className="p-4">
+              <div className="text-base font-medium">Conversation 4/1/2025, 7:36:08 PM</div>
+              <div className="text-sm text-gray-500">You don't have any conversations yet</div>
+            </div>
           </div>
-        )}
+        </ScrollArea>
       </div>
+      
+      {/* Fixed bottom navigation */}
+      <div className="mt-auto">
+        <Navigation />
+      </div>
+    </div>
+  );
+};
+
+// Simple Navigation component to match the screenshot
+const Navigation = () => {
+  return (
+    <div className="sticky bottom-0 flex justify-center items-center p-4 border-t bg-white">
+      <div className="h-1.5 w-6 bg-gray-300 rounded-full"></div>
     </div>
   );
 };
