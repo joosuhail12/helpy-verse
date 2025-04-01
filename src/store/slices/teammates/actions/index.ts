@@ -5,8 +5,7 @@ export * from './export';
 export * from './invite';
 export * from './security';
 
-// Re-export all thunks from the thunks directory to maintain backward compatibility
-// This ensures components importing from '@/store/slices/teammates/actions' will find what they need
+// Re-export specific thunks for backward compatibility
 export {
   // Core thunks 
   fetchTeammates,
