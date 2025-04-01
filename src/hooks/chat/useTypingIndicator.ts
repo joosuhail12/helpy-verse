@@ -22,15 +22,12 @@ export const useTypingIndicator = (conversationId: string) => {
 
       setIsUserTyping(isTyping);
 
-      // Use the correct publish method from Ably
-      channel.publish({
-        name: 'typing',
-        data: { 
-          isTyping, 
-          clientId: ably.clientId,
-          name: userName || 'User',
-          timestamp: Date.now() 
-        }
+      // Use the correct publish method for Ably's RealtimeChannelBase
+      channel.publish('typing', { 
+        isTyping, 
+        clientId: ably.clientId,
+        name: userName || 'User',
+        timestamp: Date.now() 
       });
     },
     [conversationId, ably]
@@ -74,11 +71,11 @@ export const useTypingIndicator = (conversationId: string) => {
       }
     };
 
-    // Use the correct subscribe syntax
-    channel.subscribe('typing', typingHandler);
+    // Use on() instead of subscribe() for Ably's RealtimeChannelBase
+    channel.on('typing', typingHandler);
 
     return () => {
-      channel.unsubscribe('typing', typingHandler);
+      channel.off('typing', typingHandler);
     };
   }, [conversationId, ably]);
 

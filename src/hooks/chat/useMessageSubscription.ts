@@ -29,11 +29,12 @@ export const useMessageSubscription = (
       }
     };
 
-    channel.subscribe('message', callbackHandler);
+    // Use on() instead of subscribe() for Ably's RealtimeChannelBase
+    channel.on('message', callbackHandler);
     setIsSubscribed(true);
 
     return () => {
-      channel.unsubscribe('message', callbackHandler);
+      channel.off('message', callbackHandler);
       setIsSubscribed(false);
     };
   }, [conversationId, workspaceId, ably, options]);
@@ -45,11 +46,8 @@ export const useMessageSubscription = (
       const channelName = `chat:${workspaceId}:${conversationId}`;
       const channel = ably.getChannel(channelName);
 
-      // Use the correct publish method from Ably
-      await channel.publish({
-        name: 'message',
-        data: message
-      });
+      // Use the correct publish method for Ably's RealtimeChannelBase
+      await channel.publish('message', message);
     },
     [conversationId, workspaceId, ably]
   );
