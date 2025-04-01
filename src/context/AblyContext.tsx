@@ -10,7 +10,7 @@ interface AblyContextState {
   workspaceId: string;
   isConnected: boolean;
   client: Ably.Realtime | null;
-  getChannel: (channelName: string) => Ably.Types.RealtimeChannelBase;
+  getChannel: (channelName: string) => Ably.Types.RealtimeChannel;
 }
 
 const AblyContext = createContext<AblyContextState | undefined>(undefined);
