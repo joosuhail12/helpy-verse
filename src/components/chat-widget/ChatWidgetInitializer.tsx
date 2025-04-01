@@ -75,8 +75,20 @@ const ChatWidgetInitializer: React.FC<ChatWidgetInitializerProps> = ({ workspace
         compact: true,
         colors: {
           primary: '#3b82f6',
+          primaryForeground: '#ffffff',
           background: '#ffffff',
-          foreground: '#1f2937'
+          backgroundSecondary: '#f9f9f9',
+          foreground: '#1f2937',
+          border: '#e5e7eb',
+          muted: '#f3f4f6',
+          accent: '#f9fafb',
+          inputBackground: '#ffffff',
+          userMessage: '#3b82f6',
+          userMessageText: '#ffffff',
+          agentMessage: '#f3f4f6',
+          agentMessageText: '#1f2937',
+          error: '#ef4444',
+          success: '#10b981'
         }
       }}
     />

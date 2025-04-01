@@ -62,7 +62,7 @@ const ApiKeyConfigForm: React.FC<ApiKeyConfigFormProps> = ({ onValidated, onClos
           style={{ 
             borderColor: colors.border, 
             backgroundColor: colors.inputBackground,
-            color: colors.inputText
+            color: colors.foreground
           }}
         />
         {error && (
