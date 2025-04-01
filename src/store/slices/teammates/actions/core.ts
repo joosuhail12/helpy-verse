@@ -1,59 +1,14 @@
 
-import { createAsyncThunk } from '@reduxjs/toolkit';
-import type { NewTeammate, Teammate } from '@/types/teammate';
-import { 
-  fetchTeammates as fetchTeammatesThunk,
-  fetchTeammateDetails as fetchTeammateDetailsThunk,
-  fetchTeammateActivities as fetchTeammateActivitiesThunk,
-  fetchTeammateAssignments as fetchTeammateAssignmentsThunk,
-  fetchTeammateSessions as fetchTeammateSessionsThunk
-} from '../thunks';
-import { 
-  updateTeammate as updateTeammateThunk,
-  updateTeammatesRole as updateTeammatesRoleThunk,
-  updateTeammatePermissions as updateTeammatePermissionsThunk
-} from '../thunks';
-import {
-  enable2FA as enable2FAThunk,
-  verify2FA as verify2FAThunk,
-  disable2FA as disable2FAThunk,
-  resetPassword as resetPasswordThunk
-} from '../thunks';
-import {
-  terminateSession as terminateSessionThunk
-} from '../thunks';
-import { createTeammate as createTeammateApi } from '@/api/services/teammatesService';
+import { createAction } from '@reduxjs/toolkit';
+import { Teammate } from '@/types/teammate';
 
-// Re-export the fetch thunks
-export const fetchTeammates = fetchTeammatesThunk;
-export const fetchTeammateDetails = fetchTeammateDetailsThunk;
-export const fetchTeammateActivities = fetchTeammateActivitiesThunk;
-export const fetchTeammateAssignments = fetchTeammateAssignmentsThunk;
-export const fetchTeammateSessions = fetchTeammateSessionsThunk;
-
-// Re-export the update thunks
-export const updateTeammate = updateTeammateThunk;
-export const updateTeammatesRole = updateTeammatesRoleThunk;
-export const updateTeammatePermissions = updateTeammatePermissionsThunk;
-
-// Re-export the security thunks
-export const enable2FA = enable2FAThunk;
-export const verify2FA = verify2FAThunk;
-export const disable2FA = disable2FAThunk;
-export const resetPassword = resetPasswordThunk;
-
-// Re-export the session thunks
-export const terminateSession = terminateSessionThunk;
-
-// Add new teammate
-export const addTeammate = createAsyncThunk(
-  'teammates/addTeammate',
-  async (newTeammate: NewTeammate, { dispatch }) => {
-    try {
-      const teammate = await createTeammateApi(newTeammate);
-      return teammate;
-    } catch (error) {
-      throw error;
-    }
-  }
-);
+// Core teammate actions
+export const addTeammate = createAction<Teammate>('teammates/addTeammate');
+export const updateTeammate = createAction<{id: string, updates: Partial<Teammate>}>('teammates/updateTeammate');
+export const updateTeammatesRole = createAction<{ids: string[], role: string}>('teammates/updateTeammatesRole');
+export const updateTeammatePermissions = createAction<{id: string, permissions: string[]}>('teammates/updateTeammatePermissions');
+export const fetchTeammateDetails = createAction<string>('teammates/fetchTeammateDetails');
+export const fetchTeammates = createAction('teammates/fetchTeammates');
+export const fetchTeammateActivities = createAction<string>('teammates/fetchTeammateActivities');
+export const fetchTeammateAssignments = createAction<string>('teammates/fetchTeammateAssignments');
+export const fetchTeammateSessions = createAction<string>('teammates/fetchTeammateSessions');

@@ -1,6 +1,7 @@
 
-// Export all thunks for easy imports elsewhere
-export * from './fetchThunks';
-export * from './updateThunks';
+// Export all thunks from individual files
+export * from './coreThunks';
+export * from './activityThunks';
+export * from './assignmentThunks';
 export * from './securityThunks';
 export * from './sessionThunks';

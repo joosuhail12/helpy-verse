@@ -4,24 +4,19 @@ export * from './core';
 export * from './export';
 export * from './invite';
 
-// Export the thunks but avoid naming conflicts
-export {
-  fetchTeammates,
-  fetchTeammateDetails,
-  fetchTeammateActivities,
-  fetchTeammateAssignments,
-  fetchTeammateSessions,
-  updateTeammate,
-  updateTeammatesRole,
-  updateTeammatePermissions,
+// Export the thunks separately with explicit names to avoid conflicts
+export { 
+  fetchTeammates as fetchTeammatesThunk,
+  fetchTeammateDetails as fetchTeammateDetailsThunk,
+  fetchTeammateActivities as fetchTeammateActivitiesThunk,
+  fetchTeammateAssignments as fetchTeammateAssignmentsThunk,
+  fetchTeammateSessions as fetchTeammateSessionsThunk,
+  updateTeammate as updateTeammateThunk,
+  updateTeammatesRole as updateTeammatesRoleThunk,
+  updateTeammatePermissions as updateTeammatePermissionsThunk,
   terminateSession,
   enable2FA,
   verify2FA,
   disable2FA,
   resetPassword
 } from '../thunks';
-
-// Add direct exports for commonly used functions
-export { addTeammate } from './core';
-export { exportTeammates } from './export';
-export { resendInvitation } from './invite';

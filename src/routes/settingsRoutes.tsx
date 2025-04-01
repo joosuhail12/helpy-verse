@@ -7,8 +7,9 @@ import RouteErrorBoundary from '@/components/app/RouteErrorBoundary';
 
 // Loading spinner component
 const LoadingSpinner = () => (
-  <div className="min-h-screen flex items-center justify-center">
+  <div className="flex items-center justify-center min-h-[400px]">
     <Loader2 className="h-8 w-8 animate-spin text-primary" />
+    <span className="ml-2">Loading...</span>
   </div>
 );
 
@@ -41,7 +42,7 @@ export const SettingsRoutes = [
     path: "settings", 
     element: withSuspenseAndProtection(<Settings />),
     children: [
-      { path: "", element: <Navigate to="chat" replace /> },
+      { path: "", element: <Navigate to="teams" replace /> },
       { path: "chat", element: withSuspenseAndProtection(<ChatSettings />) },
       { path: "profile", element: withSuspenseAndProtection(<Profile />) },
       { path: "team", element: withSuspenseAndProtection(<TeamSettings />) },
