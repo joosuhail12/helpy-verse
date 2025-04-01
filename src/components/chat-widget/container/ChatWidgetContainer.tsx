@@ -43,7 +43,7 @@ const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({
     
     setIsLoading(true);
     try {
-      // Here we need to use the string ID returned by createNewConversation
+      // Use the string ID returned by createNewConversation
       const newConversationId = await createNewConversation(`Conversation ${new Date().toLocaleString()}`);
       selectConversation(newConversationId);
       setActiveView('conversation');
@@ -59,7 +59,7 @@ const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({
   const handleStartNewConversation = useCallback(async () => {
     setIsLoading(true);
     try {
-      // Here we need to use the string ID returned by createNewConversation
+      // Use the string ID returned by createNewConversation
       const newConversationId = await createNewConversation(`Conversation ${new Date().toLocaleString()}`);
       selectConversation(newConversationId);
       setActiveView('conversation');
@@ -70,7 +70,7 @@ const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({
     }
   }, [createNewConversation, selectConversation]);
 
-  // Fixed: Pass the conversation ID string instead of the conversation object
+  // Fixed: Pass the conversation ID string
   const handleSelectConversation = useCallback((conversationId: string) => {
     selectConversation(conversationId);
   }, [selectConversation]);
