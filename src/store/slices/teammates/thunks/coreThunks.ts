@@ -45,13 +45,13 @@ export const fetchTeammateDetails = createAsyncThunk(
 // Update teammate
 export const updateTeammate = createAsyncThunk(
   'teammates/updateTeammate',
-  async ({ id, updates }: { id: string, updates: Partial<Teammate> }, { rejectWithValue }) => {
+  async (teammate: Teammate, { rejectWithValue }) => {
     try {
-      console.log(`Updating teammate ${id}`, updates);
+      console.log(`Updating teammate ${teammate.id}`, teammate);
       
       // In a real app, you would call your API here
       
-      return { id, updates };
+      return teammate;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to update teammate');
     }
@@ -61,13 +61,13 @@ export const updateTeammate = createAsyncThunk(
 // Update teammates' role
 export const updateTeammatesRole = createAsyncThunk(
   'teammates/updateTeammatesRole',
-  async ({ ids, role }: { ids: string[], role: string }, { rejectWithValue }) => {
+  async ({ teammateIds, role }: { teammateIds: string[], role: string }, { rejectWithValue }) => {
     try {
-      console.log(`Updating ${ids.length} teammates to role: ${role}`);
+      console.log(`Updating ${teammateIds.length} teammates to role: ${role}`);
       
       // In a real app, you would call your API here
       
-      return { ids, role };
+      return { teammateIds, role };
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to update teammates role');
     }

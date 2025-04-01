@@ -52,13 +52,13 @@ export const resendInvitation = createAsyncThunk(
 // Update teammate permissions
 export const updateTeammatePermissions = createAsyncThunk(
   'teammates/updatePermissions',
-  async ({ teammateId, permissions }: { teammateId: string, permissions: string[] }, { rejectWithValue }) => {
+  async ({ id, permissions }: { id: string, permissions: string[] }, { rejectWithValue }) => {
     try {
       // Mock API call
-      console.log(`Updating permissions for teammate ${teammateId}:`, permissions);
+      console.log(`Updating permissions for teammate ${id}:`, permissions);
       
       // Return updated permissions
-      return { teammateId, permissions };
+      return { id, permissions };
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to update permissions');
     }
