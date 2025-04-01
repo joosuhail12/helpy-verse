@@ -16,7 +16,7 @@ export const useMessageSubscription = (
   const ably = useAbly();
 
   useEffect(() => {
-    if (!conversationId || !workspaceId) return;
+    if (!conversationId || !workspaceId || !ably.client) return;
 
     const channelName = `chat:${workspaceId}:${conversationId}`;
     const channel = ably.getChannel(channelName);
@@ -37,7 +37,7 @@ export const useMessageSubscription = (
 
   const publishMessage = useCallback(
     async (message: ChatMessage) => {
-      if (!conversationId || !workspaceId) return;
+      if (!conversationId || !workspaceId || !ably.client) return;
 
       const channelName = `chat:${workspaceId}:${conversationId}`;
       const channel = ably.getChannel(channelName);

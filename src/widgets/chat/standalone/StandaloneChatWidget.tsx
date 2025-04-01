@@ -64,7 +64,7 @@ const StandaloneChatWidget: React.FC = () => {
   const contextTheme = adaptApiThemeToContextTheme(options?.theme);
   
   return (
-    <WidgetStateProvider id={instanceId}>
+    <WidgetStateProvider>
       <ChatWidget 
         workspaceId={workspaceId}
         theme={contextTheme}

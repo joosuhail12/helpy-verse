@@ -18,10 +18,10 @@ export interface AgentPresence {
  */
 export const useAgentPresence = (conversationId: string, workspaceId?: string) => {
   const [agents, setAgents] = useState<AgentPresence[]>([]);
-  const { client, isConnected } = useAbly();
+  const ably = useAbly();
 
   useEffect(() => {
-    if (!client || !isConnected || !conversationId) return;
+    if (!ably.client || !ably.isConnected || !conversationId) return;
 
     // In a real app, this would connect to Ably presence
     // For demo purposes, we're setting mock data
@@ -42,7 +42,7 @@ export const useAgentPresence = (conversationId: string, workspaceId?: string) =
     return () => {
       // Cleanup function
     };
-  }, [conversationId, client, isConnected]);
+  }, [conversationId, ably.client, ably.isConnected]);
 
   return {
     agents,

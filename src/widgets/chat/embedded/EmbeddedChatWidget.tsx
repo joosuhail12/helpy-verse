@@ -89,7 +89,7 @@ const EmbeddedChatWidget: React.FC<EmbeddedChatWidgetProps> = ({
   const contextTheme = adaptApiThemeToContextTheme(theme);
 
   return (
-    <WidgetStateProvider id={instanceId}>
+    <WidgetStateProvider>
       <ChatWidget 
         workspaceId={workspaceId}
         theme={contextTheme}

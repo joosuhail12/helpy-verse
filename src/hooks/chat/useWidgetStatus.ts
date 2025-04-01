@@ -12,11 +12,11 @@ type ConnectionStatus = 'connected' | 'connecting' | 'disconnected' | 'failed';
 export const useWidgetStatus = () => {
   const [status, setStatus] = useState<ConnectionStatus>('connecting');
   const [lastConnected, setLastConnected] = useState<Date | null>(null);
-  const { client } = useAbly();
+  const ably = useAbly();
   
   // Monitor connection status
   useEffect(() => {
-    if (!client) return;
+    if (!ably.client) return;
     
     const handleStateChange = (stateChange: Types.ConnectionStateChange) => {
       console.log('Connection state changed:', stateChange.current);
@@ -42,41 +42,41 @@ export const useWidgetStatus = () => {
     };
     
     // Initial status
-    if (client.connection.state === 'connected') {
+    if (ably.client.connection.state === 'connected') {
       setStatus('connected');
       setLastConnected(new Date());
-    } else if (['connecting', 'disconnected'].includes(client.connection.state)) {
+    } else if (['connecting', 'disconnected'].includes(ably.client.connection.state)) {
       setStatus('connecting');
-    } else if (client.connection.state === 'failed') {
+    } else if (ably.client.connection.state === 'failed') {
       setStatus('failed');
     } else {
       setStatus('disconnected');
     }
     
     // Subscribe to connection state changes
-    client.connection.on(stateChange => {
+    ably.client.connection.on(stateChange => {
       handleStateChange(stateChange);
     });
     
     return () => {
-      client.connection.off(stateChange => {
+      ably.client.connection.off(stateChange => {
         handleStateChange(stateChange);
       });
     };
-  }, [client]);
+  }, [ably.client]);
   
   // Attempt to reconnect
   const reconnect = useCallback(() => {
-    if (!client) return false;
+    if (!ably.client) return false;
     
     try {
       // Close current connection if in a bad state
       if (status === 'failed') {
-        client.close();
+        ably.client.close();
       }
       
       // Attempt to connect
-      client.connect();
+      ably.client.connect();
       setStatus('connecting');
       return true;
     } catch (error) {
@@ -84,7 +84,7 @@ export const useWidgetStatus = () => {
       setStatus('failed');
       return false;
     }
-  }, [client, status]);
+  }, [ably.client, status]);
   
   return {
     status,

@@ -39,7 +39,7 @@ const initialState: ChatWidgetState = {
   }
 };
 
-const ChatWidgetContext = createContext<ChatWidgetContextType | undefined>(undefined);
+export const ChatWidgetContext = createContext<ChatWidgetContextType | undefined>(undefined);
 
 const chatWidgetReducer = (state: ChatWidgetState, action: ChatWidgetAction): ChatWidgetState => {
   switch (action.type) {

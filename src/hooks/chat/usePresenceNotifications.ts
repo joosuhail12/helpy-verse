@@ -8,11 +8,11 @@ import { useAgentPresence } from './useAgentPresence';
  */
 export const usePresenceNotifications = (conversationId: string, workspaceId: string) => {
   const [notifications, setNotifications] = useState<any[]>([]);
-  const { client, isConnected } = useAbly();
+  const ably = useAbly();
   const { agents } = useAgentPresence(conversationId);
 
   useEffect(() => {
-    if (!client || !isConnected || !conversationId) return;
+    if (!ably.client || !ably.isConnected || !conversationId) return;
 
     // In a real app, we would subscribe to presence events
     // For demo purposes, we'll just set up a dummy notification
@@ -28,7 +28,7 @@ export const usePresenceNotifications = (conversationId: string, workspaceId: st
     return () => {
       // Cleanup
     };
-  }, [client, conversationId, isConnected, workspaceId]);
+  }, [ably.client, conversationId, ably.isConnected, workspaceId]);
 
   // Add a notification
   const addNotification = (notification: any) => {

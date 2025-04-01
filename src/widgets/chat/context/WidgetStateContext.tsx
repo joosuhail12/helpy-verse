@@ -41,6 +41,11 @@ const initialState: WidgetState = {
 
 const WidgetStateContext = createContext<WidgetStateContextType | undefined>(undefined);
 
+interface WidgetStateProviderProps {
+  children: React.ReactNode;
+  id?: string; // Optional ID for the widget instance
+}
+
 const widgetReducer = (state: WidgetState, action: WidgetAction): WidgetState => {
   switch (action.type) {
     case 'TOGGLE_WIDGET':
@@ -94,7 +99,7 @@ const widgetReducer = (state: WidgetState, action: WidgetAction): WidgetState =>
   }
 };
 
-export const WidgetStateProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const WidgetStateProvider: React.FC<WidgetStateProviderProps> = ({ children, id }) => {
   const [state, dispatch] = useReducer(widgetReducer, initialState);
   
   return (

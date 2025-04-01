@@ -14,7 +14,7 @@ export const useTypingIndicator = (conversationId: string) => {
 
   const sendTypingIndicator = useCallback(
     (isTyping: boolean, userName?: string) => {
-      if (!conversationId) return;
+      if (!conversationId || !ably.client) return;
 
       const channelName = `typing:${conversationId}`;
       const channel = ably.getChannel(channelName);
@@ -32,7 +32,7 @@ export const useTypingIndicator = (conversationId: string) => {
   );
 
   useEffect(() => {
-    if (!conversationId) return;
+    if (!conversationId || !ably.client) return;
 
     const channelName = `typing:${conversationId}`;
     const channel = ably.getChannel(channelName);
