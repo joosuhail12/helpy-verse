@@ -61,25 +61,23 @@ const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
 
   return (
     <AppErrorBoundary>
-      <React.StrictMode>
-        <Provider store={store}>
-          <ThemeProvider initialTheme={defaultTheme}>
-            <WidgetStateProvider>
-              <AppQueryProvider>
-                <TooltipProvider>
-                  <Toaster />
-                  <Sonner />
-                  <CaslProvider>
-                    <AppInitializer>
-                      {children}
-                    </AppInitializer>
-                  </CaslProvider>
-                </TooltipProvider>
-              </AppQueryProvider>
-            </WidgetStateProvider>
-          </ThemeProvider>
-        </Provider>
-      </React.StrictMode>
+      <Provider store={store}>
+        <ThemeProvider initialTheme={defaultTheme}>
+          <WidgetStateProvider>
+            <AppQueryProvider>
+              <TooltipProvider>
+                <Toaster />
+                <Sonner />
+                <CaslProvider>
+                  <AppInitializer>
+                    {children}
+                  </AppInitializer>
+                </CaslProvider>
+              </TooltipProvider>
+            </AppQueryProvider>
+          </WidgetStateProvider>
+        </ThemeProvider>
+      </Provider>
     </AppErrorBoundary>
   );
 };

@@ -59,7 +59,7 @@ export const mockTeammates: Teammate[] = [
   }
 ];
 
-// Add the missing mockSessions export
+// Export the mockSessions data 
 export const mockSessions: Record<string, Session[]> = {
   'tm-1': [
     { 
