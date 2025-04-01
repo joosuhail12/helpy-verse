@@ -23,12 +23,16 @@ export const useTypingIndicator = (conversationId: string) => {
       setIsUserTyping(isTyping);
 
       try {
-        // Use the correct publish method
+        // Use the correct publish method with callback
         channel.publish('typing', { 
           isTyping, 
           clientId: ably.clientId,
           name: userName || 'User',
           timestamp: Date.now() 
+        }, (err) => {
+          if (err) {
+            console.error('Error publishing typing indicator:', err);
+          }
         });
       } catch (error) {
         console.error('Error publishing typing indicator:', error);
@@ -75,11 +79,12 @@ export const useTypingIndicator = (conversationId: string) => {
       }
     };
 
-    // Use correct subscribe method
-    channel.subscribe('typing', typingHandler);
+    // Use on method instead of subscribe
+    channel.on('typing', typingHandler);
 
     return () => {
-      channel.unsubscribe('typing', typingHandler);
+      // Use off method instead of unsubscribe
+      channel.off('typing', typingHandler);
     };
   }, [conversationId, ably]);
 
