@@ -1,94 +1,68 @@
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import * as Ably from 'ably';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 
-interface AblyContextType {
-  client: Ably.Realtime | null;
-  isConnected: boolean;
-  error: Error | null;
-  clientId: string;
-  getChannelName: (channelId: string) => string;
-  workspaceId: string;
+interface AblyContextValue {
+  connected: boolean;
+  subscribe: (channelName: string, callback: (data: any) => void) => () => void;
+  publish: (channelName: string, data: any) => Promise<void>;
 }
 
-const AblyContext = createContext<AblyContextType>({
-  client: null,
-  isConnected: false,
-  error: null,
-  clientId: '',
-  getChannelName: () => '',
-  workspaceId: ''
-});
-
-export const useAbly = () => useContext(AblyContext);
+const AblyContext = createContext<AblyContextValue | undefined>(undefined);
 
 interface AblyProviderProps {
-  children: ReactNode;
+  children: React.ReactNode;
   workspaceId: string;
 }
 
-export const AblyProvider: React.FC<AblyProviderProps> = ({ children, workspaceId }) => {
-  const [client, setClient] = useState<Ably.Realtime | null>(null);
-  const [isConnected, setIsConnected] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-  const [clientId] = useState(() => `user-${Math.random().toString(36).substring(2, 9)}`);
-
-  const getChannelName = (channelId: string) => {
-    return `workspace:${workspaceId}:conversation:${channelId}`;
-  };
-
+export const AblyProvider: React.FC<AblyProviderProps> = ({ 
+  children, 
+  workspaceId 
+}) => {
+  const [connected, setConnected] = useState(false);
+  
+  // Mock implementation for now - in a real app, would connect to Ably
   useEffect(() => {
-    // In a real app, you would fetch a client API key from your backend
-    // For demo purposes, we're simulating the client connection
-    try {
-      // Use a mock client for demonstration purposes
-      const mockClient = {
-        connection: {
-          state: 'connected',
-          on: (callback: (stateChange: any) => void) => {
-            // Simulate connection established
-            callback({ current: 'connected' });
-            return () => {}; // Mock cleanup function
-          },
-          off: () => {},
-          connect: () => {},
-          close: () => {}
-        },
-        channels: {
-          get: () => ({
-            subscribe: () => ({
-              unsubscribe: () => {}
-            }),
-            publish: () => Promise.resolve()
-          })
-        }
-      } as unknown as Ably.Realtime;
-      
-      setClient(mockClient);
-      setIsConnected(true);
-    } catch (err) {
-      console.error('Failed to initialize Ably client:', err);
-      setError(err instanceof Error ? err : new Error('Failed to initialize Ably client'));
-    }
-
+    console.log('AblyProvider: Connecting to workspace', workspaceId);
+    // Simulate connection delay
+    const timer = setTimeout(() => {
+      setConnected(true);
+      console.log('AblyProvider: Connected');
+    }, 1000);
+    
     return () => {
-      // Cleanup Ably connection
-      if (client) {
-        client.close();
-      }
+      clearTimeout(timer);
+      console.log('AblyProvider: Disconnected');
     };
   }, [workspaceId]);
-
+  
+  // Mock subscription function
+  const subscribe = (channelName: string, callback: (data: any) => void) => {
+    console.log(`AblyProvider: Subscribed to ${channelName}`);
+    
+    // Return unsubscribe function
+    return () => {
+      console.log(`AblyProvider: Unsubscribed from ${channelName}`);
+    };
+  };
+  
+  // Mock publish function
+  const publish = async (channelName: string, data: any) => {
+    console.log(`AblyProvider: Published to ${channelName}`, data);
+  };
+  
   return (
-    <AblyContext.Provider value={{ 
-      client, 
-      isConnected, 
-      error, 
-      clientId, 
-      getChannelName,
-      workspaceId 
-    }}>
+    <AblyContext.Provider value={{ connected, subscribe, publish }}>
       {children}
     </AblyContext.Provider>
   );
+};
+
+export const useAbly = () => {
+  const context = useContext(AblyContext);
+  
+  if (context === undefined) {
+    throw new Error('useAbly must be used within an AblyProvider');
+  }
+  
+  return context;
 };

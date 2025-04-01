@@ -1,32 +1,24 @@
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 
 export interface ThemeConfig {
   colors: {
     primary: string;
-    primaryForeground: string;
     background: string;
-    backgroundSecondary: string;
-    inputBackground: string;
     foreground: string;
     border: string;
-    userMessage: string;
-    userMessageText: string;
-    agentMessage: string;
-    agentMessageText: string;
-    error: string;
-    success: string;
+    muted: string;
+    accent: string;
   };
   position: 'left' | 'right';
   compact: boolean;
   labels: {
     welcomeTitle: string;
     welcomeSubtitle: string;
-    sendButton: string;
     placeholder: string;
-    recentMessagesTitle?: string;
-    askQuestionButton?: string;
-    noMessagesText?: string;
+    sendButton: string;
+    noMessagesText: string;
+    recentMessagesTitle: string;
   };
   features: {
     typingIndicator: boolean;
@@ -39,90 +31,66 @@ export interface ThemeConfig {
 const defaultTheme: ThemeConfig = {
   colors: {
     primary: '#9b87f5',
-    primaryForeground: '#ffffff',
     background: '#ffffff',
-    backgroundSecondary: '#f9f9f9',
-    inputBackground: '#ffffff',
-    foreground: '#000000',
+    foreground: '#1f2937',
     border: '#e5e7eb',
-    userMessage: '#9b87f5',
-    userMessageText: '#ffffff',
-    agentMessage: '#f3f4f6',
-    agentMessageText: '#000000',
-    error: '#ef4444',
-    success: '#10b981'
+    muted: '#f3f4f6',
+    accent: '#f9fafb',
   },
   position: 'right',
   compact: false,
   labels: {
     welcomeTitle: 'Hello there.',
     welcomeSubtitle: 'How can we help?',
-    sendButton: 'Send',
     placeholder: 'Type a message...',
-    recentMessagesTitle: 'Recent Messages',
-    askQuestionButton: 'Ask a question',
-    noMessagesText: 'No messages yet'
+    sendButton: 'Send',
+    noMessagesText: "You don't have any conversations yet",
+    recentMessagesTitle: "Recent Conversations"
   },
   features: {
     typingIndicator: true,
     reactions: true,
     fileAttachments: true,
-    readReceipts: true
+    readReceipts: true,
   }
 };
 
-type ThemeContextType = {
+interface ThemeContextProps {
+  theme: ThemeConfig;
   colors: ThemeConfig['colors'];
-  position: ThemeConfig['position'];
-  compact: ThemeConfig['compact'];
   labels: ThemeConfig['labels'];
   features: ThemeConfig['features'];
   setTheme: (theme: Partial<ThemeConfig>) => void;
-  setColors: (colors: Partial<ThemeConfig['colors']>) => void;
-  setPosition: (position: ThemeConfig['position']) => void;
-  setCompact: (compact: boolean) => void;
-  setLabels: (labels: Partial<ThemeConfig['labels']>) => void;
-  setFeatures: (features: Partial<ThemeConfig['features']>) => void;
-};
+}
 
-const ThemeContext = createContext<ThemeContextType>({
-  ...defaultTheme,
-  setTheme: () => {},
-  setColors: () => {},
-  setPosition: () => {},
-  setCompact: () => {},
-  setLabels: () => {},
-  setFeatures: () => {}
-});
-
-export const useThemeContext = () => useContext(ThemeContext);
+const ThemeContext = createContext<ThemeContextProps | undefined>(undefined);
 
 interface ThemeProviderProps {
-  children: ReactNode;
+  children: React.ReactNode;
   initialTheme?: Partial<ThemeConfig>;
 }
 
-export const ThemeProvider: React.FC<ThemeProviderProps> = ({
-  children,
-  initialTheme = {}
+export const ThemeProvider: React.FC<ThemeProviderProps> = ({ 
+  children, 
+  initialTheme = {} 
 }) => {
   const [theme, setThemeState] = useState<ThemeConfig>({
     ...defaultTheme,
     ...initialTheme,
     colors: {
       ...defaultTheme.colors,
-      ...(initialTheme.colors || {})
+      ...initialTheme.colors
     },
     labels: {
       ...defaultTheme.labels,
-      ...(initialTheme.labels || {})
+      ...initialTheme.labels
     },
     features: {
       ...defaultTheme.features,
-      ...(initialTheme.features || {})
+      ...initialTheme.features
     }
   });
-
+  
   const setTheme = (newTheme: Partial<ThemeConfig>) => {
     setThemeState(prev => ({
       ...prev,
@@ -141,68 +109,28 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
       }
     }));
   };
-
-  const setColors = (colors: Partial<ThemeConfig['colors']>) => {
-    setThemeState(prev => ({
-      ...prev,
-      colors: {
-        ...prev.colors,
-        ...colors
-      }
-    }));
-  };
-
-  const setPosition = (position: ThemeConfig['position']) => {
-    setThemeState(prev => ({
-      ...prev,
-      position
-    }));
-  };
-
-  const setCompact = (compact: boolean) => {
-    setThemeState(prev => ({
-      ...prev,
-      compact
-    }));
-  };
-
-  const setLabels = (labels: Partial<ThemeConfig['labels']>) => {
-    setThemeState(prev => ({
-      ...prev,
-      labels: {
-        ...prev.labels,
-        ...labels
-      }
-    }));
-  };
-
-  const setFeatures = (features: Partial<ThemeConfig['features']>) => {
-    setThemeState(prev => ({
-      ...prev,
-      features: {
-        ...prev.features,
-        ...features
-      }
-    }));
-  };
-
+  
   return (
-    <ThemeContext.Provider
-      value={{
-        colors: theme.colors,
-        position: theme.position,
-        compact: theme.compact,
+    <ThemeContext.Provider 
+      value={{ 
+        theme, 
+        setTheme, 
+        colors: theme.colors, 
         labels: theme.labels,
-        features: theme.features,
-        setTheme,
-        setColors,
-        setPosition,
-        setCompact,
-        setLabels,
-        setFeatures
+        features: theme.features 
       }}
     >
       {children}
     </ThemeContext.Provider>
   );
+};
+
+export const useThemeContext = () => {
+  const context = useContext(ThemeContext);
+  
+  if (context === undefined) {
+    throw new Error('useThemeContext must be used within a ThemeProvider');
+  }
+  
+  return context;
 };

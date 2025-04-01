@@ -11,12 +11,13 @@ import companiesReducer from './slices/companies/companiesSlice';
 import ticketsReducer from './slices/tickets/ticketsSlice';
 import tagsReducer from './slices/tagsSlice';
 import teamsReducer from './slices/teams/teamsSlice';
-import { chatWidgetSettingsReducer } from './slices/chatWidgetSettings';
+import { chatWidgetSettingsReducer } from './slices/chatWidgetSettings/chatWidgetSettingsSlice';
 import { emailChannelsReducer } from './slices/emailChannels/emailChannelsSlice';
 import { cannedResponsesReducer } from './slices/cannedResponses/cannedResponsesSlice';
 import { chatbotsReducer } from './slices/chatbots/chatbotsSlice';
 import userReducer from './slices/user/userSlice';
 import teammatesSlice from './slices/teammates/teammatesSlice';
+import { chatReducer } from './slices/chat/chatSlice';
 
 // Define the root reducer with all slices
 const rootReducer = {
@@ -26,7 +27,7 @@ const rootReducer = {
   contentCenter: contentCenterReducer,
   contacts: contactsReducer,
   companies: companiesReducer,
-  tickets: ticketsReducer, // Renamed from inbox to tickets for clarity
+  tickets: ticketsReducer,
   tags: tagsReducer,
   teammates: teammatesSlice,
   teams: teamsReducer,
@@ -35,6 +36,7 @@ const rootReducer = {
   chatbots: chatbotsReducer,
   user: userReducer,
   chatWidgetSettings: chatWidgetSettingsReducer,
+  chat: chatReducer,
 };
 
 export const store = configureStore({
