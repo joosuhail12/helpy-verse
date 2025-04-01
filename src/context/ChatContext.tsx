@@ -1,8 +1,9 @@
+
 import React, { createContext, useContext } from 'react';
 import { useConversations } from '@/hooks/chat/useConversations';
 import { useMessages } from '@/hooks/chat/useMessages';
 
-const ChatContext = createContext<any | undefined>(undefined);
+export const ChatContext = createContext<any | undefined>(undefined);
 
 interface ChatProviderProps {
   children: React.ReactNode;

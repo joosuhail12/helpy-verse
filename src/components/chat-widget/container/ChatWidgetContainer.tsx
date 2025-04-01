@@ -1,10 +1,11 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { useChat } from '@/hooks/chat/useChat';
 import { useThemeContext } from '@/context/ThemeContext';
-import Navigation from '../components/navigation/Navigation';
 import ViewManager from '../components/navigation/ViewManager';
 import LoadingState from '../components/states/LoadingState';
+import { ChatContext } from '@/context/ChatContext';
+
+export type View = 'home' | 'messages' | 'conversation';
 
 interface ChatWidgetContainerProps {
   onClose: () => void;
@@ -14,8 +15,6 @@ interface ChatWidgetContainerProps {
   instanceId?: string;
 }
 
-export type View = 'home' | 'messages' | 'conversation';
-
 const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({ 
   onClose, 
   workspaceId,
@@ -23,67 +22,34 @@ const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({
   compact = false,
   instanceId = 'default'
 }) => {
-  const { conversations, currentConversation, selectConversation, createNewConversation } = useChat();
+  const chatContext = React.useContext(ChatContext);
+  const { conversations, currentConversation, selectConversation, createNewConversation, sendMessage } = 
+    chatContext || { conversations: [], currentConversation: null, selectConversation: () => {}, createNewConversation: () => {}, sendMessage: () => {} };
+  
   const { colors } = useThemeContext();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [activeView, setActiveView] = useState<View>('home');
 
-  // Modified to not create a conversation on init
   useEffect(() => {
+    // Initialize chat widget
     setIsLoading(false);
   }, []);
 
-  // Function to handle starting a new conversation when user sends first message
-  const handleStartConversation = useCallback(async (message: string) => {
-    if (!message.trim()) {
-      // If no message, just navigate to the messages view
-      setActiveView('messages');
-      return;
-    }
-    
-    setIsLoading(true);
-    try {
-      // Use the string ID returned by createNewConversation
-      const newConversationId = await createNewConversation(`Conversation ${new Date().toLocaleString()}`);
-      selectConversation(newConversationId);
-      setActiveView('conversation');
-      // Now we can handle the message in the conversation component
-    } catch (error) {
-      console.error('Failed to create conversation:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [createNewConversation, selectConversation]);
-
-  // Function to start a new conversation without a message
-  const handleStartNewConversation = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      // Use the string ID returned by createNewConversation
-      const newConversationId = await createNewConversation(`Conversation ${new Date().toLocaleString()}`);
-      selectConversation(newConversationId);
-      setActiveView('conversation');
-    } catch (error) {
-      console.error('Failed to create conversation:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [createNewConversation, selectConversation]);
-
-  // Fixed: Pass the conversation ID string
-  const handleSelectConversation = useCallback((conversationId: string) => {
-    selectConversation(conversationId);
+  const handleStartConversation = useCallback((message: string) => {
+    // This would typically handle sending the first message in a conversation
+    console.log('Starting conversation with message:', message);
+    // Move to conversation view
     setActiveView('conversation');
-  }, [selectConversation]);
+  }, []);
 
   if (isLoading) {
-    return <LoadingState compact={compact} />;
+    return <LoadingState />;
   }
 
   return (
     <div 
-      className={`flex flex-col h-full text-gray-900 ${compact ? 'max-w-xs' : 'w-full'}`} 
-      style={{ backgroundColor: colors.background, color: colors.foreground }}
+      className="flex flex-col h-full overflow-hidden"
+      style={{ backgroundColor: colors.background }}
     >
       <ViewManager
         activeView={activeView}
@@ -91,8 +57,6 @@ const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({
         workspaceId={workspaceId}
         onClose={onClose}
         onStartConversation={handleStartConversation}
-        onSelectConversation={handleSelectConversation}
-        onStartNewConversation={handleStartNewConversation}
       />
     </div>
   );
