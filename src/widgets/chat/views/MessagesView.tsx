@@ -5,6 +5,7 @@ import { useThemeContext } from '@/context/ThemeContext';
 import ChatHeader from '@/components/chat-widget/components/header/ChatHeader';
 import { View } from '../types';
 import { Conversation } from '../types/messages';
+import { ChevronLeft } from 'lucide-react';
 
 interface MessagesViewProps {
   onSelectConversation: () => void;
@@ -73,7 +74,7 @@ const MessagesView: React.FC<MessagesViewProps> = ({
     ? conversations 
     : exampleConversations;
 
-  // Handle back click differently depending on which component is using this
+  // Handle back click to return to home view
   const handleBackClick = () => {
     if (setActiveView) {
       setActiveView('home');
@@ -93,7 +94,7 @@ const MessagesView: React.FC<MessagesViewProps> = ({
         overflow: 'hidden'
       }}
     >
-      {/* Fixed Header with Back Button */}
+      {/* Header with Back Button */}
       <div 
         className="flex-shrink-0 border-b" 
         style={{ 

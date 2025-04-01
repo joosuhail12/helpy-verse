@@ -92,8 +92,6 @@ const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({
           workspaceId={workspaceId}
           onClose={onClose}
           onStartConversation={handleStartConversation}
-          onSelectConversation={handleSelectConversation}
-          onStartNewConversation={handleStartNewConversation}
         />
       </div>
       
