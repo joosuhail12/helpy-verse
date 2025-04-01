@@ -47,9 +47,15 @@ export const useOfflineMessaging = (conversationId: string) => {
     localStorage.removeItem(getStorageKey());
   }, [getStorageKey]);
 
+  const hasQueuedMessages = useCallback(async (): Promise<boolean> => {
+    const messages = await getQueuedMessages();
+    return messages.length > 0;
+  }, [getQueuedMessages]);
+
   return {
     queueMessage,
     getQueuedMessages,
-    clearQueuedMessages
+    clearQueuedMessages,
+    hasQueuedMessages
   };
 };

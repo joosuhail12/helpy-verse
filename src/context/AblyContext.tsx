@@ -5,6 +5,7 @@ type AblyContextType = {
   client: any;
   isConnected: boolean;
   workspaceId: string;
+  clientId: string;
   connect: () => void;
   disconnect: () => void;
   getChannel: (channelName: string) => any;
@@ -20,6 +21,7 @@ interface AblyProviderProps {
 export const AblyProvider: React.FC<AblyProviderProps> = ({ children, workspaceId }) => {
   const [client, setClient] = useState<any>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [clientId, setClientId] = useState<string>('user-' + Math.random().toString(36).substring(2, 9));
 
   // Initialize Ably client mock - in a real app, you would use the actual Ably SDK
   useEffect(() => {
@@ -73,6 +75,7 @@ export const AblyProvider: React.FC<AblyProviderProps> = ({ children, workspaceI
         client,
         isConnected,
         workspaceId,
+        clientId,
         connect,
         disconnect,
         getChannel

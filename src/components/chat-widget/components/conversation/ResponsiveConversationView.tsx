@@ -8,9 +8,10 @@ import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import TypingIndicator from './TypingIndicator';
 import { ChatMessage } from './types';
+import { ChatMessage as StoreChatMessage } from '@/store/slices/chat/types';
 import { useChat } from '@/hooks/chat/useChat';
 import UserAvatar from '../user/UserAvatar';
-import { adaptStoreMessagesToComponentMessages, adaptComponentMessageToStoreMessage } from '@/utils/messageTypeAdapter';
+import { adaptStoreMessagesToComponentMessages } from '@/utils/messageTypeAdapter';
 import { ThemeProvider } from '@/context/ThemeContext';
 
 export interface ResponsiveConversationViewProps {
@@ -32,9 +33,17 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
   // Load messages when component mounts
   useEffect(() => {
     const loadMessages = async () => {
-      const storeMessages = await getMessages(conversationId);
-      // Convert store messages to component messages
-      setLoadedMessages(adaptStoreMessagesToComponentMessages(storeMessages));
+      try {
+        const storeMessages = await getMessages(conversationId);
+        // Convert store messages to component messages with proper timestamp conversion
+        const componentMessages = storeMessages.map(msg => ({
+          ...msg,
+          timestamp: msg.timestamp instanceof Date ? msg.timestamp : new Date(msg.timestamp)
+        }));
+        setLoadedMessages(componentMessages as unknown as ChatMessage[]);
+      } catch (error) {
+        console.error("Error loading messages:", error);
+      }
     };
     
     loadMessages();
@@ -76,9 +85,12 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
     sendTypingIndicator(true);
   };
 
-  // Combine real-time messages with loaded messages
-  const displayMessages = storeMessages.length > 0 
-    ? adaptStoreMessagesToComponentMessages(storeMessages) 
+  // Convert store messages to component messages with proper timestamp handling
+  const displayMessages: ChatMessage[] = storeMessages.length > 0 
+    ? (storeMessages.map(msg => ({
+        ...msg,
+        timestamp: msg.timestamp instanceof Date ? msg.timestamp : new Date(msg.timestamp)
+      })) as unknown as ChatMessage[])
     : loadedMessages;
 
   return (

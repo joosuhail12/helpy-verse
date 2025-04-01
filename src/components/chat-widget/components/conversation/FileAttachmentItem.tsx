@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { File, Download } from 'lucide-react';
+import { FileText, Download, Image, File } from 'lucide-react';
 import { FileAttachment } from './types';
 
 interface FileAttachmentItemProps {
@@ -9,38 +9,42 @@ interface FileAttachmentItemProps {
 
 const FileAttachmentItem: React.FC<FileAttachmentItemProps> = ({ attachment }) => {
   const isImage = attachment.type.startsWith('image/');
+  const isPdf = attachment.type === 'application/pdf';
   
-  const formatFileSize = (bytes: number): string => {
-    if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  const formatFileSize = (sizeInBytes: number): string => {
+    if (sizeInBytes < 1024) return `${sizeInBytes} B`;
+    if (sizeInBytes < 1024 * 1024) return `${(sizeInBytes / 1024).toFixed(1)} KB`;
+    return `${(sizeInBytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
+  
+  const getFileIcon = () => {
+    if (isImage) return <Image size={18} />;
+    if (isPdf) return <FileText size={18} />;
+    return <File size={18} />;
+  };
+  
+  const handleDownload = () => {
+    window.open(attachment.url, '_blank');
   };
   
   return (
-    <div className="flex items-center p-2 bg-white bg-opacity-20 rounded">
-      {isImage ? (
-        <img 
-          src={attachment.url} 
-          alt={attachment.name} 
-          className="w-8 h-8 object-cover rounded"
-        />
-      ) : (
-        <File size={24} className="text-white text-opacity-80" />
-      )}
-      
-      <div className="ml-2 flex-1 min-w-0">
-        <div className="text-sm font-medium truncate">{attachment.name}</div>
-        <div className="text-xs opacity-80">{formatFileSize(attachment.size)}</div>
+    <div className="flex items-center gap-2 p-2 bg-white/10 rounded-md text-sm">
+      <div className="text-white/80">
+        {getFileIcon()}
       </div>
       
-      <a 
-        href={attachment.url}
-        download={attachment.name}
-        className="p-1 rounded-full hover:bg-white hover:bg-opacity-20"
-        onClick={(e) => e.stopPropagation()}
+      <div className="flex-1 overflow-hidden">
+        <div className="font-medium truncate">{attachment.name}</div>
+        <div className="text-xs text-white/60">{formatFileSize(attachment.size)}</div>
+      </div>
+      
+      <button 
+        onClick={handleDownload}
+        className="p-1 rounded-full hover:bg-white/20"
+        aria-label="Download file"
       >
         <Download size={16} />
-      </a>
+      </button>
     </div>
   );
 };

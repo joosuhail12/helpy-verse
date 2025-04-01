@@ -110,13 +110,13 @@ export const useMessaging = ({ conversationId, workspaceId, userName }: Messagin
   
   // Handle typing status
   const handleTyping = useCallback(() => {
-    sendTypingIndicator(true, userName);
+    sendTypingIndicator(true);
     
     // Automatically turn off typing indicator after a delay
     setTimeout(() => {
-      sendTypingIndicator(false, userName);
+      sendTypingIndicator(false);
     }, 3000);
-  }, [sendTypingIndicator, userName]);
+  }, [sendTypingIndicator]);
   
   // Handle input change
   const handleInputChange = useCallback((text: string) => {

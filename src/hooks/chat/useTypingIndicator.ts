@@ -9,18 +9,22 @@ interface TypingUser {
 
 export const useTypingIndicator = (conversationId: string) => {
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
+  const [isUserTyping, setIsUserTyping] = useState<boolean>(false);
   const ably = useAbly();
 
   const sendTypingIndicator = useCallback(
-    (isTyping: boolean) => {
+    (isTyping: boolean, userName?: string) => {
       if (!conversationId) return;
 
       const channelName = `typing:${conversationId}`;
       const channel = ably.getChannel(channelName);
 
+      setIsUserTyping(isTyping);
+
       channel.publish('typing', { 
         isTyping, 
-        clientId: 'current-user',
+        clientId: ably.clientId,
+        name: userName || 'User',
         timestamp: Date.now() 
       });
     },
@@ -35,6 +39,12 @@ export const useTypingIndicator = (conversationId: string) => {
 
     const subscription = channel.subscribe('typing', (message: any) => {
       const { isTyping, clientId, name, timestamp } = message.data;
+
+      if (clientId === ably.clientId) {
+        // It's our own typing indicator, just update local state
+        setIsUserTyping(isTyping);
+        return;
+      }
 
       if (isTyping) {
         setTypingUsers(prev => {
@@ -65,6 +75,7 @@ export const useTypingIndicator = (conversationId: string) => {
 
   return {
     typingUsers,
-    sendTypingIndicator
+    sendTypingIndicator,
+    isUserTyping
   };
 };

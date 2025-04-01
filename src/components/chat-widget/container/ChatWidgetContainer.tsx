@@ -45,6 +45,12 @@ const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({
     }
   }, [createNewConversation, selectConversation]);
 
+  const handleSelectConversation = useCallback((conversation: any) => {
+    // Check if we're getting a string or a conversation object
+    const conversationId = typeof conversation === 'string' ? conversation : conversation.id;
+    selectConversation(conversationId);
+  }, [selectConversation]);
+
   if (isLoading) {
     return <LoadingState compact={compact} />;
   }
@@ -60,6 +66,7 @@ const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({
         workspaceId={workspaceId}
         onClose={onClose}
         onStartConversation={handleStartConversation}
+        onSelectConversation={handleSelectConversation}
       />
       
       <Navigation activeView={activeView} setActiveView={setActiveView} />

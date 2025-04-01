@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useChat } from '@/hooks/chat/useChat';
 import { ChatMessage } from '@/store/slices/chat/types';
 import { v4 as uuidv4 } from 'uuid';
+import { adaptComponentMessagesToStoreMessages } from '@/utils/messageTypeAdapter';
 
 export const useRealtimeChat = (conversationId: string, workspaceId: string) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -14,7 +15,12 @@ export const useRealtimeChat = (conversationId: string, workspaceId: string) => 
       setIsLoading(true);
       try {
         const conversationMessages = await getMessages(conversationId);
-        setMessages(conversationMessages);
+        // Convert any string timestamps to Date objects
+        const formattedMessages = conversationMessages.map(msg => ({
+          ...msg,
+          timestamp: msg.timestamp instanceof Date ? msg.timestamp : new Date(msg.timestamp),
+        }));
+        setMessages(formattedMessages);
       } catch (error) {
         console.error('Error loading messages:', error);
       } finally {

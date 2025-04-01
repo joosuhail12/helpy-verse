@@ -16,7 +16,7 @@ const COMMON_REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
 
 const MessageItem: React.FC<MessageItemProps> = ({ message, showAvatar = false }) => {
   const { colors } = useThemeContext();
-  const { clientId } = useAbly();
+  const ably = useAbly();
   const [showReactions, setShowReactions] = useState(false);
   const isUserMessage = message.sender === 'user';
   

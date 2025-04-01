@@ -7,7 +7,6 @@ import MessageList from '@/components/chat-widget/components/conversation/Messag
 import MessageInput from '@/components/chat-widget/components/conversation/MessageInput';
 import { ChatMessage } from '@/components/chat-widget/components/conversation/types';
 import { Loader2, Send } from 'lucide-react';
-import { adaptStoreMessagesToComponentMessages, adaptComponentMessagesToStoreMessages } from '@/utils/messageTypeAdapter';
 import { ThemeProvider } from '@/context/ThemeContext';
 
 interface ConversationViewProps {
@@ -30,8 +29,12 @@ const ConversationView: React.FC<ConversationViewProps> = ({
       setIsLoading(true);
       getMessages(currentConversation.id)
         .then(fetchedMessages => {
-          // Convert store messages to component messages
-          setMessages(adaptStoreMessagesToComponentMessages(fetchedMessages));
+          // Ensure all timestamps are Date objects
+          const formattedMessages = fetchedMessages.map(msg => ({
+            ...msg,
+            timestamp: msg.timestamp instanceof Date ? msg.timestamp : new Date(msg.timestamp)
+          }));
+          setMessages(formattedMessages as unknown as ChatMessage[]);
           setIsLoading(false);
         })
         .catch(error => {
