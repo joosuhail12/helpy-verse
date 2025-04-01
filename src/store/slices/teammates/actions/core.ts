@@ -1,13 +1,54 @@
 
-import { createAction } from '@reduxjs/toolkit';
+import { createAsyncThunk } from '@reduxjs/toolkit';
+import { getTeammates, getTeammateById } from '@/api/services/teammatesService';
 import type { Teammate } from '@/types/teammate';
 
-// Core teammate actions
-export const addTeammate = createAction<Teammate>('teammates/addTeammate');
-export const updateTeammate = createAction<Teammate>('teammates/updateTeammate');
-export const updateTeammatesRole = createAction<{teammateIds: string[], role: string}>('teammates/updateTeammatesRole');
-export const updateTeammatePermissions = createAction<{id: string, permissions: string[]}>('teammates/updateTeammatePermissions');
-export const fetchTeammateDetails = createAction<string>('teammates/fetchTeammateDetails');
-export const fetchTeammates = createAction('teammates/fetchTeammates');
-export const fetchTeammateActivities = createAction<string>('teammates/fetchTeammateActivities');
-export const fetchTeammateAssignments = createAction<string>('teammates/fetchTeammateAssignments');
+// Export the core thunks for teammates
+export const fetchTeammates = createAsyncThunk(
+  'teammates/fetchAll',
+  async (_, { rejectWithValue }) => {
+    try {
+      console.log('Fetching all teammates...');
+      const teammates = await getTeammates();
+      console.log(`Successfully fetched ${teammates.length} teammates`);
+      return teammates;
+    } catch (error: any) {
+      console.error('Error fetching teammates:', error);
+      return rejectWithValue(error.message || 'Failed to fetch teammates');
+    }
+  }
+);
+
+export const fetchTeammateDetails = createAsyncThunk(
+  'teammates/fetchDetails',
+  async (teammateId: string, { rejectWithValue }) => {
+    try {
+      console.log(`Fetching details for teammate with ID: ${teammateId}`);
+      const teammate = await getTeammateById(teammateId);
+      console.log('Teammate details fetched successfully:', teammate);
+      return teammate;
+    } catch (error: any) {
+      console.error(`Error fetching teammate details for ID ${teammateId}:`, error);
+      return rejectWithValue(error.message || 'Failed to fetch teammate details');
+    }
+  }
+);
+
+// Add the addTeammate action
+export const addTeammate = createAsyncThunk(
+  'teammates/addTeammate',
+  async (newTeammate: any, { rejectWithValue }) => {
+    try {
+      console.log('Adding new teammate:', newTeammate);
+      // In a real implementation, this would call an API
+      // For now, just return the new teammate with a fake ID
+      return {
+        ...newTeammate,
+        id: 'new-' + Date.now(),
+        createdAt: new Date().toISOString()
+      };
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to add teammate');
+    }
+  }
+);

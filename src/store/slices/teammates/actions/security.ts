@@ -1,10 +1,51 @@
 
-import { createAction } from '@reduxjs/toolkit';
+import { createAsyncThunk } from '@reduxjs/toolkit';
 
-// Security-related actions
-export const enable2FA = createAction<string>('teammates/enable2FA');
-export const verify2FA = createAction<{teammateId: string, code: string}>('teammates/verify2FA');
-export const disable2FA = createAction<string>('teammates/disable2FA');
-export const resetPassword = createAction<{teammateId: string, newPassword: string}>('teammates/resetPassword');
-export const fetchTeammateSessions = createAction<string>('teammates/fetchTeammateSessions');
-export const terminateSession = createAction<{teammateId: string, sessionId: string}>('teammates/terminateSession');
+// Security actions
+export const enable2FA = createAsyncThunk(
+  'teammates/enable2FA',
+  async (teammateId: string, { rejectWithValue }) => {
+    try {
+      console.log(`Enabling 2FA for teammate ${teammateId}`);
+      return { success: true, qrCode: 'mock-qr-code' };
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to enable 2FA');
+    }
+  }
+);
+
+export const verify2FA = createAsyncThunk(
+  'teammates/verify2FA',
+  async ({ teammateId, verificationCode }: { teammateId: string, verificationCode: string }, { rejectWithValue }) => {
+    try {
+      console.log(`Verifying 2FA for teammate ${teammateId} with code ${verificationCode}`);
+      return { success: true };
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to verify 2FA');
+    }
+  }
+);
+
+export const disable2FA = createAsyncThunk(
+  'teammates/disable2FA',
+  async (teammateId: string, { rejectWithValue }) => {
+    try {
+      console.log(`Disabling 2FA for teammate ${teammateId}`);
+      return { success: true };
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to disable 2FA');
+    }
+  }
+);
+
+export const resetPassword = createAsyncThunk(
+  'teammates/resetPassword',
+  async ({ teammateId, newPassword }: { teammateId: string, newPassword: string }, { rejectWithValue }) => {
+    try {
+      console.log(`Resetting password for teammate ${teammateId}`);
+      return { success: true };
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to reset password');
+    }
+  }
+);

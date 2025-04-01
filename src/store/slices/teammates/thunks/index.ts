@@ -3,32 +3,6 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 
 // Import and export activity thunks
-export const fetchTeammateActivities = createAsyncThunk(
-  'teammates/fetchTeammateActivities',
-  async (teammateId: string, { rejectWithValue }) => {
-    try {
-      console.log(`Fetching activities for teammate ${teammateId}`);
-      return []; // Mock implementation
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to fetch teammate activities');
-    }
-  }
-);
-
-// Import and export assignment thunks
-export const fetchTeammateAssignments = createAsyncThunk(
-  'teammates/fetchTeammateAssignments',
-  async (teammateId: string, { rejectWithValue }) => {
-    try {
-      console.log(`Fetching assignments for teammate ${teammateId}`);
-      return []; // Mock implementation
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to fetch teammate assignments');
-    }
-  }
-);
-
-// We need to export from additional files explicitly too
 export * from './activityThunks';
 export * from './assignmentThunks';
 export * from './securityThunks';
@@ -40,7 +14,8 @@ import {
   fetchTeammateDetails,
   updateTeammate,
   updateTeammatesRole,
-  updateTeammatePermissions
+  updateTeammatePermissions,
+  addTeammate
 } from './coreThunks';
 
 // Re-export core thunks explicitly to avoid naming conflicts
@@ -49,31 +24,13 @@ export {
   fetchTeammateDetails,
   updateTeammate,
   updateTeammatesRole,
-  updateTeammatePermissions
+  updateTeammatePermissions,
+  addTeammate
 };
 
 // Import and re-export from updateThunks
 import { resendInvitation } from './updateThunks';
 export { resendInvitation };
-
-// Export action to add a new teammate
-export const addTeammate = createAsyncThunk(
-  'teammates/addTeammate',
-  async (newTeammate: any, { rejectWithValue }) => {
-    try {
-      console.log('Adding new teammate:', newTeammate);
-      // In a real implementation, this would call an API
-      // For now, just return the new teammate with a fake ID
-      return {
-        ...newTeammate,
-        id: 'new-' + Date.now(),
-        createdAt: new Date().toISOString()
-      };
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to add teammate');
-    }
-  }
-);
 
 // Export teammate export functionality
 export const exportTeammates = createAsyncThunk(
@@ -86,97 +43,6 @@ export const exportTeammates = createAsyncThunk(
       return { success: true };
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to export teammates');
-    }
-  }
-);
-
-// Create security thunks
-export const enable2FA = createAsyncThunk(
-  'teammates/enable2FA',
-  async (teammateId: string, { rejectWithValue }) => {
-    try {
-      console.log(`Enabling 2FA for teammate ${teammateId}`);
-      return { success: true, qrCode: 'mock-qr-code' };
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to enable 2FA');
-    }
-  }
-);
-
-export const verify2FA = createAsyncThunk(
-  'teammates/verify2FA',
-  async ({ teammateId, verificationCode }: { teammateId: string, verificationCode: string }, { rejectWithValue }) => {
-    try {
-      console.log(`Verifying 2FA for teammate ${teammateId} with code ${verificationCode}`);
-      return { success: true };
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to verify 2FA');
-    }
-  }
-);
-
-export const disable2FA = createAsyncThunk(
-  'teammates/disable2FA',
-  async (teammateId: string, { rejectWithValue }) => {
-    try {
-      console.log(`Disabling 2FA for teammate ${teammateId}`);
-      return { success: true };
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to disable 2FA');
-    }
-  }
-);
-
-export const resetPassword = createAsyncThunk(
-  'teammates/resetPassword',
-  async ({ teammateId, newPassword }: { teammateId: string, newPassword: string }, { rejectWithValue }) => {
-    try {
-      console.log(`Resetting password for teammate ${teammateId}`);
-      return { success: true };
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to reset password');
-    }
-  }
-);
-
-export const fetchTeammateSessions = createAsyncThunk(
-  'teammates/fetchTeammateSessions',
-  async (teammateId: string, { rejectWithValue }) => {
-    try {
-      console.log(`Fetching sessions for teammate ${teammateId}`);
-      // Mock some session data
-      return [
-        {
-          id: 'session-1',
-          deviceName: 'Chrome on Windows',
-          deviceType: 'desktop',
-          location: 'San Francisco, CA',
-          startTime: new Date().toISOString(),
-          lastActive: new Date().toISOString(),
-        },
-        {
-          id: 'session-2',
-          deviceName: 'Mobile Safari',
-          deviceType: 'mobile',
-          location: 'New York, NY',
-          startTime: new Date(Date.now() - 86400000).toISOString(),
-          lastActive: new Date(Date.now() - 3600000).toISOString(),
-        }
-      ];
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to fetch teammate sessions');
-    }
-  }
-);
-
-export const terminateSession = createAsyncThunk(
-  'teammates/terminateSession',
-  async ({ teammateId, sessionId }: { teammateId: string, sessionId: string }, { rejectWithValue }) => {
-    try {
-      console.log(`Terminating session ${sessionId} for teammate ${teammateId}`);
-      return { success: true };
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to terminate session');
     }
   }
 );
