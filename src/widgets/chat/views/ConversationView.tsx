@@ -7,7 +7,7 @@ import MessageList from '@/components/chat-widget/components/conversation/Messag
 import MessageInput from '@/components/chat-widget/components/conversation/MessageInput';
 import { ChatMessage } from '@/components/chat-widget/components/conversation/types';
 import { Loader2, Send } from 'lucide-react';
-import { adaptStoreMessagesToComponentMessages } from '@/utils/messageTypeAdapter';
+import { adaptStoreMessagesToComponentMessages, adaptComponentMessagesToStoreMessages } from '@/utils/messageTypeAdapter';
 
 interface ConversationViewProps {
   onBack: () => void;

@@ -10,7 +10,7 @@ import TypingIndicator from './TypingIndicator';
 import { ChatMessage } from './types';
 import { useChat } from '@/hooks/chat/useChat';
 import UserAvatar from '../user/UserAvatar';
-import { adaptStoreMessagesToComponentMessages } from '@/utils/messageTypeAdapter';
+import { adaptStoreMessagesToComponentMessages, adaptComponentMessagesToStoreMessages } from '@/utils/messageTypeAdapter';
 
 export interface ResponsiveConversationViewProps {
   conversationId: string;
