@@ -35,12 +35,12 @@ export const useConversations = (): UseConversationsReturn => {
   const createNewConversation = useCallback(async (title?: string): Promise<string> => {
     try {
       const conversationTitle = title || `Conversation ${new Date().toLocaleString()}`;
-      const action = await dispatch(createConversation(conversationTitle));
+      const result = await dispatch(createConversation(conversationTitle));
       
       // Extract the conversation ID from the action payload
-      if (action.payload && 'id' in action.payload) {
-        const conversationId = action.payload.id;
-        return conversationId;
+      const payload = result.payload as Conversation;
+      if (payload && 'id' in payload) {
+        return payload.id;
       }
       
       // Fallback if we can't get the ID from the action payload

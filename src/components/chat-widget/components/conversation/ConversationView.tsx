@@ -5,8 +5,9 @@ import { useThemeContext } from '@/context/ThemeContext';
 import ChatHeader from '../header/ChatHeader';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
-import { ChatMessage } from '@/store/slices/chat/types';
+import { ChatMessage } from './types';
 import { TypingUser } from '@/store/slices/chat/types';
+import { adaptStoreMessagesToComponentMessages } from '@/utils/messageTypeAdapter';
 
 interface ConversationViewProps {
   conversationId: string;
@@ -32,7 +33,9 @@ const ConversationView: React.FC<ConversationViewProps> = ({
   useEffect(() => {
     if (conversationId) {
       const conversationMessages = getMessages(conversationId);
-      setLocalMessages(conversationMessages);
+      // Convert store messages to component messages
+      const adaptedMessages = adaptStoreMessagesToComponentMessages(conversationMessages);
+      setLocalMessages(adaptedMessages);
     }
   }, [conversationId, getMessages]);
 
@@ -51,7 +54,9 @@ const ConversationView: React.FC<ConversationViewProps> = ({
       
       // Update local messages after sending
       const updatedMessages = getMessages(conversationId);
-      setLocalMessages(updatedMessages);
+      // Convert store messages to component messages
+      const adaptedMessages = adaptStoreMessagesToComponentMessages(updatedMessages);
+      setLocalMessages(adaptedMessages);
       
       // Reset typing indicator
       setIsUserTyping(false);

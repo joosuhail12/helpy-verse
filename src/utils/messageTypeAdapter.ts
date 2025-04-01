@@ -1,6 +1,6 @@
 
-import { ChatMessage as StoreChatMessage } from '@/store/slices/chat/types';
-import { ChatMessage as ComponentChatMessage, FileAttachment } from '@/components/chat-widget/components/conversation/types';
+import { ChatMessage as StoreChatMessage, FileAttachment as StoreFileAttachment } from '@/store/slices/chat/types';
+import { ChatMessage as ComponentChatMessage, FileAttachment as ComponentFileAttachment } from '@/components/chat-widget/components/conversation/types';
 
 /**
  * Adapts a message from the store format to the component format
@@ -8,34 +8,36 @@ import { ChatMessage as ComponentChatMessage, FileAttachment } from '@/component
 export const adaptStoreMessageToComponentMessage = (
   message: StoreChatMessage
 ): ComponentChatMessage => {
+  // Convert reactions from Record<string, string[]> to array format
+  const reactionsArray = message.reactions 
+    ? Object.entries(message.reactions).map(([type, users]) => ({
+        type,
+        count: users.length,
+        userReacted: users.includes('current-user-id') // Replace with actual user ID when available
+      }))
+    : undefined;
+
   return {
-    ...message,
-    // Keep timestamp as is - it can be either string or Date in the component type
+    id: message.id,
+    conversationId: message.conversationId,
+    content: message.content,
+    sender: message.sender,
     timestamp: message.timestamp,
-    // Convert string attachments to FileAttachment objects
+    status: message.status,
+    readBy: message.readBy,
+    // Convert attachments from StoreFileAttachment[] to ComponentFileAttachment[]
     attachments: message.attachments 
-      ? message.attachments.map((attachment: string | Record<string, any>): FileAttachment => {
-          // Handle both string attachments and object attachments
-          if (typeof attachment === 'string') {
-            return {
-              id: `attachment-${Math.random().toString(36).substr(2, 9)}`,
-              url: attachment,
-              name: attachment.split('/').pop() || 'file',
-              type: getFileTypeFromUrl(attachment),
-              size: 0
-            };
-          } else {
-            // If it's already an object with url property
-            return {
-              id: attachment.id || `attachment-${Math.random().toString(36).substr(2, 9)}`,
-              url: attachment.url || '',
-              name: attachment.name || 'file',
-              type: attachment.type || 'application/octet-stream',
-              size: attachment.size || 0
-            };
-          }
-        })
-      : undefined
+      ? message.attachments.map((attachment: StoreFileAttachment): ComponentFileAttachment => ({
+          id: attachment.id,
+          name: attachment.name,
+          type: attachment.type,
+          url: attachment.url,
+          size: attachment.size,
+          thumbnailUrl: attachment.thumbnailUrl,
+          uploadProgress: attachment.uploadProgress
+        }))
+      : undefined,
+    reactions: reactionsArray
   };
 };
 
@@ -45,18 +47,36 @@ export const adaptStoreMessageToComponentMessage = (
 export const adaptComponentMessageToStoreMessage = (
   message: ComponentChatMessage
 ): StoreChatMessage => {
+  // Convert reactions from array to Record<string, string[]>
+  const reactionsRecord: Record<string, string[]> = {};
+  if (message.reactions) {
+    message.reactions.forEach(reaction => {
+      reactionsRecord[reaction.type] = reaction.userReacted ? ['current-user-id'] : [];
+    });
+  }
+
   return {
-    ...message,
-    // Ensure timestamp is always a string for store
-    timestamp: typeof message.timestamp === 'string' 
-      ? new Date(message.timestamp) // Convert string to Date
-      : message.timestamp,
-    // Convert FileAttachment objects to string URLs
+    id: message.id,
+    conversationId: message.conversationId,
+    content: message.content,
+    sender: message.sender,
+    // Ensure timestamp is always a string or Date for store
+    timestamp: message.timestamp,
+    status: message.status === 'error' ? 'delivered' : message.status,
+    readBy: message.readBy,
+    // Convert ComponentFileAttachment[] to StoreFileAttachment[]
     attachments: message.attachments 
-      ? message.attachments.map(attachment => attachment.url)
+      ? message.attachments.map(attachment => ({
+          id: attachment.id,
+          name: attachment.name,
+          type: attachment.type,
+          url: attachment.url,
+          size: attachment.size,
+          thumbnailUrl: attachment.thumbnailUrl,
+          uploadProgress: attachment.uploadProgress
+        }))
       : undefined,
-    // Status conversion (handle 'error' type if needed)
-    status: message.status === 'error' ? 'delivered' : message.status
+    reactions: reactionsRecord
   };
 };
 
