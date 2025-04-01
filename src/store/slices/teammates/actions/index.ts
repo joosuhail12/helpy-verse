@@ -1,19 +1,19 @@
 
-// Export all teammate actions for easy imports elsewhere
+// Re-export all actions from individual action files
 export * from './core';
 export * from './export';
 export * from './invite';
 export * from './security';
 
-// Re-export all thunks from the thunks directory
+// Re-export all thunks from the thunks directory with explicit imports to ensure they're available
 export {
   // Core thunks 
   fetchTeammates,
   fetchTeammateDetails,
-  updateTeammate,
   addTeammate,
   
-  // Role-related thunks
+  // Role and update related thunks
+  updateTeammate,
   updateTeammatesRole,
   updateTeammatePermissions,
   
@@ -35,7 +35,7 @@ export {
   
   // Invitation thunks
   resendInvitation,
-  
-  // Export functionality
-  exportTeammates
 } from '../thunks';
+
+// Export the export functionality
+export { exportTeammates } from './export';

@@ -1,7 +1,7 @@
 
 import { createAsyncThunk } from '@reduxjs/toolkit';
 
-// Security actions
+// 2FA Enable action
 export const enable2FA = createAsyncThunk(
   'teammates/enable2FA',
   async (teammateId: string, { rejectWithValue }) => {
@@ -14,6 +14,7 @@ export const enable2FA = createAsyncThunk(
   }
 );
 
+// 2FA Verification action
 export const verify2FA = createAsyncThunk(
   'teammates/verify2FA',
   async ({ teammateId, verificationCode }: { teammateId: string, verificationCode: string }, { rejectWithValue }) => {
@@ -26,6 +27,7 @@ export const verify2FA = createAsyncThunk(
   }
 );
 
+// 2FA Disable action
 export const disable2FA = createAsyncThunk(
   'teammates/disable2FA',
   async (teammateId: string, { rejectWithValue }) => {
@@ -38,6 +40,7 @@ export const disable2FA = createAsyncThunk(
   }
 );
 
+// Password reset action
 export const resetPassword = createAsyncThunk(
   'teammates/resetPassword',
   async ({ teammateId, newPassword }: { teammateId: string, newPassword: string }, { rejectWithValue }) => {

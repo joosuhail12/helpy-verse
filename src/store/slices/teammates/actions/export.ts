@@ -1,7 +1,7 @@
 
 import { createAsyncThunk } from '@reduxjs/toolkit';
 
-// Export teammate export functionality
+// Export teammate data functionality
 export const exportTeammates = createAsyncThunk(
   'teammates/exportTeammates',
   async (params: string[] | { format?: string }, { rejectWithValue }) => {
