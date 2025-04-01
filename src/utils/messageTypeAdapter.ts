@@ -1,3 +1,4 @@
+
 import { ChatMessage as StoreChatMessage } from '@/store/slices/chat/types';
 import { ChatMessage as ComponentChatMessage, FileAttachment } from '@/components/chat-widget/components/conversation/types';
 
@@ -48,8 +49,8 @@ export const adaptComponentMessageToStoreMessage = (
     ...message,
     // Ensure timestamp is always a string for store
     timestamp: typeof message.timestamp === 'string' 
-      ? message.timestamp 
-      : message.timestamp.toISOString(),
+      ? new Date(message.timestamp) // Convert string to Date
+      : message.timestamp,
     // Convert FileAttachment objects to string URLs
     attachments: message.attachments 
       ? message.attachments.map(attachment => attachment.url)
