@@ -14,7 +14,7 @@ export const adaptStoreMessageToComponentMessage = (
     timestamp: message.timestamp instanceof Date ? message.timestamp : new Date(message.timestamp),
     // Convert string attachments to FileAttachment objects
     attachments: message.attachments 
-      ? message.attachments.map((attachment): FileAttachment => {
+      ? message.attachments.map((attachment: string | any): FileAttachment => {
           // Handle both string attachments and object attachments
           if (typeof attachment === 'string') {
             return {
