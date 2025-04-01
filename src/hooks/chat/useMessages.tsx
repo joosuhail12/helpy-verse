@@ -25,7 +25,7 @@ export const useMessages = (
       id: uuidv4(),
       sender: 'user',
       content: message,
-      timestamp: new Date(),
+      timestamp: new Date().toISOString(),
       conversationId
     };
     
@@ -41,7 +41,7 @@ export const useMessages = (
         id: uuidv4(),
         sender: 'agent',
         content: `Thanks for your message: "${message}". How else can I assist you today?`,
-        timestamp: new Date(),
+        timestamp: new Date().toISOString(),
         conversationId
       };
       
@@ -80,7 +80,7 @@ export const useMessages = (
         id: uuidv4(),
         sender: 'agent',
         content: 'Hello! How can I help you today?',
-        timestamp: new Date(),
+        timestamp: new Date().toISOString(),
         conversationId
       };
       

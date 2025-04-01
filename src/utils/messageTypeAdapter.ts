@@ -47,14 +47,16 @@ export const adaptComponentMessageToStoreMessage = (
 ): StoreChatMessage => {
   return {
     ...message,
-    // Ensure timestamp is always a Date for store
+    // Ensure timestamp is always a string for store
     timestamp: typeof message.timestamp === 'string' 
-      ? new Date(message.timestamp) 
-      : message.timestamp,
+      ? message.timestamp 
+      : message.timestamp.toISOString(),
     // Convert FileAttachment objects to string URLs
     attachments: message.attachments 
       ? message.attachments.map(attachment => attachment.url)
-      : undefined
+      : undefined,
+    // Status conversion (handle 'error' type if needed)
+    status: message.status === 'error' ? 'delivered' : message.status
   };
 };
 

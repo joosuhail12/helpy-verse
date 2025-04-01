@@ -7,12 +7,14 @@ interface MessageInputProps {
   onSendMessage: (message: string) => void;
   onTyping?: (isTyping: boolean) => void;
   disabled?: boolean;
+  placeholder?: string;
 }
 
 const MessageInput: React.FC<MessageInputProps> = ({ 
   onSendMessage, 
   onTyping,
-  disabled = false 
+  disabled = false,
+  placeholder = "Type a message..."
 }) => {
   const [message, setMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -68,7 +70,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
             borderColor: colors.border,
             color: colors.foreground
           }}
-          placeholder={labels.placeholder || "Type a message..."}
+          placeholder={placeholder || labels.placeholder || "Type a message..."}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           onKeyDown={handleKeyDown}

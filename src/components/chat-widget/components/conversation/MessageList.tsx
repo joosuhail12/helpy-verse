@@ -3,17 +3,20 @@ import React from 'react';
 import { ChatMessage, TypingUser } from './types';
 import { useThemeContext } from '@/context/ThemeContext';
 import { Loader2 } from 'lucide-react';
+import MessageItem from './MessageItem';
 
 interface MessageListProps {
   messages: ChatMessage[];
   typingUsers?: TypingUser[];
   isLoading?: boolean;
+  showAvatars?: boolean;
 }
 
 const MessageList: React.FC<MessageListProps> = ({ 
   messages, 
   typingUsers = [], 
-  isLoading = false 
+  isLoading = false,
+  showAvatars = false
 }) => {
   const { colors } = useThemeContext();
 
@@ -36,33 +39,11 @@ const MessageList: React.FC<MessageListProps> = ({
   return (
     <div className="space-y-4">
       {messages.map((message) => (
-        <div 
-          key={message.id}
-          className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-        >
-          <div 
-            className={`max-w-[80%] rounded-lg px-4 py-2 ${
-              message.sender === 'user'
-                ? 'bg-primary text-white'
-                : 'bg-gray-100 text-gray-900'
-            }`}
-            style={{
-              backgroundColor: message.sender === 'user' ? colors.userMessage : colors.agentMessage,
-              color: message.sender === 'user' ? colors.userMessageText : colors.agentMessageText
-            }}
-          >
-            {message.content}
-            <div className="text-xs opacity-70 mt-1">
-              {new Date(message.timestamp).toLocaleTimeString(undefined, { 
-                hour: '2-digit', 
-                minute: '2-digit'
-              })}
-              {message.status === 'read' && (
-                <span className="ml-1">✓✓</span>
-              )}
-            </div>
-          </div>
-        </div>
+        <MessageItem 
+          key={message.id} 
+          message={message} 
+          showAvatar={showAvatars}
+        />
       ))}
       
       {typingUsers.length > 0 && (

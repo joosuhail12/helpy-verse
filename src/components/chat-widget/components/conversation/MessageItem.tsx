@@ -84,11 +84,11 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, showAvatar = false }
           </button>
           
           {/* Reactions display */}
-          {message.reactions && Object.keys(message.reactions).length > 0 && (
+          {message.reactions && message.reactions.length > 0 && (
             <div className="mt-1 flex flex-wrap gap-1">
-              {Object.entries(message.reactions).map(([emoji, users]) => (
-                <div key={emoji} className="bg-white rounded-full px-2 py-0.5 text-xs shadow-sm">
-                  {emoji} {users.length}
+              {message.reactions.map((reaction, index) => (
+                <div key={index} className="bg-white rounded-full px-2 py-0.5 text-xs shadow-sm">
+                  {reaction.type} {reaction.count}
                 </div>
               ))}
             </div>

@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { ChatMessage } from '@/components/chat-widget/components/conversation/types';
@@ -66,7 +67,7 @@ export const useMessaging = ({ conversationId, workspaceId, userName }: Messagin
             id: uuidv4(),
             sender: 'agent',
             content: 'Hello! How can I help you today?',
-            timestamp: new Date(),
+            timestamp: new Date().toISOString(),
             conversationId
           };
           
@@ -137,7 +138,7 @@ export const useMessaging = ({ conversationId, workspaceId, userName }: Messagin
       id: uuidv4(),
       content,
       sender: 'user',
-      timestamp: new Date(),
+      timestamp: new Date().toISOString(),
       conversationId,
       metadata: {
         ...metadata,
