@@ -1,5 +1,5 @@
 
-import type { Teammate } from '@/types/teammate';
+import type { Teammate, Session } from '@/types/teammate';
 
 // Mock data for testing and development
 export const mockTeammates: Teammate[] = [
@@ -58,3 +58,50 @@ export const mockTeammates: Teammate[] = [
     is2FAEnabled: false
   }
 ];
+
+// Add the missing mockSessions export
+export const mockSessions: Record<string, Session[]> = {
+  'tm-1': [
+    { 
+      id: 'session-1', 
+      teammateId: 'tm-1', 
+      deviceName: 'Chrome on Windows', 
+      startTime: new Date().toISOString(), 
+      endTime: null,
+      ipAddress: '192.168.1.1', 
+      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+      active: true,
+      deviceType: 'desktop',
+      location: 'New York, US',
+      lastActive: new Date().toISOString()
+    },
+    { 
+      id: 'session-2', 
+      teammateId: 'tm-1', 
+      deviceName: 'Firefox on Mac', 
+      startTime: new Date(Date.now() - 86400000).toISOString(), 
+      endTime: null,
+      ipAddress: '192.168.1.2', 
+      userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:95.0)',
+      active: true,
+      deviceType: 'desktop',
+      location: 'San Francisco, US',
+      lastActive: new Date(Date.now() - 3600000).toISOString()
+    }
+  ],
+  'tm-2': [
+    { 
+      id: 'session-3', 
+      teammateId: 'tm-2', 
+      deviceName: 'Safari on iPhone', 
+      startTime: new Date().toISOString(), 
+      endTime: null,
+      ipAddress: '192.168.1.3', 
+      userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15',
+      active: true,
+      deviceType: 'mobile',
+      location: 'Chicago, US',
+      lastActive: new Date().toISOString()
+    }
+  ]
+};
