@@ -160,7 +160,7 @@ const authSlice = createSlice({
 // Export actions directly from the slice
 export const { logout, clearError } = authSlice.actions;
 
-// Export the reducer as a named export to avoid circular dependencies
+// Export the reducer
 export const authReducer = authSlice.reducer;
 
 // Export all the async actions for use in components
@@ -174,5 +174,3 @@ export {
   fetchWorkspaceData,
   getUserPermission
 };
-
-// Remove the default export completely to prevent circular dependencies

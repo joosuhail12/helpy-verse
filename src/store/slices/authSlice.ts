@@ -3,6 +3,7 @@
 // for backward compatibility
 
 import { 
+  authReducer,
   logout, 
   clearError,
   loginUser,
@@ -12,11 +13,11 @@ import {
   fetchUserData,
   fetchUserProfile,
   fetchWorkspaceData,
-  getUserPermission,
-  authReducer
+  getUserPermission
 } from './auth/authSlice';
 
 export { 
+  authReducer,
   logout, 
   clearError,
   loginUser,
@@ -26,8 +27,7 @@ export {
   fetchUserData,
   fetchUserProfile,
   fetchWorkspaceData,
-  getUserPermission,
-  authReducer
+  getUserPermission
 };
 
 // Use 'export type' when re-exporting types with isolatedModules enabled
