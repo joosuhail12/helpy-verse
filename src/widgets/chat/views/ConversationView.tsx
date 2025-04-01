@@ -2,13 +2,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useChat } from '@/hooks/chat/useChat';
 import { useThemeContext } from '@/context/ThemeContext';
-import { Loader2, Send } from 'lucide-react';
+import { Loader2, Send, ChevronLeft } from 'lucide-react';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { ChatMessage } from '@/components/chat-widget/components/conversation/types';
 import MessageList from '@/components/chat-widget/components/conversation/MessageList';
 import MessageInput from '@/components/chat-widget/components/conversation/MessageInput';
 import ChatHeader from '@/components/chat-widget/components/header/ChatHeader';
 import { v4 as uuidv4 } from 'uuid';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface ConversationViewProps {
   onBack: () => void;
@@ -58,7 +59,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
       id: `temp-${Date.now()}`,
       content,
       sender: 'user',
-      timestamp: new Date(),
+      timestamp: new Date().toISOString(),
       conversationId: currentConversation.id
     };
 
@@ -71,13 +72,20 @@ const ConversationView: React.FC<ConversationViewProps> = ({
       // Send the actual message
       await sendMessage(currentConversation.id, content);
       
-      // No need to add the message again as it will be included 
-      // in the response from the server via the subscription
-      
-      // Wait a realistic amount of time for typing
+      // Simulate agent response after a delay
       setTimeout(() => {
+        const agentResponse: ChatMessage = {
+          id: uuidv4(),
+          content: "Thank you for your message. How else can I assist you today?",
+          sender: 'agent',
+          timestamp: new Date().toISOString(),
+          conversationId: currentConversation.id
+        };
+        
+        setMessages(prev => [...prev, agentResponse]);
         setIsTyping(false);
       }, 1500);
+      
     } catch (error) {
       console.error('Error sending message:', error);
       setIsTyping(false);
@@ -157,33 +165,42 @@ const ConversationViewContent: React.FC<{
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : (
-          <>
-            <MessageList 
-              messages={messages} 
-              showAvatars={true}
-              typingUsers={[]}
-              isLoading={false}
-            />
-            
-            {isTyping && (
-              <div className="flex items-center space-x-2 p-3 bg-gray-100 rounded-lg max-w-[80%] animate-pulse">
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '200ms' }}></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '400ms' }}></div>
-              </div>
-            )}
-            
-            <div ref={messagesEndRef} />
-          </>
+          <AnimatePresence>
+            <div className="space-y-4">
+              <MessageList 
+                messages={messages} 
+                showAvatars={true}
+                typingUsers={isTyping ? [{ clientId: 'agent', name: 'Agent' }] : []}
+                isLoading={false}
+              />
+              
+              {isTyping && (
+                <motion.div 
+                  className="flex items-center space-x-2 p-3 bg-gray-100 rounded-lg max-w-[80%] ml-2"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                >
+                  <div className="flex space-x-1">
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '200ms' }}></div>
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '400ms' }}></div>
+                  </div>
+                </motion.div>
+              )}
+              
+              <div ref={messagesEndRef} />
+            </div>
+          </AnimatePresence>
         )}
       </div>
       
       <div className="border-t p-3" style={{ borderColor: colors.border }}>
         <MessageInput 
           onSendMessage={handleSendMessage} 
+          onTyping={() => {}}
           disabled={isLoading}
           placeholder={labels?.placeholder || "Type a message..."}
-          onTyping={() => {}}
         />
       </div>
     </div>

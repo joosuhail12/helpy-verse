@@ -1,136 +1,65 @@
 
-import React, { useState } from 'react';
-import { Check, CheckCheck, Smile, Paperclip } from 'lucide-react';
+import React from 'react';
+import { formatMessageTime } from '@/components/chat-widget/utils/messageFormatter';
+import { ChatMessage } from './types';
+import FileAttachmentList from '@/components/chat-widget/components/message/FileAttachmentList';
 import { useThemeContext } from '@/context/ThemeContext';
-import { useAbly } from '@/context/AblyContext';
-import { ChatMessage, FileAttachment } from './types';
-import FileAttachmentItem from './FileAttachmentItem';
-import UserAvatar from '../user/UserAvatar';
+import { User, Bot } from 'lucide-react';
 
 interface MessageItemProps {
   message: ChatMessage;
   showAvatar?: boolean;
 }
 
-const COMMON_REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
-
 const MessageItem: React.FC<MessageItemProps> = ({ message, showAvatar = false }) => {
   const { colors } = useThemeContext();
-  const ably = useAbly();
-  const [showReactions, setShowReactions] = useState(false);
-  const isUserMessage = message.sender === 'user';
+  const isUser = message.sender === 'user';
   
-  const handleReaction = async (emoji: string) => {
-    // This would be implemented with your realtime service
-    console.log('Adding reaction', emoji, 'to message', message.id);
-    // For now, we'll just toggle the reactions UI
-    setShowReactions(false);
-  };
+  // Determine message style based on sender
+  const messageStyle = isUser 
+    ? { 
+        backgroundColor: colors.userMessage || '#9b87f5',
+        color: colors.userMessageText || 'white'
+      } 
+    : { 
+        backgroundColor: colors.agentMessage || '#f3f4f6',
+        color: colors.agentMessageText || '#1f2937'
+      };
   
-  const getReadStatus = () => {
-    if (!message.readBy || message.sender !== 'user') return null;
-    
-    if (message.readBy.length > 0) {
-      return <CheckCheck size={14} className="ml-1 text-green-500" />;
-    } else {
-      return <Check size={14} className="ml-1 text-gray-400" />;
-    }
-  };
-
   return (
-    <div 
-      className={`flex mb-4 ${isUserMessage ? 'justify-end' : 'justify-start'}`}
-    >
-      {/* Avatar for agent messages (left side) */}
-      {showAvatar && !isUserMessage && (
+    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`}>
+      {showAvatar && !isUser && (
         <div className="mr-2 flex-shrink-0">
-          <UserAvatar 
-            name="Agent" 
-            status="available" 
-            size="sm"
-          />
+          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+            <Bot size={16} className="text-primary" />
+          </div>
         </div>
       )}
-
-      <div className={`flex flex-col ${isUserMessage ? 'items-end' : 'items-start'}`}>
+      
+      <div className="flex flex-col max-w-[80%]">
         <div 
-          className={`px-4 py-2 rounded-lg max-w-[85%] relative ${
-            isUserMessage 
-              ? 'bg-primary text-white' 
-              : 'bg-gray-200'
-          }`}
-          style={{
-            backgroundColor: isUserMessage ? colors.userMessage : colors.agentMessage,
-            color: isUserMessage ? colors.userMessageText : colors.agentMessageText,
-          }}
+          className={`px-4 py-3 rounded-2xl ${isUser ? 'rounded-tr-sm' : 'rounded-tl-sm'}`}
+          style={messageStyle}
         >
-          {message.content}
+          <div className="break-words whitespace-pre-wrap">{message.content}</div>
           
-          {/* File attachments */}
           {message.attachments && message.attachments.length > 0 && (
-            <div className="mt-2 space-y-1">
-              {message.attachments.map((attachment) => (
-                <FileAttachmentItem key={attachment.id} attachment={attachment} />
-              ))}
-            </div>
-          )}
-          
-          {/* Reaction button */}
-          <button 
-            onClick={() => setShowReactions(!showReactions)}
-            className="absolute -bottom-3 right-2 bg-white rounded-full p-1 shadow-sm hover:bg-gray-100"
-          >
-            <Smile size={14} className="text-gray-500" />
-          </button>
-          
-          {/* Reactions display */}
-          {message.reactions && message.reactions.length > 0 && (
-            <div className="mt-1 flex flex-wrap gap-1">
-              {message.reactions.map((reaction, index) => (
-                <div key={index} className="bg-white rounded-full px-2 py-0.5 text-xs shadow-sm">
-                  {reaction.type} {reaction.count}
-                </div>
-              ))}
-            </div>
-          )}
-          
-          {/* Reaction picker */}
-          {showReactions && (
-            <div className="absolute top-full mt-2 right-0 bg-white rounded-lg shadow-md p-2 z-10">
-              <div className="flex gap-1">
-                {COMMON_REACTIONS.map(emoji => (
-                  <button
-                    key={emoji}
-                    onClick={() => handleReaction(emoji)}
-                    className="hover:bg-gray-100 p-1 rounded"
-                  >
-                    {emoji}
-                  </button>
-                ))}
-              </div>
+            <div className="mt-2">
+              <FileAttachmentList attachments={message.attachments} />
             </div>
           )}
         </div>
         
-        <div className="flex items-center mt-1 text-xs text-gray-500">
-          <span>
-            {typeof message.timestamp === 'string' 
-              ? new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-              : message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            }
-          </span>
-          {getReadStatus()}
+        <div className={`text-xs mt-1 text-gray-400 ${isUser ? 'text-right mr-1' : 'ml-1'}`}>
+          {formatMessageTime(message.timestamp)}
         </div>
       </div>
       
-      {/* Avatar for user messages (right side) */}
-      {showAvatar && isUserMessage && (
+      {showAvatar && isUser && (
         <div className="ml-2 flex-shrink-0">
-          <UserAvatar 
-            name="You" 
-            status="available" 
-            size="sm"
-          />
+          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+            <User size={16} className="text-primary" />
+          </div>
         </div>
       )}
     </div>
