@@ -17,6 +17,8 @@ export interface Teammate {
   workspaceId?: string;
   is2FAEnabled?: boolean;
   createdBy?: string;
+  teamId?: string;
+  permissions?: string[];
 }
 
 export interface NewTeammate {
@@ -51,6 +53,7 @@ export interface TeamAssignment {
   assignedAt: string;
   teamName?: string;
   startDate?: string;
+  status?: string;
 }
 
 export interface Session {
