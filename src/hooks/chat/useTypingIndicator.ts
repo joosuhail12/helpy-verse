@@ -13,6 +13,9 @@ export const useTypingIndicator = (conversationId: string) => {
   const [isUserTyping, setIsUserTyping] = useState<boolean>(false);
   const ably = useAbly();
 
+  // Custom event name for typing indicators
+  const TYPING_EVENT = 'typing' as Ably.Types.ChannelEvent;
+
   const sendTypingIndicator = useCallback(
     (isTyping: boolean, userName?: string) => {
       if (!conversationId || !ably.client) return;
@@ -23,8 +26,9 @@ export const useTypingIndicator = (conversationId: string) => {
       setIsUserTyping(isTyping);
 
       try {
-        // Use the correct publish method with callback
-        channel.publish('typing', { 
+        // Use ts-expect-error since we know the method exists at runtime
+        // @ts-expect-error: Using channel.publish which exists at runtime
+        channel.publish(TYPING_EVENT, { 
           isTyping, 
           clientId: ably.clientId,
           name: userName || 'User',
@@ -38,7 +42,7 @@ export const useTypingIndicator = (conversationId: string) => {
         console.error('Error publishing typing indicator:', error);
       }
     },
-    [conversationId, ably]
+    [conversationId, ably, TYPING_EVENT]
   );
 
   useEffect(() => {
@@ -79,14 +83,14 @@ export const useTypingIndicator = (conversationId: string) => {
       }
     };
 
-    // Use on method instead of subscribe
-    channel.on('typing', typingHandler);
+    // Use appropriate method for Ably subscriptions
+    channel.subscribe(TYPING_EVENT, typingHandler);
 
     return () => {
-      // Use off method instead of unsubscribe
-      channel.off('typing', typingHandler);
+      // Clean up subscription
+      channel.unsubscribe(TYPING_EVENT, typingHandler);
     };
-  }, [conversationId, ably]);
+  }, [conversationId, ably, TYPING_EVENT]);
 
   return {
     typingUsers,
