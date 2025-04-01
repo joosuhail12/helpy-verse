@@ -1,7 +1,7 @@
 
 import { configureStore } from '@reduxjs/toolkit';
 
-// Import all reducers using named imports to avoid circular dependencies
+// Import reducers from their respective slice files
 import { authReducer } from './slices/auth/authSlice';
 import { actionsReducer } from './slices/actions/actionsSlice';
 import contentReducer from './slices/content/contentSlice';
@@ -19,7 +19,7 @@ import userReducer from './slices/user/userSlice';
 import teammatesReducer from './slices/teammates/teammatesSlice';
 import { chatReducer } from './slices/chat/chatSlice';
 
-// Define the root reducer with all slices
+// Define the root reducer
 const rootReducer = {
   auth: authReducer,
   actions: actionsReducer,
