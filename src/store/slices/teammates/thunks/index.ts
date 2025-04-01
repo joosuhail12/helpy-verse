@@ -5,6 +5,7 @@ export * from './assignmentThunks';
 export * from './securityThunks';
 export * from './sessionThunks';
 export * from './updateThunks';
+export * from './invitationThunks';
 
 // Export core thunks
 export {

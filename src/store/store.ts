@@ -39,6 +39,8 @@ const rootReducer = {
   chat: chatReducer,
 };
 
+// Create store with proper error handling
+console.log("Initializing Redux store...");
 export const store = configureStore({
   reducer: rootReducer,
   middleware: (getDefaultMiddleware) =>
@@ -47,6 +49,7 @@ export const store = configureStore({
     }),
   devTools: process.env.NODE_ENV !== 'production',
 });
+console.log("Redux store initialized successfully");
 
 export type AppDispatch = typeof store.dispatch;
 export type RootState = ReturnType<typeof store.getState>;

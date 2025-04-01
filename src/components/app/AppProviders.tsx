@@ -22,30 +22,32 @@ interface AppProvidersProps {
  */
 const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
   // Make sure React is properly initialized before rendering
-  if (typeof React === 'undefined' || !React.createElement) {
-    console.error("React is not properly initialized");
+  if (!React || !React.createElement) {
+    console.error("React is not properly initialized in AppProviders");
     return <div>Error initializing application</div>;
   }
 
   return (
     <AppErrorBoundary>
-      <Provider store={store}>
-        <ThemeProvider initialTheme={{}}>
-          <WidgetStateProvider>
-            <AppQueryProvider>
-              <TooltipProvider>
-                <Toaster />
-                <Sonner />
-                <CaslProvider>
-                  <AppInitializer>
-                    {children}
-                  </AppInitializer>
-                </CaslProvider>
-              </TooltipProvider>
-            </AppQueryProvider>
-          </WidgetStateProvider>
-        </ThemeProvider>
-      </Provider>
+      <React.StrictMode>
+        <Provider store={store}>
+          <ThemeProvider initialTheme={{}}>
+            <WidgetStateProvider>
+              <AppQueryProvider>
+                <TooltipProvider>
+                  <Toaster />
+                  <Sonner />
+                  <CaslProvider>
+                    <AppInitializer>
+                      {children}
+                    </AppInitializer>
+                  </CaslProvider>
+                </TooltipProvider>
+              </AppQueryProvider>
+            </WidgetStateProvider>
+          </ThemeProvider>
+        </Provider>
+      </React.StrictMode>
     </AppErrorBoundary>
   );
 };
