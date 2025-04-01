@@ -1,6 +1,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useAbly } from '@/context/AblyContext';
+import * as Ably from 'ably';
 
 interface TypingUser {
   clientId: string;
@@ -21,12 +22,15 @@ export const useTypingIndicator = (conversationId: string) => {
 
       setIsUserTyping(isTyping);
 
-      // Use publish directly
-      channel.publish('typing', { 
-        isTyping, 
-        clientId: ably.clientId,
-        name: userName || 'User',
-        timestamp: Date.now() 
+      // Use the correct publish method from Ably
+      channel.publish({
+        name: 'typing',
+        data: { 
+          isTyping, 
+          clientId: ably.clientId,
+          name: userName || 'User',
+          timestamp: Date.now() 
+        }
       });
     },
     [conversationId, ably]
@@ -38,8 +42,8 @@ export const useTypingIndicator = (conversationId: string) => {
     const channelName = `typing:${conversationId}`;
     const channel = ably.getChannel(channelName);
 
-    // Use on instead of subscribe
-    const handler = (message: any) => {
+    // Create a named handler function for the subscription
+    const typingHandler = (message: Ably.Types.Message) => {
       const { isTyping, clientId, name, timestamp } = message.data;
 
       if (clientId === ably.clientId) {
@@ -70,10 +74,11 @@ export const useTypingIndicator = (conversationId: string) => {
       }
     };
 
-    channel.on('typing', handler);
+    // Use the correct subscribe syntax
+    channel.subscribe('typing', typingHandler);
 
     return () => {
-      channel.off(handler);
+      channel.unsubscribe('typing', typingHandler);
     };
   }, [conversationId, ably]);
 

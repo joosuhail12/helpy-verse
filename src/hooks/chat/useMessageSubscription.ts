@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAbly } from '@/context/AblyContext';
 import { ChatMessage } from '@/components/chat-widget/components/conversation/types';
+import * as Ably from 'ably';
 
 interface MessageSubscriptionOptions {
   onMessage?: (message: ChatMessage) => void;
@@ -21,17 +22,18 @@ export const useMessageSubscription = (
     const channelName = `chat:${workspaceId}:${conversationId}`;
     const channel = ably.getChannel(channelName);
 
-    // Use on() instead of subscribe()
-    const subscription = channel.on('message', (message: any) => {
+    // Subscribe to messages using the correct Ably event format
+    const callbackHandler = (message: Ably.Types.Message) => {
       if (options?.onMessage) {
         options.onMessage(message.data);
       }
-    });
+    };
 
+    channel.subscribe('message', callbackHandler);
     setIsSubscribed(true);
 
     return () => {
-      channel.off(subscription); // Use off() instead of unsubscribe()
+      channel.unsubscribe('message', callbackHandler);
       setIsSubscribed(false);
     };
   }, [conversationId, workspaceId, ably, options]);
@@ -43,8 +45,11 @@ export const useMessageSubscription = (
       const channelName = `chat:${workspaceId}:${conversationId}`;
       const channel = ably.getChannel(channelName);
 
-      // Use channel.publish directly
-      await channel.publish('message', message);
+      // Use the correct publish method from Ably
+      await channel.publish({
+        name: 'message',
+        data: message
+      });
     },
     [conversationId, workspaceId, ably]
   );

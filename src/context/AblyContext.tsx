@@ -58,6 +58,11 @@ export const AblyProvider: React.FC<AblyProviderProps> = ({ children, workspaceI
       setState(prev => ({ ...prev, isConnected: false }));
     });
 
+    ablyClient.connection.on('failed', (err) => {
+      console.error('Ably connection failed:', err);
+      setState(prev => ({ ...prev, isConnected: false }));
+    });
+
     setClient(ablyClient);
 
     // Cleanup function
