@@ -92,11 +92,13 @@ const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({
           workspaceId={workspaceId}
           onClose={onClose}
           onStartConversation={handleStartConversation}
+          onSelectConversation={handleSelectConversation}
+          onStartNewConversation={handleStartNewConversation}
         />
       </div>
       
-      {/* Only show navigation on home view */}
-      {activeView === 'home' && (
+      {/* Navigation bar should be on home and messages views */}
+      {(activeView === 'home' || activeView === 'messages') && (
         <Navigation activeView={activeView} setActiveView={setActiveView} />
       )}
     </div>

@@ -23,7 +23,7 @@ const LazyMessagesViewComponent: React.FC<LazyMessagesViewComponentProps> = (pro
     <LazyMessagesView
       workspaceId={props.workspaceId}
       onClose={props.onClose}
-      setActiveView={props.setActiveView}
+      setActiveView={props.setActiveView as (view: View) => void}
       onStartConversation={props.onStartConversation}
       onSelectConversation={handleSelectConversation}
     />

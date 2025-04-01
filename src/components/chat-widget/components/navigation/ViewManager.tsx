@@ -5,6 +5,7 @@ import { useChat } from '@/hooks/chat/useChat';
 import LazyHomeView from '../../views/LazyHomeView';
 import LazyMessagesView from '../../views/LazyMessagesView';
 import LazyConversationView from '../conversation/LazyConversationView';
+import PoweredByFooter from '@/widgets/chat/components/footer/PoweredByFooter';
 
 interface ViewManagerProps {
   activeView: View;
@@ -32,34 +33,39 @@ const ViewManager: React.FC<ViewManagerProps> = ({
   const { currentConversation } = useChat();
   
   return (
-    <>
-      {activeView === 'home' && (
-        <LazyHomeView 
-          workspaceId={workspaceId} 
-          onClose={onClose} 
-          setActiveView={setActiveView} 
-          onSelectConversation={onSelectConversation}
-          onStartNewConversation={onStartNewConversation}
-        />
-      )}
+    <div className="flex flex-col h-full overflow-hidden">
+      <div className="flex-1 overflow-hidden">
+        {activeView === 'home' && (
+          <LazyHomeView 
+            workspaceId={workspaceId} 
+            onClose={onClose} 
+            setActiveView={setActiveView} 
+            onSelectConversation={onSelectConversation}
+            onStartNewConversation={onStartNewConversation}
+          />
+        )}
+        
+        {activeView === 'messages' && (
+          <LazyMessagesView 
+            workspaceId={workspaceId} 
+            onClose={onClose} 
+            setActiveView={setActiveView} 
+            onStartConversation={onStartConversation}
+          />
+        )}
+        
+        {activeView === 'conversation' && currentConversation && (
+          <LazyConversationView 
+            conversationId={currentConversation.id} 
+            workspaceId={workspaceId} 
+            onBack={() => setActiveView('messages')} 
+          />
+        )}
+      </div>
       
-      {activeView === 'messages' && (
-        <LazyMessagesView 
-          workspaceId={workspaceId} 
-          onClose={onClose} 
-          setActiveView={setActiveView} 
-          onStartConversation={onStartConversation}
-        />
-      )}
-      
-      {activeView === 'conversation' && currentConversation && (
-        <LazyConversationView 
-          conversationId={currentConversation.id} 
-          workspaceId={workspaceId} 
-          onBack={() => setActiveView('messages')} 
-        />
-      )}
-    </>
+      {/* PoweredByFooter appears on all views */}
+      <PoweredByFooter />
+    </div>
   );
 };
 
