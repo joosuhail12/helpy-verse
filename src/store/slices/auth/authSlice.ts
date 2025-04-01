@@ -160,7 +160,7 @@ const authSlice = createSlice({
 // Export actions directly from the slice
 export const { logout, clearError } = authSlice.actions;
 
-// Export the reducer
+// Export the reducer to make it available for importing directly
 export const authReducer = authSlice.reducer;
 
 // Export all the async actions for use in components
