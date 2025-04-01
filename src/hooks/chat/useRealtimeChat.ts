@@ -21,7 +21,14 @@ export const useRealtimeChat = (conversationId: string, workspaceId: string) => 
           timestamp: msg.timestamp instanceof Date ? msg.timestamp : new Date(msg.timestamp),
           // Ensure attachments are in the correct format (array of strings)
           attachments: msg.attachments && Array.isArray(msg.attachments) 
-            ? msg.attachments.map(att => typeof att === 'string' ? att : att.url)
+            ? msg.attachments.map(att => {
+                // If it's an object with url property, extract the url
+                if (typeof att === 'object' && att !== null && 'url' in att) {
+                  return att.url;
+                }
+                // If it's already a string, return it
+                return att;
+              })
             : undefined
         })) as ChatMessage[];
         
