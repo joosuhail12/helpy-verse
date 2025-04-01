@@ -13,56 +13,74 @@ const LazyHomeView: React.FC<LazyHomeViewProps> = ({
   onClose
 }) => {
   return (
-    <div className="flex flex-col h-full p-4">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-semibold">Chat Support</h2>
-        <button 
-          onClick={onClose}
-          className="p-1 rounded-full hover:bg-gray-100"
+    <div className="flex flex-col h-full bg-white">
+      {/* Header section */}
+      <div className="p-6 pb-4">
+        <div className="bg-gray-200 w-10 h-10 rounded-full flex items-center justify-center mb-4">
+          <div className="w-5 h-5 bg-black rounded-sm"></div>
+        </div>
+        <h2 className="text-lg text-gray-600 font-normal">Hello there.</h2>
+        <h1 className="text-2xl font-semibold mt-1">How can we help?</h1>
+      </div>
+      
+      {/* Content area */}
+      <div className="flex-1 px-4 pb-4 space-y-4">
+        {/* Recent Messages Section */}
+        <div className="bg-white rounded-xl border p-4">
+          <h3 className="font-medium mb-2">Recent Messages</h3>
+          <div 
+            className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg"
+            onClick={() => onStartConversation("can you explain copilot to me")}
+          >
+            <div className="bg-gray-200 rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0">
+              <div className="w-4 h-4 bg-black rounded-sm"></div>
+            </div>
+            <div className="flex-grow">
+              <p className="text-black">can you explain copilot to me</p>
+              <p className="text-gray-500 text-sm">Fin · 1d ago</p>
+            </div>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400">
+              <path d="M9 18l6-6-6-6"/>
+            </svg>
+          </div>
+        </div>
+        
+        {/* Ask a question button */}
+        <div 
+          className="bg-white rounded-xl border p-4 flex items-center justify-between cursor-pointer hover:bg-gray-50"
+          onClick={() => onStartConversation("")}
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          <span className="font-medium">Ask a question</span>
+          <div className="flex items-center">
+            <div className="bg-black rounded-sm w-6 h-6 flex-shrink-0 mr-1"></div>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400">
+              <path d="M9 18l6-6-6-6"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+      
+      {/* Navigation footer */}
+      <div className="border-t flex h-14">
+        <button 
+          className="flex-1 flex flex-col items-center justify-center text-primary"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
           </svg>
+          <span className="text-xs mt-1">Home</span>
+        </button>
+        <button 
+          onClick={onViewMessages}
+          className="flex-1 flex flex-col items-center justify-center text-gray-500" 
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+          <span className="text-xs mt-1">Messages</span>
         </button>
       </div>
-      
-      <div className="flex-1 flex flex-col items-center justify-center text-center">
-        <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-          <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-          </svg>
-        </div>
-        <h3 className="text-xl font-medium mb-2">Welcome to Chat Support</h3>
-        <p className="text-muted-foreground mb-6">How can we help you today?</p>
-        
-        <div className="w-full space-y-3">
-          <button 
-            onClick={() => onStartConversation("I need help with my account")}
-            className="w-full py-2 px-4 bg-background border rounded-md hover:bg-gray-50 text-left"
-          >
-            I need help with my account
-          </button>
-          <button 
-            onClick={() => onStartConversation("I have a billing question")}
-            className="w-full py-2 px-4 bg-background border rounded-md hover:bg-gray-50 text-left"
-          >
-            I have a billing question
-          </button>
-          <button 
-            onClick={() => onStartConversation("I want to report an issue")}
-            className="w-full py-2 px-4 bg-background border rounded-md hover:bg-gray-50 text-left"
-          >
-            I want to report an issue
-          </button>
-        </div>
-      </div>
-      
-      <button 
-        onClick={onViewMessages}
-        className="w-full py-2 mt-4 bg-primary text-white rounded-md hover:bg-primary/90"
-      >
-        View Previous Conversations
-      </button>
     </div>
   );
 };
