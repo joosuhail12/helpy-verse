@@ -51,6 +51,7 @@ const ViewManager: React.FC<ViewManagerProps> = ({
             onSelectConversation={() => setActiveView('conversation')}
             onClose={onClose}
             onStartConversation={onStartConversation}
+            setActiveView={setActiveView}
           />
         )}
         
