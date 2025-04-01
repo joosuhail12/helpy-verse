@@ -1,17 +1,37 @@
 
 // Export all thunks from individual files
 import { createAsyncThunk } from '@reduxjs/toolkit';
-export * from './coreThunks';
 export * from './activityThunks';
 export * from './assignmentThunks';
 export * from './securityThunks';
 export * from './sessionThunks';
-export * from './updateThunks';
+
+// We need to be explicit with these imports to avoid conflicts
+import {
+  fetchTeammates,
+  fetchTeammateDetails,
+  updateTeammate,
+  updateTeammatesRole,
+  updateTeammatePermissions
+} from './coreThunks';
+
+// Re-export core thunks explicitly to avoid naming conflicts
+export {
+  fetchTeammates,
+  fetchTeammateDetails,
+  updateTeammate,
+  updateTeammatesRole,
+  updateTeammatePermissions
+};
+
+// Import and re-export from updateThunks
+import { resendInvitation } from './updateThunks';
+export { resendInvitation };
 
 // Export action to add a new teammate
 export const addTeammate = createAsyncThunk(
   'teammates/addTeammate',
-  async (newTeammate, { rejectWithValue }) => {
+  async (newTeammate: any, { rejectWithValue }) => {
     try {
       console.log('Adding new teammate:', newTeammate);
       // In a real implementation, this would call an API

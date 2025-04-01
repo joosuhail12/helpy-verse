@@ -34,4 +34,3 @@ export {
   addTeammate,
   exportTeammates
 } from '../thunks';
-
