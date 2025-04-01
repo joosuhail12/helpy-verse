@@ -1,32 +1,22 @@
 
 /**
- * Types related to chat messages
+ * Message-related type definitions
  */
-export interface ChatMessage {
+
+export interface Message {
   id: string;
   content: string;
-  sender: 'user' | 'agent' | 'system';
-  timestamp: Date | string;
+  sender: 'user' | 'agent';
+  timestamp: string;
   conversationId: string;
-  readBy?: string[];
-  reactions?: Record<string, string[]>;
-  attachments?: FileAttachment[];
-  metadata?: Record<string, any>;
+  status?: 'sent' | 'delivered' | 'read' | 'error';
 }
 
-export interface FileAttachment {
+export interface Conversation {
   id: string;
-  name: string;
-  type: string;
-  url: string;
-  size: number;
-  thumbnailUrl?: string;
-  uploadProgress?: number;
-}
-
-export interface TypingIndicator {
-  userId: string;
-  name: string;
-  isTyping: boolean;
-  timestamp: number;
+  title?: string;
+  lastMessage?: string;
+  lastMessageTimestamp: string;
+  unreadCount: number;
+  type?: string;
 }

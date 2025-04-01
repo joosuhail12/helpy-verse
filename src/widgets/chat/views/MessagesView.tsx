@@ -5,8 +5,8 @@ import { useThemeContext } from '@/context/ThemeContext';
 import ChatHeader from '@/components/chat-widget/components/header/ChatHeader';
 import { formatDistanceToNow } from 'date-fns';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import Navigation from '../components/navigation/Navigation';
 import { View } from '../types';
+import Navigation from '../components/navigation/Navigation';
 
 interface MessagesViewProps {
   onSelectConversation: () => void;
@@ -27,32 +27,21 @@ const MessagesView: React.FC<MessagesViewProps> = ({
     onSelectConversation();
   };
 
-  // Format timestamp to readable format
-  const formatTimestamp = (timestamp: string | undefined) => {
-    if (!timestamp) return '';
-    try {
-      const date = new Date(timestamp);
-      return `${date.toLocaleDateString()} ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-    } catch (e) {
-      return timestamp;
-    }
-  };
-
   return (
     <div className="flex flex-col h-full bg-white">
       {/* Fixed Header */}
-      <div className="sticky top-0 z-10 bg-white">
+      <div className="sticky top-0 z-10 w-full bg-white border-b" style={{ borderColor: colors.border }}>
         <ChatHeader 
           title="Recent Conversations" 
           onClose={onClose} 
-          onBackClick={() => onClose()} 
+          onBackClick={onClose}
         />
       </div>
       
       {/* Scrollable Content Area */}
       <div className="flex-1 overflow-hidden">
         <ScrollArea className="h-[calc(100vh-120px)]">
-          <div className="divide-y">
+          <div className="divide-y" style={{ borderColor: colors.border }}>
             {conversations.length === 0 ? (
               <div className="p-4">
                 <div className="text-base font-medium">New question</div>
@@ -66,7 +55,7 @@ const MessagesView: React.FC<MessagesViewProps> = ({
                   onClick={() => handleConversationSelect(conversation.id)}
                 >
                   <div className="text-base font-medium">
-                    {conversation.title || `Conversation ${formatTimestamp(conversation.lastMessageTimestamp)}`}
+                    {conversation.title || `Conversation ${new Date(conversation.lastMessageTimestamp).toLocaleString()}`}
                   </div>
                   <div className="text-sm text-gray-500">
                     {conversation.lastMessage || "You don't have any conversations yet"}
@@ -75,7 +64,7 @@ const MessagesView: React.FC<MessagesViewProps> = ({
               ))
             )}
             
-            {/* Add example conversations that match the screenshot */}
+            {/* Add example conversations to match the screenshot */}
             <div className="p-4">
               <div className="text-base font-medium">New question</div>
               <div className="text-sm text-gray-500">You don't have any conversations yet</div>
@@ -105,8 +94,8 @@ const MessagesView: React.FC<MessagesViewProps> = ({
       </div>
       
       {/* Fixed Navigation */}
-      <div className="sticky bottom-0 z-10 bg-white mt-auto">
-        <Navigation activeView="messages" setActiveView={(view) => {}} />
+      <div className="sticky bottom-0 z-10 w-full">
+        <Navigation activeView="messages" setActiveView={(view: View) => {}} />
       </div>
     </div>
   );

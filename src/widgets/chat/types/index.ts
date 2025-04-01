@@ -6,4 +6,3 @@
 export type View = 'home' | 'messages' | 'conversation';
 
 export * from './messages';
-
