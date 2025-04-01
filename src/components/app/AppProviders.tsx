@@ -46,7 +46,7 @@ const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
       error: '#ef4444',
       success: '#10b981'
     },
-    position: 'right',
+    position: 'right' as 'left' | 'right',
     compact: false,
     labels: {
       welcomeTitle: 'Hello there.',
