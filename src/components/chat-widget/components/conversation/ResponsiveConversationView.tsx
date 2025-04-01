@@ -7,24 +7,28 @@ interface ResponsiveConversationViewProps {
   conversationId: string;
   workspaceId: string;
   onBack: () => void;
+  onClose: () => void;
 }
 
 const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
   conversationId,
   workspaceId,
-  onBack
+  onBack,
+  onClose
 }) => {
   return (
     <div className="flex flex-col h-full">
       <ChatHeader 
         title="Chat Support" 
         onBackClick={onBack} 
-        onClose={null}
+        onClose={onClose}
       />
       <div className="flex-1 overflow-hidden">
         <ConversationView 
           conversationId={conversationId} 
-          workspaceId={workspaceId} 
+          workspaceId={workspaceId}
+          onBack={onBack}
+          onClose={onClose}
         />
       </div>
     </div>
