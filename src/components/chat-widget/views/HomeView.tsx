@@ -23,6 +23,11 @@ const HomeView: React.FC<HomeViewProps> = ({
     setActiveView('conversation');
   };
 
+  const handleAskQuestion = () => {
+    onStartNewConversation();
+    setActiveView('conversation');
+  };
+
   return (
     <div className="flex flex-col h-full bg-white">
       {/* Header section */}
@@ -71,7 +76,7 @@ const HomeView: React.FC<HomeViewProps> = ({
         {/* Ask a question button */}
         <div 
           className="bg-white rounded-xl border p-4 flex items-center justify-between cursor-pointer hover:bg-gray-50"
-          onClick={onStartNewConversation}
+          onClick={handleAskQuestion}
         >
           <span className="font-medium">Ask a question</span>
           <div className="flex items-center">

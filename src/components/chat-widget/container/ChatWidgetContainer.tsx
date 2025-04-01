@@ -45,7 +45,22 @@ const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({
     try {
       const newConversationId = await createNewConversation(`Conversation ${new Date().toLocaleString()}`);
       selectConversation(newConversationId);
+      setActiveView('conversation');
       // Now we can handle the message in the conversation component
+    } catch (error) {
+      console.error('Failed to create conversation:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [createNewConversation, selectConversation]);
+
+  // Function to start a new conversation without a message
+  const handleStartNewConversation = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const newConversationId = await createNewConversation(`Conversation ${new Date().toLocaleString()}`);
+      selectConversation(newConversationId);
+      setActiveView('conversation');
     } catch (error) {
       console.error('Failed to create conversation:', error);
     } finally {
@@ -74,6 +89,7 @@ const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({
         onClose={onClose}
         onStartConversation={handleStartConversation}
         onSelectConversation={handleSelectConversation}
+        onStartNewConversation={handleStartNewConversation}
       />
       
       <Navigation activeView={activeView} setActiveView={setActiveView} />
