@@ -8,6 +8,7 @@ import MessageInput from '@/components/chat-widget/components/conversation/Messa
 import { ChatMessage } from '@/components/chat-widget/components/conversation/types';
 import { Loader2, Send } from 'lucide-react';
 import { adaptStoreMessagesToComponentMessages, adaptComponentMessagesToStoreMessages } from '@/utils/messageTypeAdapter';
+import { ThemeProvider } from '@/context/ThemeContext';
 
 interface ConversationViewProps {
   onBack: () => void;
@@ -19,7 +20,6 @@ const ConversationView: React.FC<ConversationViewProps> = ({
   onClose
 }) => {
   const { currentConversation, getMessages, sendMessage } = useChat();
-  const { colors, labels } = useThemeContext();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isTyping, setIsTyping] = useState(false);
@@ -84,18 +84,59 @@ const ConversationView: React.FC<ConversationViewProps> = ({
 
   if (!currentConversation) {
     return (
-      <div className="flex flex-col items-center justify-center h-full p-4">
-        <p className="text-gray-500">No conversation selected</p>
-        <button 
-          onClick={onBack}
-          className="mt-4 px-4 py-2 bg-primary text-white rounded-md"
-        >
-          Back to Conversations
-        </button>
-      </div>
+      <ThemeProvider>
+        <div className="flex flex-col items-center justify-center h-full p-4">
+          <p className="text-gray-500">No conversation selected</p>
+          <button 
+            onClick={onBack}
+            className="mt-4 px-4 py-2 bg-primary text-white rounded-md"
+          >
+            Back to Conversations
+          </button>
+        </div>
+      </ThemeProvider>
     );
   }
 
+  // Use ThemeContext within the component that needs it
+  return (
+    <ThemeProvider>
+      <ConversationViewContent
+        currentConversation={currentConversation}
+        messages={messages}
+        isLoading={isLoading}
+        isTyping={isTyping}
+        onBack={onBack}
+        onClose={onClose}
+        handleSendMessage={handleSendMessage}
+        messagesEndRef={messagesEndRef}
+      />
+    </ThemeProvider>
+  );
+};
+
+// Extract the content into a separate component to use useThemeContext inside it
+const ConversationViewContent: React.FC<{
+  currentConversation: any;
+  messages: ChatMessage[];
+  isLoading: boolean;
+  isTyping: boolean;
+  onBack: () => void;
+  onClose: () => void;
+  handleSendMessage: (content: string) => Promise<void>;
+  messagesEndRef: React.RefObject<HTMLDivElement>;
+}> = ({
+  currentConversation,
+  messages,
+  isLoading,
+  isTyping,
+  onBack,
+  onClose,
+  handleSendMessage,
+  messagesEndRef
+}) => {
+  const { colors, labels } = useThemeContext();
+  
   return (
     <div 
       className="flex flex-col h-full" 

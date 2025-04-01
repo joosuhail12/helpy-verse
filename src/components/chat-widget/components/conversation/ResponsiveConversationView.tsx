@@ -11,6 +11,7 @@ import { ChatMessage } from './types';
 import { useChat } from '@/hooks/chat/useChat';
 import UserAvatar from '../user/UserAvatar';
 import { adaptStoreMessagesToComponentMessages, adaptComponentMessagesToStoreMessages } from '@/utils/messageTypeAdapter';
+import { ThemeProvider } from '@/context/ThemeContext';
 
 export interface ResponsiveConversationViewProps {
   conversationId: string;
@@ -82,28 +83,30 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
     : loadedMessages;
 
   return (
-    <div className="flex flex-col h-full">
-      <ChatHeader 
-        title="Conversation" 
-        onBackClick={onBack} 
-        workspaceId={workspaceId}
-        conversationId={conversationId}
-      />
-      <div className="flex-1 overflow-hidden flex flex-col">
-        <MessageList 
-          messages={displayMessages} 
+    <ThemeProvider>
+      <div className="flex flex-col h-full">
+        <ChatHeader 
+          title="Conversation" 
+          onBackClick={onBack} 
+          workspaceId={workspaceId}
           conversationId={conversationId}
-          showAvatars={true}
         />
-        <div className="px-4 pb-2">
-          <TypingIndicator users={activeTypers} agentName={activeTypers.length === 1 ? "Support agent" : undefined} />
-          <MessageInput 
-            onSendMessage={handleSendMessage}
-            onTyping={handleMessageInputChange}
+        <div className="flex-1 overflow-hidden flex flex-col">
+          <MessageList 
+            messages={displayMessages} 
+            conversationId={conversationId}
+            showAvatars={true}
           />
+          <div className="px-4 pb-2">
+            <TypingIndicator users={activeTypers} agentName={activeTypers.length === 1 ? "Support agent" : undefined} />
+            <MessageInput 
+              onSendMessage={handleSendMessage}
+              onTyping={handleMessageInputChange}
+            />
+          </div>
         </div>
       </div>
-    </div>
+    </ThemeProvider>
   );
 };
 
