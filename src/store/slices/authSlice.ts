@@ -13,7 +13,7 @@ import {
   fetchUserProfile,
   fetchWorkspaceData,
   getUserPermission,
-  default as authReducer
+  authReducer
 } from './auth/authSlice';
 
 export { 
