@@ -5,7 +5,7 @@ export * from './export';
 export * from './invite';
 export * from './security';
 
-// Re-export specific thunks for backward compatibility
+// Re-export all necessary thunks from the thunks directory
 export {
   // Core thunks 
   fetchTeammates,
