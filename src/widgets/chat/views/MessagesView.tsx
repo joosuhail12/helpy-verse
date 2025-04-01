@@ -34,9 +34,9 @@ const MessagesView: React.FC<MessagesViewProps> = ({
     onSelectConversation();
   };
 
-  // For testing - log the height to debug
+  // Log for debugging purposes
   useEffect(() => {
-    console.log('MessagesView rendered - scrolling should work');
+    console.log('Consolidated MessagesView rendered with scrolling optimizations');
   }, []);
 
   // Examples for the UI to match the screenshot
