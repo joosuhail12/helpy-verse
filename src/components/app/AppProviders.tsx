@@ -59,8 +59,14 @@ const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
     }
   };
 
+  // Ensure we have React available
+  if (!React) {
+    throw new Error('React is not available - this is critical for rendering');
+  }
+
   return (
     <AppErrorBoundary>
+      {/* Always provide Redux at the top level */}
       <Provider store={store}>
         <ThemeProvider initialTheme={defaultTheme}>
           <WidgetStateProvider>
