@@ -17,7 +17,7 @@ export const LoadingSpinner = () => (
 import { DashboardRoutes } from './dashboardRoutes';
 import { InboxRoutes } from './inboxRoutes';
 import { AutomationRoutes } from './automationRoutes';
-// Import settings routes correctly
+// Import settings routes correctly - using the named export instead of default
 import { SettingsRoutes } from './settingsRoutes';
 
 // Lazy load components

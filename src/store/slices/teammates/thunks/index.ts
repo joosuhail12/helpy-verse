@@ -1,12 +1,40 @@
 
 // Export all thunks from individual files
 import { createAsyncThunk } from '@reduxjs/toolkit';
+
+// Import and export activity thunks
+export const fetchTeammateActivities = createAsyncThunk(
+  'teammates/fetchTeammateActivities',
+  async (teammateId: string, { rejectWithValue }) => {
+    try {
+      console.log(`Fetching activities for teammate ${teammateId}`);
+      return []; // Mock implementation
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to fetch teammate activities');
+    }
+  }
+);
+
+// Import and export assignment thunks
+export const fetchTeammateAssignments = createAsyncThunk(
+  'teammates/fetchTeammateAssignments',
+  async (teammateId: string, { rejectWithValue }) => {
+    try {
+      console.log(`Fetching assignments for teammate ${teammateId}`);
+      return []; // Mock implementation
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to fetch teammate assignments');
+    }
+  }
+);
+
+// We need to export from additional files explicitly too
 export * from './activityThunks';
 export * from './assignmentThunks';
 export * from './securityThunks';
 export * from './sessionThunks';
 
-// We need to be explicit with these imports to avoid conflicts
+// Import core thunks correctly
 import {
   fetchTeammates,
   fetchTeammateDetails,
@@ -50,9 +78,9 @@ export const addTeammate = createAsyncThunk(
 // Export teammate export functionality
 export const exportTeammates = createAsyncThunk(
   'teammates/exportTeammates',
-  async (teammateIds: string[] | { format?: string }, { rejectWithValue }) => {
+  async (params: string[] | { format?: string }, { rejectWithValue }) => {
     try {
-      console.log('Exporting teammates:', teammateIds);
+      console.log('Exporting teammates:', params);
       // In a real implementation, this would generate and download a file
       // For now, just log the action
       return { success: true };
@@ -62,7 +90,7 @@ export const exportTeammates = createAsyncThunk(
   }
 );
 
-// Create security thunks if they don't exist in securityThunks.ts
+// Create security thunks
 export const enable2FA = createAsyncThunk(
   'teammates/enable2FA',
   async (teammateId: string, { rejectWithValue }) => {
