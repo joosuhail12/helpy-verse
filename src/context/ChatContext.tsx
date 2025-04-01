@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useEffect } from 'react';
-import { useChat } from '@/hooks/chat/useChat';
+import { useChat as useChatHook } from '@/hooks/chat/useChat';
 
 interface ChatContextValue {
   conversations: any[];
@@ -19,7 +19,7 @@ interface ChatProviderProps {
 }
 
 export const ChatProvider: React.FC<ChatProviderProps> = ({ children, workspaceId }) => {
-  const chatHook = useChat();
+  const chatHook = useChatHook();
   
   // Initialize with some mock data
   useEffect(() => {
