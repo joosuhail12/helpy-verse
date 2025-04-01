@@ -44,6 +44,19 @@ const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({
     return Promise.resolve();
   }, []);
 
+  const handleSelectConversation = useCallback((conversationId: string) => {
+    // Handle selecting a conversation
+    selectConversation(conversationId);
+    setActiveView('conversation');
+  }, [selectConversation]);
+
+  const handleStartNewConversation = useCallback(async (): Promise<void> => {
+    // Handle starting a new conversation
+    const conversationId = await createNewConversation();
+    setActiveView('conversation');
+    return Promise.resolve();
+  }, [createNewConversation]);
+
   if (isLoading) {
     return <LoadingState />;
   }
@@ -59,6 +72,8 @@ const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({
         workspaceId={workspaceId}
         onClose={onClose}
         onStartConversation={handleStartConversation}
+        onSelectConversation={handleSelectConversation}
+        onStartNewConversation={handleStartNewConversation}
       />
     </div>
   );
