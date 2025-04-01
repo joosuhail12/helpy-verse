@@ -12,13 +12,14 @@ export const adaptStoreMessageToComponentMessage = (
     ...message,
     // Convert timestamp to ensure compatibility with component type
     timestamp: message.timestamp instanceof Date ? message.timestamp : new Date(message.timestamp),
+    // Convert string attachments to FileAttachment objects
     attachments: message.attachments 
       ? message.attachments.map(url => ({
           id: `attachment-${Math.random().toString(36).substr(2, 9)}`,
-          url,
-          name: url.split('/').pop() || 'file',
-          type: getFileTypeFromUrl(url),
-          size: 0 // We don't have size info from strings
+          url: typeof url === 'string' ? url : url.url,
+          name: typeof url === 'string' ? url.split('/').pop() || 'file' : url.name,
+          type: typeof url === 'string' ? getFileTypeFromUrl(url) : url.type,
+          size: typeof url === 'string' ? 0 : url.size
         }))
       : undefined
   };
@@ -36,6 +37,7 @@ export const adaptComponentMessageToStoreMessage = (
     timestamp: typeof message.timestamp === 'string' 
       ? new Date(message.timestamp) 
       : message.timestamp,
+    // Convert FileAttachment objects to string URLs
     attachments: message.attachments 
       ? message.attachments.map(attachment => attachment.url)
       : undefined

@@ -12,6 +12,7 @@ interface ViewManagerProps {
   workspaceId: string;
   onClose: () => void;
   onStartConversation: (message: string) => Promise<void>;
+  onSelectConversation: (conversationId: string) => void; // Added this prop
 }
 
 /**
@@ -23,7 +24,8 @@ const ViewManager: React.FC<ViewManagerProps> = ({
   setActiveView,
   workspaceId,
   onClose,
-  onStartConversation
+  onStartConversation,
+  onSelectConversation
 }) => {
   const { currentConversation } = useChat();
   
@@ -34,6 +36,8 @@ const ViewManager: React.FC<ViewManagerProps> = ({
           workspaceId={workspaceId} 
           onClose={onClose} 
           setActiveView={(view: View) => setActiveView(view)} 
+          onSelectConversation={onSelectConversation}
+          onStartNewConversation={() => onStartConversation('')}
         />
       )}
       

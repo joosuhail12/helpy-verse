@@ -15,12 +15,17 @@ export const useRealtimeChat = (conversationId: string, workspaceId: string) => 
       setIsLoading(true);
       try {
         const conversationMessages = await getMessages(conversationId);
-        // Convert any string timestamps to Date objects
+        // Convert any string timestamps to Date objects and adapt message format
         const formattedMessages = conversationMessages.map(msg => ({
           ...msg,
           timestamp: msg.timestamp instanceof Date ? msg.timestamp : new Date(msg.timestamp),
+          // Convert object attachments to string arrays if needed
+          attachments: msg.attachments && Array.isArray(msg.attachments) 
+            ? msg.attachments.map(att => typeof att === 'string' ? att : att.url)
+            : undefined
         }));
-        setMessages(formattedMessages);
+        
+        setMessages(formattedMessages as ChatMessage[]);
       } catch (error) {
         console.error('Error loading messages:', error);
       } finally {

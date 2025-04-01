@@ -45,9 +45,7 @@ const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({
     }
   }, [createNewConversation, selectConversation]);
 
-  const handleSelectConversation = useCallback((conversation: any) => {
-    // Check if we're getting a string or a conversation object
-    const conversationId = typeof conversation === 'string' ? conversation : conversation.id;
+  const handleSelectConversation = useCallback((conversationId: string) => {
     selectConversation(conversationId);
   }, [selectConversation]);
 
