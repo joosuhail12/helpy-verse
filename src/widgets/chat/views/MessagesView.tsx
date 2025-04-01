@@ -15,10 +15,6 @@ interface MessagesViewProps {
   setActiveView?: (view: View) => void;
 }
 
-/**
- * MessagesView component that displays a list of conversations
- * This is the consolidated component that works across both usage locations
- */
 const MessagesView: React.FC<MessagesViewProps> = ({
   onSelectConversation,
   onClose,
@@ -33,11 +29,6 @@ const MessagesView: React.FC<MessagesViewProps> = ({
     selectConversation(conversationId);
     onSelectConversation();
   };
-
-  // Log for debugging purposes
-  useEffect(() => {
-    console.log('MessagesView rendered with fixed navigation');
-  }, []);
 
   // Examples for the UI to match the screenshot
   const exampleConversations: Conversation[] = [
@@ -154,19 +145,6 @@ const MessagesView: React.FC<MessagesViewProps> = ({
           </div>
         )}
       </div>
-      
-      {/* Fixed Navigation - Only include one instance */}
-      {setActiveView && (
-        <div 
-          className="flex-shrink-0 border-t" 
-          style={{ 
-            borderColor: colors.border,
-            flexShrink: 0
-          }}
-        >
-          <Navigation activeView="messages" setActiveView={setActiveView} />
-        </div>
-      )}
     </div>
   );
 };
