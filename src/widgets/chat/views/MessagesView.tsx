@@ -1,9 +1,10 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useChat } from '@/hooks/chat/useChat';
 import { useThemeContext } from '@/context/ThemeContext';
 import ChatHeader from '@/components/chat-widget/components/header/ChatHeader';
 import { View } from '../types';
+import Navigation from '../components/navigation/Navigation';
 import { Conversation } from '../types/messages';
 
 interface MessagesViewProps {
@@ -93,7 +94,7 @@ const MessagesView: React.FC<MessagesViewProps> = ({
         overflow: 'hidden'
       }}
     >
-      {/* Fixed Header with Back Button */}
+      {/* Fixed Header */}
       <div 
         className="flex-shrink-0 border-b" 
         style={{ 

@@ -85,22 +85,17 @@ const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({
       className={`flex flex-col h-full text-gray-900 ${compact ? 'max-w-xs' : 'w-full'}`} 
       style={{ backgroundColor: colors.background, color: colors.foreground }}
     >
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <ViewManager
-          activeView={activeView}
-          setActiveView={setActiveView}
-          workspaceId={workspaceId}
-          onClose={onClose}
-          onStartConversation={handleStartConversation}
-          onSelectConversation={handleSelectConversation}
-          onStartNewConversation={handleStartNewConversation}
-        />
-      </div>
+      <ViewManager
+        activeView={activeView}
+        setActiveView={setActiveView}
+        workspaceId={workspaceId}
+        onClose={onClose}
+        onStartConversation={handleStartConversation}
+        onSelectConversation={handleSelectConversation}
+        onStartNewConversation={handleStartNewConversation}
+      />
       
-      {/* Only show navigation on home view */}
-      {activeView === 'home' && (
-        <Navigation activeView={activeView} setActiveView={setActiveView} />
-      )}
+      <Navigation activeView={activeView} setActiveView={setActiveView} />
     </div>
   );
 };
