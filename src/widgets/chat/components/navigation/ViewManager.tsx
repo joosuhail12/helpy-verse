@@ -74,7 +74,7 @@ const ViewManager: React.FC<ViewManagerProps> = ({
           <Navigation activeView={activeView} setActiveView={setActiveView} />
         )}
 
-        {/* PoweredByFooter always appears at the bottom */}
+        {/* PoweredByFooter always appears at the bottom after navigation */}
         <PoweredByFooter />
       </div>
     </div>

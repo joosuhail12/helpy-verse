@@ -6,6 +6,7 @@ import LazyHomeView from '../../views/LazyHomeView';
 import LazyMessagesView from '../../views/LazyMessagesView';
 import LazyConversationView from '../conversation/LazyConversationView';
 import PoweredByFooter from '@/widgets/chat/components/footer/PoweredByFooter';
+import Navigation from './Navigation';
 
 interface ViewManagerProps {
   activeView: View;
@@ -71,7 +72,7 @@ const ViewManager: React.FC<ViewManagerProps> = ({
           <Navigation activeView={activeView} setActiveView={setActiveView} />
         )}
         
-        {/* PoweredByFooter appears at the bottom */}
+        {/* PoweredByFooter appears at the bottom after navigation */}
         <PoweredByFooter />
       </div>
     </div>
@@ -79,6 +80,3 @@ const ViewManager: React.FC<ViewManagerProps> = ({
 };
 
 export default ViewManager;
-
-// Import Navigation component at the end to avoid circular dependencies
-import Navigation from './Navigation';

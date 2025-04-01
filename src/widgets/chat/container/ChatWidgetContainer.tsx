@@ -12,13 +12,15 @@ interface ChatWidgetContainerProps {
   workspaceId: string;
   position?: 'left' | 'right';
   compact?: boolean;
+  instanceId?: string; // Added instanceId prop
 }
 
 const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({ 
   onClose, 
   workspaceId,
   position = 'right',
-  compact = false
+  compact = false,
+  instanceId = 'default' // Default value for the instanceId
 }) => {
   const { conversations, currentConversation, selectConversation, createNewConversation, sendMessage } = useChat();
   const { colors } = useThemeContext();
