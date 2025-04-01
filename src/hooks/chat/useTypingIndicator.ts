@@ -21,6 +21,7 @@ export const useTypingIndicator = (conversationId: string) => {
 
       setIsUserTyping(isTyping);
 
+      // Use publish directly
       channel.publish('typing', { 
         isTyping, 
         clientId: ably.clientId,
@@ -37,7 +38,8 @@ export const useTypingIndicator = (conversationId: string) => {
     const channelName = `typing:${conversationId}`;
     const channel = ably.getChannel(channelName);
 
-    const subscription = channel.subscribe('typing', (message: any) => {
+    // Use on instead of subscribe
+    const handler = (message: any) => {
       const { isTyping, clientId, name, timestamp } = message.data;
 
       if (clientId === ably.clientId) {
@@ -66,10 +68,12 @@ export const useTypingIndicator = (conversationId: string) => {
           prev.filter(user => user.clientId !== clientId)
         );
       }
-    });
+    };
+
+    channel.on('typing', handler);
 
     return () => {
-      subscription.unsubscribe();
+      channel.off(handler);
     };
   }, [conversationId, ably]);
 

@@ -21,7 +21,8 @@ export const useMessageSubscription = (
     const channelName = `chat:${workspaceId}:${conversationId}`;
     const channel = ably.getChannel(channelName);
 
-    const subscription = channel.subscribe('message', (message: any) => {
+    // Use on() instead of subscribe()
+    const subscription = channel.on('message', (message: any) => {
       if (options?.onMessage) {
         options.onMessage(message.data);
       }
@@ -30,7 +31,7 @@ export const useMessageSubscription = (
     setIsSubscribed(true);
 
     return () => {
-      subscription.unsubscribe();
+      channel.off(subscription); // Use off() instead of unsubscribe()
       setIsSubscribed(false);
     };
   }, [conversationId, workspaceId, ably, options]);
@@ -42,6 +43,7 @@ export const useMessageSubscription = (
       const channelName = `chat:${workspaceId}:${conversationId}`;
       const channel = ably.getChannel(channelName);
 
+      // Use channel.publish directly
       await channel.publish('message', message);
     },
     [conversationId, workspaceId, ably]

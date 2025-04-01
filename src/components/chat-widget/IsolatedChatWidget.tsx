@@ -7,6 +7,7 @@ import { ChatWidgetProvider, useChatWidget } from '@/context/ChatWidgetContext';
 import { adaptApiThemeToContextTheme } from '@/utils/themeAdapter';
 import { Loader2 } from 'lucide-react';
 import '@/styles/chat-widget-theme.css';
+import { MotionConfig } from 'framer-motion'; // Import MotionConfig
 
 // Lazy load the widget container
 const ChatWidgetWrapper = lazy(() => import('./components/wrapper/ChatWidgetWrapper'));
@@ -29,7 +30,7 @@ const ChatWidgetInner: React.FC = () => {
   const compact = state.theme.compact;
 
   return (
-    <>
+    <MotionConfig> {/* Wrap with MotionConfig */}
       {state.isOpen && (
         <Suspense fallback={
           <div className={`fixed bottom-20 ${position === 'left' ? 'left-4' : 'right-4'} rounded-xl shadow-lg bg-white p-4 z-50`}>
@@ -56,7 +57,7 @@ const ChatWidgetInner: React.FC = () => {
           onClick={toggleWidget} 
         />
       </div>
-    </>
+    </MotionConfig>
   );
 };
 
