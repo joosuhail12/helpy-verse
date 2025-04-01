@@ -7,4 +7,5 @@ export interface Conversation {
   lastMessage?: string;
   lastMessageTimestamp: Date | string;
   unreadCount: number;
+  type?: string;
 }

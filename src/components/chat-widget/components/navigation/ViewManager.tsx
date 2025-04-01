@@ -35,7 +35,7 @@ const ViewManager: React.FC<ViewManagerProps> = ({
         <LazyHomeView 
           workspaceId={workspaceId} 
           onClose={onClose} 
-          setActiveView={(view: View) => setActiveView(view)} 
+          setActiveView={setActiveView} 
           onSelectConversation={onSelectConversation}
           onStartNewConversation={() => onStartConversation('')}
         />
@@ -45,7 +45,7 @@ const ViewManager: React.FC<ViewManagerProps> = ({
         <LazyMessagesView 
           workspaceId={workspaceId} 
           onClose={onClose} 
-          setActiveView={(view: View) => setActiveView(view)} 
+          setActiveView={setActiveView} 
           onStartConversation={onStartConversation}
         />
       )}

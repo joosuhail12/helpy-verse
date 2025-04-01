@@ -1,15 +1,19 @@
 
 import React from 'react';
+import { View } from '../types';
 
 interface LazyHomeViewProps {
-  onStartConversation: (message: string) => void;
-  onViewMessages: () => void;
+  workspaceId: string;
+  onStartNewConversation: () => void;
+  onSelectConversation: (conversationId: string) => void;
+  setActiveView: (view: View) => void;
   onClose: () => void;
 }
 
 const LazyHomeView: React.FC<LazyHomeViewProps> = ({
-  onStartConversation,
-  onViewMessages,
+  onStartNewConversation,
+  onSelectConversation,
+  setActiveView,
   onClose
 }) => {
   return (
@@ -30,7 +34,10 @@ const LazyHomeView: React.FC<LazyHomeViewProps> = ({
           <h3 className="font-medium mb-2">Recent Messages</h3>
           <div 
             className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg"
-            onClick={() => onStartConversation("can you explain copilot to me")}
+            onClick={() => {
+              onSelectConversation("customer-service-conv");
+              setActiveView('conversation');
+            }}
           >
             <div className="bg-gray-200 rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0">
               <div className="w-4 h-4 bg-black rounded-sm"></div>
@@ -48,7 +55,7 @@ const LazyHomeView: React.FC<LazyHomeViewProps> = ({
         {/* Ask a question button */}
         <div 
           className="bg-white rounded-xl border p-4 flex items-center justify-between cursor-pointer hover:bg-gray-50"
-          onClick={() => onStartConversation("")}
+          onClick={onStartNewConversation}
         >
           <span className="font-medium">Ask a question</span>
           <div className="flex items-center">
@@ -72,7 +79,7 @@ const LazyHomeView: React.FC<LazyHomeViewProps> = ({
           <span className="text-xs mt-1">Home</span>
         </button>
         <button 
-          onClick={onViewMessages}
+          onClick={() => setActiveView('messages')}
           className="flex-1 flex flex-col items-center justify-center text-gray-500" 
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
