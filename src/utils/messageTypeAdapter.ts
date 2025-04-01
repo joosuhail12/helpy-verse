@@ -10,6 +10,8 @@ export const adaptStoreMessageToComponentMessage = (
 ): ComponentChatMessage => {
   return {
     ...message,
+    // Store timestamp is Date, component can handle Date or string
+    timestamp: message.timestamp,
     attachments: message.attachments 
       ? message.attachments.map(url => ({
           id: `attachment-${Math.random().toString(36).substr(2, 9)}`,
@@ -30,6 +32,10 @@ export const adaptComponentMessageToStoreMessage = (
 ): StoreChatMessage => {
   return {
     ...message,
+    // Ensure timestamp is always a Date for store
+    timestamp: typeof message.timestamp === 'string' 
+      ? new Date(message.timestamp) 
+      : message.timestamp,
     attachments: message.attachments 
       ? message.attachments.map(attachment => attachment.url)
       : undefined
@@ -43,6 +49,15 @@ export const adaptStoreMessagesToComponentMessages = (
   messages: StoreChatMessage[]
 ): ComponentChatMessage[] => {
   return messages.map(adaptStoreMessageToComponentMessage);
+};
+
+/**
+ * Adapts an array of messages from component format to store format
+ */
+export const adaptComponentMessagesToStoreMessages = (
+  messages: ComponentChatMessage[]
+): StoreChatMessage[] => {
+  return messages.map(adaptComponentMessageToStoreMessage);
 };
 
 /**

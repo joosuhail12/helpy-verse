@@ -23,7 +23,7 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
   workspaceId,
   onBack
 }) => {
-  const { messages, sendMessage, isLoading } = useRealtimeChat(conversationId, workspaceId);
+  const { messages: storeMessages, sendMessage, isLoading } = useRealtimeChat(conversationId, workspaceId);
   const [typingUsers, setTypingUsers] = useState<{ clientId: string; name?: string }[]>([]);
   const { getMessages } = useChat();
   const [loadedMessages, setLoadedMessages] = useState<ChatMessage[]>([]);
@@ -77,8 +77,8 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
 
   // Combine real-time messages with loaded messages
   // Convert store messages to component messages
-  const displayMessages = messages.length > 0 
-    ? adaptStoreMessagesToComponentMessages(messages) 
+  const displayMessages = storeMessages.length > 0 
+    ? adaptStoreMessagesToComponentMessages(storeMessages) 
     : loadedMessages;
 
   return (
