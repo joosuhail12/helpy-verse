@@ -22,19 +22,19 @@ export const useMessageSubscription = (
     const channelName = `chat:${workspaceId}:${conversationId}`;
     const channel = ably.getChannel(channelName);
 
-    // Subscribe to messages using the Ably types
+    // Subscribe to messages using the Ably on method
     const callbackHandler = (message: Ably.Types.Message) => {
       if (options?.onMessage) {
         options.onMessage(message.data);
       }
     };
 
-    // Using proper Ably types for event names - 'message' is a reserved Ably message name
-    channel.subscribe(Ably.Types.ChannelEvent.Message, callbackHandler);
+    // Using proper Ably on/off methods for event subscription
+    channel.on('message', callbackHandler);
     setIsSubscribed(true);
 
     return () => {
-      channel.unsubscribe(Ably.Types.ChannelEvent.Message, callbackHandler);
+      channel.off('message', callbackHandler);
       setIsSubscribed(false);
     };
   }, [conversationId, workspaceId, ably, options]);
@@ -50,7 +50,7 @@ export const useMessageSubscription = (
         // Properly type the publish method with a Promise
         await new Promise<void>((resolve, reject) => {
           // @ts-expect-error: Using channel.publish which exists at runtime
-          channel.publish(Ably.Types.ChannelEvent.Message, message, (err) => {
+          channel.publish('message', message, (err) => {
             if (err) {
               reject(err);
             } else {

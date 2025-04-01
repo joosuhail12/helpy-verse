@@ -14,7 +14,7 @@ export const useTypingIndicator = (conversationId: string) => {
   const ably = useAbly();
 
   // Custom event name for typing indicators
-  const TYPING_EVENT = 'typing' as Ably.Types.ChannelEvent;
+  const TYPING_EVENT = 'typing';
 
   const sendTypingIndicator = useCallback(
     (isTyping: boolean, userName?: string) => {
@@ -84,11 +84,11 @@ export const useTypingIndicator = (conversationId: string) => {
     };
 
     // Use appropriate method for Ably subscriptions
-    channel.subscribe(TYPING_EVENT, typingHandler);
+    channel.on(TYPING_EVENT, typingHandler);
 
     return () => {
       // Clean up subscription
-      channel.unsubscribe(TYPING_EVENT, typingHandler);
+      channel.off(TYPING_EVENT, typingHandler);
     };
   }, [conversationId, ably, TYPING_EVENT]);
 
