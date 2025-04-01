@@ -1,6 +1,6 @@
 
-import React, { createContext, useContext, useReducer } from 'react';
-import { ThemeConfig } from '@/context/ThemeContext';
+import React, { createContext, useContext, useReducer, ReactNode } from 'react';
+import { ThemeConfig, ChatWidgetSettings } from '../types';
 
 interface WidgetState {
   isOpen: boolean;
@@ -11,11 +11,11 @@ interface WidgetState {
   theme: {
     position: 'left' | 'right';
     compact: boolean;
-    colors: Partial<ThemeConfig['colors']>;
+    colors: Partial<Record<string, string>>;
   };
 }
 
-type WidgetAction = 
+type WidgetAction =
   | { type: 'TOGGLE_WIDGET' }
   | { type: 'OPEN_WIDGET' }
   | { type: 'CLOSE_WIDGET' }
@@ -40,11 +40,6 @@ const initialState: WidgetState = {
 };
 
 const WidgetStateContext = createContext<WidgetStateContextType | undefined>(undefined);
-
-interface WidgetStateProviderProps {
-  children: React.ReactNode;
-  id?: string; // Optional ID for the widget instance
-}
 
 const widgetReducer = (state: WidgetState, action: WidgetAction): WidgetState => {
   switch (action.type) {
@@ -99,7 +94,7 @@ const widgetReducer = (state: WidgetState, action: WidgetAction): WidgetState =>
   }
 };
 
-export const WidgetStateProvider: React.FC<WidgetStateProviderProps> = ({ children, id }) => {
+export const WidgetStateProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(widgetReducer, initialState);
   
   return (

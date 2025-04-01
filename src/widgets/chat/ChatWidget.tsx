@@ -1,5 +1,5 @@
 
-import React, { useState, Suspense, lazy, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChatProvider } from '@/context/ChatContext';
 import { AblyProvider } from '@/context/AblyContext';
 import { ThemeProvider, ThemeConfig } from '@/context/ThemeContext';
@@ -8,10 +8,8 @@ import ToggleButton from './components/button/ToggleButton';
 import { Loader2 } from 'lucide-react';
 import '@/styles/chat-widget-theme.css';
 import { useWidgetState } from './context/WidgetStateContext';
-
-// Lazy load the widget container
-const ChatWidgetWrapper = lazy(() => import('./components/wrapper/ChatWidgetWrapper'));
-const ChatWidgetContainer = lazy(() => import('./container/ChatWidgetContainer'));
+import ChatWidgetWrapper from './components/wrapper/ChatWidgetWrapper';
+import ChatWidgetContainer from './container/ChatWidgetContainer';
 
 interface ChatWidgetProps {
   workspaceId: string;
@@ -108,11 +106,8 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({
       <ChatProvider workspaceId={workspaceId}>
         <ThemeProvider initialTheme={combinedTheme}>
           {isOpen && (
-            <Suspense fallback={
-              <div className={`fixed bottom-20 ${position === 'left' ? 'left-4' : 'right-4'} rounded-xl shadow-lg bg-white p-4 z-50`}>
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              </div>
-            }>
+            <div className={`fixed bottom-20 ${position === 'left' ? 'left-4' : 'right-4'} z-[9999]`} 
+                 style={{ maxWidth: combinedTheme.compact ? '320px' : '380px', width: '100%' }}>
               <ChatWidgetWrapper 
                 isOpen={isOpen}
                 position={position}
@@ -126,7 +121,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({
                   instanceId={instanceId}
                 />
               </ChatWidgetWrapper>
-            </Suspense>
+            </div>
           )}
           <div className={`fixed bottom-4 z-50 ${position === 'left' ? 'left-4' : 'right-4'}`}>
             <ToggleButton 
