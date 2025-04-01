@@ -10,7 +10,7 @@ import TypingIndicator from './TypingIndicator';
 import { ChatMessage } from './types';
 import { useChat } from '@/hooks/chat/useChat';
 import UserAvatar from '../user/UserAvatar';
-import { adaptStoreMessagesToComponentMessages, adaptComponentMessagesToStoreMessages } from '@/utils/messageTypeAdapter';
+import { adaptStoreMessagesToComponentMessages, adaptComponentMessageToStoreMessage } from '@/utils/messageTypeAdapter';
 import { ThemeProvider } from '@/context/ThemeContext';
 
 export interface ResponsiveConversationViewProps {
@@ -77,13 +77,8 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
   };
 
   // Combine real-time messages with loaded messages
-  // Convert store messages to component messages
-  const storeMessagesConverted = storeMessages.length > 0 
+  const displayMessages = storeMessages.length > 0 
     ? adaptStoreMessagesToComponentMessages(storeMessages) 
-    : [];
-    
-  const displayMessages = storeMessagesConverted.length > 0 
-    ? storeMessagesConverted 
     : loadedMessages;
 
   return (

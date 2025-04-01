@@ -1,76 +1,83 @@
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-interface AblyContextValue {
-  connected: boolean;
-  subscribe: (channelName: string, callback: (data: any) => void) => () => void;
-  publish: (channelName: string, data: any) => Promise<void>;
-  client: any; // Added this property
-  clientId: string; // Added this property
-  isConnected: boolean; // Added this property
-}
+type AblyContextType = {
+  client: any;
+  isConnected: boolean;
+  workspaceId: string;
+  connect: () => void;
+  disconnect: () => void;
+  getChannel: (channelName: string) => any;
+};
 
-const AblyContext = createContext<AblyContextValue | undefined>(undefined);
+const AblyContext = createContext<AblyContextType | undefined>(undefined);
 
 interface AblyProviderProps {
-  children: React.ReactNode;
+  children: ReactNode;
   workspaceId: string;
 }
 
-export const AblyProvider: React.FC<AblyProviderProps> = ({ 
-  children, 
-  workspaceId 
-}) => {
-  const [connected, setConnected] = useState(false);
-  const [clientId, setClientId] = useState<string>(`user-${Math.random().toString(36).substring(2, 9)}`);
+export const AblyProvider: React.FC<AblyProviderProps> = ({ children, workspaceId }) => {
   const [client, setClient] = useState<any>(null);
-  
-  // Mock implementation for now - in a real app, would connect to Ably
+  const [isConnected, setIsConnected] = useState(false);
+
+  // Initialize Ably client mock - in a real app, you would use the actual Ably SDK
   useEffect(() => {
-    console.log('AblyProvider: Connecting to workspace', workspaceId);
-    // Simulate connection delay
-    const timer = setTimeout(() => {
-      setConnected(true);
-      console.log('AblyProvider: Connected');
-    }, 1000);
+    // For now, just create a mock client
+    console.info(`AblyProvider: Connecting to workspace ${workspaceId}`);
     
-    // Creating a mock client
-    setClient({
-      connection: {
-        state: 'connected'
-      }
-    });
-    
+    // Simulate connection
+    setTimeout(() => {
+      setIsConnected(true);
+      console.info(`AblyProvider: Connected`);
+    }, 500);
+
     return () => {
-      clearTimeout(timer);
-      console.log('AblyProvider: Disconnected');
+      console.info(`AblyProvider: Disconnected`);
+      setIsConnected(false);
     };
   }, [workspaceId]);
-  
-  // Mock subscription function
-  const subscribe = (channelName: string, callback: (data: any) => void) => {
-    console.log(`AblyProvider: Subscribed to ${channelName}`);
-    
-    // Return unsubscribe function
-    return () => {
-      console.log(`AblyProvider: Unsubscribed from ${channelName}`);
+
+  const connect = () => {
+    console.info(`AblyProvider: Connecting to workspace ${workspaceId}`);
+    setIsConnected(true);
+  };
+
+  const disconnect = () => {
+    console.info(`AblyProvider: Disconnecting`);
+    setIsConnected(false);
+  };
+
+  const getChannel = (channelName: string) => {
+    console.info(`AblyProvider: Getting channel ${channelName}`);
+    // Return a mock channel
+    return {
+      subscribe: (eventName: string, callback: Function) => {
+        console.info(`AblyProvider: Subscribed to ${eventName} on ${channelName}`);
+        return {
+          unsubscribe: () => {
+            console.info(`AblyProvider: Unsubscribed from ${eventName} on ${channelName}`);
+          }
+        };
+      },
+      publish: (eventName: string, data: any) => {
+        console.info(`AblyProvider: Published ${eventName} to ${channelName}`, data);
+        return Promise.resolve();
+      }
     };
   };
-  
-  // Mock publish function
-  const publish = async (channelName: string, data: any) => {
-    console.log(`AblyProvider: Published to ${channelName}`, data);
-  };
-  
+
   return (
-    <AblyContext.Provider value={{ 
-      connected, 
-      subscribe, 
-      publish, 
-      client,
-      clientId, 
-      isConnected: connected 
-    }}>
+    <AblyContext.Provider
+      value={{
+        client,
+        isConnected,
+        workspaceId,
+        connect,
+        disconnect,
+        getChannel
+      }}
+    >
       {children}
     </AblyContext.Provider>
   );
@@ -85,3 +92,5 @@ export const useAbly = () => {
   
   return context;
 };
+
+export default AblyContext;
