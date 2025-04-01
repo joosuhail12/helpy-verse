@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
-import { fetchTeammateSessions, terminateSession } from '@/store/slices/teammates/thunks';
+import { fetchTeammateSessions, terminateSession } from '@/store/slices/teammates/actions';
 import { selectTeammateSessions } from '@/store/slices/teammates/selectors';
 import { Monitor, Smartphone, Laptop, Globe, Loader, X } from 'lucide-react';
 import { formatDistance } from 'date-fns';
@@ -27,7 +27,7 @@ export const ActiveSessions: React.FC<ActiveSessionsProps> = ({ teammateId }) =>
   };
 
   const getDeviceIcon = (deviceType: string) => {
-    switch (deviceType.toLowerCase()) {
+    switch (deviceType?.toLowerCase()) {
       case 'desktop':
         return <Laptop className="h-4 w-4 mr-2" />;
       case 'mobile':
@@ -65,12 +65,12 @@ export const ActiveSessions: React.FC<ActiveSessionsProps> = ({ teammateId }) =>
             {sessions.map((session) => (
               <div key={session.id} className="flex items-center justify-between p-3 border rounded-md">
                 <div className="flex items-center">
-                  {getDeviceIcon(session.deviceType)}
+                  {getDeviceIcon(session.deviceType || 'unknown')}
                   <div>
-                    <p className="font-medium">{session.deviceName}</p>
+                    <p className="font-medium">{session.deviceName || 'Unknown device'}</p>
                     <div className="text-sm text-muted-foreground">
-                      <span>{session.location}</span> • Last active{' '}
-                      {formatDistance(new Date(session.lastActive), new Date(), { addSuffix: true })}
+                      <span>{session.location || 'Unknown location'}</span> • Last active{' '}
+                      {formatDistance(new Date(session.lastActive || session.startTime), new Date(), { addSuffix: true })}
                     </div>
                   </div>
                 </div>

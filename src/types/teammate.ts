@@ -2,9 +2,9 @@
 // Define common teammate-related types
 
 export interface Teammate {
-  id?: string;
-  name?: string;
-  email?: string;
+  id: string;
+  name: string;
+  email: string;
   role?: string;
   team?: string;
   department?: string;
@@ -15,6 +15,8 @@ export interface Teammate {
   updatedAt?: string;
   lastActive?: string;
   workspaceId?: string;
+  is2FAEnabled?: boolean;
+  createdBy?: string;
 }
 
 export interface NewTeammate {
@@ -25,6 +27,10 @@ export interface NewTeammate {
   department?: string;
   status?: string;
   notes?: string;
+  password?: string;
+  confirm_password?: string;
+  first_name?: string;
+  last_name?: string;
 }
 
 export interface ActivityLog {
@@ -33,6 +39,8 @@ export interface ActivityLog {
   action: string;
   timestamp: string;
   details: Record<string, any>;
+  type?: string;
+  description?: string;
 }
 
 export interface TeamAssignment {
@@ -41,6 +49,8 @@ export interface TeamAssignment {
   teamId: string;
   role: string;
   assignedAt: string;
+  teamName?: string;
+  startDate?: string;
 }
 
 export interface Session {
@@ -51,4 +61,8 @@ export interface Session {
   ipAddress: string;
   userAgent: string;
   active: boolean;
+  deviceType?: string;
+  deviceName?: string;
+  location?: string;
+  lastActive?: string;
 }

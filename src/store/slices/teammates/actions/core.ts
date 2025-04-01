@@ -1,6 +1,6 @@
 
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import type { NewTeammate } from '@/types/teammate';
+import type { NewTeammate, Teammate } from '@/types/teammate';
 import { 
   fetchTeammates as fetchTeammatesThunk,
   fetchTeammateDetails as fetchTeammateDetailsThunk,
@@ -45,7 +45,7 @@ export const resetPassword = resetPasswordThunk;
 // Re-export the session thunks
 export const terminateSession = terminateSessionThunk;
 
-// Add new teammates
+// Add new teammate
 export const addTeammate = createAsyncThunk(
   'teammates/addTeammate',
   async (newTeammate: NewTeammate, { dispatch }) => {

@@ -23,7 +23,7 @@ export const useTeammatesInTeam = (teamId?: string) => {
   useEffect(() => {
     // If we have a team ID, filter teammates by that team
     if (teamId) {
-      const teammatesInTeam = allTeammates.filter(teammate => teammate.teamId === teamId);
+      const teammatesInTeam = allTeammates.filter(teammate => teammate.team === teamId);
       setInitialMemberIds(teammatesInTeam.map(teammate => teammate.id));
     }
   }, [teamId, allTeammates]);

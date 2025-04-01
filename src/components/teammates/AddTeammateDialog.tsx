@@ -49,12 +49,13 @@ const AddTeammateDialog = () => {
   const onSubmit = async (data: FormData) => {
     try {
       const newTeammate: NewTeammate = {
-        first_name: data.first_name,
-        last_name: data.last_name,
+        name: `${data.first_name} ${data.last_name}`,
         email: data.email,
         password: data.password,
-        confirm_password: data.confirm_password,
-        role: data.role
+        role: data.role,
+        first_name: data.first_name,
+        last_name: data.last_name,
+        confirm_password: data.confirm_password
       };
       await dispatch(addTeammate(newTeammate)).unwrap();
       toast({
