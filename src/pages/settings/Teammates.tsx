@@ -17,6 +17,7 @@ const LoadingSpinner = () => (
  */
 const Teammates = () => {
   const location = useLocation();
+  console.log("Current location in Teammates container:", location.pathname);
   const isListPage = location.pathname === '/home/settings/teammates';
   
   return (

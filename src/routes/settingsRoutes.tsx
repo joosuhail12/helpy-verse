@@ -18,6 +18,11 @@ const ChatSettings = lazy(() => import('../pages/settings/ChatSettings'));
 const Profile = lazy(() => import('../pages/settings/Profile'));
 const TeamSettings = lazy(() => import('../pages/settings/TeamSettings'));
 const AccountSettings = lazy(() => import('../pages/settings/AccountSettings'));
+const Teammates = lazy(() => import('../pages/settings/Teammates'));
+const TeammateDetail = lazy(() => import('../pages/settings/teammates/TeammateDetail'));
+const Teams = lazy(() => import('../pages/settings/Teams'));
+const EditTeam = lazy(() => import('../pages/settings/EditTeam'));
+const Tags = lazy(() => import('../pages/settings/Tags'));
 
 // Helper function to wrap a component with Suspense, ProtectedRoute and RouteErrorBoundary
 const withSuspenseAndProtection = (Component: React.ReactNode) => (
@@ -40,25 +45,15 @@ export const SettingsRoutes = [
       { path: "chat", element: withSuspenseAndProtection(<ChatSettings />) },
       { path: "profile", element: withSuspenseAndProtection(<Profile />) },
       { path: "team", element: withSuspenseAndProtection(<TeamSettings />) },
-      { path: "account", element: withSuspenseAndProtection(<AccountSettings />) }
+      { path: "account", element: withSuspenseAndProtection(<AccountSettings />) },
+      { path: "teammates", element: withSuspenseAndProtection(<Teammates />) },
+      { path: "teammates/:id", element: withSuspenseAndProtection(<TeammateDetail />) },
+      { path: "teams", element: withSuspenseAndProtection(<Teams />) },
+      { path: "teams/:id/edit", element: withSuspenseAndProtection(<EditTeam />) },
+      { path: "tags", element: withSuspenseAndProtection(<Tags />) }
     ]
   }
 ];
-
-// No longer needed since we're using the routes array directly in the main router
-// const SettingsRoutesComponent = () => {
-//   return (
-//     <Routes>
-//       <Route path="" element={<Settings />}>
-//         <Route path="" element={<Navigate to="chat" replace />} />
-//         <Route path="chat" element={withSuspenseAndProtection(<ChatSettings />)} />
-//         <Route path="profile" element={withSuspenseAndProtection(<Profile />)} />
-//         <Route path="team" element={withSuspenseAndProtection(<TeamSettings />)} />
-//         <Route path="account" element={withSuspenseAndProtection(<AccountSettings />)} />
-//       </Route>
-//     </Routes>
-//   );
-// };
 
 // Export a dummy component to maintain backward compatibility
 const SettingsRoutesComponent = () => <div>Settings Routes</div>;

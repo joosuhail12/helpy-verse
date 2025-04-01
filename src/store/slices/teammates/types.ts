@@ -12,5 +12,3 @@ export interface TeammatesState {
   lastFetchTime: number | null;
   retryCount: number;
 }
-
-export const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
