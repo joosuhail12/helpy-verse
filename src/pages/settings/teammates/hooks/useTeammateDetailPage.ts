@@ -51,11 +51,15 @@ export const useTeammateDetailPage = (teammateId?: string) => {
   };
 
   const handleConfirmSave = async () => {
-    if (!editedTeammate) return;
+    if (!editedTeammate || !teammateId) return;
     
     setIsSaving(true);
     try {
-      await dispatch(updateTeammate(editedTeammate)).unwrap();
+      // Fix: Pass the correct format expected by updateTeammate
+      await dispatch(updateTeammate({ 
+        teammateId: teammateId, 
+        updates: editedTeammate 
+      })).unwrap();
       
       toast({
         description: "Changes saved successfully.",

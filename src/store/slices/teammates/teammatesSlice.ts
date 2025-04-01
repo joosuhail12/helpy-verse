@@ -73,7 +73,6 @@ const teammatesSlice = createSlice({
       })
       
       // Add other reducer cases for the newly added thunks
-      // These are placeholders and should be expanded as needed
       .addCase(addTeammate.fulfilled, (state, action) => {
         state.teammates.push(action.payload);
       })

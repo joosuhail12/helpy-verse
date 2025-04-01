@@ -1,5 +1,6 @@
 
 import { createAsyncThunk } from '@reduxjs/toolkit';
+import type { TeamAssignment } from '@/types/teammate';
 
 // Fetch teammate assignments
 export const fetchTeammateAssignments = createAsyncThunk(
@@ -8,9 +9,27 @@ export const fetchTeammateAssignments = createAsyncThunk(
     try {
       console.log(`Fetching assignments for teammate with ID: ${teammateId}`);
       // Mocked API call for now
-      const assignments = [
-        { id: '1', ticketId: 'ticket-1', subject: 'Customer complaint', assignedAt: new Date().toISOString() },
-        { id: '2', ticketId: 'ticket-2', subject: 'Feature request', assignedAt: new Date().toISOString() }
+      const assignments: TeamAssignment[] = [
+        { 
+          id: '1', 
+          teammateId: teammateId,
+          teamId: 'team-1',
+          role: 'Support Agent',
+          assignedAt: new Date().toISOString(),
+          teamName: 'Customer Support',
+          startDate: new Date().toISOString(),
+          status: 'active'
+        },
+        { 
+          id: '2', 
+          teammateId: teammateId,
+          teamId: 'team-2',
+          role: 'Developer',
+          assignedAt: new Date().toISOString(),
+          teamName: 'Product Development',
+          startDate: new Date().toISOString(),
+          status: 'active'
+        }
       ];
       
       return assignments;

@@ -1,5 +1,6 @@
 
 import { createAsyncThunk } from '@reduxjs/toolkit';
+import type { ActivityLog } from '@/types/teammate';
 
 // Fetch teammate activities
 export const fetchTeammateActivities = createAsyncThunk(
@@ -8,9 +9,25 @@ export const fetchTeammateActivities = createAsyncThunk(
     try {
       console.log(`Fetching activities for teammate with ID: ${teammateId}`);
       // Mocked API call for now
-      const activities = [
-        { id: '1', type: 'login', description: 'Logged in to the system', timestamp: new Date().toISOString() },
-        { id: '2', type: 'updated_profile', description: 'Updated profile information', timestamp: new Date().toISOString() }
+      const activities: ActivityLog[] = [
+        { 
+          id: '1', 
+          teammateId: teammateId, 
+          action: 'login', 
+          timestamp: new Date().toISOString(),
+          details: { device: 'Chrome on Windows' },
+          type: 'login',
+          description: 'Logged in to the system' 
+        },
+        { 
+          id: '2', 
+          teammateId: teammateId, 
+          action: 'updated_profile', 
+          timestamp: new Date().toISOString(),
+          details: { fields: ['name', 'role'] },
+          type: 'updated_profile',
+          description: 'Updated profile information' 
+        }
       ];
       
       return activities;
