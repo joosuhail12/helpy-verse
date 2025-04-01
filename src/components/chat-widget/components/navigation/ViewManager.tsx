@@ -12,7 +12,7 @@ interface ViewManagerProps {
   workspaceId: string;
   onClose: () => void;
   onStartConversation: (message: string) => Promise<void>;
-  onSelectConversation: (conversationId: string) => void; // Added this prop
+  onSelectConversation: (conversationId: string) => void;
 }
 
 /**

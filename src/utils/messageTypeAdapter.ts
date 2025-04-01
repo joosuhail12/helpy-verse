@@ -14,13 +14,27 @@ export const adaptStoreMessageToComponentMessage = (
     timestamp: message.timestamp instanceof Date ? message.timestamp : new Date(message.timestamp),
     // Convert string attachments to FileAttachment objects
     attachments: message.attachments 
-      ? message.attachments.map(url => ({
-          id: `attachment-${Math.random().toString(36).substr(2, 9)}`,
-          url: typeof url === 'string' ? url : url.url,
-          name: typeof url === 'string' ? url.split('/').pop() || 'file' : url.name,
-          type: typeof url === 'string' ? getFileTypeFromUrl(url) : url.type,
-          size: typeof url === 'string' ? 0 : url.size
-        }))
+      ? message.attachments.map((attachment): FileAttachment => {
+          // Handle both string attachments and object attachments
+          if (typeof attachment === 'string') {
+            return {
+              id: `attachment-${Math.random().toString(36).substr(2, 9)}`,
+              url: attachment,
+              name: attachment.split('/').pop() || 'file',
+              type: getFileTypeFromUrl(attachment),
+              size: 0
+            };
+          } else {
+            // If it's already an object with url property
+            return {
+              id: attachment.id || `attachment-${Math.random().toString(36).substr(2, 9)}`,
+              url: attachment.url || '',
+              name: attachment.name || 'file',
+              type: attachment.type || 'application/octet-stream',
+              size: attachment.size || 0
+            };
+          }
+        })
       : undefined
   };
 };

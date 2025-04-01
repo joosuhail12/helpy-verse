@@ -45,6 +45,7 @@ const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({
     }
   }, [createNewConversation, selectConversation]);
 
+  // Fix: Pass the conversation ID string instead of the conversation object
   const handleSelectConversation = useCallback((conversationId: string) => {
     selectConversation(conversationId);
   }, [selectConversation]);
