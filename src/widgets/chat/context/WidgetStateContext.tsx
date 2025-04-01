@@ -1,32 +1,42 @@
 
 import React, { createContext, useContext, useReducer, ReactNode } from 'react';
-import { ThemeConfig } from '../types';
+import { ThemeConfig } from '@/context/ThemeContext';
 
+// Define the widget state
 interface WidgetState {
   isOpen: boolean;
   isInitialized: boolean;
-  config?: {
-    workspaceId: string;
-  };
   theme: {
     position: 'left' | 'right';
     compact: boolean;
-    colors: Partial<Record<string, string>>;
+    colors?: {
+      primary: string;
+      [key: string]: string;
+    };
+  };
+  config?: {
+    workspaceId: string;
+    [key: string]: any;
   };
 }
 
-type WidgetAction =
+// Define action types
+type WidgetAction = 
   | { type: 'TOGGLE_WIDGET' }
   | { type: 'OPEN_WIDGET' }
   | { type: 'CLOSE_WIDGET' }
-  | { type: 'INITIALIZE'; payload: any }
+  | { type: 'INITIALIZE'; payload: { workspaceId: string; theme?: Partial<ThemeConfig>; settings?: any } }
   | { type: 'SET_THEME'; payload: Partial<ThemeConfig> };
 
-interface WidgetStateContextType {
+// Create context
+type WidgetStateContextType = {
   state: WidgetState;
   dispatch: React.Dispatch<WidgetAction>;
-}
+};
 
+const WidgetStateContext = createContext<WidgetStateContextType | undefined>(undefined);
+
+// Initial state
 const initialState: WidgetState = {
   isOpen: false,
   isInitialized: false,
@@ -39,9 +49,8 @@ const initialState: WidgetState = {
   }
 };
 
-const WidgetStateContext = createContext<WidgetStateContextType | undefined>(undefined);
-
-const widgetReducer = (state: WidgetState, action: WidgetAction): WidgetState => {
+// Reducer function
+function widgetReducer(state: WidgetState, action: WidgetAction): WidgetState {
   switch (action.type) {
     case 'TOGGLE_WIDGET':
       return {
@@ -63,8 +72,8 @@ const widgetReducer = (state: WidgetState, action: WidgetAction): WidgetState =>
         ...state,
         isInitialized: true,
         config: {
-          ...state.config,
-          workspaceId: action.payload.workspaceId
+          workspaceId: action.payload.workspaceId,
+          ...state.config
         },
         theme: {
           ...state.theme,
@@ -92,8 +101,9 @@ const widgetReducer = (state: WidgetState, action: WidgetAction): WidgetState =>
     default:
       return state;
   }
-};
+}
 
+// Provider component
 export const WidgetStateProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(widgetReducer, initialState);
   
@@ -104,12 +114,11 @@ export const WidgetStateProvider: React.FC<{ children: ReactNode }> = ({ childre
   );
 };
 
+// Custom hook to use the context
 export const useWidgetState = () => {
   const context = useContext(WidgetStateContext);
-  
   if (context === undefined) {
     throw new Error('useWidgetState must be used within a WidgetStateProvider');
   }
-  
   return context;
 };
