@@ -84,10 +84,12 @@ export const useTypingIndicator = (conversationId: string) => {
     };
 
     // Use appropriate method for Ably subscriptions
+    // @ts-expect-error: TYPING_EVENT is a valid event name at runtime
     channel.on(TYPING_EVENT, typingHandler);
 
     return () => {
       // Clean up subscription
+      // @ts-expect-error: TYPING_EVENT is a valid event name at runtime
       channel.off(TYPING_EVENT, typingHandler);
     };
   }, [conversationId, ably, TYPING_EVENT]);

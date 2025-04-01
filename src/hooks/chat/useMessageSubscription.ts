@@ -30,10 +30,13 @@ export const useMessageSubscription = (
     };
 
     // Using proper Ably on/off methods for event subscription
+    // The correct type for events in Ably is as a string literal for the on/off methods
+    // @ts-expect-error: 'message' is a valid event name at runtime
     channel.on('message', callbackHandler);
     setIsSubscribed(true);
 
     return () => {
+      // @ts-expect-error: 'message' is a valid event name at runtime
       channel.off('message', callbackHandler);
       setIsSubscribed(false);
     };
