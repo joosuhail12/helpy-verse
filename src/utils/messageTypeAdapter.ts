@@ -1,0 +1,73 @@
+
+import { ChatMessage as StoreChatMessage } from '@/store/slices/chat/types';
+import { ChatMessage as ComponentChatMessage, FileAttachment } from '@/components/chat-widget/components/conversation/types';
+
+/**
+ * Adapts a message from the store format to the component format
+ */
+export const adaptStoreMessageToComponentMessage = (
+  message: StoreChatMessage
+): ComponentChatMessage => {
+  return {
+    ...message,
+    attachments: message.attachments 
+      ? message.attachments.map(url => ({
+          id: `attachment-${Math.random().toString(36).substr(2, 9)}`,
+          url,
+          name: url.split('/').pop() || 'file',
+          type: getFileTypeFromUrl(url),
+          size: 0 // We don't have size info from strings
+        }))
+      : undefined
+  };
+};
+
+/**
+ * Adapts a message from the component format to the store format
+ */
+export const adaptComponentMessageToStoreMessage = (
+  message: ComponentChatMessage
+): StoreChatMessage => {
+  return {
+    ...message,
+    attachments: message.attachments 
+      ? message.attachments.map(attachment => attachment.url)
+      : undefined
+  };
+};
+
+/**
+ * Adapts an array of messages from store format to component format
+ */
+export const adaptStoreMessagesToComponentMessages = (
+  messages: StoreChatMessage[]
+): ComponentChatMessage[] => {
+  return messages.map(adaptStoreMessageToComponentMessage);
+};
+
+/**
+ * Try to guess file type from URL
+ */
+const getFileTypeFromUrl = (url: string): string => {
+  const extension = url.split('.').pop()?.toLowerCase();
+  
+  switch(extension) {
+    case 'jpg':
+    case 'jpeg':
+      return 'image/jpeg';
+    case 'png':
+      return 'image/png';
+    case 'gif':
+      return 'image/gif';
+    case 'pdf':
+      return 'application/pdf';
+    case 'doc':
+    case 'docx':
+      return 'application/msword';
+    case 'xls':
+    case 'xlsx':
+      return 'application/excel';
+    default:
+      return 'application/octet-stream';
+  }
+};

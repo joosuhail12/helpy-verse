@@ -10,6 +10,7 @@ import TypingIndicator from './TypingIndicator';
 import { ChatMessage } from './types';
 import { useChat } from '@/hooks/chat/useChat';
 import UserAvatar from '../user/UserAvatar';
+import { adaptStoreMessagesToComponentMessages } from '@/utils/messageTypeAdapter';
 
 export interface ResponsiveConversationViewProps {
   conversationId: string;
@@ -30,8 +31,9 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
   // Load messages when component mounts
   useEffect(() => {
     const loadMessages = async () => {
-      const msgs = await getMessages(conversationId);
-      setLoadedMessages(msgs);
+      const storeMessages = await getMessages(conversationId);
+      // Convert store messages to component messages
+      setLoadedMessages(adaptStoreMessagesToComponentMessages(storeMessages));
     };
     
     loadMessages();
@@ -74,7 +76,10 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
   };
 
   // Combine real-time messages with loaded messages
-  const displayMessages = messages.length > 0 ? messages : loadedMessages;
+  // Convert store messages to component messages
+  const displayMessages = messages.length > 0 
+    ? adaptStoreMessagesToComponentMessages(messages) 
+    : loadedMessages;
 
   return (
     <div className="flex flex-col h-full">
