@@ -4,6 +4,7 @@ import { View } from '../../types';
 import { Loader2 } from 'lucide-react';
 import { useChat } from '@/hooks/chat/useChat';
 import PoweredByFooter from '../footer/PoweredByFooter';
+import Navigation from './Navigation';
 
 // Lazy loaded views
 const LazyHomeView = lazy(() => import('../../views/LazyHomeView'));
@@ -66,7 +67,12 @@ const ViewManager: React.FC<ViewManagerProps> = ({
         </Suspense>
       </div>
 
-      {/* PoweredByFooter moved below navigation */}
+      {/* Navigation bar should be on home and messages views */}
+      {(activeView === 'home' || activeView === 'messages') && (
+        <Navigation activeView={activeView} setActiveView={setActiveView} />
+      )}
+
+      {/* PoweredByFooter appears below navigation */}
       <PoweredByFooter />
     </div>
   );
