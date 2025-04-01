@@ -21,10 +21,10 @@ interface AppProvidersProps {
  * with necessary providers and error boundaries.
  */
 const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
-  // Make sure React is properly initialized before rendering Provider
-  if (!React.useState) {
-    console.error("React hooks are not available - potential React initialization issue");
-    return <div>Application initialization error</div>;
+  // Make sure React is properly initialized before rendering
+  if (typeof React === 'undefined' || !React.createElement) {
+    console.error("React is not properly initialized");
+    return <div>Error initializing application</div>;
   }
 
   return (
