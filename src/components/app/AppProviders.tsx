@@ -11,6 +11,7 @@ import CaslProvider from "@/components/CaslProvider";
 import AppInitializer from './AppInitializer';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { WidgetStateProvider } from '@/widgets/chat/context/WidgetStateContext';
+import { BrowserRouter } from 'react-router-dom';
 
 interface AppProvidersProps {
   children: React.ReactNode;
@@ -29,23 +30,25 @@ const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
 
   return (
     <AppErrorBoundary>
-      <Provider store={store}>
-        <ThemeProvider initialTheme={{}}>
-          <WidgetStateProvider>
-            <AppQueryProvider>
-              <TooltipProvider>
-                <Toaster />
-                <Sonner />
-                <CaslProvider>
-                  <AppInitializer>
-                    {children}
-                  </AppInitializer>
-                </CaslProvider>
-              </TooltipProvider>
-            </AppQueryProvider>
-          </WidgetStateProvider>
-        </ThemeProvider>
-      </Provider>
+      <BrowserRouter>
+        <Provider store={store}>
+          <ThemeProvider initialTheme={{}}>
+            <WidgetStateProvider>
+              <AppQueryProvider>
+                <TooltipProvider>
+                  <Toaster />
+                  <Sonner />
+                  <CaslProvider>
+                    <AppInitializer>
+                      {children}
+                    </AppInitializer>
+                  </CaslProvider>
+                </TooltipProvider>
+              </AppQueryProvider>
+            </WidgetStateProvider>
+          </ThemeProvider>
+        </Provider>
+      </BrowserRouter>
     </AppErrorBoundary>
   );
 };

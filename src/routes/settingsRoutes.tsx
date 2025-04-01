@@ -30,8 +30,23 @@ const withSuspenseAndProtection = (Component: React.ReactNode) => (
   </ProtectedRoute>
 );
 
-// Settings Routes component
-const SettingsRoutes = () => {
+// Export routes array for use in router configuration
+export const SettingsRoutes = [
+  { 
+    path: "settings", 
+    element: withSuspenseAndProtection(<Settings />),
+    children: [
+      { path: "", element: <Navigate to="chat" replace /> },
+      { path: "chat", element: withSuspenseAndProtection(<ChatSettings />) },
+      { path: "profile", element: withSuspenseAndProtection(<Profile />) },
+      { path: "team", element: withSuspenseAndProtection(<TeamSettings />) },
+      { path: "account", element: withSuspenseAndProtection(<AccountSettings />) }
+    ]
+  }
+];
+
+// Also export as a component for direct usage
+const SettingsRoutesComponent = () => {
   return (
     <Routes>
       <Route path="" element={<Settings />}>
@@ -45,4 +60,4 @@ const SettingsRoutes = () => {
   );
 };
 
-export default SettingsRoutes;
+export default SettingsRoutesComponent;
