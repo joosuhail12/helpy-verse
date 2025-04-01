@@ -1,6 +1,6 @@
 
 import React, { lazy, Suspense } from 'react';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { createBrowserRouter } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import RootRedirect from '../components/app/RootRedirect';
 import RouteErrorBoundary from '@/components/app/RouteErrorBoundary';
@@ -17,6 +17,7 @@ export const LoadingSpinner = () => (
 import { DashboardRoutes } from './dashboardRoutes';
 import { InboxRoutes } from './inboxRoutes';
 import { AutomationRoutes } from './automationRoutes';
+// Import settings routes correctly - using the named export instead of default
 import { SettingsRoutes } from './settingsRoutes';
 
 // Lazy load components
@@ -25,7 +26,7 @@ const ForgotPassword = lazy(() => import('../pages/ForgotPassword'));
 const ResetPassword = lazy(() => import('../pages/ResetPassword'));
 const SignUp = lazy(() => import('../pages/SignUp'));
 const NotFound = lazy(() => import('../pages/NotFound'));
-const LandingPage = lazy(() => import('../pages/Index'));
+const LandingPage = lazy(() => import('../pages/LandingPage'));
 
 // Lazy load dashboard layout
 const DashboardLayout = lazy(() => import('../layouts/DashboardLayout'));
@@ -39,7 +40,6 @@ const withSuspenseAndErrorHandling = (Component) => (
   </RouteErrorBoundary>
 );
 
-// Create router instance
 export const router = createBrowserRouter([
   {
     path: '/',
@@ -87,8 +87,4 @@ export const router = createBrowserRouter([
   },
 ]);
 
-// Function to provide router outside of React components
-export const getRouter = () => router;
-
-// Export the router as default
 export default router;
