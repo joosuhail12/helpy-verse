@@ -1,39 +1,26 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useChat } from '@/hooks/chat/useChat';
 import { useThemeContext } from '@/context/ThemeContext';
 import ChatHeader from '@/components/chat-widget/components/header/ChatHeader';
 import { formatDistanceToNow } from 'date-fns';
-import { MessageSquare, User, Clock, ArrowRight, SendIcon, PlusCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { motion } from 'framer-motion';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import Navigation from '../components/navigation/Navigation';
+import { View } from '../types';
 
 interface MessagesViewProps {
-  onClose: () => void;
   onSelectConversation: () => void;
+  onClose: () => void;
   onStartConversation: (message: string) => void;
 }
 
 const MessagesView: React.FC<MessagesViewProps> = ({
-  onClose,
   onSelectConversation,
+  onClose,
   onStartConversation
 }) => {
   const { conversations, selectConversation } = useChat();
   const { labels, colors } = useThemeContext();
-
-  // Load conversations data when component mounts
-  useEffect(() => {
-    // This would typically fetch conversations from an API
-    // For now we're using the mock data from the useChat hook
-  }, []);
-
-  const handleStartNewConversation = () => {
-    // Navigate to the conversation view with an empty message to start a new chat
-    onStartConversation('');
-    onSelectConversation();
-  };
 
   const handleConversationSelect = (conversationId: string) => {
     selectConversation(conversationId);
@@ -44,7 +31,6 @@ const MessagesView: React.FC<MessagesViewProps> = ({
   const formatTimestamp = (timestamp: string | undefined) => {
     if (!timestamp) return '';
     try {
-      // For the UI, display in a user-friendly format matching the screenshot
       const date = new Date(timestamp);
       return `${date.toLocaleDateString()} ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
     } catch (e) {
@@ -54,15 +40,18 @@ const MessagesView: React.FC<MessagesViewProps> = ({
 
   return (
     <div className="flex flex-col h-full bg-white">
-      <ChatHeader 
-        title="Recent Conversations" 
-        onClose={onClose} 
-        onBackClick={() => onClose()} 
-        className="sticky top-0 z-10 bg-white"
-      />
+      {/* Fixed Header */}
+      <div className="sticky top-0 z-10 bg-white">
+        <ChatHeader 
+          title="Recent Conversations" 
+          onClose={onClose} 
+          onBackClick={() => onClose()} 
+        />
+      </div>
       
-      <div className="flex-1 overflow-hidden flex flex-col">
-        <ScrollArea className="flex-1">
+      {/* Scrollable Content Area */}
+      <div className="flex-1 overflow-hidden">
+        <ScrollArea className="h-[calc(100vh-120px)]">
           <div className="divide-y">
             {conversations.length === 0 ? (
               <div className="p-4">
@@ -80,13 +69,13 @@ const MessagesView: React.FC<MessagesViewProps> = ({
                     {conversation.title || `Conversation ${formatTimestamp(conversation.lastMessageTimestamp)}`}
                   </div>
                   <div className="text-sm text-gray-500">
-                    You don't have any conversations yet
+                    {conversation.lastMessage || "You don't have any conversations yet"}
                   </div>
                 </button>
               ))
             )}
             
-            {/* Add empty mock conversations that match the screenshot */}
+            {/* Add example conversations that match the screenshot */}
             <div className="p-4">
               <div className="text-base font-medium">New question</div>
               <div className="text-sm text-gray-500">You don't have any conversations yet</div>
@@ -115,19 +104,10 @@ const MessagesView: React.FC<MessagesViewProps> = ({
         </ScrollArea>
       </div>
       
-      {/* Fixed bottom navigation */}
-      <div className="mt-auto">
-        <Navigation />
+      {/* Fixed Navigation */}
+      <div className="sticky bottom-0 z-10 bg-white mt-auto">
+        <Navigation activeView="messages" setActiveView={(view) => {}} />
       </div>
-    </div>
-  );
-};
-
-// Simple Navigation component to match the screenshot
-const Navigation = () => {
-  return (
-    <div className="sticky bottom-0 flex justify-center items-center p-4 border-t bg-white">
-      <div className="h-1.5 w-6 bg-gray-300 rounded-full"></div>
     </div>
   );
 };

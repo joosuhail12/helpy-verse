@@ -13,7 +13,7 @@ const Navigation: React.FC<NavigationProps> = ({ activeView, setActiveView }) =>
   const { colors } = useThemeContext();
   
   return (
-    <div className="sticky bottom-0 z-10 bg-white">
+    <div className="bg-white w-full">
       <div 
         className="flex justify-around border-t py-2 px-2"
         style={{ borderColor: colors.border }}
