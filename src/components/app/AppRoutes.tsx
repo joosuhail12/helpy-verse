@@ -8,6 +8,7 @@ import { router } from '@/routes/index';
  * Uses React Router v6 for handling routes
  */
 const AppRoutes: React.FC = () => {
+  console.log('AppRoutes rendering with router:', router);
   return <RouterProvider router={router} />;
 };
 

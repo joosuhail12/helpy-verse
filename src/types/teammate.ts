@@ -1,53 +1,54 @@
 
+// Define common teammate-related types
+
 export interface Teammate {
-  id: string;
-  name: string;
-  email: string;
-  role?: 'WORKSPACE_AGENT' | 'ORGANIZATION_ADMIN' | 'WORKSPACE_ADMIN' | 'SUPER_ADMIN';
-  teamId: string | null;
-  createdBy: string;
-  status: 'active' | 'inactive';
-  lastActive: string | null;
-  createdAt: string;
+  id?: string;
+  name?: string;
+  email?: string;
+  role?: string;
+  team?: string;
+  department?: string;
+  status?: string;
+  notes?: string;
   avatar?: string;
-  permissions: string[];
-  is2FAEnabled?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  lastActive?: string;
+  workspaceId?: string;
 }
 
 export interface NewTeammate {
-  first_name: string;
-  last_name: string;
-  password: string;
-  confirm_password: string;
+  name: string;
   email: string;
-  role: 'WORKSPACE_AGENT' | 'ORGANIZATION_ADMIN' | 'WORKSPACE_ADMIN' | 'SUPER_ADMIN';
+  role?: string;
+  team?: string;
+  department?: string;
+  status?: string;
+  notes?: string;
 }
 
 export interface ActivityLog {
   id: string;
   teammateId: string;
-  type: string;
-  description: string;
+  action: string;
   timestamp: string;
-  metadata?: Record<string, any>;
+  details: Record<string, any>;
 }
 
 export interface TeamAssignment {
   id: string;
   teammateId: string;
-  teamName: string;
+  teamId: string;
   role: string;
-  status: 'active' | 'pending' | 'inactive';
-  startDate?: string;
-  endDate?: string;
+  assignedAt: string;
 }
 
 export interface Session {
   id: string;
   teammateId: string;
-  deviceType: string;
-  deviceName: string;
-  location: string;
-  lastActive: string;
-  ipAddress?: string;
+  startTime: string;
+  endTime: string | null;
+  ipAddress: string;
+  userAgent: string;
+  active: boolean;
 }

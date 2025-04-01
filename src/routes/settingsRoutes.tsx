@@ -54,8 +54,3 @@ export const SettingsRoutes = [
     ]
   }
 ];
-
-// Export a dummy component to maintain backward compatibility
-const SettingsRoutesComponent = () => <div>Settings Routes</div>;
-
-export default SettingsRoutesComponent;

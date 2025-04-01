@@ -1,10 +1,13 @@
 
 import React from 'react';
-import ChatSettingsContent from './chat/ChatSettings';
 
 const ChatSettings = () => {
-  console.log("ChatSettings component rendered");
-  return <ChatSettingsContent />;
+  return (
+    <div className="p-6">
+      <h2 className="text-2xl font-bold mb-4">Chat Settings</h2>
+      <p>Configure your chat preferences and notifications here.</p>
+    </div>
+  );
 };
 
 export default ChatSettings;

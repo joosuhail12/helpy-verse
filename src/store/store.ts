@@ -16,7 +16,7 @@ import { emailChannelsReducer } from './slices/emailChannels/emailChannelsSlice'
 import { cannedResponsesReducer } from './slices/cannedResponses/cannedResponsesSlice';
 import { chatbotsReducer } from './slices/chatbots/chatbotsSlice';
 import userReducer from './slices/user/userSlice';
-import teammatesSlice from './slices/teammates/teammatesSlice';
+import teammatesReducer from './slices/teammates/teammatesSlice';
 import { chatReducer } from './slices/chat/chatSlice';
 
 // Define the root reducer with all slices
@@ -29,7 +29,7 @@ const rootReducer = {
   companies: companiesReducer,
   tickets: ticketsReducer,
   tags: tagsReducer,
-  teammates: teammatesSlice,
+  teammates: teammatesReducer,
   teams: teamsReducer,
   emailChannels: emailChannelsReducer,
   cannedResponses: cannedResponsesReducer,
