@@ -10,13 +10,21 @@ import { Conversation } from '../types/messages';
 interface MessagesViewProps {
   onSelectConversation: () => void;
   onClose: () => void;
-  onStartConversation: (message: string) => void;
+  onStartConversation?: (message: string) => void;
+  workspaceId?: string;
+  setActiveView?: (view: View) => void;
 }
 
+/**
+ * MessagesView component that displays a list of conversations
+ * This is the consolidated component that works across both usage locations
+ */
 const MessagesView: React.FC<MessagesViewProps> = ({
   onSelectConversation,
   onClose,
-  onStartConversation
+  onStartConversation,
+  workspaceId,
+  setActiveView
 }) => {
   const { conversations, selectConversation } = useChat();
   const { labels, colors } = useThemeContext();
@@ -103,6 +111,15 @@ const MessagesView: React.FC<MessagesViewProps> = ({
     ? conversations 
     : exampleConversations;
 
+  // Handle back click differently depending on which component is using this
+  const handleBackClick = () => {
+    if (setActiveView) {
+      setActiveView('home');
+    } else {
+      onClose();
+    }
+  };
+
   return (
     <div 
       className="flex flex-col h-full" 
@@ -114,7 +131,7 @@ const MessagesView: React.FC<MessagesViewProps> = ({
         overflow: 'hidden'
       }}
     >
-      {/* Fixed Header - using explicit styling to ensure it stays fixed */}
+      {/* Fixed Header */}
       <div 
         className="flex-shrink-0 border-b" 
         style={{ 
@@ -125,11 +142,11 @@ const MessagesView: React.FC<MessagesViewProps> = ({
         <ChatHeader 
           title={labels.recentMessagesTitle || "Recent Conversations"} 
           onClose={onClose} 
-          onBackClick={onClose}
+          onBackClick={handleBackClick}
         />
       </div>
       
-      {/* Scrollable Content Area - with explicit styling to ensure scrolling works */}
+      {/* Scrollable Content Area */}
       <div 
         className="flex-1 overflow-y-auto" 
         style={{
@@ -149,6 +166,10 @@ const MessagesView: React.FC<MessagesViewProps> = ({
                 key={conversation.id}
                 className="w-full px-4 py-3 flex flex-col items-start text-left hover:bg-gray-50 transition-colors"
                 onClick={() => handleConversationSelect(conversation.id)}
+                style={{ 
+                  backgroundColor: colors.background, 
+                  color: colors.foreground
+                }}
               >
                 <div className="text-base font-medium">
                   {conversation.title}
@@ -162,7 +183,7 @@ const MessagesView: React.FC<MessagesViewProps> = ({
         )}
       </div>
       
-      {/* Fixed Navigation - using explicit styling to ensure it stays fixed */}
+      {/* Fixed Navigation */}
       <div 
         className="flex-shrink-0 border-t" 
         style={{ 
@@ -170,7 +191,7 @@ const MessagesView: React.FC<MessagesViewProps> = ({
           flexShrink: 0
         }}
       >
-        <Navigation activeView="messages" setActiveView={() => {}} />
+        <Navigation activeView="messages" setActiveView={setActiveView || (() => {})} />
       </div>
     </div>
   );

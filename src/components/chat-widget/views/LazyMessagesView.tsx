@@ -1,8 +1,8 @@
 
 import React, { Suspense } from 'react';
 import { Loader2 } from 'lucide-react';
-
-const MessagesViewLazy = React.lazy(() => import('./MessagesView'));
+import MessagesView from '@/widgets/chat/views/MessagesView';
+import { View } from '@/widgets/chat/types';
 
 interface LazyMessagesViewProps {
   workspaceId: string;
@@ -15,13 +15,24 @@ interface LazyMessagesViewProps {
  * Lazy-loaded MessagesView component with loading fallback
  */
 const LazyMessagesView: React.FC<LazyMessagesViewProps> = (props) => {
+  // Create a handler for the onSelectConversation that properly works with the function from props.setActiveView
+  const handleSelectConversation = () => {
+    props.setActiveView('conversation');
+  };
+
   return (
     <Suspense fallback={
       <div className="flex items-center justify-center h-full">
         <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
       </div>
     }>
-      <MessagesViewLazy {...props} />
+      <MessagesView
+        workspaceId={props.workspaceId}
+        onClose={props.onClose}
+        setActiveView={props.setActiveView as (view: View) => void}
+        onStartConversation={props.onStartConversation}
+        onSelectConversation={handleSelectConversation}
+      />
     </Suspense>
   );
 };
