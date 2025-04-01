@@ -66,8 +66,7 @@ const ViewManager: React.FC<ViewManagerProps> = ({
         </Suspense>
       </div>
 
-      {/* Only show navigation on home view, controlled by parent component */}
-      {/* The PoweredByFooter appears on all pages/views */}
+      {/* PoweredByFooter moved below navigation */}
       <PoweredByFooter />
     </div>
   );
