@@ -3,7 +3,7 @@
  * Hook for managing chat widget state
  */
 import { useContext } from 'react';
-import ChatWidgetContext from '@/context/ChatWidgetContext';
+import { ChatWidgetContext } from '@/context/ChatWidgetContext';
 
 export const useChatWidget = () => {
   const context = useContext(ChatWidgetContext);

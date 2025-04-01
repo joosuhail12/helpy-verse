@@ -4,11 +4,20 @@ import React, { createContext, useContext, useState } from 'react';
 export interface ThemeConfig {
   colors: {
     primary: string;
+    primaryForeground: string;
     background: string;
+    backgroundSecondary: string;
     foreground: string;
     border: string;
     muted: string;
     accent: string;
+    inputBackground: string;
+    userMessage: string;
+    userMessageText: string;
+    agentMessage: string;
+    agentMessageText: string;
+    error: string;
+    success: string;
   };
   position: 'left' | 'right';
   compact: boolean;
@@ -19,6 +28,7 @@ export interface ThemeConfig {
     sendButton: string;
     noMessagesText: string;
     recentMessagesTitle: string;
+    askQuestionButton?: string;
   };
   features: {
     typingIndicator: boolean;
@@ -31,11 +41,20 @@ export interface ThemeConfig {
 const defaultTheme: ThemeConfig = {
   colors: {
     primary: '#9b87f5',
+    primaryForeground: '#ffffff',
     background: '#ffffff',
+    backgroundSecondary: '#f9f9f9',
     foreground: '#1f2937',
     border: '#e5e7eb',
     muted: '#f3f4f6',
     accent: '#f9fafb',
+    inputBackground: '#ffffff',
+    userMessage: '#9b87f5',
+    userMessageText: '#ffffff',
+    agentMessage: '#f3f4f6',
+    agentMessageText: '#1f2937',
+    error: '#ef4444',
+    success: '#10b981'
   },
   position: 'right',
   compact: false,
@@ -45,7 +64,8 @@ const defaultTheme: ThemeConfig = {
     placeholder: 'Type a message...',
     sendButton: 'Send',
     noMessagesText: "You don't have any conversations yet",
-    recentMessagesTitle: "Recent Conversations"
+    recentMessagesTitle: "Recent Conversations",
+    askQuestionButton: "Ask a question"
   },
   features: {
     typingIndicator: true,
@@ -61,6 +81,11 @@ interface ThemeContextProps {
   labels: ThemeConfig['labels'];
   features: ThemeConfig['features'];
   setTheme: (theme: Partial<ThemeConfig>) => void;
+  position: 'left' | 'right';
+  compact: boolean;
+  setPosition: (position: 'left' | 'right') => void;
+  setCompact: (compact: boolean) => void;
+  setColors: (colors: Partial<ThemeConfig['colors']>) => void;
 }
 
 const ThemeContext = createContext<ThemeContextProps | undefined>(undefined);
@@ -110,6 +135,30 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
     }));
   };
   
+  const setPosition = (position: 'left' | 'right') => {
+    setThemeState(prev => ({
+      ...prev,
+      position
+    }));
+  };
+  
+  const setCompact = (compact: boolean) => {
+    setThemeState(prev => ({
+      ...prev,
+      compact
+    }));
+  };
+  
+  const setColors = (colors: Partial<ThemeConfig['colors']>) => {
+    setThemeState(prev => ({
+      ...prev,
+      colors: {
+        ...prev.colors,
+        ...colors
+      }
+    }));
+  };
+  
   return (
     <ThemeContext.Provider 
       value={{ 
@@ -117,7 +166,12 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
         setTheme, 
         colors: theme.colors, 
         labels: theme.labels,
-        features: theme.features 
+        features: theme.features,
+        position: theme.position,
+        compact: theme.compact,
+        setPosition,
+        setCompact,
+        setColors
       }}
     >
       {children}

@@ -5,6 +5,9 @@ interface AblyContextValue {
   connected: boolean;
   subscribe: (channelName: string, callback: (data: any) => void) => () => void;
   publish: (channelName: string, data: any) => Promise<void>;
+  client: any; // Added this property
+  clientId: string; // Added this property
+  isConnected: boolean; // Added this property
 }
 
 const AblyContext = createContext<AblyContextValue | undefined>(undefined);
@@ -19,6 +22,8 @@ export const AblyProvider: React.FC<AblyProviderProps> = ({
   workspaceId 
 }) => {
   const [connected, setConnected] = useState(false);
+  const [clientId, setClientId] = useState<string>(`user-${Math.random().toString(36).substring(2, 9)}`);
+  const [client, setClient] = useState<any>(null);
   
   // Mock implementation for now - in a real app, would connect to Ably
   useEffect(() => {
@@ -28,6 +33,13 @@ export const AblyProvider: React.FC<AblyProviderProps> = ({
       setConnected(true);
       console.log('AblyProvider: Connected');
     }, 1000);
+    
+    // Creating a mock client
+    setClient({
+      connection: {
+        state: 'connected'
+      }
+    });
     
     return () => {
       clearTimeout(timer);
@@ -51,7 +63,14 @@ export const AblyProvider: React.FC<AblyProviderProps> = ({
   };
   
   return (
-    <AblyContext.Provider value={{ connected, subscribe, publish }}>
+    <AblyContext.Provider value={{ 
+      connected, 
+      subscribe, 
+      publish, 
+      client,
+      clientId, 
+      isConnected: connected 
+    }}>
       {children}
     </AblyContext.Provider>
   );

@@ -1,20 +1,22 @@
 
-import { ThemeConfig as ContextThemeConfig } from '@/context/ThemeContext';
-import { ThemeConfig as ApiThemeConfig } from '../types';
+import { ThemeConfig } from '@/context/ThemeContext';
 
 /**
  * Adapts API theme config to Context theme config
  */
 export const adaptApiThemeToContextTheme = (
-  apiTheme?: Partial<ApiThemeConfig>
-): Partial<ContextThemeConfig> => {
+  apiTheme?: Partial<any>
+): Partial<ThemeConfig> => {
   if (!apiTheme) return {};
   
   const defaultLabels = {
     welcomeTitle: 'Hello there.',
     welcomeSubtitle: 'How can we help?',
     sendButton: 'Send',
-    placeholder: 'Type a message...'
+    placeholder: 'Type a message...',
+    noMessagesText: "You don't have any conversations yet",
+    recentMessagesTitle: "Recent Conversations",
+    askQuestionButton: "Ask a question"
   };
   
   return {
@@ -26,6 +28,8 @@ export const adaptApiThemeToContextTheme = (
       inputBackground: '#ffffff',
       foreground: apiTheme.colors.foreground || '#000000',
       border: '#e5e7eb',
+      muted: '#f3f4f6',
+      accent: '#f9fafb',
       userMessage: apiTheme.colors.userMessage || '#9b87f5',
       userMessageText: '#ffffff',
       agentMessage: apiTheme.colors.agentMessage || '#f3f4f6',
@@ -52,8 +56,8 @@ export const adaptApiThemeToContextTheme = (
  * Adapts Context theme config to API theme config
  */
 export const adaptContextThemeToApiTheme = (
-  contextTheme: Partial<ContextThemeConfig>
-): Partial<ApiThemeConfig> => {
+  contextTheme: Partial<ThemeConfig>
+): Partial<any> => {
   if (!contextTheme) return {};
   
   return {
@@ -72,7 +76,10 @@ export const adaptContextThemeToApiTheme = (
       welcomeTitle: contextTheme.labels.welcomeTitle,
       welcomeSubtitle: contextTheme.labels.welcomeSubtitle,
       sendButton: contextTheme.labels.sendButton,
-      placeholder: contextTheme.labels.placeholder
+      placeholder: contextTheme.labels.placeholder,
+      noMessagesText: contextTheme.labels.noMessagesText,
+      recentMessagesTitle: contextTheme.labels.recentMessagesTitle,
+      askQuestionButton: contextTheme.labels.askQuestionButton
     } : undefined,
     features: contextTheme.features ? {
       typingIndicator: contextTheme.features.typingIndicator,

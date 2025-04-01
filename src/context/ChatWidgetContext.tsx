@@ -20,7 +20,8 @@ type Action =
   | { type: 'OPEN_WIDGET' }
   | { type: 'CLOSE_WIDGET' }
   | { type: 'TOGGLE_WIDGET' }
-  | { type: 'SET_THEME'; payload: Partial<ThemeConfig> };
+  | { type: 'SET_THEME'; payload: Partial<ThemeConfig> }
+  | { type: 'INITIALIZE'; payload: any };
 
 interface ChatWidgetContextValue {
   state: ChatWidgetState;
@@ -41,7 +42,7 @@ const initialState: ChatWidgetState = {
   }
 };
 
-const ChatWidgetContext = createContext<ChatWidgetContextValue | undefined>(undefined);
+export const ChatWidgetContext = createContext<ChatWidgetContextValue | undefined>(undefined);
 
 const reducer = (state: ChatWidgetState, action: Action): ChatWidgetState => {
   switch (action.type) {
@@ -58,6 +59,18 @@ const reducer = (state: ChatWidgetState, action: Action): ChatWidgetState => {
           ...state.theme, 
           ...(action.payload as any) 
         } 
+      };
+    case 'INITIALIZE':
+      return {
+        ...state,
+        config: {
+          ...state.config,
+          ...(action.payload?.workspaceId ? { workspaceId: action.payload.workspaceId } : {})
+        },
+        theme: {
+          ...state.theme,
+          ...(action.payload?.theme ? action.payload.theme : {})
+        }
       };
     default:
       return state;

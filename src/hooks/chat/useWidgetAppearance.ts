@@ -19,7 +19,6 @@ export const useWidgetAppearance = (options: WidgetAppearanceOptions = {}) => {
     if (options.initialSettings) {
       if (options.initialSettings.appearance?.primaryColor) {
         setColors({ 
-          ...colors, 
           primary: options.initialSettings.appearance.primaryColor 
         });
       }
@@ -32,7 +31,7 @@ export const useWidgetAppearance = (options: WidgetAppearanceOptions = {}) => {
         setCompact(options.initialSettings.appearance.compact);
       }
     }
-  }, [options.initialSettings]);
+  }, [options.initialSettings, setColors, setPosition, setCompact]);
   
   const toggleWidget = () => {
     setIsOpen(prev => !prev);
