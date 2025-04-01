@@ -2,10 +2,6 @@
 import React from 'react';
 import Sidebar from '../navigation/Sidebar';
 import Header from '../navigation/Header';
-import { lazy, Suspense } from 'react';
-import { Loader2 } from 'lucide-react';
-
-// Import ChatWidget normally rather than lazily to avoid dynamic import issues
 import { ChatWidget } from '@/widgets/chat';
 
 interface MainLayoutProps {
@@ -23,8 +19,14 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         </main>
       </div>
       
-      {/* Chat widget with direct import */}
-      <ChatWidget workspaceId="workspace-123" />
+      {/* Chat widget with fixed workspaceId */}
+      <ChatWidget 
+        workspaceId="workspace-123" 
+        theme={{
+          position: 'right',
+          compact: false
+        }}
+      />
     </div>
   );
 };

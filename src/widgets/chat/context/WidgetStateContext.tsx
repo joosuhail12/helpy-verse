@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useReducer, ReactNode } from 'react';
-import { ThemeConfig, ChatWidgetSettings } from '../types';
+import { ThemeConfig } from '../types';
 
 interface WidgetState {
   isOpen: boolean;

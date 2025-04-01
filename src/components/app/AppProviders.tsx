@@ -10,6 +10,7 @@ import AppErrorBoundary from './AppErrorBoundary';
 import CaslProvider from "@/components/CaslProvider";
 import AppInitializer from './AppInitializer';
 import { ThemeProvider } from '@/context/ThemeContext';
+import { WidgetStateProvider } from '@/widgets/chat/context/WidgetStateContext';
 
 interface AppProvidersProps {
   children: React.ReactNode;
@@ -20,21 +21,29 @@ interface AppProvidersProps {
  * with necessary providers and error boundaries.
  */
 const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
+  // Make sure React is properly initialized before rendering Provider
+  if (!React.useState) {
+    console.error("React hooks are not available - potential React initialization issue");
+    return <div>Application initialization error</div>;
+  }
+
   return (
     <AppErrorBoundary>
       <Provider store={store}>
-        <ThemeProvider>
-          <AppQueryProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Sonner />
-              <CaslProvider>
-                <AppInitializer>
-                  {children}
-                </AppInitializer>
-              </CaslProvider>
-            </TooltipProvider>
-          </AppQueryProvider>
+        <ThemeProvider initialTheme={{}}>
+          <WidgetStateProvider>
+            <AppQueryProvider>
+              <TooltipProvider>
+                <Toaster />
+                <Sonner />
+                <CaslProvider>
+                  <AppInitializer>
+                    {children}
+                  </AppInitializer>
+                </CaslProvider>
+              </TooltipProvider>
+            </AppQueryProvider>
+          </WidgetStateProvider>
         </ThemeProvider>
       </Provider>
     </AppErrorBoundary>
