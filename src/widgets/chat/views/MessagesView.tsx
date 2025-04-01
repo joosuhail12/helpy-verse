@@ -3,9 +3,9 @@ import React, { useEffect } from 'react';
 import { useChat } from '@/hooks/chat/useChat';
 import { useThemeContext } from '@/context/ThemeContext';
 import ChatHeader from '@/components/chat-widget/components/header/ChatHeader';
-import MessageInput from '@/components/chat-widget/components/conversation/MessageInput';
 import { formatDistanceToNow } from 'date-fns';
-import { MessageSquare, User, Clock, ArrowRight } from 'lucide-react';
+import { MessageSquare, User, Clock, ArrowRight, SendIcon } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface MessagesViewProps {
   onClose: () => void;
@@ -27,12 +27,10 @@ const MessagesView: React.FC<MessagesViewProps> = ({
     // For now we're using the mock data from the useChat hook
   }, []);
 
-  const handleSendMessage = async (content: string) => {
-    if (content.trim()) {
-      await onStartConversation(content);
-      // After starting a conversation, we should move to the conversation view
-      onSelectConversation();
-    }
+  const handleStartNewConversation = () => {
+    // Navigate to the conversation view with an empty message to start a new chat
+    onStartConversation('');
+    onSelectConversation();
   };
 
   const handleConversationSelect = (conversationId: string) => {
@@ -62,17 +60,13 @@ const MessagesView: React.FC<MessagesViewProps> = ({
             </div>
             <p className="text-gray-500 mb-4">{labels?.noMessagesText || "You don't have any conversations yet"}</p>
             
-            {/* Input to start a new conversation when there are no existing ones */}
-            <div className="w-full max-w-md mx-auto mt-4">
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <h3 className="text-sm font-medium mb-2">Start a new conversation</h3>
-                <MessageInput 
-                  onSendMessage={handleSendMessage}
-                  disabled={false}
-                  placeholder={labels?.placeholder || "Type a message..."}
-                />
-              </div>
-            </div>
+            {/* Button to start a new conversation when there are no existing ones */}
+            <Button 
+              onClick={handleStartNewConversation}
+              className="mt-2 flex items-center gap-2"
+            >
+              Start a conversation <SendIcon size={16} />
+            </Button>
           </div>
         ) : (
           <div 
@@ -124,14 +118,15 @@ const MessagesView: React.FC<MessagesViewProps> = ({
           </div>
         )}
         
-        {/* Input at the bottom to start a new conversation when there are existing ones */}
+        {/* Button at the bottom to start a new conversation when there are existing ones */}
         {conversations.length > 0 && (
-          <div className="p-3 border-t" style={{ borderColor: colors.border }}>
-            <MessageInput 
-              onSendMessage={handleSendMessage}
-              disabled={false}
-              placeholder={labels?.placeholder || "Start a new conversation..."}
-            />
+          <div className="p-3 border-t flex justify-center" style={{ borderColor: colors.border }}>
+            <Button
+              onClick={handleStartNewConversation}
+              className="w-full flex items-center justify-center gap-2"
+            >
+              Start new conversation <SendIcon size={16} />
+            </Button>
           </div>
         )}
       </div>
