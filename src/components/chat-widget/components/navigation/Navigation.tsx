@@ -40,10 +40,14 @@ const Navigation: React.FC<NavigationProps> = ({ activeView, setActiveView }) =>
       {/* Powered By section */}
       <div className="bg-gray-50 py-2 px-4 text-center border-t text-xs text-gray-500 flex items-center justify-center" style={{ borderColor: colors.border }}>
         <span className="mr-1">Powered by</span>
-        <div className="bg-white rounded-md p-1 shadow-sm">
-          <div className="w-4 h-4 bg-primary rounded-sm"></div>
+        <div className="flex items-center">
+          <img 
+            src="https://framerusercontent.com/images/9N8Z1vTRbJsHlrIuTjm6Ajga4dI.png" 
+            alt="Pullse Logo" 
+            className="h-4 w-auto"
+          />
+          <span className="ml-1 font-medium">Pullse</span>
         </div>
-        <span className="ml-1 font-medium">Your Brand</span>
       </div>
     </>
   );
