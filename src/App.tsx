@@ -1,7 +1,9 @@
 
 import React from "react";
+import ReactDOM from "react-dom/client";
 import AppProviders from "./components/app/AppProviders";
 import AppRoutes from "./components/app/AppRoutes";
+import "./index.css";
 
 const App: React.FC = () => {
   return (

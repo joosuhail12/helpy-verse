@@ -10,8 +10,8 @@ export const adaptStoreMessageToComponentMessage = (
 ): ComponentChatMessage => {
   return {
     ...message,
-    // Store timestamp is Date, component can handle Date or string
-    timestamp: message.timestamp,
+    // Convert timestamp to ensure compatibility with component type
+    timestamp: message.timestamp instanceof Date ? message.timestamp : new Date(message.timestamp),
     attachments: message.attachments 
       ? message.attachments.map(url => ({
           id: `attachment-${Math.random().toString(36).substr(2, 9)}`,

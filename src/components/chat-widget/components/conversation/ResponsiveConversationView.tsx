@@ -78,8 +78,12 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
 
   // Combine real-time messages with loaded messages
   // Convert store messages to component messages
-  const displayMessages = storeMessages.length > 0 
+  const storeMessagesConverted = storeMessages.length > 0 
     ? adaptStoreMessagesToComponentMessages(storeMessages) 
+    : [];
+    
+  const displayMessages = storeMessagesConverted.length > 0 
+    ? storeMessagesConverted 
     : loadedMessages;
 
   return (
