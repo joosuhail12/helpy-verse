@@ -114,6 +114,8 @@ export const useChat = (): UseChatReturn => {
 
     setConversations(prev => [...prev, newConversation]);
     setCurrentConversation(newConversation);
+    
+    // Return just the ID string, not the whole conversation object
     return conversationId;
   }, []);
 
