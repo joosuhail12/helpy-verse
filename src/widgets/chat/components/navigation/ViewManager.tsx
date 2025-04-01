@@ -34,17 +34,18 @@ const ViewManager: React.FC<ViewManagerProps> = ({
       }>
         {activeView === 'home' && (
           <LazyHomeView 
-            onStartConversation={(message) => {
+            workspaceId={workspaceId}
+            onStartNewConversation={() => {
               // If message is provided, start conversation with that message
               // Otherwise just create a new conversation
-              if (message) {
-                onStartConversation(message);
-              } else {
-                setActiveView('conversation');
-                onStartConversation("");
-              }
+              setActiveView('conversation');
+              onStartConversation("");
             }}
-            onViewMessages={() => setActiveView('messages')}
+            onSelectConversation={(conversationId: string) => {
+              setActiveView('conversation');
+              // Handle conversation selection
+            }}
+            setActiveView={setActiveView}
             onClose={onClose}
           />
         )}
