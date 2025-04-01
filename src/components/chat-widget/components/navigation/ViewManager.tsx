@@ -64,10 +64,21 @@ const ViewManager: React.FC<ViewManagerProps> = ({
         )}
       </div>
       
-      {/* PoweredByFooter appears on all views */}
-      <PoweredByFooter />
+      {/* Footer container with navigation and powered by footer */}
+      <div className="mt-auto">
+        {/* Navigation appears on home and messages views */}
+        {(activeView === 'home' || activeView === 'messages') && (
+          <Navigation activeView={activeView} setActiveView={setActiveView} />
+        )}
+        
+        {/* PoweredByFooter appears at the bottom */}
+        <PoweredByFooter />
+      </div>
     </div>
   );
 };
 
 export default ViewManager;
+
+// Import Navigation component at the end to avoid circular dependencies
+import Navigation from './Navigation';

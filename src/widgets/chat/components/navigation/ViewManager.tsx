@@ -67,13 +67,16 @@ const ViewManager: React.FC<ViewManagerProps> = ({
         </Suspense>
       </div>
 
-      {/* Navigation bar should be on home and messages views */}
-      {(activeView === 'home' || activeView === 'messages') && (
-        <Navigation activeView={activeView} setActiveView={setActiveView} />
-      )}
+      {/* Footer container with navigation and powered by footer */}
+      <div className="mt-auto">
+        {/* Navigation bar should be on home and messages views */}
+        {(activeView === 'home' || activeView === 'messages') && (
+          <Navigation activeView={activeView} setActiveView={setActiveView} />
+        )}
 
-      {/* PoweredByFooter appears below navigation */}
-      <PoweredByFooter />
+        {/* PoweredByFooter always appears at the bottom */}
+        <PoweredByFooter />
+      </div>
     </div>
   );
 };
