@@ -38,8 +38,13 @@ export const useConversations = (): UseConversationsReturn => {
       const action = await dispatch(createConversation(conversationTitle));
       
       // Extract the conversation ID from the action payload
-      const conversationId = action.payload?.id || uuidv4();
-      return conversationId;
+      if (action.payload && 'id' in action.payload) {
+        const conversationId = action.payload.id;
+        return conversationId;
+      }
+      
+      // Fallback if we can't get the ID from the action payload
+      return uuidv4();
     } catch (error) {
       console.error('Error creating conversation:', error);
       return Promise.reject(error);

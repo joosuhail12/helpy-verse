@@ -33,7 +33,7 @@ const InnerChatProvider: React.FC<ChatProviderProps> = ({ children, workspaceId 
   const chatContextValue = useChat();
   
   return (
-    <ChatContext.Provider value={{ ...chatContextValue, workspaceId }}>
+    <ChatContext.Provider value={chatContextValue}>
       {children}
     </ChatContext.Provider>
   );

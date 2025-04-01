@@ -16,7 +16,8 @@ const initialState: ChatState = {
   currentConversationId: null,
   messages: {},
   loading: false,
-  error: null
+  error: null,
+  workspaceId: undefined
 };
 
 // Async thunk for creating a conversation
@@ -46,6 +47,10 @@ export const chatSlice = createSlice({
   name: 'chat',
   initialState,
   reducers: {
+    setWorkspaceId: (state, action: PayloadAction<string>) => {
+      state.workspaceId = action.payload;
+    },
+    
     selectConversation: (state, action: PayloadAction<string>) => {
       state.currentConversationId = action.payload;
     },
@@ -114,6 +119,7 @@ export const chatSlice = createSlice({
 });
 
 export const {
+  setWorkspaceId,
   selectConversation,
   addMessage,
   markConversationAsRead,

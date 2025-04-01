@@ -6,6 +6,7 @@ import {
   addMessage,
   ChatMessage
 } from '@/store/slices/chat/chatSlice';
+import { TypingUser } from '@/store/slices/chat/types';
 
 interface UseMessagesReturn {
   messages: Record<string, ChatMessage[]>;
@@ -16,7 +17,7 @@ interface UseMessagesReturn {
 
 export const useMessages = (): UseMessagesReturn => {
   const dispatch = useAppDispatch();
-  const { messages: allMessages, loading } = useAppSelector(state => state.chat);
+  const { messages, loading } = useAppSelector(state => state.chat);
   
   const sendMessage = useCallback(async (content: string, conversationId: string): Promise<void> => {
     // User message
@@ -55,11 +56,11 @@ export const useMessages = (): UseMessagesReturn => {
   }, [dispatch]);
   
   const getMessages = useCallback((conversationId: string): ChatMessage[] => {
-    return allMessages[conversationId] || [];
-  }, [allMessages]);
+    return messages[conversationId] || [];
+  }, [messages]);
   
   return {
-    messages: allMessages,
+    messages,
     loadingMessages: loading,
     sendMessage,
     getMessages

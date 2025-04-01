@@ -2,12 +2,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useChat } from '@/hooks/chat/useChat';
 import { useThemeContext } from '@/context/ThemeContext';
-import { useMessageSubscription } from '@/hooks/chat/useMessageSubscription';
-import { useTypingIndicator } from '@/hooks/chat/useTypingIndicator';
 import ChatHeader from '../header/ChatHeader';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
-import { ChatMessage } from './types';
+import { ChatMessage } from '@/store/slices/chat/types';
+import { TypingUser } from '@/store/slices/chat/types';
 
 interface ConversationViewProps {
   conversationId: string;
@@ -23,27 +22,19 @@ const ConversationView: React.FC<ConversationViewProps> = ({
   onClose
 }) => {
   const { colors, features } = useThemeContext();
-  const { messages, sendMessage, loadingMessages, currentConversation } = useChat();
+  const { getMessages, sendMessage, loading, currentConversation } = useChat();
   const [localMessages, setLocalMessages] = useState<ChatMessage[]>([]);
+  const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
+  const [isUserTyping, setIsUserTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Subscribe to new messages using Ably
-  const { publishMessage } = useMessageSubscription(
-    conversationId,
-    workspaceId,
-    {
-      onMessage: (message: ChatMessage) => {
-        setLocalMessages(prev => [...prev, message]);
-      }
+  // Initialize local messages
+  useEffect(() => {
+    if (conversationId) {
+      const conversationMessages = getMessages(conversationId);
+      setLocalMessages(conversationMessages);
     }
-  );
-
-  // Use typing indicator
-  const { 
-    typingUsers, 
-    sendTypingIndicator, 
-    isUserTyping 
-  } = useTypingIndicator(conversationId);
+  }, [conversationId, getMessages]);
 
   // Scroll to bottom when new messages arrive
   useEffect(() => {
@@ -52,46 +43,26 @@ const ConversationView: React.FC<ConversationViewProps> = ({
     }
   }, [localMessages]);
 
-  // Initialize local messages
-  useEffect(() => {
-    if (messages && messages.length > 0) {
-      setLocalMessages(messages);
-    }
-  }, [messages]);
-
   const handleSendMessage = async (content: string) => {
     if (!content.trim()) return;
 
-    // Create a new message
-    const newMessage: ChatMessage = {
-      id: `msg-${Date.now()}`,
-      content,
-      sender: 'user',
-      timestamp: new Date().toISOString(),
-      conversationId,
-      status: 'sent'
-    };
-
-    // Add to local messages immediately
-    setLocalMessages(prev => [...prev, newMessage]);
-
-    // Send through Ably
-    await publishMessage(newMessage);
-
-    // Also send through local chat context
-    if (sendMessage) {
-      await sendMessage(conversationId, content);
-    }
-
-    // Reset typing indicator
-    if (features.typingIndicator) {
-      sendTypingIndicator(false);
+    try {
+      await sendMessage(content, conversationId);
+      
+      // Update local messages after sending
+      const updatedMessages = getMessages(conversationId);
+      setLocalMessages(updatedMessages);
+      
+      // Reset typing indicator
+      setIsUserTyping(false);
+    } catch (error) {
+      console.error('Error sending message:', error);
     }
   };
 
   const handleTyping = (isTyping: boolean) => {
-    if (features.typingIndicator) {
-      sendTypingIndicator(isTyping);
+    if (features?.typingIndicator) {
+      setIsUserTyping(isTyping);
     }
   };
 
@@ -113,7 +84,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
         <MessageList 
           messages={localMessages} 
           typingUsers={typingUsers}
-          isLoading={loadingMessages}
+          isLoading={loading}
         />
         <div ref={messagesEndRef} />
       </div>

@@ -6,12 +6,13 @@ import { useConversations } from './useConversations';
 import { useMessages } from './useMessages';
 import { 
   addMessage,
-  ChatMessage
+  ChatMessage,
+  selectConversation as selectConversationAction
 } from '@/store/slices/chat/chatSlice';
 
 export const useChat = () => {
   const dispatch = useAppDispatch();
-  const { loading, error } = useAppSelector(state => state.chat);
+  const { loading, error, workspaceId } = useAppSelector(state => state.chat);
   
   const {
     conversations,
@@ -20,7 +21,7 @@ export const useChat = () => {
     selectConversation
   } = useConversations();
   
-  const { messages, sendMessage: sendMessageInternal } = useMessages();
+  const { messages, sendMessage: sendMessageInternal, getMessages } = useMessages();
   
   // Wrap the sendMessage function to update the Redux store
   const sendMessage = useCallback((content: string, conversationId: string) => {
@@ -51,7 +52,9 @@ export const useChat = () => {
     selectConversation,
     messages,
     sendMessage,
+    getMessages,
     loading,
-    error
+    error,
+    workspaceId
   };
 };
