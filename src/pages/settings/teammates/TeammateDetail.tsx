@@ -2,129 +2,100 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { useAppSelector } from '@/hooks/useAppSelector';
-import { fetchTeammateDetails } from '@/store/slices/teammates/actions';
-import { selectTeammateDetails, selectTeammateDetailsLoading } from '@/store/slices/teammates/selectors';
-import type { Teammate } from '@/types/teammate';
 import TeammateDetailView from './components/detail/TeammateDetailView';
+import { useTeammateDetailPage } from './hooks/useTeammateDetailPage';
 
+/**
+ * Detailed view of a specific teammate's information
+ */
 const TeammateDetail = () => {
-  const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const dispatch = useAppDispatch();
-  const { toast } = useToast();
+  // Safely get params even if router context isn't available
+  let teammateId = '';
+  let navigate = null;
   
-  const teammate = useAppSelector(selectTeammateDetails);
-  const loading = useAppSelector(selectTeammateDetailsLoading);
-  
-  const [editedTeammate, setEditedTeammate] = useState<Teammate | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
-  
-  useEffect(() => {
-    if (id) {
-      dispatch(fetchTeammateDetails(id)).catch(error => {
-        toast({
-          title: "Error loading teammate",
-          description: error.message || "Failed to load teammate details",
-          variant: "destructive"
-        });
-      });
-    }
-  }, [id, dispatch, toast]);
-  
-  useEffect(() => {
-    if (teammate) {
-      setEditedTeammate(teammate);
-    }
-  }, [teammate]);
-  
-  const handleUpdateTeammate = (updates: Partial<Teammate>) => {
-    if (!editedTeammate) return;
-    
-    setEditedTeammate({
-      ...editedTeammate,
-      ...updates
-    });
-  };
-  
-  const validateTeammate = () => {
-    const errors: Record<string, string> = {};
-    
-    if (!editedTeammate?.name) {
-      errors.name = "Name is required";
-    }
-    
-    if (!editedTeammate?.email) {
-      errors.email = "Email is required";
-    } else if (!/\S+@\S+\.\S+/.test(editedTeammate.email)) {
-      errors.email = "Email is invalid";
-    }
-    
-    setValidationErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
-  
-  const handleSave = () => {
-    if (!validateTeammate()) return;
-    
-    setShowConfirmDialog(true);
-  };
-  
-  const handleConfirmSave = async () => {
-    if (!editedTeammate || !id) return;
-    
-    setIsSaving(true);
-    
-    try {
-      // TODO: Implement saving changes to the teammate
-      // For now, we'll just simulate a successful save
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      setIsEditing(false);
-      setShowConfirmDialog(false);
-      
-      toast({
-        title: "Success",
-        description: "Teammate updated successfully"
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update teammate",
-        variant: "destructive"
-      });
-    } finally {
-      setIsSaving(false);
+  try {
+    const params = useParams();
+    teammateId = params.id || '';
+    navigate = useNavigate();
+  } catch (error) {
+    console.error("Router context not available in TeammateDetail component");
+  }
+
+  // Safe navigation function
+  const safeNavigate = (path: string) => {
+    if (navigate) {
+      navigate(path);
+    } else {
+      window.location.href = path;
     }
   };
-  
-  if (loading || !teammate || !editedTeammate) {
+
+  const {
+    teammate,
+    editedTeammate,
+    isLoading,
+    error,
+    isEditing,
+    isSaving,
+    showConfirmDialog,
+    validationErrors,
+    setIsEditing,
+    setShowConfirmDialog,
+    handleUpdateTeammate,
+    handleSave,
+    handleCancel,
+    handleConfirmSave
+  } = useTeammateDetailPage(teammateId);
+
+  if (isLoading) {
     return (
-      <div className="flex justify-center items-center p-8">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="flex items-center justify-center min-h-[500px]">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
       </div>
     );
   }
-  
+
+  if (error) {
+    return (
+      <div className="bg-red-50 text-red-500 p-6 rounded-lg">
+        <h2 className="text-xl font-bold mb-3">Error Loading Teammate</h2>
+        <p>{error}</p>
+        <button 
+          onClick={() => safeNavigate('/home/settings/teammates')}
+          className="mt-4 text-blue-500 hover:underline"
+        >
+          Return to Teammates List
+        </button>
+      </div>
+    );
+  }
+
+  if (!teammate) {
+    return (
+      <div className="bg-yellow-50 text-yellow-700 p-6 rounded-lg">
+        <h2 className="text-xl font-bold mb-3">Teammate Not Found</h2>
+        <p>We couldn't find the teammate you're looking for. They may have been removed.</p>
+        <button 
+          onClick={() => safeNavigate('/home/settings/teammates')}
+          className="mt-4 text-blue-500 hover:underline"
+        >
+          Return to Teammates List
+        </button>
+      </div>
+    );
+  }
+
   return (
     <TeammateDetailView
       teammate={teammate}
-      editedTeammate={editedTeammate}
+      editedTeammate={editedTeammate || teammate}
       isEditing={isEditing}
       isSaving={isSaving}
       showConfirmDialog={showConfirmDialog}
       validationErrors={validationErrors}
       onUpdateTeammate={handleUpdateTeammate}
       onSave={handleSave}
-      onCancel={() => {
-        setEditedTeammate(teammate);
-        setIsEditing(false);
-      }}
+      onCancel={handleCancel}
       onConfirmSave={handleConfirmSave}
       onStartEditing={() => setIsEditing(true)}
       onCancelConfirm={() => setShowConfirmDialog(false)}
