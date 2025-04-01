@@ -4,11 +4,6 @@ import AppProviders from "./components/app/AppProviders";
 import AppRoutes from "./components/app/AppRoutes";
 import "./index.css";
 
-// Verify React is available
-if (!React || !React.createElement) {
-  console.error("React is not properly initialized in App.tsx");
-}
-
 const App: React.FC = () => {
   return (
     <AppProviders>

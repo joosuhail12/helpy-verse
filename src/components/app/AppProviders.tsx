@@ -21,12 +21,6 @@ interface AppProvidersProps {
  * with necessary providers and error boundaries.
  */
 const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
-  // Make sure React is properly initialized before rendering
-  if (!React || !React.createElement) {
-    console.error("React is not properly initialized in AppProviders");
-    return <div>Error initializing application</div>;
-  }
-
   // Initialize with default theme configuration
   const defaultTheme = {
     colors: {
