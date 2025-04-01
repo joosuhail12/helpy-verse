@@ -3,45 +3,23 @@ export interface ChatMessage {
   id: string;
   content: string;
   sender: 'user' | 'agent' | 'system';
-  timestamp: Date | string;
+  timestamp: string;
   conversationId: string;
-  readBy?: string[];
-  reactions?: Record<string, string[]>;
-  attachments?: {
-    id: string;
+  status?: 'sent' | 'delivered' | 'read' | 'error';
+  attachment?: {
     url: string;
     name: string;
     type: string;
     size: number;
+  };
+  reactions?: {
+    type: string;
+    count: number;
+    userReacted: boolean;
   }[];
-  metadata?: Record<string, any>;
 }
 
-export interface ConversationViewProps {
-  conversationId: string;
-  workspaceId: string;
-  onBack?: () => void;
-}
-
-// Adding the FileAttachment type that was missing
-export interface FileAttachment {
-  id: string;
-  name: string;
-  type: string;
-  url: string;
-  size: number;
-  thumbnailUrl?: string;
-  uploadProgress?: number;
-}
-
-// Interface for Conversation with unreadCount
-export interface Conversation {
-  id: string;
-  title: string;
-  lastMessage?: string;
-  lastMessageTimestamp?: string | Date;
-  unreadCount?: number;
-  participants?: string[];
-  type?: string;
-  status?: 'open' | 'closed' | 'archived';
+export interface TypingUser {
+  clientId: string;
+  name?: string;
 }
