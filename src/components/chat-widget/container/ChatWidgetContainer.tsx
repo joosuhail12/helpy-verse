@@ -35,6 +35,12 @@ const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({
 
   // Function to handle starting a new conversation when user sends first message
   const handleStartConversation = useCallback(async (message: string) => {
+    if (!message.trim()) {
+      // If no message, just navigate to the messages view
+      setActiveView('messages');
+      return;
+    }
+    
     setIsLoading(true);
     try {
       const newConversationId = await createNewConversation(`Conversation ${new Date().toLocaleString()}`);

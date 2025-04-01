@@ -37,7 +37,7 @@ const ViewManager: React.FC<ViewManagerProps> = ({
           onClose={onClose} 
           setActiveView={setActiveView} 
           onSelectConversation={onSelectConversation}
-          onStartNewConversation={() => onStartConversation('')}
+          onStartNewConversation={() => setActiveView('messages')}
         />
       )}
       

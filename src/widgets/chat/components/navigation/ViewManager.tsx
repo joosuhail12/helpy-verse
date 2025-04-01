@@ -1,3 +1,4 @@
+
 import React, { lazy, Suspense } from 'react';
 import { View } from '../../types';
 import { Loader2 } from 'lucide-react';
@@ -35,12 +36,7 @@ const ViewManager: React.FC<ViewManagerProps> = ({
         {activeView === 'home' && (
           <LazyHomeView 
             workspaceId={workspaceId}
-            onStartNewConversation={() => {
-              // If message is provided, start conversation with that message
-              // Otherwise just create a new conversation
-              setActiveView('conversation');
-              onStartConversation("");
-            }}
+            onStartNewConversation={() => setActiveView('messages')}
             onSelectConversation={(conversationId: string) => {
               setActiveView('conversation');
               // Handle conversation selection
