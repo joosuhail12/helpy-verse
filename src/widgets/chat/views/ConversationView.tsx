@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useChat } from '@/hooks/chat/useChat';
 import { useThemeContext } from '@/context/ThemeContext';
@@ -6,6 +7,7 @@ import { ThemeProvider } from '@/context/ThemeContext';
 import { ChatMessage } from '@/components/chat-widget/components/conversation/types';
 import MessageList from '@/components/chat-widget/components/conversation/MessageList';
 import MessageInput from '@/components/chat-widget/components/conversation/MessageInput';
+import ChatHeader from '@/components/chat-widget/components/header/ChatHeader';
 import { v4 as uuidv4 } from 'uuid';
 
 interface ConversationViewProps {
@@ -159,6 +161,8 @@ const ConversationViewContent: React.FC<{
             <MessageList 
               messages={messages} 
               showAvatars={true}
+              typingUsers={[]}
+              isLoading={false}
             />
             
             {isTyping && (
@@ -179,6 +183,7 @@ const ConversationViewContent: React.FC<{
           onSendMessage={handleSendMessage} 
           disabled={isLoading}
           placeholder={labels?.placeholder || "Type a message..."}
+          onTyping={() => {}}
         />
       </div>
     </div>
