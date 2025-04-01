@@ -36,20 +36,13 @@ const MessagesView: React.FC<MessagesViewProps> = ({
 
   // Log for debugging purposes
   useEffect(() => {
-    console.log('Consolidated MessagesView rendered with scrolling optimizations');
+    console.log('MessagesView rendered with fixed navigation');
   }, []);
 
   // Examples for the UI to match the screenshot
   const exampleConversations: Conversation[] = [
     { 
       id: 'new-1',
-      title: 'New question',
-      lastMessage: "You don't have any conversations yet",
-      lastMessageTimestamp: new Date().toISOString(),
-      unreadCount: 0
-    },
-    { 
-      id: 'new-2',
       title: 'New question',
       lastMessage: "You don't have any conversations yet",
       lastMessageTimestamp: new Date().toISOString(),
@@ -79,27 +72,6 @@ const MessagesView: React.FC<MessagesViewProps> = ({
     { 
       id: 'conv-4',
       title: 'Conversation 4/1/2025, 7:36:08 PM',
-      lastMessage: "You don't have any conversations yet",
-      lastMessageTimestamp: new Date().toISOString(),
-      unreadCount: 0
-    },
-    { 
-      id: 'conv-5',
-      title: 'Conversation 4/1/2025, 7:40:10 PM',
-      lastMessage: "You don't have any conversations yet",
-      lastMessageTimestamp: new Date().toISOString(),
-      unreadCount: 0
-    },
-    { 
-      id: 'conv-6',
-      title: 'Conversation 4/1/2025, 7:45:22 PM',
-      lastMessage: "You don't have any conversations yet",
-      lastMessageTimestamp: new Date().toISOString(),
-      unreadCount: 0
-    },
-    { 
-      id: 'conv-7',
-      title: 'Conversation 4/1/2025, 7:50:30 PM',
       lastMessage: "You don't have any conversations yet",
       lastMessageTimestamp: new Date().toISOString(),
       unreadCount: 0
@@ -183,16 +155,18 @@ const MessagesView: React.FC<MessagesViewProps> = ({
         )}
       </div>
       
-      {/* Fixed Navigation */}
-      <div 
-        className="flex-shrink-0 border-t" 
-        style={{ 
-          borderColor: colors.border,
-          flexShrink: 0
-        }}
-      >
-        <Navigation activeView="messages" setActiveView={setActiveView || (() => {})} />
-      </div>
+      {/* Fixed Navigation - Only include one instance */}
+      {setActiveView && (
+        <div 
+          className="flex-shrink-0 border-t" 
+          style={{ 
+            borderColor: colors.border,
+            flexShrink: 0
+          }}
+        >
+          <Navigation activeView="messages" setActiveView={setActiveView} />
+        </div>
+      )}
     </div>
   );
 };
