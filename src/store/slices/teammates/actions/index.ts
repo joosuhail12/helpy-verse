@@ -5,15 +5,18 @@ export * from './export';
 export * from './invite';
 export * from './security';
 
-// Export all thunks from the thunks directory
+// Re-export all thunks from the thunks directory to maintain backward compatibility
+// This ensures components importing from '@/store/slices/teammates/actions' will find what they need
 export {
   // Core thunks 
   fetchTeammates,
   fetchTeammateDetails,
   updateTeammate,
+  addTeammate,
+  
+  // Role-related thunks
   updateTeammatesRole,
   updateTeammatePermissions,
-  addTeammate,
   
   // Activity thunks
   fetchTeammateActivities,
@@ -31,7 +34,9 @@ export {
   fetchTeammateSessions,
   terminateSession,
   
-  // Extra thunks (like resendInvitation and export)
+  // Invitation thunks
   resendInvitation,
+  
+  // Export functionality
   exportTeammates
 } from '../thunks';

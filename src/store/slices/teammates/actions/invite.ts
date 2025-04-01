@@ -1,5 +1,4 @@
 
-import { createAction } from '@reduxjs/toolkit';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { resendTeammateInvitation } from '@/api/services/teammatesService';
 

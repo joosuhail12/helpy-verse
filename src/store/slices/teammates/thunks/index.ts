@@ -28,7 +28,7 @@ export {
   addTeammate
 };
 
-// Import and re-export from updateThunks
+// Import and re-export from updateThunks (which contains resendInvitation)
 import { resendInvitation } from './updateThunks';
 export { resendInvitation };
 

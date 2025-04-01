@@ -1,4 +1,3 @@
-
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { getTeammates, getTeammateById } from '@/api/services/teammatesService';
 import type { Teammate } from '@/types/teammate';
