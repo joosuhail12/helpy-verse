@@ -1,145 +1,101 @@
 
-import React, { createContext, useContext, useReducer, ReactNode, Dispatch } from 'react';
-import { WidgetOptions, WidgetState } from '../types/widget';
+import React, { createContext, useContext, useReducer } from 'react';
+import { ThemeConfig } from '@/context/ThemeContext';
 
-// Define action types
-type ActionType = 
-  | { type: 'INITIALIZE'; payload: WidgetOptions }
+interface WidgetState {
+  isOpen: boolean;
+  isInitialized: boolean;
+  config?: {
+    workspaceId: string;
+  };
+  theme: {
+    position: 'left' | 'right';
+    compact: boolean;
+    colors: Partial<ThemeConfig['colors']>;
+  };
+}
+
+type WidgetAction = 
   | { type: 'TOGGLE_WIDGET' }
   | { type: 'OPEN_WIDGET' }
   | { type: 'CLOSE_WIDGET' }
-  | { type: 'ADD_MESSAGE'; payload: any }
-  | { type: 'SET_MESSAGES'; payload: any[] }
-  | { type: 'ADD_ATTACHMENT'; payload: any }
-  | { type: 'REMOVE_ATTACHMENT'; payload: string }
-  | { type: 'CLEAR_ATTACHMENTS' }
-  | { type: 'UPDATE_THEME'; payload: Partial<WidgetState['theme']> };
+  | { type: 'INITIALIZE'; payload: any }
+  | { type: 'SET_THEME'; payload: Partial<ThemeConfig> };
 
-// Initial state
+interface WidgetStateContextType {
+  state: WidgetState;
+  dispatch: React.Dispatch<WidgetAction>;
+}
+
 const initialState: WidgetState = {
   isOpen: false,
   isInitialized: false,
-  config: null,
-  messages: [],
-  attachments: [],
   theme: {
-    colors: {
-      primary: '#9b87f5',
-      background: '#ffffff',
-      foreground: '#1f2937',
-      userMessage: '#f3f4f6',
-      agentMessage: '#9b87f5'
-    },
     position: 'right',
-    compact: false
+    compact: false,
+    colors: {
+      primary: '#9b87f5'
+    }
   }
 };
 
-// Create the reducer
-const widgetStateReducer = (state: WidgetState, action: ActionType): WidgetState => {
+const WidgetStateContext = createContext<WidgetStateContextType | undefined>(undefined);
+
+const widgetReducer = (state: WidgetState, action: WidgetAction): WidgetState => {
   switch (action.type) {
-    case 'INITIALIZE':
-      return {
-        ...state,
-        isInitialized: true,
-        config: action.payload,
-        // Apply theme from config if provided
-        theme: action.payload.theme ? {
-          ...state.theme,
-          ...(action.payload.theme.colors && { colors: { ...state.theme.colors, ...action.payload.theme.colors } }),
-          position: action.payload.theme.position || state.theme.position,
-          compact: action.payload.theme.compact !== undefined ? action.payload.theme.compact : state.theme.compact
-        } : state.theme
-      };
-    
     case 'TOGGLE_WIDGET':
       return {
         ...state,
         isOpen: !state.isOpen
       };
-      
     case 'OPEN_WIDGET':
       return {
         ...state,
         isOpen: true
       };
-      
     case 'CLOSE_WIDGET':
       return {
         ...state,
         isOpen: false
       };
-      
-    case 'ADD_MESSAGE':
+    case 'INITIALIZE':
       return {
         ...state,
-        messages: [...state.messages, action.payload]
+        isInitialized: true,
+        config: {
+          ...state.config,
+          workspaceId: action.payload.workspaceId
+        },
+        theme: {
+          ...state.theme,
+          position: action.payload.theme?.position || state.theme.position,
+          compact: action.payload.theme?.compact || state.theme.compact,
+          colors: {
+            ...state.theme.colors,
+            ...(action.payload.theme?.colors || {})
+          }
+        }
       };
-      
-    case 'SET_MESSAGES':
-      return {
-        ...state,
-        messages: action.payload
-      };
-      
-    case 'ADD_ATTACHMENT':
-      return {
-        ...state,
-        attachments: [...state.attachments, action.payload]
-      };
-      
-    case 'REMOVE_ATTACHMENT':
-      return {
-        ...state,
-        attachments: state.attachments.filter(att => att.id !== action.payload)
-      };
-      
-    case 'CLEAR_ATTACHMENTS':
-      return {
-        ...state,
-        attachments: []
-      };
-      
-    case 'UPDATE_THEME':
+    case 'SET_THEME':
       return {
         ...state,
         theme: {
           ...state.theme,
-          ...action.payload,
+          position: action.payload.position || state.theme.position,
+          compact: action.payload.compact || state.theme.compact,
           colors: {
             ...state.theme.colors,
             ...(action.payload.colors || {})
           }
         }
       };
-      
     default:
       return state;
   }
 };
 
-// Create the context
-interface WidgetStateContextType {
-  state: WidgetState;
-  dispatch: Dispatch<ActionType>;
-}
-
-const WidgetStateContext = createContext<WidgetStateContextType | undefined>(undefined);
-
-// Create the provider component with a unique ID to ensure isolation
-export const WidgetStateProvider: React.FC<{ children: ReactNode; id?: string }> = ({ 
-  children, 
-  id = 'default' 
-}) => {
-  // Using ID in naming to allow for multiple isolated instances
-  const [state, dispatch] = useReducer(
-    widgetStateReducer, 
-    initialState, 
-    (initial) => ({
-      ...initial,
-      instanceId: id // Add instance ID to track this specific widget instance
-    })
-  );
+export const WidgetStateProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [state, dispatch] = useReducer(widgetReducer, initialState);
   
   return (
     <WidgetStateContext.Provider value={{ state, dispatch }}>
@@ -148,13 +104,12 @@ export const WidgetStateProvider: React.FC<{ children: ReactNode; id?: string }>
   );
 };
 
-// Create a custom hook to use the context
 export const useWidgetState = () => {
   const context = useContext(WidgetStateContext);
+  
   if (context === undefined) {
     throw new Error('useWidgetState must be used within a WidgetStateProvider');
   }
+  
   return context;
 };
-
-export default WidgetStateContext;

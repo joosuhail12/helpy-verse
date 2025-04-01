@@ -73,6 +73,7 @@ const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({
   // Fixed: Pass the conversation ID string
   const handleSelectConversation = useCallback((conversationId: string) => {
     selectConversation(conversationId);
+    setActiveView('conversation');
   }, [selectConversation]);
 
   if (isLoading) {

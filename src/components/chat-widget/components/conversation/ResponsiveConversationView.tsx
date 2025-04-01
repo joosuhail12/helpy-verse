@@ -94,30 +94,28 @@ const ResponsiveConversationView: React.FC<ResponsiveConversationViewProps> = ({
     : loadedMessages;
 
   return (
-    <ThemeProvider>
-      <div className="flex flex-col h-full">
-        <ChatHeader 
-          title="Conversation" 
-          onBackClick={onBack} 
-          workspaceId={workspaceId}
+    <div className="flex flex-col h-full">
+      <ChatHeader 
+        title="Conversation" 
+        onBackClick={onBack} 
+        workspaceId={workspaceId}
+        conversationId={conversationId}
+      />
+      <div className="flex-1 overflow-hidden flex flex-col">
+        <MessageList 
+          messages={displayMessages} 
           conversationId={conversationId}
+          showAvatars={true}
         />
-        <div className="flex-1 overflow-hidden flex flex-col">
-          <MessageList 
-            messages={displayMessages} 
-            conversationId={conversationId}
-            showAvatars={true}
+        <div className="px-4 pb-2">
+          <TypingIndicator users={activeTypers} agentName={activeTypers.length === 1 ? "Support agent" : undefined} />
+          <MessageInput 
+            onSendMessage={handleSendMessage}
+            onTyping={handleMessageInputChange}
           />
-          <div className="px-4 pb-2">
-            <TypingIndicator users={activeTypers} agentName={activeTypers.length === 1 ? "Support agent" : undefined} />
-            <MessageInput 
-              onSendMessage={handleSendMessage}
-              onTyping={handleMessageInputChange}
-            />
-          </div>
         </div>
       </div>
-    </ThemeProvider>
+    </div>
   );
 };
 

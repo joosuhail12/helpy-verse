@@ -4,35 +4,32 @@ import { ThemeConfig } from './ThemeContext';
 
 interface ChatWidgetState {
   isOpen: boolean;
-  config: {
+  isInitialized: boolean;
+  config?: {
     workspaceId: string;
   };
   theme: {
     position: 'left' | 'right';
     compact: boolean;
-    colors: {
-      primary: string;
-    };
+    colors: Partial<ThemeConfig['colors']>;
   };
 }
 
-type Action = 
+type ChatWidgetAction = 
+  | { type: 'TOGGLE_WIDGET' }
   | { type: 'OPEN_WIDGET' }
   | { type: 'CLOSE_WIDGET' }
-  | { type: 'TOGGLE_WIDGET' }
-  | { type: 'SET_THEME'; payload: Partial<ThemeConfig> }
-  | { type: 'INITIALIZE'; payload: any };
+  | { type: 'INITIALIZE'; payload: any }
+  | { type: 'SET_THEME'; payload: Partial<ThemeConfig> };
 
-interface ChatWidgetContextValue {
+interface ChatWidgetContextType {
   state: ChatWidgetState;
-  dispatch: React.Dispatch<Action>;
+  dispatch: React.Dispatch<ChatWidgetAction>;
 }
 
 const initialState: ChatWidgetState = {
   isOpen: false,
-  config: {
-    workspaceId: '',
-  },
+  isInitialized: false,
   theme: {
     position: 'right',
     compact: false,
@@ -42,34 +39,54 @@ const initialState: ChatWidgetState = {
   }
 };
 
-export const ChatWidgetContext = createContext<ChatWidgetContextValue | undefined>(undefined);
+const ChatWidgetContext = createContext<ChatWidgetContextType | undefined>(undefined);
 
-const reducer = (state: ChatWidgetState, action: Action): ChatWidgetState => {
+const chatWidgetReducer = (state: ChatWidgetState, action: ChatWidgetAction): ChatWidgetState => {
   switch (action.type) {
-    case 'OPEN_WIDGET':
-      return { ...state, isOpen: true };
-    case 'CLOSE_WIDGET':
-      return { ...state, isOpen: false };
     case 'TOGGLE_WIDGET':
-      return { ...state, isOpen: !state.isOpen };
-    case 'SET_THEME':
-      return { 
-        ...state, 
-        theme: { 
-          ...state.theme, 
-          ...(action.payload as any) 
-        } 
+      return {
+        ...state,
+        isOpen: !state.isOpen
+      };
+    case 'OPEN_WIDGET':
+      return {
+        ...state,
+        isOpen: true
+      };
+    case 'CLOSE_WIDGET':
+      return {
+        ...state,
+        isOpen: false
       };
     case 'INITIALIZE':
       return {
         ...state,
+        isInitialized: true,
         config: {
           ...state.config,
-          ...(action.payload?.workspaceId ? { workspaceId: action.payload.workspaceId } : {})
+          workspaceId: action.payload.workspaceId
         },
         theme: {
           ...state.theme,
-          ...(action.payload?.theme ? action.payload.theme : {})
+          position: action.payload.theme?.position || state.theme.position,
+          compact: action.payload.theme?.compact || state.theme.compact,
+          colors: {
+            ...state.theme.colors,
+            ...(action.payload.theme?.colors || {})
+          }
+        }
+      };
+    case 'SET_THEME':
+      return {
+        ...state,
+        theme: {
+          ...state.theme,
+          position: action.payload.position || state.theme.position,
+          compact: action.payload.compact || state.theme.compact,
+          colors: {
+            ...state.theme.colors,
+            ...(action.payload.colors || {})
+          }
         }
       };
     default:
@@ -77,19 +94,8 @@ const reducer = (state: ChatWidgetState, action: Action): ChatWidgetState => {
   }
 };
 
-interface ChatWidgetProviderProps {
-  children: React.ReactNode;
-  initialState?: Partial<ChatWidgetState>;
-}
-
-export const ChatWidgetProvider: React.FC<ChatWidgetProviderProps> = ({ 
-  children, 
-  initialState: propInitialState 
-}) => {
-  const [state, dispatch] = useReducer(reducer, {
-    ...initialState,
-    ...propInitialState
-  });
+export const ChatWidgetProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [state, dispatch] = useReducer(chatWidgetReducer, initialState);
   
   return (
     <ChatWidgetContext.Provider value={{ state, dispatch }}>
