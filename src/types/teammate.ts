@@ -7,6 +7,7 @@ export interface Teammate {
   email: string;
   role?: string;
   team?: string;
+  teamId?: string;
   department?: string;
   status?: string;
   notes?: string;
@@ -17,7 +18,6 @@ export interface Teammate {
   workspaceId?: string;
   is2FAEnabled?: boolean;
   createdBy?: string;
-  teamId?: string;
   permissions?: string[];
 }
 

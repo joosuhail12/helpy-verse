@@ -12,6 +12,7 @@ export const mockTeammates: Teammate[] = [
     createdAt: '2023-01-01T08:00:00Z',
     createdBy: 'system',
     team: 'support',
+    teamId: 'team-1',
     permissions: ['manage_users', 'manage_settings', 'manage_content'],
     is2FAEnabled: true,
   },
@@ -25,6 +26,7 @@ export const mockTeammates: Teammate[] = [
     createdAt: '2023-01-15T09:30:00Z',
     createdBy: 'system',
     team: 'sales',
+    teamId: 'team-2',
     permissions: ['view_tickets', 'respond_tickets'],
     is2FAEnabled: false,
   },
@@ -75,6 +77,7 @@ export const mockAssignments: TeamAssignment[] = [
     teamName: 'Support Team',
     role: 'Lead',
     assignedAt: '2023-01-01T08:00:00Z',
-    startDate: '2023-01-01T08:00:00Z'
+    startDate: '2023-01-01T08:00:00Z',
+    status: 'active'
   }
 ];

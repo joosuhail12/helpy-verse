@@ -71,6 +71,15 @@ const TeamEditForm = ({ team, teammates, onSuccess }: TeamEditFormProps) => {
     );
   };
 
+  // Function to handle routing limits changes
+  const handleRoutingLimitsChange = (limits: { maxTickets?: number; maxOpenTickets?: number; maxActiveChats?: number }) => {
+    setRoutingLimits(prev => ({
+      maxTotalTickets: limits.maxTickets !== undefined ? limits.maxTickets : prev.maxTotalTickets,
+      maxOpenTickets: limits.maxOpenTickets !== undefined ? limits.maxOpenTickets : prev.maxOpenTickets,
+      maxActiveChats: limits.maxActiveChats !== undefined ? limits.maxActiveChats : prev.maxActiveChats,
+    }));
+  };
+
   const handleUpdateTeam = async () => {
     if (!name.trim()) {
       toast({
@@ -145,7 +154,7 @@ const TeamEditForm = ({ team, teammates, onSuccess }: TeamEditFormProps) => {
         routingType={routingType}
         setRoutingType={setRoutingType}
         routingLimits={routingLimits}
-        setRoutingLimits={setRoutingLimits}
+        setRoutingLimits={handleRoutingLimitsChange}
       />
 
       <TeamAvailabilitySection
