@@ -35,11 +35,13 @@ const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({
     setIsLoading(false);
   }, []);
 
-  const handleStartConversation = useCallback((message: string) => {
+  const handleStartConversation = useCallback(async (message: string): Promise<void> => {
     // This would typically handle sending the first message in a conversation
     console.log('Starting conversation with message:', message);
     // Move to conversation view
     setActiveView('conversation');
+    // Return a resolved promise to satisfy the Promise<void> return type
+    return Promise.resolve();
   }, []);
 
   if (isLoading) {
