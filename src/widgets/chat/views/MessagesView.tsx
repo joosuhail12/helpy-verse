@@ -104,9 +104,24 @@ const MessagesView: React.FC<MessagesViewProps> = ({
     : exampleConversations;
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Fixed Header - using flex-shrink-0 to prevent it from shrinking */}
-      <div className="flex-shrink-0 border-b" style={{ borderColor: colors.border }}>
+    <div 
+      className="flex flex-col h-full" 
+      style={{ 
+        display: 'flex', 
+        flexDirection: 'column',
+        height: '100%',
+        maxHeight: '100%',
+        overflow: 'hidden'
+      }}
+    >
+      {/* Fixed Header - using explicit styling to ensure it stays fixed */}
+      <div 
+        className="flex-shrink-0 border-b" 
+        style={{ 
+          borderColor: colors.border,
+          flexShrink: 0
+        }}
+      >
         <ChatHeader 
           title={labels.recentMessagesTitle || "Recent Conversations"} 
           onClose={onClose} 
@@ -114,8 +129,15 @@ const MessagesView: React.FC<MessagesViewProps> = ({
         />
       </div>
       
-      {/* Scrollable Content Area - using flex-1 to take up all available space */}
-      <div className="flex-1 overflow-y-auto">
+      {/* Scrollable Content Area - with explicit styling to ensure scrolling works */}
+      <div 
+        className="flex-1 overflow-y-auto" 
+        style={{
+          flex: '1 1 auto',
+          overflowY: 'auto',
+          minHeight: 0 // This is crucial for flexbox to allow scrolling
+        }}
+      >
         {displayConversations.length === 0 ? (
           <div className="p-4 text-center text-gray-500">
             {labels.noMessagesText || "You don't have any conversations yet"}
@@ -140,8 +162,14 @@ const MessagesView: React.FC<MessagesViewProps> = ({
         )}
       </div>
       
-      {/* Fixed Navigation - using flex-shrink-0 to prevent it from shrinking */}
-      <div className="flex-shrink-0 border-t" style={{ borderColor: colors.border }}>
+      {/* Fixed Navigation - using explicit styling to ensure it stays fixed */}
+      <div 
+        className="flex-shrink-0 border-t" 
+        style={{ 
+          borderColor: colors.border,
+          flexShrink: 0
+        }}
+      >
         <Navigation activeView="messages" setActiveView={() => {}} />
       </div>
     </div>
