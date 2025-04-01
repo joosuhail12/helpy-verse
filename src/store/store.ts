@@ -2,7 +2,7 @@
 import { configureStore } from '@reduxjs/toolkit';
 
 // Import reducers from their respective slice files
-import { authReducer } from './slices/auth/authSlice'; // Import directly from implementation file
+import authReducer from './slices/auth/authSlice'; // Import directly using default export
 import { actionsReducer } from './slices/actions/actionsSlice';
 import contentReducer from './slices/content/contentSlice';
 import contentCenterReducer from './slices/automation/contentCenterSlice';
