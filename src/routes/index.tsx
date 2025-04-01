@@ -18,7 +18,7 @@ import { DashboardRoutes } from './dashboardRoutes';
 import { InboxRoutes } from './inboxRoutes';
 import { AutomationRoutes } from './automationRoutes';
 // Import settings routes correctly
-import SettingsRoutes from './settingsRoutes';
+import { SettingsRoutes } from './settingsRoutes';
 
 // Lazy load components
 const SignIn = lazy(() => import('../pages/SignIn'));
@@ -78,14 +78,7 @@ export const router = createBrowserRouter([
       ...DashboardRoutes,
       ...InboxRoutes,
       ...AutomationRoutes,
-      {
-        path: "settings/*",
-        element: (
-          <Suspense fallback={<LoadingSpinner />}>
-            <SettingsRoutes />
-          </Suspense>
-        )
-      }
+      ...SettingsRoutes
     ],
   },
   {

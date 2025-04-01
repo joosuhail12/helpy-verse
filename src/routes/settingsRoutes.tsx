@@ -1,6 +1,6 @@
 
 import React, { lazy, Suspense } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import RouteErrorBoundary from '@/components/app/RouteErrorBoundary';
@@ -45,19 +45,22 @@ export const SettingsRoutes = [
   }
 ];
 
-// Also export as a component for direct usage
-const SettingsRoutesComponent = () => {
-  return (
-    <Routes>
-      <Route path="" element={<Settings />}>
-        <Route path="" element={<Navigate to="chat" replace />} />
-        <Route path="chat" element={withSuspenseAndProtection(<ChatSettings />)} />
-        <Route path="profile" element={withSuspenseAndProtection(<Profile />)} />
-        <Route path="team" element={withSuspenseAndProtection(<TeamSettings />)} />
-        <Route path="account" element={withSuspenseAndProtection(<AccountSettings />)} />
-      </Route>
-    </Routes>
-  );
-};
+// No longer needed since we're using the routes array directly in the main router
+// const SettingsRoutesComponent = () => {
+//   return (
+//     <Routes>
+//       <Route path="" element={<Settings />}>
+//         <Route path="" element={<Navigate to="chat" replace />} />
+//         <Route path="chat" element={withSuspenseAndProtection(<ChatSettings />)} />
+//         <Route path="profile" element={withSuspenseAndProtection(<Profile />)} />
+//         <Route path="team" element={withSuspenseAndProtection(<TeamSettings />)} />
+//         <Route path="account" element={withSuspenseAndProtection(<AccountSettings />)} />
+//       </Route>
+//     </Routes>
+//   );
+// };
+
+// Export a dummy component to maintain backward compatibility
+const SettingsRoutesComponent = () => <div>Settings Routes</div>;
 
 export default SettingsRoutesComponent;
