@@ -4,6 +4,7 @@ import { useChat } from '@/hooks/chat/useChat';
 import { useThemeContext } from '@/context/ThemeContext';
 import { useMessageSubscription } from '@/hooks/chat/useMessageSubscription';
 import { useTypingIndicator } from '@/hooks/chat/useTypingIndicator';
+import ChatHeader from '../header/ChatHeader';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import { ChatMessage } from './types';
@@ -11,14 +12,18 @@ import { ChatMessage } from './types';
 interface ConversationViewProps {
   conversationId: string;
   workspaceId: string;
+  onBack: () => void;
+  onClose: () => void;
 }
 
 const ConversationView: React.FC<ConversationViewProps> = ({ 
   conversationId,
-  workspaceId
+  workspaceId,
+  onBack,
+  onClose
 }) => {
   const { colors, features } = useThemeContext();
-  const { messages, sendMessage, loadingMessages } = useChat();
+  const { messages, sendMessage, loadingMessages, currentConversation } = useChat();
   const [localMessages, setLocalMessages] = useState<ChatMessage[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -90,11 +95,20 @@ const ConversationView: React.FC<ConversationViewProps> = ({
     }
   };
 
+  const conversationTitle = currentConversation?.title || "Conversation";
+
   return (
     <div 
       className="flex flex-col h-full overflow-hidden"
       style={{ backgroundColor: colors.background }}
     >
+      {/* Add the header with back button */}
+      <ChatHeader 
+        title={conversationTitle} 
+        onClose={onClose} 
+        onBackClick={onBack}
+      />
+      
       <div className="flex-1 overflow-y-auto p-4">
         <MessageList 
           messages={localMessages} 

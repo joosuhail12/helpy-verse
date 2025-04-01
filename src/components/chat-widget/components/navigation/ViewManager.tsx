@@ -59,6 +59,7 @@ const ViewManager: React.FC<ViewManagerProps> = ({
             conversationId={currentConversation.id} 
             workspaceId={workspaceId} 
             onBack={() => setActiveView('messages')} 
+            onClose={onClose}
           />
         )}
       </div>
