@@ -104,15 +104,15 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
     ...initialTheme,
     colors: {
       ...defaultTheme.colors,
-      ...initialTheme.colors
+      ...(initialTheme.colors || {})
     },
     labels: {
       ...defaultTheme.labels,
-      ...initialTheme.labels
+      ...(initialTheme.labels || {})
     },
     features: {
       ...defaultTheme.features,
-      ...initialTheme.features
+      ...(initialTheme.features || {})
     }
   });
   
