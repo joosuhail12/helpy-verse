@@ -1,5 +1,5 @@
 
-// Import all thunks from files
+// Import all thunks from their respective files
 import { 
   fetchTeammateActivities 
 } from './activityThunks';
@@ -27,7 +27,7 @@ import {
 } from './updateThunks';
 
 import { 
-  resendInvitation as resendTeammateInvitation 
+  resendInvitation 
 } from './invitationThunks';
 
 import { 
@@ -59,8 +59,8 @@ export {
   updateTeammatesRole,
   updateTeammatePermissions,
   
-  // Invitation thunks - renamed to avoid conflict
-  resendTeammateInvitation as resendInvitation,
+  // Invitation thunks
+  resendInvitation,
   
   // Core thunks
   fetchTeammates,

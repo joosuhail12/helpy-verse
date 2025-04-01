@@ -5,7 +5,8 @@ export * from './export';
 export * from './invite';
 export * from './security';
 
-// Re-export all thunks from the thunks directory with explicit imports to ensure they're available
+// Re-export all thunks from the thunks directory to ensure they're available
+// for components that import from the actions directory
 export {
   // Core thunks 
   fetchTeammates,

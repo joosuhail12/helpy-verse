@@ -1,9 +1,9 @@
 
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { getTeammates, getTeammateById, updateTeammateData } from '@/api/services/teammatesService';
+import { getTeammates, getTeammateById } from '@/api/services/teammatesService';
 import type { Teammate } from '@/types/teammate';
 
-// Fetch all teammates
+// Export the core thunks for teammates
 export const fetchTeammates = createAsyncThunk(
   'teammates/fetchAll',
   async (_, { rejectWithValue }) => {
@@ -19,7 +19,6 @@ export const fetchTeammates = createAsyncThunk(
   }
 );
 
-// Fetch specific teammate details
 export const fetchTeammateDetails = createAsyncThunk(
   'teammates/fetchDetails',
   async (teammateId: string, { rejectWithValue }) => {
@@ -35,30 +34,14 @@ export const fetchTeammateDetails = createAsyncThunk(
   }
 );
 
-// Update teammate information
-export const updateTeammate = createAsyncThunk(
-  'teammates/updateTeammate',
-  async (teammate: Teammate, { rejectWithValue }) => {
-    try {
-      const { id } = teammate;
-      if (!id) {
-        throw new Error('Teammate ID is required for update');
-      }
-      const updated = await updateTeammateData(id, teammate);
-      return updated;
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to update teammate');
-    }
-  }
-);
-
-// Add new teammate
+// Add the addTeammate action
 export const addTeammate = createAsyncThunk(
   'teammates/addTeammate',
   async (newTeammate: any, { rejectWithValue }) => {
     try {
       console.log('Adding new teammate:', newTeammate);
-      // Mock API response
+      // In a real implementation, this would call an API
+      // For now, just return the new teammate with a fake ID
       return {
         ...newTeammate,
         id: 'new-' + Date.now(),
@@ -66,34 +49,6 @@ export const addTeammate = createAsyncThunk(
       };
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to add teammate');
-    }
-  }
-);
-
-// Update roles for multiple teammates
-export const updateTeammatesRole = createAsyncThunk(
-  'teammates/updateTeammatesRole',
-  async ({ teammateIds, role }: { teammateIds: string[], role: string }, { rejectWithValue }) => {
-    try {
-      console.log(`Updating role to ${role} for teammates:`, teammateIds);
-      // Mock successful operation
-      return { teammateIds, role };
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to update teammates role');
-    }
-  }
-);
-
-// Update teammate permissions
-export const updateTeammatePermissions = createAsyncThunk(
-  'teammates/updatePermissions',
-  async ({ id, permissions }: { id: string, permissions: string[] }, { rejectWithValue }) => {
-    try {
-      console.log(`Updating permissions for teammate ${id}:`, permissions);
-      // Mock successful operation
-      return { id, permissions };
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to update permissions');
     }
   }
 );

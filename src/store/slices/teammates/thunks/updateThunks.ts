@@ -1,66 +1,45 @@
 
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { updateTeammateData, resendTeammateInvitation } from '@/api/services/teammatesService';
 import type { Teammate } from '@/types/teammate';
 
-// Update teammate information
+// Update a single teammate
 export const updateTeammate = createAsyncThunk(
   'teammates/updateTeammate',
-  async (teammate: Teammate, { rejectWithValue }) => {
+  async ({ teammateId, updates }: { teammateId: string; updates: Partial<Teammate> }, { rejectWithValue }) => {
     try {
-      const { id } = teammate;
-      if (!id) {
-        throw new Error('Teammate ID is required for update');
-      }
-      const updated = await updateTeammateData(id, teammate);
-      return updated;
+      console.log(`Updating teammate with ID: ${teammateId}`, updates);
+      // In a real implementation, this would call an API
+      return { id: teammateId, ...updates };
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to update teammate');
     }
   }
 );
 
-// Update role for multiple teammates
+// Update roles for multiple teammates
 export const updateTeammatesRole = createAsyncThunk(
   'teammates/updateTeammatesRole',
-  async ({ teammateIds, role }: { teammateIds: string[], role: string }, { rejectWithValue }) => {
+  async ({ teammateIds, role }: { teammateIds: string[]; role: string }, { rejectWithValue }) => {
     try {
-      // This would perform multiple API calls in a real implementation
       console.log(`Updating role to ${role} for teammates:`, teammateIds);
-      
-      // Mock successful operation
-      return { teammateIds, role };
+      // In a real implementation, this would call an API
+      return { teammateIds, role, success: true };
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to update teammates role');
     }
   }
 );
 
-// Resend invitation to teammate
-export const resendInvitation = createAsyncThunk(
-  'teammates/resendInvitation',
-  async (teammateId: string, { rejectWithValue }) => {
-    try {
-      await resendTeammateInvitation(teammateId);
-      return teammateId;
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to resend invitation');
-    }
-  }
-);
-
-// Update teammate permissions
+// Update permissions for a teammate
 export const updateTeammatePermissions = createAsyncThunk(
-  'teammates/updatePermissions',
-  async ({ id, permissions }: { id: string, permissions: string[] }, { rejectWithValue }) => {
+  'teammates/updateTeammatePermissions',
+  async ({ teammateId, permissions }: { teammateId: string; permissions: string[] }, { rejectWithValue }) => {
     try {
-      // Mock API call
-      console.log(`Updating permissions for teammate ${id}:`, permissions);
-      
-      // Return updated permissions
-      return { id, permissions };
+      console.log(`Updating permissions for teammate ${teammateId}:`, permissions);
+      // In a real implementation, this would call an API
+      return { teammateId, permissions, success: true };
     } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to update permissions');
+      return rejectWithValue(error.message || 'Failed to update teammate permissions');
     }
   }
 );
