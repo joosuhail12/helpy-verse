@@ -4,19 +4,34 @@ export * from './core';
 export * from './export';
 export * from './invite';
 
-// Export the thunks separately with explicit names to avoid conflicts
-export { 
-  fetchTeammates as fetchTeammatesThunk,
-  fetchTeammateDetails as fetchTeammateDetailsThunk,
-  fetchTeammateActivities as fetchTeammateActivitiesThunk,
-  fetchTeammateAssignments as fetchTeammateAssignmentsThunk,
-  fetchTeammateSessions as fetchTeammateSessionsThunk,
-  updateTeammate as updateTeammateThunk,
-  updateTeammatesRole as updateTeammatesRoleThunk,
-  updateTeammatePermissions as updateTeammatePermissionsThunk,
-  terminateSession,
+// Export all thunks from the thunks directory
+export {
+  // Core thunks 
+  fetchTeammates,
+  fetchTeammateDetails,
+  updateTeammate,
+  updateTeammatesRole,
+  updateTeammatePermissions,
+  
+  // Activity thunks
+  fetchTeammateActivities,
+  
+  // Assignment thunks
+  fetchTeammateAssignments,
+  
+  // Security thunks
   enable2FA,
   verify2FA,
   disable2FA,
-  resetPassword
+  resetPassword,
+  
+  // Session thunks
+  fetchTeammateSessions,
+  terminateSession,
+  
+  // Extra thunks (like resendInvitation and export)
+  resendInvitation,
+  addTeammate,
+  exportTeammates
 } from '../thunks';
+
