@@ -24,7 +24,7 @@ const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({
 }) => {
   const chatContext = React.useContext(ChatContext);
   const { conversations, currentConversation, selectConversation, createNewConversation, sendMessage } = 
-    chatContext || { conversations: [], currentConversation: null, selectConversation: () => {}, createNewConversation: () => {}, sendMessage: () => {} };
+    chatContext || { conversations: [], currentConversation: null, selectConversation: () => {}, createNewConversation: () => Promise.resolve(''), sendMessage: () => Promise.resolve() };
   
   const { colors } = useThemeContext();
   const [isLoading, setIsLoading] = useState(true);
@@ -51,9 +51,15 @@ const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({
   }, [selectConversation]);
 
   const handleStartNewConversation = useCallback(async (): Promise<void> => {
-    // Handle starting a new conversation
-    const conversationId = await createNewConversation();
-    setActiveView('conversation');
+    try {
+      // Handle starting a new conversation
+      console.log('Creating new conversation');
+      const conversationId = await createNewConversation();
+      console.log('Created conversation with ID:', conversationId);
+      setActiveView('conversation');
+    } catch (error) {
+      console.error('Error creating new conversation:', error);
+    }
     return Promise.resolve();
   }, [createNewConversation]);
 

@@ -8,7 +8,7 @@ interface HomeViewProps {
   onClose: () => void;
   setActiveView: (view: View) => void;
   onSelectConversation: (conversationId: string) => void;
-  onStartNewConversation: () => void;
+  onStartNewConversation: () => Promise<void>;
 }
 
 const HomeView: React.FC<HomeViewProps> = ({ 
@@ -20,12 +20,10 @@ const HomeView: React.FC<HomeViewProps> = ({
 
   const handleSelectConversation = (conversationId: string) => {
     onSelectConversation(conversationId);
-    setActiveView('conversation');
   };
 
-  const handleAskQuestion = () => {
-    onStartNewConversation();
-    setActiveView('conversation');
+  const handleAskQuestion = async () => {
+    await onStartNewConversation();
   };
 
   return (
