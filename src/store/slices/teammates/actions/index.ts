@@ -3,6 +3,7 @@
 export * from './core';
 export * from './export';
 export * from './invite';
+export * from './security';
 
 // Export all thunks from the thunks directory
 export {
@@ -12,6 +13,7 @@ export {
   updateTeammate,
   updateTeammatesRole,
   updateTeammatePermissions,
+  addTeammate,
   
   // Activity thunks
   fetchTeammateActivities,
@@ -31,6 +33,5 @@ export {
   
   // Extra thunks (like resendInvitation and export)
   resendInvitation,
-  addTeammate,
   exportTeammates
 } from '../thunks';

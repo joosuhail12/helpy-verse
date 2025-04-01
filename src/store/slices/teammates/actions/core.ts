@@ -11,4 +11,3 @@ export const fetchTeammateDetails = createAction<string>('teammates/fetchTeammat
 export const fetchTeammates = createAction('teammates/fetchTeammates');
 export const fetchTeammateActivities = createAction<string>('teammates/fetchTeammateActivities');
 export const fetchTeammateAssignments = createAction<string>('teammates/fetchTeammateAssignments');
-export const fetchTeammateSessions = createAction<string>('teammates/fetchTeammateSessions');
