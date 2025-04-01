@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { useChat } from '@/hooks/chat/useChat';
 import { useThemeContext } from '@/context/ThemeContext';
@@ -18,7 +17,7 @@ const MessagesView: React.FC<MessagesViewProps> = ({
   onSelectConversation,
   onStartConversation
 }) => {
-  const { conversations, selectConversation, getMessages } = useChat();
+  const { conversations, selectConversation } = useChat();
   const { labels, colors } = useThemeContext();
 
   // Load conversations data when component mounts

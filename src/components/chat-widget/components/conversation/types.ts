@@ -1,4 +1,3 @@
-
 export interface ChatMessage {
   id: string;
   content: string;
@@ -19,6 +18,7 @@ export interface ChatMessage {
     count: number;
     userReacted: boolean;
   }[];
+  metadata?: Record<string, any>;
 }
 
 export interface FileAttachment {
