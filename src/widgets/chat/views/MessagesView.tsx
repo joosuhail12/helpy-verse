@@ -79,9 +79,9 @@ const MessagesView: React.FC<MessagesViewProps> = ({
     : exampleConversations;
 
   return (
-    <div className="flex flex-col h-full bg-white">
+    <div className="h-full flex flex-col bg-white">
       {/* Fixed Header */}
-      <div className="w-full bg-white border-b" style={{ borderColor: colors.border }}>
+      <div className="flex-shrink-0 border-b" style={{ borderColor: colors.border }}>
         <ChatHeader 
           title="Recent Conversations" 
           onClose={onClose} 
@@ -90,29 +90,27 @@ const MessagesView: React.FC<MessagesViewProps> = ({
       </div>
       
       {/* Scrollable Content Area */}
-      <div className="flex-1 overflow-hidden">
-        <ScrollArea className="h-[calc(100vh-138px)]">
-          <div className="divide-y" style={{ borderColor: colors.border }}>
-            {displayConversations.map(conversation => (
-              <button
-                key={conversation.id}
-                className="w-full px-4 py-3 flex flex-col items-start text-left hover:bg-gray-50 transition-colors"
-                onClick={() => handleConversationSelect(conversation.id)}
-              >
-                <div className="text-base font-medium">
-                  {conversation.title}
-                </div>
-                <div className="text-sm text-gray-500">
-                  {conversation.lastMessage}
-                </div>
-              </button>
-            ))}
-          </div>
-        </ScrollArea>
+      <div className="flex-1 overflow-auto">
+        <div className="divide-y" style={{ borderColor: colors.border }}>
+          {displayConversations.map(conversation => (
+            <button
+              key={conversation.id}
+              className="w-full px-4 py-3 flex flex-col items-start text-left hover:bg-gray-50 transition-colors"
+              onClick={() => handleConversationSelect(conversation.id)}
+            >
+              <div className="text-base font-medium">
+                {conversation.title}
+              </div>
+              <div className="text-sm text-gray-500">
+                {conversation.lastMessage}
+              </div>
+            </button>
+          ))}
+        </div>
       </div>
       
       {/* Fixed Navigation */}
-      <div className="w-full mt-auto border-t" style={{ borderColor: colors.border }}>
+      <div className="flex-shrink-0 mt-auto border-t" style={{ borderColor: colors.border }}>
         <Navigation activeView="messages" setActiveView={() => {}} />
       </div>
     </div>
