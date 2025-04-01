@@ -1,46 +1,46 @@
 
 import React from 'react';
-import { ChevronLeft, X } from 'lucide-react';
+import { X, ChevronLeft } from 'lucide-react';
 import { useThemeContext } from '@/context/ThemeContext';
 
 interface ChatHeaderProps {
   title: string;
-  onBackClick: (() => void) | null;
   onClose: (() => void) | null;
+  onBackClick: (() => void) | null;
+  className?: string;
 }
 
-const ChatHeader: React.FC<ChatHeaderProps> = ({ title, onBackClick, onClose }) => {
+const ChatHeader: React.FC<ChatHeaderProps> = ({ title, onClose, onBackClick, className = '' }) => {
   const { colors } = useThemeContext();
-  
+
   return (
-    <header 
-      className="flex items-center justify-between p-4 border-b"
-      style={{ 
-        backgroundColor: colors.backgroundSecondary,
-        borderColor: colors.border
-      }}
+    <div 
+      className={`flex items-center justify-between p-4 border-b ${className}`}
+      style={{ borderColor: colors.border, backgroundColor: colors.background }}
     >
       <div className="flex items-center">
         {onBackClick && (
           <button 
             onClick={onBackClick}
-            className="mr-2 p-1 rounded-full hover:bg-gray-200"
+            className="mr-2 p-1 rounded-md hover:bg-gray-100"
+            aria-label="Go back"
           >
-            <ChevronLeft className="w-5 h-5" />
+            <ChevronLeft className="h-5 w-5 text-gray-500" />
           </button>
         )}
-        <h3 className="font-medium">{title}</h3>
+        <h2 className="font-medium">{title}</h2>
       </div>
       
       {onClose && (
         <button 
           onClick={onClose}
-          className="p-1 rounded-full hover:bg-gray-200"
+          className="p-1 rounded-md hover:bg-gray-100"
+          aria-label="Close chat"
         >
-          <X className="w-5 h-5" />
+          <X className="h-5 w-5 text-gray-500" />
         </button>
       )}
-    </header>
+    </div>
   );
 };
 

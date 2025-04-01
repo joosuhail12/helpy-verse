@@ -13,9 +13,9 @@ const Navigation: React.FC<NavigationProps> = ({ activeView, setActiveView }) =>
   const { colors } = useThemeContext();
   
   return (
-    <>
+    <div className="sticky bottom-0 z-10">
       <div 
-        className="flex justify-around border-t py-2 px-2" 
+        className="flex justify-around border-t py-2 px-2 bg-background"
         style={{ borderColor: colors.border }}
       >
         <button
@@ -58,7 +58,7 @@ const Navigation: React.FC<NavigationProps> = ({ activeView, setActiveView }) =>
           <span className="ml-1 font-medium">Pullse</span>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

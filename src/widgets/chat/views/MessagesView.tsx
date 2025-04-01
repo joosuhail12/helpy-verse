@@ -7,6 +7,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { MessageSquare, User, Clock, ArrowRight, SendIcon, PlusCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface MessagesViewProps {
   onClose: () => void;
@@ -66,12 +67,13 @@ const MessagesView: React.FC<MessagesViewProps> = ({
         title={labels?.recentMessagesTitle || "Recent Conversations"} 
         onClose={onClose} 
         onBackClick={() => onClose()} 
+        className="sticky top-0 z-10"
       />
       
-      <div className="flex-1 overflow-hidden flex flex-col p-4">
+      <div className="flex-1 overflow-hidden flex flex-col">
         {conversations.length === 0 ? (
           <motion.div 
-            className="flex-1 flex flex-col items-center justify-center text-center"
+            className="flex-1 flex flex-col items-center justify-center text-center p-4"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
@@ -94,60 +96,62 @@ const MessagesView: React.FC<MessagesViewProps> = ({
             </Button>
           </motion.div>
         ) : (
-          <motion.div 
-            className="flex-1 overflow-y-auto space-y-3"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-          >
-            {conversations.map(conversation => (
-              <motion.div
-                key={conversation.id}
-                variants={itemVariants}
-                className="bg-card hover:bg-accent/20 rounded-lg transition-colors duration-200 shadow-sm"
-              >
-                <button
-                  className="w-full px-4 py-4 flex items-start text-left"
-                  onClick={() => handleConversationSelect(conversation.id)}
+          <ScrollArea className="flex-1 px-4 pt-4">
+            <motion.div 
+              className="space-y-3 pb-4"
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+            >
+              {conversations.map(conversation => (
+                <motion.div
+                  key={conversation.id}
+                  variants={itemVariants}
+                  className="bg-card hover:bg-accent/20 rounded-lg transition-colors duration-200 shadow-sm"
                 >
-                  <div className="flex-shrink-0 mr-3">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <User size={18} className="text-primary" />
+                  <button
+                    className="w-full px-4 py-4 flex items-start text-left"
+                    onClick={() => handleConversationSelect(conversation.id)}
+                  >
+                    <div className="flex-shrink-0 mr-3">
+                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <User size={18} className="text-primary" />
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-start">
-                      <h3 className="font-medium truncate" style={{ color: colors.foreground }}>
-                        {conversation.title || "New Conversation"}
-                      </h3>
-                      <span className="text-xs text-gray-400 flex items-center ml-2 whitespace-nowrap">
-                        <Clock size={12} className="mr-1" />
-                        {formatTimestamp(conversation.lastMessageTimestamp)}
-                      </span>
-                    </div>
-                    <p className="text-sm truncate mt-1 text-muted-foreground">
-                      {conversation.lastMessage || "No messages yet"}
-                    </p>
-                    <div className="mt-2 flex justify-between items-center">
-                      {conversation.unreadCount > 0 && (
-                        <span className="bg-primary text-primary-foreground text-xs rounded-full px-2 py-0.5 font-medium">
-                          {conversation.unreadCount}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-start">
+                        <h3 className="font-medium truncate" style={{ color: colors.foreground }}>
+                          {conversation.title || "New Conversation"}
+                        </h3>
+                        <span className="text-xs text-gray-400 flex items-center ml-2 whitespace-nowrap">
+                          <Clock size={12} className="mr-1" />
+                          {formatTimestamp(conversation.lastMessageTimestamp)}
                         </span>
-                      )}
-                      <span className="text-primary text-xs flex items-center ml-auto">
-                        View <ArrowRight size={12} className="ml-1" />
-                      </span>
+                      </div>
+                      <p className="text-sm truncate mt-1 text-muted-foreground">
+                        {conversation.lastMessage || "No messages yet"}
+                      </p>
+                      <div className="mt-2 flex justify-between items-center">
+                        {conversation.unreadCount > 0 && (
+                          <span className="bg-primary text-primary-foreground text-xs rounded-full px-2 py-0.5 font-medium">
+                            {conversation.unreadCount}
+                          </span>
+                        )}
+                        <span className="text-primary text-xs flex items-center ml-auto">
+                          View <ArrowRight size={12} className="ml-1" />
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                </button>
-              </motion.div>
-            ))}
-          </motion.div>
+                  </button>
+                </motion.div>
+              ))}
+            </motion.div>
+          </ScrollArea>
         )}
         
         {/* Button at the bottom to start a new conversation when there are existing ones */}
         {conversations.length > 0 && (
-          <div className="pt-4 mt-auto">
+          <div className="p-4 mt-auto border-t">
             <Button
               onClick={handleStartNewConversation}
               className="w-full py-5 font-medium"

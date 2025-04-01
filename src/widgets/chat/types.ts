@@ -61,3 +61,23 @@ export interface WidgetOptions {
   theme?: Partial<ThemeConfig>;
   settings?: Partial<ChatWidgetSettings>;
 }
+
+export interface ChatMessage {
+  id: string;
+  text: string;
+  sender: 'user' | 'agent';
+  timestamp: Date;
+  conversationId: string;
+  status: 'sent' | 'delivered' | 'read' | 'error';
+}
+
+export interface FileAttachment {
+  id: string;
+  name: string;
+  size: number;
+  type: string;
+  url: string;
+  thumbnailUrl?: string;
+  uploadProgress?: number;
+  status: 'uploading' | 'uploaded' | 'error';
+}

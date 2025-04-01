@@ -3,13 +3,13 @@ import React, { useState, useEffect } from 'react';
 import { ChatProvider } from '@/context/ChatContext';
 import { AblyProvider } from '@/context/AblyContext';
 import { ThemeProvider, ThemeConfig } from '@/context/ThemeContext';
-import { ChatWidgetSettings } from '@/store/slices/chatWidgetSettings/types';
 import ToggleButton from './components/button/ToggleButton';
 import { Loader2 } from 'lucide-react';
 import '@/styles/chat-widget-theme.css';
 import { useWidgetState } from './context/WidgetStateContext';
 import ChatWidgetWrapper from './components/wrapper/ChatWidgetWrapper';
 import ChatWidgetContainer from './container/ChatWidgetContainer';
+import { ChatWidgetSettings } from './types';
 
 interface ChatWidgetProps {
   workspaceId: string;
