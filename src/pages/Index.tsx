@@ -5,8 +5,31 @@ import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '@/hooks/useAppSelector';
 
 const Index = () => {
-  const navigate = useNavigate();
-  const { isAuthenticated } = useAppSelector((state) => state.auth);
+  let navigate;
+  
+  try {
+    navigate = useNavigate();
+  } catch (error) {
+    console.error("Router context not available in Index component");
+  }
+
+  // Safe navigation function that works even if useNavigate fails
+  const safeNavigate = (path) => {
+    if (navigate) {
+      navigate(path);
+    } else {
+      window.location.href = path;
+    }
+  };
+
+  let isAuthenticated = false;
+  try {
+    // Use a try-catch to safely access the Redux store
+    const auth = useAppSelector((state) => state.auth);
+    isAuthenticated = auth?.isAuthenticated || false;
+  } catch (error) {
+    console.error("Redux store not available in Index component");
+  }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100">
@@ -23,7 +46,7 @@ const Index = () => {
             <Button 
               size="lg" 
               className="bg-purple-600 hover:bg-purple-700"
-              onClick={() => navigate('/home/dashboard')}
+              onClick={() => safeNavigate('/home/dashboard')}
             >
               Go to Dashboard
             </Button>
@@ -32,14 +55,14 @@ const Index = () => {
               <Button 
                 size="lg" 
                 className="bg-purple-600 hover:bg-purple-700"
-                onClick={() => navigate('/auth/login')}
+                onClick={() => safeNavigate('/auth/login')}
               >
                 Sign In
               </Button>
               <Button 
                 variant="outline" 
                 size="lg"
-                onClick={() => navigate('/auth/register')}
+                onClick={() => safeNavigate('/auth/register')}
               >
                 Create Account
               </Button>
