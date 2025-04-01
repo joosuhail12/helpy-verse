@@ -1,7 +1,7 @@
 
 export type SortField = 'subject' | 'customer' | 'assignee' | 'status' | 'priority' | 'createdAt';
 export type SortDirection = 'asc' | 'desc';
-export type ViewMode = 'list' | 'grid';
+export type ViewMode = 'list' | 'grid' | 'compact' | 'card';
 
 export interface Ticket {
   id: string;
@@ -18,6 +18,7 @@ export interface Ticket {
   hasNotification?: boolean;
   notificationType?: 'mention' | 'assignment' | 'reply';
   recipients: string[];
+  channel?: string;
 }
 
 export interface TicketFormData {
@@ -45,4 +46,13 @@ export interface TicketFilter {
   assignee?: string[];
   tags?: string[];
   dateRange?: [Date | null, Date | null];
+}
+
+export interface TeamMember {
+  id: string;
+  name: string;
+  email: string;
+  avatar: string;
+  teamId: string;
+  teamName: string;
 }
