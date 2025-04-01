@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 export interface ThemeConfig {
   colors: {
@@ -91,7 +91,7 @@ interface ThemeContextProps {
 const ThemeContext = createContext<ThemeContextProps | undefined>(undefined);
 
 interface ThemeProviderProps {
-  children: React.ReactNode;
+  children: ReactNode;
   initialTheme?: Partial<ThemeConfig>;
 }
 
@@ -99,6 +99,12 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
   children, 
   initialTheme = {} 
 }) => {
+  // Make sure React is properly initialized
+  if (typeof React === 'undefined' || !React.useState) {
+    console.error("React is not properly initialized in ThemeContext");
+    return null;
+  }
+
   const [theme, setThemeState] = useState<ThemeConfig>({
     ...defaultTheme,
     ...initialTheme,
