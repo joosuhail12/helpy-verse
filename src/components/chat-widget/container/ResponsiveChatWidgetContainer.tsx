@@ -82,6 +82,7 @@ const ResponsiveChatWidgetContainer: React.FC<ResponsiveChatWidgetContainerProps
           workspaceId={workspaceId}
           onBack={() => setView('list')}
           conversationId={currentConversation.id}
+          onClose={onClose}
         />
       )}
     </div>
