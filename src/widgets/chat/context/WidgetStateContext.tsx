@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 
 // Define types for the widget state
@@ -55,7 +56,7 @@ const defaultInitialState: WidgetState = {
 const widgetReducer = (state: WidgetState, action: WidgetAction): WidgetState => {
   switch (action.type) {
     case 'INITIALIZE':
-      const initializedState = {
+      const initializedState: WidgetState = {
         ...state,
         isInitialized: true,
         config: {

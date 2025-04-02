@@ -17,12 +17,16 @@ interface ChatWidgetProps {
   workspaceId: string;
   theme?: Partial<ThemeConfig>;
   settings?: Partial<ChatWidgetSettings>;
+  standalone?: boolean;
+  instanceId?: string;
 }
 
 export const ChatWidget: React.FC<ChatWidgetProps> = ({ 
   workspaceId, 
   theme = {}, 
-  settings
+  settings,
+  standalone = false,
+  instanceId = 'default'
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -78,6 +82,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({
                         workspaceId={workspaceId} 
                         position="right"
                         compact={Boolean(combinedTheme.compact)}
+                        instanceId={instanceId}
                       />
                     </ChatWidgetWrapper>
                   </div>
