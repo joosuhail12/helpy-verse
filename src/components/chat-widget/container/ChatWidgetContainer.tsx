@@ -18,7 +18,7 @@ interface ChatWidgetContainerProps {
 const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({ 
   onClose, 
   workspaceId,
-  position = 'right',
+  position = 'bottom-right',
   compact = false,
   instanceId = 'default'
 }) => {
