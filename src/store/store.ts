@@ -3,7 +3,7 @@ import { configureStore } from '@reduxjs/toolkit';
 
 // Import reducers from their respective slice files
 // Import auth reducer directly to avoid any circular dependencies
-import reducer as authReducer from './slices/auth/authSlice';
+import authReducerModule from './slices/auth/authSlice';
 import { actionsReducer } from './slices/actions/actionsSlice';
 import contentReducer from './slices/content/contentSlice';
 import contentCenterReducer from './slices/automation/contentCenterSlice';
@@ -19,6 +19,9 @@ import { chatbotsReducer } from './slices/chatbots/chatbotsSlice';
 import userReducer from './slices/user/userSlice';
 import teammatesReducer from './slices/teammates/teammatesSlice';
 import { chatReducer } from './slices/chat/chatSlice';
+
+// Rename the imported default reducer to authReducer
+const authReducer = authReducerModule;
 
 // Define the root reducer
 const rootReducer = {
