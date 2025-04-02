@@ -1,95 +1,96 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, Suspense, lazy } from 'react';
 import { ChatProvider } from '@/context/ChatContext';
 import { AblyProvider } from '@/context/AblyContext';
 import { ThemeProvider, ThemeConfig } from '@/context/ThemeContext';
+import { ChatWidgetSettings } from '@/store/slices/chatWidgetSettings/types';
 import ToggleButton from './components/button/ToggleButton';
 import { Loader2 } from 'lucide-react';
 import '@/styles/chat-widget-theme.css';
-import { useWidgetState } from './context/WidgetStateContext';
-import ChatWidgetWrapper from './components/wrapper/ChatWidgetWrapper';
-import ChatWidgetContainer from './container/ChatWidgetContainer';
-import { ChatWidgetSettings } from './types';
+import { MotionConfig } from 'framer-motion';
+
+// Lazy load the widget container
+const ChatWidgetWrapper = lazy(() => import('./components/wrapper/ChatWidgetWrapper'));
+const ChatWidgetContainer = lazy(() => import('./container/ChatWidgetContainer'));
 
 interface ChatWidgetProps {
   workspaceId: string;
   theme?: Partial<ThemeConfig>;
   settings?: Partial<ChatWidgetSettings>;
-  standalone?: boolean;
-  instanceId?: string;
 }
 
 export const ChatWidget: React.FC<ChatWidgetProps> = ({ 
   workspaceId, 
   theme = {}, 
-  settings,
-  standalone = false,
-  instanceId = 'default'
+  settings
 }) => {
-  const { state, dispatch } = useWidgetState();
-  const isOpen = state.isOpen;
+  const [isOpen, setIsOpen] = useState(false);
 
-  // Initialize widget with provided settings
-  useEffect(() => {
-    dispatch({
-      type: 'INITIALIZE',
-      payload: { 
-        workspaceId, 
-        theme: {
-          position: 'right', // Force right positioning
-          ...theme
-        },
-        settings
-      }
-    });
-  }, [workspaceId, theme, settings, dispatch]);
-
-  // Override theme settings to ensure right positioning
+  // Apply settings to theme if provided
   const combinedTheme: Partial<ThemeConfig> = {
     ...theme,
-    position: 'right', // Force right positioning
+    // Override with settings if provided
     ...(settings?.appearance && {
-      position: 'right', // Force right positioning again to be sure
+      position: 'right', // Force right positioning
       compact: settings.appearance.compact,
       colors: {
         ...theme.colors,
         primary: settings.appearance.primaryColor
+      },
+      labels: {
+        ...theme.labels,
+        welcomeTitle: settings.content?.welcomeTitle,
+        welcomeSubtitle: settings.content?.welcomeSubtitle
+      },
+      features: {
+        typingIndicator: settings.features?.enableTypingIndicator,
+        reactions: settings.features?.enableReactions,
+        fileAttachments: settings.features?.enableFileAttachments,
+        readReceipts: settings.features?.enableReadReceipts
       }
     })
   };
 
   const toggleWidget = () => {
-    dispatch({ type: 'TOGGLE_WIDGET' });
+    setIsOpen((prev) => !prev);
   };
 
   return (
     <AblyProvider workspaceId={workspaceId}>
       <ChatProvider workspaceId={workspaceId}>
         <ThemeProvider initialTheme={combinedTheme}>
-          <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end">
-            {isOpen && (
-              <div className="mb-4">
-                <ChatWidgetWrapper 
-                  isOpen={isOpen}
-                  position="right"
-                  compact={Boolean(combinedTheme.compact)}
-                >
-                  <ChatWidgetContainer 
-                    onClose={() => dispatch({ type: 'CLOSE_WIDGET' })} 
-                    workspaceId={workspaceId} 
-                    position="right"
-                    compact={Boolean(combinedTheme.compact)}
-                  />
-                </ChatWidgetWrapper>
+          <MotionConfig>
+            <div className="fixed bottom-4 right-4 z-[9999] flex flex-col items-end">
+              {isOpen && (
+                <Suspense fallback={
+                  <div className="rounded-xl shadow-lg bg-white p-4 mb-4">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  </div>
+                }>
+                  <div className="mb-4">
+                    <ChatWidgetWrapper 
+                      isOpen={isOpen}
+                      position="right"
+                      compact={Boolean(combinedTheme.compact)}
+                    >
+                      <ChatWidgetContainer 
+                        onClose={() => setIsOpen(false)} 
+                        workspaceId={workspaceId} 
+                        position="right"
+                        compact={Boolean(combinedTheme.compact)}
+                      />
+                    </ChatWidgetWrapper>
+                  </div>
+                </Suspense>
+              )}
+              <div>
+                <ToggleButton 
+                  isOpen={isOpen} 
+                  onClick={toggleWidget} 
+                />
               </div>
-            )}
-            <div>
-              <ToggleButton 
-                isOpen={isOpen} 
-                onClick={toggleWidget} 
-              />
             </div>
-          </div>
+          </MotionConfig>
         </ThemeProvider>
       </ChatProvider>
     </AblyProvider>

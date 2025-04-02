@@ -25,7 +25,7 @@ const ChatWidgetInner: React.FC = () => {
   const compact = state.theme.compact;
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end">
+    <div className="fixed bottom-4 right-4 z-[9999] flex flex-col items-end">
       {state.isOpen && (
         <Suspense fallback={
           <div className="rounded-xl shadow-lg bg-white p-4 mb-4">
@@ -57,6 +57,9 @@ const ChatWidgetInner: React.FC = () => {
     </div>
   );
 };
+
+// Import ToggleButton here to avoid circular dependencies
+import ToggleButton from '../components/button/ToggleButton';
 
 // Main component that provides context
 const IsolatedChatWidget: React.FC<IsolatedChatWidgetProps> = ({ 
@@ -122,7 +125,7 @@ const IsolatedChatWidget: React.FC<IsolatedChatWidgetProps> = ({
   const adaptedTheme = adaptApiThemeToContextTheme(mergedConfig.theme);
   
   // Force right positioning
-  adaptedTheme.position = 'right' as 'right'; 
+  adaptedTheme.position = 'right'; 
 
   return (
     <ChatWidgetProvider>
@@ -136,8 +139,5 @@ const IsolatedChatWidget: React.FC<IsolatedChatWidgetProps> = ({
     </ChatWidgetProvider>
   );
 };
-
-// Import ToggleButton here to avoid circular dependencies
-import ToggleButton from '../components/button/ToggleButton';
 
 export default IsolatedChatWidget;
