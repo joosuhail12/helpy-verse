@@ -7,3 +7,7 @@ export type {
   View,
   WidgetOptions
 } from './types';
+
+// Export service for external usage
+export { widgetService } from '@/api/services/WidgetService';
+export type { Widget, WidgetTheme, CreateWidgetRequest } from '@/api/services/WidgetService';
