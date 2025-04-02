@@ -105,29 +105,30 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({
     <AblyProvider workspaceId={workspaceId}>
       <ChatProvider workspaceId={workspaceId}>
         <ThemeProvider initialTheme={combinedTheme}>
-          {isOpen && (
-            <div className={`fixed bottom-20 ${position === 'left' ? 'left-4' : 'right-4'} z-[9999]`} 
-                 style={{ maxWidth: combinedTheme.compact ? '320px' : '380px', width: '100%' }}>
-              <ChatWidgetWrapper 
-                isOpen={isOpen}
-                position={position}
-                compact={Boolean(combinedTheme.compact)}
-              >
-                <ChatWidgetContainer 
-                  onClose={() => dispatch({ type: 'CLOSE_WIDGET' })} 
-                  workspaceId={workspaceId} 
+          <div className={`fixed z-[9999] ${position === 'left' ? 'left-4' : 'right-4'}`}>
+            {isOpen && (
+              <div className="mb-4">
+                <ChatWidgetWrapper 
+                  isOpen={isOpen}
                   position={position}
                   compact={Boolean(combinedTheme.compact)}
-                  instanceId={instanceId}
-                />
-              </ChatWidgetWrapper>
+                >
+                  <ChatWidgetContainer 
+                    onClose={() => dispatch({ type: 'CLOSE_WIDGET' })} 
+                    workspaceId={workspaceId} 
+                    position={position}
+                    compact={Boolean(combinedTheme.compact)}
+                    instanceId={instanceId}
+                  />
+                </ChatWidgetWrapper>
+              </div>
+            )}
+            <div className="bottom-4">
+              <ToggleButton 
+                isOpen={isOpen} 
+                onClick={toggleWidget} 
+              />
             </div>
-          )}
-          <div className={`fixed bottom-4 z-50 ${position === 'left' ? 'left-4' : 'right-4'}`}>
-            <ToggleButton 
-              isOpen={isOpen} 
-              onClick={toggleWidget} 
-            />
           </div>
         </ThemeProvider>
       </ChatProvider>

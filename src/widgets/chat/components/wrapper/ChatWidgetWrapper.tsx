@@ -22,30 +22,25 @@ const ChatWidgetWrapper: React.FC<ChatWidgetWrapperProps> = ({
   const { colors } = useThemeContext();
 
   return (
-    <div 
-      className={`fixed bottom-20 ${position === 'left' ? 'left-4' : 'right-4'} z-[9999]`}
-      style={{ maxWidth: compact ? '320px' : '380px', width: '100%' }}
-    >
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            transition={{ duration: 0.2 }}
-            className="w-full rounded-lg shadow-lg overflow-hidden"
-            style={{ 
-              borderColor: colors?.border,
-              height: '500px',
-              maxHeight: 'calc(100vh - 100px)',
-              backgroundColor: colors?.background || 'white'
-            }}
-          >
-            {children}
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0, y: 20, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 20, scale: 0.95 }}
+          transition={{ duration: 0.2 }}
+          className="w-full rounded-lg shadow-lg overflow-hidden"
+          style={{ 
+            borderColor: colors?.border,
+            height: '500px',
+            maxHeight: 'calc(100vh - 100px)',
+            backgroundColor: colors?.background || 'white'
+          }}
+        >
+          {children}
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 };
 
