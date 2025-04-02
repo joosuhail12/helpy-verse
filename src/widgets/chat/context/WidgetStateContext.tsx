@@ -56,7 +56,7 @@ const defaultInitialState: WidgetState = {
 const widgetReducer = (state: WidgetState, action: WidgetAction): WidgetState => {
   switch (action.type) {
     case 'INITIALIZE':
-      const initializedState: WidgetState = {
+      return {
         ...state,
         isInitialized: true,
         config: {
@@ -65,7 +65,7 @@ const widgetReducer = (state: WidgetState, action: WidgetAction): WidgetState =>
         },
         theme: {
           ...state.theme,
-          position: 'right', // Force right positioning
+          position: 'right' as const, // Force right positioning with type assertion
           compact: action.payload.theme?.compact ?? state.theme.compact,
           colors: {
             ...state.theme.colors,
@@ -73,7 +73,6 @@ const widgetReducer = (state: WidgetState, action: WidgetAction): WidgetState =>
           },
         },
       };
-      return initializedState;
 
     case 'TOGGLE_WIDGET':
       const toggledState = { ...state, isOpen: !state.isOpen };
@@ -125,7 +124,7 @@ const widgetReducer = (state: WidgetState, action: WidgetAction): WidgetState =>
         ...state,
         theme: {
           ...state.theme,
-          position: 'right', // Always force right positioning
+          position: 'right' as const, // Always force right positioning with type assertion
           compact: action.payload.compact ?? state.theme.compact,
           colors: {
             ...state.theme.colors,

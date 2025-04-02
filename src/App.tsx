@@ -1,15 +1,16 @@
 
-import React from "react";
-import AppProviders from "./components/app/AppProviders";
-import AppRoutes from "./components/app/AppRoutes";
-import "./index.css";
+import React from 'react';
+import { RouterProvider } from 'react-router-dom';
+import { router } from './routes';
+import AppProviders from './components/app/AppProviders';
+import './App.css';
 
-const App: React.FC = () => {
+function App() {
   return (
     <AppProviders>
-      <AppRoutes />
+      <RouterProvider router={router} />
     </AppProviders>
   );
-};
+}
 
 export default App;
