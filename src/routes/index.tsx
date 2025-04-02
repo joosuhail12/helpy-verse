@@ -39,8 +39,8 @@ const withSuspenseAndErrorHandling = (Component) => (
   </RouteErrorBoundary>
 );
 
-// Export router as the default export
-export default createBrowserRouter([
+// Create and export the router with proper route configuration
+const router = createBrowserRouter([
   {
     path: '/',
     element: withSuspenseAndErrorHandling(LandingPage),
@@ -86,3 +86,5 @@ export default createBrowserRouter([
     element: withSuspenseAndErrorHandling(NotFound),
   },
 ]);
+
+export default router;
