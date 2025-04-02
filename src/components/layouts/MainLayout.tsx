@@ -20,17 +20,15 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         </main>
       </div>
       
-      {/* Chat widget with fixed positioning and right alignment */}
-      <WidgetStateProvider>
-        <div className="fixed bottom-4 right-4 z-50">
-          <ChatWidget 
-            workspaceId="workspace-123" 
-            theme={{
-              position: 'right',
-              compact: false
-            }}
-          />
-        </div>
+      {/* Chat widget with fixed positioning in bottom right corner */}
+      <WidgetStateProvider instanceId="main-layout">
+        <ChatWidget 
+          workspaceId="workspace-123" 
+          theme={{
+            position: 'right',
+            compact: false
+          }}
+        />
       </WidgetStateProvider>
     </div>
   );

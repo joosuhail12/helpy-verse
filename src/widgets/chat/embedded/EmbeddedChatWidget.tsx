@@ -51,7 +51,7 @@ const EmbeddedChatWidget: React.FC<EmbeddedChatWidgetProps> = ({
   onMessageSent
 }) => {
   // Generate a unique ID for this widget instance to ensure state isolation
-  const [instanceId] = useState(() => `widget-${uuidv4()}`);
+  const [instanceId] = useState(() => `widget-${uuidv4().slice(0, 8)}`);
   
   // Set up event listeners for callbacks if provided
   React.useEffect(() => {
@@ -59,6 +59,7 @@ const EmbeddedChatWidget: React.FC<EmbeddedChatWidgetProps> = ({
     const openEventName = `chat-widget-open-${instanceId}`;
     const closeEventName = `chat-widget-close-${instanceId}`;
     const messageSentEventName = `chat-message-sent-${instanceId}`;
+    const toggleEventName = `chat-widget-toggle-${instanceId}`;
     
     const handleOpen = () => {
       if (onOpen) onOpen();
@@ -76,20 +77,61 @@ const EmbeddedChatWidget: React.FC<EmbeddedChatWidgetProps> = ({
     window.addEventListener(openEventName, handleOpen);
     window.addEventListener(closeEventName, handleClose);
     window.addEventListener(messageSentEventName, handleMessageSent as EventListener);
+    window.addEventListener(toggleEventName, () => {
+      // Toggle event needs to check current state to determine which callback to fire
+      const widgetState = localStorage.getItem(`chat-widget-state-${instanceId}`);
+      if (widgetState) {
+        const { isOpen } = JSON.parse(widgetState);
+        if (isOpen && onClose) onClose();
+        if (!isOpen && onOpen) onOpen();
+      }
+    });
     
     // Clean up event listeners
     return () => {
       window.removeEventListener(openEventName, handleOpen);
       window.removeEventListener(closeEventName, handleClose);
       window.removeEventListener(messageSentEventName, handleMessageSent as EventListener);
+      window.removeEventListener(toggleEventName, handleOpen);
     };
   }, [instanceId, onOpen, onClose, onMessageSent]);
 
-  // Convert API theme to context theme
-  const contextTheme = adaptApiThemeToContextTheme(theme);
+  // Convert API theme to context theme and force right positioning
+  const contextTheme = {
+    ...adaptApiThemeToContextTheme(theme),
+    position: 'right' // Always force right positioning
+  };
+
+  // Expose imperative methods for parent components
+  React.useEffect(() => {
+    // Create a method to programmatically trigger widget actions
+    if (window && !window.PULLSE) {
+      window.PULLSE = {};
+    }
+    
+    if (window.PULLSE) {
+      window.PULLSE[`widget_${instanceId}`] = {
+        open: () => {
+          window.dispatchEvent(new CustomEvent(`chat-widget-open-${instanceId}`));
+        },
+        close: () => {
+          window.dispatchEvent(new CustomEvent(`chat-widget-close-${instanceId}`));
+        },
+        toggle: () => {
+          window.dispatchEvent(new CustomEvent(`chat-widget-toggle-${instanceId}`));
+        }
+      };
+    }
+    
+    return () => {
+      if (window.PULLSE) {
+        delete window.PULLSE[`widget_${instanceId}`];
+      }
+    };
+  }, [instanceId]);
 
   return (
-    <WidgetStateProvider>
+    <WidgetStateProvider instanceId={instanceId}>
       <ChatWidget 
         workspaceId={workspaceId}
         theme={contextTheme}

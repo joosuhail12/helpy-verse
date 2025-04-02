@@ -4,6 +4,7 @@ import { useChat } from '@/hooks/chat/useChat';
 import { useThemeContext } from '@/context/ThemeContext';
 import ViewManager from '../components/navigation/ViewManager';
 import LoadingState from '../components/states/LoadingState';
+import { useWidgetState } from '../context/WidgetStateContext';
 
 export type View = 'home' | 'messages' | 'conversation';
 
@@ -12,16 +13,19 @@ interface ChatWidgetContainerProps {
   workspaceId: string;
   position?: 'left' | 'right';
   compact?: boolean;
-  instanceId?: string; // Added instanceId prop
+  instanceId?: string;
 }
 
 const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({ 
   onClose, 
   workspaceId,
-  position = 'right',
+  position = 'right', // Default to right
   compact = false,
-  instanceId = 'default' // Default value for the instanceId
+  instanceId = 'default'
 }) => {
+  // Get widget state for additional context
+  const { state } = useWidgetState();
+
   // Access chat context
   const chatContext = useChat();
   const { conversations, currentConversation, selectConversation, createNewConversation, sendMessage } = chatContext || {
@@ -45,12 +49,31 @@ const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({
     setIsLoading(false);
   }, []);
 
-  const handleStartConversation = useCallback((message: string) => {
-    // This would typically handle sending the first message in a conversation
-    console.log('Starting conversation with message:', message);
-    // Move to conversation view
-    setActiveView('conversation');
-  }, []);
+  // When a new conversation is selected, switch to conversation view
+  useEffect(() => {
+    if (currentConversation) {
+      setActiveView('conversation');
+    }
+  }, [currentConversation]);
+
+  const handleStartConversation = useCallback(async (message: string) => {
+    try {
+      if (createNewConversation && sendMessage) {
+        const conversationId = await createNewConversation();
+        if (conversationId) {
+          await sendMessage(conversationId, message);
+          setActiveView('conversation');
+          
+          // Trigger message sent event for external callbacks
+          window.dispatchEvent(new CustomEvent(`chat-message-sent-${instanceId}`, {
+            detail: { message: { content: message } }
+          }));
+        }
+      }
+    } catch (error) {
+      console.error('Failed to start conversation:', error);
+    }
+  }, [createNewConversation, sendMessage, instanceId]);
 
   if (isLoading) {
     return <LoadingState />;

@@ -1,83 +1,61 @@
 
-export interface ThemeConfig {
-  colors?: {
-    primary?: string;
-    primaryForeground?: string;
-    background?: string;
-    backgroundSecondary?: string;
-    foreground?: string;
-    border?: string;
-    muted?: string;
-    accent?: string;
-    inputBackground?: string;
-    userMessage?: string;
-    userMessageText?: string;
-    agentMessage?: string;
-    agentMessageText?: string;
-    error?: string;
-    success?: string;
-  };
-  position?: 'left' | 'right';
-  compact?: boolean;
-  labels?: {
-    welcomeTitle?: string;
-    welcomeSubtitle?: string;
-    placeholder?: string;
-    sendButton?: string;
-    noMessagesText?: string;
-    recentMessagesTitle?: string;
-    askQuestionButton?: string;
-  };
-  features?: {
-    typingIndicator?: boolean;
-    reactions?: boolean;
-    fileAttachments?: boolean;
-    readReceipts?: boolean;
-  };
-}
+import { ThemeConfig } from '@/context/ThemeContext';
 
+// Chat Widget Settings Interface
 export interface ChatWidgetSettings {
-  appearance?: {
-    position?: 'left' | 'right';
-    compact?: boolean;
-    primaryColor?: string;
+  appearance: {
+    primaryColor: string;
+    position: 'left' | 'right';
+    compact: boolean;
   };
-  content?: {
-    welcomeTitle?: string;
-    welcomeSubtitle?: string;
+  content: {
+    welcomeTitle: string;
+    welcomeSubtitle: string;
   };
-  features?: {
-    enableTypingIndicator?: boolean;
-    enableReactions?: boolean;
-    enableFileAttachments?: boolean;
-    enableReadReceipts?: boolean;
+  features: {
+    enableTypingIndicator: boolean;
+    enableReactions: boolean;
+    enableFileAttachments: boolean;
+    enableReadReceipts: boolean;
   };
 }
 
-export type View = 'home' | 'messages' | 'conversation';
+// Button Props Interface
+export interface ToggleButtonProps {
+  isOpen: boolean;
+  onClick: () => void;
+}
 
+// Widget Options for external configuration
 export interface WidgetOptions {
   workspaceId: string;
-  theme?: Partial<ThemeConfig>;
+  theme?: {
+    position?: 'left' | 'right';
+    compact?: boolean;
+    colors?: {
+      primary?: string;
+      [key: string]: string | undefined;
+    };
+  };
   settings?: Partial<ChatWidgetSettings>;
 }
 
-export interface ChatMessage {
-  id: string;
-  text: string;
-  sender: 'user' | 'agent';
-  timestamp: Date;
-  conversationId: string;
-  status: 'sent' | 'delivered' | 'read' | 'error';
+// Widget Props Interface for IsolatedChatWidget
+export interface IsolatedChatWidgetProps {
+  workspaceId: string;
+  config?: any;
 }
 
-export interface FileAttachment {
-  id: string;
-  name: string;
-  size: number;
-  type: string;
-  url: string;
-  thumbnailUrl?: string;
-  uploadProgress?: number;
-  status: 'uploading' | 'uploaded' | 'error';
+// Global window augmentation to add PULLSE namespace
+declare global {
+  interface Window {
+    PULLSE: {
+      initializeWidget: (options: WidgetOptions) => void;
+      openWidget?: () => void;
+      closeWidget?: () => void;
+      toggleWidget?: () => void;
+      [key: string]: any;
+    };
+    PULLSE_CHAT_CONFIG?: WidgetOptions;
+  }
 }

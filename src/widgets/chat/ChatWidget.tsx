@@ -29,6 +29,21 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({
   const { state, dispatch } = useWidgetState();
   const isOpen = state.isOpen;
 
+  // Initialize widget with provided settings
+  useEffect(() => {
+    dispatch({
+      type: 'INITIALIZE',
+      payload: { 
+        workspaceId, 
+        theme: {
+          position: 'right', // Force right positioning
+          ...theme
+        },
+        settings
+      }
+    });
+  }, [workspaceId, dispatch]);
+
   // Override theme settings to ensure right positioning
   const combinedTheme: Partial<ThemeConfig> = {
     ...theme,
