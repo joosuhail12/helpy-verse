@@ -2,28 +2,14 @@
 import { AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import { get } from 'lodash';
 import { store } from '@/store/store';
+import { handleLogout as tokenManagerLogout } from '@/utils/auth/tokenManager';
 
-// Import getAuthToken directly to avoid circular imports
+// Export handleLogout for use in other modules
+export const handleLogout = tokenManagerLogout;
+
+// Get auth token directly to avoid circular imports
 const getAuthToken = () => {
     return localStorage.getItem("token") || "";
-};
-
-// Manually handle logout to avoid circular imports
-const handleLogout = () => {
-    try {
-        localStorage.removeItem("token");
-        localStorage.removeItem("userId");
-        localStorage.removeItem("role");
-        localStorage.removeItem("workspaceId");
-        sessionStorage.removeItem("token");
-        
-        console.log("User logged out - cleared all tokens and storage");
-        
-        // Force page refresh and redirect to sign-in
-        window.location.href = "/sign-in";
-    } catch (error) {
-        console.error('Error during logout process:', error);
-    }
 };
 
 // Request Interceptor - Adds Token & Workspace ID to all requests
@@ -151,6 +137,3 @@ export const responseErrorInterceptor = (error: any) => {
         originalError: error
     });
 };
-
-// Export the handleLogout function for use in other parts of the app
-export { handleLogout };

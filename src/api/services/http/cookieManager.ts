@@ -42,11 +42,11 @@ export const cookieFunctions = {
   }
 };
 
-// Import from interceptors instead of creating circular dependency
-import { handleLogout as logoutFromInterceptors } from './interceptors';
+// Import from tokenManager instead of creating circular dependency
+import { handleLogout as logoutFromTokenManager } from '@/utils/auth/tokenManager';
 
 // Re-export the logout function
-export const handleLogout = logoutFromInterceptors;
+export const handleLogout = logoutFromTokenManager;
 
 // Helper function to set workspaceId in localStorage
 export const setWorkspaceId = (id: string): void => {
@@ -69,3 +69,6 @@ export const getWorkspaceId = (): string => {
     return "";
   }
 };
+
+// Export individual functions for cleaner imports
+export const { getCookie, setCookie, deleteCookie } = cookieFunctions;

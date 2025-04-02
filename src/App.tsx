@@ -5,7 +5,7 @@ import AppRoutes from "./components/app/AppRoutes";
 import "./index.css";
 
 // Verify React is available
-if (!React || !React.createElement) {
+if (!React) {
   console.error("React is not properly initialized in App.tsx");
 }
 

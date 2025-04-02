@@ -21,33 +21,34 @@ interface AppProvidersProps {
  * with necessary providers and error boundaries.
  */
 const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
+  console.log("Rendering AppProviders");
+  
   // Make sure React is properly initialized before rendering
-  if (!React || !React.createElement) {
+  if (!React) {
     console.error("React is not properly initialized in AppProviders");
     return <div>Error initializing application</div>;
   }
 
   return (
     <AppErrorBoundary>
-      <React.StrictMode>
-        <Provider store={store}>
+      {/* Redux Provider must come first since other components depend on it */}
+      <Provider store={store}>
+        <AppQueryProvider>
           <ThemeProvider initialTheme={{}}>
             <WidgetStateProvider>
-              <AppQueryProvider>
-                <TooltipProvider>
-                  <Toaster />
-                  <Sonner />
+              <TooltipProvider>
+                <Toaster />
+                <Sonner />
+                <AppInitializer>
                   <CaslProvider>
-                    <AppInitializer>
-                      {children}
-                    </AppInitializer>
+                    {children}
                   </CaslProvider>
-                </TooltipProvider>
-              </AppQueryProvider>
+                </AppInitializer>
+              </TooltipProvider>
             </WidgetStateProvider>
           </ThemeProvider>
-        </Provider>
-      </React.StrictMode>
+        </AppQueryProvider>
+      </Provider>
     </AppErrorBoundary>
   );
 };
