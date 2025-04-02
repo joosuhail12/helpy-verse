@@ -2,7 +2,10 @@
 import { useDispatch } from 'react-redux';
 import type { AppDispatch } from '@/store/store';
 
-// Use throughout your app instead of plain `useDispatch`
+/**
+ * Custom hook for typed dispatch
+ * Use throughout the app instead of plain `useDispatch`
+ */
 export const useAppDispatch = () => useDispatch<AppDispatch>();
 
 export default useAppDispatch;

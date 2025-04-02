@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { RouterProvider } from 'react-router-dom';
-import { router } from '@/routes/index';
+import router from '@/routes/index';
 
 /**
  * Component for application routing

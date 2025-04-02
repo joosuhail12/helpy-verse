@@ -5,12 +5,12 @@ import router from './routes';
 import AppProviders from './components/app/AppProviders';
 import './App.css';
 
-function App() {
+const App: React.FC = () => {
   return (
     <AppProviders>
       <RouterProvider router={router} />
     </AppProviders>
   );
-}
+};
 
 export default App;
