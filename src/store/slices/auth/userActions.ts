@@ -2,6 +2,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { HttpClient } from '@/api/services/http';
 import { setWorkspaceId } from '@/api/services/http/cookieManager';
+import { AuthResponse, ResponseStatus } from './types';
 
 // Thunk to fetch user data
 export const fetchUserData = createAsyncThunk(
@@ -13,8 +14,8 @@ export const fetchUserData = createAsyncThunk(
       console.log('Fetching user data');
       
       // Mock successful response for development
-      const userData = {
-        status: "success",
+      const userData: AuthResponse = {
+        status: "success" as ResponseStatus,
         message: "User data retrieved successfully",
         data: {
           id: 'user-123',
@@ -39,7 +40,7 @@ export const fetchUserData = createAsyncThunk(
       }
       
       return userData;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching user data:', error);
       return rejectWithValue(error.message || 'Failed to fetch user data');
     }
@@ -56,7 +57,7 @@ export const fetchUserProfile = createAsyncThunk(
       
       // Mock successful response for development
       return {
-        status: "success",
+        status: "success" as ResponseStatus,
         message: "User profile retrieved successfully",
         data: {
           id: 'user-123',
@@ -76,7 +77,7 @@ export const fetchUserProfile = createAsyncThunk(
           defaultWorkspaceId: 'workspace-123'
         }
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching user profile:', error);
       return rejectWithValue(error.message || 'Failed to fetch user profile');
     }
@@ -93,7 +94,7 @@ export const fetchWorkspaceData = createAsyncThunk(
       
       // Mock successful response for development
       return {
-        status: "success",
+        status: "success" as ResponseStatus,
         message: "Workspace data retrieved successfully",
         data: {
           id: 'workspace-123',
@@ -112,7 +113,7 @@ export const fetchWorkspaceData = createAsyncThunk(
           defaultWorkspaceId: 'workspace-123'
         }
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching workspace data:', error);
       return rejectWithValue(error.message || 'Failed to fetch workspace data');
     }

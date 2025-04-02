@@ -11,23 +11,34 @@ export interface Permission {
 
 export type Permissions = Permission[];
 
+// Define specific status type to enforce "success" or "error" literal values
+export type ResponseStatus = "success" | "error";
+
+// Define the interface for auth response data
+export interface AuthResponseData {
+  id: string;
+  accessToken: {
+    token: string;
+    expiry: number;
+    issuedAt: string;
+    userAgent: string;
+    ip: string;
+  };
+  defaultWorkspaceId: string;
+  // Allow additional properties
+  [key: string]: any;
+}
+
+// Define the interface for auth response
+export interface AuthResponse {
+  status: ResponseStatus;
+  message: string;
+  data: AuthResponseData;
+}
+
 export interface AuthState {
   isAuthenticated: boolean;
-  user: {
-    status: "success" | "error";
-    message: string;
-    data: {
-      id: string;
-      accessToken: {
-        token: string;
-        expiry: number;
-        issuedAt: string;
-        userAgent: string;
-        ip: string;
-      };
-      defaultWorkspaceId: string;
-    };
-  } | null;
+  user: AuthResponse | null;
   loading: boolean;
   error: string | null;
   permissions: Permissions;

@@ -1,6 +1,6 @@
 
 import { createSlice } from '@reduxjs/toolkit';
-import { AuthState } from './types';
+import { AuthState, ResponseStatus } from './types';
 import { 
   loginUser, 
   registerUser, 
