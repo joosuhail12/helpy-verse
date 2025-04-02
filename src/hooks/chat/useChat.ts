@@ -1,60 +1,94 @@
 
-import { useCallback } from 'react';
-import { v4 as uuidv4 } from 'uuid';
-import { useAppDispatch, useAppSelector } from '@/hooks/redux';
-import { useConversations } from './useConversations';
-import { useMessages } from './useMessages';
-import { 
-  addMessage,
-  ChatMessage,
-  selectConversation as selectConversationAction
-} from '@/store/slices/chat/chatSlice';
+import { useState, useCallback, useContext } from 'react';
+import ChatContext from '@/context/ChatContext';
+
+export interface Conversation {
+  id: string;
+  title: string;
+  lastMessage?: string;
+  lastMessageTimestamp: string;
+  unreadCount: number;
+}
 
 export const useChat = () => {
-  const dispatch = useAppDispatch();
-  const { loading, error, workspaceId } = useAppSelector(state => state.chat);
-  
-  const {
-    conversations,
-    currentConversation,
-    createNewConversation,
-    selectConversation
-  } = useConversations();
-  
-  const { messages, sendMessage: sendMessageInternal, getMessages } = useMessages();
-  
-  // Wrap the sendMessage function to update the Redux store
-  const sendMessage = useCallback((content: string, conversationId: string) => {
-    if (!conversationId) {
-      console.error('Cannot send message - no active conversation');
-      return Promise.reject('No active conversation');
+  const contextValue = useContext(ChatContext);
+  const [conversations, setConversations] = useState<Conversation[]>(contextValue?.conversations || []);
+  const [currentConversation, setCurrentConversation] = useState<Conversation | null>(contextValue?.currentConversation || null);
+  const [messages, setMessages] = useState<any[]>(contextValue?.messages || []);
+  const [loadingMessages, setLoadingMessages] = useState(false);
+
+  const createNewConversation = useCallback(async (title: string) => {
+    // Use context function if available
+    if (contextValue?.createNewConversation) {
+      return contextValue.createNewConversation(title);
     }
-    
-    const message: ChatMessage = {
-      id: uuidv4(),
-      conversationId,
+
+    // Fallback implementation
+    const newConversation: Conversation = {
+      id: `conv-${Date.now()}`,
+      title,
+      lastMessageTimestamp: new Date().toISOString(),
+      unreadCount: 0
+    };
+
+    setConversations(prev => [...prev, newConversation]);
+    setCurrentConversation(newConversation);
+    return newConversation.id;
+  }, [contextValue]);
+
+  const selectConversation = useCallback((conversationId: string) => {
+    // Use context function if available
+    if (contextValue?.selectConversation) {
+      return contextValue.selectConversation(conversationId);
+    }
+
+    // Fallback implementation
+    const conversation = conversations.find(c => c.id === conversationId);
+    if (conversation) {
+      setCurrentConversation(conversation);
+      // Mark as read
+      setConversations(prev => 
+        prev.map(c => c.id === conversationId ? { ...c, unreadCount: 0 } : c)
+      );
+    }
+  }, [conversations, contextValue]);
+
+  const sendMessage = useCallback(async (conversationId: string, content: string) => {
+    // Use context function if available
+    if (contextValue?.sendMessage) {
+      return contextValue.sendMessage(conversationId, content);
+    }
+
+    // Fallback implementation
+    const newMessage = {
+      id: `msg-${Date.now()}`,
       content,
       sender: 'user',
-      timestamp: new Date()
+      timestamp: new Date().toISOString(),
+      conversationId
     };
-    
-    // Add to Redux store
-    dispatch(addMessage(message));
-    
-    // Use the internal send function
-    return sendMessageInternal(content, conversationId);
-  }, [dispatch, sendMessageInternal]);
-  
+
+    setMessages(prev => [...prev, newMessage]);
+
+    // Update conversation
+    setConversations(prev => 
+      prev.map(c => c.id === conversationId ? {
+        ...c,
+        lastMessage: content,
+        lastMessageTimestamp: new Date().toISOString()
+      } : c)
+    );
+
+    return newMessage;
+  }, [contextValue]);
+
   return {
-    conversations,
-    currentConversation,
+    conversations: contextValue?.conversations || conversations,
+    currentConversation: contextValue?.currentConversation || currentConversation,
+    messages: contextValue?.messages || messages,
+    loadingMessages: contextValue?.loadingMessages || loadingMessages,
     createNewConversation,
     selectConversation,
-    messages,
-    sendMessage,
-    getMessages,
-    loading,
-    error,
-    workspaceId
+    sendMessage
   };
 };

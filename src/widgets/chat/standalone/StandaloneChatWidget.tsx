@@ -1,11 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { ChatWidget } from '../ChatWidget';
-import { WidgetOptions } from '../types';
-import { ThemeConfig } from '@/context/ThemeContext';
+import { ThemeConfig, WidgetOptions } from '../types';
 import { adaptApiThemeToContextTheme } from '../utils/themeAdapter';
 import { WidgetStateProvider } from '../context/WidgetStateContext';
-import { v4 as uuidv4 } from 'uuid';
 
 /**
  * Standalone Chat Widget component designed for website embedding via script tag
@@ -15,7 +13,7 @@ const StandaloneChatWidget: React.FC = () => {
   const [options, setOptions] = useState<WidgetOptions | null>(null);
   const [mounted, setMounted] = useState(false);
   // Use a fixed instance ID for standalone mode since there will only be one per page
-  const [instanceId] = useState(() => 'standalone-' + uuidv4().slice(0, 8));
+  const instanceId = 'standalone-widget';
 
   useEffect(() => {
     // Mark component as mounted
@@ -40,31 +38,12 @@ const StandaloneChatWidget: React.FC = () => {
         ...window.PULLSE,
         initializeWidget: (widgetOptions: WidgetOptions) => {
           setOptions(widgetOptions);
-        },
-        openWidget: () => {
-          // This will be handled by event listeners in the ChatWidget component
-          window.dispatchEvent(new CustomEvent(`chat-widget-open-${instanceId}`));
-        },
-        closeWidget: () => {
-          window.dispatchEvent(new CustomEvent(`chat-widget-close-${instanceId}`));
-        },
-        toggleWidget: () => {
-          window.dispatchEvent(new CustomEvent(`chat-widget-toggle-${instanceId}`));
         }
       };
     } else {
       window.PULLSE = {
         initializeWidget: (widgetOptions: WidgetOptions) => {
           setOptions(widgetOptions);
-        },
-        openWidget: () => {
-          window.dispatchEvent(new CustomEvent(`chat-widget-open-${instanceId}`));
-        },
-        closeWidget: () => {
-          window.dispatchEvent(new CustomEvent(`chat-widget-close-${instanceId}`));
-        },
-        toggleWidget: () => {
-          window.dispatchEvent(new CustomEvent(`chat-widget-toggle-${instanceId}`));
         }
       };
     }
@@ -74,19 +53,18 @@ const StandaloneChatWidget: React.FC = () => {
       window.removeEventListener('chat-widget-initialize', handleInitialize as EventListener);
       setMounted(false);
     };
-  }, [instanceId]);
+  }, []);
 
   if (!mounted) return null;
 
   // Default workspaceId if not provided
   const workspaceId = options?.workspaceId || '6c22b22f-7bdf-43db-b7c1-9c5884125c63';
   
-  // Convert API theme to context theme and FORCE right positioning
+  // Convert API theme to context theme
   const contextTheme = adaptApiThemeToContextTheme(options?.theme);
-  contextTheme.position = 'right' as 'right'; // Type assertion to enforce right positioning
   
   return (
-    <WidgetStateProvider instanceId={instanceId}>
+    <WidgetStateProvider>
       <ChatWidget 
         workspaceId={workspaceId}
         theme={contextTheme}

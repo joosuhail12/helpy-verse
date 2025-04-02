@@ -10,7 +10,7 @@ interface LazyHomeViewProps {
   onClose: () => void;
   setActiveView: (view: View) => void;
   onSelectConversation: (conversationId: string) => void;
-  onStartNewConversation: () => Promise<void>;
+  onStartNewConversation: () => void;
 }
 
 /**

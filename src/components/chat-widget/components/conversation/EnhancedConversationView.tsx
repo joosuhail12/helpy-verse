@@ -13,7 +13,7 @@ interface EnhancedConversationViewProps {
   isLoading?: boolean;
   agentName?: string;
   isTyping?: boolean;
-  disabled?: boolean;
+  disabled?: boolean; // Changed from isDisabled to disabled for consistency
   hasActiveConversation?: boolean;
 }
 
@@ -40,9 +40,6 @@ const EnhancedConversationView: React.FC<EnhancedConversationViewProps> = ({
     onSendMessage(content);
   };
 
-  // Add a no-op onTyping handler to satisfy the type requirement
-  const handleTyping = () => {};
-
   return (
     <div className="flex flex-col h-full" style={{ background: colors.background, color: colors.foreground }}>
       <div className="flex-1 overflow-y-auto p-4">
@@ -57,7 +54,6 @@ const EnhancedConversationView: React.FC<EnhancedConversationViewProps> = ({
       
       <MessageInput 
         onSendMessage={handleSendMessage}
-        onTyping={handleTyping}  // Added this line
         disabled={disabled || isLoading}
         placeholder={!hasActiveConversation ? "Start a new conversation..." : "Type a message..."}
       />

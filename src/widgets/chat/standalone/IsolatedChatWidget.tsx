@@ -5,7 +5,7 @@ import { AblyProvider } from '@/context/AblyContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { ChatWidgetProvider, useChatWidget } from '@/context/ChatWidgetContext';
 import { adaptApiThemeToContextTheme } from '../utils/themeAdapter';
-import { IsolatedChatWidgetProps } from '../types';
+import { IsolatedChatWidgetProps } from '../types/widget';
 import { Loader2 } from 'lucide-react';
 import '@/styles/chat-widget-theme.css';
 
@@ -25,41 +25,36 @@ const ChatWidgetInner: React.FC = () => {
   const compact = state.theme.compact;
 
   return (
-    <div className="fixed bottom-4 right-4 z-[9999] flex flex-col items-end">
+    <>
       {state.isOpen && (
         <Suspense fallback={
-          <div className="rounded-xl shadow-lg bg-white p-4 mb-4">
+          <div className={`fixed bottom-20 ${position === 'left' ? 'left-4' : 'right-4'} rounded-xl shadow-lg bg-white p-4 z-50`}>
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         }>
-          <div className="mb-4">
-            <ChatWidgetWrapper 
-              isOpen={state.isOpen}
-              position="right"
+          <ChatWidgetWrapper 
+            isOpen={state.isOpen}
+            position={position}
+            compact={compact}
+          >
+            <ChatWidgetContainer 
+              onClose={() => dispatch({ type: 'CLOSE_WIDGET' })} 
+              workspaceId={state.config?.workspaceId || ''} 
+              position={position}
               compact={compact}
-            >
-              <ChatWidgetContainer 
-                onClose={() => dispatch({ type: 'CLOSE_WIDGET' })} 
-                workspaceId={state.config?.workspaceId || ''} 
-                position="right"
-                compact={compact}
-              />
-            </ChatWidgetWrapper>
-          </div>
+            />
+          </ChatWidgetWrapper>
         </Suspense>
       )}
-      <div>
+      <div className={`fixed bottom-4 z-50 ${position === 'left' ? 'left-4' : 'right-4'}`}>
         <ToggleButton 
           isOpen={state.isOpen} 
           onClick={toggleWidget} 
         />
       </div>
-    </div>
+    </>
   );
 };
-
-// Import ToggleButton here to avoid circular dependencies
-import ToggleButton from '../components/button/ToggleButton';
 
 // Main component that provides context
 const IsolatedChatWidget: React.FC<IsolatedChatWidgetProps> = ({ 
@@ -123,9 +118,6 @@ const IsolatedChatWidget: React.FC<IsolatedChatWidgetProps> = ({
 
   // Adapt the API theme to context theme
   const adaptedTheme = adaptApiThemeToContextTheme(mergedConfig.theme);
-  
-  // Force right positioning
-  adaptedTheme.position = 'right'; 
 
   return (
     <ChatWidgetProvider>
@@ -139,5 +131,8 @@ const IsolatedChatWidget: React.FC<IsolatedChatWidgetProps> = ({
     </ChatWidgetProvider>
   );
 };
+
+// Import ToggleButton here to avoid circular dependencies
+import ToggleButton from '../components/button/ToggleButton';
 
 export default IsolatedChatWidget;

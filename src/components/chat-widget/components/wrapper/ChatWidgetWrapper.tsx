@@ -1,54 +1,51 @@
 
 import React from 'react';
 import { useThemeContext } from '@/context/ThemeContext';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 
 interface ChatWidgetWrapperProps {
-  children: React.ReactNode;
   isOpen: boolean;
-  position: 'left' | 'right';
+  position?: 'left' | 'right';
   compact?: boolean;
+  children: React.ReactNode;
 }
 
+/**
+ * Wrapper component that handles positioning and animation of the chat widget
+ */
 const ChatWidgetWrapper: React.FC<ChatWidgetWrapperProps> = ({ 
-  children, 
   isOpen, 
-  position,
-  compact = false
+  position = 'right',
+  compact = false,
+  children 
 }) => {
   const { colors } = useThemeContext();
-  
-  const variants = {
-    open: { 
-      opacity: 1, 
-      y: 0,
-      scale: 1
-    },
-    closed: { 
-      opacity: 0, 
-      y: 20,
-      scale: 0.95
-    },
-  };
-  
+
   return (
-    <motion.div
-      initial="closed"
-      animate={isOpen ? "open" : "closed"}
-      variants={variants}
-      transition={{ duration: 0.2 }}
-      className="overflow-hidden rounded-xl shadow-lg"
-      style={{ 
-        width: compact ? '320px' : '380px',
-        maxWidth: '100%',
-        height: compact ? '500px' : '600px',
-        maxHeight: '80vh',
-        backgroundColor: colors.background,
-        border: `1px solid ${colors.border}`,
-      }}
+    <div 
+      className={`fixed bottom-20 ${position === 'left' ? 'left-4' : 'right-4'} z-[9999]`}
+      style={{ maxWidth: compact ? '320px' : '380px', width: '100%' }}
     >
-      {children}
-    </motion.div>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+            className="w-full rounded-lg shadow-lg overflow-hidden"
+            style={{ 
+              borderColor: colors?.border,
+              height: '500px',
+              maxHeight: 'calc(100vh - 100px)',
+              backgroundColor: colors?.background || 'white'
+            }}
+          >
+            {children}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 };
 

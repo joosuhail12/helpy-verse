@@ -21,49 +21,17 @@ interface AppProvidersProps {
  * with necessary providers and error boundaries.
  */
 const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
-  // Initialize with default theme configuration
-  const defaultTheme = {
-    colors: {
-      primary: '#9b87f5',
-      primaryForeground: '#ffffff',
-      background: '#ffffff',
-      backgroundSecondary: '#f9f9f9',
-      foreground: '#1f2937',
-      border: '#e5e7eb',
-      muted: '#f3f4f6',
-      accent: '#f9fafb',
-      inputBackground: '#ffffff',
-      userMessage: '#9b87f5',
-      userMessageText: '#ffffff',
-      agentMessage: '#f3f4f6',
-      agentMessageText: '#1f2937',
-      error: '#ef4444',
-      success: '#10b981'
-    },
-    position: 'right' as 'left' | 'right',
-    compact: false,
-    labels: {
-      welcomeTitle: 'Hello there.',
-      welcomeSubtitle: 'How can we help?',
-      placeholder: 'Type a message...',
-      sendButton: 'Send',
-      noMessagesText: "You don't have any conversations yet",
-      recentMessagesTitle: "Recent Conversations",
-      askQuestionButton: "Ask a question"
-    },
-    features: {
-      typingIndicator: true,
-      reactions: true,
-      fileAttachments: true,
-      readReceipts: true,
-    }
-  };
+  // Make sure React is properly initialized before rendering
+  if (!React || !React.createElement) {
+    console.error("React is not properly initialized in AppProviders");
+    return <div>Error initializing application</div>;
+  }
 
   return (
-    <React.StrictMode>
-      <AppErrorBoundary>
+    <AppErrorBoundary>
+      <React.StrictMode>
         <Provider store={store}>
-          <ThemeProvider initialTheme={defaultTheme}>
+          <ThemeProvider initialTheme={{}}>
             <WidgetStateProvider>
               <AppQueryProvider>
                 <TooltipProvider>
@@ -79,8 +47,8 @@ const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
             </WidgetStateProvider>
           </ThemeProvider>
         </Provider>
-      </AppErrorBoundary>
-    </React.StrictMode>
+      </React.StrictMode>
+    </AppErrorBoundary>
   );
 };
 

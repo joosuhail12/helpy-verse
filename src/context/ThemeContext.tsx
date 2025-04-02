@@ -99,6 +99,12 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
   children, 
   initialTheme = {} 
 }) => {
+  // Verify React is available
+  if (typeof React === 'undefined' || !React.useState) {
+    console.error("React is not properly initialized in ThemeContext");
+    return null;
+  }
+
   const [theme, setThemeState] = useState<ThemeConfig>({
     ...defaultTheme,
     ...initialTheme,

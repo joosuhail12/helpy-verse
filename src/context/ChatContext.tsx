@@ -1,42 +1,49 @@
+import React, { createContext, useContext } from 'react';
+import { useConversations } from '@/hooks/chat/useConversations';
+import { useMessages } from '@/hooks/chat/useMessages';
 
-import React, { createContext } from 'react';
-import { Provider } from 'react-redux';
-import { store } from '@/store/store';
-import { useChat } from '@/hooks/chat/useChat';
-
-export const ChatContext = createContext<ReturnType<typeof useChat> | undefined>(undefined);
+const ChatContext = createContext<any | undefined>(undefined);
 
 interface ChatProviderProps {
   children: React.ReactNode;
   workspaceId: string;
 }
 
-/**
- * Chat Provider Component that wraps the children with Redux Provider and ChatContext
- */
 export const ChatProvider: React.FC<ChatProviderProps> = ({ children, workspaceId }) => {
-  // We need to wrap the components in a Redux Provider
-  // After that, the useChat hook can access the store
-  return (
-    <Provider store={store}>
-      <InnerChatProvider workspaceId={workspaceId}>
-        {children}
-      </InnerChatProvider>
-    </Provider>
-  );
-};
+  const { 
+    conversations, 
+    currentConversation, 
+    createNewConversation, 
+    selectConversation 
+  } = useConversations();
 
-/**
- * Inner provider that depends on Redux to be available
- */
-const InnerChatProvider: React.FC<ChatProviderProps> = ({ children, workspaceId }) => {
-  const chatContextValue = useChat();
+  // Helper to update conversation with newest message
+  const updateConversationWithMessage = React.useCallback((conversationId: string, message: string) => {
+    // This would typically update the conversation's last message and timestamp
+    // For now, we're just passing this function to useMessages
+    // The actual implementation would depend on how conversations are stored and updated
+  }, []);
+
+  const { 
+    messages, 
+    loadingMessages, 
+    sendMessage, 
+    getMessages 
+  } = useMessages(updateConversationWithMessage);
+
+  const value = {
+    workspaceId,
+    conversations,
+    currentConversation,
+    createNewConversation,
+    selectConversation,
+    messages,
+    loadingMessages,
+    sendMessage,
+    getMessages,
+  };
   
-  return (
-    <ChatContext.Provider value={chatContextValue}>
-      {children}
-    </ChatContext.Provider>
-  );
+  return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;
 };
 
 export default ChatContext;

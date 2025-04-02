@@ -17,6 +17,7 @@ export const LoadingSpinner = () => (
 import { DashboardRoutes } from './dashboardRoutes';
 import { InboxRoutes } from './inboxRoutes';
 import { AutomationRoutes } from './automationRoutes';
+// Import settings routes correctly - using the named export instead of default
 import { SettingsRoutes } from './settingsRoutes';
 
 // Lazy load components
@@ -39,8 +40,7 @@ const withSuspenseAndErrorHandling = (Component) => (
   </RouteErrorBoundary>
 );
 
-// Create and export the router with proper route configuration
-const router = createBrowserRouter([
+export const router = createBrowserRouter([
   {
     path: '/',
     element: withSuspenseAndErrorHandling(LandingPage),

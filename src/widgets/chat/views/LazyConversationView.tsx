@@ -7,8 +7,6 @@ const ConversationView = React.lazy(() => import('./ConversationView'));
 interface LazyConversationViewProps {
   onBack: () => void;
   onClose: () => void;
-  conversationId: string;
-  workspaceId: string;
 }
 
 const LazyConversationView: React.FC<LazyConversationViewProps> = (props) => {

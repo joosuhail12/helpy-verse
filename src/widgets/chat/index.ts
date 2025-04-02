@@ -1,6 +1,9 @@
 
-// Export the ChatWidget component
+// Export components directly rather than using dynamic imports
 export { ChatWidget } from './ChatWidget';
-
-// Export widget types
-export type { ChatWidgetSettings } from './types';
+export type { 
+  ThemeConfig, 
+  ChatWidgetSettings, 
+  View,
+  WidgetOptions
+} from './types';

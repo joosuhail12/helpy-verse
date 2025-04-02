@@ -4,7 +4,6 @@ import { RootState } from '../../store';
 import { companiesService } from '@/api/services';
 import { Company } from '@/types/company';
 
-// Define state interface
 export interface CompaniesState {
   companies: Company[];
   selectedCompany: string | null;
@@ -15,7 +14,6 @@ export interface CompaniesState {
   lastFetchTime: number | null;
 }
 
-// Initialize state
 const initialState: CompaniesState = {
   companies: [],
   selectedCompany: null,
@@ -28,7 +26,6 @@ const initialState: CompaniesState = {
 
 export const CACHE_DURATION = 5 * 60 * 1000;
 
-// Thunks
 export const fetchCompanies = createAsyncThunk(
   'companies/fetchCompanies',
   async (_, { getState, rejectWithValue }) => {
@@ -98,7 +95,6 @@ export const deleteCompany = createAsyncThunk(
   }
 );
 
-// Slice
 const companiesSlice = createSlice({
   name: 'companies',
   initialState,
@@ -205,7 +201,6 @@ const companiesSlice = createSlice({
   },
 });
 
-// Actions
 export const { 
   selectCompany, 
   clearSelectedCompany, 
@@ -214,7 +209,6 @@ export const {
   setSelectedCompanies 
 } = companiesSlice.actions;
 
-// Selectors
 const getCompaniesState = (state: RootState) => state.companies;
 
 export const selectCompanies = createSelector(
@@ -257,6 +251,4 @@ export const selectCompaniesByIds = createSelector(
   (companies, companyIds) => companies.filter(company => companyIds.includes(company.id))
 );
 
-// Export the reducer separately to avoid circular dependencies
-const companiesReducer = companiesSlice.reducer;
-export default companiesReducer;
+export default companiesSlice.reducer;

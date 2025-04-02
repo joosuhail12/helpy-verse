@@ -1,64 +1,83 @@
 
-import { ThemeConfig } from '@/context/ThemeContext';
+export interface ThemeConfig {
+  colors?: {
+    primary?: string;
+    primaryForeground?: string;
+    background?: string;
+    backgroundSecondary?: string;
+    foreground?: string;
+    border?: string;
+    muted?: string;
+    accent?: string;
+    inputBackground?: string;
+    userMessage?: string;
+    userMessageText?: string;
+    agentMessage?: string;
+    agentMessageText?: string;
+    error?: string;
+    success?: string;
+  };
+  position?: 'left' | 'right';
+  compact?: boolean;
+  labels?: {
+    welcomeTitle?: string;
+    welcomeSubtitle?: string;
+    placeholder?: string;
+    sendButton?: string;
+    noMessagesText?: string;
+    recentMessagesTitle?: string;
+    askQuestionButton?: string;
+  };
+  features?: {
+    typingIndicator?: boolean;
+    reactions?: boolean;
+    fileAttachments?: boolean;
+    readReceipts?: boolean;
+  };
+}
 
-// View type for navigation
-export type View = 'home' | 'messages' | 'conversation';
-
-// Chat Widget Settings Interface
 export interface ChatWidgetSettings {
-  appearance: {
-    primaryColor: string;
-    position: 'left' | 'right';
-    compact: boolean;
-  };
-  content: {
-    welcomeTitle: string;
-    welcomeSubtitle: string;
-  };
-  features: {
-    enableTypingIndicator: boolean;
-    enableReactions: boolean;
-    enableFileAttachments: boolean;
-    enableReadReceipts: boolean;
-  };
-}
-
-// Button Props Interface
-export interface ToggleButtonProps {
-  isOpen: boolean;
-  onClick: () => void;
-}
-
-// File attachment structure
-export interface FileAttachment {
-  id: string;
-  name: string;
-  type: string;
-  url: string;
-  size: number;
-  thumbnailUrl?: string;
-  uploadProgress?: number;
-}
-
-// Widget Options for external configuration
-export interface WidgetOptions {
-  workspaceId: string;
-  theme?: {
+  appearance?: {
     position?: 'left' | 'right';
     compact?: boolean;
-    colors?: {
-      primary?: string;
-      [key: string]: string | undefined;
-    };
+    primaryColor?: string;
   };
+  content?: {
+    welcomeTitle?: string;
+    welcomeSubtitle?: string;
+  };
+  features?: {
+    enableTypingIndicator?: boolean;
+    enableReactions?: boolean;
+    enableFileAttachments?: boolean;
+    enableReadReceipts?: boolean;
+  };
+}
+
+export type View = 'home' | 'messages' | 'conversation';
+
+export interface WidgetOptions {
+  workspaceId: string;
+  theme?: Partial<ThemeConfig>;
   settings?: Partial<ChatWidgetSettings>;
 }
 
-// Widget Props Interface for IsolatedChatWidget
-export interface IsolatedChatWidgetProps {
-  workspaceId: string;
-  config?: any;
+export interface ChatMessage {
+  id: string;
+  text: string;
+  sender: 'user' | 'agent';
+  timestamp: Date;
+  conversationId: string;
+  status: 'sent' | 'delivered' | 'read' | 'error';
 }
 
-// DO NOT add global window interface declarations here to avoid conflicts
-// These are now moved to src/types/globals.d.ts
+export interface FileAttachment {
+  id: string;
+  name: string;
+  size: number;
+  type: string;
+  url: string;
+  thumbnailUrl?: string;
+  uploadProgress?: number;
+  status: 'uploading' | 'uploaded' | 'error';
+}

@@ -2,12 +2,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useChat } from '@/hooks/chat/useChat';
 import { useThemeContext } from '@/context/ThemeContext';
+import { useMessageSubscription } from '@/hooks/chat/useMessageSubscription';
+import { useTypingIndicator } from '@/hooks/chat/useTypingIndicator';
 import ChatHeader from '../header/ChatHeader';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import { ChatMessage } from './types';
-import { TypingUser } from '@/store/slices/chat/types';
-import { adaptStoreMessagesToComponentMessages } from '@/utils/messageTypeAdapter';
 
 interface ConversationViewProps {
   conversationId: string;
@@ -23,21 +23,27 @@ const ConversationView: React.FC<ConversationViewProps> = ({
   onClose
 }) => {
   const { colors, features } = useThemeContext();
-  const { getMessages, sendMessage, loading, currentConversation } = useChat();
+  const { messages, sendMessage, loadingMessages, currentConversation } = useChat();
   const [localMessages, setLocalMessages] = useState<ChatMessage[]>([]);
-  const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
-  const [isUserTyping, setIsUserTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Initialize local messages
-  useEffect(() => {
-    if (conversationId) {
-      const conversationMessages = getMessages(conversationId);
-      // Convert store messages to component messages
-      const adaptedMessages = adaptStoreMessagesToComponentMessages(conversationMessages);
-      setLocalMessages(adaptedMessages);
+  // Subscribe to new messages using Ably
+  const { publishMessage } = useMessageSubscription(
+    conversationId,
+    workspaceId,
+    {
+      onMessage: (message: ChatMessage) => {
+        setLocalMessages(prev => [...prev, message]);
+      }
     }
-  }, [conversationId, getMessages]);
+  );
+
+  // Use typing indicator
+  const { 
+    typingUsers, 
+    sendTypingIndicator, 
+    isUserTyping 
+  } = useTypingIndicator(conversationId);
 
   // Scroll to bottom when new messages arrive
   useEffect(() => {
@@ -46,28 +52,46 @@ const ConversationView: React.FC<ConversationViewProps> = ({
     }
   }, [localMessages]);
 
+  // Initialize local messages
+  useEffect(() => {
+    if (messages && messages.length > 0) {
+      setLocalMessages(messages);
+    }
+  }, [messages]);
+
   const handleSendMessage = async (content: string) => {
     if (!content.trim()) return;
 
-    try {
-      await sendMessage(content, conversationId);
-      
-      // Update local messages after sending
-      const updatedMessages = getMessages(conversationId);
-      // Convert store messages to component messages
-      const adaptedMessages = adaptStoreMessagesToComponentMessages(updatedMessages);
-      setLocalMessages(adaptedMessages);
-      
-      // Reset typing indicator
-      setIsUserTyping(false);
-    } catch (error) {
-      console.error('Error sending message:', error);
+    // Create a new message
+    const newMessage: ChatMessage = {
+      id: `msg-${Date.now()}`,
+      content,
+      sender: 'user',
+      timestamp: new Date().toISOString(),
+      conversationId,
+      status: 'sent'
+    };
+
+    // Add to local messages immediately
+    setLocalMessages(prev => [...prev, newMessage]);
+
+    // Send through Ably
+    await publishMessage(newMessage);
+
+    // Also send through local chat context
+    if (sendMessage) {
+      await sendMessage(conversationId, content);
+    }
+
+    // Reset typing indicator
+    if (features.typingIndicator) {
+      sendTypingIndicator(false);
     }
   };
 
   const handleTyping = (isTyping: boolean) => {
-    if (features?.typingIndicator) {
-      setIsUserTyping(isTyping);
+    if (features.typingIndicator) {
+      sendTypingIndicator(isTyping);
     }
   };
 
@@ -89,7 +113,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
         <MessageList 
           messages={localMessages} 
           typingUsers={typingUsers}
-          isLoading={loading}
+          isLoading={loadingMessages}
         />
         <div ref={messagesEndRef} />
       </div>

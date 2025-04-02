@@ -2,10 +2,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useChat } from '@/hooks/chat/useChat';
 import { useThemeContext } from '@/context/ThemeContext';
+import Navigation from '../components/navigation/Navigation';
 import ViewManager from '../components/navigation/ViewManager';
 import LoadingState from '../components/states/LoadingState';
-
-export type View = 'home' | 'messages' | 'conversation';
 
 interface ChatWidgetContainerProps {
   onClose: () => void;
@@ -15,78 +14,76 @@ interface ChatWidgetContainerProps {
   instanceId?: string;
 }
 
+export type View = 'home' | 'messages' | 'conversation';
+
 const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({ 
   onClose, 
   workspaceId,
-  position = 'bottom-right',
+  position = 'right',
   compact = false,
   instanceId = 'default'
 }) => {
-  // Get chat context
-  const { conversations, currentConversation, selectConversation, createNewConversation, sendMessage } = useChat();
-  
-  // UI state
+  const { conversations, currentConversation, selectConversation, createNewConversation } = useChat();
   const { colors } = useThemeContext();
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [activeView, setActiveView] = useState<View>('home');
 
-  // Initialize the widget
+  // Modified to not create a conversation on init
   useEffect(() => {
-    // Initialize chat widget
     setIsLoading(false);
   }, []);
 
-  // Handle starting a conversation with a message
-  const handleStartConversation = useCallback(async (message: string): Promise<void> => {
-    try {
-      // Create a new conversation if needed
-      if (!currentConversation) {
-        const conversationId = await createNewConversation();
-        // Send the initial message
-        await sendMessage(message, conversationId);
-      } else {
-        // Send message to current conversation
-        await sendMessage(message, currentConversation.id);
-      }
-      
-      // Move to conversation view
-      setActiveView('conversation');
-      return Promise.resolve();
-    } catch (error) {
-      console.error('Error starting conversation:', error);
-      return Promise.reject(error);
+  // Function to handle starting a new conversation when user sends first message
+  const handleStartConversation = useCallback(async (message: string) => {
+    if (!message.trim()) {
+      // If no message, just navigate to the messages view
+      setActiveView('messages');
+      return;
     }
-  }, [currentConversation, createNewConversation, sendMessage]);
+    
+    setIsLoading(true);
+    try {
+      // Use the string ID returned by createNewConversation
+      const newConversationId = await createNewConversation(`Conversation ${new Date().toLocaleString()}`);
+      selectConversation(newConversationId);
+      setActiveView('conversation');
+      // Now we can handle the message in the conversation component
+    } catch (error) {
+      console.error('Failed to create conversation:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [createNewConversation, selectConversation]);
 
-  // Handle selecting a conversation
+  // Function to start a new conversation without a message
+  const handleStartNewConversation = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      // Use the string ID returned by createNewConversation
+      const newConversationId = await createNewConversation(`Conversation ${new Date().toLocaleString()}`);
+      selectConversation(newConversationId);
+      setActiveView('conversation');
+    } catch (error) {
+      console.error('Failed to create conversation:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [createNewConversation, selectConversation]);
+
+  // Fixed: Pass the conversation ID string
   const handleSelectConversation = useCallback((conversationId: string) => {
     selectConversation(conversationId);
     setActiveView('conversation');
   }, [selectConversation]);
 
-  // Handle starting a new conversation
-  const handleStartNewConversation = useCallback(async (): Promise<void> => {
-    try {
-      console.log('Creating new conversation');
-      const conversationId = await createNewConversation();
-      console.log('Created conversation with ID:', conversationId);
-      setActiveView('conversation');
-      return Promise.resolve();
-    } catch (error) {
-      console.error('Error creating new conversation:', error);
-      return Promise.reject(error);
-    }
-  }, [createNewConversation]);
-
-  // Show loading state while initializing
   if (isLoading) {
-    return <LoadingState />;
+    return <LoadingState compact={compact} />;
   }
 
   return (
     <div 
-      className="flex flex-col h-full overflow-hidden"
-      style={{ backgroundColor: colors.background }}
+      className={`flex flex-col h-full text-gray-900 ${compact ? 'max-w-xs' : 'w-full'}`} 
+      style={{ backgroundColor: colors.background, color: colors.foreground }}
     >
       <ViewManager
         activeView={activeView}
