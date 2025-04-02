@@ -22,13 +22,26 @@ const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({
   compact = false,
   instanceId = 'default' // Default value for the instanceId
 }) => {
-  const { conversations, currentConversation, selectConversation, createNewConversation, sendMessage } = useChat();
-  const { colors } = useThemeContext();
+  // Access chat context
+  const chatContext = useChat();
+  const { conversations, currentConversation, selectConversation, createNewConversation, sendMessage } = chatContext || {
+    conversations: [],
+    currentConversation: null,
+    selectConversation: () => {},
+    createNewConversation: async () => '',
+    sendMessage: async () => {}
+  };
+  
+  // Access theme context
+  const themeContext = useThemeContext();
+  const colors = themeContext?.colors || { background: '#ffffff' };
+  
   const [isLoading, setIsLoading] = useState(true);
   const [activeView, setActiveView] = useState<View>('home');
 
   useEffect(() => {
     // Initialize chat widget
+    console.log('Initializing chat widget container');
     setIsLoading(false);
   }, []);
 

@@ -3,6 +3,7 @@ import React from 'react';
 import Sidebar from '../navigation/Sidebar';
 import Header from '../navigation/Header';
 import { ChatWidget } from '@/widgets/chat';
+import { WidgetStateProvider } from '@/widgets/chat/context/WidgetStateContext';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -20,15 +21,17 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       </div>
       
       {/* Chat widget with fixed positioning and right alignment */}
-      <div className="fixed bottom-4 right-4 z-50">
-        <ChatWidget 
-          workspaceId="workspace-123" 
-          theme={{
-            position: 'right',
-            compact: false
-          }}
-        />
-      </div>
+      <WidgetStateProvider>
+        <div className="fixed bottom-4 right-4 z-50">
+          <ChatWidget 
+            workspaceId="workspace-123" 
+            theme={{
+              position: 'right',
+              compact: false
+            }}
+          />
+        </div>
+      </WidgetStateProvider>
     </div>
   );
 };
