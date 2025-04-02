@@ -1,7 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { ChatWidget } from '../ChatWidget';
-import { ThemeConfig, WidgetOptions } from '../types';
+import { WidgetOptions } from '../types';
+import { ThemeConfig } from '@/context/ThemeContext';
 import { adaptApiThemeToContextTheme } from '../utils/themeAdapter';
 import { WidgetStateProvider } from '../context/WidgetStateContext';
 import { v4 as uuidv4 } from 'uuid';
@@ -87,7 +88,7 @@ const StandaloneChatWidget: React.FC = () => {
     <WidgetStateProvider instanceId={instanceId}>
       <ChatWidget 
         workspaceId={workspaceId}
-        theme={{ ...contextTheme, position: 'right' }}
+        theme={{ ...contextTheme, position: 'right' as const }}
         settings={options?.settings}
         standalone={true}
         instanceId={instanceId}

@@ -1,7 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { ChatWidget } from '../ChatWidget';
-import { ThemeConfig, ChatWidgetSettings } from '../types';
+import { ThemeConfig } from '@/context/ThemeContext';
+import { ChatWidgetSettings } from '../types';
 import { adaptApiThemeToContextTheme } from '../utils/themeAdapter';
 import { WidgetStateProvider } from '../context/WidgetStateContext';
 import { v4 as uuidv4 } from 'uuid';
@@ -99,14 +100,18 @@ const EmbeddedChatWidget: React.FC<EmbeddedChatWidgetProps> = ({
   // Convert API theme to context theme and force right positioning
   const contextTheme = {
     ...adaptApiThemeToContextTheme(theme),
-    position: 'right' // Always force right positioning
+    position: 'right' as const // Always force right positioning with type assertion
   };
 
   // Expose imperative methods for parent components
   React.useEffect(() => {
     // Create a method to programmatically trigger widget actions
     if (window && !window.PULLSE) {
-      window.PULLSE = {};
+      window.PULLSE = {
+        initializeWidget: () => {
+          console.log('Widget initialized');
+        }
+      };
     }
     
     if (window.PULLSE) {

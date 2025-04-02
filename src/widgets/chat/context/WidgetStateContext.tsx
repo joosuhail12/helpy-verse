@@ -80,7 +80,7 @@ function widgetReducer(state: WidgetState, action: WidgetAction): WidgetState {
         },
         theme: {
           ...state.theme,
-          position: 'right', // Always force right positioning
+          position: 'right' as const, // Force right positioning with type assertion
           compact: action.payload.theme?.compact || state.theme.compact,
           colors: {
             ...state.theme.colors,
@@ -93,7 +93,7 @@ function widgetReducer(state: WidgetState, action: WidgetAction): WidgetState {
         ...state,
         theme: {
           ...state.theme,
-          position: 'right', // Always force right positioning
+          position: 'right' as const, // Force right positioning with type assertion
           compact: action.payload.compact || state.theme.compact,
           colors: {
             ...state.theme.colors,
@@ -106,63 +106,56 @@ function widgetReducer(state: WidgetState, action: WidgetAction): WidgetState {
   }
 }
 
-// Persist widget state to localStorage based on instanceId
-const persistState = (state: WidgetState) => {
-  if (typeof window !== 'undefined') {
-    try {
-      localStorage.setItem(`chat-widget-state-${state.instanceId}`, JSON.stringify({
-        isOpen: state.isOpen,
-        theme: state.theme,
-        config: state.config
-      }));
-    } catch (e) {
-      console.error('Failed to persist widget state:', e);
-    }
-  }
-};
-
-// Load persisted state from localStorage based on instanceId
-const loadPersistedState = (instanceId: string): Partial<WidgetState> => {
-  if (typeof window !== 'undefined') {
-    try {
-      const saved = localStorage.getItem(`chat-widget-state-${instanceId}`);
-      if (saved) {
-        return JSON.parse(saved);
-      }
-    } catch (e) {
-      console.error('Failed to load persisted widget state:', e);
-    }
-  }
-  return {};
-};
-
 // Provider component
-export const WidgetStateProvider: React.FC<{ children: ReactNode; instanceId?: string }> = ({ 
+interface WidgetStateProviderProps {
+  children: ReactNode;
+  instanceId?: string;
+}
+
+export const WidgetStateProvider: React.FC<WidgetStateProviderProps> = ({ 
   children, 
   instanceId = 'default' 
 }) => {
-  // Load initial state from localStorage if available
-  const persistedState = loadPersistedState(instanceId);
-  const mergedInitialState = {
+  // Initialize state with instanceId
+  const actualInitialState: WidgetState = {
     ...initialState,
-    ...persistedState,
-    instanceId,
-    theme: {
-      ...initialState.theme,
-      ...(persistedState.theme || {}),
-      position: 'right' // Always enforce right positioning
-    }
+    instanceId
   };
-  
-  const [state, dispatch] = useReducer(widgetReducer, mergedInitialState);
-  
-  // Persist state changes to localStorage
+
+  const [state, dispatch] = useReducer(widgetReducer, actualInitialState);
+
+  // Persist widget state to localStorage based on instanceId
   useEffect(() => {
-    if (state.isInitialized) {
-      persistState(state);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(`chat-widget-state-${state.instanceId}`, JSON.stringify({
+          isOpen: state.isOpen,
+          theme: state.theme
+        }));
+      } catch (error) {
+        console.error('Failed to persist widget state:', error);
+      }
     }
-  }, [state]);
-  
+  }, [state.isOpen, state.theme, state.instanceId]);
+
+  // Set up event listeners for external control
+  useEffect(() => {
+    const handleOpenEvent = () => dispatch({ type: 'OPEN_WIDGET' });
+    const handleCloseEvent = () => dispatch({ type: 'CLOSE_WIDGET' });
+    const handleToggleEvent = () => dispatch({ type: 'TOGGLE_WIDGET' });
+
+    // Add namespaced event listeners to prevent cross-widget interference
+    window.addEventListener(`chat-widget-open-${instanceId}`, handleOpenEvent);
+    window.addEventListener(`chat-widget-close-${instanceId}`, handleCloseEvent);
+    window.addEventListener(`chat-widget-toggle-${instanceId}`, handleToggleEvent);
+
+    return () => {
+      window.removeEventListener(`chat-widget-open-${instanceId}`, handleOpenEvent);
+      window.removeEventListener(`chat-widget-close-${instanceId}`, handleCloseEvent);
+      window.removeEventListener(`chat-widget-toggle-${instanceId}`, handleToggleEvent);
+    };
+  }, [instanceId]);
+
   return (
     <WidgetStateContext.Provider value={{ state, dispatch }}>
       {children}
@@ -170,11 +163,12 @@ export const WidgetStateProvider: React.FC<{ children: ReactNode; instanceId?: s
   );
 };
 
-// Custom hook to use the context
 export const useWidgetState = () => {
   const context = useContext(WidgetStateContext);
+  
   if (context === undefined) {
     throw new Error('useWidgetState must be used within a WidgetStateProvider');
   }
+  
   return context;
 };

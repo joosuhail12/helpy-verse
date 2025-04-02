@@ -1,6 +1,9 @@
 
 import { ThemeConfig } from '@/context/ThemeContext';
 
+// View type for navigation
+export type View = 'home' | 'messages' | 'conversation';
+
 // Chat Widget Settings Interface
 export interface ChatWidgetSettings {
   appearance: {
@@ -24,6 +27,17 @@ export interface ChatWidgetSettings {
 export interface ToggleButtonProps {
   isOpen: boolean;
   onClick: () => void;
+}
+
+// File attachment structure
+export interface FileAttachment {
+  id: string;
+  name: string;
+  type: string;
+  url: string;
+  size: number;
+  thumbnailUrl?: string;
+  uploadProgress?: number;
 }
 
 // Widget Options for external configuration
