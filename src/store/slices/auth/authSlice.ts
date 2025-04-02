@@ -1,4 +1,3 @@
-
 import { createSlice } from '@reduxjs/toolkit';
 import { AuthState } from './types';
 import { 
@@ -160,14 +159,10 @@ const authSlice = createSlice({
 // Export actions directly from the slice
 export const { logout, clearError } = authSlice.actions;
 
-// Export the reducer as default export to avoid circular dependencies
-const authReducer = authSlice.reducer;
-export default authReducer;
+// Create and export the reducer separately from any other exports
+const reducer = authSlice.reducer;
 
-// For backwards compatibility
-export { authReducer };
-
-// Export all the async actions for use in components
+// Export all the async actions individually
 export {
   loginUser,
   registerUser,
@@ -178,3 +173,6 @@ export {
   fetchWorkspaceData,
   getUserPermission
 };
+
+// Export the reducer as the default export - this is the cleanest approach
+export default reducer;

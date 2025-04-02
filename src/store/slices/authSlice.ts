@@ -2,6 +2,7 @@
 // This file re-exports everything from the refactored auth slice
 // for backward compatibility
 
+// First, import the actions and other exports that are not the reducer
 import { 
   logout, 
   clearError,
@@ -15,9 +16,10 @@ import {
   getUserPermission,
 } from './auth/authSlice';
 
-// Import the default export (the reducer) and re-export with the name authReducer
-import authReducer from './auth/authSlice';
+// Import the default export (reducer) separately
+import reducer from './auth/authSlice';
 
+// Re-export everything
 export { 
   logout, 
   clearError,
@@ -29,8 +31,10 @@ export {
   fetchUserProfile,
   fetchWorkspaceData,
   getUserPermission,
-  authReducer
 };
+
+// Re-export the reducer as authReducer for backward compatibility
+export const authReducer = reducer;
 
 // Use 'export type' when re-exporting types with isolatedModules enabled
 export type { Permission, Permissions, AuthState } from './auth/types';
