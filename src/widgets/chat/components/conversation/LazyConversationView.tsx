@@ -6,12 +6,14 @@ interface LazyConversationViewProps {
   workspaceId: string;
   onBack: () => void;
   onClose: () => void;
+  conversationId: string;
 }
 
 const LazyConversationView: React.FC<LazyConversationViewProps> = ({
   workspaceId,
   onBack,
-  onClose
+  onClose,
+  conversationId
 }) => {
   const { currentConversation } = useChat();
   

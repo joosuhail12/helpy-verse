@@ -60,16 +60,5 @@ export interface IsolatedChatWidgetProps {
   config?: any;
 }
 
-// Global window augmentation to add PULLSE namespace
-declare global {
-  interface Window {
-    PULLSE: {
-      initializeWidget: (options: WidgetOptions) => void;
-      openWidget?: () => void;
-      closeWidget?: () => void;
-      toggleWidget?: () => void;
-      [key: string]: any;
-    };
-    PULLSE_CHAT_CONFIG?: WidgetOptions;
-  }
-}
+// DO NOT add global window interface declarations here to avoid conflicts
+// These are now moved to src/types/globals.d.ts
