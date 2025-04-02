@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { ChatProvider } from '@/context/ChatContext';
 import { AblyProvider } from '@/context/AblyContext';
@@ -29,12 +28,12 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({
   const { state, dispatch } = useWidgetState();
   const isOpen = state.isOpen;
 
-  // Apply settings to theme if provided
+  // Override theme settings to ensure right positioning
   const combinedTheme: Partial<ThemeConfig> = {
     ...theme,
-    // Override with settings if provided
+    position: 'right', // Force right positioning
     ...(settings?.appearance && {
-      position: settings.appearance.position,
+      position: 'right',
       compact: settings.appearance.compact,
       colors: {
         ...theme.colors,
@@ -56,74 +55,28 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({
 
   const toggleWidget = () => {
     dispatch({ type: 'TOGGLE_WIDGET' });
-    
-    // Dispatch event for external listeners with instance ID to avoid cross-talk
-    window.dispatchEvent(new CustomEvent(
-      state.isOpen ? `chat-widget-close-${instanceId}` : `chat-widget-open-${instanceId}`
-    ));
   };
-
-  const position = combinedTheme.position === 'left' ? 'left' : 'right';
-
-  // Setup event listeners for external control
-  React.useEffect(() => {
-    // Use instance-specific event names
-    const openEventName = `chat-widget-open-${instanceId}`;
-    const closeEventName = `chat-widget-close-${instanceId}`;
-    const toggleEventName = `chat-widget-toggle-${instanceId}`;
-    
-    const handleOpen = () => dispatch({ type: 'OPEN_WIDGET' });
-    const handleClose = () => dispatch({ type: 'CLOSE_WIDGET' });
-    const handleToggle = () => dispatch({ type: 'TOGGLE_WIDGET' });
-    
-    window.addEventListener(openEventName, handleOpen);
-    window.addEventListener(closeEventName, handleClose);
-    window.addEventListener(toggleEventName, handleToggle);
-    
-    return () => {
-      window.removeEventListener(openEventName, handleOpen);
-      window.removeEventListener(closeEventName, handleClose);
-      window.removeEventListener(toggleEventName, handleToggle);
-    };
-  }, [dispatch, instanceId]);
-
-  // Initialize widget state with configuration
-  useEffect(() => {
-    if (workspaceId && !state.isInitialized) {
-      dispatch({ 
-        type: 'INITIALIZE', 
-        payload: {
-          workspaceId,
-          theme: combinedTheme,
-          settings
-        }
-      });
-    }
-  }, [workspaceId, combinedTheme, settings, dispatch, state.isInitialized]);
 
   return (
     <AblyProvider workspaceId={workspaceId}>
       <ChatProvider workspaceId={workspaceId}>
         <ThemeProvider initialTheme={combinedTheme}>
-          <div className={`fixed z-[9999] ${position === 'left' ? 'left-4' : 'right-4'}`}>
+          <div className="fixed bottom-4 right-4 z-50">
             {isOpen && (
-              <div className="mb-4">
-                <ChatWidgetWrapper 
-                  isOpen={isOpen}
-                  position={position}
+              <ChatWidgetWrapper 
+                isOpen={isOpen}
+                position="right"
+                compact={Boolean(combinedTheme.compact)}
+              >
+                <ChatWidgetContainer 
+                  onClose={() => dispatch({ type: 'CLOSE_WIDGET' })} 
+                  workspaceId={workspaceId} 
+                  position="right"
                   compact={Boolean(combinedTheme.compact)}
-                >
-                  <ChatWidgetContainer 
-                    onClose={() => dispatch({ type: 'CLOSE_WIDGET' })} 
-                    workspaceId={workspaceId} 
-                    position={position}
-                    compact={Boolean(combinedTheme.compact)}
-                    instanceId={instanceId}
-                  />
-                </ChatWidgetWrapper>
-              </div>
+                />
+              </ChatWidgetWrapper>
             )}
-            <div className="bottom-4">
+            <div className="mt-2">
               <ToggleButton 
                 isOpen={isOpen} 
                 onClick={toggleWidget} 

@@ -19,14 +19,16 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         </main>
       </div>
       
-      {/* Chat widget with fixed workspaceId */}
-      <ChatWidget 
-        workspaceId="workspace-123" 
-        theme={{
-          position: 'right',
-          compact: false
-        }}
-      />
+      {/* Chat widget with fixed positioning and right alignment */}
+      <div className="fixed bottom-4 right-4 z-50">
+        <ChatWidget 
+          workspaceId="workspace-123" 
+          theme={{
+            position: 'right',
+            compact: false
+          }}
+        />
+      </div>
     </div>
   );
 };
