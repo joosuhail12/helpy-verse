@@ -22,27 +22,47 @@ const ConversationView: React.FC<ConversationViewProps> = ({
   instanceId = 'default'
 }) => {
   const chatContext = useChat();
-  const { sendMessage, loadMessages, messages, loadingMessages } = chatContext || {
+  const { 
+    sendMessage, 
+    getMessages,
+    loading: loadingMessages 
+  } = chatContext || {
     sendMessage: async () => {},
-    loadMessages: async () => {},
-    messages: [],
-    loadingMessages: false
+    getMessages: () => [],
+    loading: false
   };
   
   const { colors, features } = useThemeContext();
   const [isLoading, setIsLoading] = useState(true);
+  const [messages, setMessages] = useState<any[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
     const loadConversation = async () => {
-      if (loadMessages) {
-        await loadMessages(conversationId);
+      try {
+        // If getMessages exists, use it
+        if (getMessages) {
+          const conversationMessages = await getMessages(conversationId);
+          setMessages(conversationMessages || []);
+        } else {
+          // Fallback for mock data
+          setMessages([{
+            id: '1',
+            content: 'Hello! How can I help you today?',
+            sender: 'agent',
+            timestamp: new Date().toISOString(),
+            conversationId
+          }]);
+        }
+      } catch (error) {
+        console.error('Error loading messages:', error);
+      } finally {
         setIsLoading(false);
       }
     };
     
     loadConversation();
-  }, [conversationId, loadMessages]);
+  }, [conversationId, getMessages]);
   
   useEffect(() => {
     if (messagesEndRef.current) {
@@ -52,12 +72,43 @@ const ConversationView: React.FC<ConversationViewProps> = ({
   
   const handleSendMessage = async (content: string) => {
     if (sendMessage) {
+      // Optimistically add the user message
+      const newUserMessage = {
+        id: `temp-${Date.now()}`,
+        content,
+        sender: 'user',
+        timestamp: new Date().toISOString(),
+        conversationId
+      };
+      
+      setMessages(prev => [...prev, newUserMessage]);
+      
+      // Send the message
       await sendMessage(conversationId, content);
       
       // Trigger message sent event for external callbacks
       window.dispatchEvent(new CustomEvent(`chat-message-sent-${instanceId}`, {
         detail: { message: { content } }
       }));
+      
+      // Refresh messages
+      if (getMessages) {
+        const updatedMessages = await getMessages(conversationId);
+        setMessages(updatedMessages || []);
+      } else {
+        // Add mock response
+        setTimeout(() => {
+          const agentResponse = {
+            id: `response-${Date.now()}`,
+            content: `Thank you for your message: "${content}". How else can I help?`,
+            sender: 'agent',
+            timestamp: new Date().toISOString(),
+            conversationId
+          };
+          
+          setMessages(prev => [...prev, agentResponse]);
+        }, 1000);
+      }
     }
   };
   

@@ -18,14 +18,6 @@ interface ViewManagerProps {
   instanceId?: string;
 }
 
-interface LazyConversationViewProps {
-  onBack: () => void;
-  onClose: () => void;
-  workspaceId: string;
-  conversationId: string;
-  instanceId?: string;
-}
-
 const ViewManager: React.FC<ViewManagerProps> = ({
   activeView,
   setActiveView,
