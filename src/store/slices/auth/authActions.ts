@@ -1,3 +1,4 @@
+
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { HttpClient } from "@/api/services/http";
 import { 
@@ -69,7 +70,7 @@ export const loginUser = createAsyncThunk(
         }
 
         // Configure Axios with the new token
-        HttpClient.setAxiosDefaultConfig();
+        HttpClient.setAxiosDefaultConfig(token);
       } else {
         console.error("Login response missing data structure:", response.data);
         return rejectWithValue("Invalid server response format");

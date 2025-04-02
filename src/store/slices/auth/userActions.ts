@@ -13,20 +13,32 @@ export const fetchUserData = createAsyncThunk(
       console.log('Fetching user data');
       
       // Mock successful response for development
-      const mockData = {
-        id: 'user-123',
-        name: 'Test User',
-        email: 'test@example.com',
-        workspaceId: 'workspace-123',
-        role: 'admin'
+      const userData = {
+        status: "success",
+        message: "User data retrieved successfully",
+        data: {
+          id: 'user-123',
+          name: 'Test User',
+          email: 'test@example.com',
+          workspaceId: 'workspace-123',
+          role: 'admin',
+          accessToken: {
+            token: "mock-token",
+            expiry: Date.now() + 3600000,
+            issuedAt: new Date().toISOString(),
+            userAgent: navigator.userAgent,
+            ip: "127.0.0.1"
+          },
+          defaultWorkspaceId: 'workspace-123'
+        }
       };
       
       // Store workspace ID in localStorage for easy access in API calls
-      if (mockData.workspaceId) {
-        setWorkspaceId(mockData.workspaceId);
+      if (userData.data.workspaceId) {
+        setWorkspaceId(userData.data.workspaceId);
       }
       
-      return mockData;
+      return userData;
     } catch (error) {
       console.error('Error fetching user data:', error);
       return rejectWithValue(error.message || 'Failed to fetch user data');
@@ -44,13 +56,25 @@ export const fetchUserProfile = createAsyncThunk(
       
       // Mock successful response for development
       return {
-        id: 'user-123',
-        name: 'Test User',
-        email: 'test@example.com',
-        avatar: 'https://ui-avatars.com/api/?name=Test+User',
-        role: 'admin',
-        department: 'Engineering',
-        lastLogin: new Date().toISOString()
+        status: "success",
+        message: "User profile retrieved successfully",
+        data: {
+          id: 'user-123',
+          name: 'Test User',
+          email: 'test@example.com',
+          avatar: 'https://ui-avatars.com/api/?name=Test+User',
+          role: 'admin',
+          department: 'Engineering',
+          lastLogin: new Date().toISOString(),
+          accessToken: {
+            token: "mock-token",
+            expiry: Date.now() + 3600000,
+            issuedAt: new Date().toISOString(),
+            userAgent: navigator.userAgent,
+            ip: "127.0.0.1"
+          },
+          defaultWorkspaceId: 'workspace-123'
+        }
       };
     } catch (error) {
       console.error('Error fetching user profile:', error);
@@ -69,12 +93,24 @@ export const fetchWorkspaceData = createAsyncThunk(
       
       // Mock successful response for development
       return {
-        id: 'workspace-123',
-        name: 'Test Workspace',
-        plan: 'professional',
-        seats: 10,
-        usedSeats: 3,
-        createdAt: new Date().toISOString()
+        status: "success",
+        message: "Workspace data retrieved successfully",
+        data: {
+          id: 'workspace-123',
+          name: 'Test Workspace',
+          plan: 'professional',
+          seats: 10,
+          usedSeats: 3,
+          createdAt: new Date().toISOString(),
+          accessToken: {
+            token: "mock-token",
+            expiry: Date.now() + 3600000,
+            issuedAt: new Date().toISOString(),
+            userAgent: navigator.userAgent,
+            ip: "127.0.0.1"
+          },
+          defaultWorkspaceId: 'workspace-123'
+        }
       };
     } catch (error) {
       console.error('Error fetching workspace data:', error);

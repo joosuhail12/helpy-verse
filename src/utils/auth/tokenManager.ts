@@ -13,6 +13,16 @@ export const isAuthenticated = (): boolean => {
   }
 };
 
+// Get auth token from storage
+export const getAuthToken = (): string | null => {
+  try {
+    return localStorage.getItem("token");
+  } catch (error) {
+    console.error("Error getting auth token:", error);
+    return null;
+  }
+};
+
 // Handle setting token
 export const handleSetToken = (token: string): void => {
   try {
