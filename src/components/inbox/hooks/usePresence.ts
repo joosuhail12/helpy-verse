@@ -35,19 +35,14 @@ export const usePresence = (ticket: Ticket, setMessages: (updater: (prev: Messag
           toast({
             description: `${member.data.name} joined the conversation`,
           });
-          setActiveUsers(prev => [...prev, {
-            userId: member.data.userId || member.clientId,
-            name: member.data.name,
-            lastActive: member.data.lastActive || new Date().toISOString(),
-            location: member.data.location
-          } as UserPresence]);
+          setActiveUsers(prev => [...prev, member.data as UserPresence]);
         });
 
         channel.presence.subscribe('leave', (member) => {
           toast({
             description: `${member.data.name} left the conversation`,
           });
-          setActiveUsers(prev => prev.filter(user => user.userId !== (member.data.userId || member.clientId)));
+          setActiveUsers(prev => prev.filter(user => user.userId !== member.data.userId));
         });
 
         channel.presence.subscribe('update', (member) => {
@@ -60,13 +55,13 @@ export const usePresence = (ticket: Ticket, setMessages: (updater: (prev: Messag
           if (member.data?.lastRead) {
             setMessages(prev => prev.map(msg => ({
               ...msg,
-              readBy: [...(msg.readBy || []), member.data.userId || member.clientId]
+              readBy: [...(msg.readBy || []), member.data.userId]
             })));
           }
 
           if (member.data?.location) {
             setActiveUsers(prev => prev.map(user => 
-              user.userId === (member.data.userId || member.clientId)
+              user.userId === member.data.userId 
                 ? { ...user, location: member.data.location }
                 : user
             ));
@@ -78,7 +73,7 @@ export const usePresence = (ticket: Ticket, setMessages: (updater: (prev: Messag
         
         if (presenceData && Array.isArray(presenceData)) {
           const presentMembers = presenceData.map(member => ({
-            userId: member.data?.userId || member.clientId,
+            userId: member.clientId,
             name: member.data?.name || 'Unknown',
             lastActive: member.data?.lastActive || new Date().toISOString(),
             location: member.data?.location

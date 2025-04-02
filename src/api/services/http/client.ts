@@ -2,11 +2,12 @@
 import axios from 'axios';
 import { API_BASE_URL, LLM_SERVICE_URL, DEFAULT_TIMEOUT, CONTACTS_TIMEOUT, CORS_CONFIG } from './config';
 import { 
-    requestInterceptor, 
-    requestErrorInterceptor, 
-    responseInterceptor, 
-    responseErrorInterceptor 
+  requestInterceptor, 
+  requestErrorInterceptor, 
+  responseInterceptor, 
+  responseErrorInterceptor 
 } from './interceptors';
+import { cookieFunctions } from './cookieManager';
 
 // A function to create an axios instance with proper config
 const createApiClient = (baseURL, timeout) => {
@@ -37,7 +38,7 @@ const contactsClient = createApiClient(API_BASE_URL, CONTACTS_TIMEOUT);
 const llmService = createApiClient(LLM_SERVICE_URL, 60000);
 
 // ✅ Set up default axios configuration
-const setAxiosDefaultConfig = (token) => {
+const setAxiosDefaultConfig = (token?: string): void => {
     // If token is provided, use it; otherwise try to get it from cookie
     if (token) {
         apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
@@ -69,7 +70,7 @@ const checkApiConnection = async () => {
 };
 
 // Offline check utility
-export const isOffline = () => {
+export const isOffline = (): boolean => {
   return !navigator.onLine;
 };
 

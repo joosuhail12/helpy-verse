@@ -1,123 +1,134 @@
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
+import { Send, Paperclip } from 'lucide-react';
 import { useThemeContext } from '@/context/ThemeContext';
-import { Send, Paperclip, Smile } from 'lucide-react';
+import { FileAttachment } from './types';
+import FileAttachmentItem from './FileAttachmentItem';
 
 interface MessageInputProps {
-  onSendMessage: (message: string) => void;
-  onTyping?: (isTyping: boolean) => void;
-  disabled?: boolean;
-  placeholder?: string;
+  onSendMessage: (content: string) => void;
+  onTyping?: () => void;
+  isDisabled?: boolean;
 }
 
-const MessageInput: React.FC<MessageInputProps> = ({ 
-  onSendMessage, 
-  onTyping,
-  disabled = false,
-  placeholder = "Type a message..."
-}) => {
-  const [message, setMessage] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, onTyping, isDisabled = false }) => {
   const { colors, labels } = useThemeContext();
+  const [message, setMessage] = useState('');
+  const [attachments, setAttachments] = useState<FileAttachment[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Auto-resize textarea
-  useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 150)}px`;
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (message.trim() === '' && attachments.length === 0) return;
+    
+    let content = message;
+    
+    // Add attachment info to the message if there are any
+    if (attachments.length > 0) {
+      const attachmentSummary = attachments.map(a => a.name).join(', ');
+      content = `${message}\n\nAttachments: ${attachmentSummary}`;
     }
-  }, [message]);
+    
+    onSendMessage(content);
+    setMessage('');
+    setAttachments([]);
+  };
 
-  // Handle typing indicator
-  useEffect(() => {
-    if (message && !isTyping) {
-      setIsTyping(true);
-      if (onTyping) onTyping(true);
-    }
-
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-    }
-
-    typingTimeoutRef.current = setTimeout(() => {
-      if (isTyping) {
-        setIsTyping(false);
-        if (onTyping) onTyping(false);
-      }
-    }, 2000);
-
-    return () => {
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
-      }
-    };
-  }, [message, isTyping, onTyping]);
-
-  const handleSend = () => {
-    if (message.trim() && !disabled) {
-      onSendMessage(message);
-      setMessage('');
-      if (textareaRef.current) {
-        textareaRef.current.style.height = 'auto';
-      }
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setMessage(e.target.value);
+    
+    // Trigger typing indicator when user is typing
+    if (onTyping && e.target.value.length > 0) {
+      onTyping();
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSend();
+      handleSubmit(e);
     }
   };
 
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const newAttachments: FileAttachment[] = Array.from(e.target.files).map(file => ({
+        id: Math.random().toString(36).substring(2, 11),
+        name: file.name,
+        type: file.type,
+        url: URL.createObjectURL(file),
+        size: file.size
+      }));
+      
+      setAttachments(prev => [...prev, ...newAttachments]);
+    }
+  };
+
+  const handleAttachmentClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const removeAttachment = (id: string) => {
+    setAttachments(prev => prev.filter(attachment => attachment.id !== id));
+  };
+
   return (
-    <div className="p-3 flex items-end">
-      <div className="relative flex-1">
-        <textarea
-          ref={textareaRef}
-          className="w-full rounded-lg pl-4 pr-12 py-3 resize-none focus:outline-none focus:ring-2 focus:ring-primary/50 transition-shadow"
-          style={{ 
-            backgroundColor: colors.inputBackground || '#f9fafb',
-            borderColor: colors.border || '#e5e7eb',
-            color: colors.foreground || '#111827',
-            minHeight: '48px',
-            maxHeight: '150px'
-          }}
-          placeholder={placeholder || labels?.placeholder || "Type a message..."}
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          onKeyDown={handleKeyDown}
-          disabled={disabled}
-          rows={1}
-        />
-        <div className="absolute right-3 bottom-3 flex items-center gap-2">
-          <button 
-            type="button"
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-            title="Attach files"
-          >
-            <Paperclip size={18} />
-          </button>
-          <button 
-            type="button"
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-            title="Add emoji"
-          >
-            <Smile size={18} />
-          </button>
+    <div className="border-t p-3" style={{ borderColor: colors.border }}>
+      {attachments.length > 0 && (
+        <div className="mb-2 flex flex-wrap gap-2">
+          {attachments.map(attachment => (
+            <div key={attachment.id} onClick={() => removeAttachment(attachment.id)}>
+              <FileAttachmentItem attachment={attachment} />
+            </div>
+          ))}
         </div>
-      </div>
-      <button
-        className="ml-2 p-3 rounded-full bg-primary text-white flex items-center justify-center transition-colors disabled:opacity-60 disabled:cursor-not-allowed hover:bg-primary/90"
-        style={{ backgroundColor: colors.primary, color: colors.primaryForeground }}
-        onClick={handleSend}
-        disabled={!message.trim() || disabled}
-        title="Send message"
-      >
-        <Send className="w-5 h-5" />
-      </button>
+      )}
+      
+      <form onSubmit={handleSubmit} className="flex items-end gap-2">
+        <button 
+          type="button"
+          onClick={handleAttachmentClick}
+          className="p-2 rounded-full hover:bg-gray-100 flex-shrink-0"
+          disabled={isDisabled}
+        >
+          <Paperclip size={18} />
+        </button>
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileUpload}
+          className="hidden"
+          multiple
+          disabled={isDisabled}
+        />
+        <textarea
+          value={message}
+          onChange={handleInputChange}
+          onKeyDown={handleKeyDown}
+          placeholder={labels.messagePlaceholder || "Type a message..."}
+          className="flex-1 resize-none rounded-lg p-3 min-h-[40px] max-h-32 focus:outline-none"
+          style={{ 
+            backgroundColor: colors.inputBackground || '#f9f9f9',
+            border: `1px solid ${colors.border}`
+          }}
+          rows={1}
+          disabled={isDisabled}
+        />
+        <button
+          type="submit"
+          className="p-3 rounded-full flex-shrink-0 flex items-center justify-center"
+          style={{ 
+            backgroundColor: (message.trim() || attachments.length > 0) && !isDisabled ? colors.primary : '#ccc',
+            color: colors.primaryForeground
+          }}
+          disabled={message.trim() === '' && attachments.length === 0 || isDisabled}
+        >
+          <Send size={18} />
+        </button>
+      </form>
     </div>
   );
 };

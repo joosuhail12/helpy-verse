@@ -9,8 +9,6 @@ import AppQueryProvider from './AppQueryProvider';
 import AppErrorBoundary from './AppErrorBoundary';
 import CaslProvider from "@/components/CaslProvider";
 import AppInitializer from './AppInitializer';
-import { ThemeProvider } from '@/context/ThemeContext';
-import { WidgetStateProvider } from '@/widgets/chat/context/WidgetStateContext';
 
 interface AppProvidersProps {
   children: React.ReactNode;
@@ -21,26 +19,19 @@ interface AppProvidersProps {
  * with necessary providers and error boundaries.
  */
 const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
-  console.log("Rendering AppProviders");
-  
   return (
     <AppErrorBoundary>
-      {/* Redux Provider must come first since other components depend on it */}
       <Provider store={store}>
         <AppQueryProvider>
-          <ThemeProvider initialTheme={{}}>
-            <WidgetStateProvider>
-              <TooltipProvider>
-                <Toaster />
-                <Sonner />
-                <AppInitializer>
-                  <CaslProvider>
-                    {children}
-                  </CaslProvider>
-                </AppInitializer>
-              </TooltipProvider>
-            </WidgetStateProvider>
-          </ThemeProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <CaslProvider>
+              <AppInitializer>
+                {children}
+              </AppInitializer>
+            </CaslProvider>
+          </TooltipProvider>
         </AppQueryProvider>
       </Provider>
     </AppErrorBoundary>

@@ -1,31 +1,16 @@
-
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { Permission } from './types';
+import { HttpClient } from "@/api/services/http";
 
-// Mock permission data for development
-const mockPermissions: Permission[] = [
-  { action: 'read', subject: 'all' },
-  { action: 'manage', subject: 'contacts' },
-  { action: 'manage', subject: 'tickets' },
-  { action: 'read', subject: 'reports' },
-  { action: ['create', 'read', 'update'], subject: 'teammates' }
-];
+// Permission related actions
 
-// Thunk to fetch user permissions
 export const getUserPermission = createAsyncThunk(
-  'auth/getUserPermission',
+  "auth/getUserPermission",
   async (_, { rejectWithValue }) => {
     try {
-      // In a real app, this would be an API call
-      console.log('Fetching user permissions');
-      
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      return mockPermissions;
+      const response = await HttpClient.apiClient.get("/profile/abilities");
+      return response.data;
     } catch (error: any) {
-      console.error('Error fetching user permissions:', error);
-      return rejectWithValue(error.message || 'Failed to fetch user permissions');
+      return rejectWithValue(error.response?.data?.message || "Failed to fetch user permissions");
     }
   }
 );

@@ -1,15 +1,27 @@
-import { HttpClient } from "@/api/services/http";
+
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../store';
-import { companiesService } from '@/api/services/companiesService';
-import { Company as CompanyType } from '@/types/company';
 
-export type Company = CompanyType;
-
-const API_ENDPOINTS = {
-  COMPANIES: '/company',
-  COMPANY_BY_ID: (id: string) => `/company/${id}`
-};
+export interface Company {
+  id: string;
+  name: string;
+  website?: string;
+  industry?: string;
+  size?: string;
+  address?: {
+    street?: string;
+    city?: string;
+    state?: string;
+    zipCode?: string;
+    country?: string;
+  };
+  contactInfo?: {
+    email?: string;
+    phone?: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
 
 export interface CompaniesState {
   companies: Company[];
@@ -33,11 +45,14 @@ export const fetchCompanies = createAsyncThunk(
   'companies/fetchCompanies',
   async (_, { rejectWithValue }) => {
     try {
-      console.log('Fetching companies');
-      const response = await companiesService.fetchCompanies();
-      return response.data;
+      // Replace with actual API call
+      const response = await fetch('/api/companies');
+      if (!response.ok) {
+        throw new Error('Failed to fetch companies');
+      }
+      return await response.json();
     } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to fetch companies');
+      return rejectWithValue(error.message);
     }
   }
 );
@@ -46,10 +61,13 @@ export const fetchCompanyById = createAsyncThunk(
   'companies/fetchCompanyById',
   async (id: string, { rejectWithValue }) => {
     try {
-      const response = await companiesService.getCompany(id);
-      return response.data;
+      const response = await fetch(`/api/companies/${id}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch company details');
+      }
+      return await response.json();
     } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to fetch company details');
+      return rejectWithValue(error.message);
     }
   }
 );
@@ -58,10 +76,17 @@ export const createCompany = createAsyncThunk(
   'companies/createCompany',
   async (company: Omit<Company, 'id' | 'createdAt' | 'updatedAt'>, { rejectWithValue }) => {
     try {
-      const response = await companiesService.createCompany(company);
-      return response.data.companyList[0];
+      const response = await fetch('/api/companies', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(company),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to create company');
+      }
+      return await response.json();
     } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to create company');
+      return rejectWithValue(error.message);
     }
   }
 );
@@ -70,10 +95,17 @@ export const updateCompany = createAsyncThunk(
   'companies/updateCompany',
   async ({ id, updates }: { id: string; updates: Partial<Company> }, { rejectWithValue }) => {
     try {
-      const response = await companiesService.updateCompany(id, updates);
-      return response.data;
+      const response = await fetch(`/api/companies/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to update company');
+      }
+      return await response.json();
     } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to update company');
+      return rejectWithValue(error.message);
     }
   }
 );
@@ -98,9 +130,6 @@ const companiesSlice = createSlice({
     },
     clearSelectedCompanies: (state) => {
       state.selectedCompanies = [];
-    },
-    setSelectedCompanies: (state, action: PayloadAction<string[]>) => {
-      state.selectedCompanies = action.payload;
     }
   },
   extraReducers: (builder) => {
@@ -144,13 +173,7 @@ const companiesSlice = createSlice({
   },
 });
 
-export const { 
-  selectCompany, 
-  clearSelectedCompany, 
-  toggleCompanySelection, 
-  clearSelectedCompanies, 
-  setSelectedCompanies 
-} = companiesSlice.actions;
+export const { selectCompany, clearSelectedCompany, toggleCompanySelection, clearSelectedCompanies } = companiesSlice.actions;
 
 export const selectCompanies = (state: RootState) => state.companies.companies;
 export const selectCompanyLoading = (state: RootState) => state.companies.loading;

@@ -1,5 +1,5 @@
 
-import React, { lazy, Suspense } from 'react';
+import { lazy, Suspense } from 'react';
 import { createBrowserRouter } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import RootRedirect from '../components/app/RootRedirect';
@@ -13,12 +13,11 @@ export const LoadingSpinner = () => (
   </div>
 );
 
-// Import route components
-import { DashboardRoutes } from './dashboardRoutes';
-import { InboxRoutes } from './inboxRoutes';
-import { AutomationRoutes } from './automationRoutes';
-// Import settings routes correctly - using the named export instead of default
-import { SettingsRoutes } from './settingsRoutes';
+// Import route modules
+import { dashboardRoutes } from './dashboardRoutes';
+import { inboxRoutes } from './inboxRoutes';
+import { settingsRoutes } from './settingsRoutes';
+import { automationRoutes } from './automationRoutes';
 
 // Lazy load components
 const SignIn = lazy(() => import('../pages/SignIn'));
@@ -29,9 +28,9 @@ const NotFound = lazy(() => import('../pages/NotFound'));
 const LandingPage = lazy(() => import('../pages/LandingPage'));
 
 // Lazy load dashboard layout
-const DashboardLayout = lazy(() => import('../layouts/DashboardLayout'));
+const DashboardLayoutComponent = lazy(() => import('../layouts/DashboardLayout'));
 
-// Helper to wrap components with Suspense and RouteErrorHandling
+// Helper to wrap components with Suspense and RouteErrorBoundary
 const withSuspenseAndErrorHandling = (Component) => (
   <RouteErrorBoundary>
     <Suspense fallback={<LoadingSpinner />}>
@@ -39,6 +38,25 @@ const withSuspenseAndErrorHandling = (Component) => (
     </Suspense>
   </RouteErrorBoundary>
 );
+
+// Log all available routes for debugging
+const logRoutes = (routes) => {
+  console.log('Available routes:');
+  const flattenRoutes = (routeArray, parentPath = '') => {
+    routeArray.forEach(route => {
+      if (route.path) {
+        const fullPath = parentPath ? `${parentPath}/${route.path}` : route.path;
+        console.log(`- ${fullPath}`);
+      }
+      if (route.children) {
+        const nextParent = route.path ? (parentPath ? `${parentPath}/${route.path}` : route.path) : parentPath;
+        flattenRoutes(route.children, nextParent);
+      }
+    });
+  };
+  
+  flattenRoutes(routes);
+};
 
 export const router = createBrowserRouter([
   {
@@ -70,15 +88,15 @@ export const router = createBrowserRouter([
     element: (
       <PrivateRoute>
         <Suspense fallback={<LoadingSpinner />}>
-          <DashboardLayout />
+          <DashboardLayoutComponent />
         </Suspense>
       </PrivateRoute>
     ),
     children: [
-      ...DashboardRoutes,
-      ...InboxRoutes,
-      ...AutomationRoutes,
-      ...SettingsRoutes
+      ...dashboardRoutes,
+      ...inboxRoutes,
+      ...settingsRoutes, 
+      ...automationRoutes,
     ],
   },
   {
@@ -86,5 +104,9 @@ export const router = createBrowserRouter([
     element: withSuspenseAndErrorHandling(NotFound),
   },
 ]);
+
+// Log the routes for debugging
+logRoutes(router.routes);
+console.log('Routes initialized:', router.routes);
 
 export default router;

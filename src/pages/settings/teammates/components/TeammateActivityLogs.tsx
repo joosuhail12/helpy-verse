@@ -34,12 +34,12 @@ const TeammateActivityLogs = ({ teammateId }: TeammateActivityLogsProps) => {
             {activities.map((activity) => (
               <div key={activity.id} className="flex items-start space-x-4 py-2 border-b last:border-0">
                 <div>
-                  <p className="font-medium">{activity.type || activity.action}</p>
+                  <p className="font-medium">{activity.type}</p>
                   <p className="text-sm text-muted-foreground">
                     {new Date(activity.timestamp).toLocaleString()}
                   </p>
-                  {(activity.description || activity.details) && (
-                    <p className="text-sm mt-1">{activity.description || JSON.stringify(activity.details)}</p>
+                  {activity.description && (
+                    <p className="text-sm mt-1">{activity.description}</p>
                   )}
                 </div>
               </div>

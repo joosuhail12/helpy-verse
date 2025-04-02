@@ -1,24 +1,28 @@
+
 export interface ChatMessage {
   id: string;
-  content: string;
   sender: 'user' | 'agent' | 'system';
-  timestamp: string | Date;
+  content: string;
+  timestamp: Date | string;
   conversationId: string;
-  status?: 'sent' | 'delivered' | 'read' | 'error';
-  readBy?: string[];
-  attachment?: {
-    url: string;
-    name: string;
-    type: string;
-    size: number;
-  };
-  attachments?: FileAttachment[];
-  reactions?: {
-    type: string;
-    count: number;
-    userReacted: boolean;
-  }[];
   metadata?: Record<string, any>;
+  attachments?: FileAttachment[];
+  reactions?: Record<string, string[]>;
+  readBy?: string[];
+}
+
+export interface Conversation {
+  id: string;
+  title?: string;
+  lastMessage?: string;
+  lastMessageTimestamp?: string;
+  unreadCount?: number;
+}
+
+export interface TypingStatus {
+  userId: string;
+  username: string;
+  isTyping: boolean;
 }
 
 export interface FileAttachment {
@@ -27,22 +31,4 @@ export interface FileAttachment {
   type: string;
   url: string;
   size: number;
-  thumbnailUrl?: string;
-  uploadProgress?: number;
-}
-
-export interface TypingUser {
-  clientId: string;
-  name?: string;
-}
-
-export interface Conversation {
-  id: string;
-  title: string;
-  lastMessage?: string;
-  lastMessageTimestamp?: string;
-  unreadCount?: number;
-  participants?: string[];
-  type?: string;
-  status?: 'active' | 'resolved' | 'pending';
 }

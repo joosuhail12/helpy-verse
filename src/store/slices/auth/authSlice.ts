@@ -1,6 +1,8 @@
 
 import { createSlice } from '@reduxjs/toolkit';
-import { AuthState, ResponseStatus } from './types';
+import { getCookie } from '@/utils/helpers/helpers';
+import { handleLogout as tokenHandleLogout } from '@/utils/auth/tokenManager';
+import { AuthState } from './types';
 import { 
   loginUser, 
   registerUser, 
@@ -13,19 +15,15 @@ import {
   fetchWorkspaceData 
 } from './userActions';
 import { getUserPermission } from './permissionActions';
-// Import the token check directly from tokenManager
-import { isAuthenticated } from '@/utils/auth/tokenManager';
-import { handleLogout as tokenHandleLogout } from '@/utils/auth/tokenManager';
 
 const initialState: AuthState = {
-  isAuthenticated: isAuthenticated(),
+  isAuthenticated: !!getCookie("customerToken"),
   user: null,
   loading: false,
   error: null,
   permissions: [],
 };
 
-// Create the auth slice with all reducers
 const authSlice = createSlice({
   name: 'auth',
   initialState,
@@ -157,13 +155,9 @@ const authSlice = createSlice({
   },
 });
 
-// Export actions directly from the slice
 export const { logout, clearError } = authSlice.actions;
 
-// Export the reducer as a named export to avoid circular dependencies
-export const authReducer = authSlice.reducer;
-
-// Export all the async actions for use in components
+// Re-export all the actions for use in components
 export {
   loginUser,
   registerUser,
@@ -175,4 +169,4 @@ export {
   getUserPermission
 };
 
-// Remove the default export completely to prevent circular dependencies
+export default authSlice.reducer;

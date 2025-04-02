@@ -2,9 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { fetchCustomers } from '@/store/slices/contacts/contactsSlice';
-import { updateContactCompany } from '@/store/slices/contacts/contactsActions';
-import { selectContacts } from '@/store/slices/contacts/contactsSelectors';
+import { fetchCustomers, updateContactCompany } from '@/store/slices/contacts/contactsSlice';
 import { Contact } from '@/types/contact';
 import { useDebounce } from '@/hooks/useDebounce';
 
@@ -15,8 +13,7 @@ export const useAssociatedContacts = (companyId: string) => {
   const [availableContacts, setAvailableContacts] = useState<Contact[]>([]);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  
-  const contacts = useAppSelector(selectContacts);
+  const contacts = useAppSelector((state) => state.contacts?.contacts || []);
   const loading = useAppSelector((state) => state.contacts?.loading || false);
   const dispatch = useAppDispatch();
 

@@ -1,17 +1,13 @@
 
-// Re-export all HTTP client related modules
-import { HttpClient } from './client';
-import { cookieFunctions, getCookie, setCookie, deleteCookie } from './cookieManager';
-import { handleLogout } from './interceptors';
+// Export all HTTP client related modules
+export * from './client';
+export * from './cookieManager';
+export * from './interceptors';
 
-// Export the main HttpClient 
+// Re-export the main HttpClient for backward compatibility
+import { HttpClient } from './client';
 export { HttpClient };
 
-// Export cookie functions
-export { cookieFunctions, getCookie, setCookie, deleteCookie };
-
-// Export handleLogout
-export { handleLogout };
-
-// Export requestInterceptor and other interceptors
-export * from './interceptors';
+// Make sure cookieFunctions is explicitly exported
+import { cookieFunctions } from './cookieManager';
+export { cookieFunctions };

@@ -2,6 +2,8 @@
 import React, { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { ChatWidget } from '@/components/chat-widget/ChatWidget';
+import { ThemeConfig } from '@/context/ThemeContext';
 
 /**
  * Landing page that is accessible without authentication
@@ -10,49 +12,40 @@ import { useNavigate } from 'react-router-dom';
 const LandingPage = () => {
   const navigate = useNavigate();
 
-  // Add the chat widget script to the page
-  useEffect(() => {
-    // Create script element
-    const script = document.createElement('script');
-    script.innerHTML = `
-      (function() {
-        window.PULLSE_WORKSPACE_ID = '6c22b22f-7bdf-43db-b7c1-9c5884125c63';
-        window.PULLSE_PRIMARY_COLOR = '#9b87f5';
-        window.PULLSE_POSITION = 'right';
-        window.PULLSE_COMPACT = false;
-        window.PULLSE_WELCOME_TITLE = 'Hello there.';
-        window.PULLSE_WELCOME_SUBTITLE = 'How can we help?';
-        
-        const script = document.createElement('script');
-        script.src = "${window.location.origin}/chat-widget-loader.js";
-        script.async = true;
-        document.body.appendChild(script);
-      })();
-    `;
-    
-    // Append script to body
-    document.body.appendChild(script);
-    
-    // Clean up on component unmount
-    return () => {
-      // Find and remove the chat widget script and container
-      const widgetContainer = document.getElementById('pullse-chat-widget');
-      if (widgetContainer) {
-        widgetContainer.remove();
-      }
-      
-      const widgetScript = document.getElementById('pullse-chat-widget-script');
-      if (widgetScript) {
-        widgetScript.remove();
-      }
-      
-      // Remove our initialization script
-      document.body.removeChild(script);
-    };
-  }, []);
+  // Example of white-labeled theme
+  const chatTheme: Partial<ThemeConfig> = {
+    colors: {
+      primary: '#9b87f5',
+      primaryForeground: '#ffffff',
+      background: '#ffffff',
+      foreground: '#1A1F2C', 
+      border: '#eaeaea',
+      userMessage: '#9b87f5',
+      userMessageText: '#ffffff',
+      agentMessage: '#f1f1f1',
+      agentMessageText: '#1A1F2C',
+      inputBackground: '#f9f9f9'
+    },
+    position: 'right',
+    compact: false,
+    labels: {
+      welcomeTitle: 'Hello there.',
+      welcomeSubtitle: 'How can we help?',
+      askQuestionButton: 'Ask a question',
+      recentMessagesTitle: 'Recent message',
+      noMessagesText: 'No messages yet. Start a conversation!',
+      messagePlaceholder: 'Type a message...'
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-purple-50">
+      {/* Direct inclusion of the ChatWidget component with custom theme */}
+      <ChatWidget 
+        workspaceId="6c22b22f-7bdf-43db-b7c1-9c5884125c63" 
+        theme={chatTheme}
+      />
+      
       {/* Hero Section */}
       <div className="container mx-auto px-4 py-20">
         <div className="flex flex-col items-center text-center max-w-4xl mx-auto">

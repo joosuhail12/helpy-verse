@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { 
@@ -39,12 +39,6 @@ export const useCompanyDetails = (id?: string) => {
       }
     }
   };
-
-  useEffect(() => {
-    if (id) {
-      loadCompanyDetails();
-    }
-  }, [id]);
 
   const handleRetry = () => {
     setRetryCount(prev => prev + 1);

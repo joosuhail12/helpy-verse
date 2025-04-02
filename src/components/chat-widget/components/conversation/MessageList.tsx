@@ -1,84 +1,64 @@
 
-import React from 'react';
-import { ChatMessage, TypingUser } from './types';
-import { useThemeContext } from '@/context/ThemeContext';
-import { Loader2 } from 'lucide-react';
+import React, { useEffect, useRef } from 'react';
+import { useChat } from '@/hooks/chat/useChat';
 import MessageItem from './MessageItem';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useThemeContext } from '@/context/ThemeContext';
+import { ChatMessage } from './types';
 
 interface MessageListProps {
-  messages: ChatMessage[];
-  typingUsers?: TypingUser[];
-  isLoading?: boolean;
-  showAvatars?: boolean;
+  conversationId?: string;
+  messages?: ChatMessage[];
 }
 
-const MessageList: React.FC<MessageListProps> = ({ 
-  messages, 
-  typingUsers = [], 
-  isLoading = false,
-  showAvatars = false
-}) => {
-  const { colors } = useThemeContext();
+const MessageList: React.FC<MessageListProps> = ({ conversationId, messages: propMessages }) => {
+  const { colors, labels } = useThemeContext();
+  const { getMessages } = useChat();
+  const endOfMessagesRef = useRef<HTMLDivElement>(null);
+  const [messages, setMessages] = React.useState<ChatMessage[]>(propMessages || []);
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-full">
-        <Loader2 className="w-6 h-6 animate-spin text-primary" />
-      </div>
-    );
-  }
+  // Fetch messages for this conversation if propMessages is not provided
+  useEffect(() => {
+    if (propMessages) {
+      setMessages(propMessages);
+      return;
+    }
 
-  if (messages.length === 0) {
-    return (
-      <div className="flex flex-col justify-center items-center h-full text-gray-400 space-y-4 p-4">
-        <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center">
-          <div className="w-8 h-8 bg-primary/40 rounded-lg"></div>
-        </div>
-        <div className="text-center">
-          <h3 className="text-lg font-medium text-gray-700 mb-1">No messages yet</h3>
-          <p className="text-sm">Start a conversation to get help</p>
-        </div>
-      </div>
-    );
-  }
+    const fetchMessages = async () => {
+      if (conversationId) {
+        const fetchedMessages = await getMessages(conversationId);
+        if (fetchedMessages && fetchedMessages.length > 0) {
+          setMessages(fetchedMessages);
+        }
+      }
+    };
+    
+    if (conversationId) {
+      fetchMessages();
+    }
+  }, [conversationId, getMessages, propMessages]);
+
+  // Scroll to bottom on new messages
+  useEffect(() => {
+    if (endOfMessagesRef.current) {
+      endOfMessagesRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
 
   return (
     <div className="space-y-4">
-      <AnimatePresence initial={false}>
-        {messages.map((message, index) => (
-          <motion.div
-            key={message.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <MessageItem 
-              message={message} 
-              showAvatar={showAvatars}
-            />
-          </motion.div>
-        ))}
-      </AnimatePresence>
-      
-      {typingUsers.length > 0 && (
-        <motion.div 
-          className="flex items-center text-gray-500 text-sm"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0 }}
+      {messages.length === 0 ? (
+        <div 
+          className="text-center py-6 text-gray-500"
+          style={{ color: `${colors.foreground}88` }}
         >
-          <div className="flex space-x-1 mr-2">
-            <div className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '0ms' }}></div>
-            <div className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '150ms' }}></div>
-            <div className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '300ms' }}></div>
-          </div>
-          {typingUsers.length === 1 
-            ? `${typingUsers[0].name || 'Someone'} is typing...` 
-            : `${typingUsers.length} people are typing...`}
-        </motion.div>
+          {labels.noMessagesText}
+        </div>
+      ) : (
+        messages.map((message) => (
+          <MessageItem key={message.id} message={message} />
+        ))
       )}
+      <div ref={endOfMessagesRef} />
     </div>
   );
 };

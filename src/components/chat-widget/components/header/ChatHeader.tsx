@@ -1,45 +1,30 @@
 
 import React from 'react';
-import { X, ChevronLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { useThemeContext } from '@/context/ThemeContext';
 
-interface ChatHeaderProps {
+export interface ChatHeaderProps {
   title: string;
-  onClose: (() => void) | null;
-  onBackClick: (() => void) | null;
-  className?: string;
+  onBackClick?: () => void;
 }
 
-const ChatHeader: React.FC<ChatHeaderProps> = ({ title, onClose, onBackClick, className = '' }) => {
+const ChatHeader: React.FC<ChatHeaderProps> = ({ title, onBackClick }) => {
   const { colors } = useThemeContext();
 
   return (
-    <div 
-      className={`flex items-center justify-between p-4 border-b ${className}`}
-      style={{ borderColor: colors.border, backgroundColor: colors.background }}
-    >
-      <div className="flex items-center">
-        {onBackClick && (
-          <button 
-            onClick={onBackClick}
-            className="mr-2 p-1 rounded-md hover:bg-gray-100 flex items-center justify-center"
-            aria-label="Go back"
-          >
-            <ChevronLeft className="h-5 w-5 text-gray-500" />
-          </button>
-        )}
-        <h2 className="font-medium text-base">{title}</h2>
-      </div>
-      
-      {onClose && (
+    <div className="p-4 border-b flex items-center space-x-3" 
+      style={{ borderColor: colors.border, backgroundColor: colors.background, color: colors.foreground }}>
+      {onBackClick && (
         <button 
-          onClick={onClose}
-          className="p-1 rounded-md hover:bg-gray-100 flex items-center justify-center"
-          aria-label="Close chat"
+          onClick={onBackClick}
+          className="rounded-full p-1 hover:bg-gray-100 transition-colors"
+          style={{ color: colors.foreground }}
+          aria-label="Go back"
         >
-          <X className="h-5 w-5 text-gray-500" />
+          <ArrowLeft size={20} />
         </button>
       )}
+      <h2 className="font-medium flex-1 truncate">{title}</h2>
     </div>
   );
 };

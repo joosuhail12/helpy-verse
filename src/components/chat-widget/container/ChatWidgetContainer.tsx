@@ -1,17 +1,17 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useChat } from '@/hooks/chat/useChat';
 import { useThemeContext } from '@/context/ThemeContext';
+import HomeView from '../views/HomeView';
+import MessagesView from '../views/MessagesView';
+import ConversationView from '../components/conversation/ConversationView';
 import Navigation from '../components/navigation/Navigation';
-import ViewManager from '../components/navigation/ViewManager';
-import LoadingState from '../components/states/LoadingState';
 
 interface ChatWidgetContainerProps {
   onClose: () => void;
   workspaceId: string;
   position?: 'left' | 'right';
   compact?: boolean;
-  instanceId?: string;
 }
 
 export type View = 'home' | 'messages' | 'conversation';
@@ -20,80 +20,45 @@ const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({
   onClose, 
   workspaceId,
   position = 'right',
-  compact = false,
-  instanceId = 'default'
+  compact = false 
 }) => {
-  const { conversations, currentConversation, selectConversation, createNewConversation } = useChat();
+  const { conversations, currentConversation, createNewConversation } = useChat();
   const { colors } = useThemeContext();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [activeView, setActiveView] = useState<View>('home');
 
-  // Modified to not create a conversation on init
   useEffect(() => {
-    setIsLoading(false);
-  }, []);
-
-  // Function to handle starting a new conversation when user sends first message
-  const handleStartConversation = useCallback(async (message: string) => {
-    if (!message.trim()) {
-      // If no message, just navigate to the messages view
-      setActiveView('messages');
-      return;
-    }
-    
-    setIsLoading(true);
-    try {
-      // Use the string ID returned by createNewConversation
-      const newConversationId = await createNewConversation(`Conversation ${new Date().toLocaleString()}`);
-      selectConversation(newConversationId);
-      setActiveView('conversation');
-      // Now we can handle the message in the conversation component
-    } catch (error) {
-      console.error('Failed to create conversation:', error);
-    } finally {
+    const initializeChat = async () => {
+      if (!currentConversation && conversations.length === 0) {
+        await createNewConversation(`Conversation ${Date.now()}`);
+      }
       setIsLoading(false);
-    }
-  }, [createNewConversation, selectConversation]);
+    };
 
-  // Function to start a new conversation without a message
-  const handleStartNewConversation = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      // Use the string ID returned by createNewConversation
-      const newConversationId = await createNewConversation(`Conversation ${new Date().toLocaleString()}`);
-      selectConversation(newConversationId);
-      setActiveView('conversation');
-    } catch (error) {
-      console.error('Failed to create conversation:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [createNewConversation, selectConversation]);
-
-  // Fixed: Pass the conversation ID string
-  const handleSelectConversation = useCallback((conversationId: string) => {
-    selectConversation(conversationId);
-    setActiveView('conversation');
-  }, [selectConversation]);
+    initializeChat();
+  }, [currentConversation, conversations, createNewConversation]);
 
   if (isLoading) {
-    return <LoadingState compact={compact} />;
+    return (
+      <div className={`flex flex-col h-full text-gray-900 ${compact ? 'max-w-xs' : 'w-full'}`} 
+        style={{ backgroundColor: colors.background, color: colors.foreground }}>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="animate-spin h-8 w-8 border-4 border-t-transparent rounded-full" 
+            style={{ borderColor: colors.primary, borderTopColor: 'transparent' }}></div>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div 
-      className={`flex flex-col h-full text-gray-900 ${compact ? 'max-w-xs' : 'w-full'}`} 
-      style={{ backgroundColor: colors.background, color: colors.foreground }}
-    >
-      <ViewManager
-        activeView={activeView}
-        setActiveView={setActiveView}
-        workspaceId={workspaceId}
-        onClose={onClose}
-        onStartConversation={handleStartConversation}
-        onSelectConversation={handleSelectConversation}
-        onStartNewConversation={handleStartNewConversation}
-      />
+    <div className={`flex flex-col h-full text-gray-900 ${compact ? 'max-w-xs' : 'w-full'}`} 
+      style={{ backgroundColor: colors.background, color: colors.foreground }}>
+      {activeView === 'home' && <HomeView workspaceId={workspaceId} onClose={onClose} setActiveView={(view: View) => setActiveView(view)} />}
+      {activeView === 'messages' && <MessagesView workspaceId={workspaceId} onClose={onClose} setActiveView={(view: View) => setActiveView(view)} />}
+      {activeView === 'conversation' && currentConversation && 
+        <ConversationView conversationId={currentConversation.id} workspaceId={workspaceId} onBack={() => setActiveView('messages')} />}
+      
+      <Navigation activeView={activeView} setActiveView={setActiveView} />
     </div>
   );
 };

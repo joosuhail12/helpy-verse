@@ -15,12 +15,9 @@ const CaslProvider: React.FC<CaslProviderProps> = ({ children }) => {
 
     useEffect(() => {
         if (isAuthenticated) {
-            console.log("CaslProvider: User is authenticated, fetching profile data");
             dispatch(fetchUserProfile()); 
             dispatch(fetchWorkspaceData());
             dispatch(getUserPermission()); 
-        } else {
-            console.log("CaslProvider: User is not authenticated");
         }
     }, [dispatch, isAuthenticated]);
 

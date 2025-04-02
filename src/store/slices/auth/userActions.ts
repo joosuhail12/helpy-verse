@@ -1,121 +1,89 @@
 
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { HttpClient } from '@/api/services/http';
-import { setWorkspaceId } from '@/api/services/http/cookieManager';
-import { AuthResponse, ResponseStatus } from './types';
+import { HttpClient } from "@/api/services/http";
+import { AUTH_ENDPOINTS } from "@/api/services/http/config";
 
-// Thunk to fetch user data
 export const fetchUserData = createAsyncThunk(
-  'auth/fetchUserData',
+  "user/fetchData",
   async (_, { rejectWithValue }) => {
     try {
-      // Simulate API call for now
-      // In real app, this would be: const response = await HttpClient.apiClient.get('/auth/me');
-      console.log('Fetching user data');
+      console.log("Fetching user profile data");
+      const response = await HttpClient.apiClient.get(AUTH_ENDPOINTS.USER_PROFILE);
+      console.log("User profile data fetched successfully", response.data);
       
-      // Mock successful response for development
-      const userData: AuthResponse = {
-        status: "success" as ResponseStatus,
-        message: "User data retrieved successfully",
-        data: {
-          id: 'user-123',
-          name: 'Test User',
-          email: 'test@example.com',
-          workspaceId: 'workspace-123',
-          role: 'admin',
-          accessToken: {
-            token: "mock-token",
-            expiry: Date.now() + 3600000,
-            issuedAt: new Date().toISOString(),
-            userAgent: navigator.userAgent,
-            ip: "127.0.0.1"
-          },
-          defaultWorkspaceId: 'workspace-123'
+      // Save workspace ID from response to localStorage if it exists
+      if (response.data.data?.defaultWorkspaceId) {
+        try {
+          const workspaceId = response.data.data.defaultWorkspaceId;
+          
+          // Set the workspace ID in localStorage
+          localStorage.setItem("workspaceId", workspaceId);
+          console.log(`✅ Workspace ID saved to localStorage: ${workspaceId}`);
+          
+          // Verify localStorage was set correctly
+          const verifiedValue = localStorage.getItem("workspaceId");
+          if (verifiedValue) {
+            console.log("✅ Workspace ID saved to localStorage and verified:", verifiedValue);
+          } else {
+            console.error("❌ Failed to save workspace ID to localStorage - verification failed");
+          }
+        } catch (storageError) {
+          console.error("Error saving workspace ID to localStorage:", storageError);
         }
-      };
-      
-      // Store workspace ID in localStorage for easy access in API calls
-      if (userData.data.workspaceId) {
-        setWorkspaceId(userData.data.workspaceId);
+      } else {
+        console.warn("No default workspace ID found in user profile response");
       }
       
-      return userData;
+      return response.data.data;
     } catch (error: any) {
-      console.error('Error fetching user data:', error);
-      return rejectWithValue(error.message || 'Failed to fetch user data');
+      console.error("Error fetching user data:", error.message);
+      return rejectWithValue(error.response?.data?.message || "Failed to load user profile");
     }
   }
 );
 
-// Thunk to fetch user profile data
 export const fetchUserProfile = createAsyncThunk(
-  'auth/fetchUserProfile',
+  "auth/fetchUserProfile",
   async (_, { rejectWithValue }) => {
     try {
-      // Simulate API call for now
-      console.log('Fetching user profile');
+      const response = await HttpClient.apiClient.get(AUTH_ENDPOINTS.USER_PROFILE);
+      console.log("User profile fetched:", response.data);
       
-      // Mock successful response for development
-      return {
-        status: "success" as ResponseStatus,
-        message: "User profile retrieved successfully",
-        data: {
-          id: 'user-123',
-          name: 'Test User',
-          email: 'test@example.com',
-          avatar: 'https://ui-avatars.com/api/?name=Test+User',
-          role: 'admin',
-          department: 'Engineering',
-          lastLogin: new Date().toISOString(),
-          accessToken: {
-            token: "mock-token",
-            expiry: Date.now() + 3600000,
-            issuedAt: new Date().toISOString(),
-            userAgent: navigator.userAgent,
-            ip: "127.0.0.1"
-          },
-          defaultWorkspaceId: 'workspace-123'
+      // Save workspace ID from response to localStorage if it exists
+      if (response.data.data?.defaultWorkspaceId) {
+        try {
+          // Set the workspace ID in localStorage
+          localStorage.setItem("workspaceId", response.data.data.defaultWorkspaceId);
+          
+          // Verify localStorage was set correctly
+          const verifiedValue = localStorage.getItem("workspaceId");
+          if (verifiedValue) {
+            console.log("✅ Workspace ID saved to localStorage and verified:", verifiedValue);
+          } else {
+            console.error("❌ Failed to save workspace ID to localStorage - verification failed");
+          }
+        } catch (storageError) {
+          console.error("Error saving workspace ID to localStorage:", storageError);
         }
-      };
+      } else {
+        console.warn("No default workspace ID found in user profile response");
+      }
+      
+      return response.data.data;
     } catch (error: any) {
-      console.error('Error fetching user profile:', error);
-      return rejectWithValue(error.message || 'Failed to fetch user profile');
+      return rejectWithValue(error.response?.data?.message || "Failed to fetch user profile");
     }
   }
 );
 
-// Thunk to fetch workspace data
 export const fetchWorkspaceData = createAsyncThunk(
-  'auth/fetchWorkspaceData',
+  "auth/fetchWorkspaceData",
   async (_, { rejectWithValue }) => {
     try {
-      // Simulate API call for now
-      console.log('Fetching workspace data');
-      
-      // Mock successful response for development
-      return {
-        status: "success" as ResponseStatus,
-        message: "Workspace data retrieved successfully",
-        data: {
-          id: 'workspace-123',
-          name: 'Test Workspace',
-          plan: 'professional',
-          seats: 10,
-          usedSeats: 3,
-          createdAt: new Date().toISOString(),
-          accessToken: {
-            token: "mock-token",
-            expiry: Date.now() + 3600000,
-            issuedAt: new Date().toISOString(),
-            userAgent: navigator.userAgent,
-            ip: "127.0.0.1"
-          },
-          defaultWorkspaceId: 'workspace-123'
-        }
-      };
+      const response = await HttpClient.apiClient.get("/workspace/6c22b22f-7bdf-43db-b7c1-9c5884125c63");
+      return response.data;
     } catch (error: any) {
-      console.error('Error fetching workspace data:', error);
-      return rejectWithValue(error.message || 'Failed to fetch workspace data');
+      return rejectWithValue(error.response?.data?.message || "Failed to fetch workspace data");
     }
   }
 );

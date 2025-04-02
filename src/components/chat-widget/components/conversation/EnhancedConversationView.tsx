@@ -13,8 +13,7 @@ interface EnhancedConversationViewProps {
   isLoading?: boolean;
   agentName?: string;
   isTyping?: boolean;
-  disabled?: boolean; // Changed from isDisabled to disabled for consistency
-  hasActiveConversation?: boolean;
+  isDisabled?: boolean;
 }
 
 const EnhancedConversationView: React.FC<EnhancedConversationViewProps> = ({
@@ -23,8 +22,7 @@ const EnhancedConversationView: React.FC<EnhancedConversationViewProps> = ({
   isLoading = false,
   agentName,
   isTyping = false,
-  disabled = false,
-  hasActiveConversation = false
+  isDisabled = false
 }) => {
   const { colors } = useThemeContext();
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -54,8 +52,7 @@ const EnhancedConversationView: React.FC<EnhancedConversationViewProps> = ({
       
       <MessageInput 
         onSendMessage={handleSendMessage}
-        disabled={disabled || isLoading}
-        placeholder={!hasActiveConversation ? "Start a new conversation..." : "Type a message..."}
+        isDisabled={isDisabled || isLoading}
       />
     </div>
   );

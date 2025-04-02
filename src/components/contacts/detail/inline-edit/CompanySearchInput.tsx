@@ -4,11 +4,9 @@ import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem } from '@/components/ui/command';
-import { companiesService } from '@/api/services';
+import { companiesService } from '@/api/services/companiesService';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from '@/components/ui/use-toast';
-import { useAppSelector } from '@/hooks/useAppSelector';
-import { selectCompanies } from '@/store/slices/companies/companiesSlice';
 
 interface CompanySearchInputProps {
   value: string;
@@ -21,22 +19,18 @@ export const CompanySearchInput = ({ value, onChange, disabled }: CompanySearchI
   const [inputValue, setInputValue] = useState(value);
   const [searchQuery, setSearchQuery] = useState('');
   
-  // Use the data from Redux store first
-  const cachedCompanies = useAppSelector(selectCompanies);
-  
-  // Fetch companies from the API if needed
+  // Fetch companies from the API
   const { data: companiesResponse, isLoading, error } = useQuery({
     queryKey: ['companies', searchQuery],
-    queryFn: () => companiesService.getAll({ 
+    queryFn: () => companiesService.fetchCompanies({ 
       searchQuery,
       limit: 10
     }),
-    enabled: open && searchQuery.length > 0,
+    enabled: open,
     staleTime: 60000, // 1 minute
   });
 
-  // Use API response if available, otherwise use cached companies
-  const companies = companiesResponse?.data || cachedCompanies || [];
+  const companies = companiesResponse?.companies || [];
 
   useEffect(() => {
     setInputValue(value);

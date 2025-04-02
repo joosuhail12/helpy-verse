@@ -1,16 +1,9 @@
 
 import { AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import { get } from 'lodash';
+import { handleLogout } from './cookieManager';
+import { getAuthToken } from '@/utils/auth/tokenManager';
 import { store } from '@/store/store';
-import { handleLogout as tokenManagerLogout } from '@/utils/auth/tokenManager';
-
-// Export handleLogout for use in other modules
-export const handleLogout = tokenManagerLogout;
-
-// Get auth token directly to avoid circular imports
-const getAuthToken = () => {
-    return localStorage.getItem("token") || "";
-};
 
 // Request Interceptor - Adds Token & Workspace ID to all requests
 export const requestInterceptor = async (config: InternalAxiosRequestConfig): Promise<InternalAxiosRequestConfig> => {
