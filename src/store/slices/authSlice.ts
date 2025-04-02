@@ -13,8 +13,10 @@ import {
   fetchUserProfile,
   fetchWorkspaceData,
   getUserPermission,
-  authReducer
 } from './auth/authSlice';
+
+// Import the default export (the reducer) and re-export with the name authReducer
+import authReducer from './auth/authSlice';
 
 export { 
   logout, 
