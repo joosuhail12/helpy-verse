@@ -1,102 +1,77 @@
 
 import React, { createContext, useContext, useReducer, ReactNode } from 'react';
-import { ThemeConfig } from '../types';
+import { ThemeConfig, ChatWidgetSettings } from '../types';
 
+// Define the state shape
 interface WidgetState {
   isOpen: boolean;
   isInitialized: boolean;
-  config?: {
-    workspaceId: string;
-  };
-  theme: {
-    position: 'left' | 'right';
-    compact: boolean;
-    colors: Partial<Record<string, string>>;
-  };
+  workspaceId?: string;
+  theme: Partial<ThemeConfig>;
+  settings?: Partial<ChatWidgetSettings>;
 }
 
-type WidgetAction =
+// Define the action types
+type WidgetAction = 
   | { type: 'TOGGLE_WIDGET' }
   | { type: 'OPEN_WIDGET' }
   | { type: 'CLOSE_WIDGET' }
-  | { type: 'INITIALIZE'; payload: any }
-  | { type: 'SET_THEME'; payload: Partial<ThemeConfig> };
+  | { type: 'INITIALIZE'; payload: { workspaceId: string; theme: Partial<ThemeConfig>; settings?: Partial<ChatWidgetSettings> } };
 
+// Define the context shape
 interface WidgetStateContextType {
   state: WidgetState;
   dispatch: React.Dispatch<WidgetAction>;
 }
 
+// Create the context
+const WidgetStateContext = createContext<WidgetStateContextType | undefined>(undefined);
+
+// Define the initial state
 const initialState: WidgetState = {
   isOpen: false,
   isInitialized: false,
-  theme: {
-    position: 'right',
-    compact: false,
-    colors: {
-      primary: '#9b87f5'
-    }
-  }
+  theme: {},
 };
 
-const WidgetStateContext = createContext<WidgetStateContextType | undefined>(undefined);
-
+// Define the reducer
 const widgetReducer = (state: WidgetState, action: WidgetAction): WidgetState => {
   switch (action.type) {
     case 'TOGGLE_WIDGET':
       return {
         ...state,
-        isOpen: !state.isOpen
+        isOpen: !state.isOpen,
       };
     case 'OPEN_WIDGET':
       return {
         ...state,
-        isOpen: true
+        isOpen: true,
       };
     case 'CLOSE_WIDGET':
       return {
         ...state,
-        isOpen: false
+        isOpen: false,
       };
     case 'INITIALIZE':
       return {
         ...state,
         isInitialized: true,
-        config: {
-          ...state.config,
-          workspaceId: action.payload.workspaceId
+        workspaceId: action.payload.workspaceId,
+        theme: {
+          ...state.theme,
+          ...action.payload.theme,
         },
-        theme: {
-          ...state.theme,
-          position: action.payload.theme?.position || state.theme.position,
-          compact: action.payload.theme?.compact || state.theme.compact,
-          colors: {
-            ...state.theme.colors,
-            ...(action.payload.theme?.colors || {})
-          }
-        }
-      };
-    case 'SET_THEME':
-      return {
-        ...state,
-        theme: {
-          ...state.theme,
-          position: action.payload.position || state.theme.position,
-          compact: action.payload.compact || state.theme.compact,
-          colors: {
-            ...state.theme.colors,
-            ...(action.payload.colors || {})
-          }
-        }
+        settings: action.payload.settings,
       };
     default:
       return state;
   }
 };
 
+// Create the provider
 export const WidgetStateProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(widgetReducer, initialState);
-  
+
   return (
     <WidgetStateContext.Provider value={{ state, dispatch }}>
       {children}
@@ -104,12 +79,11 @@ export const WidgetStateProvider: React.FC<{ children: ReactNode }> = ({ childre
   );
 };
 
-export const useWidgetState = () => {
+// Create a hook to use the context
+export const useWidgetState = (): WidgetStateContextType => {
   const context = useContext(WidgetStateContext);
-  
   if (context === undefined) {
     throw new Error('useWidgetState must be used within a WidgetStateProvider');
   }
-  
   return context;
 };

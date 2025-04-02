@@ -7,9 +7,12 @@ import ToggleButton from './components/button/ToggleButton';
 import { Loader2 } from 'lucide-react';
 import '@/styles/chat-widget-theme.css';
 import { useWidgetState } from './context/WidgetStateContext';
-import ChatWidgetWrapper from './components/wrapper/ChatWidgetWrapper';
-import ChatWidgetContainer from './container/ChatWidgetContainer';
-import { ChatWidgetSettings } from './types';
+import { ChatWidgetSettings, View } from './types';
+import { motion, AnimatePresence } from 'framer-motion';
+
+// Dynamically import components to reduce initial load time
+const ChatWidgetWrapper = React.lazy(() => import('./components/wrapper/ChatWidgetWrapper'));
+const ChatWidgetContainer = React.lazy(() => import('./container/ChatWidgetContainer'));
 
 interface ChatWidgetProps {
   workspaceId: string;
@@ -105,24 +108,38 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({
     <AblyProvider workspaceId={workspaceId}>
       <ChatProvider workspaceId={workspaceId}>
         <ThemeProvider initialTheme={combinedTheme}>
-          {isOpen && (
-            <div className={`fixed bottom-20 ${position === 'left' ? 'left-4' : 'right-4'} z-[9999]`} 
-                 style={{ maxWidth: combinedTheme.compact ? '320px' : '380px', width: '100%' }}>
-              <ChatWidgetWrapper 
-                isOpen={isOpen}
-                position={position}
-                compact={Boolean(combinedTheme.compact)}
-              >
-                <ChatWidgetContainer 
-                  onClose={() => dispatch({ type: 'CLOSE_WIDGET' })} 
-                  workspaceId={workspaceId} 
-                  position={position}
-                  compact={Boolean(combinedTheme.compact)}
-                  instanceId={instanceId}
-                />
-              </ChatWidgetWrapper>
-            </div>
-          )}
+          <AnimatePresence>
+            {isOpen && (
+              <React.Suspense fallback={
+                <div className={`fixed bottom-20 ${position === 'left' ? 'left-4' : 'right-4'} rounded-xl shadow-lg bg-white p-4 z-50`}>
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              }>
+                <motion.div 
+                  className={`fixed bottom-20 ${position === 'left' ? 'left-4' : 'right-4'} z-[9999]`}
+                  initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9, y: 10 }}
+                  transition={{ duration: 0.2 }}
+                  style={{ maxWidth: combinedTheme.compact ? '320px' : '380px', width: '100%' }}
+                >
+                  <ChatWidgetWrapper 
+                    isOpen={isOpen}
+                    position={position}
+                    compact={Boolean(combinedTheme.compact)}
+                  >
+                    <ChatWidgetContainer 
+                      onClose={() => dispatch({ type: 'CLOSE_WIDGET' })} 
+                      workspaceId={workspaceId} 
+                      position={position}
+                      compact={Boolean(combinedTheme.compact)}
+                      instanceId={instanceId}
+                    />
+                  </ChatWidgetWrapper>
+                </motion.div>
+              </React.Suspense>
+            )}
+          </AnimatePresence>
           <div className={`fixed bottom-4 z-50 ${position === 'left' ? 'left-4' : 'right-4'}`}>
             <ToggleButton 
               isOpen={isOpen} 

@@ -1,30 +1,28 @@
 
 import React from 'react';
-import { X, MessageSquare } from 'lucide-react';
-import { useThemeContext } from '@/context/ThemeContext';
-import { ToggleButtonProps } from '../../types/button';
+import { MessageSquare, X } from 'lucide-react';
+import { motion } from 'framer-motion';
 
-/**
- * Button component to toggle the chat widget open/closed
- */
+interface ToggleButtonProps {
+  isOpen: boolean;
+  onClick: () => void;
+}
+
 const ToggleButton: React.FC<ToggleButtonProps> = ({ isOpen, onClick }) => {
-  const { colors } = useThemeContext();
-  
   return (
-    <button
+    <motion.button
       onClick={onClick}
-      className="w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 hover:scale-105"
-      aria-label={isOpen ? 'Close chat' : 'Open chat'}
-      style={{ 
-        backgroundColor: isOpen ? '#ef4444' : colors?.primary || '#9b87f5',
-      }}
+      className="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center shadow-lg hover:bg-opacity-90 transition-colors"
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      aria-label={isOpen ? "Close chat" : "Open chat"}
     >
       {isOpen ? (
-        <X className="h-6 w-6 text-white" />
+        <X className="w-5 h-5" />
       ) : (
-        <MessageSquare className="h-6 w-6 text-white" />
+        <MessageSquare className="w-5 h-5" />
       )}
-    </button>
+    </motion.button>
   );
 };
 

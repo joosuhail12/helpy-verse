@@ -1,22 +1,20 @@
 
 /**
- * Message-related type definitions
+ * Message types for the chat widget
  */
 
 export interface Message {
   id: string;
   content: string;
-  sender: 'user' | 'agent';
+  sender: 'user' | 'agent' | 'system';
   timestamp: string;
-  conversationId: string;
-  status?: 'sent' | 'delivered' | 'read' | 'error';
 }
 
 export interface Conversation {
   id: string;
-  title?: string;
+  title: string;
+  messages?: Message[];
   lastMessage?: string;
   lastMessageTimestamp: string;
   unreadCount: number;
-  type?: string;
 }
