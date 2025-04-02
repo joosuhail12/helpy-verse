@@ -32,6 +32,7 @@ const ChatWidgetWrapper: React.FC<ChatWidgetWrapperProps> = ({
           className="w-full rounded-lg shadow-lg overflow-hidden"
           style={{ 
             borderColor: colors?.border,
+            width: compact ? '320px' : '380px',
             height: '500px',
             maxHeight: 'calc(100vh - 100px)',
             backgroundColor: colors?.background || 'white'

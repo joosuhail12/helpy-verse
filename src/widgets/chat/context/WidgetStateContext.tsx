@@ -1,11 +1,8 @@
 
-import React, { createContext, useContext, useReducer, ReactNode, useEffect } from 'react';
-import { ThemeConfig } from '@/context/ThemeContext';
+import React, { createContext, useContext, useReducer, useEffect } from 'react';
 
-// Define the widget state
-interface WidgetState {
-  isOpen: boolean;
-  isInitialized: boolean;
+// Define types for the widget state
+export interface WidgetState {
   instanceId: string;
   theme: {
     position: 'left' | 'right';
@@ -15,147 +12,188 @@ interface WidgetState {
       [key: string]: string;
     };
   };
+  isOpen: boolean;
+  isInitialized: boolean;
   config?: {
     workspaceId: string;
     [key: string]: any;
   };
 }
 
-// Define action types
-type WidgetAction = 
+// Define action types for state updates
+export type WidgetAction =
+  | { type: 'INITIALIZE'; payload: any }
   | { type: 'TOGGLE_WIDGET' }
   | { type: 'OPEN_WIDGET' }
   | { type: 'CLOSE_WIDGET' }
-  | { type: 'INITIALIZE'; payload: { workspaceId: string; theme?: Partial<ThemeConfig>; settings?: any; instanceId?: string } }
-  | { type: 'SET_THEME'; payload: Partial<ThemeConfig> };
+  | { type: 'SET_CONFIG'; payload: any }
+  | { type: 'SET_THEME'; payload: any };
 
-// Create context
-type WidgetStateContextType = {
+// Define context type
+interface WidgetStateContextType {
   state: WidgetState;
   dispatch: React.Dispatch<WidgetAction>;
-};
+}
 
+// Create context
 const WidgetStateContext = createContext<WidgetStateContextType | undefined>(undefined);
 
-// Initial state
-const initialState: WidgetState = {
-  isOpen: false,
-  isInitialized: false,
+// Default initial state
+const defaultInitialState: WidgetState = {
   instanceId: 'default',
   theme: {
-    position: 'right', // Always default to right
+    position: 'right', // Always default to right positioning
     compact: false,
     colors: {
-      primary: '#9b87f5'
-    }
-  }
+      primary: '#9b87f5',
+    },
+  },
+  isOpen: false,
+  isInitialized: false,
 };
 
-// Reducer function
-function widgetReducer(state: WidgetState, action: WidgetAction): WidgetState {
+// Reducer function for state management
+const widgetReducer = (state: WidgetState, action: WidgetAction): WidgetState => {
   switch (action.type) {
-    case 'TOGGLE_WIDGET':
-      return {
-        ...state,
-        isOpen: !state.isOpen
-      };
-    case 'OPEN_WIDGET':
-      return {
-        ...state,
-        isOpen: true
-      };
-    case 'CLOSE_WIDGET':
-      return {
-        ...state,
-        isOpen: false
-      };
     case 'INITIALIZE':
-      return {
+      const initializedState = {
         ...state,
         isInitialized: true,
-        instanceId: action.payload.instanceId || state.instanceId,
         config: {
-          workspaceId: action.payload.workspaceId,
-          ...state.config
+          ...action.payload,
+          workspaceId: action.payload.workspaceId || state.config?.workspaceId,
         },
         theme: {
           ...state.theme,
-          position: 'right' as const, // Force right positioning with type assertion
-          compact: action.payload.theme?.compact || state.theme.compact,
+          position: 'right', // Force right positioning
+          compact: action.payload.theme?.compact ?? state.theme.compact,
           colors: {
             ...state.theme.colors,
-            ...(action.payload.theme?.colors || {})
-          }
-        }
+            ...(action.payload.theme?.colors || {}),
+          },
+        },
       };
+      return initializedState;
+
+    case 'TOGGLE_WIDGET':
+      const toggledState = { ...state, isOpen: !state.isOpen };
+      // Save to localStorage for persistence
+      try {
+        localStorage.setItem(`chat-widget-state-${state.instanceId}`, JSON.stringify({
+          isOpen: toggledState.isOpen,
+        }));
+      } catch (e) {
+        console.error('Failed to save widget state to localStorage', e);
+      }
+      return toggledState;
+
+    case 'OPEN_WIDGET':
+      const openState = { ...state, isOpen: true };
+      // Save to localStorage for persistence
+      try {
+        localStorage.setItem(`chat-widget-state-${state.instanceId}`, JSON.stringify({
+          isOpen: true,
+        }));
+      } catch (e) {
+        console.error('Failed to save widget state to localStorage', e);
+      }
+      return openState;
+
+    case 'CLOSE_WIDGET':
+      const closedState = { ...state, isOpen: false };
+      // Save to localStorage for persistence
+      try {
+        localStorage.setItem(`chat-widget-state-${state.instanceId}`, JSON.stringify({
+          isOpen: false,
+        }));
+      } catch (e) {
+        console.error('Failed to save widget state to localStorage', e);
+      }
+      return closedState;
+
+    case 'SET_CONFIG':
+      return {
+        ...state,
+        config: {
+          ...state.config,
+          ...action.payload,
+        },
+      };
+
     case 'SET_THEME':
       return {
         ...state,
         theme: {
           ...state.theme,
-          position: 'right' as const, // Force right positioning with type assertion
-          compact: action.payload.compact || state.theme.compact,
+          position: 'right', // Always force right positioning
+          compact: action.payload.compact ?? state.theme.compact,
           colors: {
             ...state.theme.colors,
-            ...(action.payload.colors || {})
-          }
-        }
+            ...(action.payload.colors || {}),
+          },
+        },
       };
+
     default:
       return state;
   }
-}
+};
 
 // Provider component
-interface WidgetStateProviderProps {
-  children: ReactNode;
+export const WidgetStateProvider: React.FC<{
+  children: React.ReactNode;
   instanceId?: string;
-}
-
-export const WidgetStateProvider: React.FC<WidgetStateProviderProps> = ({ 
-  children, 
-  instanceId = 'default' 
-}) => {
-  // Initialize state with instanceId
-  const actualInitialState: WidgetState = {
-    ...initialState,
-    instanceId
+}> = ({ children, instanceId = 'default' }) => {
+  // Create initial state with instance ID
+  const initialState: WidgetState = {
+    ...defaultInitialState,
+    instanceId,
+    theme: {
+      ...defaultInitialState.theme,
+      position: 'right', // Ensure right positioning
+    },
   };
 
-  const [state, dispatch] = useReducer(widgetReducer, actualInitialState);
+  // Set up reducer with initial state
+  const [state, dispatch] = useReducer(widgetReducer, initialState);
 
-  // Persist widget state to localStorage based on instanceId
+  // Load saved state from localStorage on mount
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        localStorage.setItem(`chat-widget-state-${state.instanceId}`, JSON.stringify({
-          isOpen: state.isOpen,
-          theme: state.theme
-        }));
-      } catch (error) {
-        console.error('Failed to persist widget state:', error);
+    try {
+      const savedState = localStorage.getItem(`chat-widget-state-${instanceId}`);
+      if (savedState) {
+        const parsedState = JSON.parse(savedState);
+        if (parsedState.isOpen !== undefined) {
+          if (parsedState.isOpen) {
+            dispatch({ type: 'OPEN_WIDGET' });
+          } else {
+            dispatch({ type: 'CLOSE_WIDGET' });
+          }
+        }
       }
+    } catch (e) {
+      console.error('Failed to load widget state from localStorage', e);
     }
-  }, [state.isOpen, state.theme, state.instanceId]);
 
-  // Set up event listeners for external control
-  useEffect(() => {
-    const handleOpenEvent = () => dispatch({ type: 'OPEN_WIDGET' });
-    const handleCloseEvent = () => dispatch({ type: 'CLOSE_WIDGET' });
-    const handleToggleEvent = () => dispatch({ type: 'TOGGLE_WIDGET' });
+    // Set up event listeners for global widget controls
+    const handleOpen = () => dispatch({ type: 'OPEN_WIDGET' });
+    const handleClose = () => dispatch({ type: 'CLOSE_WIDGET' });
+    const handleToggle = () => dispatch({ type: 'TOGGLE_WIDGET' });
 
-    // Add namespaced event listeners to prevent cross-widget interference
-    window.addEventListener(`chat-widget-open-${instanceId}`, handleOpenEvent);
-    window.addEventListener(`chat-widget-close-${instanceId}`, handleCloseEvent);
-    window.addEventListener(`chat-widget-toggle-${instanceId}`, handleToggleEvent);
+    // Add event listeners with instance-specific names
+    window.addEventListener(`chat-widget-open-${instanceId}`, handleOpen);
+    window.addEventListener(`chat-widget-close-${instanceId}`, handleClose);
+    window.addEventListener(`chat-widget-toggle-${instanceId}`, handleToggle);
 
+    // Cleanup
     return () => {
-      window.removeEventListener(`chat-widget-open-${instanceId}`, handleOpenEvent);
-      window.removeEventListener(`chat-widget-close-${instanceId}`, handleCloseEvent);
-      window.removeEventListener(`chat-widget-toggle-${instanceId}`, handleToggleEvent);
+      window.removeEventListener(`chat-widget-open-${instanceId}`, handleOpen);
+      window.removeEventListener(`chat-widget-close-${instanceId}`, handleClose);
+      window.removeEventListener(`chat-widget-toggle-${instanceId}`, handleToggle);
     };
   }, [instanceId]);
 
+  // Provide the state and dispatch function to children
   return (
     <WidgetStateContext.Provider value={{ state, dispatch }}>
       {children}
@@ -163,12 +201,11 @@ export const WidgetStateProvider: React.FC<WidgetStateProviderProps> = ({
   );
 };
 
+// Custom hook for using the widget state
 export const useWidgetState = () => {
   const context = useContext(WidgetStateContext);
-  
   if (context === undefined) {
     throw new Error('useWidgetState must be used within a WidgetStateProvider');
   }
-  
   return context;
 };

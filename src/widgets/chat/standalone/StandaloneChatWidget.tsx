@@ -81,14 +81,15 @@ const StandaloneChatWidget: React.FC = () => {
   // Default workspaceId if not provided
   const workspaceId = options?.workspaceId || '6c22b22f-7bdf-43db-b7c1-9c5884125c63';
   
-  // Convert API theme to context theme
+  // Convert API theme to context theme and FORCE right positioning
   const contextTheme = adaptApiThemeToContextTheme(options?.theme);
+  contextTheme.position = 'right' as 'right'; // Type assertion to enforce right positioning
   
   return (
     <WidgetStateProvider instanceId={instanceId}>
       <ChatWidget 
         workspaceId={workspaceId}
-        theme={{ ...contextTheme, position: 'right' as const }}
+        theme={contextTheme}
         settings={options?.settings}
         standalone={true}
         instanceId={instanceId}

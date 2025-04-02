@@ -42,29 +42,18 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({
         settings
       }
     });
-  }, [workspaceId, dispatch]);
+  }, [workspaceId, theme, settings, dispatch]);
 
   // Override theme settings to ensure right positioning
   const combinedTheme: Partial<ThemeConfig> = {
     ...theme,
     position: 'right', // Force right positioning
     ...(settings?.appearance && {
-      position: 'right',
+      position: 'right', // Force right positioning again to be sure
       compact: settings.appearance.compact,
       colors: {
         ...theme.colors,
         primary: settings.appearance.primaryColor
-      },
-      labels: {
-        ...theme.labels,
-        welcomeTitle: settings.content?.welcomeTitle,
-        welcomeSubtitle: settings.content?.welcomeSubtitle
-      },
-      features: {
-        typingIndicator: settings.features?.enableTypingIndicator,
-        reactions: settings.features?.enableReactions,
-        fileAttachments: settings.features?.enableFileAttachments,
-        readReceipts: settings.features?.enableReadReceipts
       }
     })
   };
@@ -77,22 +66,24 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({
     <AblyProvider workspaceId={workspaceId}>
       <ChatProvider workspaceId={workspaceId}>
         <ThemeProvider initialTheme={combinedTheme}>
-          <div className="fixed bottom-4 right-4 z-50">
+          <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end">
             {isOpen && (
-              <ChatWidgetWrapper 
-                isOpen={isOpen}
-                position="right"
-                compact={Boolean(combinedTheme.compact)}
-              >
-                <ChatWidgetContainer 
-                  onClose={() => dispatch({ type: 'CLOSE_WIDGET' })} 
-                  workspaceId={workspaceId} 
+              <div className="mb-4">
+                <ChatWidgetWrapper 
+                  isOpen={isOpen}
                   position="right"
                   compact={Boolean(combinedTheme.compact)}
-                />
-              </ChatWidgetWrapper>
+                >
+                  <ChatWidgetContainer 
+                    onClose={() => dispatch({ type: 'CLOSE_WIDGET' })} 
+                    workspaceId={workspaceId} 
+                    position="right"
+                    compact={Boolean(combinedTheme.compact)}
+                  />
+                </ChatWidgetWrapper>
+              </div>
             )}
-            <div className="mt-2">
+            <div>
               <ToggleButton 
                 isOpen={isOpen} 
                 onClick={toggleWidget} 
