@@ -2,7 +2,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useAbly } from '@/context/AblyContext';
-import { ChatMessage } from '@/components/chat-widget/components/conversation/types';
+import { ChatMessage } from '@/types/chat';
 import { useOfflineMessaging } from './useOfflineMessaging';
 
 interface ChannelAndClient {

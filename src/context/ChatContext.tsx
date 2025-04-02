@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { Conversation } from '@/components/chat-widget/components/conversation/types';
+import { Conversation } from '@/types/chat';
 import { v4 as uuidv4 } from 'uuid';
 
 interface ChatContextValue {

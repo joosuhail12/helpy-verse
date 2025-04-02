@@ -3,7 +3,7 @@
  * Offline message queuing functionality
  */
 import { v4 as uuidv4 } from 'uuid';
-import { ChatMessage } from '@/components/chat-widget/components/conversation/types';
+import { ChatMessage } from '@/types/chat';
 
 const QUEUE_STORAGE_KEY = 'ably_message_queue';
 

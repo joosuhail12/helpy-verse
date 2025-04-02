@@ -1,7 +1,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { Conversation, ChatMessage } from '@/components/chat-widget/components/conversation/types';
+import { Conversation, ChatMessage } from '@/types/chat';
 import { useAbly } from '@/context/AblyContext';
 
 interface UseChatReturn {
