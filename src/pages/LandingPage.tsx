@@ -24,7 +24,7 @@ const LandingPage = () => {
         window.PULLSE_WELCOME_SUBTITLE = 'How can we help?';
         
         const script = document.createElement('script');
-        script.src = "${window.location.origin}/chat-widget.js";
+        script.src = "${window.location.origin}/chat-widget-loader.js";
         script.async = true;
         document.body.appendChild(script);
       })();

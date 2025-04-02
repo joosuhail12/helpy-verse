@@ -23,12 +23,6 @@ interface AppProvidersProps {
 const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
   console.log("Rendering AppProviders");
   
-  // Make sure React is properly initialized before rendering
-  if (!React) {
-    console.error("React is not properly initialized in AppProviders");
-    return <div>Error initializing application</div>;
-  }
-
   return (
     <AppErrorBoundary>
       {/* Redux Provider must come first since other components depend on it */}
