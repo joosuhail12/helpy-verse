@@ -1,7 +1,8 @@
+
 import { createSlice } from '@reduxjs/toolkit';
 import { getCookie } from '@/utils/helpers/helpers';
 import { handleLogout as tokenHandleLogout } from '@/utils/auth/tokenManager';
-import { AuthState } from './types';
+import { AuthState } from './auth/types';
 import { 
   loginUser, 
   registerUser, 
@@ -12,8 +13,8 @@ import {
   fetchUserData, 
   fetchUserProfile, 
   fetchWorkspaceData 
-} from './userActions';
-import { getUserPermission } from './permissionActions';
+} from './auth/userActions';
+import { getUserPermission } from './auth/permissionActions';
 
 const initialState: AuthState = {
   isAuthenticated: !!getCookie("customerToken"),

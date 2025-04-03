@@ -1,19 +1,20 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import type { Content, ContentStatus, SortField } from '@/types/content';
 
 export interface ContentState {
-  items: any[];
+  items: Content[];
   selectedId: string | null;
   selectedIds: string[];
   loading: boolean;
   error: string | null;
   filters: {
-    status: string | null;
+    status: ContentStatus | null;
     category: string | null;
     chatbot: string | null;
   };
   sort: {
-    field: 'title' | 'lastUpdated' | 'messageCount';
+    field: SortField;
     direction: 'asc' | 'desc';
   };
 }
@@ -57,7 +58,7 @@ const contentSlice = createSlice({
     clearSelection: (state) => {
       state.selectedIds = [];
     },
-    setSortField: (state, action: PayloadAction<'title' | 'lastUpdated' | 'messageCount'>) => {
+    setSortField: (state, action: PayloadAction<SortField>) => {
       state.sort.field = action.payload;
     },
     setSortDirection: (state, action: PayloadAction<'asc' | 'desc'>) => {
@@ -67,6 +68,15 @@ const contentSlice = createSlice({
       const { key, value } = action.payload;
       state.filters[key] = value;
     },
+    setStatusFilter: (state, action: PayloadAction<ContentStatus | null>) => {
+      state.filters.status = action.payload;
+    },
+    setCategoryFilter: (state, action: PayloadAction<string | null>) => {
+      state.filters.category = action.payload;
+    },
+    setChatbotFilter: (state, action: PayloadAction<string | null>) => {
+      state.filters.chatbot = action.payload;
+    },
     clearFilters: (state) => {
       state.filters = {
         status: null,
@@ -74,9 +84,32 @@ const contentSlice = createSlice({
         chatbot: null,
       };
     },
+    updateContentStatus: (state, action: PayloadAction<{ ids: string[], status: ContentStatus }>) => {
+      const { ids, status } = action.payload;
+      state.items = state.items.map(item => 
+        ids.includes(item.id) ? { ...item, status } : item
+      );
+    },
+    reassignChatbot: (state, action: PayloadAction<{ contentIds: string[], chatbotId: string, chatbotName: string }>) => {
+      const { contentIds, chatbotId, chatbotName } = action.payload;
+      state.items = state.items.map(item => {
+        if (contentIds.includes(item.id)) {
+          const newChatbots = [...(item.chatbots || [])];
+          if (!newChatbots.some(bot => bot.id === chatbotId)) {
+            newChatbots.push({ id: chatbotId, name: chatbotName });
+          }
+          return { ...item, chatbots: newChatbots };
+        }
+        return item;
+      });
+    },
+    deleteContents: (state, action: PayloadAction<string[]>) => {
+      const ids = action.payload;
+      state.items = state.items.filter(item => !ids.includes(item.id));
+    }
   },
   extraReducers: (builder) => {
-    // Extra reducers will be added when we implement API calls
+    // Extra reducers will be added when implementing API calls
   },
 });
 
@@ -88,7 +121,13 @@ export const {
   setSortField,
   setSortDirection,
   setFilter,
+  setStatusFilter,
+  setCategoryFilter,
+  setChatbotFilter,
   clearFilters,
+  updateContentStatus,
+  reassignChatbot,
+  deleteContents
 } = contentSlice.actions;
 
 export default contentSlice.reducer;
