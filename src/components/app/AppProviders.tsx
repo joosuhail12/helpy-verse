@@ -20,8 +20,8 @@ interface AppProvidersProps {
  */
 const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
   return (
-    <AppErrorBoundary>
-      <Provider store={store}>
+    <Provider store={store}>
+      <AppErrorBoundary>
         <AppQueryProvider>
           <TooltipProvider>
             <Toaster />
@@ -33,8 +33,8 @@ const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
             </CaslProvider>
           </TooltipProvider>
         </AppQueryProvider>
-      </Provider>
-    </AppErrorBoundary>
+      </AppErrorBoundary>
+    </Provider>
   );
 };
 
