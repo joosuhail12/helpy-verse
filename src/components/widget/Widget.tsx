@@ -8,43 +8,57 @@ interface WidgetProps {
 }
 
 const Widget: React.FC<WidgetProps> = ({ id, title }) => {
-  const { state, dispatch } = useWidgetState();
-  
-  const handleOpenWidget = () => {
-    dispatch({ type: 'OPEN_WIDGET', payload: id });
-  };
-  
-  const handleCloseWidget = () => {
-    dispatch({ type: 'CLOSE_WIDGET' });
-  };
-  
-  return (
-    <div className="border rounded-md shadow-sm p-4 bg-white dark:bg-gray-800">
-      <div className="flex justify-between items-center mb-2">
-        <h3 className="font-medium text-gray-900 dark:text-gray-100">{title}</h3>
-        <button
-          className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-          onClick={state.isOpen && state.activeWidget === id ? handleCloseWidget : handleOpenWidget}
-        >
-          {state.isOpen && state.activeWidget === id ? 'Close' : 'Open'}
-        </button>
-      </div>
-      
-      {state.isOpen && state.activeWidget === id && (
-        <div className="mt-2">
-          <p className="text-gray-600 dark:text-gray-300">Widget content goes here</p>
-          <div className="mt-2 flex justify-end">
-            <button
-              className="px-3 py-1 bg-purple-600 text-white rounded-md text-sm"
-              onClick={() => dispatch({ type: 'SET_THEME', payload: state.theme === 'light' ? 'dark' : 'light' })}
-            >
-              Toggle Theme
-            </button>
-          </div>
+  // Wrap this in a try-catch to help debug potential issues
+  try {
+    const { state, dispatch } = useWidgetState();
+    
+    const handleOpenWidget = () => {
+      dispatch({ type: 'OPEN_WIDGET', payload: id });
+    };
+    
+    const handleCloseWidget = () => {
+      dispatch({ type: 'CLOSE_WIDGET' });
+    };
+    
+    return (
+      <div className="border rounded-md shadow-sm p-4 bg-white dark:bg-gray-800">
+        <div className="flex justify-between items-center mb-2">
+          <h3 className="font-medium text-gray-900 dark:text-gray-100">{title}</h3>
+          <button
+            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            onClick={state.isOpen && state.activeWidget === id ? handleCloseWidget : handleOpenWidget}
+          >
+            {state.isOpen && state.activeWidget === id ? 'Close' : 'Open'}
+          </button>
         </div>
-      )}
-    </div>
-  );
+        
+        {state.isOpen && state.activeWidget === id && (
+          <div className="mt-2">
+            <p className="text-gray-600 dark:text-gray-300">Widget content goes here</p>
+            <div className="mt-2 flex justify-end">
+              <button
+                className="px-3 py-1 bg-purple-600 text-white rounded-md text-sm"
+                onClick={() => dispatch({ type: 'SET_THEME', payload: state.theme === 'light' ? 'dark' : 'light' })}
+              >
+                Toggle Theme
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  } catch (error) {
+    console.error('Widget error:', error);
+    // Fallback UI when context is not available
+    return (
+      <div className="border rounded-md shadow-sm p-4 bg-white">
+        <h3 className="font-medium text-gray-900">{title}</h3>
+        <p className="text-red-500 text-sm mt-2">
+          Widget context error. Make sure this component is inside a WidgetStateProvider.
+        </p>
+      </div>
+    );
+  }
 };
 
 export default Widget;

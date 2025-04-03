@@ -38,8 +38,8 @@ interface WidgetContextType {
   dispatch: Dispatch<WidgetAction>;
 }
 
-// Create the context with a default value
-const WidgetStateContext = createContext<WidgetContextType | null>(null);
+// Create the context with a default undefined value (key change from null)
+const WidgetStateContext = createContext<WidgetContextType | undefined>(undefined);
 
 // Create the reducer function
 const widgetReducer = (state: WidgetState, action: WidgetAction): WidgetState => {
@@ -96,7 +96,7 @@ export const WidgetStateProvider: React.FC<WidgetStateProviderProps> = ({ childr
 export const useWidgetState = (): WidgetContextType => {
   const context = useContext(WidgetStateContext);
   
-  if (!context) {
+  if (context === undefined) {
     throw new Error('useWidgetState must be used within a WidgetStateProvider');
   }
   
