@@ -17,10 +17,10 @@ export const usePresence = (ticket: Ticket, setMessages: (updater: (prev: Messag
     const setupPresence = async () => {
       setIsLoading(true);
       setError(null);
-      
+
       try {
         const channel = await getAblyChannel(`ticket:${ticket.id}`);
-        
+
         await channel.presence.enter({
           userId: 'Agent',
           name: 'Agent',
@@ -60,17 +60,15 @@ export const usePresence = (ticket: Ticket, setMessages: (updater: (prev: Messag
           }
 
           if (member.data?.location) {
-            setActiveUsers(prev => prev.map(user => 
-              user.userId === member.data.userId 
+            setActiveUsers(prev => prev.map(user =>
+              user.userId === member.data.userId
                 ? { ...user, location: member.data.location }
                 : user
             ));
           }
         });
+        const presenceData = await channel.presence.get();
 
-        const presencePromise = channel.presence.get();
-        const presenceData = await Promise.resolve(presencePromise) as unknown as Ably.Types.PresenceMessage[];
-        
         if (presenceData && Array.isArray(presenceData)) {
           const presentMembers = presenceData.map(member => ({
             userId: member.clientId,

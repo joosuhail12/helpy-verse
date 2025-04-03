@@ -1,20 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import useCustomer from '@/hooks/use-customer';
-import type { Ticket } from '@/types/ticket';
-import MessageToolbar from './components/MessageToolbar';
-import AttachmentList from './components/AttachmentList';
 import { createEditorConfig } from './utils/editorConfig';
 import { cn } from "@/lib/utils";
+import MessageToolbar from './components/MessageToolbar';
+import AttachmentList from './components/AttachmentList';
 
 interface MessageInputProps {
   newMessage: string;
   onMessageChange: (value: string) => void;
-  onKeyPress: (e: React.KeyboardEvent<HTMLDivElement>) => void;
+  onKeyPress?: (e: React.KeyboardEvent<HTMLDivElement>) => void;
   onSendMessage: () => void;
-  ticket: Ticket;
+  ticket: any;
   isSending?: boolean;
   disabled?: boolean;
+  handleTyping?: () => void;
+  isInternalNote?: boolean;
+  setIsInternalNote?: (value: boolean) => void;
 }
 
 const MessageInput = ({
@@ -24,89 +26,92 @@ const MessageInput = ({
   onSendMessage,
   ticket,
   isSending = false,
-  disabled = false
+  disabled = false,
+  handleTyping,
+  isInternalNote: isInternalNoteProp = false,
+  setIsInternalNote: setIsInternalNoteProp
 }: MessageInputProps) => {
-  const [isInternalNote, setIsInternalNote] = useState(false);
+  const [isInternalNote, setIsInternalNoteLocal] = useState(isInternalNoteProp);
   const [files, setFiles] = useState<File[]>([]);
   const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
   const [isAttachmentSheetOpen, setIsAttachmentSheetOpen] = useState(false);
 
   // Get customer name for better editor placeholders
-  const { customerName } = useCustomer(ticket.customerId);
+  const { customer: customerData, isLoading } = useCustomer(ticket?.customerId);
+  // Safely access customer name with fallback
+  const customerName = customerData?.name || ticket?.customer || 'Customer';
 
-  // Create the editor with proper configuration
-  const editor = useEditor({
-    extensions: createEditorConfig(newMessage, (editor) => {
-      if (editor && typeof editor.getHTML === 'function') {
-        onMessageChange(editor.getHTML());
-      }
-    }, ticket, customerName).extensions,
-    content: newMessage,
-    editorProps: {
-      attributes: {
-        class: 'prose focus:outline-none w-full max-w-full',
-        spellcheck: 'true',
-      },
-    },
-    onUpdate: ({ editor }) => {
-      if (editor && typeof editor.getHTML === 'function') {
-        onMessageChange(editor.getHTML());
+  // Create content change handler first
+  const handleContentChange = useCallback(({ editor }: { editor: any }) => {
+    if (editor) {
+      const html = editor.getHTML();
+      onMessageChange(html);
+
+      // Trigger typing indicator whenever content changes
+      if (html && html !== '<p></p>' && handleTyping) {
+        handleTyping();
       }
     }
+  }, [onMessageChange, handleTyping]);
+
+  // Create editor config with proper wrapper function
+  const editorConfig = createEditorConfig(
+    newMessage,
+    (editor) => handleContentChange({ editor }),
+    ticket,
+    customerName
+  );
+
+  const editor = useEditor({
+    extensions: editorConfig.extensions,
+    content: newMessage,
+    editorProps: editorConfig.editorProps
   });
 
-  // Update editor content when newMessage changes from outside
+  // Initialize editor with message content
   useEffect(() => {
-    if (editor && editor.commands && typeof editor.commands.setContent === 'function' && newMessage !== editor.getHTML()) {
+    if (editor && !editor.isDestroyed && newMessage !== editor.getHTML()) {
       editor.commands.setContent(newMessage);
     }
-  }, [newMessage, editor]);
+  }, [editor, newMessage]);
 
-  const handleEmojiSelect = (emojiData: any) => {
-    editor?.commands.insertContent(emojiData.emoji);
-  };
+  // Use prop setIsInternalNote if provided
+  useEffect(() => {
+    if (setIsInternalNoteProp) {
+      setIsInternalNoteProp(isInternalNote);
+    }
+  }, [isInternalNote, setIsInternalNoteProp]);
 
+  // Use prop isInternalNote if controlled
+  useEffect(() => {
+    if (isInternalNoteProp !== undefined) {
+      setIsInternalNoteLocal(isInternalNoteProp);
+    }
+  }, [isInternalNoteProp]);
+
+  // Handle file uploads
   const handleFilesAdded = (newFiles: File[]) => {
     setFiles(prev => [...prev, ...newFiles]);
-
-    // Simulate upload progress for each file
-    newFiles.forEach(file => {
-      let progress = 0;
-      const interval = setInterval(() => {
-        progress += 10;
-        setUploadProgress(prev => ({
-          ...prev,
-          [file.name]: progress
-        }));
-        if (progress >= 100) {
-          clearInterval(interval);
-        }
-      }, 500);
-    });
   };
 
-  const handleRemoveFile = (file: File) => {
-    setFiles(prev => prev.filter(f => f !== file));
-    setUploadProgress(prev => {
-      const { [file.name]: _, ...rest } = prev;
-      return rest;
-    });
+  const handleRemoveFile = (fileToRemove: File) => {
+    setFiles(prev => prev.filter(file => file !== fileToRemove));
   };
 
-  const insertPlaceholder = (type: 'customer' | 'company' | 'ticket') => {
-    let content = '';
-    switch (type) {
-      case 'customer':
-        content = `@${customerName || ticket.customer || 'Customer'}`;
-        break;
-      case 'company':
-        content = `@${ticket.company}`;
-        break;
-      case 'ticket':
-        content = `#${ticket.id}`;
-        break;
+  // Add emoji to editor
+  const handleEmojiSelect = (emojiData: any) => {
+    if (editor && editor.commands && typeof editor.commands.insertContent === 'function') {
+      const emoji = typeof emojiData === 'string' ? emojiData :
+        (emojiData.emoji || emojiData.native || emojiData.colons || '');
+      editor.commands.insertContent(emoji);
     }
-    editor?.commands.insertContent(content);
+  };
+
+  // Insert placeholder
+  const insertPlaceholder = (content: string) => {
+    if (editor && editor.commands && typeof editor.commands.insertContent === 'function') {
+      editor.commands.insertContent(content);
+    }
   };
 
   return (
@@ -121,7 +126,7 @@ const MessageInput = ({
           ticket={ticket}
           disabled={disabled}
           isInternalNote={isInternalNote}
-          setIsInternalNote={setIsInternalNote}
+          setIsInternalNote={setIsInternalNoteLocal}
           onEmojiSelect={handleEmojiSelect}
           onFilesAdded={handleFilesAdded}
           uploadProgress={uploadProgress}

@@ -4,10 +4,31 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, Send, AlertCircle, Check, MessageCircleCode, Trash2 } from 'lucide-react';
+import { Loader2, Send, AlertCircle, Check, MessageCircleCode, Trash2, User } from 'lucide-react';
 import { getAblyChatClient, initAbly } from '@/utils/ably';
 import AblyConnectionTest from '@/components/AblyConnectionTest';
 import { Separator } from '@/components/ui/separator';
+import { useAppSelector } from '@/hooks/useAppSelector';
+import { AllFeaturesEnabled } from '@ably/chat';
+
+// Helper function to get user initials from name
+const getUserInitials = (name: string) => {
+    if (!name) return '?';
+    return name.split(' ')
+        .map(part => part[0]?.toUpperCase() || '')
+        .filter(Boolean)
+        .join('')
+        .slice(0, 2);
+};
+
+// Safe access to user data with fallbacks
+const getUserInfo = (auth: any) => {
+    // Try different possible paths for user data
+    const userId = auth?.user?.data?.id || 'anonymous';
+    const username = auth?.user?.data?.name || 'Anonymous User';
+    const userEmail = auth?.user?.data?.email || '';
+    return { userId, username, userEmail };
+};
 
 const AblyTest = () => {
     const [roomId, setRoomId] = useState('test-room');
@@ -20,6 +41,13 @@ const AblyTest = () => {
     const [isJoining, setIsJoining] = useState(false);
     const [isSending, setIsSending] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const [typingUsers, setTypingUsers] = useState<string[]>([]);
+
+    // Get user data from auth state
+    const auth = useAppSelector(state => state.auth);
+    const { userId, username, userEmail } = getUserInfo(auth);
+    const userInitials = getUserInitials(username);
 
     // Scroll to bottom when messages change
     useEffect(() => {
@@ -34,10 +62,39 @@ const AblyTest = () => {
             if (room) {
                 try {
                     console.log('Detaching from room on component unmount');
-                    room.detach();
+
+                    // Mark as being cleaned up to prevent further operations
+                    (room as any)._isBeingCleaned = true;
+
+                    // Clean up presence first if available
+                    if (room.presence && typeof room.presence.leave === 'function') {
+                        try {
+                            room.presence.leave().catch(err => {
+                                console.warn('Error leaving presence during cleanup:', err);
+                            });
+                        } catch (error) {
+                            console.warn('Error calling presence.leave:', error);
+                        }
+                    }
+
+                    // Use a small delay to ensure presence operations finish before detaching
+                    setTimeout(() => {
+                        try {
+                            room.detach().catch(err => {
+                                console.warn('Error detaching room during cleanup:', err);
+                            });
+                        } catch (error) {
+                            console.error('Error detaching room:', error);
+                        }
+                    }, 100);
                 } catch (error) {
                     console.error('Error detaching from room:', error);
                 }
+            }
+
+            // Clean up any lingering typing timeout
+            if (typingTimeoutRef.current) {
+                clearTimeout(typingTimeoutRef.current);
             }
         };
     }, [room]);
@@ -75,8 +132,19 @@ const AblyTest = () => {
             const fullRoomId = roomId.startsWith('ticket:') ? roomId : `ticket:${roomId}`;
             console.log('Chat client initialized, getting room:', fullRoomId);
 
-            // Get chat room
-            const chatRoom = await chatClient.rooms.get(fullRoomId);
+            // Enable presence specifically
+            const roomOptions = {
+                ...AllFeaturesEnabled,
+                presence: {
+                    enabled: true,  // Explicitly enable presence
+                    memberKey: 'clientId', // Specify how to identify members
+                    maxMembers: 100  // Maximum members in presence
+                },
+                typing: true
+            };
+
+            // Get chat room with presence enabled
+            const chatRoom = await chatClient.rooms.get(fullRoomId, roomOptions);
 
             setDiagnosticInfo('Room instance created. Attaching to room...');
 
@@ -85,12 +153,18 @@ const AblyTest = () => {
                 console.log('Received message:', messageEvent);
 
                 const msg = messageEvent.message;
+                const extras = msg.extras || {};
+
+                // Display the sender name from extras
+                const senderName = extras.senderName || extras.sender || 'Unknown';
+
                 setMessages(prev => [...prev, {
                     id: messageEvent.id,
                     content: msg.text || '',
-                    sender: msg.extras?.sender || 'Unknown',
+                    sender: senderName,
                     timestamp: messageEvent.timestamp,
-                    isSystem: msg.extras?.isSystem || false
+                    isSystem: extras.isSystem || false,
+                    isCurrentUser: extras.sender === 'You' || extras.senderId === userId
                 }]);
             });
 
@@ -110,17 +184,36 @@ const AblyTest = () => {
                     setStatus('connected');
                     setDiagnosticInfo(prev => `${prev}\nSuccessfully attached to room`);
 
-                    // Send a system message
-                    chatRoom.messages.send({
-                        text: 'A new user has joined the room',
-                        extras: {
-                            sender: 'System',
-                            isSystem: true
+                    // Send a system message with user's name
+                    try {
+                        chatRoom.messages.send({
+                            text: `${username} has joined the room`,
+                            extras: {
+                                senderName: 'System',
+                                sender: 'System',
+                                isSystem: true
+                            }
+                        }).catch(err => {
+                            console.error('Error sending join message:', err);
+                            setDiagnosticInfo(prev => `${prev}\nError sending system message: ${err.message}`);
+                        });
+
+                        // Initialize presence if available
+                        if (chatRoom.presence && typeof chatRoom.presence.enter === 'function') {
+                            chatRoom.presence.enter({
+                                name: username,
+                                userId: userId,
+                                isCustomer: true
+                            }).catch(err => {
+                                console.error('Error entering presence:', err);
+                                setDiagnosticInfo(prev => `${prev}\nWarning: Could not initialize presence: ${err.message}`);
+                            });
                         }
-                    }).catch(err => {
-                        console.error('Error sending join message:', err);
-                        setDiagnosticInfo(prev => `${prev}\nError sending system message: ${err.message}`);
-                    });
+                    } catch (error) {
+                        console.error('Error during room initialization:', error);
+                        const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+                        setDiagnosticInfo(prev => `${prev}\nWarning: ${errorMsg}`);
+                    }
                 }
             });
 
@@ -130,6 +223,22 @@ const AblyTest = () => {
 
             console.log('Successfully attached to room');
             setRoom(chatRoom);
+
+            // Add presence diagnostics
+            try {
+                const hasPresence = chatRoom.presence &&
+                    typeof chatRoom.presence.enter === 'function' &&
+                    typeof chatRoom.presence.subscribe === 'function';
+
+                setDiagnosticInfo(prev => `${prev}\nPresence capability: ${hasPresence ? 'Available' : 'NOT AVAILABLE'}`);
+
+                if (!hasPresence) {
+                    setDiagnosticInfo(prev => `${prev}\nWARNING: Presence is not available. Typing indicators will not work.`);
+                }
+            } catch (error) {
+                console.error('Error checking presence capabilities:', error);
+                setDiagnosticInfo(prev => `${prev}\nError checking presence: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            }
         } catch (error) {
             console.error('Error connecting to room:', error);
             setStatus('error');
@@ -154,6 +263,10 @@ const AblyTest = () => {
                 text: message,
                 extras: {
                     sender: 'You',
+                    senderName: username, // Include the actual user name
+                    senderId: userId, // Include user ID for identification
+                    userInitials: userInitials,
+                    isCustomer: true // Mark as customer for the conversation panel
                 }
             });
 
@@ -175,6 +288,100 @@ const AblyTest = () => {
         }
     };
 
+    const handleTyping = async () => {
+        if (!message.trim() || !room || !room.presence || typeof room.presence.update !== 'function') {
+            return; // Skip if presence isn't available
+        }
+
+        try {
+            // Update presence with typing status and customer flag
+            await room.presence.update({
+                isTyping: true,
+                name: username,
+                userId: userEmail || username,
+                isCustomer: true
+            });
+
+            // Clear timeout if it exists
+            if (typingTimeoutRef.current) {
+                clearTimeout(typingTimeoutRef.current);
+            }
+
+            // Set timeout to stop typing after 1.5 seconds
+            typingTimeoutRef.current = setTimeout(async () => {
+                try {
+                    if (room && room.presence && typeof room.presence.update === 'function') {
+                        await room.presence.update({
+                            isTyping: false,
+                            name: username,
+                            userId: userEmail || username,
+                            isCustomer: true
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error stopping typing indicator:', error);
+                }
+            }, 1500);
+        } catch (error) {
+            console.error('Error updating typing status:', error);
+        }
+    };
+
+    // Simplified input handling without typing indicators if presence is not available
+    const handleMessageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setMessage(e.target.value);
+        // Only try to update typing status if we have presence functionality
+        if (e.target.value.trim() && room?.presence && typeof room.presence.update === 'function') {
+            handleTyping();
+        }
+    };
+
+    // Update the typing subscription to handle presence safely
+    useEffect(() => {
+        const presenceEnabled = room?.presence && typeof room.presence.subscribe === 'function';
+
+        if (room && presenceEnabled) {
+            try {
+                // Subscribe to presence updates for typing indicators
+                const unsubscribe = room.presence.subscribe('update', (member: any) => {
+                    if (member.data?.isTyping !== undefined) {
+                        const memberName = member.data.name;
+                        // Only show typing indicators for others, not self
+                        if (memberName !== username) {
+                            if (member.data.isTyping) {
+                                // Show "Agent is typing" for agent messages
+                                const displayName = member.data.isCustomer === false ? 'Agent' : memberName;
+                                setTypingUsers(prev => [...new Set([...prev, displayName])]);
+                            } else {
+                                setTypingUsers(prev => prev.filter(user => user !== memberName && user !== 'Agent'));
+                            }
+                        }
+                    }
+                });
+
+                return () => {
+                    // Clean up subscription when component unmounts or room changes
+                    if (unsubscribe && typeof unsubscribe === 'function') {
+                        unsubscribe();
+                    }
+                };
+            } catch (error) {
+                console.error('Error setting up typing indicator subscription:', error);
+            }
+        } else if (room && !presenceEnabled) {
+            console.warn('Presence is not available on this room. Typing indicators will not work.');
+        }
+    }, [room, username]);
+
+    // Cleanup on unmount
+    useEffect(() => {
+        return () => {
+            if (typingTimeoutRef.current) {
+                clearTimeout(typingTimeoutRef.current);
+            }
+        };
+    }, []);
+
     return (
         <div className="container mx-auto py-10">
             <h1 className="text-2xl font-bold mb-2 flex items-center gap-2">
@@ -194,6 +401,16 @@ const AblyTest = () => {
                             <AblyConnectionTest />
 
                             <Separator className="my-2" />
+
+                            <div className="flex items-center gap-2 py-2">
+                                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                                    <User className="h-4 w-4" />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-medium">{username}</p>
+                                    {userEmail && <p className="text-xs text-muted-foreground">{userEmail}</p>}
+                                </div>
+                            </div>
 
                             <div className="space-y-2">
                                 <label className="text-sm font-medium">Room ID</label>
@@ -284,7 +501,7 @@ const AblyTest = () => {
                                                 key={msg.id || index}
                                                 className={`px-3 py-2 rounded-lg ${msg.isSystem
                                                     ? 'bg-gray-100 text-gray-700 text-center text-sm italic'
-                                                    : msg.sender === 'You'
+                                                    : msg.isCurrentUser
                                                         ? 'bg-blue-500 text-white ml-auto'
                                                         : 'bg-gray-200 text-gray-800 mr-auto'
                                                     } max-w-[80%] break-words`}
@@ -299,12 +516,18 @@ const AblyTest = () => {
                                     </div>
                                 )}
                             </ScrollArea>
+                            {/* Only show typing indicators if available and someone is typing */}
+                            {typingUsers && typingUsers.length > 0 && (
+                                <div className="mt-2 text-xs text-muted-foreground italic">
+                                    {typingUsers.join(', ')} {typingUsers.length === 1 ? 'is' : 'are'} typing...
+                                </div>
+                            )}
                         </CardContent>
                         <CardFooter className="border-t p-4">
                             <div className="flex w-full gap-2">
                                 <Input
                                     value={message}
-                                    onChange={(e) => setMessage(e.target.value)}
+                                    onChange={handleMessageChange}
                                     onKeyDown={handleKeyPress}
                                     placeholder="Type your message..."
                                     disabled={status !== 'connected' || isSending}

@@ -140,7 +140,11 @@ const App = () => (
                     <Route path="automation/ai/content-center" element={<ContentCenter />} />
                     <Route path="automation/ai/content-center/create" element={<CreateContent />} />
                   </Route>
-                  <Route path="/ably-test" element={<AblyTest />} />
+                  <Route path="/ably-test" element={
+                    <ProtectedRoute>
+                      <AblyTest />
+                    </ProtectedRoute>
+                  } />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </Suspense>

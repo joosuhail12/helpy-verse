@@ -9,6 +9,7 @@ import CustomerContextPanel from './CustomerContextPanel';
 import { useConversation } from './hooks/useConversation';
 import { cn } from "@/lib/utils";
 import AblyConnectionTest from '@/components/AblyConnectionTest';
+import { MessagesSquare } from "lucide-react";
 
 const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
   const {
@@ -78,7 +79,10 @@ const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
           onSendMessage={handleSendMessage}
           ticket={ticket}
           isSending={isSending}
-          disabled={!!error}
+          isInternalNote={isInternalNote}
+          setIsInternalNote={setIsInternalNote}
+          disabled={isLoading}
+          handleTyping={handleTyping}
         />
       </div>
 

@@ -118,8 +118,8 @@ const MainContent = ({
 
   return (
     <div className={`flex flex-col transition-all duration-300 ${selectedTicketForChat
-        ? 'w-full md:w-3/5 lg:w-2/5'
-        : 'w-full'
+      ? 'w-full md:w-3/5 lg:w-2/5'
+      : 'w-full'
       }`}>
       <div className="flex-1 overflow-auto px-4">
         <div className="bg-white rounded-lg shadow-sm border border-gray-100 mt-4">
@@ -191,8 +191,8 @@ const MainContent = ({
                     key={page}
                     onClick={() => setCurrentPage(page)}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${currentPage === page
-                        ? 'bg-primary text-white shadow-md shadow-primary/20'
-                        : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
+                      ? 'bg-primary text-white shadow-md shadow-primary/20'
+                      : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
                       }`}
                   >
                     {page}

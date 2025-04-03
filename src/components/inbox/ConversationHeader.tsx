@@ -122,7 +122,16 @@ const ConversationHeader = ({ ticket, onClose, activeUsers = [] }: ConversationH
                           {user.location.area && ` (${user.location.area})`}
                         </>
                       ) : 'browsing'}
-                      • active {formatDistanceToNow(new Date(user.lastActive), { addSuffix: true })}
+                      {user.lastActive &&
+                        typeof user.lastActive === 'string' &&
+                        !isNaN(new Date(user.lastActive).getTime()) ? (
+                        <>
+                          • active {formatDistanceToNow(new Date(user.lastActive), { addSuffix: true })}
+                        </>
+                      ) : (
+                        '• active now'
+                      )
+                      }
                     </span>
                   </div>
                 ))}
