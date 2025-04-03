@@ -1,24 +1,12 @@
 
-import { Contact } from '@/types/contact';
+export const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
 
 export interface ContactsState {
-  items: Contact[];
-  contacts: Contact[];
-  contactDetails: Contact | null;
-  selectedContact: Contact | null;
+  contacts: any[];
+  contactDetails: any | null;
+  selectedContact: string | null;
   selectedContacts: string[];
   loading: boolean;
   error: string | null;
   lastFetchTime: number | null;
-  filters: {
-    type: string | null;
-    status: string | null;
-    search: string;
-  };
-  sort: {
-    field: keyof Contact;
-    direction: 'asc' | 'desc';
-  };
 }
-
-export const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes

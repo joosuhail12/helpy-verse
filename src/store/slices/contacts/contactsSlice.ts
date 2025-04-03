@@ -1,102 +1,83 @@
 
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { Contact } from '@/types/contact';
-import { ContactsState } from './types';
-import {
-  fetchCustomers,
-  fetchContactById,
-  fetchContactDetails,
-  createContact,
-  addContact,
-  updateContact,
-  updateContactCompany,
-  deleteContact
+import { createSlice } from '@reduxjs/toolkit';
+import { 
+  fetchCustomers, 
+  fetchContactById, 
+  createContact, 
+  updateContact, 
+  deleteContact,
+  updateContactCompany
 } from './contactsActions';
-import { updateContactInState } from './contactsReducerUtils';
+
+export interface ContactsState {
+  contacts: any[];
+  items: any[];
+  contactDetails: any | null;
+  selectedContact: string | null;
+  selectedContacts: string[];
+  loading: boolean;
+  error: string | null;
+  lastFetchTime: number | null;
+}
 
 const initialState: ContactsState = {
-  items: [],
   contacts: [],
+  items: [],
   contactDetails: null,
   selectedContact: null,
   selectedContacts: [],
   loading: false,
   error: null,
   lastFetchTime: null,
-  filters: {
-    type: null,
-    status: null,
-    search: '',
-  },
-  sort: {
-    field: 'createdAt',
-    direction: 'desc',
-  },
 };
 
 const contactsSlice = createSlice({
   name: 'contacts',
   initialState,
   reducers: {
-    setFilter: (state, action: PayloadAction<{ key: keyof ContactsState['filters']; value: string | null }>) => {
-      const { key, value } = action.payload;
-      state.filters[key] = value;
+    selectContact: (state, action) => {
+      state.selectedContact = action.payload;
     },
-    setSortField: (state, action: PayloadAction<keyof Contact>) => {
-      if (state.sort.field === action.payload) {
-        state.sort.direction = state.sort.direction === 'asc' ? 'desc' : 'asc';
-      } else {
-        state.sort.field = action.payload;
-        state.sort.direction = 'asc';
-      }
+    clearSelectedContact: (state) => {
+      state.selectedContact = null;
     },
-    resetFilters: (state) => {
-      state.filters = initialState.filters;
-    },
-    selectContact: (state, action: PayloadAction<string>) => {
-      state.selectedContact = state.items.find(contact => contact.id === action.payload) || null;
-    },
-    toggleSelectContact: (state, action: PayloadAction<string>) => {
+    toggleSelectContact: (state, action) => {
       const contactId = action.payload;
-      if (state.selectedContacts.includes(contactId)) {
-        state.selectedContacts = state.selectedContacts.filter(id => id !== contactId);
+      const index = state.selectedContacts.indexOf(contactId);
+      if (index !== -1) {
+        state.selectedContacts.splice(index, 1);
       } else {
         state.selectedContacts.push(contactId);
       }
     },
-    clearSelectedContacts: (state) => {
-      state.selectedContacts = [];
+    setSelectedContacts: (state, action) => {
+      state.selectedContacts = action.payload;
     },
     clearSelection: (state) => {
       state.selectedContacts = [];
     },
-    setSelectedContacts: (state, action: PayloadAction<string[]>) => {
-      state.selectedContacts = action.payload;
-    }
   },
   extraReducers: (builder) => {
     builder
-      // Handle fetchCustomers action states
+      // Fetch customers
       .addCase(fetchCustomers.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(fetchCustomers.fulfilled, (state, action) => {
         state.loading = false;
-        if (action.payload) {
+        if (action.payload !== null) {
           state.contacts = action.payload;
           state.items = action.payload;
-          console.log('Customers fetched:', action.payload.length);
+          state.lastFetchTime = Date.now();
         }
-        state.lastFetchTime = Date.now();
       })
       .addCase(fetchCustomers.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
-        console.error('Failed to fetch customers:', action.payload);
       })
       
-      // Handle fetchContactById action states
+      // Fetch contact by ID
       .addCase(fetchContactById.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -110,29 +91,57 @@ const contactsSlice = createSlice({
         state.error = action.payload as string;
       })
       
-      // Handle createContact action states
+      // Create contact
       .addCase(createContact.fulfilled, (state, action) => {
         state.contacts.push(action.payload);
         state.items.push(action.payload);
       })
       
-      // Handle updateContact action states
+      // Update contact
       .addCase(updateContact.fulfilled, (state, action) => {
-        if (action.payload) {
-          const { contactId, data } = action.payload;
-          updateContactInState(state, contactId, data);
+        const { contactId, data } = action.payload;
+        
+        // Update in contacts array
+        const contactIndex = state.contacts.findIndex(c => c.id === contactId);
+        if (contactIndex !== -1) {
+          state.contacts[contactIndex] = data;
+        }
+        
+        // Update in items array
+        const itemIndex = state.items.findIndex(c => c.id === contactId);
+        if (itemIndex !== -1) {
+          state.items[itemIndex] = data;
+        }
+        
+        // Update contact details if it's the currently selected contact
+        if (state.contactDetails && state.contactDetails.id === contactId) {
+          state.contactDetails = data;
         }
       })
       
-      // Handle updateContactCompany action states
+      // Update contact company
       .addCase(updateContactCompany.fulfilled, (state, action) => {
-        if (action.payload) {
-          const { contactId, data } = action.payload;
-          updateContactInState(state, contactId, data);
+        const { contactId, data } = action.payload;
+        
+        // Update in contacts array
+        const contactIndex = state.contacts.findIndex(c => c.id === contactId);
+        if (contactIndex !== -1) {
+          state.contacts[contactIndex] = data;
+        }
+        
+        // Update in items array
+        const itemIndex = state.items.findIndex(c => c.id === contactId);
+        if (itemIndex !== -1) {
+          state.items[itemIndex] = data;
+        }
+        
+        // Update contact details if it's the currently selected contact
+        if (state.contactDetails && state.contactDetails.id === contactId) {
+          state.contactDetails = data;
         }
       })
       
-      // Handle deleteContact action states
+      // Delete contact
       .addCase(deleteContact.fulfilled, (state, action) => {
         const contactId = action.payload;
         state.contacts = state.contacts.filter(c => c.id !== contactId);
@@ -145,37 +154,12 @@ const contactsSlice = createSlice({
   },
 });
 
-export const {
-  setFilter,
-  setSortField,
-  resetFilters,
-  selectContact,
-  toggleSelectContact,
-  clearSelectedContacts,
-  clearSelection,
-  setSelectedContacts
+export const { 
+  selectContact, 
+  clearSelectedContact, 
+  toggleSelectContact, 
+  setSelectedContacts, 
+  clearSelection 
 } = contactsSlice.actions;
-
-// Re-export actions from contactsActions.ts
-export {
-  fetchCustomers,
-  fetchContactById,
-  fetchContactDetails,
-  createContact,
-  addContact,
-  updateContact,
-  updateContactCompany,
-  deleteContact
-};
-
-// Re-export selectors from contactsSelectors.ts
-export {
-  selectContacts,
-  selectContactsLoading,
-  selectContactsError,
-  selectContactDetails,
-  selectSelectedContact,
-  selectSelectedContacts
-} from './contactsSelectors';
 
 export default contactsSlice.reducer;

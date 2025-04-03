@@ -1,15 +1,36 @@
+
 import { configureStore, combineReducers } from '@reduxjs/toolkit';
-import authReducer from './slices/authSlice';
+import authReducer from './slices/auth/authSlice';
 import userReducer from './slices/user/userSlice';
 import teamsReducer from './slices/teams/teamsSlice';
-// Import other reducers as needed
+import contactsReducer from './slices/contacts/contactsSlice';
+import companiesReducer from './slices/companies/companiesSlice';
+import actionsReducer from './slices/actions/actionsSlice';
+import chatbotsReducer from './slices/chatbots/chatbotsSlice';
+import contentReducer from './slices/content/contentSlice';
+import contentCenterReducer from './slices/automation/contentCenterSlice';
+import tagsReducer from './slices/tags/tagsSlice';
+import emailChannelsReducer from './slices/emailChannels/emailChannelsSlice';
+import teammatesReducer from './slices/teammates/teammatesSlice';
+import inboxReducer from './slices/inbox/inboxSlice';
+import cannedResponsesReducer from './slices/cannedResponses/cannedResponsesSlice';
 
 // Create a root reducer
 const rootReducer = combineReducers({
   auth: authReducer,
   user: userReducer,
   teams: teamsReducer,
-  // Add other reducers here
+  contacts: contactsReducer,
+  companies: companiesReducer,
+  actions: actionsReducer,
+  chatbots: chatbotsReducer,
+  content: contentReducer,
+  contentCenter: contentCenterReducer,
+  tags: tagsReducer,
+  emailChannels: emailChannelsReducer,
+  teammates: teammatesReducer,
+  inbox: inboxReducer,
+  cannedResponses: cannedResponsesReducer,
 });
 
 // Configure the store
