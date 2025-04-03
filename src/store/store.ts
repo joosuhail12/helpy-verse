@@ -9,13 +9,11 @@ import { actionsReducer } from './slices/actions/actionsSlice';
 import { chatbotsReducer } from './slices/chatbots/chatbotsSlice';
 import contentReducer from './slices/content/contentSlice';
 import contentCenterReducer from './slices/automation/contentCenterSlice';
-
-// Create placeholder reducers for missing slices
-const tagsReducer = (state = {}, action: any) => state;
-const emailChannelsReducer = (state = {}, action: any) => state;
-const teammatesReducer = (state = {}, action: any) => state;
-const inboxReducer = (state = {}, action: any) => state;
-const cannedResponsesReducer = (state = {}, action: any) => state;
+import tagsReducer from './slices/tagsSlice';
+import { emailChannelsReducer } from './slices/emailChannels/emailChannelsSlice';
+import { teammatesReducer } from './slices/teammates/teammatesSlice';
+import inboxReducer from './slices/inboxSlice';
+import { cannedResponsesReducer } from './slices/cannedResponses/cannedResponsesSlice';
 
 // Create a root reducer
 const rootReducer = combineReducers({
