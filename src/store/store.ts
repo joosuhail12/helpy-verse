@@ -5,15 +5,17 @@ import userReducer from './slices/user/userSlice';
 import teamsReducer from './slices/teams/teamsSlice';
 import contactsReducer from './slices/contacts/contactsSlice';
 import companiesReducer from './slices/companies/companiesSlice';
-import actionsReducer from './slices/actions/actionsSlice';
-import chatbotsReducer from './slices/chatbots/chatbotsSlice';
+import { actionsReducer } from './slices/actions/actionsSlice';
+import { chatbotsReducer } from './slices/chatbots/chatbotsSlice';
 import contentReducer from './slices/content/contentSlice';
 import contentCenterReducer from './slices/automation/contentCenterSlice';
-import tagsReducer from './slices/tags/tagsSlice';
-import emailChannelsReducer from './slices/emailChannels/emailChannelsSlice';
-import teammatesReducer from './slices/teammates/teammatesSlice';
-import inboxReducer from './slices/inbox/inboxSlice';
-import cannedResponsesReducer from './slices/cannedResponses/cannedResponsesSlice';
+
+// Create placeholder reducers for missing slices
+const tagsReducer = (state = {}, action: any) => state;
+const emailChannelsReducer = (state = {}, action: any) => state;
+const teammatesReducer = (state = {}, action: any) => state;
+const inboxReducer = (state = {}, action: any) => state;
+const cannedResponsesReducer = (state = {}, action: any) => state;
 
 // Create a root reducer
 const rootReducer = combineReducers({

@@ -17,7 +17,7 @@ const CaslProvider: React.FC<CaslProviderProps> = ({ children }) => {
         if (isAuthenticated) {
             dispatch(fetchUserProfile()); 
             dispatch(fetchWorkspaceData());
-            dispatch(getUserPermission()); 
+            dispatch(getUserPermission({})); // Pass an empty object as parameter
         }
     }, [dispatch, isAuthenticated]);
 

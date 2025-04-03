@@ -1,38 +1,31 @@
 
-import { Contact } from '@/types/contact';
 import { ContactsState } from './types';
 
-/**
- * Updates contact in all relevant state arrays
- */
-export const updateContactInState = (
-  state: ContactsState, 
-  contactId: string, 
-  updates: Partial<Contact>
-): void => {
-  // Update in contacts array
+export const addContact = (state: ContactsState, contact: any) => {
+  state.contacts.push(contact);
+};
+
+export const updateContact = (state: ContactsState, contactId: string, updatedData: any) => {
   const contactIndex = state.contacts.findIndex(c => c.id === contactId);
   if (contactIndex !== -1) {
-    state.contacts[contactIndex] = {
-      ...state.contacts[contactIndex],
-      ...updates
-    };
+    state.contacts[contactIndex] = { ...state.contacts[contactIndex], ...updatedData };
   }
-
-  // Update in items array
-  const itemIndex = state.items.findIndex(c => c.id === contactId);
-  if (itemIndex !== -1) {
-    state.items[itemIndex] = {
-      ...state.items[itemIndex],
-      ...updates
-    };
-  }
-
-  // Update in contactDetails if it's the current selected contact
+  
   if (state.contactDetails && state.contactDetails.id === contactId) {
-    state.contactDetails = {
-      ...state.contactDetails,
-      ...updates
-    };
+    state.contactDetails = { ...state.contactDetails, ...updatedData };
   }
+};
+
+export const removeContact = (state: ContactsState, contactId: string) => {
+  state.contacts = state.contacts.filter(c => c.id !== contactId);
+  
+  if (state.contactDetails && state.contactDetails.id === contactId) {
+    state.contactDetails = null;
+  }
+  
+  if (state.selectedContact === contactId) {
+    state.selectedContact = null;
+  }
+  
+  state.selectedContacts = state.selectedContacts.filter(id => id !== contactId);
 };

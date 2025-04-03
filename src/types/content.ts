@@ -2,6 +2,36 @@
 export type ContentStatus = 'completed' | 'processing' | 'queued' | 'failed' | 'active' | 'inactive' | 'draft';
 export type SortField = 'title' | 'lastUpdated' | 'messageCount';
 
+export interface User {
+  id: string;
+  name: string;
+  avatar: string;
+  role?: 'admin' | 'editor' | 'viewer';
+}
+
+export interface ContentVersion {
+  id: string;
+  contentId: string;
+  content: string;
+  createdAt: string;
+  createdBy: User;
+  changes: string;
+}
+
+export interface ContentComment {
+  id: string;
+  contentId: string;
+  text: string;
+  createdAt: string;
+  createdBy: User;
+}
+
+export interface ContentTag {
+  id: string;
+  name: string;
+  color: string;
+}
+
 export interface Content {
   id: string;
   title: string;
@@ -9,7 +39,9 @@ export interface Content {
   content?: string;
   status: ContentStatus;
   category?: string;
-  tags?: string[];
+  contentType?: string;
+  type?: 'snippet' | 'file' | 'website';
+  tags?: string[] | ContentTag[];
   lastUpdated: string;
   createdAt: string;
   updatedAt: string;
@@ -18,6 +50,13 @@ export interface Content {
     id: string;
     name: string;
   }[];
+  versions?: ContentVersion[];
+  comments?: ContentComment[];
+  lastEditedBy?: User;
+  sharedWith?: User[];
+  author?: User;
+  progress?: number;
+  errorMessage?: string;
 }
 
 export interface ContentFilterState {

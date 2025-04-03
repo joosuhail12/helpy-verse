@@ -1,28 +1,112 @@
 
-import { createSlice } from '@reduxjs/toolkit';
-import { 
-  fetchCustomers, 
-  fetchContactById, 
-  createContact, 
-  updateContact, 
-  deleteContact,
-  updateContactCompany
-} from './contactsActions';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { ContactsState } from './types';
 
-export interface ContactsState {
-  contacts: any[];
-  items: any[];
-  contactDetails: any | null;
-  selectedContact: string | null;
-  selectedContacts: string[];
-  loading: boolean;
-  error: string | null;
-  lastFetchTime: number | null;
-}
+// Define async thunks
+export const fetchCustomers = createAsyncThunk(
+  'contacts/fetchCustomers',
+  async (_, { rejectWithValue }) => {
+    try {
+      // Mock API call
+      return [] as any[];
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to fetch contacts');
+    }
+  }
+);
+
+export const fetchContactById = createAsyncThunk(
+  'contacts/fetchContactById',
+  async (contactId: string, { rejectWithValue }) => {
+    try {
+      // Mock API call
+      return { id: contactId, name: 'Mock Contact' };
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to fetch contact details');
+    }
+  }
+);
+
+export const fetchContactDetails = createAsyncThunk(
+  'contacts/fetchContactDetails',
+  async (contactId: string, { rejectWithValue }) => {
+    try {
+      // Mock API call
+      return { id: contactId, name: 'Mock Contact' };
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to fetch contact details');
+    }
+  }
+);
+
+export const createContact = createAsyncThunk(
+  'contacts/createContact',
+  async (contactData: any, { rejectWithValue }) => {
+    try {
+      // Mock API call
+      return { id: `contact-${Date.now()}`, ...contactData };
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to create contact');
+    }
+  }
+);
+
+export const updateContact = createAsyncThunk(
+  'contacts/updateContact',
+  async ({ contactId, data }: { contactId: string; data: any }, { rejectWithValue }) => {
+    try {
+      // Mock API call
+      return { contactId, data: { id: contactId, ...data } };
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to update contact');
+    }
+  }
+);
+
+export const updateContactCompany = createAsyncThunk(
+  'contacts/updateContactCompany',
+  async ({ contactId, companyId }: { contactId: string; companyId: string }, { rejectWithValue }) => {
+    try {
+      // Mock API call
+      return { 
+        contactId, 
+        data: { 
+          id: contactId, 
+          company: { id: companyId, name: 'Mock Company' } 
+        } 
+      };
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to update contact company');
+    }
+  }
+);
+
+export const deleteContact = createAsyncThunk(
+  'contacts/deleteContact',
+  async (contactId: string, { rejectWithValue }) => {
+    try {
+      // Mock API call
+      return contactId;
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to delete contact');
+    }
+  }
+);
+
+export const addContact = createAsyncThunk(
+  'contacts/addContact',
+  async (contactData: any, { rejectWithValue }) => {
+    try {
+      // Mock API call
+      return { id: `contact-${Date.now()}`, ...contactData };
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to add contact');
+    }
+  }
+);
 
 const initialState: ContactsState = {
   contacts: [],
-  items: [],
   contactDetails: null,
   selectedContact: null,
   selectedContacts: [],
@@ -68,7 +152,6 @@ const contactsSlice = createSlice({
         state.loading = false;
         if (action.payload !== null) {
           state.contacts = action.payload;
-          state.items = action.payload;
           state.lastFetchTime = Date.now();
         }
       })
@@ -94,7 +177,6 @@ const contactsSlice = createSlice({
       // Create contact
       .addCase(createContact.fulfilled, (state, action) => {
         state.contacts.push(action.payload);
-        state.items.push(action.payload);
       })
       
       // Update contact
@@ -105,12 +187,6 @@ const contactsSlice = createSlice({
         const contactIndex = state.contacts.findIndex(c => c.id === contactId);
         if (contactIndex !== -1) {
           state.contacts[contactIndex] = data;
-        }
-        
-        // Update in items array
-        const itemIndex = state.items.findIndex(c => c.id === contactId);
-        if (itemIndex !== -1) {
-          state.items[itemIndex] = data;
         }
         
         // Update contact details if it's the currently selected contact
@@ -129,12 +205,6 @@ const contactsSlice = createSlice({
           state.contacts[contactIndex] = data;
         }
         
-        // Update in items array
-        const itemIndex = state.items.findIndex(c => c.id === contactId);
-        if (itemIndex !== -1) {
-          state.items[itemIndex] = data;
-        }
-        
         // Update contact details if it's the currently selected contact
         if (state.contactDetails && state.contactDetails.id === contactId) {
           state.contactDetails = data;
@@ -145,7 +215,6 @@ const contactsSlice = createSlice({
       .addCase(deleteContact.fulfilled, (state, action) => {
         const contactId = action.payload;
         state.contacts = state.contacts.filter(c => c.id !== contactId);
-        state.items = state.items.filter(c => c.id !== contactId);
         if (state.contactDetails && state.contactDetails.id === contactId) {
           state.contactDetails = null;
         }
@@ -161,5 +230,10 @@ export const {
   setSelectedContacts, 
   clearSelection 
 } = contactsSlice.actions;
+
+// Selectors
+export const selectContacts = (state: any) => state.contacts.contacts;
+export const selectContactsLoading = (state: any) => state.contacts.loading;
+export const selectContactsError = (state: any) => state.contacts.error;
 
 export default contactsSlice.reducer;

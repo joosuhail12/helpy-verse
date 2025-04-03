@@ -1,5 +1,5 @@
 
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 import type { Content, ContentStatus, SortField } from '@/types/content';
 
 export interface ContentState {
@@ -16,6 +16,11 @@ export interface ContentState {
   sort: {
     field: SortField;
     direction: 'asc' | 'desc';
+  };
+  search: {
+    query: string;
+    suggestions: string[];
+    history: string[];
   };
 }
 
@@ -34,7 +39,21 @@ const initialState: ContentState = {
     field: 'lastUpdated',
     direction: 'desc',
   },
+  search: {
+    query: '',
+    suggestions: [],
+    history: []
+  }
 };
+
+// Async thunks
+export const updateContent = createAsyncThunk(
+  'content/updateContent',
+  async ({ id, data }: { id: string, data: Partial<Content> }) => {
+    // Mock API call for updating content
+    return { id, data };
+  }
+);
 
 const contentSlice = createSlice({
   name: 'content',
@@ -66,7 +85,7 @@ const contentSlice = createSlice({
     },
     setFilter: (state, action: PayloadAction<{ key: 'status' | 'category' | 'chatbot', value: string | null }>) => {
       const { key, value } = action.payload;
-      state.filters[key] = value;
+      state.filters[key] = value as any;
     },
     setStatusFilter: (state, action: PayloadAction<ContentStatus | null>) => {
       state.filters.status = action.payload;
@@ -106,10 +125,54 @@ const contentSlice = createSlice({
     deleteContents: (state, action: PayloadAction<string[]>) => {
       const ids = action.payload;
       state.items = state.items.filter(item => !ids.includes(item.id));
+    },
+    // Add search-related actions
+    setSearchQuery: (state, action: PayloadAction<string>) => {
+      state.search.query = action.payload;
+      // Save to history if not empty and not already in history
+      if (action.payload && !state.search.history.includes(action.payload)) {
+        state.search.history = [action.payload, ...state.search.history].slice(0, 10);
+      }
+    },
+    updateSearchSuggestions: (state) => {
+      // Mock implementation - in a real app this might fetch suggestions from API
+      const query = state.search.query.toLowerCase();
+      if (!query) {
+        state.search.suggestions = [];
+        return;
+      }
+      
+      // Generate mock suggestions based on existing content titles
+      state.search.suggestions = state.items
+        .filter(item => item.title.toLowerCase().includes(query))
+        .map(item => item.title)
+        .slice(0, 5);
+    },
+    clearSearch: (state) => {
+      state.search.query = '';
+      state.search.suggestions = [];
+    },
+    clearSearchHistory: (state) => {
+      state.search.history = [];
     }
   },
   extraReducers: (builder) => {
-    // Extra reducers will be added when implementing API calls
+    builder
+      .addCase(updateContent.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateContent.fulfilled, (state, action) => {
+        state.loading = false;
+        const { id, data } = action.payload;
+        state.items = state.items.map(item =>
+          item.id === id ? { ...item, ...data } : item
+        );
+      })
+      .addCase(updateContent.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Failed to update content';
+      });
   },
 });
 
@@ -127,7 +190,11 @@ export const {
   clearFilters,
   updateContentStatus,
   reassignChatbot,
-  deleteContents
+  deleteContents,
+  setSearchQuery,
+  updateSearchSuggestions,
+  clearSearch,
+  clearSearchHistory
 } = contentSlice.actions;
 
 export default contentSlice.reducer;
