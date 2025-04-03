@@ -1,3 +1,4 @@
+
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { HttpClient } from "@/api/services/http";
 import { 
@@ -7,7 +8,7 @@ import {
   handleSetToken
 } from '@/utils/helpers/helpers';
 import { get } from "lodash";
-import { Credentials, PasswordResetConfirmation, PasswordResetRequest, RegistrationCredentials } from './types';
+import { AuthResponse, Credentials, PasswordResetConfirmation, PasswordResetRequest, RegistrationCredentials } from './types';
 import { AUTH_ENDPOINTS } from '@/api/services/http/config';
 
 // Authentication actions
@@ -75,7 +76,14 @@ export const loginUser = createAsyncThunk(
         return rejectWithValue("Invalid server response format");
       }
       
-      return response.data;
+      // Format the response to match AuthResponse type
+      const formattedResponse: AuthResponse = {
+        status: "success",
+        message: "Login successful",
+        data: response.data.data
+      };
+      
+      return formattedResponse;
     } catch (error: any) {
       console.error("Login error:", error);
       
@@ -135,7 +143,14 @@ export const registerUser = createAsyncThunk(
         handleSetToken(token);
       }
       
-      return response.data;
+      // Format the response to match AuthResponse type
+      const formattedResponse: AuthResponse = {
+        status: "success",
+        message: "Registration successful",
+        data: response.data.data
+      };
+      
+      return formattedResponse;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || "Registration failed");
     }

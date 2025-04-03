@@ -2,6 +2,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { HttpClient } from "@/api/services/http";
 import { AUTH_ENDPOINTS } from "@/api/services/http/config";
+import { AuthResponse } from './types';
 
 export const fetchUserData = createAsyncThunk(
   "user/fetchData",
@@ -34,7 +35,14 @@ export const fetchUserData = createAsyncThunk(
         console.warn("No default workspace ID found in user profile response");
       }
       
-      return response.data.data;
+      // Format the response to match AuthResponse type
+      const formattedResponse: AuthResponse = {
+        status: "success",
+        message: "User data fetched successfully",
+        data: response.data.data
+      };
+      
+      return formattedResponse;
     } catch (error: any) {
       console.error("Error fetching user data:", error.message);
       return rejectWithValue(error.response?.data?.message || "Failed to load user profile");
@@ -69,7 +77,14 @@ export const fetchUserProfile = createAsyncThunk(
         console.warn("No default workspace ID found in user profile response");
       }
       
-      return response.data.data;
+      // Format the response to match AuthResponse type
+      const formattedResponse: AuthResponse = {
+        status: "success",
+        message: "User profile fetched successfully",
+        data: response.data.data
+      };
+      
+      return formattedResponse;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || "Failed to fetch user profile");
     }
@@ -81,7 +96,15 @@ export const fetchWorkspaceData = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await HttpClient.apiClient.get("/workspace/6c22b22f-7bdf-43db-b7c1-9c5884125c63");
-      return response.data;
+      
+      // Format the response to match AuthResponse type
+      const formattedResponse: AuthResponse = {
+        status: "success",
+        message: "Workspace data fetched successfully",
+        data: response.data
+      };
+      
+      return formattedResponse;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || "Failed to fetch workspace data");
     }

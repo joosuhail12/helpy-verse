@@ -11,23 +11,28 @@ export interface Permission {
 
 export type Permissions = Permission[];
 
+export type ResponseStatus = "success" | "error";
+
+export interface AuthResponse {
+  status: ResponseStatus;
+  message: string;
+  data: {
+    id: string;
+    accessToken: {
+      token: string;
+      expiry: number;
+      issuedAt: string;
+      userAgent: string;
+      ip: string;
+    };
+    defaultWorkspaceId: string;
+    [key: string]: any; // Allow for additional properties
+  };
+}
+
 export interface AuthState {
   isAuthenticated: boolean;
-  user: {
-    status: "success" | "error";
-    message: string;
-    data: {
-      id: string;
-      accessToken: {
-        token: string;
-        expiry: number;
-        issuedAt: string;
-        userAgent: string;
-        ip: string;
-      };
-      defaultWorkspaceId: string;
-    };
-  } | null;
+  user: AuthResponse | null;
   loading: boolean;
   error: string | null;
   permissions: Permissions;
