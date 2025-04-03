@@ -1,12 +1,6 @@
 
 import axios from 'axios';
 import { API_BASE_URL, LLM_SERVICE_URL, DEFAULT_TIMEOUT, CONTACTS_TIMEOUT, CORS_CONFIG } from './config';
-import { 
-  requestInterceptor, 
-  requestErrorInterceptor, 
-  responseInterceptor, 
-  responseErrorInterceptor 
-} from './interceptors';
 import { cookieFunctions } from './cookieManager';
 
 // A function to create an axios instance with proper config
@@ -20,10 +14,6 @@ const createApiClient = (baseURL, timeout) => {
         timeout,
         withCredentials: CORS_CONFIG.withCredentials,
     });
-    
-    // Add request and response interceptors
-    client.interceptors.request.use(requestInterceptor, requestErrorInterceptor);
-    client.interceptors.response.use(responseInterceptor, responseErrorInterceptor);
     
     return client;
 };
@@ -74,7 +64,7 @@ export const isOffline = (): boolean => {
   return !navigator.onLine;
 };
 
-// ✅ API Call Wrapper
+// ✅ Export the HttpClient without attaching interceptors yet
 export const HttpClient = {
     apiClient, 
     contactsClient, 
@@ -83,3 +73,21 @@ export const HttpClient = {
     isOffline,
     checkApiConnection,
 };
+
+// Import and attach interceptors after client is created to avoid circular dependency
+import { 
+  requestInterceptor, 
+  requestErrorInterceptor, 
+  responseInterceptor, 
+  responseErrorInterceptor 
+} from './interceptors';
+
+// Now attach interceptors to the clients
+apiClient.interceptors.request.use(requestInterceptor, requestErrorInterceptor);
+apiClient.interceptors.response.use(responseInterceptor, responseErrorInterceptor);
+
+contactsClient.interceptors.request.use(requestInterceptor, requestErrorInterceptor);
+contactsClient.interceptors.response.use(responseInterceptor, responseErrorInterceptor);
+
+llmService.interceptors.request.use(requestInterceptor, requestErrorInterceptor);
+llmService.interceptors.response.use(responseInterceptor, responseErrorInterceptor);
