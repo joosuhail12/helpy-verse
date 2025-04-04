@@ -3,7 +3,7 @@ import React from 'react';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, StickyNote } from "lucide-react";
 import MessageItem from '../MessageItem';
-import type { Message } from '../types';
+import type { Message } from '../hooks/useMessages';
 import type { Ticket } from '@/types/ticket';
 import { cn } from "@/lib/utils";
 

@@ -8,9 +8,11 @@ export interface Message {
   content: string;
   timestamp: string;
   isCustomer: boolean;
+  sender: string; // Added to match the interface in types.ts
   isInternalNote?: boolean;
   readBy?: string[];
   reactions?: Record<string, string[]>;
+  type?: 'message' | 'internal_note';
 }
 
 export const useMessages = (ticket: Ticket) => {
@@ -31,7 +33,9 @@ export const useMessages = (ticket: Ticket) => {
         content: newMessage,
         timestamp: new Date().toISOString(),
         isCustomer: false,
-        isInternalNote
+        sender: 'agent', // Set default sender
+        isInternalNote,
+        type: isInternalNote ? 'internal_note' : 'message'
       };
       
       // Add to local state

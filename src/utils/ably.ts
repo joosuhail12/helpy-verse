@@ -8,16 +8,21 @@
 // Mock channel interface
 interface AblyChannel {
   subscribe: (eventName: string, callback: (message: any) => void) => void;
-  unsubscribe: (eventName?: string) => void;
+  unsubscribe: (eventName?: string, callback?: (message: any) => void) => void;
   publish: (eventName: string, data: any) => Promise<void>;
   presence: {
     enter: (data: any) => Promise<void>;
     leave: () => Promise<void>;
-    get: () => Promise<any[]>;
+    get: (callback: (err: Error | null, members?: any[]) => void) => void;
     subscribe: (event: string, callback: (member: any) => void) => void;
-    unsubscribe: () => void;
+    unsubscribe: (event?: string, callback?: (member: any) => void) => void;
   };
 }
+
+// Get a workspace-specific channel name
+export const getWorkspaceChannelName = (workspaceId: string, channelName: string): string => {
+  return `${workspaceId}:${channelName}`;
+};
 
 // Get a channel from Ably
 export const getAblyChannel = async (channelName: string): Promise<AblyChannel> => {
@@ -28,7 +33,7 @@ export const getAblyChannel = async (channelName: string): Promise<AblyChannel> 
     subscribe: (eventName, callback) => {
       console.log(`Subscribed to ${eventName} on channel ${channelName}`);
     },
-    unsubscribe: (eventName) => {
+    unsubscribe: (eventName, callback) => {
       console.log(`Unsubscribed from ${eventName || 'all events'} on channel ${channelName}`);
     },
     publish: async (eventName, data) => {
@@ -41,14 +46,14 @@ export const getAblyChannel = async (channelName: string): Promise<AblyChannel> 
       leave: async () => {
         console.log(`Left presence on channel ${channelName}`);
       },
-      get: async () => {
+      get: (callback) => {
         console.log(`Getting presence members on channel ${channelName}`);
-        return [];
+        callback(null, []);
       },
       subscribe: (event, callback) => {
         console.log(`Subscribed to presence ${event} on channel ${channelName}`);
       },
-      unsubscribe: () => {
+      unsubscribe: (event, callback) => {
         console.log(`Unsubscribed from presence on channel ${channelName}`);
       }
     }

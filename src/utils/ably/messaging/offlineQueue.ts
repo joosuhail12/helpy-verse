@@ -3,14 +3,14 @@
  * Offline message queuing functionality
  */
 import { v4 as uuidv4 } from 'uuid';
-import { ChatMessage } from '@/components/chat-widget/components/conversation/types';
+import { Message } from '@/components/inbox/hooks/useMessages';
 
 const QUEUE_STORAGE_KEY = 'ably_message_queue';
 
 /**
  * Saves a message to the offline queue
  */
-export const queueMessage = async (message: ChatMessage): Promise<void> => {
+export const queueMessage = async (message: Message): Promise<void> => {
   try {
     // Get current queue
     const queue = await getQueuedMessages(message.id.split(':')[0]);
@@ -28,7 +28,7 @@ export const queueMessage = async (message: ChatMessage): Promise<void> => {
 /**
  * Gets all queued messages for a conversation
  */
-export const getQueuedMessages = async (conversationId?: string): Promise<ChatMessage[]> => {
+export const getQueuedMessages = async (conversationId?: string): Promise<Message[]> => {
   try {
     const queueJson = localStorage.getItem(QUEUE_STORAGE_KEY);
     
@@ -36,7 +36,7 @@ export const getQueuedMessages = async (conversationId?: string): Promise<ChatMe
       return [];
     }
     
-    const queue = JSON.parse(queueJson) as ChatMessage[];
+    const queue = JSON.parse(queueJson) as Message[];
     
     // Filter by conversation if ID provided
     if (conversationId) {

@@ -3,15 +3,16 @@ import { useState, useEffect } from 'react';
 import type { Ticket } from '@/types/ticket';
 import { getAblyChannel } from '@/utils/ably';
 import type { Message } from './useMessages';
+import type { UserPresence } from '../types';
 
 export const usePresence = (
   ticket: Ticket, 
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>
 ) => {
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
-  const [activeUsers, setActiveUsers] = useState<string[]>([]);
+  const [activeUsers, setActiveUsers] = useState<UserPresence[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let channel: any;
@@ -27,7 +28,17 @@ export const usePresence = (
             setTypingUsers(prev => [...new Set([...prev, member.data.name])]);
           }
           
-          setActiveUsers(prev => [...new Set([...prev, member.data?.name || 'Unknown'])]);
+          const newUserPresence: UserPresence = {
+            userId: member.data?.userId || 'unknown',
+            name: member.data?.name || 'Unknown',
+            lastActive: new Date().toISOString(),
+            location: member.data?.location || undefined
+          };
+          
+          setActiveUsers(prev => {
+            const filtered = prev.filter(user => user.userId !== newUserPresence.userId);
+            return [...filtered, newUserPresence];
+          });
         });
         
         channel.presence.subscribe('update', (member: any) => {
@@ -39,7 +50,7 @@ export const usePresence = (
         });
         
         channel.presence.subscribe('leave', (member: any) => {
-          setActiveUsers(prev => prev.filter(name => name !== member.data?.name));
+          setActiveUsers(prev => prev.filter(user => user.userId !== member.data?.userId));
           setTypingUsers(prev => prev.filter(name => name !== member.data?.name));
         });
         
@@ -49,7 +60,7 @@ export const usePresence = (
         });
         
       } catch (err) {
-        setError(err instanceof Error ? err : new Error('Failed to setup presence'));
+        setError(err instanceof Error ? err.message : 'Failed to setup presence');
       } finally {
         setIsLoading(false);
       }

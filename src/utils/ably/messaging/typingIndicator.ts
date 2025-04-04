@@ -2,8 +2,7 @@
 /**
  * Typing indicator functionality using Ably presence
  */
-import * as Ably from 'ably';
-import { getAblyChannel, getWorkspaceChannelName } from '../../ably';
+import { getAblyChannel } from '../../ably';
 
 interface TypingUser {
   clientId: string;
@@ -25,7 +24,7 @@ export const getTypingUsers = async (
   workspaceId: string,
   conversationId: string
 ): Promise<TypingUser[]> => {
-  const channelName = getWorkspaceChannelName(workspaceId, `conversations:${conversationId}`);
+  const channelName = `${workspaceId}:conversations:${conversationId}`;
   const channel = await getAblyChannel(channelName);
   
   const typingData: TypingData = {};
@@ -52,7 +51,7 @@ export const startTyping = async (
   clientId: string,
   userName?: string
 ): Promise<void> => {
-  const channelName = getWorkspaceChannelName(workspaceId, `conversations:${conversationId}`);
+  const channelName = `${workspaceId}:conversations:${conversationId}`;
   const channel = await getAblyChannel(channelName);
   
   try {
@@ -74,7 +73,7 @@ export const stopTyping = async (
   conversationId: string,
   clientId: string
 ): Promise<void> => {
-  const channelName = getWorkspaceChannelName(workspaceId, `conversations:${conversationId}`);
+  const channelName = `${workspaceId}:conversations:${conversationId}`;
   const channel = await getAblyChannel(channelName);
   
   try {
@@ -88,7 +87,7 @@ export const stopTyping = async (
 };
 
 // Type for message callback
-type MessageCallback = (message: Ably.Types.Message) => void;
+type MessageCallback = (message: any) => void;
 
 /**
  * Subscribe to typing indicators in a conversation
@@ -99,7 +98,7 @@ export const subscribeToTypingIndicators = (
   onTypingStart: (user: TypingUser) => void,
   onTypingStop: (clientId: string) => void
 ): (() => void) => {
-  const channelName = getWorkspaceChannelName(workspaceId, `conversations:${conversationId}`);
+  const channelName = `${workspaceId}:conversations:${conversationId}`;
   
   // Properly typed callbacks
   let typingStartCallback: MessageCallback | null = null;
@@ -110,13 +109,13 @@ export const subscribeToTypingIndicators = (
     const channel = await getAblyChannel(channelName);
     
     // Subscribe to typing:start events
-    typingStartCallback = (message: Ably.Types.Message) => {
+    typingStartCallback = (message: any) => {
       const user = message.data as TypingUser;
       onTypingStart(user);
     };
     
     // Subscribe to typing:stop events
-    typingStopCallback = (message: Ably.Types.Message) => {
+    typingStopCallback = (message: any) => {
       const { clientId } = message.data;
       onTypingStop(clientId);
     };

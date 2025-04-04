@@ -87,7 +87,7 @@ const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
               <Alert variant="destructive" className="m-4">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  {error}
+                  {error.toString()}
                 </AlertDescription>
               </Alert>
             ) : (

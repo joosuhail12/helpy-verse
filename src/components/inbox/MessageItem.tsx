@@ -1,17 +1,12 @@
 
-import React, { useState, useEffect } from 'react';
-import { Avatar } from "@/components/ui/avatar";
-import { Check, CheckCheck, Clock, Smile } from 'lucide-react';
-import { Button } from "@/components/ui/button";
-import { getAblyChannel } from '@/utils/ably';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import EmojiPicker from 'emoji-picker-react';
-import type { Message } from './types';
+import React from 'react';
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { format } from "date-fns";
+import { MoreHorizontal, Reply } from "lucide-react";
+import type { Message } from './hooks/useMessages';
 import type { Ticket } from '@/types/ticket';
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 interface MessageItemProps {
   message: Message;
@@ -19,120 +14,60 @@ interface MessageItemProps {
   onReply: (content: string) => void;
 }
 
-const COMMON_REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
-
-const MessageItem = ({ message, ticket }: MessageItemProps) => {
-  const [reactions, setReactions] = useState<Record<string, string[]>>(message.reactions || {});
-
-  useEffect(() => {
-    const setupReactions = async () => {
-      const channel = await getAblyChannel(`ticket:${ticket.id}:reactions`);
-      
-      channel.subscribe(`message:${message.id}:reaction`, (msg: any) => {
-        setReactions(msg.data);
-      });
-
-      return () => {
-        channel.unsubscribe();
-      };
-    };
-
-    setupReactions();
-  }, [message.id, ticket.id]);
-
-  const handleReaction = async (emoji: string) => {
-    const channel = await getAblyChannel(`ticket:${ticket.id}:reactions`);
-    const userId = 'Agent'; // In a real app, this would be the actual user ID
-    
-    const newReactions = { ...reactions };
-    if (!newReactions[emoji]) {
-      newReactions[emoji] = [];
-    }
-    
-    const hasReacted = newReactions[emoji].includes(userId);
-    if (hasReacted) {
-      newReactions[emoji] = newReactions[emoji].filter(id => id !== userId);
-      if (newReactions[emoji].length === 0) {
-        delete newReactions[emoji];
-      }
-    } else {
-      newReactions[emoji].push(userId);
-    }
-    
-    await channel.publish(`message:${message.id}:reaction`, newReactions);
-    setReactions(newReactions);
-  };
-
-  const createMarkup = () => {
-    return { __html: message.content };
+const MessageItem = ({ message, ticket, onReply }: MessageItemProps) => {
+  const formattedTime = message.timestamp ? format(new Date(message.timestamp), 'h:mm a') : '';
+  const initials = message.isCustomer 
+    ? ticket.customer.split(' ').map(n => n[0]).join('')
+    : 'A'; // Agent
+  
+  const handleReply = () => {
+    onReply(`@${message.isCustomer ? ticket.customer : 'Agent'} `);
   };
 
   return (
-    <div className="flex gap-3">
-      <Avatar className="h-8 w-8">
-        <span className="text-xs">
-          {message.isCustomer ? ticket.customer[0] : 'A'}
-        </span>
+    <div className={cn(
+      "flex gap-3 p-3",
+      message.isCustomer ? "bg-muted/30" : "bg-white",
+      !message.isCustomer && message.isInternalNote && "bg-yellow-50/50"
+    )}>
+      <Avatar className={message.isCustomer ? "bg-purple-100" : "bg-blue-100"}>
+        <AvatarFallback 
+          className={message.isCustomer ? "text-purple-700" : "text-blue-700"}
+        >
+          {initials}
+        </AvatarFallback>
       </Avatar>
-      <div className="flex-1">
-        <div className="flex items-center gap-2">
-          <span className="font-medium text-sm">
-            {message.isCustomer ? ticket.customer : 'Agent'}
-          </span>
-          <span className="text-xs text-muted-foreground flex items-center gap-1">
-            <Clock className="h-3 w-3" />
-            {new Date(message.timestamp).toLocaleString()}
-          </span>
-        </div>
-        <div 
-          className="mt-1 text-sm bg-secondary/20 rounded-lg p-3 prose prose-sm max-w-none"
-          dangerouslySetInnerHTML={createMarkup()}
-        />
-        <div className="mt-1 flex items-center gap-2">
-          <div className="flex flex-wrap gap-1">
-            {Object.entries(reactions).map(([emoji, users]) => (
-              <Button
-                key={emoji}
-                variant="ghost"
-                size="sm"
-                className="h-6 px-2 text-xs"
-                onClick={() => handleReaction(emoji)}
-              >
-                {emoji} {users.length}
-              </Button>
-            ))}
+      
+      <div className="flex-1 space-y-1">
+        <div className="flex justify-between items-start">
+          <div className="font-medium">
+            {message.isCustomer ? ticket.customer : 'Support Agent'}
+            {!message.isCustomer && message.isInternalNote && (
+              <span className="ml-2 text-xs bg-yellow-200 text-yellow-800 px-2 py-0.5 rounded">
+                Internal Note
+              </span>
+            )}
           </div>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                <Smile className="h-3 w-3" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-2" align="start">
-              <div className="flex gap-1">
-                {COMMON_REACTIONS.map((emoji) => (
-                  <Button
-                    key={emoji}
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 w-6 p-0"
-                    onClick={() => handleReaction(emoji)}
-                  >
-                    {emoji}
-                  </Button>
-                ))}
-              </div>
-            </PopoverContent>
-          </Popover>
-          {!message.isCustomer && (
-            <span className="text-xs text-muted-foreground">
-              {message.readBy && message.readBy.length > 1 ? (
-                <CheckCheck className="h-3 w-3 inline" />
-              ) : (
-                <Check className="h-3 w-3 inline" />
-              )}
-            </span>
-          )}
+          <div className="flex items-center text-xs text-muted-foreground gap-2">
+            {formattedTime}
+            <Button variant="ghost" size="icon" className="h-6 w-6">
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+        
+        <div className="text-sm" dangerouslySetInnerHTML={{ __html: message.content }} />
+        
+        <div className="pt-1">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="h-7 text-xs gap-1 text-muted-foreground hover:text-foreground"
+            onClick={handleReply}
+          >
+            <Reply className="h-3.5 w-3.5" />
+            Reply
+          </Button>
         </div>
       </div>
     </div>
