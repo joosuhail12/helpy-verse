@@ -1,3 +1,4 @@
+
 import { createSlice } from '@reduxjs/toolkit';
 import { AuthService } from '@/services/authService';
 import { AuthState } from './types';
@@ -5,7 +6,8 @@ import {
   loginUser, 
   registerUser, 
   requestPasswordReset, 
-  confirmPasswordReset
+  confirmPasswordReset,
+  refreshAuthToken
 } from './authActions';
 import { 
   fetchUserData, 
@@ -13,6 +15,13 @@ import {
   fetchWorkspaceData 
 } from './userActions';
 import { getUserPermission } from './permissionActions';
+import { toast } from '@/components/ui/use-toast';
+import { 
+  isAuthError, 
+  isNetworkError, 
+  isServerError,
+  isTimeoutError
+} from '@/utils/error/errorTypes';
 
 const initialState: AuthState = {
   isAuthenticated: AuthService.isAuthenticated(),
@@ -20,6 +29,7 @@ const initialState: AuthState = {
   loading: false,
   error: null,
   permissions: [],
+  workspaces: [],
 };
 
 const authSlice = createSlice({
@@ -30,12 +40,17 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
       state.user = null;
       state.error = null;
+      state.permissions = [];
+      state.workspaces = [];
       // Call the improved auth service logout function
       AuthService.logout();
     },
     clearError: (state) => {
       state.error = null;
     },
+    setWorkspaces: (state, action) => {
+      state.workspaces = action.payload;
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -48,10 +63,51 @@ const authSlice = createSlice({
         state.loading = false;
         state.isAuthenticated = true;
         state.user = action.payload;
+        
+        // Show success message
+        toast({
+          title: "Welcome back!",
+          description: "You have successfully logged in.",
+        });
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Login failed';
+        
+        // Extract the error payload
+        const payload = action.payload as any;
+        
+        // Determine error message to display
+        let errorMessage = 'Login failed. Please try again.';
+        
+        if (payload) {
+          if (isAuthError(payload)) {
+            errorMessage = payload.message;
+          } else if (isNetworkError(payload)) {
+            errorMessage = payload.message;
+          } else if (isServerError(payload)) {
+            errorMessage = payload.message;
+          } else if (isTimeoutError(payload)) {
+            errorMessage = payload.message;
+          } else if (typeof payload === 'object' && payload.message) {
+            errorMessage = payload.message;
+          }
+        }
+        
+        state.error = {
+          message: errorMessage,
+          code: payload?.code,
+          isOfflineError: isNetworkError(payload),
+          isAuthError: isAuthError(payload),
+          isServerError: isServerError(payload),
+          isTimeoutError: isTimeoutError(payload)
+        };
+        
+        // Show error toast
+        toast({
+          title: "Login Error",
+          description: errorMessage,
+          variant: "destructive",
+        });
       })
       
       // Password reset actions
@@ -59,12 +115,23 @@ const authSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(requestPasswordReset.fulfilled, (state) => {
+      .addCase(requestPasswordReset.fulfilled, (state, action) => {
         state.loading = false;
+        
+        // Show success message
+        toast({
+          title: "Password Reset",
+          description: "If an account exists with this email, reset instructions have been sent.",
+        });
       })
       .addCase(requestPasswordReset.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Password reset request failed';
+        
+        const payload = action.payload as any;
+        
+        state.error = typeof payload === 'object' ? payload : {
+          message: action.error.message || 'Password reset request failed'
+        };
       })
       
       // Register actions
@@ -76,10 +143,33 @@ const authSlice = createSlice({
         state.loading = false;
         state.isAuthenticated = true;
         state.user = action.payload;
+        
+        // Show success message
+        toast({
+          title: "Account Created",
+          description: "Your account has been successfully created.",
+        });
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Registration failed';
+        
+        const payload = action.payload as any;
+        const errorMessage = payload?.message || action.error.message || 'Registration failed';
+        
+        state.error = {
+          message: errorMessage,
+          code: payload?.code,
+          isOfflineError: isNetworkError(payload),
+          isAuthError: isAuthError(payload),
+          isServerError: isServerError(payload),
+        };
+        
+        // Show error toast
+        toast({
+          title: "Registration Error",
+          description: errorMessage,
+          variant: "destructive",
+        });
       })
       
       // User data actions
@@ -89,11 +179,32 @@ const authSlice = createSlice({
       })
       .addCase(fetchUserData.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload;
+        if (state.user) {
+          // Merge profile data into existing user data
+          state.user = {
+            ...state.user,
+            data: {
+              ...state.user.data,
+              profile: action.payload?.data?.profile || state.user.data.profile
+            }
+          };
+        } else {
+          state.user = action.payload;
+        }
       })
       .addCase(fetchUserData.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'User data fetch failed';
+        
+        const payload = action.payload as any;
+        const errorMessage = payload?.message || action.error.message || 'Failed to fetch user data';
+        
+        state.error = {
+          message: errorMessage,
+          code: payload?.code,
+          isOfflineError: isNetworkError(payload),
+          isAuthError: isAuthError(payload),
+          isServerError: isServerError(payload),
+        };
       })
       
       // Permission actions
@@ -107,7 +218,14 @@ const authSlice = createSlice({
       })
       .addCase(getUserPermission.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'User permission fetch failed';
+        
+        const payload = action.payload as any;
+        const errorMessage = payload?.message || action.error.message || 'Failed to fetch user permissions';
+        
+        state.error = {
+          message: errorMessage,
+          code: payload?.code,
+        };
       })
       
       // Profile actions
@@ -117,11 +235,29 @@ const authSlice = createSlice({
       })
       .addCase(fetchUserProfile.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload;
+        if (state.user) {
+          // Merge profile data into existing user data
+          state.user = {
+            ...state.user,
+            data: {
+              ...state.user.data,
+              profile: action.payload?.data?.profile || action.payload?.data
+            }
+          };
+        } else {
+          state.user = action.payload;
+        }
       })
       .addCase(fetchUserProfile.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Failed to fetch user profile';
+        
+        const payload = action.payload as any;
+        const errorMessage = payload?.message || action.error.message || 'Failed to fetch user profile';
+        
+        state.error = {
+          message: errorMessage,
+          code: payload?.code,
+        };
       })
       
       // Workspace actions
@@ -131,11 +267,29 @@ const authSlice = createSlice({
       })
       .addCase(fetchWorkspaceData.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload;
+        if (state.user) {
+          // Save workspace data
+          state.user = {
+            ...state.user,
+            data: {
+              ...state.user.data,
+              currentWorkspace: action.payload?.data
+            }
+          };
+        } else {
+          state.user = action.payload;
+        }
       })
       .addCase(fetchWorkspaceData.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Failed to fetch workspace data';
+        
+        const payload = action.payload as any;
+        const errorMessage = payload?.message || action.error.message || 'Failed to fetch workspace data';
+        
+        state.error = {
+          message: errorMessage,
+          code: payload?.code,
+        };
       })
       
       // Password reset confirmation cases
@@ -145,15 +299,69 @@ const authSlice = createSlice({
       })
       .addCase(confirmPasswordReset.fulfilled, (state) => {
         state.loading = false;
+        
+        // Show success message
+        toast({
+          title: "Password Reset Successful",
+          description: "Your password has been successfully reset. You can now log in with your new password.",
+        });
       })
       .addCase(confirmPasswordReset.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload as string || 'Password reset failed';
+        
+        const payload = action.payload as any;
+        const errorMessage = payload?.message || action.error.message || 'Password reset failed';
+        
+        state.error = {
+          message: errorMessage,
+          code: payload?.code,
+        };
+        
+        // Show error toast
+        toast({
+          title: "Password Reset Failed",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      })
+      
+      // Token refresh cases
+      .addCase(refreshAuthToken.pending, (state) => {
+        // Don't set loading to true to prevent UI flicker during background refresh
+        state.error = null;
+      })
+      .addCase(refreshAuthToken.fulfilled, (state, action) => {
+        // Update token info
+        if (state.user && action.payload?.data?.accessToken) {
+          state.user = {
+            ...state.user,
+            data: {
+              ...state.user.data,
+              accessToken: action.payload.data.accessToken
+            }
+          };
+        }
+      })
+      .addCase(refreshAuthToken.rejected, (state, action) => {
+        // Handle token refresh failure (typically this will trigger logout)
+        const payload = action.payload as any;
+        const errorMessage = payload?.message || action.error.message || 'Failed to refresh authentication';
+        
+        console.error('Token refresh failed:', errorMessage);
+        
+        // Only set error for real failures, not for background refreshes
+        if (payload?.code !== 'TOKEN_REFRESH_BACKGROUND') {
+          state.error = {
+            message: errorMessage,
+            code: payload?.code,
+            isAuthError: true
+          };
+        }
       });
   },
 });
 
-export const { logout, clearError } = authSlice.actions;
+export const { logout, clearError, setWorkspaces } = authSlice.actions;
 
 // Re-export all the actions for use in components
 export {
@@ -161,6 +369,7 @@ export {
   registerUser,
   requestPasswordReset,
   confirmPasswordReset,
+  refreshAuthToken,
   fetchUserData,
   fetchUserProfile,
   fetchWorkspaceData,

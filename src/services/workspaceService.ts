@@ -4,6 +4,7 @@
  * Handles workspace-related functionality including ID management
  */
 import { HttpClient } from "@/api/services/http";
+import { ErrorHandlerService } from "@/utils/error/errorHandlerService";
 
 // Constants
 const WORKSPACE_ID_KEY = "workspaceId";
@@ -79,10 +80,54 @@ export const fetchWorkspaceData = async () => {
   }
   
   try {
-    const response = await HttpClient.apiClient.get(`/workspaces/${workspaceId}`);
+    // Use retry logic for fetching workspace data
+    const response = await ErrorHandlerService.retryWithBackoff(
+      () => HttpClient.apiClient.get(`/workspaces/${workspaceId}`),
+      2
+    );
     return response.data;
   } catch (error) {
     console.error("Error fetching workspace data:", error);
+    throw error;
+  }
+};
+
+/**
+ * Fetch all workspaces for the current user
+ */
+export const fetchAllWorkspaces = async () => {
+  try {
+    // Use retry logic for fetching all workspaces
+    const response = await ErrorHandlerService.retryWithBackoff(
+      () => HttpClient.apiClient.get('/workspaces'),
+      2
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching all workspaces:", error);
+    throw error;
+  }
+};
+
+/**
+ * Switch to a different workspace
+ */
+export const switchWorkspace = async (workspaceId: string) => {
+  if (!workspaceId) {
+    throw new Error("Invalid workspace ID");
+  }
+  
+  try {
+    // Update workspace ID in localStorage
+    setWorkspaceId(workspaceId);
+    
+    // Fetch the workspace data to verify it's valid
+    const response = await fetchWorkspaceData();
+    
+    // Return the workspace data
+    return response.data;
+  } catch (error) {
+    console.error("Error switching workspace:", error);
     throw error;
   }
 };
@@ -93,7 +138,9 @@ export const WorkspaceService = {
   getWorkspaceId,
   hasWorkspaceId,
   validateWorkspaceContext,
-  fetchWorkspaceData
+  fetchWorkspaceData,
+  fetchAllWorkspaces,
+  switchWorkspace
 };
 
 export default WorkspaceService;
