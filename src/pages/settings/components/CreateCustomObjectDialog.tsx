@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import * as React from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -25,7 +25,7 @@ const customObjectSchema = z.object({
 type CustomObjectFormValues = z.infer<typeof customObjectSchema>;
 
 export function CreateCustomObjectDialog() {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = React.useState(false);
   
   const form = useForm<CustomObjectFormValues>({
     resolver: zodResolver(customObjectSchema),

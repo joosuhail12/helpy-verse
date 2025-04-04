@@ -1,9 +1,9 @@
 
+import * as React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { useState } from 'react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { createCompany } from '@/store/slices/companies/companiesSlice';
 import { toast } from '@/hooks/use-toast';
@@ -16,9 +16,9 @@ interface CreateCompanyDialogProps {
 
 const CreateCompanyDialog = ({ open, onOpenChange }: CreateCompanyDialogProps) => {
   const dispatch = useAppDispatch();
-  const [name, setName] = useState('');
-  const [website, setWebsite] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [name, setName] = React.useState('');
+  const [website, setWebsite] = React.useState('');
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

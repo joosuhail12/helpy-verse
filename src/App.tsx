@@ -1,5 +1,5 @@
 
-import React from "react";
+import * as React from "react";
 import AppProviders from "./components/app/AppProviders";
 import { RouterProvider } from "react-router-dom";
 import { router } from "./routes";

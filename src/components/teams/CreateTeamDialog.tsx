@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import * as React from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,8 +10,8 @@ interface CreateTeamDialogProps {
 }
 
 const CreateTeamDialog = ({ children }: CreateTeamDialogProps) => {
-  const [open, setOpen] = useState(false);
-  const [teamName, setTeamName] = useState('');
+  const [open, setOpen] = React.useState(false);
+  const [teamName, setTeamName] = React.useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import * as React from 'react';
 import { Navigate } from 'react-router-dom';
 import { toast } from '@/components/ui/use-toast';
 import { isAuthenticated } from '@/utils/auth/tokenManager';

@@ -1,11 +1,11 @@
 
+import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
-import { useState } from 'react';
 import CreateContactDialog from './CreateContactDialog';
 
 export const ContactsHeader = () => {
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = React.useState(false);
 
   return (
     <>

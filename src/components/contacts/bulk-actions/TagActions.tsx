@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { 
@@ -21,8 +21,8 @@ interface TagActionsProps {
 }
 
 export const TagActions: React.FC<TagActionsProps> = ({ selectedContactIds, contacts }) => {
-  const [newTag, setNewTag] = useState('');
-  const [showAddTag, setShowAddTag] = useState(false);
+  const [newTag, setNewTag] = React.useState('');
+  const [showAddTag, setShowAddTag] = React.useState(false);
   const { toast } = useToast();
   const dispatch = useAppDispatch();
 

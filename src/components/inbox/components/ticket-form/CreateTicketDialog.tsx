@@ -1,4 +1,5 @@
 
+import * as React from 'react';
 import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
 import TicketFormContainer from './TicketFormContainer';
 import type { CreateTicketDialogProps } from './types';

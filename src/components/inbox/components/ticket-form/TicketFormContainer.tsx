@@ -1,11 +1,11 @@
 
-import { useState } from 'react';
+import * as React from 'react';
 import TicketForm from './TicketForm';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import type { TeamMember } from '@/types/ticket';
 
 const TicketFormContainer = ({ onClose, onTicketCreated }: { onClose: () => void; onTicketCreated?: (ticket: any) => void }) => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
   const teams = useAppSelector(state => state.teams.teams);
   const emailChannels = useAppSelector(state => state.emailChannels.channels);
   

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { StatusActions } from './bulk-actions/StatusActions';
 import { TagActions } from './bulk-actions/TagActions';

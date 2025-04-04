@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import * as React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,11 +19,11 @@ interface CreateContactDialogProps {
 const CreateContactDialog = ({ open, onOpenChange }: CreateContactDialogProps) => {
   const dispatch = useAppDispatch();
   const { toast } = useToast();
-  const [firstname, setFirstName] = useState('');
-  const [lastname, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [isCustomer, setIsCustomer] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [firstname, setFirstName] = React.useState('');
+  const [lastname, setLastName] = React.useState('');
+  const [email, setEmail] = React.useState('');
+  const [isCustomer, setIsCustomer] = React.useState(false);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

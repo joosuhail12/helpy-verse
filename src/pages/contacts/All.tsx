@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import * as React from 'react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { fetchCustomers, selectContacts, selectContactsLoading, selectContactsError } from '@/store/slices/contacts/contactsSlice';
@@ -19,9 +19,9 @@ const AllContacts = () => {
   const contacts = useAppSelector(selectContacts);
   const loading = useAppSelector(selectContactsLoading);
   const error = useAppSelector(selectContactsError);
-  const [retryCount, setRetryCount] = useState(0);
+  const [retryCount, setRetryCount] = React.useState(0);
   
-  useEffect(() => {
+  React.useEffect(() => {
     console.log('AllContacts component mounted, fetching customers');
     dispatch(fetchCustomers())
       .unwrap()
@@ -37,7 +37,7 @@ const AllContacts = () => {
   }, [dispatch, retryCount]);
 
   // Debug logging
-  useEffect(() => {
+  React.useEffect(() => {
     console.log('Contacts state:', { 
       loading, 
       contactsCount: contacts?.length, 
