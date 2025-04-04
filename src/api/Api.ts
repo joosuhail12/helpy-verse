@@ -1,6 +1,7 @@
 
 import { store } from '@/store/store';
 import axios from 'axios';
+import { RootState } from '@/store/store';
 
 // Use the environment variable for API base URL with fallback
 const API_BASE_URL = import.meta.env.VITE_REACT_APP_API_URL || '/api';
@@ -17,7 +18,7 @@ const api = axios.create({
 // Add request interceptor for auth token and workspace ID
 api.interceptors.request.use(
   (config) => {
-    const state = store.getState();
+    const state = store.getState() as RootState;
     // Get token from auth state with proper type checking and optional chaining
     const token = state.auth?.user?.data?.accessToken?.token;
     

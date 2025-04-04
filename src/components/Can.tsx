@@ -2,12 +2,13 @@
 import { useAppSelector } from "@/hooks/useAppSelector";
 import { createContext, createElement, useContext, useEffect, useState } from "react";
 import { AppAbility, defineAppAbility } from "@/utils/ability";
+import { RootState } from "@/store/store";
 
 // Create our own AbilityContext since @casl/react doesn't export it directly in the version we're using
 export const AbilityContext = createContext<AppAbility | undefined>(undefined);
 
 export const Can = (props: any) => {
-  const auth = useAppSelector((state) => state.auth);
+  const auth = useAppSelector((state: RootState) => state.auth);
   const permissions = auth?.permissions || [];
   const [ability, setAbility] = useState<AppAbility>(defineAppAbility());
 

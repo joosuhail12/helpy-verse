@@ -3,9 +3,10 @@ import React, { useEffect, useState } from "react";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import { fetchUserProfile } from "@/store/slices/user/userSlice";
+import { PayloadAction } from "@reduxjs/toolkit";
 // Import directly from the action creators
-import { fetchWorkspaceData } from "@/store/slices/auth/userActions";
-import { getUserPermission } from "@/store/slices/auth/permissionActions";
+import { fetchWorkspaceDataThunk } from "@/store/slices/auth/userActions";
+import { getUserPermissionThunk } from "@/store/slices/auth/permissionActions";
 
 interface CaslProviderProps {
     children: React.ReactNode;
@@ -25,20 +26,21 @@ const CaslProvider: React.FC<CaslProviderProps> = ({ children }) => {
             console.log("CaslProvider: Fetching user data and permissions");
             
             // Create an array of promises for the async operations
-            const promises = [
-                dispatch(fetchUserProfile()),
-            ];
+            const fetchPromises = [];
             
-            // Only add these if they exist and are functions
-            if (typeof fetchWorkspaceData === 'function') {
-                promises.push(dispatch(fetchWorkspaceData()));
+            // Add fetchUserProfile
+            fetchPromises.push(dispatch(fetchUserProfile()));
+            
+            // Use thunks that return PayloadAction types
+            if (typeof fetchWorkspaceDataThunk === 'function') {
+                fetchPromises.push(dispatch(fetchWorkspaceDataThunk()));
             }
             
-            if (typeof getUserPermission === 'function') {
-                promises.push(dispatch(getUserPermission()));
+            if (typeof getUserPermissionThunk === 'function') {
+                fetchPromises.push(dispatch(getUserPermissionThunk()));
             }
             
-            Promise.all(promises)
+            Promise.all(fetchPromises)
                 .then(() => {
                     setDataFetched(true);
                     console.log("CaslProvider: Successfully fetched user data");

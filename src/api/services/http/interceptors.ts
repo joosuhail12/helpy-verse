@@ -3,6 +3,7 @@ import { AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import { get } from 'lodash';
 import { getAuthToken } from '@/utils/auth/tokenManager';
 import { store } from '@/store/store';
+import { RootState } from '@/store/store';
 
 // Request Interceptor - Adds Token & Workspace ID to all requests
 export const requestInterceptor = async (config: InternalAxiosRequestConfig): Promise<InternalAxiosRequestConfig> => {
@@ -19,7 +20,7 @@ export const requestInterceptor = async (config: InternalAxiosRequestConfig): Pr
             config.headers.set("Authorization", `Bearer ${token}`);
         } else {
             // Try getting token from Redux store as fallback
-            const state = store.getState();
+            const state = store.getState() as RootState;
             const storeToken = state.auth?.user?.data?.accessToken?.token;
             
             if (storeToken) {
