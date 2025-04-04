@@ -9,6 +9,7 @@ import { useAppSelector } from '@/hooks/useAppSelector';
 import { enable2FA, verify2FA, disable2FA } from '@/store/slices/teammates/teammatesSlice';
 import { useToast } from '@/hooks/use-toast';
 import { ShieldCheck, ShieldOff, QrCode } from 'lucide-react';
+import type { RootState } from '@/store/store';
 
 interface TwoFactorSetupProps {
   teammateId: string;
@@ -24,7 +25,7 @@ export const TwoFactorSetup: React.FC<TwoFactorSetupProps> = ({ teammateId }) =>
   const [isVerifying, setIsVerifying] = useState(false);
   const [isDisabling, setIsDisabling] = useState(false);
   
-  const teammate = useAppSelector(state => 
+  const teammate = useAppSelector((state: RootState) => 
     state.teammates.teammates.find(t => t.id === teammateId)
   );
   const is2FAEnabled = teammate?.is2FAEnabled || false;

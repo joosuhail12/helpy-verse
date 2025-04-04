@@ -2,10 +2,10 @@
 import React from 'react';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { ActionListItem } from './ActionListItem';
-import { RootState } from '@/store/store';
+import type { RootState } from '@/store/store';
 
 export function ActionList() {
-  const actions = useAppSelector((state: RootState) => state.actions.items || []);
+  const actions = useAppSelector((state: RootState) => state.actions.items);
 
   if (actions.length === 0) {
     return (

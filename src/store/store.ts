@@ -1,19 +1,19 @@
 
 import { configureStore } from '@reduxjs/toolkit';
-// Import reducers using named imports instead of default imports
-import { reducer as authReducer } from './slices/auth/authSlice';
-import { reducer as actionsReducer } from './slices/actions/actionsSlice';
+// Import reducers using proper named exports
+import { authReducer } from './slices/auth/authSlice';
+import { actionsReducer } from './slices/actions/actionsSlice';
 import contentReducer from './slices/content/contentSlice';
 import contentCenterReducer from './slices/automation/contentCenterSlice';
 import contactsReducer from './slices/contacts/contactsSlice';
 import companiesReducer from './slices/companies/companiesSlice';
 import inboxReducer from './slices/inboxSlice';
 import tagsReducer from './slices/tagsSlice';
-import { reducer as teammatesReducer } from './slices/teammates/teammatesSlice';
+import { teammatesReducer } from './slices/teammates/teammatesSlice';
 import teamsReducer from './slices/teams/teamsSlice';
-import { reducer as emailChannelsReducer } from './slices/emailChannels/emailChannelsSlice';
-import { reducer as cannedResponsesReducer } from './slices/cannedResponses/cannedResponsesSlice';
-import { reducer as chatbotsReducer } from './slices/chatbots/chatbotsSlice';
+import { emailChannelsReducer } from './slices/emailChannels/emailChannelsSlice';
+import { cannedResponsesReducer } from './slices/cannedResponses/cannedResponsesSlice';
+import { chatbotsReducer } from './slices/chatbots/chatbotsSlice';
 import userReducer from './slices/user/userSlice';
 
 // Define the root reducer with all slices

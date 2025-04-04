@@ -6,6 +6,7 @@ import { useAppSelector } from '@/hooks/useAppSelector';
 import { toast } from '@/components/ui/use-toast';
 import { fetchCannedResponses, deleteCannedResponse } from '@/store/slices/cannedResponses/actions';
 import { selectCannedResponseById } from '@/store/slices/cannedResponses/selectors';
+import type { RootState } from '@/store/store';
 
 export const useCannedResponseDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -16,9 +17,9 @@ export const useCannedResponseDetail = () => {
   
   // Use selectors to get data from the store
   const response = useAppSelector(state => selectCannedResponseById(state, id || ''));
-  const loading = useAppSelector(state => state.cannedResponses.loading);
-  const error = useAppSelector(state => state.cannedResponses.error);
-  const teams = useAppSelector(state => state.teams.teams);
+  const loading = useAppSelector((state: RootState) => state.cannedResponses.loading);
+  const error = useAppSelector((state: RootState) => state.cannedResponses.error);
+  const teams = useAppSelector((state: RootState) => state.teams.teams);
   
   useEffect(() => {
     // Fetch all responses

@@ -2,7 +2,7 @@
 import { useAppSelector } from "@/hooks/useAppSelector";
 import { createContext, createElement, useContext, useEffect, useState } from "react";
 import { AppAbility, defineAppAbility } from "@/utils/ability";
-import { RootState } from "@/store/store";
+import type { RootState } from "@/store/store";
 
 // Create our own AbilityContext since @casl/react doesn't export it directly in the version we're using
 export const AbilityContext = createContext<AppAbility | undefined>(undefined);

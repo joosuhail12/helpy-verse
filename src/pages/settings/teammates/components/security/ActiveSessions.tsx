@@ -8,6 +8,7 @@ import { fetchTeammateSessions, terminateSession } from '@/store/slices/teammate
 import { selectTeammateSessions } from '@/store/slices/teammates/selectors';
 import { Monitor, Smartphone, Laptop, Globe, Loader, X } from 'lucide-react';
 import { formatDistance } from 'date-fns';
+import type { RootState } from '@/store/store';
 
 interface ActiveSessionsProps {
   teammateId: string;
@@ -16,7 +17,7 @@ interface ActiveSessionsProps {
 export const ActiveSessions: React.FC<ActiveSessionsProps> = ({ teammateId }) => {
   const dispatch = useAppDispatch();
   const sessions = useAppSelector((state) => selectTeammateSessions(state, teammateId));
-  const loading = useAppSelector((state) => state.teammates.loading);
+  const loading = useAppSelector((state: RootState) => state.teammates.loading);
 
   useEffect(() => {
     dispatch(fetchTeammateSessions(teammateId));

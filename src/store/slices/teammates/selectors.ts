@@ -4,7 +4,7 @@ import { createSelector } from '@reduxjs/toolkit';
 
 // Basic selectors
 const getTeammatesState = (state: RootState) => state.teammates;
-const getTeammates = (state: RootState) => state.teammates?.teammates || [];
+const getTeammates = (state: RootState) => state.teammates.teammates || [];
 const getTeammateIds = createSelector(
   [getTeammates],
   (teammates) => teammates.map(teammate => teammate.id)
