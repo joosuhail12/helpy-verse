@@ -12,9 +12,28 @@ export default defineConfig(({ mode }) => ({
   build: {
     chunkSizeWarningLimit: 1500,
     sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'ui-components': ['@/components/ui'],
+        }
+      }
+    }
   },
   optimizeDeps: {
-    include: ['@tiptap/extension-mention', '@tiptap/suggestion'],
+    include: [
+      '@tiptap/extension-mention', 
+      '@tiptap/suggestion',
+      'react',
+      'react-dom',
+      'react-router-dom',
+      '@reduxjs/toolkit',
+      'react-redux'
+    ],
+    esbuildOptions: {
+      target: 'es2020',
+    }
   },
   plugins: [
     react(),
@@ -25,5 +44,8 @@ export default defineConfig(({ mode }) => ({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+  },
+  esbuild: {
+    logOverride: { 'this-is-undefined-in-esm': 'silent' }
   },
 }));

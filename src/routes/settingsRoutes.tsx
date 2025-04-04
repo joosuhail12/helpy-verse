@@ -1,8 +1,6 @@
-import { lazy, ReactNode } from 'react';
-import ProtectedRouteWrapper from '@/components/auth/ProtectedRouteWrapper';
-import { Suspense } from 'react';
-import LoadingSpinner from '@/components/common/LoadingSpinner';
-import RouteErrorBoundary from '@/components/app/RouteErrorBoundary';
+
+import { lazy } from 'react';
+import ProtectedRoute from '@/components/routing/ProtectedRoute';
 
 // Lazy load settings pages
 const Settings = lazy(() => import('../pages/Settings'));
@@ -22,86 +20,74 @@ const CannedResponses = lazy(() => import('../pages/settings/CannedResponses'));
 const CreateCannedResponse = lazy(() => import('../pages/settings/CreateCannedResponse'));
 const CannedResponseDetail = lazy(() => import('../pages/settings/CannedResponseDetail'));
 
-// Helper function to wrap components with protection
-const withProtection = (component: ReactNode) => (
-  <ProtectedRouteWrapper>
-    {component}
-  </ProtectedRouteWrapper>
-);
-
-// Helper for child routes that don't need the full wrapper
-const withSuspenseOnly = (Component: React.ComponentType) => (
-  <RouteErrorBoundary>
-    <Suspense fallback={<LoadingSpinner />}>
-      <Component />
-    </Suspense>
-  </RouteErrorBoundary>
-);
-
 export const settingsRoutes = [
   {
     path: 'settings',
-    element: withProtection(<Settings />),
+    element: (
+      <ProtectedRoute>
+        <Settings />
+      </ProtectedRoute>
+    ),
     children: [
       {
         path: 'email/domains',
-        element: withSuspenseOnly(EmailDomainsSettings),
+        element: <EmailDomainsSettings />,
       },
       {
         path: 'email/domains/:id',
-        element: withSuspenseOnly(EmailDomainDetail),
+        element: <EmailDomainDetail />,
       },
       {
         path: 'email/channels',
-        element: withSuspenseOnly(EmailChannels),
+        element: <EmailChannels />,
       },
       {
         path: 'tags',
-        element: withSuspenseOnly(Tags),
+        element: <Tags />,
       },
       {
         path: 'custom-data',
-        element: withSuspenseOnly(CustomData),
+        element: <CustomData />,
       },
       {
         path: 'custom-objects',
-        element: withSuspenseOnly(CustomObjects),
+        element: <CustomObjects />,
       },
       {
         path: 'custom-objects/:id',
-        element: withSuspenseOnly(CustomObjectDetail),
+        element: <CustomObjectDetail />,
       },
       {
         path: 'teammates',
-        element: withSuspenseOnly(Teammates),
+        element: <Teammates />,
       },
       {
         path: 'teammates/:id',
-        element: withSuspenseOnly(TeammateDetail),
+        element: <TeammateDetail />,
       },
       {
         path: 'teams',
-        element: withSuspenseOnly(Teams),
+        element: <Teams />,
       },
       {
         path: 'teams/:id',
-        element: withSuspenseOnly(TeamDetail),
+        element: <TeamDetail />,
       },
       {
         path: 'teams/:id/edit',
-        element: withSuspenseOnly(EditTeam),
+        element: <EditTeam />,
       },
       {
         path: 'canned-responses',
-        element: withSuspenseOnly(CannedResponses),
+        element: <CannedResponses />,
       },
       {
         path: 'canned-responses/create',
-        element: withSuspenseOnly(CreateCannedResponse),
+        element: <CreateCannedResponse />,
       },
       {
         path: 'canned-responses/:id',
-        element: withSuspenseOnly(CannedResponseDetail),
+        element: <CannedResponseDetail />,
       }
     ],
   },

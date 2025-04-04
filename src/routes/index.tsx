@@ -2,8 +2,7 @@
 import { lazy } from 'react';
 import { createBrowserRouter } from 'react-router-dom';
 import RootRedirect from '../components/app/RootRedirect';
-import { PrivateRoute } from '@/utils/helpers/Routes';
-import ProtectedRouteWrapper from '@/components/auth/ProtectedRouteWrapper';
+import ProtectedRoute from '@/components/routing/ProtectedRoute';
 
 // Import route modules
 import { dashboardRoutes } from './dashboardRoutes';
@@ -21,13 +20,6 @@ const LandingPage = lazy(() => import('../pages/LandingPage'));
 
 // Lazy load dashboard layout
 const DashboardLayoutComponent = lazy(() => import('../layouts/DashboardLayout'));
-
-// Helper to wrap components with ProtectedRouteWrapper
-const withProtection = (Component) => (
-  <ProtectedRouteWrapper>
-    <Component />
-  </ProtectedRouteWrapper>
-);
 
 // Log all available routes for debugging
 const logRoutes = (routes) => {
@@ -76,9 +68,9 @@ export const router = createBrowserRouter([
   {
     path: '/home',
     element: (
-      <PrivateRoute>
+      <ProtectedRoute>
         <DashboardLayoutComponent />
-      </PrivateRoute>
+      </ProtectedRoute>
     ),
     children: [
       ...dashboardRoutes,

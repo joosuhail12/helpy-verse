@@ -1,20 +1,13 @@
 
 import { lazy } from 'react';
 import { Navigate } from 'react-router-dom';
-import ProtectedRouteWrapper from '@/components/auth/ProtectedRouteWrapper';
+import ProtectedRoute from '@/components/routing/ProtectedRoute';
 
-// Lazy load inbox pages
+// Import the components directly to avoid dynamic import issues
 const YourInbox = lazy(() => import('../pages/inbox/YourInbox'));
 const AllInbox = lazy(() => import('../pages/inbox/All'));
 const UnassignedInbox = lazy(() => import('../pages/inbox/Unassigned'));
 const MentionsInbox = lazy(() => import('../pages/inbox/Mentions'));
-
-// Helper function to wrap a component with ProtectedRouteWrapper
-const withProtection = (Component) => (
-  <ProtectedRouteWrapper>
-    <Component />
-  </ProtectedRouteWrapper>
-);
 
 export const inboxRoutes = [
   {
@@ -23,18 +16,34 @@ export const inboxRoutes = [
   },
   {
     path: 'inbox/your-inbox',
-    element: withProtection(YourInbox),
+    element: (
+      <ProtectedRoute>
+        <YourInbox />
+      </ProtectedRoute>
+    ),
   },
   {
     path: 'inbox/all',
-    element: withProtection(AllInbox),
+    element: (
+      <ProtectedRoute>
+        <AllInbox />
+      </ProtectedRoute>
+    ),
   },
   {
     path: 'inbox/unassigned',
-    element: withProtection(UnassignedInbox),
+    element: (
+      <ProtectedRoute>
+        <UnassignedInbox />
+      </ProtectedRoute>
+    ),
   },
   {
     path: 'inbox/mentions',
-    element: withProtection(MentionsInbox),
+    element: (
+      <ProtectedRoute>
+        <MentionsInbox />
+      </ProtectedRoute>
+    ),
   },
 ];
