@@ -8,10 +8,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Skeleton } from '@/components/ui/skeleton';
 
-const LoadingState = () => {
+// Change to default export or named export
+const LoadingState: React.FC = () => {
   return (
     <div className="border rounded-md bg-white">
       <div className="w-full overflow-auto">
