@@ -1,19 +1,20 @@
+
 import { createSlice } from '@reduxjs/toolkit';
 import { AuthService } from '@/services/authService';
-import { AuthState } from './types';
+import { AuthState } from './auth/types';
 import { 
   loginUser, 
   registerUser, 
   requestPasswordReset, 
   confirmPasswordReset,
   refreshAuthToken
-} from './authActions';
+} from './auth/authActions';
 import { 
   fetchUserData, 
   fetchUserProfile, 
   fetchWorkspaceData 
-} from './userActions';
-import { getUserPermission } from './permissionActions';
+} from './auth/userActions';
+import { getUserPermission } from './auth/permissionActions';
 import { toast } from '@/components/ui/use-toast';
 import { 
   isAuthError, 

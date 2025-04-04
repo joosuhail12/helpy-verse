@@ -1,74 +1,5 @@
 
-import { ActionType } from "@/utils/ability";
-
-export interface Permission {
-  action: ActionType | ActionType[];
-  subject: string;
-  conditions?: {
-    clineId: string;
-  };
-}
-
-export type Permissions = Permission[];
-
-export interface UserProfile {
-  id: string;
-  email: string;
-  username?: string;
-  firstName?: string;
-  lastName?: string;
-  fullName?: string;
-  phone?: string;
-  avatarUrl?: string;
-  role?: string;
-  status: 'active' | 'inactive' | 'pending';
-  lastLoginAt?: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-export interface Workspace {
-  id: string;
-  name: string;
-  role?: string;
-  status?: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-export interface AuthToken {
-  token: string;
-  expiry: number;
-  issuedAt: string;
-  userAgent: string;
-  ip: string;
-}
-
-export interface AuthState {
-  isAuthenticated: boolean;
-  user: {
-    status: "success" | "error";
-    message: string;
-    data: {
-      id: string;
-      accessToken: AuthToken;
-      defaultWorkspaceId: string;
-      profile?: UserProfile;
-      currentWorkspace?: Workspace;
-    };
-  } | null;
-  loading: boolean;
-  error: string | null | {
-    message: string;
-    code?: string; 
-    isOfflineError?: boolean;
-    isAuthError?: boolean;
-    isServerError?: boolean;
-    isTimeoutError?: boolean;
-  };
-  permissions: Permissions;
-  workspaces: Workspace[];
-}
+import { UserProfile } from '@/types/user';
 
 export interface Credentials {
   email: string;
@@ -76,10 +7,10 @@ export interface Credentials {
 }
 
 export interface RegistrationCredentials {
-  fullName: string;
+  fullName?: string;
   email: string;
   password: string;
-  companyName: string;
+  companyName?: string;
 }
 
 export interface PasswordResetRequest {
@@ -89,19 +20,38 @@ export interface PasswordResetRequest {
 export interface PasswordResetConfirmation {
   token: string;
   password: string;
-  rid?: string;
-  tenantId?: string;
+  confirmPassword?: string;
 }
 
 export interface AuthResponse {
-  status: "success" | "error";
-  message: string;
   data: {
     id: string;
-    username?: string;
+    accessToken: {
+      token: string;
+      expiresAt: string;
+    };
+    defaultWorkspaceId?: string;
     email?: string;
-    accessToken: AuthToken;
-    defaultWorkspaceId: string;
     role?: string;
   };
+  message: string;
+  status: string;
+}
+
+export interface AuthError {
+  message: string;
+  code?: string;
+  isOfflineError?: boolean;
+  isAuthError?: boolean;
+  isServerError?: boolean;
+  isTimeoutError?: boolean;
+}
+
+export interface AuthState {
+  isAuthenticated: boolean;
+  user: AuthResponse | null;
+  loading: boolean;
+  error: AuthError | null;
+  permissions: string[];
+  workspaces: any[];
 }
