@@ -17,6 +17,12 @@ export interface ThemeConfig {
   };
   position: 'left' | 'right';
   compact: boolean;
+  positionOffset: {
+    x: number;
+    y: number;
+  };
+  logo: string | null;
+  launcherIcon: string | null;
   labels: {
     welcomeTitle: string;
     welcomeSubtitle: string;
@@ -43,6 +49,12 @@ const defaultTheme: ThemeConfig = {
   },
   position: 'right',
   compact: false,
+  positionOffset: {
+    x: 0,
+    y: 0
+  },
+  logo: null,
+  launcherIcon: null,
   labels: {
     welcomeTitle: 'Hello there.',
     welcomeSubtitle: 'How can we help?',
@@ -74,6 +86,10 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children, initialT
       ...defaultTheme.colors,
       ...(initialTheme.colors || {})
     },
+    positionOffset: {
+      ...defaultTheme.positionOffset,
+      ...(initialTheme.positionOffset || {})
+    },
     labels: {
       ...defaultTheme.labels,
       ...(initialTheme.labels || {})
@@ -87,6 +103,10 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children, initialT
       colors: {
         ...prev.colors,
         ...(newTheme.colors || {})
+      },
+      positionOffset: {
+        ...prev.positionOffset,
+        ...(newTheme.positionOffset || {})
       },
       labels: {
         ...prev.labels,

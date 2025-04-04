@@ -5,7 +5,15 @@ import { Button } from '@/components/ui/button';
 import { MessageCircle, Send, Star, ThumbsUp, ThumbsDown } from 'lucide-react';
 
 const ChatWidgetPreview: React.FC = () => {
-  const { colors, position, compact, labels } = useThemeContext();
+  const { 
+    colors, 
+    position, 
+    compact, 
+    labels, 
+    logo, 
+    launcherIcon, 
+    positionOffset 
+  } = useThemeContext();
 
   // Sample messages for the preview
   const messages = [
@@ -29,14 +37,39 @@ const ChatWidgetPreview: React.FC = () => {
     }
   ];
 
+  // Calculate position with offsets
+  const getPositionStyle = () => {
+    const basePosition = position === 'right' ? 'right-4' : 'left-4';
+    
+    // Calculate position with offset
+    const xOffset = positionOffset?.x || 0;
+    const yOffset = positionOffset?.y || 0;
+    
+    return {
+      [position]: `calc(1rem + ${xOffset}px)`,
+      bottom: `calc(1rem + ${yOffset}px)`,
+    };
+  };
+
   return (
     <div className="h-full flex flex-col relative">
       {/* Widget Button */}
       <div 
-        className={`absolute ${position === 'right' ? 'right-4' : 'left-4'} bottom-4 shadow-lg rounded-full p-3`}
-        style={{ backgroundColor: colors.primary }}
+        className="absolute shadow-lg rounded-full p-3"
+        style={{ 
+          backgroundColor: colors.primary,
+          ...getPositionStyle()
+        }}
       >
-        <MessageCircle size={24} style={{ color: colors.primaryForeground }} />
+        {launcherIcon ? (
+          <img 
+            src={launcherIcon} 
+            alt="Chat launcher" 
+            className="h-6 w-6"
+          />
+        ) : (
+          <MessageCircle size={24} style={{ color: colors.primaryForeground }} />
+        )}
       </div>
 
       {/* Widget Panel */}
@@ -46,6 +79,8 @@ const ChatWidgetPreview: React.FC = () => {
           backgroundColor: colors.background,
           width: compact ? '300px' : '380px',
           height: '500px',
+          [position]: `calc(1rem + ${positionOffset.x}px)`,
+          bottom: `calc(5rem + ${positionOffset.y}px)`
         }}
       >
         {/* Widget Header */}
@@ -53,7 +88,15 @@ const ChatWidgetPreview: React.FC = () => {
           className="p-4 flex items-center gap-3"
           style={{ backgroundColor: colors.primary, color: colors.primaryForeground }}
         >
-          <MessageCircle />
+          {logo ? (
+            <img 
+              src={logo} 
+              alt="Company logo" 
+              className="h-6 object-contain"
+            />
+          ) : (
+            <MessageCircle />
+          )}
           <div>
             <h3 className="font-medium">{labels.welcomeTitle}</h3>
             <p className="text-sm opacity-90">{labels.welcomeSubtitle}</p>

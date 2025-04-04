@@ -8,9 +8,11 @@ import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import ChatWidgetPreview from './ChatWidgetPreview';
+import ImageUploader from '@/components/settings/chat/ImageUploader';
+import PositionOffsetControls from '@/components/settings/chat/PositionOffsetControls';
 
 const BrandingSettings: React.FC = () => {
-  const { colors, position, compact, labels, updateTheme } = useThemeContext();
+  const { colors, position, compact, labels, logo, launcherIcon, positionOffset, updateTheme } = useThemeContext();
 
   const handleColorChange = (colorKey: keyof ThemeConfig['colors'], value: string) => {
     updateTheme({
@@ -36,6 +38,32 @@ const BrandingSettings: React.FC = () => {
         [labelKey]: value,
       },
     });
+  };
+
+  const handleXOffsetChange = (value: number) => {
+    updateTheme({
+      positionOffset: {
+        ...positionOffset,
+        x: value
+      }
+    });
+  };
+
+  const handleYOffsetChange = (value: number) => {
+    updateTheme({
+      positionOffset: {
+        ...positionOffset,
+        y: value
+      }
+    });
+  };
+
+  const handleLogoChange = (image: string | null) => {
+    updateTheme({ logo: image });
+  };
+
+  const handleIconChange = (image: string | null) => {
+    updateTheme({ launcherIcon: image });
   };
 
   const handleSaveChanges = () => {
@@ -145,6 +173,37 @@ const BrandingSettings: React.FC = () => {
 
           <Separator />
 
+          <h2 className="text-lg font-medium">Brand Assets</h2>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Header Logo</Label>
+              <ImageUploader 
+                initialImage={logo}
+                onImageChange={handleLogoChange}
+                label="Upload Logo"
+                previewHeight={40}
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                This logo will appear in the header of the chat widget
+              </p>
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Launcher Icon</Label>
+              <ImageUploader 
+                initialImage={launcherIcon}
+                onImageChange={handleIconChange}
+                label="Upload Icon"
+                previewHeight={40}
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                This icon will appear on the chat launcher button
+              </p>
+            </div>
+          </div>
+
+          <Separator />
+
           <h2 className="text-lg font-medium">Layout</h2>
           <div className="space-y-4">
             {/* Widget Position */}
@@ -166,6 +225,22 @@ const BrandingSettings: React.FC = () => {
                   Right
                 </Button>
               </div>
+            </div>
+
+            {/* Position Offsets */}
+            <div className="space-y-2">
+              <Label>Position Offset</Label>
+              <div className="pl-2 border-l-2 border-gray-200">
+                <PositionOffsetControls
+                  xOffset={positionOffset.x}
+                  yOffset={positionOffset.y}
+                  onXChange={handleXOffsetChange}
+                  onYChange={handleYOffsetChange}
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Adjust the position of the chat launcher from its default position
+              </p>
             </div>
 
             {/* Compact Mode */}
