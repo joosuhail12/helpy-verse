@@ -46,4 +46,5 @@ const AllTickets: React.FC = () => {
   );
 };
 
+// Make sure we're exporting the component as default
 export default AllTickets;
