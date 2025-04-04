@@ -1,6 +1,6 @@
 
 import { configureStore, combineReducers } from '@reduxjs/toolkit';
-import authReducer from './slices/authSlice';
+import authReducer from './slices/auth/authSlice';
 import userReducer from './slices/user/userSlice';
 import teamsReducer from './slices/teams/teamsSlice';
 import contactsReducer from './slices/contacts/contactsSlice';

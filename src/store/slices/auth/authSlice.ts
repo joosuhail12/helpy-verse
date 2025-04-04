@@ -157,7 +157,7 @@ const authSlice = createSlice({
 
 export const { logout, clearError } = authSlice.actions;
 
-// Re-export all the actions for use in components
+// Export actions for components to use
 export {
   loginUser,
   registerUser,
@@ -170,6 +170,3 @@ export {
 };
 
 export default authSlice.reducer;
-
-// Export types for TypeScript
-export type { AuthState } from './types';

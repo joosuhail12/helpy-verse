@@ -2,7 +2,7 @@
 import React, { useEffect } from "react";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { useAppSelector } from "@/hooks/useAppSelector";
-import { fetchUserProfile, fetchWorkspaceData, getUserPermission } from "@/store/slices/authSlice";
+import { fetchUserProfile, fetchWorkspaceData, getUserPermission } from "@/store/slices/auth/authSlice";
 
 interface CaslProviderProps {
     children: React.ReactNode;
@@ -16,8 +16,8 @@ const CaslProvider: React.FC<CaslProviderProps> = ({ children }) => {
     useEffect(() => {
         if (isAuthenticated) {
             dispatch(fetchUserProfile()); 
-            dispatch(fetchWorkspaceData(auth?.user?.workspace?.id || '')); // Pass workspace ID or empty string
-            dispatch(getUserPermission()); // Remove empty object parameter
+            dispatch(fetchWorkspaceData(auth?.user?.workspace?.id || '')); 
+            dispatch(getUserPermission()); 
         }
     }, [dispatch, isAuthenticated, auth?.user?.workspace?.id]);
 
