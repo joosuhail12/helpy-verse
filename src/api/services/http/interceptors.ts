@@ -44,6 +44,7 @@ export const requestInterceptor = async (config: InternalAxiosRequestConfig): Pr
             if (!config.params.workspace_id) {
                 config.params.workspace_id = workspaceId;
             }
+            
             console.log(`Request to ${config.url} with workspace_id: ${workspaceId}`);
         } else {
             console.warn(`Making API request without workspace_id to: ${config.url}`);

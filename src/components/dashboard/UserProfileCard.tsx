@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/tooltip';
 import { Settings, CheckCircle, MessageCircle, AlertCircle, PauseCircle, XCircle, Power, LucideIcon } from 'lucide-react';
 import { UserStatus, statusConfig } from '@/types/userStatus';
+import type { RootState } from '@/store/store';
 
 interface UserProfileCardProps {
   isCollapsed: boolean;
@@ -29,7 +30,7 @@ interface StatusIconsMap {
 
 const UserProfileCard = ({ isCollapsed }: UserProfileCardProps) => {
   const navigate = useNavigate();
-  const { user } = useAppSelector((state) => state.auth);
+  const { user } = useAppSelector((state: RootState) => state.auth);
   const [status, setStatus] = useState<UserStatus>('available');
 
   // Extract user email and role safely

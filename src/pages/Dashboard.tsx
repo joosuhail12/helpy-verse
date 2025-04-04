@@ -5,11 +5,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { fetchUserProfile } from '@/store/slices/user/userSlice';
+import type { RootState } from '@/store/store';
 
 const Dashboard: React.FC = () => {
   const dispatch = useAppDispatch();
-  const auth = useAppSelector((state) => state.auth);
-  const userState = useAppSelector((state) => state.user);
+  const auth = useAppSelector((state: RootState) => state.auth);
+  const userState = useAppSelector((state: RootState) => state.user);
   
   // Safe access to user with fallback for undefined
   const user = userState?.user || null;

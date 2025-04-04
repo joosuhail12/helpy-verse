@@ -10,6 +10,7 @@ import { ArrowLeft, Loader2, Check } from 'lucide-react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { confirmPasswordReset } from '@/store/slices/auth/authActions';
+import type { RootState } from '@/store/store';
 
 const ResetPassword = () => {
   const [searchParams] = useSearchParams();
@@ -26,7 +27,7 @@ const ResetPassword = () => {
   const { toast } = useToast();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const authState = useAppSelector((state) => state.auth);
+  const authState = useAppSelector((state: RootState) => state.auth);
 
   useEffect(() => {
     if (!token) {

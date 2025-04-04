@@ -6,6 +6,7 @@ import { useAppDispatch } from "../../hooks/useAppDispatch";
 import { useAppSelector } from "../../hooks/useAppSelector";
 import { registerUser } from "../../store/slices/auth/authActions";
 import { toast } from "../../components/ui/use-toast";
+import type { RootState } from "@/store/store";
 
 export const SignUpForm = memo(() => {
   const [fullName, setFullName] = useState("");
@@ -13,7 +14,7 @@ export const SignUpForm = memo(() => {
   const [password, setPassword] = useState("");
   const [companyName, setCompanyName] = useState("");
   const dispatch = useAppDispatch();
-  const { loading, error } = useAppSelector((state) => state.auth);
+  const { loading, error } = useAppSelector((state: RootState) => state.auth);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

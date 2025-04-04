@@ -6,11 +6,12 @@ import { useAppDispatch } from "../../hooks/useAppDispatch";
 import { useAppSelector } from "../../hooks/useAppSelector";
 import { requestPasswordReset } from "../../store/slices/auth/authActions";
 import { toast } from "../../components/ui/use-toast";
+import type { RootState } from "@/store/store";
 
 export const ForgotPasswordForm = () => {
   const [email, setEmail] = useState("");
   const dispatch = useAppDispatch();
-  const { loading } = useAppSelector((state) => state.auth);
+  const { loading } = useAppSelector((state: RootState) => state.auth);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

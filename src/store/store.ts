@@ -1,7 +1,7 @@
 
 import { configureStore } from '@reduxjs/toolkit';
 // Import reducers using proper named exports
-import { authReducer } from './slices/auth/authSlice';
+import { reducer as authReducer } from './slices/auth/authSlice';
 import { actionsReducer } from './slices/actions/actionsSlice';
 import contentReducer from './slices/content/contentSlice';
 import contentCenterReducer from './slices/automation/contentCenterSlice';
