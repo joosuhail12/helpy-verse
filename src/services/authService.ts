@@ -8,6 +8,7 @@ import { HttpClient } from "@/api/services/http";
 
 // Token Constants
 const TOKEN_KEY = "token";
+const REFRESH_TOKEN_KEY = "refreshToken";
 const USER_ID_KEY = "userId";
 const ROLE_KEY = "role";
 const WORKSPACE_ID_KEY = "workspaceId";
@@ -40,6 +41,22 @@ export const setAuthToken = (token: string): boolean => {
  */
 export const getAuthToken = (): string => {
   return localStorage.getItem(TOKEN_KEY) || "";
+};
+
+/**
+ * Get the stored refresh token
+ */
+export const getRefreshToken = (): string => {
+  return localStorage.getItem(REFRESH_TOKEN_KEY) || "";
+};
+
+/**
+ * Set refresh token in localStorage
+ */
+export const setRefreshToken = (token: string): void => {
+  if (token) {
+    localStorage.setItem(REFRESH_TOKEN_KEY, token);
+  }
 };
 
 /**
@@ -109,6 +126,7 @@ export const logout = async (): Promise<void> => {
   } finally {
     // Clear all authentication data
     localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
     localStorage.removeItem(USER_ID_KEY);
     localStorage.removeItem(ROLE_KEY);
     localStorage.removeItem(WORKSPACE_ID_KEY);
@@ -183,6 +201,8 @@ export const isWorkspaceAgent = (): boolean => {
 export const AuthService = {
   setAuthToken,
   getAuthToken,
+  getRefreshToken,
+  setRefreshToken,
   isAuthenticated,
   isTokenExpired,
   logout,
