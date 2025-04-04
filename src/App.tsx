@@ -1,18 +1,9 @@
 
 import React from "react";
 import AppProviders from "./components/app/AppProviders";
-import { RouterProvider } from "react-router-dom";
-import { router } from "./routes";
-import { Loader2 } from 'lucide-react';
+import AppRoutes from "./components/app/AppRoutes";
 import ErrorBoundary from "./components/common/ErrorBoundary";
 import { Toaster } from "./components/ui/toaster";
-
-const LoadingFallback = () => (
-  <div className="min-h-screen flex items-center justify-center">
-    <Loader2 className="h-12 w-12 animate-spin text-primary" />
-    <span className="ml-2 text-lg">Loading application...</span>
-  </div>
-);
 
 /**
  * Root application component that initializes the app and provides
@@ -23,9 +14,14 @@ const App: React.FC = () => {
   
   return (
     <ErrorBoundary>
-      <React.Suspense fallback={<LoadingFallback />}>
+      <React.Suspense fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          <span className="ml-2 text-lg">Loading application...</span>
+        </div>
+      }>
         <AppProviders>
-          <RouterProvider router={router} />
+          <AppRoutes />
           <Toaster />
         </AppProviders>
       </React.Suspense>

@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import {
@@ -17,6 +17,7 @@ import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { selectContact, fetchCustomers, setSelectedContacts } from '@/store/slices/contacts/contactsSlice';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { LoadingState } from './LoadingState';
+import { toast } from '@/components/ui/use-toast';
 
 interface ContactListProps {
   contacts: Contact[];
@@ -42,9 +43,14 @@ const ContactList = ({ contacts, loading = false }: ContactListProps) => {
         })
         .catch((error) => {
           console.error('Fetch customers failed:', error);
+          toast({
+            title: 'Error loading contacts',
+            description: error.message || 'Please try again later',
+            variant: 'destructive'
+          });
         });
     }
-  }, [dispatch, contacts.length, loading, initialLoadAttempted]);
+  }, [dispatch, contacts, loading, initialLoadAttempted]);
 
   const handleSelectAll = (checked: boolean) => {
     console.log('Select all toggled:', checked);
@@ -66,7 +72,7 @@ const ContactList = ({ contacts, loading = false }: ContactListProps) => {
     return <LoadingState />;
   }
 
-  if (contacts.length === 0) {
+  if (!contacts || contacts.length === 0) {
     console.log('Rendering empty state');
     return (
       <div className="p-6 text-center border rounded-md bg-white">
@@ -74,6 +80,7 @@ const ContactList = ({ contacts, loading = false }: ContactListProps) => {
         <Button 
           onClick={() => {
             console.log('Refresh contacts clicked');
+            setInitialLoadAttempted(false);
             dispatch(fetchCustomers());
           }} 
           className="mt-4"

@@ -2,8 +2,9 @@
 import React, { useEffect, useState } from "react";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { useAppSelector } from "@/hooks/useAppSelector";
-// Fix imports to use action creators directly from their files
-import { fetchUserProfile, fetchWorkspaceData } from "@/store/slices/auth/userActions";
+import { fetchUserProfile } from "@/store/slices/user/userSlice";
+// Import directly from the action creators
+import { fetchWorkspaceData } from "@/store/slices/auth/userActions";
 import { getUserPermission } from "@/store/slices/auth/permissionActions";
 
 interface CaslProviderProps {
@@ -23,18 +24,29 @@ const CaslProvider: React.FC<CaslProviderProps> = ({ children }) => {
         if (isAuthenticated && !dataFetched) {
             console.log("CaslProvider: Fetching user data and permissions");
             
-            Promise.all([
+            // Create an array of promises for the async operations
+            const promises = [
                 dispatch(fetchUserProfile()),
-                dispatch(fetchWorkspaceData()),
-                dispatch(getUserPermission())
-            ])
-            .then(() => {
-                setDataFetched(true);
-            })
-            .catch(error => {
-                console.error("Error fetching user data:", error);
-                setDataFetched(true); // Still mark as fetched to prevent endless retries
-            });
+            ];
+            
+            // Only add these if they exist and are functions
+            if (typeof fetchWorkspaceData === 'function') {
+                promises.push(dispatch(fetchWorkspaceData()));
+            }
+            
+            if (typeof getUserPermission === 'function') {
+                promises.push(dispatch(getUserPermission()));
+            }
+            
+            Promise.all(promises)
+                .then(() => {
+                    setDataFetched(true);
+                    console.log("CaslProvider: Successfully fetched user data");
+                })
+                .catch(error => {
+                    console.error("Error fetching user data:", error);
+                    setDataFetched(true); // Still mark as fetched to prevent endless retries
+                });
         }
     }, [dispatch, isAuthenticated, dataFetched]);
 
