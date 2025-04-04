@@ -44,17 +44,25 @@ const BehaviorSettings: React.FC = () => {
   // In a real implementation, these would be fetched from the backend
   const [collectUserData, setCollectUserData] = useState(true);
   const [welcomeMessage, setWelcomeMessage] = useState("Hi there! 👋 How can I help you today?");
+  
+  // New settings
+  const [showTicketStatusBar, setShowTicketStatusBar] = useState(true);
+  const [allowEndChat, setAllowEndChat] = useState(true);
+  const [enableReceipts, setEnableReceipts] = useState(true);
+  const [enableMessageReactions, setEnableMessageReactions] = useState(true);
+  const [showAgentPresence, setShowAgentPresence] = useState(true);
+  
   const [selectedFields, setSelectedFields] = useState<DataCollectionField[]>([
     {
       id: 'contact_email',
       label: 'Email',
-      type: 'email', // This must be one of: "text" | "email" | "phone" | "select"
+      type: 'email', 
       required: true
     },
     {
       id: 'contact_firstname',
       label: 'First Name',
-      type: 'text', // This must be one of: "text" | "email" | "phone" | "select"
+      type: 'text',
       required: false
     }
   ]);
@@ -141,6 +149,76 @@ const BehaviorSettings: React.FC = () => {
                 />
               </div>
             )}
+          </div>
+
+          <Separator />
+          
+          <h2 className="text-lg font-medium">Chat Interface Features</h2>
+          <div className="space-y-4">
+            {/* Ticket Status Bar */}
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="ticketStatusBar">Show Ticket Status Bar</Label>
+                <p className="text-sm text-muted-foreground">Display the current status of the ticket in the chat</p>
+              </div>
+              <Switch
+                id="ticketStatusBar"
+                checked={showTicketStatusBar}
+                onCheckedChange={setShowTicketStatusBar}
+              />
+            </div>
+            
+            {/* End Chat Option */}
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="endChat">Allow Visitors to End Chat</Label>
+                <p className="text-sm text-muted-foreground">Let visitors manually end their chat session</p>
+              </div>
+              <Switch
+                id="endChat"
+                checked={allowEndChat}
+                onCheckedChange={setAllowEndChat}
+              />
+            </div>
+            
+            {/* Message Receipts */}
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="messageReceipts">Enable Delivery/Read Receipts</Label>
+                <p className="text-sm text-muted-foreground">Show when messages are delivered and read</p>
+              </div>
+              <Switch
+                id="messageReceipts"
+                checked={enableReceipts}
+                onCheckedChange={setEnableReceipts}
+              />
+            </div>
+            
+            {/* Message Reactions */}
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="messageReactions">Enable Message Reactions</Label>
+                <p className="text-sm text-muted-foreground">Allow visitors to react to agent messages with emojis</p>
+              </div>
+              <Switch
+                id="messageReactions"
+                checked={enableMessageReactions}
+                onCheckedChange={setEnableMessageReactions}
+              />
+            </div>
+            
+            {/* Agent Presence */}
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="agentPresence">Show Agent Presence</Label>
+                <p className="text-sm text-muted-foreground">Display agent status (online, typing) to visitors</p>
+              </div>
+              <Switch
+                id="agentPresence"
+                checked={showAgentPresence}
+                onCheckedChange={setShowAgentPresence}
+              />
+            </div>
           </div>
 
           <div className="pt-4">
