@@ -7,17 +7,19 @@ import LoadingSpinner from "./components/common/LoadingSpinner";
 
 const App = () => {
   return (
-    <AppProviders>
-      <DynamicImportErrorBoundary fallbackMessage="Failed to load application routes">
-        <Suspense fallback={
-          <div className="flex items-center justify-center h-screen">
-            <LoadingSpinner />
-          </div>
-        }>
-          <AppRoutes />
-        </Suspense>
-      </DynamicImportErrorBoundary>
-    </AppProviders>
+    <React.Fragment>
+      <AppProviders>
+        <DynamicImportErrorBoundary fallbackMessage="Failed to load application routes">
+          <Suspense fallback={
+            <div className="flex items-center justify-center h-screen">
+              <LoadingSpinner />
+            </div>
+          }>
+            <AppRoutes />
+          </Suspense>
+        </DynamicImportErrorBoundary>
+      </AppProviders>
+    </React.Fragment>
   );
 };
 
