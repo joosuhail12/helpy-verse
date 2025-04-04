@@ -2,7 +2,7 @@
 import { HttpClient } from '@/api/services/http';
 
 // Get correct API URL from environment variables
-const API_BASE_URL = import.meta.env.VITE_REACT_APP_API_URL || '/api';
+const API_BASE_URL = import.meta.env.VITE_REACT_APP_API_URL || 'https://dev-socket.pullseai.com/api';
 
 // Re-export the main API client for direct usage
 const api = HttpClient.apiClient;
@@ -41,34 +41,14 @@ const setupApi = () => {
         return config;
       });
     } else {
-      console.warn('API service initialized without workspace ID - API requests may fail');
+      console.warn('API service initialized without workspace ID - some requests may not work correctly');
     }
   } catch (error) {
     console.error('Error setting up API client:', error);
   }
 };
 
-// Function to retry failed requests
-const retryRequest = async (requestFn: () => Promise<any>, maxRetries = 2): Promise<any> => {
-  let lastError;
-  for (let i = 0; i <= maxRetries; i++) {
-    try {
-      return await requestFn();
-    } catch (error) {
-      console.warn(`Request failed (attempt ${i + 1}/${maxRetries + 1}):`, error);
-      lastError = error;
-      
-      // Wait before retrying (exponential backoff)
-      if (i < maxRetries) {
-        await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, i)));
-      }
-    }
-  }
-  throw lastError;
-};
-
 // Initialize on import
 setupApi();
 
-export { retryRequest };
 export default api;

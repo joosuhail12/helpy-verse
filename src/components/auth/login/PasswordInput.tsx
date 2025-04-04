@@ -1,5 +1,7 @@
 
 import React from 'react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 interface PasswordInputProps {
   value: string;
@@ -14,13 +16,13 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
 }) => {
   return (
     <div className="space-y-2">
-      <label 
+      <Label 
         htmlFor="password" 
         className="block text-gray-700 font-medium text-sm transition-colors duration-300"
       >
         Password
-      </label>
-      <input
+      </Label>
+      <Input
         id="password"
         type="password"
         value={value}

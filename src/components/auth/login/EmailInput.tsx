@@ -1,5 +1,7 @@
 
 import React from 'react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 interface EmailInputProps {
   value: string;
@@ -14,13 +16,13 @@ export const EmailInput: React.FC<EmailInputProps> = ({
 }) => {
   return (
     <div className="space-y-2">
-      <label 
+      <Label 
         htmlFor="email" 
         className="block text-gray-700 font-medium text-sm transition-colors duration-300"
       >
         Email
-      </label>
-      <input
+      </Label>
+      <Input
         id="email"
         type="email"
         value={value}

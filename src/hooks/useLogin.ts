@@ -7,6 +7,7 @@ import { loginUser } from '../store/slices/authSlice';
 import { toast } from '../components/ui/use-toast';
 import { handleSetToken, isAuthenticated } from '@/utils/auth/tokenManager';
 import { HttpClient } from '@/api/services/http';
+import { AuthResponse } from '@/store/slices/auth/types';
 
 /**
  * Custom hook to handle login functionality
@@ -77,40 +78,31 @@ export const useLogin = (redirectPath: string = '/home/inbox/all') => {
       
       // Real login process
       const result = await dispatch(loginUser({ email, password })).unwrap();
+      console.log('Login result:', result);
       
-      // Handle successful login
-      if (result && result.data && result.data.accessToken) {
-        console.log('Login successful');
-        
-        toast({
-          title: 'Success',
-          description: 'Logged in successfully',
-        });
-        
-        // Double-check auth status before redirecting
-        setTimeout(() => {
-          if (isAuthenticated()) {
-            console.log('Redirecting to:', redirectPath);
-            navigate(redirectPath, { replace: true });
-          } else {
-            console.error('Login appeared successful but token was not set correctly');
-            toast({
-              title: 'Login Error',
-              description: 'Authentication succeeded but session setup failed. Please try again.',
-              variant: 'destructive',
-            });
-          }
-        }, 300);
-      } else if (result && result.accessToken) {
-        // Alternative response structure
-        console.log('Login successful (alternative response structure)');
-        
-        // Ensure token is set
-        if (typeof result.accessToken === 'string') {
-          handleSetToken(result.accessToken);
-        } else if (result.accessToken.token) {
-          handleSetToken(result.accessToken.token);
+      // Extract and store token regardless of response structure
+      let token = null;
+      
+      // Handle different result structures
+      if (result.data && result.data.accessToken) {
+        // Handle nested data.accessToken structure
+        if (typeof result.data.accessToken === 'string') {
+          token = result.data.accessToken;
+        } else if (result.data.accessToken.token) {
+          token = result.data.accessToken.token;
         }
+      } else if (result.accessToken) {
+        // Handle direct accessToken structure
+        if (typeof result.accessToken === 'string') {
+          token = result.accessToken;
+        } else if (result.accessToken.token) {
+          token = result.accessToken.token;
+        }
+      }
+      
+      if (token) {
+        // Ensure token is set
+        handleSetToken(token);
         
         toast({
           title: 'Success',
@@ -124,6 +116,13 @@ export const useLogin = (redirectPath: string = '/home/inbox/all') => {
             navigate(redirectPath, { replace: true });
           }
         }, 300);
+      } else {
+        console.error('No token found in the response');
+        toast({
+          title: 'Login Error',
+          description: 'Authentication succeeded but no token was found. Please try again.',
+          variant: 'destructive',
+        });
       }
     } catch (error: any) {
       console.error('Login error:', error);

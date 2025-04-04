@@ -14,13 +14,39 @@ export const loginUser = createAsyncThunk<AuthResponse, Credentials>(
   'auth/login',
   async (credentials, { rejectWithValue }) => {
     try {
+      console.log('Attempting login with:', credentials.email);
+      
       // Use HttpClient instead of direct fetch
       const response = await HttpClient.apiClient.post('/auth/login', credentials);
+      console.log('Login response:', response.data);
       
       // Check if response has the expected structure
-      if (response.data && response.data.accessToken) {
-        // Store token using tokenManager's handleSetToken
-        handleSetToken(response.data.accessToken.token || response.data.accessToken);
+      if (response.data) {
+        let token = null;
+        
+        // Handle different response structures
+        if (response.data.accessToken) {
+          if (typeof response.data.accessToken === 'string') {
+            token = response.data.accessToken;
+          } else if (response.data.accessToken.token) {
+            token = response.data.accessToken.token;
+          }
+        } else if (response.data.data && response.data.data.accessToken) {
+          if (typeof response.data.data.accessToken === 'string') {
+            token = response.data.data.accessToken;
+          } else if (response.data.data.accessToken.token) {
+            token = response.data.data.accessToken.token;
+          }
+        }
+        
+        if (token) {
+          console.log('Token found, storing:', token.substring(0, 10) + '...');
+          // Store token using tokenManager's handleSetToken
+          handleSetToken(token);
+        } else {
+          console.warn('No token found in response:', response.data);
+        }
+        
         return response.data;
       }
       

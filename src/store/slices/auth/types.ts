@@ -28,13 +28,17 @@ export interface ConfirmPasswordResetData {
   password: string;
 }
 
-// Add missing types that were referenced in error messages
+// Update AuthResponse interface to match the actual API response structure
 export interface AuthResponse {
-  data: {
+  data?: {
     accessToken: {
       token: string;
     }
-  }
+  };
+  accessToken?: string | {
+    token: string;
+  };
+  user?: any;
 }
 
 export interface Credentials {
@@ -45,8 +49,8 @@ export interface Credentials {
 export interface RegistrationCredentials {
   email: string;
   password: string;
-  fullName: string;  // Added to match SignUpForm usage
-  companyName: string; // Added to match SignUpForm usage
+  fullName: string;
+  companyName: string;
 }
 
 export interface PasswordResetRequest {
@@ -56,8 +60,8 @@ export interface PasswordResetRequest {
 export interface PasswordResetConfirmation {
   token: string;
   password: string;
-  rid?: string;      // Added to match ResetPassword.tsx usage
-  tenantId?: string; // Added to match ResetPassword.tsx usage
+  rid?: string;
+  tenantId?: string;
 }
 
 export type Permissions = string[];
