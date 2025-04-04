@@ -10,6 +10,8 @@ import { RouterProvider } from "react-router-dom";
 import { router } from "./routes";
 
 const App: React.FC = () => {
+  console.log("App component rendering with router");
+  
   return (
     <AppErrorBoundary>
       <AppQueryProvider>

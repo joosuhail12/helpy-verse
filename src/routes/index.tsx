@@ -13,14 +13,14 @@ export const LoadingSpinner = () => (
   </div>
 );
 
-// Import route modules
-import { dashboardRoutes } from './dashboardRoutes';
-import { inboxRoutes } from './inboxRoutes';
-import { settingsRoutes } from './settingsRoutes';
-import { automationRoutes } from './automationRoutes';
-
 // Import directly instead of lazy loading for problematic components
 import AllInbox from '@/pages/inbox/All';
+import DashboardLayout from '@/layouts/DashboardLayout';
+
+// Import route modules
+import { dashboardRoutes } from './dashboardRoutes';
+import { settingsRoutes } from './settingsRoutes';
+import { automationRoutes } from './automationRoutes';
 
 // Lazy load auth pages and other components correctly
 const SignIn = React.lazy(() => import('../pages/SignIn'));
@@ -29,13 +29,12 @@ const ResetPassword = React.lazy(() => import('../pages/ResetPassword'));
 const SignUp = React.lazy(() => import('../pages/SignUp'));
 const NotFound = React.lazy(() => import('../pages/NotFound'));
 const LandingPage = React.lazy(() => import('../pages/LandingPage'));
-const DashboardLayout = React.lazy(() => import('../layouts/DashboardLayout'));
 const YourInbox = React.lazy(() => import('../pages/inbox/YourInbox'));
 const UnassignedInbox = React.lazy(() => import('../pages/inbox/Unassigned'));
 const MentionsInbox = React.lazy(() => import('../pages/inbox/Mentions'));
 
 // Helper to wrap components with Suspense and RouteErrorBoundary
-const withSuspenseAndErrorHandling = (Component) => (
+const withSuspenseAndErrorHandling = (Component: React.FC) => (
   <RouteErrorBoundary>
     <React.Suspense fallback={<LoadingSpinner />}>
       <Component />
@@ -43,8 +42,8 @@ const withSuspenseAndErrorHandling = (Component) => (
   </RouteErrorBoundary>
 );
 
-// Simple PrivateRoute component
-const PrivateRoute = ({ children }) => {
+// Simple PrivateRoute component for the router
+const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   return isAuthenticated() ? children : <Navigate to="/sign-in" replace />;
 };
 
@@ -140,12 +139,12 @@ export const router = createBrowserRouter([
   },
 ]);
 
+// Log for debugging
+console.log('Router initialized with routes:', router.routes.length);
+
 // For compatibility with existing code
 export const allRoutes = [
   ...dashboardRoutes,
-  ...inboxRoutes,
   ...settingsRoutes,
   ...automationRoutes
 ];
-
-console.log('Router initialized with routes:', router.routes.length);
