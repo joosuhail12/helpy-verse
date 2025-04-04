@@ -11,6 +11,7 @@ import ChatWidgetPreview from './ChatWidgetPreview';
 import { DataCollectionConfig } from '@/components/automation/chatbots/DataCollectionConfig';
 import { useCustomFields } from '@/hooks/useCustomFields';
 import type { DataCollectionField } from '@/types/chatbot';
+import { FieldSelector } from '@/components/settings/chat/FieldSelector';
 
 // Mock data for available fields - in a real implementation, this would be fetched from the API
 const AVAILABLE_FIELDS = [
@@ -27,6 +28,16 @@ const AVAILABLE_FIELDS = [
   { id: 'company_website', name: 'Website', type: 'text', object: 'company' },
   { id: 'company_industry', name: 'Industry', type: 'text', object: 'company' },
   { id: 'company_size', name: 'Company Size', type: 'text', object: 'company' },
+];
+
+// Mock data for available tables - in a real implementation, this would be fetched from the API
+const AVAILABLE_TABLES = [
+  { id: 'contacts', name: 'Contacts' },
+  { id: 'companies', name: 'Companies' },
+  // Mock custom objects connected to contacts and companies
+  { id: 'deals', name: 'Deals', connectedTo: 'contacts' },
+  { id: 'products', name: 'Products', connectedTo: 'companies' },
+  { id: 'projects', name: 'Projects', connectedTo: 'contacts' },
 ];
 
 const BehaviorSettings: React.FC = () => {
@@ -48,6 +59,28 @@ const BehaviorSettings: React.FC = () => {
     }
   ]);
 
+  const ensureEmailFieldIsRequired = (fields: DataCollectionField[]): DataCollectionField[] => {
+    const emailFieldIndex = fields.findIndex(field => field.id === 'contact_email');
+    if (emailFieldIndex === -1) {
+      // Email field doesn't exist, add it as required
+      return [
+        ...fields,
+        {
+          id: 'contact_email',
+          label: 'Email',
+          type: 'email',
+          required: true
+        }
+      ];
+    } else if (!fields[emailFieldIndex].required) {
+      // Email field exists but not required, update it
+      return fields.map(field => 
+        field.id === 'contact_email' ? { ...field, required: true } : field
+      );
+    }
+    return fields;
+  };
+
   const handleSaveChanges = () => {
     // In a real implementation, we would save changes to the backend here
     toast({
@@ -57,7 +90,9 @@ const BehaviorSettings: React.FC = () => {
   };
 
   const handleFieldsChange = (fields: DataCollectionField[]) => {
-    setSelectedFields(fields);
+    // Ensure the email field is always required
+    const updatedFields = ensureEmailFieldIsRequired(fields);
+    setSelectedFields(updatedFields);
   };
 
   return (
@@ -97,11 +132,12 @@ const BehaviorSettings: React.FC = () => {
 
             {collectUserData && (
               <div className="mt-4 border border-gray-100 rounded-md p-4 bg-gray-50">
-                <DataCollectionConfig
-                  enabled={collectUserData}
+                <FieldSelector 
                   fields={selectedFields}
-                  onEnableChange={setCollectUserData}
+                  tables={AVAILABLE_TABLES}
+                  availableFields={AVAILABLE_FIELDS}
                   onFieldsChange={handleFieldsChange}
+                  ensureEmailRequired={true}
                 />
               </div>
             )}
