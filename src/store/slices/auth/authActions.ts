@@ -1,3 +1,4 @@
+
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { HttpClient } from '@/api/services/http';
 import { 
@@ -33,10 +34,17 @@ export const loginUser = createAsyncThunk(
       
       console.log('Sending login request with:', { email: cleanCredentials.email });
       
-      // Important: We need to ensure the request body contains email and password directly
+      // Make a direct request with explicit content type and without any params
       const response = await HttpClient.apiClient.post<AuthResponse>(
         '/auth/login', 
-        cleanCredentials
+        cleanCredentials,
+        {
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          // Ensure no params are added to this request
+          params: {}
+        }
       );
       
       console.log('Login response:', response.data);
@@ -69,6 +77,15 @@ export const loginUser = createAsyncThunk(
       return response.data;
     } catch (error: any) {
       console.error('Login error:', error);
+      
+      // Log the full error object for debugging
+      if (error.response) {
+        console.error('Error response data:', error.response.data);
+        console.error('Error response status:', error.response.status);
+        console.error('Error response headers:', error.response.headers);
+      } else if (error.request) {
+        console.error('Error request:', error.request);
+      }
       
       // Check for specific error status codes
       if (error.response?.status === 422) {

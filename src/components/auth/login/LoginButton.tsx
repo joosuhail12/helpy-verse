@@ -1,40 +1,44 @@
 
 import React from 'react';
-import { ArrowRight, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Loader2 } from 'lucide-react';
 
 interface LoginButtonProps {
   isLoading: boolean;
-  isDevelopmentMode?: boolean;
+  onDebug?: () => void;
 }
 
-/**
- * Login button component with loading state
- */
-export const LoginButton: React.FC<LoginButtonProps> = ({ 
-  isLoading 
-}) => {
+export const LoginButton: React.FC<LoginButtonProps> = ({ isLoading, onDebug }) => {
   return (
-    <Button 
-      type="submit" 
-      className="w-full py-3 px-4 rounded-lg transition-all duration-300 ease-in-out 
-               flex items-center justify-center gap-2 hover:shadow-lg 
-               active:scale-[0.98]"
-      disabled={isLoading}
-      aria-busy={isLoading}
-      data-testid="login-button"
-    >
-      {isLoading ? (
-        <>
-          <Loader2 className="w-4 h-4 animate-spin" />
-          <span>Signing in...</span>
-        </>
-      ) : (
-        <>
-          <span>Sign In</span>
-          <ArrowRight className="w-4 h-4" />
-        </>
+    <div className="flex flex-col gap-2">
+      <Button 
+        type="submit" 
+        className="w-full rounded-lg py-2.5 bg-primary hover:bg-primary/90 transition-colors duration-300" 
+        disabled={isLoading}
+      >
+        {isLoading ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 
+            Signing in...
+          </>
+        ) : (
+          'Sign In'
+        )}
+      </Button>
+      
+      {process.env.NODE_ENV === 'development' && onDebug && (
+        <Button 
+          type="button" 
+          variant="outline" 
+          size="sm" 
+          className="text-xs" 
+          onClick={onDebug}
+        >
+          Debug Connection
+        </Button>
       )}
-    </Button>
+    </div>
   );
 };
+
+export default LoginButton;

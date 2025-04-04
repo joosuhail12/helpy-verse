@@ -11,6 +11,11 @@ const isClientSide = () => {
   return typeof window !== 'undefined';
 };
 
+// Helper to check if a URL is a login request
+const isLoginRequest = (url: string | undefined): boolean => {
+  return !!url && (url.includes('/auth/login') || url.endsWith('/auth/login'));
+};
+
 // Add request interceptor
 export const setupRequestInterceptor = (axiosInstance: AxiosInstance) => {
   axiosInstance.interceptors.request.use(
@@ -18,11 +23,19 @@ export const setupRequestInterceptor = (axiosInstance: AxiosInstance) => {
       // Clone the config to avoid mutating the original
       const newConfig = { ...config };
 
+      // Skip adding workspace_id for login requests
+      if (isLoginRequest(newConfig.url)) {
+        if (HttpConfig.DEBUG) {
+          console.log(`Skipping workspace_id for login request to: ${newConfig.url}`);
+        }
+        return newConfig;
+      }
+
       // Get the workspace_id from localStorage if we're in a browser
       const workspaceId = isClientSide() ? localStorage.getItem('workspaceId') : null;
 
-      // Only add workspace_id to query params if it exists and this isn't the login request
-      if (workspaceId && !newConfig.url?.includes('/auth/login')) {
+      // Only add workspace_id to query params if it exists
+      if (workspaceId) {
         // Initialize params object if it doesn't exist
         if (!newConfig.params) {
           newConfig.params = {};
@@ -39,6 +52,9 @@ export const setupRequestInterceptor = (axiosInstance: AxiosInstance) => {
       // Log requests in development mode
       if (process.env.NODE_ENV === 'development' || HttpConfig.DEBUG) {
         console.log(`API Request to: ${newConfig.url} with params:`, newConfig.params);
+        if (newConfig.data) {
+          console.log('Request body:', newConfig.data);
+        }
       }
 
       return newConfig;

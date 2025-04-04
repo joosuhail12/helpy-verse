@@ -8,6 +8,9 @@ import { LoginButton } from './login/LoginButton';
 import { LoginLinks } from './login/LoginLinks';
 import { WifiOff } from 'lucide-react';
 import { Button } from '../ui/button';
+import { toast } from '../ui/use-toast';
+import axios from 'axios';
+import { API_BASE_URL } from '@/api/services/http/config';
 
 /**
  * The main login form component
@@ -29,6 +32,50 @@ export const LoginForm = memo(() => {
   } = useLogin(defaultRedirectPath);
 
   console.log('LoginForm rendering with state:', { email, loading, isOffline });
+
+  // Debug function for direct API test
+  const handleDebugConnection = async () => {
+    if (!email || !password) {
+      toast({
+        title: "Debug Error",
+        description: "Please enter both email and password to test the connection",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      toast({
+        title: "Debug Info",
+        description: "Attempting direct API connection...",
+      });
+
+      // Create a new axios instance without interceptors
+      const response = await axios.post(`${API_BASE_URL}/auth/login`, {
+        email: email.trim(),
+        password: password.trim()
+      }, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      console.log('Debug direct API response:', response);
+      
+      toast({
+        title: "Debug Success",
+        description: "Direct API call successful. Check console for details.",
+      });
+    } catch (error: any) {
+      console.error('Debug API error:', error);
+      
+      toast({
+        title: "Debug Error",
+        description: `Error: ${error.response?.data?.message || error.message || 'Unknown error'}`,
+        variant: "destructive"
+      });
+    }
+  };
 
   // Display offline warning if needed
   if (isOffline) {
@@ -74,7 +121,10 @@ export const LoginForm = memo(() => {
         />
 
         <div className="pt-2">
-          <LoginButton isLoading={loading} />
+          <LoginButton 
+            isLoading={loading} 
+            onDebug={handleDebugConnection}
+          />
         </div>
       </form>
 

@@ -68,6 +68,18 @@ const checkApiConnection = async () => {
     }
 };
 
+// Helper for direct API calls without interceptors
+const createDirectApiClient = () => {
+    return axios.create({
+        baseURL: API_BASE_URL,
+        headers: {
+            "Content-Type": "application/json"
+        },
+        timeout: DEFAULT_TIMEOUT,
+        withCredentials: CORS_CONFIG.withCredentials,
+    });
+};
+
 // Offline check utility
 export const isOffline = (): boolean => {
   return !navigator.onLine;
@@ -78,6 +90,7 @@ export const HttpClient = {
     apiClient, 
     contactsClient, 
     llmService,
+    directClient: createDirectApiClient,
     setAxiosDefaultConfig,
     isOffline,
     checkApiConnection,
