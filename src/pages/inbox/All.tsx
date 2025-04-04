@@ -1,6 +1,7 @@
 
 import { useState } from 'react';
-import { useAppSelector, useAppDispatch } from '@/hooks/useAppSelector';
+import { useAppSelector } from '@/hooks/useAppSelector';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
 import TicketList from '@/components/inbox/TicketList';
 import { Ticket } from '@/types/ticket';
 
