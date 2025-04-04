@@ -1,6 +1,5 @@
 
-import { lazy, Suspense, ReactNode } from 'react';
-import { ProtectedRoute } from '../components/auth/ProtectedRoute';
+import { lazy } from 'react';
 import { Loader2 } from 'lucide-react';
 import RouteErrorBoundary from '@/components/app/RouteErrorBoundary';
 
@@ -29,81 +28,134 @@ const CannedResponses = lazy(() => import('../pages/settings/CannedResponses'));
 const CreateCannedResponse = lazy(() => import('../pages/settings/CreateCannedResponse'));
 const CannedResponseDetail = lazy(() => import('../pages/settings/CannedResponseDetail'));
 
-// Helper to wrap components with Suspense, ProtectedRoute and RouteErrorBoundary
-const withSuspenseAndProtection = (component: ReactNode) => (
-  <ProtectedRoute>
-    <RouteErrorBoundary>
-      <Suspense fallback={<LoadingSpinner />}>
-        {component}
-      </Suspense>
-    </RouteErrorBoundary>
-  </ProtectedRoute>
-);
-
 export const settingsRoutes = [
   {
     path: 'settings',
-    element: withSuspenseAndProtection(<Settings />),
+    element: (
+      <RouteErrorBoundary>
+        <Settings />
+      </RouteErrorBoundary>
+    ),
     children: [
       {
         path: 'email/domains',
-        element: <Suspense fallback={<LoadingSpinner />}><EmailDomainsSettings /></Suspense>,
+        element: (
+          <RouteErrorBoundary>
+            <EmailDomainsSettings />
+          </RouteErrorBoundary>
+        ),
       },
       {
         path: 'email/domains/:id',
-        element: <Suspense fallback={<LoadingSpinner />}><EmailDomainDetail /></Suspense>,
+        element: (
+          <RouteErrorBoundary>
+            <EmailDomainDetail />
+          </RouteErrorBoundary>
+        ),
       },
       {
         path: 'email/channels',
-        element: <Suspense fallback={<LoadingSpinner />}><EmailChannels /></Suspense>,
+        element: (
+          <RouteErrorBoundary>
+            <EmailChannels />
+          </RouteErrorBoundary>
+        ),
       },
       {
         path: 'tags',
-        element: <Suspense fallback={<LoadingSpinner />}><Tags /></Suspense>,
+        element: (
+          <RouteErrorBoundary>
+            <Tags />
+          </RouteErrorBoundary>
+        ),
       },
       {
         path: 'custom-data',
-        element: <Suspense fallback={<LoadingSpinner />}><CustomData /></Suspense>,
+        element: (
+          <RouteErrorBoundary>
+            <CustomData />
+          </RouteErrorBoundary>
+        ),
       },
       {
         path: 'custom-objects',
-        element: <Suspense fallback={<LoadingSpinner />}><CustomObjects /></Suspense>,
+        element: (
+          <RouteErrorBoundary>
+            <CustomObjects />
+          </RouteErrorBoundary>
+        ),
       },
       {
         path: 'custom-objects/:id',
-        element: <Suspense fallback={<LoadingSpinner />}><CustomObjectDetail /></Suspense>,
+        element: (
+          <RouteErrorBoundary>
+            <CustomObjectDetail />
+          </RouteErrorBoundary>
+        ),
       },
       {
         path: 'teammates',
-        element: <Suspense fallback={<LoadingSpinner />}><Teammates /></Suspense>,
+        element: (
+          <RouteErrorBoundary>
+            <TeammateDetail />
+          </RouteErrorBoundary>
+        ),
       },
       {
         path: 'teammates/:id',
-        element: <Suspense fallback={<LoadingSpinner />}><TeammateDetail /></Suspense>,
+        element: (
+          <RouteErrorBoundary>
+            <TeammateDetail />
+          </RouteErrorBoundary>
+        ),
       },
       {
         path: 'teams',
-        element: <Suspense fallback={<LoadingSpinner />}><Teams /></Suspense>,
+        element: (
+          <RouteErrorBoundary>
+            <Teams />
+          </RouteErrorBoundary>
+        ),
       },
       {
         path: 'teams/:id',
-        element: <Suspense fallback={<LoadingSpinner />}><TeamDetail /></Suspense>,
+        element: (
+          <RouteErrorBoundary>
+            <TeamDetail />
+          </RouteErrorBoundary>
+        ),
       },
       {
         path: 'teams/:id/edit',
-        element: <Suspense fallback={<LoadingSpinner />}><EditTeam /></Suspense>,
+        element: (
+          <RouteErrorBoundary>
+            <EditTeam />
+          </RouteErrorBoundary>
+        ),
       },
       {
         path: 'canned-responses',
-        element: <Suspense fallback={<LoadingSpinner />}><CannedResponses /></Suspense>,
+        element: (
+          <RouteErrorBoundary>
+            <CannedResponses />
+          </RouteErrorBoundary>
+        ),
       },
       {
         path: 'canned-responses/create',
-        element: <Suspense fallback={<LoadingSpinner />}><CreateCannedResponse /></Suspense>,
+        element: (
+          <RouteErrorBoundary>
+            <CreateCannedResponse />
+          </RouteErrorBoundary>
+        ),
       },
       {
         path: 'canned-responses/:id',
-        element: <Suspense fallback={<LoadingSpinner />}><CannedResponseDetail /></Suspense>,
+        element: (
+          <RouteErrorBoundary>
+            <CannedResponseDetail />
+          </RouteErrorBoundary>
+        ),
       }
     ],
   },

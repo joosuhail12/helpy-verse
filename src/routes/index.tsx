@@ -4,6 +4,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import RootRedirect from '../components/app/RootRedirect';
 import RouteErrorBoundary from '@/components/app/RouteErrorBoundary';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { isAuthenticated } from '@/utils/auth/tokenManager';
 
 // Define LoadingSpinner first to avoid reference errors
@@ -42,13 +43,6 @@ const withSuspenseAndErrorHandling = (Component: React.FC) => (
   </RouteErrorBoundary>
 );
 
-// Simple PrivateRoute component for the router
-const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
-  const isAuth = isAuthenticated();
-  console.log('Router PrivateRoute check:', isAuth);
-  return isAuth ? children : <Navigate to="/sign-in" replace />;
-};
-
 // Define the router
 export const router = createBrowserRouter([
   {
@@ -78,11 +72,11 @@ export const router = createBrowserRouter([
   {
     path: '/home',
     element: (
-      <PrivateRoute>
+      <ProtectedRoute>
         <React.Suspense fallback={<LoadingSpinner />}>
           <DashboardLayout />
         </React.Suspense>
-      </PrivateRoute>
+      </ProtectedRoute>
     ),
     children: [
       // Define critical inbox routes directly to avoid dynamic import issues
@@ -129,10 +123,10 @@ export const router = createBrowserRouter([
         path: 'inbox',
         element: <Navigate to="all" replace />,
       },
-      // Add other routes from route configs, filtering out duplicates
-      ...dashboardRoutes.filter(route => !route.path.includes('inbox/')),
-      ...settingsRoutes,
-      ...automationRoutes,
+      // Process all routes from config files
+      ...processRoutes(dashboardRoutes),
+      ...processRoutes(settingsRoutes),
+      ...processRoutes(automationRoutes),
     ],
   },
   {
@@ -140,6 +134,37 @@ export const router = createBrowserRouter([
     element: withSuspenseAndErrorHandling(NotFound),
   },
 ]);
+
+// Enhanced route processing function
+function processRoutes(routes) {
+  // Create a flattened array to handle nested routes
+  const processedRoutes = [];
+  
+  const flatten = (routes, parentPath = '') => {
+    routes.forEach(route => {
+      // Skip routes that are explicitly handled above
+      if (route.path && (
+        route.path === 'inbox/all' || 
+        route.path === 'inbox/your-inbox' ||
+        route.path === 'inbox/unassigned' ||
+        route.path === 'inbox/mentions'
+      )) {
+        return;
+      }
+      
+      // Process current route
+      processedRoutes.push({ ...route });
+      
+      // Process children if they exist
+      if (route.children && Array.isArray(route.children)) {
+        flatten(route.children, route.path);
+      }
+    });
+  };
+  
+  flatten(routes);
+  return processedRoutes;
+}
 
 // Log for debugging
 console.log('Router initialized with routes:', router.routes.length);
