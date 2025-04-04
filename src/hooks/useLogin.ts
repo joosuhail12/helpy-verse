@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from './useAppDispatch';
@@ -86,52 +85,28 @@ export const useLogin = (redirectPath: string = '/home/inbox/all') => {
       const result = await dispatch(loginUser({ email, password })).unwrap();
       
       // Handle successful login
-      if (result && result.data) {
+      if (result && result.data && result.data.accessToken) {
         console.log('Login successful');
         
-        // Get token from result data
-        const token = result.data?.accessToken?.token || "";
+        toast({
+          title: 'Success',
+          description: 'Logged in successfully',
+        });
         
-        // Explicitly set the token in localStorage and axios
-        if (token) {
-          const tokenSet = handleSetToken(token);
-          
-          if (tokenSet) {
-            // Store user ID and role
-            if (result.data.id) {
-              localStorage.setItem("userId", result.data.id);
-            }
-            
-            // Store workspace ID directly
-            if (result.data.defaultWorkspaceId) {
-              localStorage.setItem("workspaceId", result.data.defaultWorkspaceId);
-            }
-            
-            // Show success message
-            toast({
-              title: 'Success',
-              description: 'Logged in successfully',
-            });
-            
-            // Redirect with a short delay to ensure storage is updated
-            setTimeout(() => {
-              console.log('Redirecting to:', redirectPath);
-              navigate(redirectPath, { replace: true });
-            }, 300);
+        // Double-check auth status before redirecting
+        setTimeout(() => {
+          if (isAuthenticated()) {
+            console.log('Redirecting to:', redirectPath);
+            navigate(redirectPath, { replace: true });
           } else {
+            console.error('Login appeared successful but token was not set correctly');
             toast({
               title: 'Login Error',
-              description: 'Failed to set authentication token. Please try again.',
+              description: 'Authentication succeeded but session setup failed. Please try again.',
               variant: 'destructive',
             });
           }
-        } else {
-          toast({
-            title: 'Login Error',
-            description: 'No authentication token received. Please try again.',
-            variant: 'destructive',
-          });
-        }
+        }, 300);
       }
     } catch (error: any) {
       console.error('Login error:', error);

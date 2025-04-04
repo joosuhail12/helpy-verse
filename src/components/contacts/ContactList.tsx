@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -13,9 +14,9 @@ import { Checkbox } from '@/components/ui/checkbox';
 import type { Contact } from '@/types/contact';
 import ContactListItem from './ContactListItem';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { useAppSelector } from '@/hooks/useAppSelector';
 import { selectContact, fetchCustomers, setSelectedContacts } from '@/store/slices/contacts/contactsSlice';
-import LoadingState from './LoadingState';
+import { useAppSelector } from '@/hooks/useAppSelector';
+import { LoadingState } from './LoadingState';
 
 interface ContactListProps {
   contacts: Contact[];
@@ -23,7 +24,6 @@ interface ContactListProps {
 }
 
 const ContactList = ({ contacts, loading = false }: ContactListProps) => {
-  console.log('ContactList rendered with', contacts?.length, 'contacts');
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { selectedContacts } = useAppSelector(state => state.contacts);
@@ -66,7 +66,7 @@ const ContactList = ({ contacts, loading = false }: ContactListProps) => {
     return <LoadingState />;
   }
 
-  if (!contacts || contacts.length === 0) {
+  if (contacts.length === 0) {
     console.log('Rendering empty state');
     return (
       <div className="p-6 text-center border rounded-md bg-white">

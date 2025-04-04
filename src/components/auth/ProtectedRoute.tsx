@@ -33,17 +33,8 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   }, []);
   
   useEffect(() => {
-    // Prevent checking auth on authentication pages
-    if (location.pathname === '/sign-in' || 
-        location.pathname === '/sign-up' || 
-        location.pathname.includes('/forgot-password') || 
-        location.pathname.includes('/reset-password')) {
-      setIsChecking(false);
-      return;
-    }
-    
     const checkAuth = async () => {
-      console.log('ProtectedRoute: Checking authentication status for path:', location.pathname);
+      console.log('ProtectedRoute: Checking authentication status');
       
       // Check if offline
       if (isOffline) {
@@ -151,21 +142,13 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  // If we're on an auth page, don't redirect
-  if (location.pathname === '/sign-in' || 
-      location.pathname === '/sign-up' || 
-      location.pathname.includes('/forgot-password') || 
-      location.pathname.includes('/reset-password')) {
-    return <>{children}</>;
-  }
-
   // Simple but reliable check based on token existence
   if (hasValidToken && isAuthenticated()) {
     console.log('ProtectedRoute: Token exists, rendering protected content', location.pathname);
     return <>{children}</>;
   }
 
-  // No token, redirect to login with the current location saved for post-login redirect
+  // No token, redirect to login
   console.log('ProtectedRoute: No token found, redirecting to login');
   return <Navigate to="/sign-in" state={{ from: location.pathname }} replace />;
 };

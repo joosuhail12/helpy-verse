@@ -3,9 +3,9 @@ import { HttpClient } from "@/api/services/http";
 import { 
   encryptBase64,
   setCookie,
-  setWorkspaceId
+  setWorkspaceId,
+  handleSetToken
 } from '@/utils/helpers/helpers';
-import { handleSetToken } from '@/utils/auth/tokenManager';
 import { get } from "lodash";
 import { Credentials, PasswordResetConfirmation, PasswordResetRequest, RegistrationCredentials } from './types';
 import { AUTH_ENDPOINTS } from '@/api/services/http/config';
@@ -36,7 +36,45 @@ export const loginUser = createAsyncThunk(
 
       console.log("Login response received:", response.status);
       
-      // The token setup will be handled in the hook, return the complete response
+      const loginData = response.data?.data;
+      if (loginData) {
+        const email = loginData?.username || credentials.email;
+        const encryptedEmail = encryptBase64(email);
+        setCookie("agent_email", encryptedEmail);
+
+        // Set the token in the cookie and Axios headers
+        const token = loginData?.accessToken?.token || "";
+        if (token) {
+          console.log("Setting token from login response");
+          handleSetToken(token);
+          
+          // Store user ID for convenience if available
+          if (loginData.id) {
+            localStorage.setItem("userId", loginData.id);
+          }
+          
+          // Store user role if available
+          if (loginData.role) {
+            localStorage.setItem("role", loginData.role);
+          }
+        } else {
+          console.error("No token received in login response");
+          return rejectWithValue("Authentication server did not provide a valid token. Please try again.");
+        }
+
+        // Set workspace ID if available - only in cookie
+        const workspaceId = get(response.data, "data.defaultWorkspaceId", "");
+        if (workspaceId) {
+          setWorkspaceId(workspaceId);
+        }
+
+        // Configure Axios with the new token
+        HttpClient.setAxiosDefaultConfig();
+      } else {
+        console.error("Login response missing data structure:", response.data);
+        return rejectWithValue("Invalid server response format");
+      }
+      
       return response.data;
     } catch (error: any) {
       console.error("Login error:", error);

@@ -1,52 +1,54 @@
 
-import { lazy } from 'react';
+import { lazy, Suspense } from 'react';
 import { Navigate } from 'react-router-dom';
-import ProtectedRouteWrapper from '../components/auth/ProtectedRouteWrapper';
+import { ProtectedRoute } from '../components/auth/ProtectedRoute';
+import { Loader2 } from 'lucide-react';
+import RouteErrorBoundary from '@/components/app/RouteErrorBoundary';
 
-// Lazy load dashboard pages - all using lowercase paths
+// Create the loading spinner component
+const LoadingSpinner = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+  </div>
+);
+
+// Lazy load dashboard pages
 const Dashboard = lazy(() => import('../pages/Dashboard'));
-const ContactsPage = lazy(() => import('../pages/contacts/index'));
 const AllContacts = lazy(() => import('../pages/contacts/All'));
 const Companies = lazy(() => import('../pages/contacts/Companies'));
 const CompanyDetail = lazy(() => import('../pages/contacts/CompanyDetail'));
 const ContactDetail = lazy(() => import('../pages/contacts/Detail'));
 
-// Helper function to wrap a component with ProtectedRouteWrapper
-const withProtection = (Component) => (
-  <ProtectedRouteWrapper>
-    <Component />
-  </ProtectedRouteWrapper>
+// Helper function to wrap a component with Suspense, ProtectedRoute and RouteErrorBoundary
+const withSuspenseAndProtection = (Component) => (
+  <ProtectedRoute>
+    <RouteErrorBoundary>
+      <Suspense fallback={<LoadingSpinner />}>
+        <Component />
+      </Suspense>
+    </RouteErrorBoundary>
+  </ProtectedRoute>
 );
 
 export const dashboardRoutes = [
   {
     path: '',
-    element: withProtection(Dashboard),
+    element: withSuspenseAndProtection(Dashboard),
   },
   {
-    path: 'contacts',
-    element: withProtection(ContactsPage),
-    children: [
-      {
-        path: '',
-        element: <Navigate to="all" replace />,
-      },
-      {
-        path: 'all',
-        element: withProtection(AllContacts),
-      },
-      {
-        path: 'companies',
-        element: withProtection(Companies),
-      },
-      {
-        path: 'companies/:id',
-        element: withProtection(CompanyDetail),
-      },
-      {
-        path: ':id',
-        element: withProtection(ContactDetail),
-      },
-    ],
+    path: 'contacts/all',
+    element: withSuspenseAndProtection(AllContacts),
+  },
+  {
+    path: 'contacts/companies',
+    element: withSuspenseAndProtection(Companies),
+  },
+  {
+    path: 'contacts/companies/:id',
+    element: withSuspenseAndProtection(CompanyDetail),
+  },
+  {
+    path: 'contacts/:id',
+    element: withSuspenseAndProtection(ContactDetail),
   },
 ];

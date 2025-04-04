@@ -22,15 +22,9 @@ interface TicketListProps {
   tickets: Ticket[];
   isLoading?: boolean;
   onTicketCreated?: (ticket: Ticket) => void;
-  onCreateTicket?: () => void;
 }
 
-const TicketList = ({ 
-  tickets: initialTickets, 
-  isLoading = false, 
-  onTicketCreated,
-  onCreateTicket 
-}: TicketListProps) => {
+const TicketList = ({ tickets: initialTickets, isLoading = false, onTicketCreated }: TicketListProps) => {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   
@@ -65,21 +59,13 @@ const TicketList = ({
     setSelectedTicket(null);
   };
 
-  const handleCreateTicketClick = () => {
-    if (onCreateTicket) {
-      onCreateTicket();
-    } else {
-      setCreateDialogOpen(true);
-    }
-  };
-
   if (isLoading) {
     return <LoadingState />;
   }
 
   if (tickets.length === 0 && !isLoading) {
     return (
-      <EmptyTicketState onCreateTicket={handleCreateTicketClick} />
+      <EmptyTicketState onCreateTicket={() => setCreateDialogOpen(true)} />
     );
   }
 
@@ -114,7 +100,7 @@ const TicketList = ({
                   />
                   <ViewToggle viewMode={viewMode} onChangeViewMode={setViewMode} />
                   <Button
-                    onClick={handleCreateTicketClick}
+                    onClick={() => setCreateDialogOpen(true)}
                     size="sm"
                     className="ml-auto sm:ml-2"
                   >
@@ -179,7 +165,7 @@ const TicketList = ({
                 />
                 <ViewToggle viewMode={viewMode} onChangeViewMode={setViewMode} />
                 <Button
-                  onClick={handleCreateTicketClick}
+                  onClick={() => setCreateDialogOpen(true)}
                   size="sm"
                   className="ml-auto sm:ml-2"
                 >
@@ -214,13 +200,11 @@ const TicketList = ({
         </div>
       )}
 
-      {!onCreateTicket && (
-        <CreateTicketDialog
-          open={createDialogOpen}
-          onOpenChange={setCreateDialogOpen}
-          onTicketCreated={handleTicketCreated}
-        />
-      )}
+      <CreateTicketDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+        onTicketCreated={handleTicketCreated}
+      />
     </div>
   );
 };

@@ -1,8 +1,17 @@
 
-import { lazy } from 'react';
+import { lazy, Suspense } from 'react';
 import { createBrowserRouter } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
 import RootRedirect from '../components/app/RootRedirect';
-import ProtectedRoute from '@/components/routing/ProtectedRoute';
+import RouteErrorBoundary from '@/components/app/RouteErrorBoundary';
+import { PrivateRoute } from '@/utils/helpers/Routes';
+
+// Define LoadingSpinner first to avoid reference errors
+export const LoadingSpinner = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+  </div>
+);
 
 // Import route modules
 import { dashboardRoutes } from './dashboardRoutes';
@@ -20,6 +29,15 @@ const LandingPage = lazy(() => import('../pages/LandingPage'));
 
 // Lazy load dashboard layout
 const DashboardLayoutComponent = lazy(() => import('../layouts/DashboardLayout'));
+
+// Helper to wrap components with Suspense and RouteErrorBoundary
+const withSuspenseAndErrorHandling = (Component) => (
+  <RouteErrorBoundary>
+    <Suspense fallback={<LoadingSpinner />}>
+      <Component />
+    </Suspense>
+  </RouteErrorBoundary>
+);
 
 // Log all available routes for debugging
 const logRoutes = (routes) => {
@@ -43,7 +61,7 @@ const logRoutes = (routes) => {
 export const router = createBrowserRouter([
   {
     path: '/',
-    element: <LandingPage />,
+    element: withSuspenseAndErrorHandling(LandingPage),
   },
   {
     path: '/home',
@@ -51,26 +69,28 @@ export const router = createBrowserRouter([
   },
   {
     path: '/sign-in',
-    element: <SignIn />,
+    element: withSuspenseAndErrorHandling(SignIn),
   },
   {
     path: '/forgot-password',
-    element: <ForgotPassword />,
+    element: withSuspenseAndErrorHandling(ForgotPassword),
   },
   {
     path: '/reset-password',
-    element: <ResetPassword />,
+    element: withSuspenseAndErrorHandling(ResetPassword),
   },
   {
     path: '/sign-up',
-    element: <SignUp />,
+    element: withSuspenseAndErrorHandling(SignUp),
   },
   {
     path: '/home',
     element: (
-      <ProtectedRoute>
-        <DashboardLayoutComponent />
-      </ProtectedRoute>
+      <PrivateRoute>
+        <Suspense fallback={<LoadingSpinner />}>
+          <DashboardLayoutComponent />
+        </Suspense>
+      </PrivateRoute>
     ),
     children: [
       ...dashboardRoutes,
@@ -81,12 +101,12 @@ export const router = createBrowserRouter([
   },
   {
     path: '*',
-    element: <NotFound />,
+    element: withSuspenseAndErrorHandling(NotFound),
   },
 ]);
 
 // Log the routes for debugging
-console.log('Routes initialized:', router);
 logRoutes(router.routes);
+console.log('Routes initialized:', router.routes);
 
 export default router;

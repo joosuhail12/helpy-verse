@@ -13,10 +13,8 @@ import { toast } from '@/components/ui/use-toast';
 import { AlertCircle } from 'lucide-react';
 import ContactsErrorBoundary from '@/components/contacts/ContactsErrorBoundary';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import BulkActions from '@/components/contacts/BulkActions';
 
 const AllContacts = () => {
-  console.log('AllContacts component rendered');
   const dispatch = useAppDispatch();
   const contacts = useAppSelector(selectContacts);
   const loading = useAppSelector(selectContactsLoading);
@@ -85,7 +83,7 @@ const AllContacts = () => {
     );
   }
 
-  if (!contacts || contacts.length === 0) {
+  if (!contacts) {
     return (
       <div className="p-6 h-full overflow-auto">
         <Card className="p-4">
@@ -113,11 +111,10 @@ const AllContacts = () => {
       <div className="flex-1 px-6 pb-6 overflow-hidden">
         <ScrollArea className="h-full w-full">
           <ContactsErrorBoundary>
-            <ContactList contacts={contacts} loading={loading} />
+            <ContactList contacts={contacts || []} loading={loading} />
           </ContactsErrorBoundary>
         </ScrollArea>
       </div>
-      <BulkActions />
     </div>
   );
 };

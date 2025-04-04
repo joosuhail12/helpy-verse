@@ -1,10 +1,16 @@
 
-import { lazy, ReactNode } from 'react';
+import { lazy, Suspense, ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
-import ProtectedRouteWrapper from '@/components/auth/ProtectedRouteWrapper';
-import { Suspense } from 'react';
-import LoadingSpinner from '@/components/common/LoadingSpinner';
+import { ProtectedRoute } from '../components/auth/ProtectedRoute';
+import { Loader2 } from 'lucide-react';
 import RouteErrorBoundary from '@/components/app/RouteErrorBoundary';
+
+// Define LoadingSpinner explicitly in this file to avoid reference errors
+const LoadingSpinner = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+  </div>
+);
 
 // Lazy load automation pages with error handling
 const Automation = lazy(() => import('../pages/automation').catch((err) => {
@@ -36,50 +42,45 @@ const ContentCenter = lazy(() => import('../pages/automation/ContentCenter').cat
   throw new Error('Failed to load ContentCenter');
 }));
 
-// Helper function to wrap components with protection
-const withProtection = (component: ReactNode) => (
-  <ProtectedRouteWrapper>
-    {component}
-  </ProtectedRouteWrapper>
-);
-
-// Helper for child routes that need just error boundary and suspense
-const withSuspenseOnly = (Component: React.ComponentType) => (
-  <RouteErrorBoundary>
-    <Suspense fallback={<LoadingSpinner />}>
-      <Component />
-    </Suspense>
-  </RouteErrorBoundary>
+// Helper to wrap components with Suspense, ProtectedRoute and RouteErrorBoundary
+const withSuspenseAndProtection = (component: ReactNode) => (
+  <ProtectedRoute>
+    <RouteErrorBoundary>
+      <Suspense fallback={<LoadingSpinner />}>
+        {component}
+      </Suspense>
+    </RouteErrorBoundary>
+  </ProtectedRoute>
 );
 
 export const automationRoutes = [
   {
     path: 'automation',
-    element: withProtection(<Automation />),
+    element: withSuspenseAndProtection(<Automation />),
     children: [
       {
         path: 'ai/action-center',
-        element: withSuspenseOnly(ActionCenter),
+        element: <RouteErrorBoundary><Suspense fallback={<LoadingSpinner />}><ActionCenter /></Suspense></RouteErrorBoundary>,
       },
       {
         path: 'ai/action-center/create',
-        element: withSuspenseOnly(CreateAction),
+        element: <RouteErrorBoundary><Suspense fallback={<LoadingSpinner />}><CreateAction /></Suspense></RouteErrorBoundary>,
       },
       {
         path: 'ai/chatbot-profiles',
-        element: withSuspenseOnly(ChatbotProfiles),
+        element: <RouteErrorBoundary><Suspense fallback={<LoadingSpinner />}><ChatbotProfiles /></Suspense></RouteErrorBoundary>,
       },
       {
         path: 'ai/chatbot-profiles/create',
-        element: withSuspenseOnly(CreateChatbot),
+        element: <RouteErrorBoundary><Suspense fallback={<LoadingSpinner />}><CreateChatbot /></Suspense></RouteErrorBoundary>,
       },
       {
         path: 'ai/chatbot-profiles/:id',
-        element: withSuspenseOnly(ChatbotDetail),
+        element: <RouteErrorBoundary><Suspense fallback={<LoadingSpinner />}><ChatbotDetail /></Suspense></RouteErrorBoundary>,
       },
       {
         path: 'ai/content-center',
-        element: withSuspenseOnly(ContentCenter),
+        element: <RouteErrorBoundary><Suspense fallback={<LoadingSpinner />}><ContentCenter /></Suspense></RouteErrorBoundary>,
       },
     ],
   },

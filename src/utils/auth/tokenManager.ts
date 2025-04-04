@@ -3,8 +3,11 @@
  * Token and authentication management utility functions
  * Using localStorage only (no cookies)
  */
-import { HttpClient } from "@/api/services/http";
+import { HttpClient, cookieFunctions } from "@/api/services/http";
 import { jwtDecode } from "jwt-decode";
+
+// Get storage helpers from HttpClient to avoid circular dependencies
+const { getCookie, setCookie } = cookieFunctions;
 
 // 🟢 Logout User
 export const handleLogout = async (): Promise<void> => {
@@ -65,53 +68,46 @@ export const handleSetToken = (token: string): boolean => {
 // 🟢 Check if user is authenticated - check localStorage only
 export const isAuthenticated = (): boolean => {
   try {
-    const token = getAuthToken();
-    if (!token) return false;
-    
-    // Simple validation - just check if token exists
-    // We'll skip the expiration check for now as it's causing issues
-    return true;
+    const tokenInStorage = !!localStorage.getItem("token");
+    return tokenInStorage;
   } catch (error) {
     console.error("Error checking authentication:", error);
     return false;
   }
 };
 
-// 🟢 Get auth token - from localStorage only with validation
+// 🟢 Get auth token - from localStorage only
 export const getAuthToken = (): string => {
-  try {
-    const storageToken = localStorage.getItem("token");
-    
-    // Basic validation to ensure token exists
-    if (storageToken) {
-      return storageToken;
-    }
-    
-    console.warn("No valid auth token found in storage");
-    return "";
-  } catch (error) {
-    console.error("Error retrieving auth token:", error);
-    return "";
-  }
+  const storageToken = localStorage.getItem("token");
+  return storageToken || "";
 };
 
-// Enhanced token expiration check with better error handling
+// Check if token is expired - safer version that handles invalid tokens
 export const isTokenExpired = (): boolean => {
-  // For now, let's return false to bypass the expiration check
-  // since the token may not be a standard JWT format
+  const token = getAuthToken();
+  if (!token) return true;
+  
   try {
-    const token = getAuthToken();
-    if (!token) return true;
+    // First check if the token has the right format for JWT
+    if (!token.includes('.')) {
+      console.warn("Token does not appear to be in JWT format");
+      return true; // Consider non-JWT tokens as expired
+    }
     
-    // Check if the token has a specific format expected by your API
-    // This will vary based on your backend implementation
+    // Now try to decode it
+    const decoded = jwtDecode<{exp?: number}>(token);
+    if (!decoded || !decoded.exp) {
+      console.warn("Token has no expiration claim");
+      return true;
+    }
     
-    // If it's a JWT, you would normally check the expiration
-    // But we'll skip that for now as it's causing issues
-    return false;
+    // Check if current time is past expiration
+    const currentTime = Math.floor(Date.now() / 1000);
+    return decoded.exp < currentTime;
   } catch (error) {
     console.error("Error checking token expiration:", error);
-    return false;
+    // To be safe, we'll consider any token we can't validate as expired
+    return true;
   }
 };
 

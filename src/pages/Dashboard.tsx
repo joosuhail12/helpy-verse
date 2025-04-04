@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
-import { fetchUserProfile } from '@/store/slices/auth/userActions';
+import { fetchUserProfile } from '@/store/slices/user/userSlice';
 
 const Dashboard = () => {
   const dispatch = useAppDispatch();

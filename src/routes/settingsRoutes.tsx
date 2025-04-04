@@ -1,6 +1,15 @@
 
-import { lazy } from 'react';
-import ProtectedRoute from '@/components/routing/ProtectedRoute';
+import { lazy, Suspense, ReactNode } from 'react';
+import { ProtectedRoute } from '../components/auth/ProtectedRoute';
+import { Loader2 } from 'lucide-react';
+import RouteErrorBoundary from '@/components/app/RouteErrorBoundary';
+
+// Define LoadingSpinner explicitly in this file to avoid reference errors
+const LoadingSpinner = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+  </div>
+);
 
 // Lazy load settings pages
 const Settings = lazy(() => import('../pages/Settings'));
@@ -20,74 +29,81 @@ const CannedResponses = lazy(() => import('../pages/settings/CannedResponses'));
 const CreateCannedResponse = lazy(() => import('../pages/settings/CreateCannedResponse'));
 const CannedResponseDetail = lazy(() => import('../pages/settings/CannedResponseDetail'));
 
+// Helper to wrap components with Suspense, ProtectedRoute and RouteErrorBoundary
+const withSuspenseAndProtection = (component: ReactNode) => (
+  <ProtectedRoute>
+    <RouteErrorBoundary>
+      <Suspense fallback={<LoadingSpinner />}>
+        {component}
+      </Suspense>
+    </RouteErrorBoundary>
+  </ProtectedRoute>
+);
+
 export const settingsRoutes = [
   {
     path: 'settings',
-    element: (
-      <ProtectedRoute>
-        <Settings />
-      </ProtectedRoute>
-    ),
+    element: withSuspenseAndProtection(<Settings />),
     children: [
       {
         path: 'email/domains',
-        element: <EmailDomainsSettings />,
+        element: <Suspense fallback={<LoadingSpinner />}><EmailDomainsSettings /></Suspense>,
       },
       {
         path: 'email/domains/:id',
-        element: <EmailDomainDetail />,
+        element: <Suspense fallback={<LoadingSpinner />}><EmailDomainDetail /></Suspense>,
       },
       {
         path: 'email/channels',
-        element: <EmailChannels />,
+        element: <Suspense fallback={<LoadingSpinner />}><EmailChannels /></Suspense>,
       },
       {
         path: 'tags',
-        element: <Tags />,
+        element: <Suspense fallback={<LoadingSpinner />}><Tags /></Suspense>,
       },
       {
         path: 'custom-data',
-        element: <CustomData />,
+        element: <Suspense fallback={<LoadingSpinner />}><CustomData /></Suspense>,
       },
       {
         path: 'custom-objects',
-        element: <CustomObjects />,
+        element: <Suspense fallback={<LoadingSpinner />}><CustomObjects /></Suspense>,
       },
       {
         path: 'custom-objects/:id',
-        element: <CustomObjectDetail />,
+        element: <Suspense fallback={<LoadingSpinner />}><CustomObjectDetail /></Suspense>,
       },
       {
         path: 'teammates',
-        element: <Teammates />,
+        element: <Suspense fallback={<LoadingSpinner />}><Teammates /></Suspense>,
       },
       {
         path: 'teammates/:id',
-        element: <TeammateDetail />,
+        element: <Suspense fallback={<LoadingSpinner />}><TeammateDetail /></Suspense>,
       },
       {
         path: 'teams',
-        element: <Teams />,
+        element: <Suspense fallback={<LoadingSpinner />}><Teams /></Suspense>,
       },
       {
         path: 'teams/:id',
-        element: <TeamDetail />,
+        element: <Suspense fallback={<LoadingSpinner />}><TeamDetail /></Suspense>,
       },
       {
         path: 'teams/:id/edit',
-        element: <EditTeam />,
+        element: <Suspense fallback={<LoadingSpinner />}><EditTeam /></Suspense>,
       },
       {
         path: 'canned-responses',
-        element: <CannedResponses />,
+        element: <Suspense fallback={<LoadingSpinner />}><CannedResponses /></Suspense>,
       },
       {
         path: 'canned-responses/create',
-        element: <CreateCannedResponse />,
+        element: <Suspense fallback={<LoadingSpinner />}><CreateCannedResponse /></Suspense>,
       },
       {
         path: 'canned-responses/:id',
-        element: <CannedResponseDetail />,
+        element: <Suspense fallback={<LoadingSpinner />}><CannedResponseDetail /></Suspense>,
       }
     ],
   },

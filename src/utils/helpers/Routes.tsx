@@ -8,7 +8,7 @@ interface RouteProps {
     children: ReactNode;
 }
 
-// Private Route Component - simplified to avoid circular dependencies
+// Private Route Component
 export const PrivateRoute = ({ children }: RouteProps): JSX.Element => {
     const location = useLocation();
     console.log("PrivateRoute: Checking authentication status for path:", location.pathname);

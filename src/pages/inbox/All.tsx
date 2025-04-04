@@ -1,75 +1,151 @@
 
-import React, { useEffect, useState } from 'react';
-import { useAppSelector } from '@/hooks/useAppSelector';
-import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { useState } from 'react';
 import TicketList from '@/components/inbox/TicketList';
-import { fetchTickets } from '@/store/slices/inbox/inboxActions';
-import { selectTickets, selectInboxLoading } from '@/store/slices/inbox/inboxSlice';
-import { CreateTicketDialog } from '@/components/inbox/components/ticket-form';
-import { getWorkspaceId } from '@/utils/auth/tokenManager';
-import { toast } from '@/components/ui/use-toast';
-import AuthCheck from '@/components/auth/AuthCheck';
+import { Ticket } from '@/types/ticket';
 
-/**
- * AllTickets component displays all tickets in the inbox
- */
-const AllTickets: React.FC = () => {
-  const dispatch = useAppDispatch();
-  const tickets = useAppSelector(selectTickets);
-  const isLoading = useAppSelector(selectInboxLoading);
-  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+const initialTickets: Ticket[] = [
+  {
+    id: '1',
+    subject: 'Cannot access my account',
+    customer: 'John Doe',
+    lastMessage: "I've been trying to log in for the past hour but keep getting an error message. Can someone help?",
+    assignee: 'Sarah Wilson',
+    company: 'Acme Corp',
+    tags: ['login', 'urgent'],
+    status: 'open',
+    priority: 'high',
+    createdAt: '2024-03-15T10:00:00Z',
+    isUnread: true,
+    hasNotification: true,
+    notificationType: 'mention',
+    recipients: ['john.doe@acmecorp.com']
+  },
+  {
+    id: '2',
+    subject: 'How do I reset my password?',
+    customer: 'Jane Smith',
+    lastMessage: "I forgot my password and need help resetting it. I've tried the 'forgot password' link but haven't received any email.",
+    assignee: null,
+    company: 'TechStart Inc',
+    tags: ['password-reset'],
+    status: 'pending',
+    priority: 'medium',
+    createdAt: '2024-03-14T15:30:00Z',
+    isUnread: false,
+    hasNotification: true,
+    notificationType: 'assignment',
+    recipients: ['jane.smith@techstart.com']
+  },
+  {
+    id: '3',
+    subject: 'Billing inquiry',
+    customer: 'Robert Johnson',
+    lastMessage: 'I have a question about my last invoice. There seems to be a discrepancy in the charges.',
+    assignee: 'Mike Thompson',
+    company: 'Global Solutions',
+    tags: ['billing', 'invoice'],
+    status: 'closed',
+    priority: 'low',
+    createdAt: '2024-03-13T09:15:00Z',
+    isUnread: false,
+    recipients: ['robert.johnson@globalsolutions.com']
+  },
+  {
+    id: '4',
+    subject: 'Feature request: Dark mode',
+    customer: 'Emily Chen',
+    lastMessage: 'Would it be possible to add a dark mode option to the dashboard? It would help reduce eye strain during night shifts.',
+    assignee: null,
+    company: 'NightWatch Security',
+    tags: ['feature-request', 'ui'],
+    status: 'open',
+    priority: 'low',
+    createdAt: '2024-03-12T22:45:00Z',
+    isUnread: true,
+    recipients: ['emily.chen@nightwatch.com']
+  },
+  {
+    id: '5',
+    subject: 'Integration issues with API',
+    customer: 'David Lee',
+    lastMessage: 'The API endpoints are returning 404 errors since this morning. This is blocking our development process.',
+    assignee: null,
+    company: 'DevTech Solutions',
+    tags: ['api', 'urgent', 'bug'],
+    status: 'open',
+    priority: 'high',
+    createdAt: '2024-03-15T08:15:00Z',
+    isUnread: true,
+    recipients: ['david.lee@devtech.com']
+  },
+  {
+    id: '6',
+    subject: 'Export functionality not working',
+    customer: 'Maria Garcia',
+    lastMessage: 'When trying to export reports to CSV, nothing happens. This worked yesterday.',
+    assignee: 'Tom Wilson',
+    company: 'DataAnalytics Pro',
+    tags: ['bug', 'export', 'reports'],
+    status: 'pending',
+    priority: 'high',
+    createdAt: '2024-03-15T09:30:00Z',
+    isUnread: true,
+    recipients: ['maria.garcia@dataanalytics.com']
+  },
+  {
+    id: '7',
+    subject: 'Thank you for the quick response',
+    customer: 'Alex Kim',
+    lastMessage: 'Just wanted to say thanks for resolving my issue so quickly. Great service!',
+    assignee: 'Sarah Wilson',
+    company: 'StartupHub',
+    tags: ['feedback', 'positive'],
+    status: 'closed',
+    priority: 'low',
+    createdAt: '2024-03-14T16:45:00Z',
+    isUnread: false,
+    recipients: ['alex.kim@startuphub.com']
+  },
+  {
+    id: '8',
+    subject: 'Mobile app crashes on startup',
+    customer: 'Chris Taylor',
+    lastMessage: 'After the latest update, the mobile app crashes immediately when opened. Using iPhone 14 Pro.',
+    assignee: null,
+    company: 'MobileFirst Ltd',
+    tags: ['mobile', 'crash', 'urgent'],
+    status: 'open',
+    priority: 'high',
+    createdAt: '2024-03-15T11:20:00Z',
+    isUnread: true,
+    recipients: ['chris.taylor@mobilefirst.com']
+  }
+];
 
-  useEffect(() => {
-    console.log('All tickets component mounted, fetching tickets');
-    const workspaceId = getWorkspaceId();
-    
-    if (workspaceId) {
-      console.log('Fetching tickets with workspace ID:', workspaceId);
-      dispatch(fetchTickets()).catch((error) => {
-        console.error('Error fetching tickets:', error);
-        toast({
-          title: "Error fetching tickets",
-          description: "Please try refreshing the page",
-          variant: "destructive"
-        });
-      });
-    } else {
-      console.error('No workspace ID available, cannot fetch tickets');
-      toast({
-        title: "Workspace not found",
-        description: "Please select a workspace first",
-        variant: "destructive"
-      });
-    }
-  }, [dispatch]);
+const AllTickets = () => {
+  const [tickets, setTickets] = useState<Ticket[]>(initialTickets);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleTicketCreated = (newTicket: Ticket) => {
+    setTickets(prevTickets => [newTicket, ...prevTickets]);
+  };
 
   return (
-    <AuthCheck>
-      <div className="h-full w-full flex flex-col overflow-hidden">
-        <div className="flex-none p-4 border-b bg-white">
-          <h1 className="text-xl font-semibold">All Tickets</h1>
-          <p className="text-sm text-gray-500">View and manage all support tickets</p>
-        </div>
-        
-        <div className="flex-1 overflow-hidden">
-          <TicketList 
-            tickets={tickets} 
-            isLoading={isLoading}
-            onCreateTicket={() => setCreateDialogOpen(true)}
-          />
-        </div>
-
-        <CreateTicketDialog
-          open={createDialogOpen}
-          onOpenChange={setCreateDialogOpen}
-          onTicketCreated={(ticket) => {
-            setCreateDialogOpen(false);
-          }}
+    <div className="h-full w-full flex flex-col overflow-hidden">
+      <div className="flex-none p-4 border-b bg-white">
+        <h1 className="text-xl font-semibold">All Tickets</h1>
+        <p className="text-sm text-gray-500">View and manage all support tickets</p>
+      </div>
+      
+      <div className="flex-1 overflow-hidden">
+        <TicketList 
+          tickets={tickets} 
+          isLoading={isLoading}
+          onTicketCreated={handleTicketCreated}
         />
       </div>
-    </AuthCheck>
+    </div>
   );
 };
 
-// Make sure we're exporting the component as default
 export default AllTickets;
