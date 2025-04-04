@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from './useAppDispatch';
 import { useAppSelector } from './useAppSelector';
@@ -8,6 +8,12 @@ import { loginUser } from '../store/slices/auth/authActions';
 import { toast } from '../components/ui/use-toast';
 import { handleSetToken, isAuthenticated } from '@/utils/auth/tokenManager';
 import { HttpClient } from '@/api/services/http';
+
+// Create a memoized selector for auth state
+const selectAuthState = (state: any) => ({
+  loading: state.auth.loading,
+  error: state.auth.error
+});
 
 /**
  * Custom hook to handle login functionality
@@ -19,7 +25,9 @@ export const useLogin = (redirectPath: string = '/home/inbox/all') => {
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const auth = useAppSelector((state) => state.auth);
+  
+  // Use optimized selector
+  const auth = useAppSelector(selectAuthState);
   const loading = auth?.loading ?? false;
   
   // Listen for online/offline status changes
@@ -36,7 +44,7 @@ export const useLogin = (redirectPath: string = '/home/inbox/all') => {
     };
   }, []);
   
-  // Check for auth errors and show toast
+  // Check for auth errors and show toast - with proper dependencies
   useEffect(() => {
     if (auth.error && !loading && !isSubmitting) {
       // Fix TypeScript error by ensuring auth.error is not null and has the right format
@@ -65,7 +73,8 @@ export const useLogin = (redirectPath: string = '/home/inbox/all') => {
     }
   }, [auth.error, loading, isSubmitting]);
 
-  const handleLoginSubmit = async (e: React.FormEvent) => {
+  // Memoize the login handler to prevent recreation on each render
+  const handleLoginSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmitting || !email || !password) return;
     
@@ -126,7 +135,7 @@ export const useLogin = (redirectPath: string = '/home/inbox/all') => {
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [email, password, isSubmitting, isOffline, dispatch, redirectPath, navigate]);
 
   return {
     email,

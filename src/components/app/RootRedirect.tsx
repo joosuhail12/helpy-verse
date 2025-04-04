@@ -1,6 +1,6 @@
 
-import { useEffect } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { useEffect, memo } from 'react';
+import { Navigate } from 'react-router-dom';
 import { toast } from '@/components/ui/use-toast';
 import { isAuthenticated } from '@/utils/auth/tokenManager';
 import { HttpClient } from '@/api/services/http';
@@ -9,13 +9,11 @@ import { HttpClient } from '@/api/services/http';
  * Component to handle root path redirects based on authentication state
  * Also performs API connectivity check
  */
-const RootRedirect: React.FC = () => {
-  const navigate = useNavigate();
-
+const RootRedirect: React.FC = memo(() => {
   useEffect(() => {
     console.log('RootRedirect: Checking API connectivity');
     
-    // Check API connectivity
+    // Single API check on component mount
     HttpClient.checkApiConnection()
       .then(isConnected => {
         if (!isConnected) {
@@ -31,7 +29,7 @@ const RootRedirect: React.FC = () => {
       });
   }, []);
 
-  // Check authentication directly
+  // Check authentication directly - only once
   const isAuth = isAuthenticated();
   console.log('RootRedirect - Authentication status:', isAuth);
   
@@ -43,6 +41,8 @@ const RootRedirect: React.FC = () => {
     console.log('RootRedirect: User is not authenticated, redirecting to sign-in');
     return <Navigate to="/sign-in" replace />;
   }
-};
+});
+
+RootRedirect.displayName = 'RootRedirect';
 
 export default RootRedirect;

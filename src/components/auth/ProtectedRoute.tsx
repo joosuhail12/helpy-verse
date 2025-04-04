@@ -1,7 +1,7 @@
 
 import { Navigate, useLocation } from 'react-router-dom';
 import { isAuthenticated, isTokenExpired } from '@/utils/auth/tokenManager';
-import { useEffect } from 'react';
+import { useEffect, useState, memo } from 'react';
 import { toast } from '@/components/ui/use-toast';
 import { HttpClient } from '@/api/services/http';
 import ErrorBoundary from '@/components/common/ErrorBoundary';
@@ -10,16 +10,19 @@ import ErrorBoundary from '@/components/common/ErrorBoundary';
  * Enhanced ProtectedRoute component that handles authentication checks
  * and redirects to login if user is not authenticated
  */
-export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+export const ProtectedRoute = memo(({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
+  const [apiChecked, setApiChecked] = useState(false);
+  
+  // Single authentication check that runs once
   const isAuth = isAuthenticated();
   const isExpired = isAuth ? isTokenExpired() : true;
   
   useEffect(() => {
     console.log('ProtectedRoute: Auth check for path:', location.pathname);
     
-    // Verify API connection on protected route entry
-    if (isAuth && !isExpired) {
+    // Only run API check once per route change and only if authenticated
+    if (isAuth && !isExpired && !apiChecked) {
       HttpClient.checkApiConnection()
         .then(isConnected => {
           if (!isConnected) {
@@ -29,12 +32,14 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
               variant: "destructive",
             });
           }
+          setApiChecked(true);
         })
         .catch(err => {
           console.error("API connection check failed:", err);
+          setApiChecked(true);
         });
     }
-  }, [location.pathname, isAuth, isExpired]);
+  }, [location.pathname, isAuth, isExpired, apiChecked]);
   
   // If authenticated and token is not expired, render children
   if (isAuth && !isExpired) {
@@ -48,6 +53,8 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   console.log('ProtectedRoute: Redirecting to login from path:', location.pathname);
   // Store the attempted location for post-login redirect
   return <Navigate to="/sign-in" state={{ from: location.pathname }} replace />;
-};
+});
+
+ProtectedRoute.displayName = 'ProtectedRoute';
 
 export default ProtectedRoute;

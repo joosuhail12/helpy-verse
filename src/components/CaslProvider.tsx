@@ -1,5 +1,5 @@
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState, memo } from "react";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { useAppSelector } from "@/hooks/useAppSelector";
 // Fix imports to use action creators directly from their files
@@ -10,20 +10,37 @@ interface CaslProviderProps {
     children: React.ReactNode;
 }
 
-const CaslProvider: React.FC<CaslProviderProps> = ({ children }) => {
+// Create a selector that only gets needed slice of state
+const selectAuthStatus = (state: any) => state.auth.isAuthenticated;
+
+const CaslProvider: React.FC<CaslProviderProps> = memo(({ children }) => {
     const dispatch = useAppDispatch();
-    const auth = useAppSelector((state) => state.auth);
-    const isAuthenticated = auth?.isAuthenticated || false;
+    const isAuthenticated = useAppSelector(selectAuthStatus);
+    const [dataFetched, setDataFetched] = useState(false);
 
     useEffect(() => {
-        if (isAuthenticated) {
-            dispatch(fetchUserProfile()); 
-            dispatch(fetchWorkspaceData());
-            dispatch(getUserPermission()); 
+        // Only fetch data once when authenticated
+        if (isAuthenticated && !dataFetched) {
+            console.log("CaslProvider: Fetching user data and permissions");
+            
+            Promise.all([
+                dispatch(fetchUserProfile()),
+                dispatch(fetchWorkspaceData()),
+                dispatch(getUserPermission())
+            ])
+            .then(() => {
+                setDataFetched(true);
+            })
+            .catch(error => {
+                console.error("Error fetching user data:", error);
+                setDataFetched(true); // Still mark as fetched to prevent endless retries
+            });
         }
-    }, [dispatch, isAuthenticated]);
+    }, [dispatch, isAuthenticated, dataFetched]);
 
     return <>{children}</>;
-};
+});
+
+CaslProvider.displayName = 'CaslProvider';
 
 export default CaslProvider;

@@ -5,7 +5,6 @@ import AppProviders from "./components/app/AppProviders";
 import { RouterProvider } from "react-router-dom";
 import { router } from "./routes";
 import { Loader2 } from 'lucide-react';
-import { initializeApp } from "./components/app/AppInitializer";
 import ErrorBoundary from "./components/common/ErrorBoundary";
 
 const LoadingFallback = () => (
@@ -20,15 +19,7 @@ const LoadingFallback = () => (
  * top-level error handling with fallbacks
  */
 const App: React.FC = () => {
-  // Initialize app on component mount
-  useEffect(() => {
-    try {
-      console.log("Initializing app from App component");
-      initializeApp();
-    } catch (error) {
-      console.error("App initialization error:", error);
-    }
-  }, []);
+  console.log("App component rendering");
   
   return (
     <ErrorBoundary>
