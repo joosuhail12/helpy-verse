@@ -6,7 +6,7 @@ export interface ThemeConfig {
     primary: string;
     primaryForeground: string;
     background: string;
-    backgroundSecondary: string; // Added this property
+    backgroundSecondary: string;
     foreground: string;
     border: string;
     userMessage: string;
@@ -32,7 +32,7 @@ const defaultTheme: ThemeConfig = {
     primary: '#9b87f5',
     primaryForeground: '#ffffff',
     background: '#ffffff',
-    backgroundSecondary: '#f9f9f9', // Added default value
+    backgroundSecondary: '#f9f9f9',
     foreground: '#1A1F2C',
     border: '#eaeaea',
     userMessage: '#9b87f5',
@@ -57,6 +57,8 @@ interface ThemeContextType extends ThemeConfig {
   updateTheme: (theme: Partial<ThemeConfig>) => void;
 }
 
+// Create the context with a default undefined value that will be properly 
+// initialized in the provider
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 interface ThemeProviderProps {
@@ -93,6 +95,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children, initialT
     }));
   };
 
+  // Provide both the theme state and the updateTheme function
   return (
     <ThemeContext.Provider value={{ ...theme, updateTheme }}>
       {children}
@@ -100,6 +103,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children, initialT
   );
 };
 
+// Custom hook to use the theme context with proper error handling
 export const useThemeContext = () => {
   const context = useContext(ThemeContext);
   if (context === undefined) {

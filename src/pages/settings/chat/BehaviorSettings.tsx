@@ -7,7 +7,6 @@ import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from '@/components/ui/use-toast';
-import { Card, CardContent } from '@/components/ui/card';
 import ChatWidgetPreview from './ChatWidgetPreview';
 
 const BehaviorSettings: React.FC = () => {

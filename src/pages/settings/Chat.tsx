@@ -3,10 +3,10 @@ import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { MessageSquare } from 'lucide-react';
-import BrandingSettings from '../settings/chat/BrandingSettings';
-import BehaviorSettings from '../settings/chat/BehaviorSettings';
-import InstallationGuide from '../settings/chat/InstallationGuide';
-import { ThemeProvider, useThemeContext } from '@/context/ThemeContext';
+import BrandingSettings from './chat/BrandingSettings';
+import BehaviorSettings from './chat/BehaviorSettings';
+import InstallationGuide from './chat/InstallationGuide';
+import { ThemeProvider } from '@/context/ThemeContext';
 
 const Chat = () => {
   const [activeTab, setActiveTab] = useState('branding');

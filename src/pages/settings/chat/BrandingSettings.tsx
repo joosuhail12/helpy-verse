@@ -6,7 +6,6 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { toast } from '@/components/ui/use-toast';
 import ChatWidgetPreview from './ChatWidgetPreview';
 
@@ -16,7 +15,6 @@ const BrandingSettings: React.FC = () => {
   const handleColorChange = (colorKey: string, value: string) => {
     updateTheme({
       colors: {
-        ...colors,
         [colorKey]: value,
       },
     });
@@ -33,7 +31,6 @@ const BrandingSettings: React.FC = () => {
   const handleLabelChange = (labelKey: string, value: string) => {
     updateTheme({
       labels: {
-        ...labels,
         [labelKey]: value,
       },
     });
@@ -53,6 +50,7 @@ const BrandingSettings: React.FC = () => {
         <div className="space-y-6">
           <h2 className="text-lg font-medium">Colors</h2>
           <div className="grid grid-cols-1 gap-4">
+            {/* Primary Color */}
             <div className="space-y-2">
               <Label htmlFor="primaryColor">Primary Color</Label>
               <div className="flex gap-2">
@@ -70,6 +68,7 @@ const BrandingSettings: React.FC = () => {
               </div>
             </div>
             
+            {/* Background Color */}
             <div className="space-y-2">
               <Label htmlFor="backgroundColor">Background Color</Label>
               <div className="flex gap-2">
@@ -87,6 +86,7 @@ const BrandingSettings: React.FC = () => {
               </div>
             </div>
             
+            {/* Text Color */}
             <div className="space-y-2">
               <Label htmlFor="foregroundColor">Text Color</Label>
               <div className="flex gap-2">
@@ -104,6 +104,7 @@ const BrandingSettings: React.FC = () => {
               </div>
             </div>
 
+            {/* User Message Background */}
             <div className="space-y-2">
               <Label htmlFor="userMessageColor">User Message Background</Label>
               <div className="flex gap-2">
@@ -121,6 +122,7 @@ const BrandingSettings: React.FC = () => {
               </div>
             </div>
 
+            {/* Agent Message Background */}
             <div className="space-y-2">
               <Label htmlFor="agentMessageColor">Agent Message Background</Label>
               <div className="flex gap-2">
@@ -143,6 +145,7 @@ const BrandingSettings: React.FC = () => {
 
           <h2 className="text-lg font-medium">Layout</h2>
           <div className="space-y-4">
+            {/* Widget Position */}
             <div className="flex items-center justify-between">
               <Label htmlFor="position">Widget Position</Label>
               <div className="flex items-center space-x-2">
@@ -163,6 +166,7 @@ const BrandingSettings: React.FC = () => {
               </div>
             </div>
 
+            {/* Compact Mode */}
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label htmlFor="compact">Compact Mode</Label>
@@ -180,6 +184,7 @@ const BrandingSettings: React.FC = () => {
 
           <h2 className="text-lg font-medium">Text Labels</h2>
           <div className="space-y-4">
+            {/* Welcome Title */}
             <div className="space-y-2">
               <Label htmlFor="welcomeTitle">Welcome Title</Label>
               <Input
@@ -188,6 +193,8 @@ const BrandingSettings: React.FC = () => {
                 onChange={(e) => handleLabelChange('welcomeTitle', e.target.value)}
               />
             </div>
+            
+            {/* Welcome Subtitle */}
             <div className="space-y-2">
               <Label htmlFor="welcomeSubtitle">Welcome Subtitle</Label>
               <Input
@@ -196,6 +203,8 @@ const BrandingSettings: React.FC = () => {
                 onChange={(e) => handleLabelChange('welcomeSubtitle', e.target.value)}
               />
             </div>
+            
+            {/* Ask Question Button */}
             <div className="space-y-2">
               <Label htmlFor="askQuestionButton">Ask Question Button</Label>
               <Input

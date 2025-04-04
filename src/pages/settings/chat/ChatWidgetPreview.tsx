@@ -2,7 +2,7 @@
 import React from 'react';
 import { useThemeContext } from '@/context/ThemeContext';
 import { Button } from '@/components/ui/button';
-import { MessageCircle, Send, User } from 'lucide-react';
+import { MessageCircle, Send } from 'lucide-react';
 
 const ChatWidgetPreview: React.FC = () => {
   const { colors, position, compact, labels } = useThemeContext();
