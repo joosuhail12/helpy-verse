@@ -38,13 +38,13 @@ export const useLogin = (redirectPath: string = '/home/inbox/all') => {
   // Check for auth errors and show toast
   useEffect(() => {
     if (auth.error && !loading && !isSubmitting) {
-      // Fix TypeScript error by ensuring auth.error is not null and has the right format
+      // Fix TypeScript error by ensuring auth.error is treated with the correct type
       let errorMessage = 'Login failed. Please try again.';
       
       if (typeof auth.error === 'string') {
         errorMessage = auth.error;
-      } else if (auth.error && typeof auth.error === 'object') {
-        errorMessage = auth.error.message || 'Login failed. Please try again.';
+      } else if (auth.error && typeof auth.error === 'object' && 'message' in auth.error) {
+        errorMessage = auth.error.message as string || 'Login failed. Please try again.';
       }
         
       toast({
