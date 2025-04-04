@@ -1,4 +1,3 @@
-
 import { lazy } from 'react';
 import { Loader2 } from 'lucide-react';
 import RouteErrorBoundary from '@/components/app/RouteErrorBoundary';
@@ -28,6 +27,7 @@ const EditTeam = lazy(() => import('../pages/settings/EditTeam'));
 const CannedResponses = lazy(() => import('../pages/settings/CannedResponses'));
 const CreateCannedResponse = lazy(() => import('../pages/settings/CreateCannedResponse'));
 const CannedResponseDetail = lazy(() => import('../pages/settings/CannedResponseDetail'));
+const Chat = lazy(() => import('../pages/settings/Chat'));
 
 export const settingsRoutes = [
   {
@@ -155,6 +155,14 @@ export const settingsRoutes = [
         element: (
           <RouteErrorBoundary>
             <CannedResponseDetail />
+          </RouteErrorBoundary>
+        ),
+      },
+      {
+        path: 'chat',
+        element: (
+          <RouteErrorBoundary>
+            <Chat />
           </RouteErrorBoundary>
         ),
       }
