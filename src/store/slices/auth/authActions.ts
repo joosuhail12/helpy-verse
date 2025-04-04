@@ -1,3 +1,4 @@
+
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { 
   AuthResponse, 
@@ -15,8 +16,14 @@ export const loginUser = createAsyncThunk<AuthResponse, Credentials>(
     try {
       console.log('Attempting login with:', credentials.email);
       
+      // Ensure we're sending the right structure expected by the API
+      const loginPayload = {
+        email: credentials.email,
+        password: credentials.password
+      };
+      
       // Use HttpClient instead of direct fetch
-      const response = await HttpClient.apiClient.post('/auth/login', credentials);
+      const response = await HttpClient.apiClient.post('/auth/login', loginPayload);
       
       console.log('Login response:', response.data);
       

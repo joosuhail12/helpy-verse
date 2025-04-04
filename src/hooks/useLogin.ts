@@ -89,11 +89,16 @@ export const useLogin = (redirectPath: string = '/home/inbox/all') => {
       setIsSubmitting(true);
       console.log('Login attempt for:', email);
       
-      // Real login process - pass the credentials properly
-      const result = await dispatch(loginUser({ 
-        email: email.trim(), 
-        password 
-      })).unwrap();
+      // Updated to ensure credentials are correctly structured
+      const credentials = {
+        email: email.trim(),
+        password
+      };
+      
+      // Log what we're sending to help debug
+      console.log('Sending login credentials:', { email: credentials.email });
+      
+      const result = await dispatch(loginUser(credentials)).unwrap();
       
       console.log('Login result:', result);
       
