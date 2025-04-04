@@ -1,7 +1,8 @@
 
 import React, { useEffect } from "react";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
-import { fetchUserProfile, fetchWorkspaceData, getUserPermission } from "@/store/slices/authSlice";
+import { fetchUserProfile, fetchWorkspaceData } from "@/store/slices/auth/userActions";
+import { getUserPermission } from "@/store/slices/auth/authSlice";
 import { useAuthContext } from "@/hooks/useAuthContext";
 
 interface CaslProviderProps {

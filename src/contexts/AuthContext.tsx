@@ -50,14 +50,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [workspaceId, setWorkspaceId] = useState<string | null>(WorkspaceService.getWorkspaceId() || null);
   const [hasWorkspace, setHasWorkspace] = useState(WorkspaceService.hasWorkspaceId());
 
-  // Sync with Redux state when it changes
   useEffect(() => {
     if (authState.isAuthenticated !== isAuthenticated) {
       setIsAuthenticated(authState.isAuthenticated);
     }
   }, [authState.isAuthenticated, isAuthenticated]);
 
-  // Initialize auth state on component mount
   useEffect(() => {
     const initializeAuth = async () => {
       setIsLoading(true);
@@ -66,10 +64,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const token = AuthService.getAuthToken();
         
         if (token) {
-          // Configure HTTP client
           HttpClient.setAxiosDefaultConfig(token);
           
-          // Verify token validity
           if (AuthService.isTokenExpired()) {
             console.log('AuthContext: Token is expired, attempting refresh');
             await refreshToken();
@@ -78,21 +74,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setIsAuthenticated(true);
           }
           
-          // Load user ID and role
           setUserId(AuthService.getUserId() || null);
           setUserRole(AuthService.getUserRole() || null);
           
-          // Check workspace
           const wsId = WorkspaceService.getWorkspaceId();
           setWorkspaceId(wsId || null);
           setHasWorkspace(!!wsId);
           
-          // If authenticated but missing workspace, try to fetch user data
           if (isAuthenticated && !wsId) {
             console.log('AuthContext: No workspace ID found, fetching user data');
             try {
               await dispatch(fetchUserData()).unwrap();
-              // Update workspace state after fetch
               const newWsId = WorkspaceService.getWorkspaceId();
               setWorkspaceId(newWsId || null);
               setHasWorkspace(!!newWsId);
@@ -119,17 +111,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     initializeAuth();
   }, [dispatch]);
 
-  // Monitor localStorage changes for multi-tab support
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === "token") {
         if (!e.newValue) {
-          // Token removed in another tab
           setIsAuthenticated(false);
           setUserId(null);
           setUserRole(null);
         } else if (e.newValue !== AuthService.getAuthToken()) {
-          // Token changed in another tab
           setIsAuthenticated(true);
           setUserId(AuthService.getUserId() || null);
           setUserRole(AuthService.getUserRole() || null);
@@ -147,13 +136,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
-  // Login function - set token and update state
   const login = useCallback((token: string) => {
     if (token) {
       const success = AuthService.setAuthToken(token);
       if (success) {
         setIsAuthenticated(true);
-        // After setting token, fetch user data to get workspace
         dispatch(fetchUserData())
           .unwrap()
           .then(() => {
@@ -175,7 +162,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [dispatch]);
 
-  // Logout function - clear token and update state
   const logout = useCallback(() => {
     dispatch(logoutAction());
     setIsAuthenticated(false);
@@ -185,7 +171,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setHasWorkspace(false);
   }, [dispatch]);
 
-  // Refresh token function
   const refreshToken = useCallback(async (): Promise<boolean> => {
     try {
       const result = await dispatch(refreshAuthToken()).unwrap();
@@ -203,7 +188,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [dispatch]);
 
-  // Validate auth context function
   const validateAuthContext = useCallback((): boolean => {
     if (!isAuthenticated) {
       console.warn('Authentication context validation failed: Not authenticated');
