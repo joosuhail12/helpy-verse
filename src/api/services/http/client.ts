@@ -2,10 +2,9 @@
 import axios from 'axios';
 import { API_BASE_URL, LLM_SERVICE_URL, DEFAULT_TIMEOUT, CONTACTS_TIMEOUT, CORS_CONFIG } from './config';
 import { 
-  requestInterceptor, 
-  requestErrorInterceptor, 
-  responseInterceptor, 
-  responseErrorInterceptor 
+  setupRequestInterceptor, 
+  setupResponseInterceptor,
+  setupInterceptors
 } from './interceptors';
 import { cookieFunctions } from './cookieManager';
 
@@ -21,9 +20,9 @@ const createApiClient = (baseURL, timeout) => {
         withCredentials: CORS_CONFIG.withCredentials,
     });
     
-    // Add request and response interceptors
-    client.interceptors.request.use(requestInterceptor, requestErrorInterceptor);
-    client.interceptors.response.use(responseInterceptor, responseErrorInterceptor);
+    // Add request and response interceptors - using the setup functions
+    setupRequestInterceptor(client);
+    setupResponseInterceptor(client);
     
     return client;
 };

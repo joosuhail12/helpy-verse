@@ -1,7 +1,15 @@
 
-import axios, { InternalAxiosRequestConfig, AxiosError } from 'axios';
-import { HttpConfig } from './config';
-import { isClientSide } from '@/utils/environment';
+import axios, { InternalAxiosRequestConfig, AxiosError, AxiosResponse } from 'axios';
+
+// Define HttpConfig locally since it's not exported from config
+const HttpConfig = {
+  DEBUG: process.env.NODE_ENV === 'development'
+};
+
+// Create a utility to check if we're in client-side code
+const isClientSide = () => {
+  return typeof window !== 'undefined';
+};
 
 // Add request interceptor
 export const setupRequestInterceptor = (axiosInstance: typeof axios) => {
@@ -44,7 +52,7 @@ export const setupRequestInterceptor = (axiosInstance: typeof axios) => {
 // Add response interceptor
 export const setupResponseInterceptor = (axiosInstance: typeof axios) => {
   axiosInstance.interceptors.response.use(
-    (response) => {
+    (response: AxiosResponse) => {
       // Log response in development mode
       if (process.env.NODE_ENV === 'development' || HttpConfig.DEBUG) {
         console.log(`API Response from ${response.config.url}:`, {
@@ -57,8 +65,14 @@ export const setupResponseInterceptor = (axiosInstance: typeof axios) => {
     (error: AxiosError) => {
       // Log errors in development mode
       if (process.env.NODE_ENV === 'development' || HttpConfig.DEBUG) {
+        // Fix type issues with error response
+        const errorResponseData = error.response?.data as Record<string, unknown> | undefined;
         console.error(
-          `API Error: ${error.response?.status} ${error.response?.data?.message || error.message} (${error.response?.data?.code || 'UNKNOWN_ERROR'}) on ${error.config?.url}`,
+          `API Error: ${error.response?.status} ${
+            errorResponseData && typeof errorResponseData === 'object' ? String(errorResponseData.message || '') : ''
+          } (${
+            errorResponseData && typeof errorResponseData === 'object' ? String(errorResponseData.code || 'UNKNOWN_ERROR') : 'UNKNOWN_ERROR'
+          }) on ${error.config?.url}`,
           error
         );
       }
