@@ -3,7 +3,6 @@ import React, { useEffect, useState } from "react";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import { fetchUserProfile } from "@/store/slices/user/userSlice";
-import { PayloadAction } from "@reduxjs/toolkit";
 // Import directly from the action creators
 import { fetchWorkspaceDataThunk } from "@/store/slices/auth/userActions";
 import { getUserPermissionThunk } from "@/store/slices/auth/permissionActions";

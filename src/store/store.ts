@@ -14,7 +14,7 @@ import teamsReducer from './slices/teams/teamsSlice';
 import { emailChannelsReducer } from './slices/emailChannels/emailChannelsSlice';
 import { cannedResponsesReducer } from './slices/cannedResponses/cannedResponsesSlice';
 import { chatbotsReducer } from './slices/chatbots/chatbotsSlice';
-// Import userReducer correctly to avoid initialization error
+// Import userReducer as default export to avoid initialization error
 import userReducer from './slices/user/userSlice';
 
 // Define the root reducer with all slices
