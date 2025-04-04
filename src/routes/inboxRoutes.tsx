@@ -1,7 +1,6 @@
 
 import { lazy } from 'react';
 import { Navigate } from 'react-router-dom';
-import ProtectedRoute from '@/components/routing/ProtectedRoute';
 
 // Import the components directly to avoid dynamic import issues
 const YourInbox = lazy(() => import('../pages/inbox/YourInbox'));
@@ -16,34 +15,18 @@ export const inboxRoutes = [
   },
   {
     path: 'inbox/your-inbox',
-    element: (
-      <ProtectedRoute>
-        <YourInbox />
-      </ProtectedRoute>
-    ),
+    element: <YourInbox />,
   },
   {
     path: 'inbox/all',
-    element: (
-      <ProtectedRoute>
-        <AllInbox />
-      </ProtectedRoute>
-    ),
+    element: <AllInbox />,
   },
   {
     path: 'inbox/unassigned',
-    element: (
-      <ProtectedRoute>
-        <UnassignedInbox />
-      </ProtectedRoute>
-    ),
+    element: <UnassignedInbox />,
   },
   {
     path: 'inbox/mentions',
-    element: (
-      <ProtectedRoute>
-        <MentionsInbox />
-      </ProtectedRoute>
-    ),
+    element: <MentionsInbox />,
   },
 ];

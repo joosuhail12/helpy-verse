@@ -15,6 +15,5 @@ if (!container) {
 // Create a root
 const root = createRoot(container)
 
-// Render the app without StrictMode at the entry point
-// This avoids potential double-initialization issues
+// Render the app without StrictMode at the entry point to avoid double-initialization
 root.render(<App />)

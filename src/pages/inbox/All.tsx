@@ -6,6 +6,7 @@ import TicketList from '@/components/inbox/TicketList';
 import { fetchTickets } from '@/store/slices/inbox/inboxActions';
 import { selectTickets, selectInboxLoading } from '@/store/slices/inbox/inboxSlice';
 import { CreateTicketDialog } from '@/components/inbox/components/ticket-form';
+import { getWorkspaceId } from '@/utils/auth/tokenManager';
 
 /**
  * AllTickets component displays all tickets in the inbox
@@ -18,7 +19,14 @@ const AllTickets: React.FC = () => {
 
   useEffect(() => {
     console.log('All tickets component mounted, fetching tickets');
-    dispatch(fetchTickets());
+    const workspaceId = getWorkspaceId();
+    
+    if (workspaceId) {
+      console.log('Fetching tickets with workspace ID:', workspaceId);
+      dispatch(fetchTickets());
+    } else {
+      console.error('No workspace ID available, cannot fetch tickets');
+    }
   }, [dispatch]);
 
   return (

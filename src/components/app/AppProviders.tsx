@@ -8,7 +8,6 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import AppQueryProvider from './AppQueryProvider';
 import AppErrorBoundary from './AppErrorBoundary';
 import CaslProvider from "@/components/CaslProvider";
-import AppInitializer from './AppInitializer';
 
 interface AppProvidersProps {
   children: React.ReactNode;
@@ -24,12 +23,10 @@ const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
       <Provider store={store}>
         <AppQueryProvider>
           <TooltipProvider>
-            <Toaster />
-            <Sonner />
             <CaslProvider>
-              <AppInitializer>
-                {children}
-              </AppInitializer>
+              <Toaster />
+              <Sonner />
+              {children}
             </CaslProvider>
           </TooltipProvider>
         </AppQueryProvider>

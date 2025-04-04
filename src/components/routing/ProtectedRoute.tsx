@@ -7,7 +7,7 @@ import { isAuthenticated, getAuthToken } from '@/utils/auth/tokenManager';
 import { HttpClient } from '@/api/services/http';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { Loader2 } from 'lucide-react';
-import { fetchUserData } from '@/store/slices/auth/userActions';
+import { fetchUserData } from '@/store/slices/auth/authSlice';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
