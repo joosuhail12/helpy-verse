@@ -5,8 +5,9 @@ import LoadingFallback from './LoadingFallback';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import RootRedirect from './RootRedirect';
 
-// Lazily import layouts 
-const DashboardLayout = React.lazy(() => import('@/layouts/DashboardLayout'));
+// Import directly instead of lazy loading for problematic components
+import DashboardLayout from '@/layouts/DashboardLayout';
+import AllInbox from '@/pages/inbox/All';
 
 // Import route configs
 import { dashboardRoutes } from '@/routes/dashboardRoutes';
@@ -22,7 +23,14 @@ const NotFound = React.lazy(() => import('@/pages/NotFound'));
 const LandingPage = React.lazy(() => import('@/pages/LandingPage'));
 const SignIn = React.lazy(() => import('@/pages/SignIn'));
 
+// Lazy load other inbox pages
+const YourInbox = React.lazy(() => import('@/pages/inbox/YourInbox'));
+const UnassignedInbox = React.lazy(() => import('@/pages/inbox/Unassigned'));
+const MentionsInbox = React.lazy(() => import('@/pages/inbox/Mentions'));
+
 const AppRoutes: React.FC = () => {
+  console.log('AppRoutes rendering');
+  
   return (
     <React.Suspense fallback={<LoadingFallback />}>
       <Routes>
@@ -38,9 +46,26 @@ const AppRoutes: React.FC = () => {
             <DashboardLayout />
           </ProtectedRoute>
         }>
-          {/* Add nested routes */}
+          {/* Define critical routes directly */}
+          <Route path="inbox/all" element={<AllInbox />} />
+          <Route path="inbox/your-inbox" element={
+            <React.Suspense fallback={<LoadingFallback />}>
+              <YourInbox />
+            </React.Suspense>
+          } />
+          <Route path="inbox/unassigned" element={
+            <React.Suspense fallback={<LoadingFallback />}>
+              <UnassignedInbox />
+            </React.Suspense>
+          } />
+          <Route path="inbox/mentions" element={
+            <React.Suspense fallback={<LoadingFallback />}>
+              <MentionsInbox />
+            </React.Suspense>
+          } />
+          
+          {/* Add nested routes from configs */}
           {renderRoutes(dashboardRoutes)}
-          {renderRoutes(inboxRoutes)}
           {renderRoutes(settingsRoutes)}
           {renderRoutes(automationRoutes)}
         </Route>
@@ -61,8 +86,19 @@ function renderRoutes(routes: any[]) {
         </Route>
       );
     }
+    
+    // Skip routes that we've already defined explicitly
+    if (route.path && (
+      route.path === 'inbox/all' || 
+      route.path === 'inbox/your-inbox' ||
+      route.path === 'inbox/unassigned' ||
+      route.path === 'inbox/mentions'
+    )) {
+      return null;
+    }
+    
     return <Route key={route.path} path={route.path} element={route.element} />;
-  });
+  }).filter(Boolean);
 }
 
 export default AppRoutes;

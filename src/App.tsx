@@ -1,5 +1,6 @@
 
 import * as React from "react";
+import { BrowserRouter } from "react-router-dom";
 import AppQueryProvider from "./components/app/AppQueryProvider";
 import AppRoutes from "./components/app/AppRoutes";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -10,17 +11,19 @@ import CaslProvider from "@/components/CaslProvider";
 
 const App: React.FC = () => {
   return (
-    <AppErrorBoundary>
-      <AppQueryProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <CaslProvider>
-            <AppRoutes />
-          </CaslProvider>
-        </TooltipProvider>
-      </AppQueryProvider>
-    </AppErrorBoundary>
+    <BrowserRouter>
+      <AppErrorBoundary>
+        <AppQueryProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <CaslProvider>
+              <AppRoutes />
+            </CaslProvider>
+          </TooltipProvider>
+        </AppQueryProvider>
+      </AppErrorBoundary>
+    </BrowserRouter>
   );
 };
 

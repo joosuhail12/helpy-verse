@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import TicketList from '@/components/inbox/TicketList';
 import { Ticket } from '@/types/ticket';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
@@ -131,8 +131,9 @@ const AllTickets = () => {
   const [isLoading, setIsLoading] = useState(false);
   
   // Initialize tickets if they're not already in the Redux store
-  React.useEffect(() => {
+  useEffect(() => {
     if (tickets.length === 0) {
+      console.log('Initializing tickets in All.tsx');
       dispatch(setTickets(initialTickets));
     }
   }, [dispatch, tickets.length]);

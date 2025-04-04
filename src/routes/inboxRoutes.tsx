@@ -12,9 +12,11 @@ const LoadingSpinner = () => (
   </div>
 );
 
-// Lazy load inbox pages
+// Import directly instead of using lazy loading for problematic components
+import AllInbox from '../pages/inbox/All';
+
+// Lazy load other inbox pages 
 const YourInbox = lazy(() => import('../pages/inbox/YourInbox'));
-const AllInbox = lazy(() => import('../pages/inbox/All'));
 const UnassignedInbox = lazy(() => import('../pages/inbox/Unassigned'));
 const MentionsInbox = lazy(() => import('../pages/inbox/Mentions'));
 
@@ -40,7 +42,14 @@ export const inboxRoutes = [
   },
   {
     path: 'inbox/all',
-    element: withSuspenseAndProtection(AllInbox),
+    // Use the directly imported component
+    element: (
+      <ProtectedRoute>
+        <RouteErrorBoundary>
+          <AllInbox />
+        </RouteErrorBoundary>
+      </ProtectedRoute>
+    ),
   },
   {
     path: 'inbox/unassigned',
