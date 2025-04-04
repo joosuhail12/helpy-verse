@@ -5,9 +5,8 @@ import { useAppDispatch } from './useAppDispatch';
 import { useAppSelector } from './useAppSelector';
 import { loginUser } from '../store/slices/auth/authActions';
 import { toast } from '../components/ui/use-toast';
-import { AuthService } from '@/services/authService';
-import { WorkspaceService } from '@/services/workspaceService';
 import { HttpClient } from '@/api/services/http';
+import { useAuthContext } from './useAuthContext';
 
 /**
  * Custom hook to handle login functionality
@@ -19,6 +18,7 @@ export const useLogin = (redirectPath: string = '/home/inbox/all') => {
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const { login } = useAuthContext();
   const auth = useAppSelector((state) => state.auth);
   const loading = auth?.loading ?? false;
   
@@ -110,29 +110,18 @@ export const useLogin = (redirectPath: string = '/home/inbox/all') => {
       if (result && result.data && result.data.accessToken) {
         console.log('Login successful');
         
+        // Use the centralized auth context to set token and update state
+        login(result.data.accessToken.token);
+        
         toast({
           title: 'Success',
           description: 'Logged in successfully',
         });
         
-        // Ensure workspace ID is set
-        if (!WorkspaceService.hasWorkspaceId()) {
-          console.warn('Missing workspace ID after login, this may cause issues');
-        }
-        
-        // Double-check auth status before redirecting
+        // Redirect after a short delay to allow state to update
         setTimeout(() => {
-          if (AuthService.isAuthenticated()) {
-            console.log('Redirecting to:', redirectPath);
-            navigate(redirectPath, { replace: true });
-          } else {
-            console.error('Login appeared successful but token was not set correctly');
-            toast({
-              title: 'Login Error',
-              description: 'Authentication succeeded but session setup failed. Please try again.',
-              variant: 'destructive',
-            });
-          }
+          console.log('Redirecting to:', redirectPath);
+          navigate(redirectPath, { replace: true });
         }, 300);
       }
     } catch (error: any) {

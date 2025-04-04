@@ -1,25 +1,28 @@
+
 import { Navigate, useLocation } from 'react-router-dom';
-import { useAppSelector } from '@/hooks/useAppSelector';
 import { useEffect, useState } from 'react';
 import { Loader2, WifiOff, AlertTriangle, RefreshCw, LogIn } from 'lucide-react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { fetchUserData } from '@/store/slices/authSlice';
-import { refreshAuthToken } from '@/store/slices/auth/authActions';
-import { HttpClient } from '@/api/services/http';
-import { AuthService } from '@/services/authService';
-import { WorkspaceService } from '@/services/workspaceService';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { useAuthContext } from '@/hooks/useAuthContext';
 
 export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   const dispatch = useAppDispatch();
+  const { 
+    isAuthenticated, 
+    isLoading: authLoading, 
+    hasWorkspace,
+    refreshToken,
+    validateAuthContext
+  } = useAuthContext();
+  
   const [isChecking, setIsChecking] = useState(true);
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const [authError, setAuthError] = useState<string | null>(null);
   const [isRetrying, setIsRetrying] = useState(false);
-  const { loading } = useAppSelector((state) => state.auth);
-  const [hasValidToken, setHasValidToken] = useState(false);
   
   useEffect(() => {
     const handleOnline = () => setIsOffline(false);
@@ -45,82 +48,46 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
         return;
       }
       
-      const token = AuthService.getAuthToken();
-      const isTokenPresent = !!token;
-      console.log('ProtectedRoute: Token exists:', isTokenPresent, isTokenPresent ? 'Token value found' : 'No token found', 'Current path:', location.pathname);
-      
-      if (isTokenPresent) {
-        if (AuthService.isTokenExpired()) {
-          console.log('ProtectedRoute: Token is expired, attempting refresh');
+      if (!isAuthenticated) {
+        console.warn('ProtectedRoute: Not authenticated, will redirect to login');
+        setAuthError('Authentication required');
+        setIsChecking(false);
+        return;
+      }
+
+      if (!hasWorkspace) {
+        console.warn('ProtectedRoute: No workspace ID found');
+        
+        try {
+          // Try to fetch user data to get workspace ID
+          await dispatch(fetchUserData()).unwrap();
           
-          try {
-            const refreshResult = await dispatch(refreshAuthToken()).unwrap();
-            
-            if (refreshResult?.data?.accessToken?.token) {
-              console.log('ProtectedRoute: Token refreshed successfully');
-              setHasValidToken(true);
-            } else {
-              console.error('ProtectedRoute: Token refresh failed - no token returned');
-              setHasValidToken(false);
-              setAuthError('Your session has expired. Please sign in again.');
-              setIsChecking(false);
-              return;
-            }
-          } catch (error) {
-            console.error('ProtectedRoute: Token refresh failed:', error);
-            setHasValidToken(false);
-            setAuthError('Your session has expired. Please sign in again.');
+          // Check if we now have a workspace ID
+          if (!validateAuthContext()) {
+            setAuthError('Unable to determine your workspace. Please sign in again.');
             setIsChecking(false);
             return;
           }
-        } else {
-          setHasValidToken(true);
-        }
-        
-        console.log('ProtectedRoute: Found valid token, configuring axios');
-        HttpClient.setAxiosDefaultConfig(token);
-        
-        try {
-          if (!WorkspaceService.hasWorkspaceId()) {
-            console.log('ProtectedRoute: No workspace ID found, fetching user data to get workspace ID');
-          }
-          
-          await dispatch(fetchUserData());
-          console.log('ProtectedRoute: Successfully fetched user data');
-          
-          if (!WorkspaceService.hasWorkspaceId()) {
-            console.warn('ProtectedRoute: Still no workspace ID after fetching user data');
-            setAuthError('Unable to determine your workspace. Please sign in again.');
-            setHasValidToken(false);
-          }
-        } catch (error: any) {
+        } catch (error) {
           console.error("Error fetching user data:", error);
-          
-          if (error?.response?.status === 401) {
-            console.log('Token appears to be invalid');
-            setHasValidToken(false);
-            setAuthError('Your session has expired. Please sign in again.');
-          } else if (error?.isOfflineError) {
-            setAuthError('Cannot connect to the server. Please check your internet connection.');
-          } else if (error?.isServerError) {
-            setAuthError('The server is currently unavailable. Please try again later.');
-          } else if (error?.isTimeoutError) {
-            setAuthError('The server is taking too long to respond. Please try again later.');
-          } else {
-            console.warn('Non-fatal error while fetching user data:', error?.message || 'Unknown error');
-          }
+          setAuthError('Failed to load workspace data. Please sign in again.');
+          setIsChecking(false);
+          return;
         }
-      } else {
-        setHasValidToken(false);
       }
-      
-      setTimeout(() => {
-        setIsChecking(false);
-      }, 500);
+
+      // All checks passed
+      setAuthError(null);
+      setIsChecking(false);
     };
+
+    // Only run check if not already authenticated or if retrying
+    if (!isChecking || authLoading) {
+      return;
+    }
     
     checkAuth();
-  }, [dispatch, location.pathname, isOffline, isRetrying]);
+  }, [dispatch, location.pathname, isOffline, isRetrying, isAuthenticated, hasWorkspace, validateAuthContext, isChecking, authLoading]);
 
   const handleRetry = async () => {
     setIsRetrying(true);
@@ -128,8 +95,8 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     setAuthError(null);
     
     try {
-      if (AuthService.isTokenExpired()) {
-        await dispatch(refreshAuthToken());
+      if (isAuthenticated) {
+        await refreshToken();
       }
       
       if (navigator.onLine) {
@@ -172,7 +139,7 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  if (isChecking || loading) {
+  if (isChecking || authLoading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-gray-50">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -215,11 +182,11 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  if (hasValidToken && AuthService.isAuthenticated()) {
-    console.log('ProtectedRoute: Valid token exists, rendering protected content', location.pathname);
+  if (isAuthenticated && validateAuthContext()) {
+    console.log('ProtectedRoute: Valid authentication, rendering protected content', location.pathname);
     return <>{children}</>;
   }
 
-  console.log('ProtectedRoute: No valid token found, redirecting to login');
+  console.log('ProtectedRoute: Authentication validation failed, redirecting to login');
   return <Navigate to="/sign-in" state={{ from: location.pathname }} replace />;
 };
