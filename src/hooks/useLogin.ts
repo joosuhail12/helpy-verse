@@ -101,10 +101,12 @@ export const useLogin = (redirectPath: string = '/home/inbox/all') => {
       setIsSubmitting(true);
       console.log('Login attempt with credentials:', { email: email.trim() });
       
-      // Log what's going to be sent to the API
+      // Log what's going to be sent to the API - with more detail
       console.log('Sending login request with payload:', {
         email: email.trim(),
-        password: 'REDACTED'
+        password: 'REDACTED',
+        payload_type: 'JSON object',
+        url: '/auth/login'
       });
       
       // Real login process with trimmed values to avoid whitespace issues

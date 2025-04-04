@@ -36,6 +36,18 @@ const contactsClient = createApiClient(API_BASE_URL, CONTACTS_TIMEOUT);
 // ✅ LLM Service Instance
 const llmService = createApiClient(LLM_SERVICE_URL, 60000);
 
+// Create a direct client without interceptors for auth requests
+const createAuthClient = () => {
+    return axios.create({
+        baseURL: API_BASE_URL,
+        headers: {
+            "Content-Type": "application/json"
+        },
+        timeout: DEFAULT_TIMEOUT,
+        withCredentials: CORS_CONFIG.withCredentials,
+    });
+};
+
 // ✅ Set up default axios configuration
 const setAxiosDefaultConfig = (token?: string): void => {
     // If token is provided, use it; otherwise try to get it from cookie
@@ -90,6 +102,7 @@ export const HttpClient = {
     apiClient, 
     contactsClient, 
     llmService,
+    authClient: createAuthClient,
     directClient: createDirectApiClient,
     setAxiosDefaultConfig,
     isOffline,

@@ -1,283 +1,113 @@
 
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { HttpClient } from '@/api/services/http';
-import { 
-  Credentials,
-  RegistrationCredentials,
-  AuthResponse, 
-  PasswordResetRequest,
-  PasswordResetConfirmation
-} from './types';
 import { AuthService } from '@/services/authService';
-import { WorkspaceService } from '@/services/workspaceService';
 
-// Login action
+// Define action types
+export const LOGIN = 'auth/login';
+export const LOGOUT = 'auth/logout';
+export const REFRESH_TOKEN = 'auth/refreshToken';
+
+// Define interfaces for action payloads
+interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
+// Login action - directly handles authentication
 export const loginUser = createAsyncThunk(
-  'auth/login',
-  async (credentials: Credentials, { rejectWithValue }) => {
+  LOGIN,
+  async (credentials: LoginCredentials, { rejectWithValue }) => {
     try {
-      console.log('Attempting login with:', credentials.email);
+      console.log('Auth action: Attempting login with email:', credentials.email);
       
-      if (!credentials.email || !credentials.email.trim()) {
-        return rejectWithValue({ message: 'Email is required' });
-      }
+      // Use a clean auth client without interceptors for login
+      const authClient = HttpClient.authClient();
       
-      if (!credentials.password || !credentials.password.trim()) {
-        return rejectWithValue({ message: 'Password is required' });
-      }
+      // Log exactly what's being sent
+      console.log('Auth action: Sending login request to server with payload:', {
+        ...credentials,
+        password: '[REDACTED]'
+      });
       
-      // Ensure clean data by trimming whitespace
-      const cleanCredentials = {
-        email: credentials.email.trim(),
-        password: credentials.password.trim()
-      };
-      
-      console.log('Sending login request with:', { email: cleanCredentials.email });
-      
-      // Make a direct request with explicit content type and without any params
-      const response = await HttpClient.apiClient.post<AuthResponse>(
-        '/auth/login', 
-        cleanCredentials,
-        {
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          // Ensure no params are added to this request
-          params: {}
+      const response = await authClient.post('/auth/login', {
+        email: credentials.email,
+        password: credentials.password
+      }, {
+        headers: {
+          'Content-Type': 'application/json'
         }
-      );
+      });
       
-      console.log('Login response:', response.data);
+      console.log('Auth action: Login response received:', {
+        status: response.status,
+        success: !!response.data,
+        hasToken: !!(response.data?.data?.accessToken?.token)
+      });
       
-      if (!response.data?.data?.accessToken?.token) {
-        console.error('Login response missing token:', response.data);
-        return rejectWithValue({ message: 'Invalid response from server' });
-      }
-      
-      const { data } = response.data;
-      
-      // Set auth token in centralized service
-      AuthService.setAuthToken(data.accessToken.token);
-      
-      // Set user ID in auth service
-      if (data.id) {
-        AuthService.setUserId(data.id);
-      }
-      
-      // Set role if available
-      if (data.role) {
-        AuthService.setUserRole(data.role);
-      }
-      
-      // Set workspace ID if available
-      if (data.defaultWorkspaceId) {
-        WorkspaceService.setWorkspaceId(data.defaultWorkspaceId);
-      }
-      
-      return response.data;
-    } catch (error: any) {
-      console.error('Login error:', error);
-      
-      // Log the full error object for debugging
-      if (error.response) {
-        console.error('Error response data:', error.response.data);
-        console.error('Error response status:', error.response.status);
-        console.error('Error response headers:', error.response.headers);
-      } else if (error.request) {
-        console.error('Error request:', error.request);
-      }
-      
-      // Check for specific error status codes
-      if (error.response?.status === 422) {
-        console.error('Validation error details:', error.response.data);
-        // Validation error
-        return rejectWithValue({
-          message: error.response?.data?.message || 'Invalid email or password',
-          code: error.response?.data?.code || 'VALIDATION_FAILED'
-        });
-      }
-      
-      // Handle network errors
-      if (!navigator.onLine || error.message?.includes('Network Error')) {
-        return rejectWithValue({
-          message: 'Cannot connect to the server. Please check your internet connection.',
-          isOfflineError: true
-        });
-      }
-      
-      return rejectWithValue(error.response?.data || { message: error.message || 'Login failed' });
-    }
-  }
-);
-
-// Register action
-export const registerUser = createAsyncThunk(
-  'auth/register',
-  async (userData: RegistrationCredentials, { rejectWithValue }) => {
-    try {
-      // Validate required fields
-      if (!userData.email || !userData.email.trim()) {
-        return rejectWithValue({ message: 'Email is required' });
-      }
-      
-      if (!userData.password || !userData.password.trim()) {
-        return rejectWithValue({ message: 'Password is required' });
-      }
-      
-      // Clean user data
-      const cleanUserData = {
-        ...userData,
-        email: userData.email.trim(),
-        password: userData.password.trim(),
-        fullName: userData.fullName?.trim(),
-        companyName: userData.companyName?.trim()
-      };
-      
-      const response = await HttpClient.apiClient.post<AuthResponse>(
-        '/auth/register', 
-        cleanUserData
-      );
-      
-      if (!response.data?.data?.accessToken?.token) {
-        return rejectWithValue({ message: 'Invalid response from server' });
-      }
-      
-      const { data } = response.data;
-      
-      // Set auth token in centralized service
-      AuthService.setAuthToken(data.accessToken.token);
-      
-      // Set user ID in auth service
-      if (data.id) {
-        AuthService.setUserId(data.id);
-      }
-      
-      // Set workspace ID if available
-      if (data.defaultWorkspaceId) {
-        WorkspaceService.setWorkspaceId(data.defaultWorkspaceId);
-      }
-      
-      return response.data;
-    } catch (error: any) {
-      console.error('Registration error:', error);
-      return rejectWithValue(error.response?.data || { message: error.message || 'Registration failed' });
-    }
-  }
-);
-
-// Request password reset action
-export const requestPasswordReset = createAsyncThunk(
-  'auth/requestReset',
-  async (data: PasswordResetRequest, { rejectWithValue }) => {
-    try {
-      if (!data.email || !data.email.trim()) {
-        return rejectWithValue({ message: 'Email is required' });
-      }
-      
-      const cleanData = {
-        email: data.email.trim()
-      };
-      
-      const response = await HttpClient.apiClient.post(
-        '/auth/password/reset/request', 
-        cleanData
-      );
-      
-      return response.data;
-    } catch (error: any) {
-      console.error('Password reset request error:', error);
-      return rejectWithValue(error.response?.data || { message: error.message || 'Password reset request failed' });
-    }
-  }
-);
-
-// Confirm password reset action
-export const confirmPasswordReset = createAsyncThunk(
-  'auth/confirmReset',
-  async (data: PasswordResetConfirmation, { rejectWithValue }) => {
-    try {
-      if (!data.token || !data.token.trim()) {
-        return rejectWithValue({ message: 'Reset token is required' });
-      }
-      
-      if (!data.password || !data.password.trim()) {
-        return rejectWithValue({ message: 'New password is required' });
-      }
-      
-      const cleanData = {
-        token: data.token.trim(),
-        password: data.password.trim(),
-        confirmPassword: data.confirmPassword?.trim(),
-        rid: data.rid,
-        tenantId: data.tenantId
-      };
-      
-      const response = await HttpClient.apiClient.post(
-        '/auth/password/reset/confirm', 
-        cleanData
-      );
-      
-      return response.data;
-    } catch (error: any) {
-      console.error('Password reset confirmation error:', error);
-      return rejectWithValue(error.response?.data || { message: error.message || 'Password reset failed' });
-    }
-  }
-);
-
-// Refresh auth token action
-export const refreshAuthToken = createAsyncThunk(
-  'auth/refreshToken',
-  async (_, { rejectWithValue }) => {
-    try {
-      // Only attempt refresh if we have a token
-      const currentToken = AuthService.getAuthToken();
-      
-      if (!currentToken) {
-        return rejectWithValue({
-          code: 'TOKEN_MISSING',
-          message: 'No token to refresh'
-        });
-      }
-      
-      // Add it to the header for this specific call
-      const response = await HttpClient.apiClient.post(
-        '/auth/refresh',
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${currentToken}`
+      // Handle successful login
+      if (response.data?.data?.accessToken?.token) {
+        AuthService.setAuthToken(response.data.data.accessToken.token);
+        
+        // If there's user data, store it
+        if (response.data.data.user) {
+          AuthService.setUserId(response.data.data.user.id);
+          AuthService.setUserRole(response.data.data.user.role);
+          
+          // Store workspace if available
+          if (response.data.data.user.workspace?.id) {
+            localStorage.setItem('workspaceId', response.data.data.user.workspace.id);
+            console.log('Workspace ID set from login response:', response.data.data.user.workspace.id);
           }
         }
-      );
-      
-      if (!response.data?.data?.accessToken?.token) {
-        return rejectWithValue({
-          code: 'INVALID_RESPONSE',
-          message: 'Invalid response from refresh endpoint'
-        });
       }
-      
-      const { data } = response.data;
-      
-      // Set the new token
-      AuthService.setAuthToken(data.accessToken.token);
       
       return response.data;
     } catch (error: any) {
-      console.error('Token refresh error:', error);
+      console.error('Auth action: Login error:', error.response || error);
       
-      // Special handling for background refreshes
-      const isBackgroundRefresh = error?.config?.headers?.['X-Background-Refresh'];
+      // Enhance error message with response details if available
+      const errorMessage = error.response?.data?.message || error.message || 'Login failed';
+      const statusCode = error.response?.status;
       
-      if (isBackgroundRefresh) {
-        return rejectWithValue({
-          code: 'TOKEN_REFRESH_BACKGROUND',
-          message: 'Background token refresh failed'
-        });
+      console.log(`Auth action: Login failed with status ${statusCode}: ${errorMessage}`);
+      
+      return rejectWithValue({
+        message: errorMessage,
+        status: statusCode,
+        error: error.response?.data || error.message
+      });
+    }
+  }
+);
+
+// Refresh token action
+export const refreshAuthToken = createAsyncThunk(
+  REFRESH_TOKEN,
+  async (_, { rejectWithValue }) => {
+    try {
+      // Check if we have a refresh token first
+      const refreshToken = AuthService.getRefreshToken();
+      
+      if (!refreshToken) {
+        throw new Error('No refresh token available');
       }
       
-      return rejectWithValue(error.response?.data || { message: error.message || 'Token refresh failed' });
+      // Use direct API call without interceptors for token refresh
+      const authClient = HttpClient.authClient();
+      const response = await authClient.post('/auth/refresh', {
+        refreshToken
+      });
+      
+      // Update token in storage
+      if (response.data?.data?.accessToken?.token) {
+        AuthService.setAuthToken(response.data.data.accessToken.token);
+      }
+      
+      return response.data;
+    } catch (error: any) {
+      console.error('Token refresh failed:', error.response || error);
+      return rejectWithValue(error.response?.data || error.message);
     }
   }
 );

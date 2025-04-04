@@ -11,9 +11,14 @@ const isClientSide = () => {
   return typeof window !== 'undefined';
 };
 
-// Helper to check if a URL is a login request
-const isLoginRequest = (url: string | undefined): boolean => {
-  return !!url && (url.includes('/auth/login') || url.endsWith('/auth/login'));
+// Helper to check if a URL is an auth request
+const isAuthRequest = (url: string | undefined): boolean => {
+  return !!url && (
+    url.includes('/auth/login') || 
+    url.endsWith('/auth/login') || 
+    url.includes('/auth/register') || 
+    url.includes('/auth/refresh')
+  );
 };
 
 // Add request interceptor
@@ -23,11 +28,17 @@ export const setupRequestInterceptor = (axiosInstance: AxiosInstance) => {
       // Clone the config to avoid mutating the original
       const newConfig = { ...config };
 
-      // Skip adding workspace_id for login requests
-      if (isLoginRequest(newConfig.url)) {
+      // Skip adding workspace_id for all auth requests
+      if (isAuthRequest(newConfig.url)) {
         if (HttpConfig.DEBUG) {
-          console.log(`Skipping workspace_id for login request to: ${newConfig.url}`);
+          console.log(`Auth request detected: ${newConfig.url} - skipping workspace_id`);
         }
+        
+        // Ensure we have the right content type for auth requests
+        if (!newConfig.headers['Content-Type']) {
+          newConfig.headers['Content-Type'] = 'application/json';
+        }
+        
         return newConfig;
       }
 

@@ -49,12 +49,18 @@ export const LoginForm = memo(() => {
         title: "Debug Info",
         description: "Attempting direct API connection...",
       });
-
-      // Create a new axios instance without interceptors
-      const response = await axios.post(`${API_BASE_URL}/auth/login`, {
+      
+      // Show exactly what we're sending
+      const payload = {
         email: email.trim(),
         password: password.trim()
-      }, {
+      };
+      
+      console.log('Debug: Sending direct API request to', `${API_BASE_URL}/auth/login`);
+      console.log('Debug: Request payload', { ...payload, password: '[REDACTED]' });
+
+      // Create a new axios instance without interceptors
+      const response = await axios.post(`${API_BASE_URL}/auth/login`, payload, {
         headers: {
           'Content-Type': 'application/json'
         }
@@ -68,6 +74,14 @@ export const LoginForm = memo(() => {
       });
     } catch (error: any) {
       console.error('Debug API error:', error);
+      
+      const errorDetails = error.response ? {
+        status: error.response.status,
+        statusText: error.response.statusText,
+        data: error.response.data
+      } : { message: error.message };
+      
+      console.log('Debug: Full error details:', errorDetails);
       
       toast({
         title: "Debug Error",
