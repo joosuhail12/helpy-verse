@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { AuthService } from '@/services/authService';
 import { AuthState } from './types';
 import { 
@@ -13,7 +13,6 @@ import {
   fetchUserProfile, 
   fetchWorkspaceData 
 } from './userActions';
-import { getUserPermission } from './authSlice';
 import { toast } from '@/components/ui/use-toast';
 import { 
   isAuthError, 
@@ -21,19 +20,16 @@ import {
   isServerError,
   isTimeoutError
 } from '@/utils/error/errorTypes';
+import { HttpClient } from '@/api/services/http';
 
 export const getUserPermission = createAsyncThunk(
   'auth/getUserPermission',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await fetch('/api/permissions');
-      if (!response.ok) {
-        throw new Error('Failed to fetch permissions');
-      }
-      const data = await response.json();
-      return data;
+      const response = await HttpClient.apiClient.get("/profile/abilities");
+      return response.data;
     } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to get permissions');
+      return rejectWithValue(error.response?.data?.message || "Failed to fetch user permissions");
     }
   }
 );
@@ -57,7 +53,6 @@ const authSlice = createSlice({
       state.error = null;
       state.permissions = [];
       state.workspaces = [];
-      // Call the improved auth service logout function
       AuthService.logout();
     },
     clearError: (state) => {
@@ -69,7 +64,6 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Login actions
       .addCase(loginUser.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -79,7 +73,6 @@ const authSlice = createSlice({
         state.isAuthenticated = true;
         state.user = action.payload;
         
-        // Show success message
         toast({
           title: "Welcome back!",
           description: "You have successfully logged in.",
@@ -88,10 +81,8 @@ const authSlice = createSlice({
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
         
-        // Extract the error payload
         const payload = action.payload as any;
         
-        // Determine error message to display
         let errorMessage = 'Login failed. Please try again.';
         
         if (payload) {
@@ -117,7 +108,6 @@ const authSlice = createSlice({
           isTimeoutError: isTimeoutError(payload)
         };
         
-        // Show error toast
         toast({
           title: "Login Error",
           description: errorMessage,
@@ -125,7 +115,6 @@ const authSlice = createSlice({
         });
       })
       
-      // Password reset actions
       .addCase(requestPasswordReset.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -133,7 +122,6 @@ const authSlice = createSlice({
       .addCase(requestPasswordReset.fulfilled, (state, action) => {
         state.loading = false;
         
-        // Show success message
         toast({
           title: "Password Reset",
           description: "If an account exists with this email, reset instructions have been sent.",
@@ -149,7 +137,6 @@ const authSlice = createSlice({
         };
       })
       
-      // Register actions
       .addCase(registerUser.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -159,7 +146,6 @@ const authSlice = createSlice({
         state.isAuthenticated = true;
         state.user = action.payload;
         
-        // Show success message
         toast({
           title: "Account Created",
           description: "Your account has been successfully created.",
@@ -179,7 +165,6 @@ const authSlice = createSlice({
           isServerError: isServerError(payload),
         };
         
-        // Show error toast
         toast({
           title: "Registration Error",
           description: errorMessage,
@@ -187,7 +172,6 @@ const authSlice = createSlice({
         });
       })
       
-      // User data actions
       .addCase(fetchUserData.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -195,7 +179,6 @@ const authSlice = createSlice({
       .addCase(fetchUserData.fulfilled, (state, action) => {
         state.loading = false;
         if (state.user) {
-          // Merge profile data into existing user data
           state.user = {
             ...state.user,
             data: {
@@ -222,7 +205,6 @@ const authSlice = createSlice({
         };
       })
       
-      // Permission actions
       .addCase(getUserPermission.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -243,7 +225,6 @@ const authSlice = createSlice({
         };
       })
       
-      // Profile actions
       .addCase(fetchUserProfile.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -251,7 +232,6 @@ const authSlice = createSlice({
       .addCase(fetchUserProfile.fulfilled, (state, action) => {
         state.loading = false;
         if (state.user) {
-          // Merge profile data into existing user data
           state.user = {
             ...state.user,
             data: {
@@ -275,7 +255,6 @@ const authSlice = createSlice({
         };
       })
       
-      // Workspace actions
       .addCase(fetchWorkspaceData.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -283,7 +262,6 @@ const authSlice = createSlice({
       .addCase(fetchWorkspaceData.fulfilled, (state, action) => {
         state.loading = false;
         if (state.user) {
-          // Save workspace data
           state.user = {
             ...state.user,
             data: {
@@ -307,7 +285,6 @@ const authSlice = createSlice({
         };
       })
       
-      // Password reset confirmation cases
       .addCase(confirmPasswordReset.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -315,7 +292,6 @@ const authSlice = createSlice({
       .addCase(confirmPasswordReset.fulfilled, (state) => {
         state.loading = false;
         
-        // Show success message
         toast({
           title: "Password Reset Successful",
           description: "Your password has been successfully reset. You can now log in with your new password.",
@@ -332,7 +308,6 @@ const authSlice = createSlice({
           code: payload?.code,
         };
         
-        // Show error toast
         toast({
           title: "Password Reset Failed",
           description: errorMessage,
@@ -340,13 +315,10 @@ const authSlice = createSlice({
         });
       })
       
-      // Token refresh cases
       .addCase(refreshAuthToken.pending, (state) => {
-        // Don't set loading to true to prevent UI flicker during background refresh
         state.error = null;
       })
       .addCase(refreshAuthToken.fulfilled, (state, action) => {
-        // Update token info
         if (state.user && action.payload?.data?.accessToken) {
           state.user = {
             ...state.user,
@@ -358,13 +330,11 @@ const authSlice = createSlice({
         }
       })
       .addCase(refreshAuthToken.rejected, (state, action) => {
-        // Handle token refresh failure (typically this will trigger logout)
         const payload = action.payload as any;
         const errorMessage = payload?.message || action.error.message || 'Failed to refresh authentication';
         
         console.error('Token refresh failed:', errorMessage);
         
-        // Only set error for real failures, not for background refreshes
         if (payload?.code !== 'TOKEN_REFRESH_BACKGROUND') {
           state.error = {
             message: errorMessage,
@@ -378,7 +348,6 @@ const authSlice = createSlice({
 
 export const { logout, clearError, setWorkspaces } = authSlice.actions;
 
-// Re-export all the actions for use in components
 export {
   loginUser,
   registerUser,

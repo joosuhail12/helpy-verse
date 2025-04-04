@@ -14,7 +14,7 @@ import {
   fetchUserProfile, 
   fetchWorkspaceData 
 } from './auth/userActions';
-import { getUserPermission } from './auth/permissionActions';
+import { getUserPermission } from './auth/authSlice';
 import { toast } from '@/components/ui/use-toast';
 import { 
   isAuthError, 
