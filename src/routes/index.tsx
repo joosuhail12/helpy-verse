@@ -1,10 +1,10 @@
 
 import * as React from 'react';
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import RootRedirect from '../components/app/RootRedirect';
 import RouteErrorBoundary from '@/components/app/RouteErrorBoundary';
-import { PrivateRoute } from '@/utils/helpers/Routes';
+import { isAuthenticated } from '@/utils/auth/tokenManager';
 
 // Define LoadingSpinner first to avoid reference errors
 export const LoadingSpinner = () => (
@@ -19,16 +19,20 @@ import { inboxRoutes } from './inboxRoutes';
 import { settingsRoutes } from './settingsRoutes';
 import { automationRoutes } from './automationRoutes';
 
-// Lazy load components - make sure to use consistent naming pattern
+// Import directly instead of lazy loading for problematic components
+import AllInbox from '@/pages/inbox/All';
+
+// Lazy load auth pages and other components correctly
 const SignIn = React.lazy(() => import('../pages/SignIn'));
 const ForgotPassword = React.lazy(() => import('../pages/ForgotPassword'));
 const ResetPassword = React.lazy(() => import('../pages/ResetPassword'));
 const SignUp = React.lazy(() => import('../pages/SignUp'));
 const NotFound = React.lazy(() => import('../pages/NotFound'));
 const LandingPage = React.lazy(() => import('../pages/LandingPage'));
-
-// Lazy load dashboard layout - use a direct import to avoid dynamic import issues
 const DashboardLayout = React.lazy(() => import('../layouts/DashboardLayout'));
+const YourInbox = React.lazy(() => import('../pages/inbox/YourInbox'));
+const UnassignedInbox = React.lazy(() => import('../pages/inbox/Unassigned'));
+const MentionsInbox = React.lazy(() => import('../pages/inbox/Mentions'));
 
 // Helper to wrap components with Suspense and RouteErrorBoundary
 const withSuspenseAndErrorHandling = (Component) => (
@@ -39,7 +43,12 @@ const withSuspenseAndErrorHandling = (Component) => (
   </RouteErrorBoundary>
 );
 
-// Define the router - this will be used for reference but not directly used in the app
+// Simple PrivateRoute component
+const PrivateRoute = ({ children }) => {
+  return isAuthenticated() ? children : <Navigate to="/sign-in" replace />;
+};
+
+// Define the router
 export const router = createBrowserRouter([
   {
     path: '/',
@@ -75,9 +84,53 @@ export const router = createBrowserRouter([
       </PrivateRoute>
     ),
     children: [
-      ...dashboardRoutes,
-      ...inboxRoutes,
-      ...settingsRoutes, 
+      // Define critical inbox routes directly to avoid dynamic import issues
+      {
+        path: 'inbox/all',
+        element: (
+          <RouteErrorBoundary>
+            <AllInbox />
+          </RouteErrorBoundary>
+        ),
+      },
+      {
+        path: 'inbox/your-inbox',
+        element: (
+          <RouteErrorBoundary>
+            <React.Suspense fallback={<LoadingSpinner />}>
+              <YourInbox />
+            </React.Suspense>
+          </RouteErrorBoundary>
+        ),
+      },
+      {
+        path: 'inbox/unassigned',
+        element: (
+          <RouteErrorBoundary>
+            <React.Suspense fallback={<LoadingSpinner />}>
+              <UnassignedInbox />
+            </React.Suspense>
+          </RouteErrorBoundary>
+        ),
+      },
+      {
+        path: 'inbox/mentions',
+        element: (
+          <RouteErrorBoundary>
+            <React.Suspense fallback={<LoadingSpinner />}>
+              <MentionsInbox />
+            </React.Suspense>
+          </RouteErrorBoundary>
+        ),
+      },
+      // Add redirect for inbox index
+      {
+        path: 'inbox',
+        element: <Navigate to="all" replace />,
+      },
+      // Add other routes from route configs, filtering out duplicates
+      ...dashboardRoutes.filter(route => !route.path.includes('inbox/')),
+      ...settingsRoutes,
       ...automationRoutes,
     ],
   },
@@ -87,7 +140,7 @@ export const router = createBrowserRouter([
   },
 ]);
 
-// Export routes to be used by AppRoutes.tsx
+// For compatibility with existing code
 export const allRoutes = [
   ...dashboardRoutes,
   ...inboxRoutes,
@@ -95,4 +148,4 @@ export const allRoutes = [
   ...automationRoutes
 ];
 
-console.log('Routes initialized:', router.routes);
+console.log('Router initialized with routes:', router.routes.length);

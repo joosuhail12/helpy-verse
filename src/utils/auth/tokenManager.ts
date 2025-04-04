@@ -1,7 +1,6 @@
 
 /**
  * Token and authentication management utility functions
- * Using localStorage only (no cookies)
  */
 import { HttpClient, cookieFunctions } from "@/api/services/http";
 import { jwtDecode } from "jwt-decode";
@@ -9,7 +8,7 @@ import { jwtDecode } from "jwt-decode";
 // Get storage helpers from HttpClient to avoid circular dependencies
 const { getCookie, setCookie } = cookieFunctions;
 
-// 🟢 Logout User
+// Logout User
 export const handleLogout = async (): Promise<void> => {
   try {
     // Attempt to call logout endpoint if we have a token
@@ -39,7 +38,7 @@ export const handleLogout = async (): Promise<void> => {
   }
 };
 
-// 🟢 Set Auth Token
+// Set Auth Token
 export const handleSetToken = (token: string): boolean => {
   // Check if token is valid
   if (!token) {
@@ -48,7 +47,7 @@ export const handleSetToken = (token: string): boolean => {
   }
   
   try {
-    console.log("Setting auth token:", token.substring(0, 10) + "...");
+    console.log("Setting auth token");
     
     // Store in localStorage only
     localStorage.setItem("token", token);
@@ -65,23 +64,23 @@ export const handleSetToken = (token: string): boolean => {
   }
 };
 
-// 🟢 Check if user is authenticated - check localStorage only
+// Check if user is authenticated - check localStorage only for simplicity
 export const isAuthenticated = (): boolean => {
   try {
     const token = localStorage.getItem("token");
-    console.log(`isAuthenticated check: Token ${token ? 'exists' : 'does not exist'}`);
-    return !!token;
+    const hasToken = !!token;
+    console.log(`isAuthenticated check: Token ${hasToken ? 'exists' : 'does not exist'}`);
+    return hasToken;
   } catch (error) {
     console.error("Error checking authentication:", error);
     return false;
   }
 };
 
-// 🟢 Get auth token - from localStorage only
+// Get auth token - from localStorage only
 export const getAuthToken = (): string => {
   try {
     const storageToken = localStorage.getItem("token");
-    console.log(`getAuthToken: ${storageToken ? 'Token found' : 'No token'}`);
     return storageToken || "";
   } catch (error) {
     console.error("Error getting auth token:", error);
@@ -118,36 +117,21 @@ export const isTokenExpired = (): boolean => {
   }
 };
 
-// 🟢 Workspace ID Management - Use localStorage
+// Workspace ID Management - Use localStorage
 export const setWorkspaceId = (id: string): void => {
   if (id) {
-    try {
-      localStorage.setItem("workspaceId", id);
-      console.log("Workspace ID set in localStorage:", id);
-    } catch (error) {
-      console.error("Error setting workspace ID in localStorage:", error);
-    }
+    localStorage.setItem("workspaceId", id);
   }
 };
 
 export const getWorkspaceId = (): string => {
-  try {
-    const storageId = localStorage.getItem("workspaceId");
-    if (storageId) {
-      console.log("Got workspace ID from localStorage:", storageId);
-      return storageId;
-    }
-  } catch (error) {
-    console.warn("Error accessing workspace ID in localStorage:", error);
-  }
-  
-  return "";
+  return localStorage.getItem("workspaceId") || "";
 };
 
-// 🟢 Role Checks
+// Role Checks
 export const isOrganizationAdmin = (): boolean => localStorage.getItem("role") === "ORGANIZATION_ADMIN";
 export const isWorkspaceAdmin = (): boolean => localStorage.getItem("role") === "WORKSPACE_ADMIN";
 export const isWorkspaceAgent = (): boolean => localStorage.getItem("role") === "WORKSPACE_AGENT";
 
-// 🟢 Get User ID
+// Get User ID
 export const getUserId = (): string | null => localStorage.getItem("userId");
