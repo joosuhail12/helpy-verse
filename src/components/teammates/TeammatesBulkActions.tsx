@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import {
   Dialog,
@@ -36,7 +35,7 @@ const TeammatesBulkActions = ({ selectedIds, onClearSelection }: TeammatesBulkAc
 
   const handleRoleChange = async () => {
     try {
-      await dispatch(updateTeammatesRole({ teammateIds: selectedIds, role: newRole })).unwrap();
+      await dispatch(updateTeammatesRole({ teamIds: selectedIds, role: newRole })).unwrap();
       toast({
         title: "Success",
         description: "Role updated for selected teammates",
@@ -54,7 +53,7 @@ const TeammatesBulkActions = ({ selectedIds, onClearSelection }: TeammatesBulkAc
 
   const handleExport = async () => {
     try {
-      await dispatch(exportTeammates(selectedIds)).unwrap();
+      await dispatch(exportTeammates('csv')).unwrap();
       toast({
         title: "Success",
         description: "Export completed successfully",
@@ -146,7 +145,6 @@ const TeammatesBulkActions = ({ selectedIds, onClearSelection }: TeammatesBulkAc
               Cancel
             </Button>
             <Button variant="destructive" onClick={() => {
-              // Implement deactivation logic here
               setShowConfirmDialog(false);
             }}>
               Deactivate

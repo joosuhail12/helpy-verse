@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -36,10 +35,7 @@ export const PasswordReset: React.FC<PasswordResetProps> = ({ teammateId }) => {
 
     setIsProcessing(true);
     try {
-      await dispatch(resetPassword({ 
-        teammateId, 
-        newPassword 
-      })).unwrap();
+      await dispatch(resetPassword(teammateId)).unwrap();
       
       toast({
         title: 'Password reset successful',

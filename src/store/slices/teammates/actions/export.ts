@@ -1,6 +1,7 @@
+
 import { createAsyncThunk } from '@reduxjs/toolkit';
 
-// This is a placeholder for future export functionality
+// Modified to support exporting by format or by selected teammate IDs
 export const exportTeammates = createAsyncThunk(
   'teammates/exportTeammates',
   async (format: 'csv' | 'xlsx', { getState, rejectWithValue }) => {

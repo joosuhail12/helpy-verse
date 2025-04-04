@@ -17,7 +17,8 @@ interface TwoFactorSetupProps {
 export const TwoFactorSetup: React.FC<TwoFactorSetupProps> = ({ teammateId }) => {
   const dispatch = useAppDispatch();
   const { toast } = useToast();
-  const [setupKey, setSetupKey] = useState<string | null>(null);
+  const [secret, setSecret] = useState<string | null>(null);
+  const [qrCode, setQrCode] = useState<string | null>(null);
   const [verificationCode, setVerificationCode] = useState('');
   const [isEnabling, setIsEnabling] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
@@ -32,7 +33,8 @@ export const TwoFactorSetup: React.FC<TwoFactorSetupProps> = ({ teammateId }) =>
     setIsEnabling(true);
     try {
       const result = await dispatch(enable2FA(teammateId)).unwrap();
-      setSetupKey(result.setupKey);
+      setQrCode(result.qrCode);
+      setSecret(result.secret);
       toast({
         title: '2FA Setup Initiated',
         description: 'Please scan the QR code with your authenticator app.',
@@ -64,7 +66,8 @@ export const TwoFactorSetup: React.FC<TwoFactorSetupProps> = ({ teammateId }) =>
         description: 'Two-factor authentication has been successfully enabled.',
       });
       
-      setSetupKey(null);
+      setSecret(null);
+      setQrCode(null);
       setVerificationCode('');
     } catch (error) {
       toast({
@@ -119,7 +122,7 @@ export const TwoFactorSetup: React.FC<TwoFactorSetupProps> = ({ teammateId }) =>
               {isDisabling ? 'Disabling...' : 'Disable 2FA'}
             </Button>
           </div>
-        ) : setupKey ? (
+        ) : secret && qrCode ? (
           <div className="space-y-4">
             <div className="border p-4 rounded-md">
               <div className="text-center mb-4">
@@ -128,7 +131,7 @@ export const TwoFactorSetup: React.FC<TwoFactorSetupProps> = ({ teammateId }) =>
               </div>
               
               <div className="bg-gray-100 p-3 rounded text-center">
-                <p className="font-mono text-sm break-all">{setupKey}</p>
+                <p className="font-mono text-sm break-all">{secret}</p>
                 <p className="text-xs text-muted-foreground mt-2">
                   Or enter this code manually in your authenticator app
                 </p>
@@ -153,7 +156,10 @@ export const TwoFactorSetup: React.FC<TwoFactorSetupProps> = ({ teammateId }) =>
                   type="button"
                   variant="outline"
                   className="flex-1"
-                  onClick={() => setSetupKey(null)}
+                  onClick={() => {
+                    setSecret(null);
+                    setQrCode(null);
+                  }}
                   disabled={isVerifying}
                 >
                   Cancel
