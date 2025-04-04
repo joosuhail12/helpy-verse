@@ -58,7 +58,7 @@ export const customerService = {
                 };
             }
             
-            const response = await HttpClient.contactsClient.get<CustomersResponse>(API_URL, {
+            const response = await HttpClient.apiClient.get<CustomersResponse>(API_URL, {
                 params: { workspace_id: workspaceId }
             });
             console.log(`Successfully fetched customers:`, response.data);
@@ -121,7 +121,7 @@ export const customerService = {
             // Get workspace ID from localStorage
             const workspaceId = localStorage.getItem('workspaceId');
             
-            const response = await HttpClient.contactsClient.get<CustomerResponse>(`${API_URL}/${customer_id}`, {
+            const response = await HttpClient.apiClient.get<CustomerResponse>(`${API_URL}/${customer_id}`, {
                 params: { workspace_id: workspaceId }
             });
             console.log(`Successfully fetched customer details for ID: ${customer_id}`);

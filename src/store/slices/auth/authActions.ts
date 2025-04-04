@@ -1,3 +1,4 @@
+
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { HttpClient } from "@/api/services/http";
 import { AUTH_ENDPOINTS } from '@/api/services/http/config';
@@ -162,7 +163,7 @@ export const registerUser = (credentials: RegistrationCredentials) => async (dis
     // If registration returns a token, set it
     const token = get(response, 'data.data.accessToken.token', '');
     if (token) {
-      handleSetToken(token);
+      setToken(token); // Using our local setToken function instead of handleSetToken
     }
     
     dispatch(setAuthSuccess(response.data));

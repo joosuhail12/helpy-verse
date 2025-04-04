@@ -20,17 +20,37 @@ export class HttpClient {
     },
   });
 
+  // Create specialized client for contacts with longer timeout
+  static contactsClient: AxiosInstance = axios.create({
+    baseURL: API_BASE_URL,
+    timeout: 45000, // Longer timeout for contact operations
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
   // Initialize the API client with interceptors
   static {
     console.log('Initializing API client with base URL:', API_BASE_URL);
     
-    // Add interceptors
+    // Add interceptors to main API client
     this.apiClient.interceptors.request.use(
       requestInterceptor,
       requestErrorInterceptor
     );
 
     this.apiClient.interceptors.response.use(
+      responseInterceptor, 
+      responseErrorInterceptor
+    );
+    
+    // Add interceptors to contacts client
+    this.contactsClient.interceptors.request.use(
+      requestInterceptor,
+      requestErrorInterceptor
+    );
+
+    this.contactsClient.interceptors.response.use(
       responseInterceptor, 
       responseErrorInterceptor
     );
@@ -44,9 +64,11 @@ export class HttpClient {
     if (authToken) {
       console.log('Authorization header set for API clients with provided token');
       this.apiClient.defaults.headers.common['Authorization'] = `Bearer ${authToken}`;
+      this.contactsClient.defaults.headers.common['Authorization'] = `Bearer ${authToken}`;
     } else {
       console.log('No token available for API client configuration');
       delete this.apiClient.defaults.headers.common['Authorization'];
+      delete this.contactsClient.defaults.headers.common['Authorization'];
     }
   }
 
