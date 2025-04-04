@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
  * Landing page that is accessible without authentication
  * Serves as an entry point to the application for new users
  */
-const LandingPage = () => {
+const LandingPage: React.FC = () => {
   const navigate = useNavigate();
 
   return (
@@ -80,7 +80,7 @@ const LandingPage = () => {
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-8">
         <div className="container mx-auto px-4 text-center">
-          <p>© 2023 Support Platform. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Support Platform. All rights reserved.</p>
         </div>
       </footer>
     </div>

@@ -6,19 +6,18 @@ import RootRedirect from '../components/app/RootRedirect';
 import RouteErrorBoundary from '@/components/app/RouteErrorBoundary';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 
-// Define LoadingSpinner first to avoid reference errors
-export const LoadingSpinner = () => (
+// Import directly instead of lazy loading for crucial components to avoid loading errors
+import LandingPage from '@/pages/LandingPage';
+import DashboardLayout from '@/layouts/DashboardLayout';
+import AllInbox from '@/pages/inbox/All';
+
+// Lazy load auth pages and other components with consistent fallback
+const LoadingSpinner = () => (
   <div className="min-h-screen flex items-center justify-center">
     <Loader2 className="h-8 w-8 animate-spin text-primary" />
   </div>
 );
 
-// Import directly instead of lazy loading for LandingPage to prevent initialization errors
-import LandingPage from '@/pages/LandingPage';
-import DashboardLayout from '@/layouts/DashboardLayout';
-import AllInbox from '@/pages/inbox/All';
-
-// Lazy load auth pages and other components
 const SignIn = React.lazy(() => import('../pages/SignIn'));
 const ForgotPassword = React.lazy(() => import('../pages/ForgotPassword'));
 const ResetPassword = React.lazy(() => import('../pages/ResetPassword'));
@@ -126,10 +125,8 @@ export const router = createBrowserRouter([
         path: 'inbox',
         element: <Navigate to="all" replace />,
       },
-      // Process all routes from config files
-      ...processRoutes(dashboardRoutes),
-      ...processRoutes(settingsRoutes),
-      ...processRoutes(automationRoutes),
+      // Process all settings routes with proper error handling
+      ...processRoutes([...dashboardRoutes, ...settingsRoutes, ...automationRoutes]),
     ],
   },
   {
@@ -138,35 +135,34 @@ export const router = createBrowserRouter([
   },
 ]);
 
-// Enhanced route processing function
+// Simplified route processing function
 function processRoutes(routes) {
-  // Create a flattened array to handle nested routes
-  const processedRoutes = [];
-  
-  const flatten = (routes, parentPath = '') => {
-    routes.forEach(route => {
-      // Skip routes that are explicitly handled above
-      if (route.path && (
-        route.path === 'inbox/all' || 
-        route.path === 'inbox/your-inbox' ||
-        route.path === 'inbox/unassigned' ||
-        route.path === 'inbox/mentions'
-      )) {
-        return;
-      }
-      
-      // Process current route
-      processedRoutes.push({ ...route });
-      
-      // Process children if they exist
-      if (route.children && Array.isArray(route.children)) {
-        flatten(route.children, route.path);
-      }
-    });
-  };
-  
-  flatten(routes);
-  return processedRoutes;
+  return routes.map(route => {
+    // Skip routes that are explicitly handled above
+    if (route.path && (
+      route.path === 'inbox/all' || 
+      route.path === 'inbox/your-inbox' ||
+      route.path === 'inbox/unassigned' ||
+      route.path === 'inbox/mentions'
+    )) {
+      return null;
+    }
+    
+    if (route.element) {
+      return {
+        ...route,
+        element: (
+          <RouteErrorBoundary>
+            <React.Suspense fallback={<LoadingSpinner />}>
+              {route.element}
+            </React.Suspense>
+          </RouteErrorBoundary>
+        )
+      };
+    }
+    
+    return route;
+  }).filter(Boolean);
 }
 
 // Log for debugging

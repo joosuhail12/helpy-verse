@@ -1,16 +1,19 @@
 
 import { useEffect } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { initializeApp } from './AppInitializer';
-import { isAuthenticated } from '@/utils/auth/tokenManager';
 import { toast } from '@/components/ui/use-toast';
+import { isAuthenticated } from '@/utils/auth/tokenManager';
 import { HttpClient } from '@/api/services/http';
 
+/**
+ * Component to handle root path redirects based on authentication state
+ * Also performs API connectivity check
+ */
 const RootRedirect: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log('Initializing app from RootRedirect');
+    console.log('RootRedirect: Checking API connectivity');
     
     // Check API connectivity
     HttpClient.checkApiConnection()
@@ -22,19 +25,10 @@ const RootRedirect: React.FC = () => {
             variant: "destructive",
           });
         }
+      })
+      .catch(error => {
+        console.error("API connection check failed:", error);
       });
-      
-    // Initialize the app
-    try {
-      initializeApp();
-    } catch (error) {
-      console.error('Error initializing app:', error);
-      toast({
-        title: "Initialization Error",
-        description: "There was a problem initializing the application.",
-        variant: "destructive",
-      });
-    }
   }, []);
 
   // Check authentication directly

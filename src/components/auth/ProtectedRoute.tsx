@@ -4,6 +4,7 @@ import { isAuthenticated, isTokenExpired } from '@/utils/auth/tokenManager';
 import { useEffect } from 'react';
 import { toast } from '@/components/ui/use-toast';
 import { HttpClient } from '@/api/services/http';
+import ErrorBoundary from '@/components/common/ErrorBoundary';
 
 /**
  * Enhanced ProtectedRoute component that handles authentication checks
@@ -16,8 +17,6 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   
   useEffect(() => {
     console.log('ProtectedRoute: Auth check for path:', location.pathname);
-    console.log('ProtectedRoute: Authentication status:', isAuth);
-    console.log('ProtectedRoute: Token expired status:', isExpired);
     
     // Verify API connection on protected route entry
     if (isAuth && !isExpired) {
@@ -35,16 +34,15 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
           console.error("API connection check failed:", err);
         });
     }
-    
-    // If not authenticated, we'll redirect in the render phase
-    if (!isAuth || isExpired) {
-      console.log('ProtectedRoute: User not authenticated or token expired, will redirect from:', location.pathname);
-    }
   }, [location.pathname, isAuth, isExpired]);
   
   // If authenticated and token is not expired, render children
   if (isAuth && !isExpired) {
-    return <>{children}</>;
+    return (
+      <ErrorBoundary>
+        {children}
+      </ErrorBoundary>
+    );
   }
   
   console.log('ProtectedRoute: Redirecting to login from path:', location.pathname);

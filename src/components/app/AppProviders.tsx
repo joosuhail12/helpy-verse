@@ -8,7 +8,6 @@ import AppQueryProvider from './AppQueryProvider';
 import AppErrorBoundary from './AppErrorBoundary';
 import CaslProvider from "@/components/CaslProvider";
 import { HttpClient } from "@/api/services/http";
-import { initializeApp } from "./AppInitializer";
 import { toast } from "@/components/ui/use-toast";
 import { isAuthenticated } from "@/utils/auth/tokenManager";
 
@@ -22,20 +21,7 @@ interface AppProvidersProps {
  */
 const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
   useEffect(() => {
-    // Initialize the app first
-    try {
-      console.log("Initializing app from AppProviders component");
-      initializeApp();
-    } catch (error) {
-      console.error('Error initializing app:', error);
-      toast({
-        title: "Application Error",
-        description: "There was a problem initializing the application.",
-        variant: "destructive",
-      });
-    }
-    
-    // Check API connection on app start if user is authenticated
+    // Check API connection on app start if user is authenticated, but don't block rendering
     if (isAuthenticated()) {
       HttpClient.checkApiConnection()
         .then(isConnected => {

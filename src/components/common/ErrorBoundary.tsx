@@ -64,14 +64,21 @@ class ErrorBoundary extends Component<Props, State> {
               </details>
             )}
           </AlertDescription>
-          <Button 
-            variant="outline" 
-            className="mt-4"
-            onClick={this.handleReset}
-          >
-            <RefreshCcw className="mr-2 h-4 w-4" />
-            Try Again
-          </Button>
+          <div className="mt-4 flex justify-center">
+            <Button 
+              variant="outline" 
+              onClick={() => window.location.reload()}
+              className="mr-2"
+            >
+              <RefreshCcw className="mr-2 h-4 w-4" />
+              Reload Page
+            </Button>
+            <Button 
+              onClick={this.handleReset}
+            >
+              Try Again
+            </Button>
+          </div>
         </Alert>
       );
     }
