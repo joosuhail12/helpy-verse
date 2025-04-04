@@ -42,8 +42,6 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     react({
       jsxImportSource: 'react',
-      // Ensure React is properly initialized and used
-      devTools: true,
       // Make sure babel helpers are used consistently
       babel: {
         babelrc: false,

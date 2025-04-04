@@ -15,6 +15,9 @@ if (!container) {
 // Create a root
 const root = createRoot(container);
 
-// Render the app without StrictMode at the entry point to avoid double-initialization
-// StrictMode is now applied inside AppProviders to ensure it wraps all providers properly
-root.render(<App />);
+// Render the app with StrictMode at the entry point for proper React initialization
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
