@@ -1,6 +1,5 @@
 
-import React, { memo } from 'react';
-import { useLocation } from 'react-router-dom';
+import React, { memo, useState } from 'react';
 import { useLogin } from '../../hooks/useLogin';
 import { LoginFormHeader } from './login/LoginFormHeader';
 import { EmailInput } from './login/EmailInput';
@@ -15,10 +14,8 @@ import { Button } from '../ui/button';
  * Handles login functionality and renders all login-related UI
  */
 export const LoginForm = memo(() => {
-  const location = useLocation();
-  
-  // Get redirect path from location state or default to /home
-  const from = location.state?.from || '/home';
+  // Use a default redirect path instead of relying on useLocation
+  const defaultRedirectPath = '/home/inbox/all';
   
   // Use the login hook to handle login functionality
   const {
@@ -29,7 +26,7 @@ export const LoginForm = memo(() => {
     loading,
     isOffline,
     handleLoginSubmit
-  } = useLogin(from);
+  } = useLogin(defaultRedirectPath);
 
   // Display offline warning if needed
   if (isOffline) {

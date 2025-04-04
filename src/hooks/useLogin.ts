@@ -1,6 +1,5 @@
 
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from './useAppDispatch';
 import { useAppSelector } from './useAppSelector';
 import { loginUser } from '../store/slices/auth/authActions';
@@ -17,7 +16,6 @@ export const useLogin = (redirectPath: string = '/home/inbox/all') => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const dispatch = useAppDispatch();
-  const navigate = useNavigate();
   const { login } = useAuthContext();
   const auth = useAppSelector((state) => state.auth);
   const loading = auth?.loading ?? false;
@@ -123,7 +121,7 @@ export const useLogin = (redirectPath: string = '/home/inbox/all') => {
         // Redirect after a short delay to allow state to update
         setTimeout(() => {
           console.log('Redirecting to:', redirectPath);
-          navigate(redirectPath, { replace: true });
+          window.location.href = redirectPath;
         }, 300);
       } else {
         console.error('Missing token in login response:', result);

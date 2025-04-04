@@ -6,19 +6,11 @@ import { LoginForm } from "@/components/auth/LoginForm";
 import { Form } from "@/components/ui/form";
 import { FormProvider } from "react-hook-form";
 import { useForm } from "react-hook-form";
-import { useLocation, useNavigate } from "react-router-dom";
-import { useAppSelector } from "@/hooks/useAppSelector";
-import ErrorBoundary from "@/components/common/ErrorBoundary";
 import { AuthService } from "@/services/authService";
+import ErrorBoundary from "@/components/common/ErrorBoundary";
 
 export const SignIn = memo(() => {
   console.log('SignIn component rendering'); // Debug log
-  const navigate = useNavigate();
-  const location = useLocation();
-  const auth = useAppSelector((state) => state.auth);
-  
-  // Get redirect path from location state or default to /home
-  const from = location.state?.from || '/home';
   
   const methods = useForm({
     defaultValues: {
@@ -30,16 +22,12 @@ export const SignIn = memo(() => {
   // Redirect if already authenticated - using AuthService's isAuthenticated
   useEffect(() => {
     if (AuthService.isAuthenticated()) {
-      console.log('User is authenticated, redirecting to:', from); // Debug log
-      
-      // Navigate to target location
-      navigate(from, { replace: true });
+      console.log('User is authenticated, redirecting to home'); // Debug log
+      window.location.href = '/home';
     } else {
       console.log('User is NOT authenticated, staying on login page');
     }
-  }, [from, navigate]);
-
-  console.log('Auth state:', auth); // Debug log
+  }, []);
 
   return (
     <div className="min-h-screen w-full gradient-background flex items-center justify-center p-6 md:p-8">
