@@ -1,5 +1,5 @@
 
-import * as React from 'react';
+import React, { useEffect } from 'react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { fetchCompanies } from '@/store/slices/companies/companiesSlice';
@@ -12,7 +12,7 @@ const Companies = () => {
   const dispatch = useAppDispatch();
   const { companies, loading, error } = useAppSelector((state) => state.companies);
 
-  React.useEffect(() => {
+  useEffect(() => {
     dispatch(fetchCompanies());
   }, [dispatch]);
 
@@ -25,6 +25,7 @@ const Companies = () => {
       </div>
     );
   }
+  
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
       <CompaniesHeader />
