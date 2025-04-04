@@ -1,5 +1,5 @@
 
-import { memo, useEffect } from "react";
+import { memo, useEffect, Suspense } from "react";
 import { Logo } from "@/components/auth/Logo";
 import { FeatureList } from "@/components/auth/FeatureList";
 import { LoginForm } from "@/components/auth/LoginForm";
@@ -10,6 +10,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import ErrorBoundary from "@/components/common/ErrorBoundary";
 import { isAuthenticated } from "@/utils/auth/tokenManager";
+import LoadingSpinner from "@/components/common/LoadingSpinner";
 
 export const SignIn = memo(() => {
   console.log('SignIn component rendering'); // Debug log
@@ -29,14 +30,18 @@ export const SignIn = memo(() => {
 
   // Redirect if already authenticated - using tokenManager's isAuthenticated
   useEffect(() => {
-    if (isAuthenticated()) {
-      console.log('User is authenticated, redirecting to:', from); // Debug log
-      
-      // Navigate to target location
-      navigate(from, { replace: true });
-    } else {
-      console.log('User is NOT authenticated, staying on login page');
-    }
+    // Use setTimeout to avoid immediate redirect that could cause render loops
+    const checkAuth = setTimeout(() => {
+      if (isAuthenticated()) {
+        console.log('User is authenticated, redirecting to:', from); // Debug log
+        // Navigate to target location
+        navigate(from, { replace: true });
+      } else {
+        console.log('User is NOT authenticated, staying on login page');
+      }
+    }, 100);
+    
+    return () => clearTimeout(checkAuth);
   }, [from, navigate]);
 
   console.log('Auth state:', auth); // Debug log
@@ -60,11 +65,13 @@ export const SignIn = memo(() => {
           </ErrorBoundary>
         </div>
         <ErrorBoundary>
-          <Form {...methods}>
-            <FormProvider {...methods}>
-              <LoginForm />
-            </FormProvider>
-          </Form>
+          <Suspense fallback={<div className="flex items-center justify-center h-full"><LoadingSpinner /></div>}>
+            <Form {...methods}>
+              <FormProvider {...methods}>
+                <LoginForm />
+              </FormProvider>
+            </Form>
+          </Suspense>
         </ErrorBoundary>
       </div>
     </div>

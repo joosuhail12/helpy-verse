@@ -15,7 +15,9 @@ interface ProtectedRouteWrapperProps {
 const ProtectedRouteWrapper: React.FC<ProtectedRouteWrapperProps> = ({ children }) => (
   <ProtectedRoute>
     <RouteErrorBoundary>
-      <Suspense fallback={<LoadingSpinner />}>
+      <Suspense fallback={<div className="flex items-center justify-center h-screen">
+        <LoadingSpinner />
+      </div>}>
         {children}
       </Suspense>
     </RouteErrorBoundary>
