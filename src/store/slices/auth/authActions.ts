@@ -10,7 +10,6 @@ import {
 } from './types';
 import { AuthService } from '@/services/authService';
 import { WorkspaceService } from '@/services/workspaceService';
-import { ErrorHandlerService } from '@/utils/error/errorHandlerService';
 
 // Login action
 export const loginUser = createAsyncThunk(
@@ -52,7 +51,7 @@ export const loginUser = createAsyncThunk(
       return response.data;
     } catch (error: any) {
       console.error('Login error:', error);
-      return rejectWithValue(ErrorHandlerService.handleApiError(error, false));
+      return rejectWithValue(error.response?.data || { message: error.message });
     }
   }
 );
@@ -89,7 +88,7 @@ export const registerUser = createAsyncThunk(
       return response.data;
     } catch (error: any) {
       console.error('Registration error:', error);
-      return rejectWithValue(ErrorHandlerService.handleApiError(error, false));
+      return rejectWithValue(error.response?.data || { message: error.message });
     }
   }
 );
@@ -107,7 +106,7 @@ export const requestPasswordReset = createAsyncThunk(
       return response.data;
     } catch (error: any) {
       console.error('Password reset request error:', error);
-      return rejectWithValue(ErrorHandlerService.handleApiError(error, false));
+      return rejectWithValue(error.response?.data || { message: error.message });
     }
   }
 );
@@ -125,7 +124,7 @@ export const confirmPasswordReset = createAsyncThunk(
       return response.data;
     } catch (error: any) {
       console.error('Password reset confirmation error:', error);
-      return rejectWithValue(ErrorHandlerService.handleApiError(error, false));
+      return rejectWithValue(error.response?.data || { message: error.message });
     }
   }
 );
@@ -182,7 +181,7 @@ export const refreshAuthToken = createAsyncThunk(
         });
       }
       
-      return rejectWithValue(ErrorHandlerService.handleApiError(error, false));
+      return rejectWithValue(error.response?.data || { message: error.message });
     }
   }
 );

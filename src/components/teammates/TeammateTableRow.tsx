@@ -1,4 +1,3 @@
-
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -83,10 +82,11 @@ const TeammateTableRow = ({
     navigate(`/home/settings/teammates/${teammate.id}`);
   };
 
-  const formatDate = (dateString: string | null) => {
+  const formatDate = (dateString: string | Date | undefined) => {
     if (!dateString) return 'Never';
     try {
-      return format(parseISO(dateString), 'MMM d, yyyy HH:mm');
+      const dateValue = typeof dateString === 'string' ? dateString : dateString.toISOString();
+      return format(parseISO(dateValue), 'MMM d, yyyy HH:mm');
     } catch (error) {
       console.error("Invalid date format:", dateString);
       return 'Invalid Date';
