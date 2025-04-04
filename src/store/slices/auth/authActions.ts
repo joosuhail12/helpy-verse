@@ -135,7 +135,8 @@ export const registerUser = createAsyncThunk(
       // If registration returns a token, set it
       const token = get(response, 'data.data.accessToken.token', '');
       if (token) {
-        handleSetToken(token);
+        // Use AuthService to set the token instead of handleSetToken directly
+        AuthService.setAuthToken(token);
       }
       
       return response.data;
