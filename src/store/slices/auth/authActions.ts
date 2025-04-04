@@ -33,14 +33,10 @@ export const loginUser = createAsyncThunk(
       
       console.log('Sending login request with:', { email: cleanCredentials.email });
       
-      // Important: Send ONLY email and password in the request body without workspace_id
+      // Important: We need to ensure the request body contains email and password directly
       const response = await HttpClient.apiClient.post<AuthResponse>(
         '/auth/login', 
-        cleanCredentials,
-        {
-          // Remove workspace_id for login request
-          params: {}
-        }
+        cleanCredentials
       );
       
       console.log('Login response:', response.data);
