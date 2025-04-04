@@ -17,6 +17,7 @@ const AllTickets: React.FC = () => {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
   useEffect(() => {
+    console.log('All tickets component mounted, fetching tickets');
     dispatch(fetchTickets());
   }, [dispatch]);
 
