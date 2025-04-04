@@ -1,4 +1,3 @@
-
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 import type { Content, ContentStatus, SortField } from '@/types/content';
 
@@ -46,11 +45,9 @@ const initialState: ContentState = {
   }
 };
 
-// Async thunks
 export const updateContent = createAsyncThunk(
   'content/updateContent',
   async ({ id, data }: { id: string, data: Partial<Content> }) => {
-    // Mock API call for updating content
     return { id, data };
   }
 );
@@ -126,23 +123,19 @@ const contentSlice = createSlice({
       const ids = action.payload;
       state.items = state.items.filter(item => !ids.includes(item.id));
     },
-    // Add search-related actions
     setSearchQuery: (state, action: PayloadAction<string>) => {
       state.search.query = action.payload;
-      // Save to history if not empty and not already in history
       if (action.payload && !state.search.history.includes(action.payload)) {
         state.search.history = [action.payload, ...state.search.history].slice(0, 10);
       }
     },
     updateSearchSuggestions: (state) => {
-      // Mock implementation - in a real app this might fetch suggestions from API
       const query = state.search.query.toLowerCase();
       if (!query) {
         state.search.suggestions = [];
         return;
       }
       
-      // Generate mock suggestions based on existing content titles
       state.search.suggestions = state.items
         .filter(item => item.title.toLowerCase().includes(query))
         .map(item => item.title)

@@ -1,5 +1,5 @@
+
 import { AbilityBuilder, AbilityClass, InferSubjects, PureAbility } from "@casl/ability";
-import { Permission } from "@/store/slices/auth/types";
 
 // Create/export the ActionType type if it doesn't already exist
 export type ActionType = "create" | "read" | "update" | "delete" | "archive" | "manage";

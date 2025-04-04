@@ -18,6 +18,7 @@ export const analyticsContent: Content[] = [
     type: 'file',
     status: 'queued',
     createdAt: today.toISOString(),
+    updatedAt: today.toISOString(), // Add the missing property
     lastUpdated: today.toISOString(),
     author: defaultAuthor,
     messageCount: 0,

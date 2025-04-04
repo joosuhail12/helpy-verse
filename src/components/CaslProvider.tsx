@@ -16,10 +16,10 @@ const CaslProvider: React.FC<CaslProviderProps> = ({ children }) => {
     useEffect(() => {
         if (isAuthenticated) {
             dispatch(fetchUserProfile()); 
-            dispatch(fetchWorkspaceData());
-            dispatch(getUserPermission({})); // Pass an empty object as parameter
+            dispatch(fetchWorkspaceData(auth?.user?.workspace?.id || '')); // Pass workspace ID or empty string
+            dispatch(getUserPermission()); // Remove empty object parameter
         }
-    }, [dispatch, isAuthenticated]);
+    }, [dispatch, isAuthenticated, auth?.user?.workspace?.id]);
 
     return <>{children}</>;
 };

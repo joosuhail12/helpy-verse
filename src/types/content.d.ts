@@ -1,4 +1,3 @@
-
 export interface User {
   id: string;
   name: string;
@@ -45,13 +44,14 @@ export interface Content {
   title: string;
   description: string;
   status: ContentStatus;
-  contentType: string;
-  category: string;
+  contentType?: string;
+  category?: string;
   createdAt: string;
+  updatedAt: string;
   lastUpdated: string;
-  author: User;
+  author?: User;
   chatbots?: Array<{ id: string; name: string }>;
-  tags?: ContentTag[];
+  tags?: (ContentTag | string)[];
   sharedWith?: User[];
   comments?: ContentComment[];
   versions?: ContentVersion[];
@@ -59,6 +59,8 @@ export interface Content {
   content?: string;
   type?: ContentType;
   messageCount?: number;
+  progress?: number;
+  errorMessage?: string;
 }
 
 export interface ContentState {

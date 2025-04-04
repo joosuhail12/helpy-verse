@@ -19,6 +19,7 @@ export const salesContent: Content[] = [
     type: 'snippet',
     status: 'completed',
     createdAt: subDays(today, 5).toISOString(),
+    updatedAt: subDays(today, 2).toISOString(), // Add the missing property
     lastUpdated: subDays(today, 2).toISOString(),
     author: defaultAuthor,
     messageCount: 850,

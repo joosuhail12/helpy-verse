@@ -27,7 +27,11 @@ export const ContentTags = ({ content }: ContentTagsProps) => {
       color: `#${Math.floor(Math.random()*16777215).toString(16)}`, // Random color
     };
 
-    const currentTags = Array.isArray(content.tags) ? [...content.tags] : [];
+    // Convert all tags to ContentTag objects for consistency
+    const currentTags = Array.isArray(content.tags) 
+      ? content.tags.map(tag => typeof tag === 'string' ? { id: tag, name: tag, color: '#6b7280' } : tag) 
+      : [];
+      
     const updatedTags = [...currentTags, newTag];
     
     dispatch(updateContent({ 
@@ -46,9 +50,12 @@ export const ContentTags = ({ content }: ContentTagsProps) => {
   const handleRemoveTag = (tagId: string) => {
     if (!content.tags) return;
     
-    const updatedTags = content.tags.filter(tag => 
-      typeof tag === 'string' ? tag !== tagId : tag.id !== tagId
+    // Convert all tags to ContentTag objects for consistency
+    const currentTags = content.tags.map(tag => 
+      typeof tag === 'string' ? { id: tag, name: tag, color: '#6b7280' } : tag
     );
+    
+    const updatedTags = currentTags.filter(tag => tag.id !== tagId);
     
     dispatch(updateContent({ 
       id: content.id, 

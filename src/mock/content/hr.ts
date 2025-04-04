@@ -19,6 +19,7 @@ export const hrContent: Content[] = [
     type: 'file',
     status: 'completed',
     createdAt: subDays(today, 10).toISOString(),
+    updatedAt: subDays(today, 5).toISOString(), // Add the missing property
     lastUpdated: subDays(today, 5).toISOString(),
     author: defaultAuthor,
     messageCount: 890,
