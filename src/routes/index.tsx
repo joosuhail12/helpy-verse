@@ -44,7 +44,9 @@ const withSuspenseAndErrorHandling = (Component: React.FC) => (
 
 // Simple PrivateRoute component for the router
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
-  return isAuthenticated() ? children : <Navigate to="/sign-in" replace />;
+  const isAuth = isAuthenticated();
+  console.log('Router PrivateRoute check:', isAuth);
+  return isAuth ? children : <Navigate to="/sign-in" replace />;
 };
 
 // Define the router

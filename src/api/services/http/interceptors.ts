@@ -1,7 +1,6 @@
 
 import { AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import { get } from 'lodash';
-import { handleLogout } from './cookieManager';
 import { getAuthToken } from '@/utils/auth/tokenManager';
 import { store } from '@/store/store';
 
@@ -12,43 +11,46 @@ export const requestInterceptor = async (config: InternalAxiosRequestConfig): Pr
         console.error("Network is offline - request will likely fail");
     }
     
-    // Get token for each request
-    const token = getAuthToken();
-    
-    if (token) {
-        config.headers.set("Authorization", `Bearer ${token}`);
-    } else {
-        // Try getting token from Redux store as fallback
-        const state = store.getState();
-        const storeToken = state.auth?.user?.data?.accessToken?.token;
+    try {
+        // Get token for each request
+        const token = getAuthToken();
         
-        if (storeToken) {
-            config.headers.set("Authorization", `Bearer ${storeToken}`);
-            console.log("Using token from Redux store");
+        if (token) {
+            config.headers.set("Authorization", `Bearer ${token}`);
         } else {
-            console.warn(`Making API request without authentication token to: ${config.url}`);
+            // Try getting token from Redux store as fallback
+            const state = store.getState();
+            const storeToken = state.auth?.user?.data?.accessToken?.token;
+            
+            if (storeToken) {
+                config.headers.set("Authorization", `Bearer ${storeToken}`);
+                console.log("Using token from Redux store");
+            } else {
+                console.warn(`Making API request without authentication token to: ${config.url}`);
+            }
         }
-    }
 
-    // Get workspace_id from localStorage
-    const workspaceId = localStorage.getItem("workspaceId");
-    
-    // Always add workspace_id to all requests
-    if (workspaceId) {
-        // Add workspace_id to params if they exist, otherwise create params
-        if (!config.params) {
-            config.params = {};
-        }
+        // Get workspace_id from localStorage
+        const workspaceId = localStorage.getItem("workspaceId");
         
-        if (!config.params.workspace_id) {
-            config.params.workspace_id = workspaceId;
+        // Always add workspace_id to all requests
+        if (workspaceId) {
+            // Add workspace_id to params if they exist, otherwise create params
+            if (!config.params) {
+                config.params = {};
+            }
+            
+            if (!config.params.workspace_id) {
+                config.params.workspace_id = workspaceId;
+            }
+            console.log(`Request to ${config.url} with workspace_id: ${workspaceId}`);
+        } else {
+            console.warn(`Making API request without workspace_id to: ${config.url}`);
         }
-        console.log(`Request to ${config.url} with workspace_id: ${workspaceId}`);
-    } else {
-        console.warn(`Making API request without workspace_id to: ${config.url}`);
+    } catch (error) {
+        console.error("Error in request interceptor:", error);
     }
 
-    console.log(`API Request to: ${config.url} with params:`, config.params);
     return config;
 };
 
@@ -104,19 +106,16 @@ export const responseErrorInterceptor = (error: any) => {
         });
     }
 
-    // Handle authentication errors
-    if (status === 401 || errorCode === "UNAUTHORIZED") {
-        console.warn("Authentication error detected, logging out");
-        handleLogout();
-        
+    // Handle 404 Not Found errors
+    if (status === 404) {
         return Promise.reject({
-            message: "Authentication failed. Please sign in again.",
-            isAuthError: true,
+            message: "The requested resource was not found.",
+            isNotFoundError: true,
             originalError: error
         });
     }
 
-    // For server errors, provide a clearer message
+    // Handle 500 Internal Server errors
     if (status >= 500) {
         return Promise.reject({
             message: "Server error. Please try again later.",

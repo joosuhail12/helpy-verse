@@ -2,11 +2,11 @@
 /**
  * Token and authentication management utility functions
  */
-import { HttpClient, cookieFunctions } from "@/api/services/http";
+import { HttpClient } from "@/api/services/http";
 import { jwtDecode } from "jwt-decode";
 
 // Get storage helpers from HttpClient to avoid circular dependencies
-const { getCookie, setCookie } = cookieFunctions;
+const { getCookie, setCookie } = HttpClient;
 
 // Logout User
 export const handleLogout = async (): Promise<void> => {
@@ -53,8 +53,14 @@ export const handleSetToken = (token: string): boolean => {
     localStorage.setItem("token", token);
     
     // Configure axios with the new token
-    if (HttpClient && HttpClient.setAxiosDefaultConfig) {
-      HttpClient.setAxiosDefaultConfig(token);
+    try {
+      if (HttpClient && HttpClient.setAxiosDefaultConfig) {
+        HttpClient.setAxiosDefaultConfig(token);
+      } else {
+        console.warn("HttpClient or setAxiosDefaultConfig is not available");
+      }
+    } catch (error) {
+      console.error("Error configuring Axios with token:", error);
     }
     
     return true;

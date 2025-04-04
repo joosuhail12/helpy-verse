@@ -1,13 +1,40 @@
 
 import { useEffect } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { initializeApp } from './AppInitializer';
 import { isAuthenticated } from '@/utils/auth/tokenManager';
+import { toast } from '@/components/ui/use-toast';
+import { HttpClient } from '@/api/services/http';
 
 const RootRedirect: React.FC = () => {
+  const navigate = useNavigate();
+
   useEffect(() => {
     console.log('Initializing app from RootRedirect');
-    initializeApp();
+    
+    // Check API connectivity
+    HttpClient.checkApiConnection()
+      .then(isConnected => {
+        if (!isConnected) {
+          toast({
+            title: "API Connection Issue",
+            description: "Could not connect to the API. Some features may not work correctly.",
+            variant: "destructive",
+          });
+        }
+      });
+      
+    // Initialize the app
+    try {
+      initializeApp();
+    } catch (error) {
+      console.error('Error initializing app:', error);
+      toast({
+        title: "Initialization Error",
+        description: "There was a problem initializing the application.",
+        variant: "destructive",
+      });
+    }
   }, []);
 
   // Check authentication directly

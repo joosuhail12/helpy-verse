@@ -28,26 +28,26 @@ const createApiClient = (baseURL, timeout) => {
     return client;
 };
 
-// ✅ Initialize Axios instance with proper configuration
+// Initialize Axios instances with proper configuration
 const apiClient = createApiClient(API_BASE_URL, DEFAULT_TIMEOUT);
-
-// ✅ Create a specialized client for contacts API with longer timeout
 const contactsClient = createApiClient(API_BASE_URL, CONTACTS_TIMEOUT);
-
-// ✅ LLM Service Instance
 const llmService = createApiClient(LLM_SERVICE_URL, 60000);
 
-// ✅ Set up default axios configuration
+// Set up default axios configuration
 const setAxiosDefaultConfig = (token?: string): void => {
-    // If token is provided, use it; otherwise try to get it from cookie
-    if (token) {
-        apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-        contactsClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-        llmService.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-        console.log("Authorization header set for API clients with provided token");
-    } else {
-        // We'll handle this in the request interceptor instead
-        console.log("No token provided, will check in interceptor");
+    try {
+        // If token is provided, use it
+        if (token) {
+            apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+            contactsClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+            llmService.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+            console.log("Authorization header set for API clients with provided token");
+        } else {
+            // We'll handle this in the request interceptor instead
+            console.log("No token provided, will check in interceptor");
+        }
+    } catch (error) {
+        console.error("Error setting API client configuration:", error);
     }
 };
 
@@ -74,7 +74,7 @@ export const isOffline = (): boolean => {
   return !navigator.onLine;
 };
 
-// ✅ API Call Wrapper
+// Export API Client
 export const HttpClient = {
     apiClient, 
     contactsClient, 

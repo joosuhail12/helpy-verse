@@ -2,7 +2,7 @@
 import { HttpClient } from '@/api/services/http';
 
 // Get correct API URL from environment variables
-const API_BASE_URL = import.meta.env.VITE_REACT_APP_API_URL || '/api';
+const API_BASE_URL = import.meta.env.VITE_REACT_APP_API_URL || 'https://dev-socket.pullseai.com/api';
 
 // Re-export the main API client for direct usage
 const api = HttpClient.apiClient;
@@ -42,6 +42,10 @@ const setupApi = () => {
       });
     } else {
       console.warn('API service initialized without workspace ID - API requests may fail');
+      
+      // Set a default workspace ID for development testing - remove in production
+      localStorage.setItem('workspaceId', '6c22b22f-7bdf-43db-b7c1-9c5884125c63');
+      console.log('DEVELOPMENT: Set default workspace ID for testing');
     }
   } catch (error) {
     console.error('Error setting up API client:', error);
