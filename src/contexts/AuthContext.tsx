@@ -1,14 +1,13 @@
-
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { AuthService } from '@/services/authService';
 import { WorkspaceService } from '@/services/workspaceService';
 import { 
-  refreshAuthToken, 
-  fetchUserData, 
-  logout as logoutAction 
+  refreshAuthToken
 } from '@/store/slices/auth/authActions';
+import { fetchUserData } from '@/store/slices/auth/userActions';
+import { logout as logoutAction } from '@/store/slices/auth/authSlice';
 import { toast } from '@/components/ui/use-toast';
 import { HttpClient } from '@/api/services/http';
 
