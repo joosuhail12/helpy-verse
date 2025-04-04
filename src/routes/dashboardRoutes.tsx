@@ -14,7 +14,7 @@ const LoadingSpinner = () => (
 
 // Lazy load dashboard pages - fixed imports to ensure proper lazy loading
 const Dashboard = lazy(() => import('../pages/Dashboard'));
-const ContactsPage = lazy(() => import('../pages/contacts/index'));
+const ContactsPage = lazy(() => import('../pages/contacts/index'));  // Ensure lowercase path
 const AllContacts = lazy(() => import('../pages/contacts/All'));
 const Companies = lazy(() => import('../pages/contacts/Companies'));
 const CompanyDetail = lazy(() => import('../pages/contacts/CompanyDetail'));
