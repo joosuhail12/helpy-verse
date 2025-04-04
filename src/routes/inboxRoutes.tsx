@@ -5,21 +5,21 @@ import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { Loader2 } from 'lucide-react';
 import RouteErrorBoundary from '@/components/app/RouteErrorBoundary';
 
-// Define LoadingSpinner component at the top of the file to avoid reference errors
+// Define LoadingSpinner component for Suspense fallback
 const LoadingSpinner = () => (
   <div className="min-h-screen flex items-center justify-center">
     <Loader2 className="h-8 w-8 animate-spin text-primary" />
   </div>
 );
 
-// Lazy load inbox pages
+// Lazy load inbox pages with explicit component names to avoid bundling issues
 const YourInbox = lazy(() => import('../pages/inbox/YourInbox'));
 const AllInbox = lazy(() => import('../pages/inbox/All'));
 const UnassignedInbox = lazy(() => import('../pages/inbox/Unassigned'));
 const MentionsInbox = lazy(() => import('../pages/inbox/Mentions'));
 
 // Helper function to wrap a component with Suspense, ProtectedRoute and RouteErrorBoundary
-const withSuspenseAndProtection = (Component) => (
+const withSuspenseAndProtection = (Component: React.ComponentType) => (
   <ProtectedRoute>
     <RouteErrorBoundary>
       <Suspense fallback={<LoadingSpinner />}>
