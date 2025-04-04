@@ -1,4 +1,3 @@
-
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../store';
 import { EmailChannel } from '@/types/emailChannel';
@@ -99,7 +98,7 @@ export const toggleChannelStatus = createAsyncThunk(
   async (id: string, { rejectWithValue, getState }) => {
     try {
       const state = getState() as RootState;
-      const channel = state.emailChannels.channels.find(c => c.id === id);
+      const channel = state.emailChannels?.channels?.find(c => c.id === id);
       if (!channel) {
         throw new Error('Channel not found');
       }
@@ -265,3 +264,5 @@ const emailChannelsSlice = createSlice({
 });
 
 export const emailChannelsReducer = emailChannelsSlice.reducer;
+
+export { emailChannelsReducer as reducer };

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
@@ -17,7 +16,7 @@ const CreateTeam = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { toast } = useToast();
-  const teammates = useAppSelector((state) => state.teammates.teammates);
+  const teammates = useAppSelector((state) => state.teammates?.teammates || []);
 
   const [teamName, setTeamName] = useState('');
   const [selectedIcon, setSelectedIcon] = useState<string>('👥');

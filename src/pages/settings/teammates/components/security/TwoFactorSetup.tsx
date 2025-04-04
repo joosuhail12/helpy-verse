@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -25,8 +24,8 @@ export const TwoFactorSetup: React.FC<TwoFactorSetupProps> = ({ teammateId }) =>
   const [isVerifying, setIsVerifying] = useState(false);
   const [isDisabling, setIsDisabling] = useState(false);
   
-  const teammate = useAppSelector((state: RootState) => 
-    state.teammates.teammates.find(t => t.id === teammateId)
+  const teammate = useAppSelector((state) => 
+    state.teammates?.teammates?.find(t => t.id === teammateId) || null
   );
   const is2FAEnabled = teammate?.is2FAEnabled || false;
 

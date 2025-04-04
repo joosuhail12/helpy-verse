@@ -9,11 +9,11 @@ import contactsReducer from './slices/contacts/contactsSlice';
 import companiesReducer from './slices/companies/companiesSlice';
 import inboxReducer from './slices/inboxSlice';
 import tagsReducer from './slices/tagsSlice';
-import { reducer as teammatesReducer } from './slices/teammates/teammatesSlice';
+import { teammatesReducer } from './slices/teammates/teammatesSlice';
 import teamsReducer from './slices/teams/teamsSlice';
-import { reducer as emailChannelsReducer } from './slices/emailChannels/emailChannelsSlice';
-import { reducer as cannedResponsesReducer } from './slices/cannedResponses/cannedResponsesSlice';
-import { reducer as chatbotsReducer } from './slices/chatbots/chatbotsSlice';
+import { emailChannelsReducer } from './slices/emailChannels/emailChannelsSlice';
+import { cannedResponsesReducer } from './slices/cannedResponses/cannedResponsesSlice';
+import { chatbotsReducer } from './slices/chatbots/chatbotsSlice';
 // Import userReducer correctly to avoid initialization error
 import userReducer from './slices/user/userSlice';
 

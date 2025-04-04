@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,7 +16,7 @@ interface ActiveSessionsProps {
 export const ActiveSessions: React.FC<ActiveSessionsProps> = ({ teammateId }) => {
   const dispatch = useAppDispatch();
   const sessions = useAppSelector((state) => selectTeammateSessions(state, teammateId));
-  const loading = useAppSelector((state: RootState) => state.teammates.loading);
+  const loading = useAppSelector((state) => state.teammates?.loading || false);
 
   useEffect(() => {
     dispatch(fetchTeammateSessions(teammateId));

@@ -1,4 +1,3 @@
-
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../store';
 import { CannedResponse } from '@/mock/cannedResponses';
@@ -202,3 +201,5 @@ export const {
 } = cannedResponsesSlice.actions;
 
 export const cannedResponsesReducer = cannedResponsesSlice.reducer;
+
+export { cannedResponsesReducer as reducer };

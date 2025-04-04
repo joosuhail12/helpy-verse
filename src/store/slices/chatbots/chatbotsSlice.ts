@@ -1,4 +1,3 @@
-
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../store';
 import { mockChatbots } from '@/mock/chatbots';
@@ -119,9 +118,10 @@ const chatbotsSlice = createSlice({
 });
 
 // Export selectors
-export const selectChatbots = (state: RootState) => state.chatbots.chatbots;
-export const selectChatbotsLoading = (state: RootState) => state.chatbots.loading;
-export const selectChatbotsError = (state: RootState) => state.chatbots.error;
+export const selectChatbots = (state: RootState) => state.chatbots?.chatbots || [];
+export const selectChatbotsLoading = (state: RootState) => state.chatbots?.loading || false;
+export const selectChatbotsError = (state: RootState) => state.chatbots?.error || null;
 
 // Export the reducer
 export const chatbotsReducer = chatbotsSlice.reducer;
+export { chatbotsReducer as reducer };

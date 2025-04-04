@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import TeamsLoadingState from '@/components/teams/TeamsLoadingState';
@@ -9,8 +8,8 @@ const EditTeam = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   
-  const teammates = useAppSelector((state) => state.teammates.teammates);
-  const { teams, loading, error } = useAppSelector((state) => state.teams);
+  const teammates = useAppSelector((state) => state.teammates?.teammates || []);
+  const { teams, loading, error } = useAppSelector((state) => state.teams || { teams: [], loading: false, error: null });
   const team = teams.find(t => t.id === id);
 
   if (loading) {
