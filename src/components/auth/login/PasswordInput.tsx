@@ -31,6 +31,7 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
                  placeholder:text-gray-400 text-gray-800"
         required
         disabled={disabled}
+        autoComplete="current-password"
       />
     </div>
   );

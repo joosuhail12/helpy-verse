@@ -3,22 +3,12 @@ import { memo, useEffect } from "react";
 import { Logo } from "@/components/auth/Logo";
 import { FeatureList } from "@/components/auth/FeatureList";
 import { LoginForm } from "@/components/auth/LoginForm";
-import { Form } from "@/components/ui/form";
-import { FormProvider } from "react-hook-form";
-import { useForm } from "react-hook-form";
-import { AuthService } from "@/services/authService";
 import ErrorBoundary from "@/components/common/ErrorBoundary";
+import { AuthService } from "@/services/authService";
 
 export const SignIn = memo(() => {
   console.log('SignIn component rendering'); // Debug log
   
-  const methods = useForm({
-    defaultValues: {
-      email: '',
-      password: '',
-    },
-  });
-
   // Redirect if already authenticated - using AuthService's isAuthenticated
   useEffect(() => {
     if (AuthService.isAuthenticated()) {
@@ -48,11 +38,7 @@ export const SignIn = memo(() => {
           </ErrorBoundary>
         </div>
         <ErrorBoundary>
-          <Form {...methods}>
-            <FormProvider {...methods}>
-              <LoginForm />
-            </FormProvider>
-          </Form>
+          <LoginForm />
         </ErrorBoundary>
       </div>
     </div>

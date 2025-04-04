@@ -28,6 +28,8 @@ export const LoginForm = memo(() => {
     handleLoginSubmit
   } = useLogin(defaultRedirectPath);
 
+  console.log('LoginForm rendering with state:', { email, loading, isOffline });
+
   // Display offline warning if needed
   if (isOffline) {
     return (

@@ -1,4 +1,3 @@
-
 import { AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import { get } from 'lodash';
 import { AuthService } from '@/services/authService';
@@ -35,6 +34,18 @@ export const requestInterceptor = async (config: InternalAxiosRequestConfig): Pr
         } else {
             console.warn(`Making API request without authentication token to: ${config.url}`);
         }
+    }
+
+    // Skip workspace_id for auth endpoints
+    const isAuthEndpoint = config.url && (
+        config.url.includes('/auth/login') || 
+        config.url.includes('/auth/register') ||
+        config.url.includes('/auth/password')
+    );
+    
+    if (isAuthEndpoint) {
+        console.log(`Skipping workspace_id for auth endpoint: ${config.url}`);
+        return config;
     }
 
     // Get workspace_id from our centralized workspace service

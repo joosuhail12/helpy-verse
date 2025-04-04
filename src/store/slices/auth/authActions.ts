@@ -1,4 +1,3 @@
-
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { HttpClient } from '@/api/services/http';
 import { 
@@ -34,9 +33,14 @@ export const loginUser = createAsyncThunk(
       
       console.log('Sending login request with:', { email: cleanCredentials.email });
       
+      // Important: Send ONLY email and password in the request body without workspace_id
       const response = await HttpClient.apiClient.post<AuthResponse>(
         '/auth/login', 
-        cleanCredentials
+        cleanCredentials,
+        {
+          // Remove workspace_id for login request
+          params: {}
+        }
       );
       
       console.log('Login response:', response.data);
@@ -72,6 +76,7 @@ export const loginUser = createAsyncThunk(
       
       // Check for specific error status codes
       if (error.response?.status === 422) {
+        console.error('Validation error details:', error.response.data);
         // Validation error
         return rejectWithValue({
           message: error.response?.data?.message || 'Invalid email or password',

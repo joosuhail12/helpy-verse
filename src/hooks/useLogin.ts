@@ -65,16 +65,19 @@ export const useLogin = (redirectPath: string = '/home/inbox/all') => {
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Login form submitted');
     
     // Validate inputs before submitting
     if (isSubmitting || !email.trim() || !password.trim()) {
       if (!email.trim()) {
+        console.log('Email validation failed - empty email');
         toast({
           title: 'Validation Error',
           description: 'Email is required',
           variant: 'destructive',
         });
       } else if (!password.trim()) {
+        console.log('Password validation failed - empty password');
         toast({
           title: 'Validation Error',
           description: 'Password is required',
@@ -96,7 +99,7 @@ export const useLogin = (redirectPath: string = '/home/inbox/all') => {
     
     try {
       setIsSubmitting(true);
-      console.log('Login attempt for:', email);
+      console.log('Login attempt with credentials:', { email: email.trim() });
       
       // Real login process with trimmed values to avoid whitespace issues
       const result = await dispatch(loginUser({ 
@@ -104,11 +107,11 @@ export const useLogin = (redirectPath: string = '/home/inbox/all') => {
         password: password.trim() 
       })).unwrap();
       
-      console.log('Login result:', result);
+      console.log('Login result received:', result ? 'success' : 'failure');
       
       // Handle successful login
       if (result && result.data && result.data.accessToken) {
-        console.log('Login successful, token:', result.data.accessToken.token);
+        console.log('Login successful, token received');
         
         // Use the centralized auth context to set token and update state
         login(result.data.accessToken.token);
