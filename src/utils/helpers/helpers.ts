@@ -2,11 +2,17 @@
 /**
  * Common utility helpers used throughout the application
  */
-import { cookieFunctions } from "@/api/services/http";
-import { handleSetToken, getAuthToken, isAuthenticated } from "@/utils/auth/tokenManager";
+import { 
+  getCookie as getStorageCookie, 
+  setCookie as setStorageCookie, 
+  handleLogout as handleStorageLogout 
+} from "@/api/services/http/cookieManager";
+import { handleSetToken as tokenManagerSetToken } from "@/utils/auth/tokenManager";
 
 // Re-export storage functions from cookieManager to avoid circular dependencies
-export const { getCookie, setCookie, handleLogout } = cookieFunctions;
+export const getCookie = getStorageCookie;
+export const setCookie = setStorageCookie;
+export const handleLogout = handleStorageLogout;
 
 // Base64 encoding for email addresses (simple obfuscation)
 export const encryptBase64 = (text: string): string => {
@@ -32,8 +38,8 @@ export const setWorkspaceId = (workspaceId: string): void => {
   console.log(`Workspace ID set to: ${workspaceId}`);
 };
 
-// Re-export the token manager functions
-export { handleSetToken, getAuthToken, isAuthenticated };
+// Re-export the token manager's handleSetToken function
+export const handleSetToken = tokenManagerSetToken;
 
 // Format date to a readable format
 export const formatDate = (date: Date | string | number): string => {

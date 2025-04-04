@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { updateContact, clearSelection } from '@/store/slices/contacts/actions';
+import { updateContact, clearSelection } from '@/store/slices/contacts/contactsSlice';
 import { Tag, ChevronDown, Plus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import type { Contact } from '@/types/contact';
@@ -43,8 +43,8 @@ export const TagActions: React.FC<TagActionsProps> = ({ selectedContactIds, cont
           const existingTags = contact.tags || [];
           if (!existingTags.includes(tag)) {
             await dispatch(updateContact({
-              id: contactId,
-              updates: { tags: [...existingTags, tag] }
+              contactId,
+              data: { tags: [...existingTags, tag] }
             })).unwrap();
           }
         }

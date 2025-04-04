@@ -79,11 +79,7 @@ const TagTable = ({
               </div>
             </TableCell>
             <TableCell>
-              <TagUsageStats
-                tickets={tag.counts.tickets}
-                contacts={tag.counts.contacts}
-                companies={tag.counts.companies}
-              />
+              <TagUsageStats {...tag.counts} />
             </TableCell>
             <TableCell>
               <TagUsageChart tag={tag} />

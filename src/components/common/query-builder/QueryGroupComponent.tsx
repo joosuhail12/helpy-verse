@@ -2,9 +2,10 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Plus, Trash, Copy } from 'lucide-react';
-import type { QueryGroup, QueryRule, QueryField, ValidationError } from '@/types/queryBuilder';
+import type { QueryGroup, QueryRule, QueryField } from '@/types/queryBuilder';
 import { QueryRule as QueryRuleComponent } from './QueryRule';
 import { generateId } from '@/lib/utils';
+import type { ValidationError } from '@/components/automation/chatbots/form/audience-rules/utils/validation';
 import { toast } from '@/hooks/use-toast';
 import { useCallback } from 'react';
 
@@ -204,25 +205,30 @@ export const QueryGroupComponent = ({
                 />
               )}
             </div>
-            <div className="flex items-center space-x-1">
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => copyRuleToClipboard(rule)}
+              >
+                <Copy className="w-4 h-4" />
+              </Button>
               <Button
                 type="button"
                 variant="ghost"
                 size="icon"
                 onClick={() => handleDuplicateRule(index)}
-                title="Duplicate"
               >
-                <Copy className="h-4 w-4" />
+                <Copy className="w-4 h-4" />
               </Button>
               <Button
                 type="button"
                 variant="ghost"
                 size="icon"
                 onClick={() => handleRemoveRule(index)}
-                title="Delete"
-                className="text-destructive hover:text-destructive"
               >
-                <Trash className="h-4 w-4" />
+                <Trash className="w-4 h-4" />
               </Button>
             </div>
           </div>
@@ -231,3 +237,4 @@ export const QueryGroupComponent = ({
     </div>
   );
 };
+

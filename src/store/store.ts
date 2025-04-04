@@ -1,33 +1,28 @@
 
 import { configureStore } from '@reduxjs/toolkit';
-import { setupListeners } from '@reduxjs/toolkit/query';
-import { baseApi } from '@/api/baseApi';
+// Import the auth reducer directly from the re-export file
+import authReducer from './slices/authSlice';
 import { actionsReducer } from './slices/actions/actionsSlice';
 import contentReducer from './slices/content/contentSlice';
 import contentCenterReducer from './slices/automation/contentCenterSlice';
 import contactsReducer from './slices/contacts/contactsSlice';
 import companiesReducer from './slices/companies/companiesSlice';
-import inboxReducer from './slices/inbox/inboxSlice';
-import tagsReducer from './slices/tags/tagsSlice';
+import inboxReducer from './slices/inboxSlice';
+import tagsReducer from './slices/tagsSlice';
 import { teammatesReducer } from './slices/teammates/teammatesSlice';
 import teamsReducer from './slices/teams/teamsSlice';
 import { emailChannelsReducer } from './slices/emailChannels/emailChannelsSlice';
 import { cannedResponsesReducer } from './slices/cannedResponses/cannedResponsesSlice';
 import { chatbotsReducer } from './slices/chatbots/chatbotsSlice';
 import userReducer from './slices/user/userSlice';
-import { securityReducer } from './slices/securitySlice';
-import legacyContactsReducer from './slices/contactSlice';
-import authReducer from './slices/auth/authSlice';
 
 // Define the root reducer with all slices
 const rootReducer = {
-  [baseApi.reducerPath]: baseApi.reducer, // Add the API reducer
   auth: authReducer,
   actions: actionsReducer,
   content: contentReducer,
   contentCenter: contentCenterReducer,
   contacts: contactsReducer,
-  legacyContacts: legacyContactsReducer, // Keep for backward compatibility
   companies: companiesReducer,
   inbox: inboxReducer,
   tags: tagsReducer,
@@ -37,7 +32,6 @@ const rootReducer = {
   cannedResponses: cannedResponsesReducer,
   chatbots: chatbotsReducer,
   user: userReducer,
-  security: securityReducer,
 };
 
 export const store = configureStore({
@@ -45,12 +39,10 @@ export const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: false,
-    }).concat(baseApi.middleware),
-  devTools: process.env.NODE_ENV !== 'production',
+    }),
 });
-
-// Optional, but required for refetchOnFocus/refetchOnReconnect behaviors
-setupListeners(store.dispatch);
 
 export type AppDispatch = typeof store.dispatch;
 export type RootState = ReturnType<typeof store.getState>;
+
+export default store;

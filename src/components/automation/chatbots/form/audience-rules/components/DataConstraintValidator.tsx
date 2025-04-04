@@ -63,11 +63,7 @@ export const DataConstraintValidator = ({ queryGroup }: DataConstraintValidatorP
         
         // Check for selection from available options
         if (field.type === 'select' && field.options && 
-            !field.options.some(option => 
-              typeof option === 'string' 
-                ? option === rule.value 
-                : option.value === rule.value
-            ) && 
+            !field.options.includes(rule.value as string) && 
             rule.operator !== 'is_empty' && rule.operator !== 'is_not_empty') {
           newIssues.push({
             ruleId: rule.id,

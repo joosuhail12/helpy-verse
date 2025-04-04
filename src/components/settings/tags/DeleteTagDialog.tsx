@@ -11,16 +11,25 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "@/hooks/use-toast";
 import { useState } from "react";
-import { Tag } from "@/types/tag";
+
+interface Tag {
+  id: string;
+  name: string;
+  color: string;
+  counts: {
+    tickets: number;
+    contacts: number;
+    companies: number;
+  };
+}
 
 interface DeleteTagDialogProps {
   tag: Tag;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onConfirm: () => void;
 }
 
-const DeleteTagDialog = ({ tag, open, onOpenChange, onConfirm }: DeleteTagDialogProps) => {
+const DeleteTagDialog = ({ tag, open, onOpenChange }: DeleteTagDialogProps) => {
   const [isDeleting, setIsDeleting] = useState(false);
 
   const totalAssociations = tag.counts.tickets + tag.counts.contacts + tag.counts.companies;
@@ -29,12 +38,15 @@ const DeleteTagDialog = ({ tag, open, onOpenChange, onConfirm }: DeleteTagDialog
     setIsDeleting(true);
 
     try {
-      onConfirm();
+      // Mock API call delay - in the future, this will be replaced with actual API call
+      await new Promise(resolve => setTimeout(resolve, 500));
       
       toast({
         title: "Success",
         description: `Successfully archived tag "${tag.name}"`,
       });
+      
+      onOpenChange(false);
     } catch (error) {
       toast({
         title: "Error",

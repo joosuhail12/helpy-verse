@@ -1,110 +1,62 @@
 
-import { useEffect, useState } from 'react';
-import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { useAppSelector } from '@/hooks/useAppSelector';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Building, FileText, Calendar } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
 import { Contact } from '@/types/contact';
-import { selectCompanyDetails } from '@/store/slices/companies/selectors';
-import { fetchCompanyById } from '@/store/slices/companies/companiesSlice';
-import { RelatedCompanySelector } from './RelatedCompanySelector';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+} from '@/components/ui/card';
+import { Users2 } from 'lucide-react';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { User } from 'lucide-react';
+import { useAppSelector } from '@/hooks/useAppSelector';
 
 interface ContactRelatedProps {
   contact: Contact;
 }
 
 export const ContactRelated = ({ contact }: ContactRelatedProps) => {
-  const [isAddingCompany, setIsAddingCompany] = useState(false);
-  const dispatch = useAppDispatch();
-  const company = useAppSelector(selectCompanyDetails);
+  const allContacts = useAppSelector((state) => state.contacts.contacts);
   
-  useEffect(() => {
-    if (contact.company) {
-      dispatch(fetchCompanyById(contact.company));
-    }
-  }, [dispatch, contact.company]);
-  
-  const hasRelatedDeals = false; // Placeholder for deals feature
-  const hasRelatedTickets = false; // Placeholder for tickets feature
-  const hasScheduledActivities = false; // Placeholder for activities feature
-  
+  if (!contact.company) return null;
+
+  // Find colleagues (same company, excluding self)
+  const colleagues = allContacts.filter(c => 
+    c.company === contact.company && 
+    c.id !== contact.id
+  );
+
+  if (colleagues.length === 0) return null;
+
   return (
-    <Card className="bg-white/60 backdrop-blur-sm">
-      <CardHeader className="border-b pb-3">
-        <CardTitle className="text-lg">Related Items</CardTitle>
+    <Card className="mt-4 bg-white/60 backdrop-blur-sm border-purple-100/50 shadow-lg shadow-purple-500/5 transition-all duration-300 hover:shadow-purple-500/10">
+      <CardHeader className="border-b border-purple-100/20 pb-4">
+        <CardTitle className="text-lg font-semibold text-purple-900">Related Contacts</CardTitle>
       </CardHeader>
-      <CardContent className="p-0">
-        <div className="divide-y">
-          <div className="p-4">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-medium flex items-center">
-                <Building className="mr-2 h-4 w-4 text-primary" />
-                Company
-              </h3>
-              {!contact.company && !isAddingCompany && (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={() => setIsAddingCompany(true)}
-                >
-                  Add
-                </Button>
-              )}
-            </div>
-            {isAddingCompany ? (
-              <RelatedCompanySelector 
-                contact={contact}
-                onCancel={() => setIsAddingCompany(false)}
-                onSaved={() => setIsAddingCompany(false)}
-              />
-            ) : (
-              contact.company && company ? (
-                <Link to={`/contacts/companies/${company.id}`} className="text-sm text-blue-600 hover:underline">
-                  {company.name}
-                </Link>
-              ) : (
-                <span className="text-sm text-muted-foreground">No company associated</span>
-              )
-            )}
+      <CardContent className="pt-6">
+        <div className="pt-4">
+          <div className="flex items-center gap-2 text-sm font-medium text-purple-900/70 mb-3">
+            <Users2 className="h-4 w-4" />
+            <span>Colleagues at {contact.company}</span>
           </div>
-          
-          <div className="p-4">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-medium flex items-center">
-                <FileText className="mr-2 h-4 w-4 text-primary" />
-                Deals & Tickets
-              </h3>
-            </div>
-            {hasRelatedDeals || hasRelatedTickets ? (
-              <div className="space-y-2">
-                {/* Deals and tickets would be listed here */}
-                <p className="text-sm text-muted-foreground">Placeholder for deals and tickets</p>
+          <div className="space-y-3">
+            {colleagues.map((colleague) => (
+              <div key={colleague.id} className="flex items-center gap-3">
+                <Avatar className="h-8 w-8">
+                  <AvatarFallback>
+                    <User className="h-4 w-4" />
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="text-sm font-medium">{colleague.firstname} {colleague.lastname}</p>
+                  <p className="text-xs text-muted-foreground">{colleague.title}</p>
+                </div>
               </div>
-            ) : (
-              <span className="text-sm text-muted-foreground">No deals or tickets</span>
-            )}
-          </div>
-          
-          <div className="p-4">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-medium flex items-center">
-                <Calendar className="mr-2 h-4 w-4 text-primary" />
-                Upcoming Activities
-              </h3>
-            </div>
-            {hasScheduledActivities ? (
-              <div className="space-y-2">
-                {/* Activities would be listed here */}
-                <p className="text-sm text-muted-foreground">Placeholder for activities</p>
-              </div>
-            ) : (
-              <span className="text-sm text-muted-foreground">No upcoming activities</span>
-            )}
+            ))}
           </div>
         </div>
       </CardContent>
     </Card>
   );
 };
+

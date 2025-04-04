@@ -1,59 +1,58 @@
 
 import { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { useAppSelector } from '@/hooks/useAppSelector';
-import { fetchCompanyById } from '@/store/slices/companies/companiesSlice';
-import { selectCompanyDetails, selectCompaniesLoading, selectCompaniesError } from '@/store/slices/companies/selectors';
 import { CompanyDetailHeader } from '@/components/companies/detail/CompanyDetailHeader';
 import { CompanyDetailContent } from '@/components/companies/detail/CompanyDetailContent';
-import { CompanyDetailSidebar } from '@/components/companies/detail/CompanyDetailSidebar';
 import { CompanyDetailLoading } from '@/components/companies/detail/CompanyDetailLoading';
 import { CompanyDetailError } from '@/components/companies/detail/CompanyDetailError';
+import { CompanyNotFound } from '@/components/companies/detail/CompanyNotFound';
+import { useCompanyDetails } from '@/hooks/useCompanyDetails';
 
 const CompanyDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const dispatch = useAppDispatch();
-  const company = useAppSelector(selectCompanyDetails);
-  const loading = useAppSelector(selectCompaniesLoading);
-  const error = useAppSelector(selectCompaniesError);
+  const { 
+    company, 
+    loading, 
+    error, 
+    isRetrying, 
+    retryCount,
+    activities,
+    loadCompanyDetails, 
+    handleRetry, 
+    handleGoBack, 
+    handleDeleteClick 
+  } = useCompanyDetails(id);
 
   useEffect(() => {
-    if (id) {
-      dispatch(fetchCompanyById(id));
-    }
-  }, [dispatch, id]);
+    loadCompanyDetails();
+  }, [id]);
 
-  if (loading) {
+  useEffect(() => {
+    if (error && retryCount < 1 && !isRetrying) {
+      const timer = setTimeout(() => {
+        loadCompanyDetails();
+      }, 2000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [error, retryCount, isRetrying]);
+
+  if (loading || isRetrying) {
     return <CompanyDetailLoading />;
   }
 
   if (error) {
-    return <CompanyDetailError error={error} />;
+    return <CompanyDetailError onRetry={handleRetry} onGoBack={handleGoBack} />;
   }
 
   if (!company) {
-    return <div className="text-center py-8">Company not found</div>;
+    return <CompanyNotFound onGoBack={handleGoBack} />;
   }
 
-  // Mock activities for now
-  const activities = [];
-
   return (
-    <div className="flex flex-col space-y-6">
-      <CompanyDetailHeader 
-        company={company} 
-        onDeleteClick={() => console.log('Delete clicked')} 
-      />
-      
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <CompanyDetailContent company={company} activities={activities} />
-        </div>
-        <div className="lg:col-span-1">
-          <CompanyDetailSidebar company={company} />
-        </div>
-      </div>
+    <div className="container mx-auto px-4 py-6 max-w-[1400px]">
+      <CompanyDetailHeader company={company} onDeleteClick={handleDeleteClick} />
+      <CompanyDetailContent company={company} activities={activities} />
     </div>
   );
 };

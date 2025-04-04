@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { fetchCustomers } from '@/store/slices/contacts/contactsSlice';
-import { selectAllContacts } from '@/store/slices/contacts/contactsSelectors';
+import { selectContacts } from '@/store/slices/contacts/contactsSelectors';
 import { v4 as uuidv4 } from 'uuid';
 import RecipientBadge from './RecipientBadge';
 import RecipientInput from './RecipientInput';
@@ -13,7 +13,7 @@ const ToField = ({ selectedRecipients, onChange }: ToFieldProps) => {
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const dispatch = useAppDispatch();
-  const contacts = useAppSelector(selectAllContacts);
+  const contacts = useAppSelector(selectContacts);
 
   useEffect(() => {
     dispatch(fetchCustomers());

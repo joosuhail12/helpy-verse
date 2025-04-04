@@ -1,5 +1,4 @@
-
-import React, { useState, useMemo } from 'react';
+import * as React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { mockDomains, type Domain } from '@/mock/domains';
 import { Card } from '@/components/ui/card';
@@ -13,12 +12,12 @@ import { DomainBulkActions } from './components/DomainBulkActions';
 const Domains = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<Domain['status'] | 'all'>('all');
-  const [sortBy, setSortBy] = useState<'date' | 'name'>('date');
-  const [selectedDomains, setSelectedDomains] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const [statusFilter, setStatusFilter] = React.useState<Domain['status'] | 'all'>('all');
+  const [sortBy, setSortBy] = React.useState<'date' | 'name'>('date');
+  const [selectedDomains, setSelectedDomains] = React.useState<string[]>([]);
 
-  const filteredDomains = useMemo(() => {
+  const filteredDomains = React.useMemo(() => {
     let filtered = [...mockDomains];
 
     if (searchQuery) {

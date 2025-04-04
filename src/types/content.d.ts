@@ -1,29 +1,9 @@
 
-export type ContentStatus = 'queued' | 'processing' | 'completed' | 'failed' | 'active' | 'inactive' | 'draft';
-
-export type SortField = 'title' | 'lastUpdated' | 'messageCount' | 'createdAt' | 'status' | 'category' | 'author';
-
-export type ContentType = 'snippet' | 'file' | 'website';
-
 export interface User {
   id: string;
   name: string;
   avatar: string;
   role?: 'admin' | 'editor' | 'viewer';
-}
-
-export interface ContentTag {
-  id: string;
-  name: string;
-  color: string;
-}
-
-export interface ContentComment {
-  id: string;
-  contentId: string;
-  text: string;
-  createdAt: string;
-  createdBy: User;
 }
 
 export interface ContentVersion {
@@ -35,6 +15,31 @@ export interface ContentVersion {
   changes: string;
 }
 
+export interface ContentComment {
+  id: string;
+  contentId: string;
+  text: string;
+  createdAt: string;
+  createdBy: User;
+}
+
+export interface ContentTag {
+  id: string;
+  name: string;
+  color: string;
+}
+
+export type ContentStatus = 
+  | 'active' 
+  | 'inactive' 
+  | 'draft' 
+  | 'processing' 
+  | 'queued' 
+  | 'completed' 
+  | 'failed';
+
+export type ContentType = 'snippet' | 'file' | 'website';
+
 export interface Content {
   id: string;
   title: string;
@@ -45,7 +50,6 @@ export interface Content {
   createdAt: string;
   lastUpdated: string;
   author: User;
-  messageCount: number;
   chatbots?: Array<{ id: string; name: string }>;
   tags?: ContentTag[];
   sharedWith?: User[];
@@ -54,8 +58,7 @@ export interface Content {
   lastEditedBy?: User;
   content?: string;
   type?: ContentType;
-  progress?: number;
-  errorMessage?: string;
+  messageCount?: number;
 }
 
 export interface ContentState {
@@ -79,9 +82,18 @@ export interface ContentState {
   selectedIds: string[];
   searchQuery: string;
   lastFetchTime: number | null;
-  search: {
+  search?: {
     query: string;
     suggestions: string[];
     history: string[];
   };
 }
+
+export type SortField = 
+  | 'title'
+  | 'createdAt'
+  | 'lastUpdated'
+  | 'status'
+  | 'category'
+  | 'author'
+  | 'messageCount';

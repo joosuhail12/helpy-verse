@@ -1,144 +1,115 @@
 
-import { useState, useEffect } from 'react';
-import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { useAppSelector } from '@/hooks/useAppSelector';
+import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Plus, X } from 'lucide-react';
-import { TagSelector } from '@/components/common/TagSelector';
+import { PlusCircle, X } from 'lucide-react';
+import { useAppSelector } from '@/hooks/useAppSelector';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { updateContact } from '@/store/slices/contacts/contactsSlice';
 import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle,
-  DialogTrigger
-} from '@/components/ui/dialog';
-import { fetchTags } from '@/store/slices/tags/actions';
-import { updateContact } from '@/store/slices/contacts/actions';
-import { useToast } from '@/hooks/use-toast';
-import type { Contact } from '@/types/contact';
-import type { Tag } from '@/types/tag';
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface ContactTagsProps {
-  contact: Contact;
+  contactId: string;
   tags: string[];
 }
 
-export const ContactTags = ({ contact, tags }: ContactTagsProps) => {
-  const [selectedTags, setSelectedTags] = useState<string[]>(tags || []);
-  const [isOpen, setIsOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  
+export const ContactTags: React.FC<ContactTagsProps> = ({ contactId, tags }) => {
+  const [open, setOpen] = useState(false);
   const dispatch = useAppDispatch();
-  const { toast } = useToast();
+  const allTags = useAppSelector((state) => state.tags.items);
   
-  useEffect(() => {
-    dispatch(fetchTags({}));
-  }, [dispatch]);
-  
-  useEffect(() => {
-    setSelectedTags(tags || []);
-  }, [tags]);
-  
-  const handleSaveTags = async () => {
-    setIsLoading(true);
-    try {
-      await dispatch(updateContact({
-        id: contact.id,
-        updates: { tags: selectedTags }
+  const handleAddTag = (tagId: string) => {
+    // Only add if not already in the array
+    if (!tags.includes(tagId)) {
+      dispatch(updateContact({
+        contactId,
+        data: { tags: [...tags, tagId] }
       }));
-      setIsOpen(false);
-      toast({
-        title: "Tags Updated",
-        description: "Contact tags have been updated successfully.",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update tags. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
     }
+    setOpen(false);
   };
   
-  const handleRemoveTag = async (tagToRemove: string) => {
-    const updatedTags = selectedTags.filter(tag => tag !== tagToRemove);
-    setSelectedTags(updatedTags);
-    
-    try {
-      await dispatch(updateContact({
-        id: contact.id,
-        updates: { tags: updatedTags }
-      }));
-      toast({
-        title: "Tag Removed",
-        description: "Tag has been removed successfully.",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to remove tag. Please try again.",
-        variant: "destructive",
-      });
-      // Restore the removed tag
-      setSelectedTags(selectedTags);
-    }
+  const handleRemoveTag = (tagId: string) => {
+    dispatch(updateContact({
+      contactId,
+      data: { tags: tags.filter(id => id !== tagId) }
+    }));
   };
+  
+  const getTagById = (tagId: string) => {
+    return allTags.find(tag => tag.id === tagId);
+  };
+  
+  // Filter out tags that are already assigned
+  const availableTags = allTags.filter(tag => !tags.includes(tag.id));
   
   return (
     <div className="space-y-2">
-      <div className="flex items-center justify-between">
+      <div className="flex justify-between items-center">
         <h3 className="text-sm font-medium">Tags</h3>
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
-          <DialogTrigger asChild>
-            <Button variant="outline" size="sm">
-              <Plus className="mr-1 h-3 w-3" /> Add Tags
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add Tags</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <TagSelector
-                selectedTags={selectedTags}
-                onChange={setSelectedTags}
-              />
-              <div className="flex justify-end space-x-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setIsOpen(false)}
-                  disabled={isLoading}
-                >
-                  Cancel
-                </Button>
-                <Button 
-                  onClick={handleSaveTags}
-                  disabled={isLoading}
-                >
-                  Save
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+        
+        {availableTags.length > 0 && (
+          <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-8 px-2">
+                <PlusCircle className="h-4 w-4 mr-1" />
+                Add Tag
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="p-0" align="end" side="bottom">
+              <Command>
+                <CommandInput placeholder="Search tags..." />
+                <CommandList>
+                  <CommandEmpty>No tags found.</CommandEmpty>
+                  <CommandGroup>
+                    {availableTags.map((tag) => (
+                      <CommandItem
+                        key={tag.id}
+                        onSelect={() => handleAddTag(tag.id)}
+                      >
+                        {tag.name}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
+        )}
       </div>
       
       <div className="flex flex-wrap gap-2">
-        {selectedTags.length > 0 ? (
-          selectedTags.map((tag) => (
-            <Badge key={tag} variant="secondary" className="flex items-center gap-1">
-              {tag}
-              <X
-                className="h-3 w-3 cursor-pointer"
-                onClick={() => handleRemoveTag(tag)}
-              />
-            </Badge>
-          ))
+        {tags.length > 0 ? (
+          tags.map((tagId) => {
+            const tag = getTagById(tagId);
+            return tag ? (
+              <Badge key={tagId} variant="outline" className="flex items-center gap-1 pr-1">
+                {tag.name}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-4 w-4 p-0 hover:bg-transparent"
+                  onClick={() => handleRemoveTag(tagId)}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </Badge>
+            ) : null;
+          })
         ) : (
-          <span className="text-sm text-muted-foreground">No tags</span>
+          <p className="text-sm text-muted-foreground">No tags assigned</p>
         )}
       </div>
     </div>

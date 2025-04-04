@@ -1,5 +1,5 @@
 
-import React, { lazy, Suspense } from 'react';
+import * as React from 'react';
 import { createBrowserRouter } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import RootRedirect from '../components/app/RootRedirect';
@@ -20,44 +20,26 @@ import { settingsRoutes } from './settingsRoutes';
 import { automationRoutes } from './automationRoutes';
 
 // Lazy load components
-const SignIn = lazy(() => import('../pages/SignIn'));
-const ForgotPassword = lazy(() => import('../pages/ForgotPassword'));
-const ResetPassword = lazy(() => import('../pages/ResetPassword'));
-const SignUp = lazy(() => import('../pages/SignUp'));
-const NotFound = lazy(() => import('../pages/NotFound'));
-const LandingPage = lazy(() => import('../pages/LandingPage'));
+const SignIn = React.lazy(() => import('../pages/SignIn'));
+const ForgotPassword = React.lazy(() => import('../pages/ForgotPassword'));
+const ResetPassword = React.lazy(() => import('../pages/ResetPassword'));
+const SignUp = React.lazy(() => import('../pages/SignUp'));
+const NotFound = React.lazy(() => import('../pages/NotFound'));
+const LandingPage = React.lazy(() => import('../pages/LandingPage'));
 
-// Lazy load dashboard layout - make sure it's imported correctly
-const DashboardLayout = lazy(() => import('../layouts/DashboardLayout'));
+// Lazy load dashboard layout
+const DashboardLayoutComponent = React.lazy(() => import('../layouts/DashboardLayout'));
 
 // Helper to wrap components with Suspense and RouteErrorBoundary
 const withSuspenseAndErrorHandling = (Component) => (
   <RouteErrorBoundary>
-    <Suspense fallback={<LoadingSpinner />}>
+    <React.Suspense fallback={<LoadingSpinner />}>
       <Component />
-    </Suspense>
+    </React.Suspense>
   </RouteErrorBoundary>
 );
 
-// Log all available routes for debugging
-const logRoutes = (routes) => {
-  console.log('Available routes:');
-  const flattenRoutes = (routeArray, parentPath = '') => {
-    routeArray.forEach(route => {
-      if (route.path) {
-        const fullPath = parentPath ? `${parentPath}/${route.path}` : route.path;
-        console.log(`- ${fullPath}`);
-      }
-      if (route.children) {
-        const nextParent = route.path ? (parentPath ? `${parentPath}/${route.path}` : route.path) : parentPath;
-        flattenRoutes(route.children, nextParent);
-      }
-    });
-  };
-  
-  flattenRoutes(routes);
-};
-
+// Define the router - this will be used for reference but not directly used in the app
 export const router = createBrowserRouter([
   {
     path: '/',
@@ -87,9 +69,9 @@ export const router = createBrowserRouter([
     path: '/home',
     element: (
       <PrivateRoute>
-        <Suspense fallback={<LoadingSpinner />}>
-          <DashboardLayout />
-        </Suspense>
+        <React.Suspense fallback={<LoadingSpinner />}>
+          <DashboardLayoutComponent />
+        </React.Suspense>
       </PrivateRoute>
     ),
     children: [
@@ -105,8 +87,12 @@ export const router = createBrowserRouter([
   },
 ]);
 
-// Log the routes for debugging
-logRoutes(router.routes);
-console.log('Routes initialized:', router.routes);
+// Export routes to be used by AppRoutes.tsx
+export const allRoutes = [
+  ...dashboardRoutes,
+  ...inboxRoutes,
+  ...settingsRoutes,
+  ...automationRoutes
+];
 
-export default router;
+console.log('Routes initialized:', router.routes);

@@ -1,127 +1,94 @@
 
-import { QueryField } from '@/types/queryBuilder';
+import { QueryField, DataSource, FieldType } from '@/types/queryBuilder';
 
-// Sample audience fields for chatbot audience targeting
-export const audienceFields: QueryField[] = [
+export const mockAudienceFields: QueryField[] = [
   {
-    id: 'firstname',
-    name: 'firstname',
-    label: 'First Name',
+    id: 'name',
+    label: 'Name',
     type: 'text',
-    dataSource: 'contacts'
-  },
-  {
-    id: 'lastname',
-    name: 'lastname',
-    label: 'Last Name',
-    type: 'text',
-    dataSource: 'contacts'
+    source: 'contacts',
   },
   {
     id: 'email',
-    name: 'email',
     label: 'Email',
     type: 'text',
-    dataSource: 'contacts'
+    source: 'contacts',
   },
   {
-    id: 'phone',
-    name: 'phone',
-    label: 'Phone Number',
+    id: 'company',
+    label: 'Company Name',
     type: 'text',
-    dataSource: 'contacts'
+    source: 'companies',
   },
   {
-    id: 'customer_type',
-    name: 'customer_type',
-    label: 'Customer Type',
+    id: 'status',
+    label: 'Status',
     type: 'select',
-    dataSource: 'contacts',
-    options: [
-      { label: 'Lead', value: 'lead' },
-      { label: 'Customer', value: 'customer' },
-      { label: 'Partner', value: 'partner' }
-    ]
+    source: 'contacts',
+    options: ['Active', 'Inactive', 'Pending'],
   },
   {
-    id: 'subscription_status',
-    name: 'subscription_status',
-    label: 'Subscription Status',
-    type: 'select',
-    dataSource: 'contacts',
-    options: [
-      { label: 'Active', value: 'active' },
-      { label: 'Trial', value: 'trial' },
-      { label: 'Expired', value: 'expired' },
-      { label: 'Cancelled', value: 'cancelled' }
-    ]
+    id: 'interests',
+    label: 'Interests',
+    type: 'multi-select',
+    source: 'contacts',
+    options: ['Technology', 'Marketing', 'Sales', 'Support', 'Design'],
+  },
+  {
+    id: 'is_verified',
+    label: 'Is Verified',
+    type: 'boolean',
+    source: 'contacts',
+  },
+  {
+    id: 'age',
+    label: 'Age',
+    type: 'number',
+    source: 'contacts',
+  },
+  {
+    id: 'created_at',
+    label: 'Created Date',
+    type: 'date',
+    source: 'contacts',
   },
   {
     id: 'last_active',
-    name: 'last_active',
     label: 'Last Active',
     type: 'date',
-    dataSource: 'contacts'
+    source: 'contacts',
   },
   {
-    id: 'company_name',
-    name: 'company_name',
-    label: 'Company Name',
-    type: 'text',
-    dataSource: 'companies'
+    id: 'subscription_date',
+    label: 'Subscription Date',
+    type: 'date',
+    source: 'contacts',
   },
   {
-    id: 'company_size',
-    name: 'company_size',
-    label: 'Company Size',
+    id: 'last_purchase',
+    label: 'Last Purchase Date',
+    type: 'date',
+    source: 'contacts',
+  },
+  {
+    id: 'next_renewal',
+    label: 'Next Renewal Date',
+    type: 'date',
+    source: 'contacts',
+  },
+  {
+    id: 'subscription_type',
+    label: 'Subscription Type',
     type: 'select',
-    dataSource: 'companies',
-    options: [
-      { label: '1-10', value: 'small' },
-      { label: '11-50', value: 'medium' },
-      { label: '51-200', value: 'large' },
-      { label: '201+', value: 'enterprise' }
-    ]
-  },
-  {
-    id: 'industry',
-    name: 'industry',
-    label: 'Industry',
-    type: 'select',
-    dataSource: 'companies',
-    options: [
-      { label: 'Technology', value: 'technology' },
-      { label: 'Healthcare', value: 'healthcare' },
-      { label: 'Finance', value: 'finance' },
-      { label: 'Education', value: 'education' },
-      { label: 'Retail', value: 'retail' }
-    ]
-  },
-  {
-    id: 'location',
-    name: 'location',
-    label: 'Location',
-    type: 'text',
-    dataSource: 'companies'
-  },
-  {
-    id: 'is_enterprise',
-    name: 'is_enterprise',
-    label: 'Enterprise Customer',
-    type: 'boolean',
-    dataSource: 'companies'
+    source: 'contacts',
+    options: ['Basic', 'Premium', 'Enterprise'],
   },
   {
     id: 'tags',
-    name: 'tags',
     label: 'Tags',
     type: 'multi-select',
-    dataSource: 'general',
-    options: [
-      { label: 'VIP', value: 'vip' },
-      { label: 'New', value: 'new' },
-      { label: 'Returning', value: 'returning' },
-      { label: 'High Value', value: 'high_value' }
-    ]
-  }
+    source: 'contacts',
+    options: ['VIP', 'New', 'At Risk', 'Champion', 'Qualified'],
+  },
 ];
+

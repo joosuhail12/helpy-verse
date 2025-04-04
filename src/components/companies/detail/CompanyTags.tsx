@@ -32,8 +32,8 @@ export const CompanyTags = ({ companyId, tags = [] }: CompanyTagsProps) => {
     
     try {
       await dispatch(updateCompany({
-        companyId,
-        data: { 
+        id: companyId,
+        updates: { 
           tags: updatedTags 
         }
       }));

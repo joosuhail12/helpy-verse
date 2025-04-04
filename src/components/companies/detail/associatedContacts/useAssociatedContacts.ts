@@ -1,63 +1,91 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAppSelector } from '@/hooks/useAppSelector';
-import { selectAllContacts } from '@/store/slices/contacts/contactsSelectors';
-import { useUpdateContactCompanyMutation } from '@/api/services/contactsApi';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { fetchCustomers, updateContactCompany } from '@/store/slices/contacts/contactsSlice';
+import { Contact } from '@/types/contact';
+import { useDebounce } from '@/hooks/useDebounce';
 
 export const useAssociatedContacts = (companyId: string) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
+  const [associatedContacts, setAssociatedContacts] = useState<Contact[]>([]);
+  const [availableContacts, setAvailableContacts] = useState<Contact[]>([]);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-  
-  // Get data from Redux store (will be replaced with RTK Query in future)
-  const allContacts = useAppSelector(selectAllContacts);
-  
-  // Use RTK Query mutation for updating contacts
-  const [updateContactCompany, { isLoading }] = useUpdateContactCompanyMutation();
-  
-  // Filter contacts associated with the company
-  const associatedContacts = allContacts.filter(
-    contact => contact.company === companyId
-  );
-  
-  // Filter contacts for the search popover (those not already associated)
-  const unassociatedContacts = allContacts.filter(
-    contact => contact.company !== companyId
-  );
-  
-  // Filter contacts based on search query
-  const filteredContacts = searchQuery
-    ? unassociatedContacts.filter(
-        contact =>
-          `${contact.firstname} ${contact.lastname}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          contact.email.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    : unassociatedContacts.slice(0, 5); // Just show first 5 if no search
-  
-  const handleAssociateContact = async (contactId: string) => {
-    try {
-      await updateContactCompany({ contactId, companyId }).unwrap();
-      setIsPopoverOpen(false);
-    } catch (error) {
-      console.error('Failed to associate contact:', error);
-    }
+  const [isLoading, setIsLoading] = useState(true);
+  const contacts = useAppSelector((state) => state.contacts?.contacts || []);
+  const loading = useAppSelector((state) => state.contacts?.loading || false);
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    setIsLoading(true);
+    dispatch(fetchCustomers())
+      .unwrap()
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, [dispatch]);
+
+  const fetchAssociatedContacts = () => {
+    const associated = contacts.filter(contact => contact.company === companyId);
+    setAssociatedContacts(associated);
+
+    const available = contacts.filter(contact => !contact.company);
+    setAvailableContacts(available);
   };
-  
-  const handleRemoveAssociation = async (contactId: string) => {
-    try {
-      await updateContactCompany({ contactId, companyId: null }).unwrap();
-    } catch (error) {
-      console.error('Failed to remove association:', error);
+
+  useEffect(() => {
+    if (contacts.length > 0) {
+      fetchAssociatedContacts();
     }
+  }, [contacts, companyId]);
+
+  const filteredContacts = availableContacts.filter(contact => {
+    const firstName = contact.firstname.toLowerCase();
+    const lastName = contact.lastname.toLowerCase();
+    const email = contact.email.toLowerCase();
+    const query = debouncedSearchQuery.toLowerCase();
+    
+    return firstName.includes(query) || lastName.includes(query) || email.includes(query);
+  });
+
+  const handleAssociateContact = (contactId: string) => {
+    dispatch(
+      updateContactCompany({
+        contactId,
+        companyId
+      })
+    );
+    
+    // Refresh associated contacts
+    fetchAssociatedContacts();
+    
+    // Close popover
+    setIsPopoverOpen(false);
+    // Clear search query
+    setSearchQuery('');
   };
-  
+
+  const handleRemoveAssociation = (contactId: string) => {
+    dispatch(
+      updateContactCompany({
+        contactId,
+        companyId: null
+      })
+    );
+    fetchAssociatedContacts();
+  };
+
   return {
     searchQuery,
     setSearchQuery,
+    debouncedSearchQuery,
     associatedContacts,
+    availableContacts,
     isPopoverOpen,
     setIsPopoverOpen,
     isLoading,
-    loading: isLoading,
+    loading,
     filteredContacts,
     handleAssociateContact,
     handleRemoveAssociation

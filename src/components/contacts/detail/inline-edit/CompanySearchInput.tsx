@@ -1,101 +1,96 @@
 
 import { useState, useEffect } from 'react';
-import { useAppSelector } from '@/hooks/useAppSelector';
-import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { 
-  Command, 
-  CommandEmpty, 
-  CommandGroup, 
-  CommandInput, 
-  CommandItem, 
-  CommandList 
-} from '@/components/ui/command';
-import { 
-  Popover, 
-  PopoverContent, 
-  PopoverTrigger 
-} from '@/components/ui/popover';
-import { Building } from 'lucide-react';
-import { selectAllCompanies } from '@/store/slices/companies/selectors';
-import { fetchCompanies } from '@/store/slices/companies/companiesSlice';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem } from '@/components/ui/command';
+import { companiesService } from '@/api/services/companiesService';
+import { useQuery } from '@tanstack/react-query';
+import { toast } from '@/components/ui/use-toast';
 
 interface CompanySearchInputProps {
   value: string;
   onChange: (value: string) => void;
-  onBlur?: () => void;
-  placeholder?: string;
   disabled?: boolean;
 }
 
-export const CompanySearchInput = ({
-  value,
-  onChange,
-  onBlur,
-  placeholder = 'Search companies...',
-  disabled = false
-}: CompanySearchInputProps) => {
+export const CompanySearchInput = ({ value, onChange, disabled }: CompanySearchInputProps) => {
   const [open, setOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const companies = useAppSelector(selectAllCompanies);
-  const dispatch = useAppDispatch();
+  const [inputValue, setInputValue] = useState(value);
+  const [searchQuery, setSearchQuery] = useState('');
   
+  // Fetch companies from the API
+  const { data: companiesResponse, isLoading, error } = useQuery({
+    queryKey: ['companies', searchQuery],
+    queryFn: () => companiesService.fetchCompanies({ 
+      searchQuery,
+      limit: 10
+    }),
+    enabled: open,
+    staleTime: 60000, // 1 minute
+  });
+
+  const companies = companiesResponse?.companies || [];
+
   useEffect(() => {
-    dispatch(fetchCompanies({}));
-  }, [dispatch]);
-  
-  // Find current company name if we have a value (company ID)
-  const selectedCompany = companies.find(company => company.id === value);
-  const displayValue = selectedCompany ? selectedCompany.name : '';
-  
-  const filteredCompanies = searchTerm
-    ? companies.filter(company =>
-        company.name.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    : companies;
-  
+    setInputValue(value);
+  }, [value]);
+
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: "Error loading companies",
+        description: "Could not load the company list. Please try again.",
+        variant: "destructive",
+      });
+    }
+  }, [error]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setInputValue(value);
+    setSearchQuery(value);
+  };
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <div className="relative">
+        <div className="flex items-center w-full relative">
           <Input
-            placeholder={placeholder}
-            value={displayValue}
-            onChange={e => setSearchTerm(e.target.value)}
-            onClick={() => setOpen(true)}
-            onBlur={onBlur}
+            value={inputValue}
+            onChange={handleInputChange}
+            onFocus={() => setOpen(true)}
+            className="h-8 pr-8"
             disabled={disabled}
-            className="w-full"
           />
-          <Building className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute right-2 h-4 w-4 text-gray-400" />
         </div>
       </PopoverTrigger>
-      <PopoverContent className="p-0 w-[300px]" align="start">
+      <PopoverContent className="p-0 w-[220px]">
         <Command>
           <CommandInput 
             placeholder="Search companies..." 
-            value={searchTerm}
-            onValueChange={setSearchTerm}
+            value={searchQuery}
+            onValueChange={setSearchQuery}
           />
-          <CommandList>
-            <CommandEmpty>No companies found</CommandEmpty>
-            <CommandGroup>
-              {filteredCompanies.map(company => (
-                <CommandItem
-                  key={company.id}
-                  value={company.id}
-                  onSelect={(value) => {
-                    onChange(value);
-                    setOpen(false);
-                    onBlur && onBlur();
-                  }}
-                >
-                  <Building className="mr-2 h-4 w-4" />
-                  {company.name}
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
+          <CommandEmpty>
+            {isLoading ? 'Loading...' : 'No company found.'}
+          </CommandEmpty>
+          <CommandGroup>
+            {companies.map((company) => (
+              <CommandItem
+                key={company.id}
+                value={company.name}
+                onSelect={(value) => {
+                  onChange(value);
+                  setInputValue(value);
+                  setOpen(false);
+                }}
+              >
+                {company.name}
+              </CommandItem>
+            ))}
+          </CommandGroup>
         </Command>
       </PopoverContent>
     </Popover>

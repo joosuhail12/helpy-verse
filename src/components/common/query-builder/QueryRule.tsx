@@ -1,6 +1,8 @@
 
 import { useState } from 'react';
-import type { QueryRule as QueryRuleType, QueryField, DataSource, ValidationError, Operator } from '@/types/queryBuilder';
+import type { QueryRule as QueryRuleType, QueryField, DataSource } from '@/types/queryBuilder';
+import type { ValidationError } from '@/components/automation/chatbots/form/audience-rules/utils/validation';
+import { useSourceFields } from './hooks/useSourceFields';
 import { OperatorSelect } from './components/OperatorSelect';
 import { SourceSelect } from './components/SourceSelect';
 import { FieldSelect } from './components/FieldSelect';
@@ -18,25 +20,16 @@ interface QueryRuleProps {
 export const QueryRule = ({ rule, onChange, fields, errors = [] }: QueryRuleProps) => {
   const [selectedSource, setSelectedSource] = useState<ExtendedDataSource>('');
   const selectedField = fields.find((f) => f.id === rule.field);
-  const ruleErrors = errors.filter(error => error.rule?.id === rule.id);
-  
-  // Filter fields by source
-  const sourceFields = fields.filter(field => {
-    if (!selectedSource) return true;
-    if (selectedSource.startsWith('custom_objects.')) {
-      const customObjectId = selectedSource.split('.')[1];
-      return field.customObject === customObjectId;
-    }
-    return field.dataSource === selectedSource;
-  });
+  const ruleErrors = errors.filter(error => error.ruleId === rule.id);
+  const sourceFields = useSourceFields(selectedSource, fields);
 
   const handleSourceChange = (source: ExtendedDataSource) => {
     setSelectedSource(source);
     onChange({ ...rule, field: '' });
   };
 
-  const getErrorMessage = (fieldPath: string) => {
-    const error = ruleErrors.find(err => err.path === fieldPath || err.field === fieldPath);
+  const getErrorMessage = (fieldName: string) => {
+    const error = ruleErrors.find(err => err.field === fieldName);
     return error ? error.message : null;
   };
 
@@ -68,7 +61,7 @@ export const QueryRule = ({ rule, onChange, fields, errors = [] }: QueryRuleProp
           <OperatorSelect
             selectedField={selectedField}
             value={rule.operator}
-            onValueChange={(value) => onChange({ ...rule, operator: value as Operator })}
+            onValueChange={(value) => onChange({ ...rule, operator: value })}
             disabled={!rule.field}
           />
           {getErrorMessage('operator') && (
@@ -78,10 +71,9 @@ export const QueryRule = ({ rule, onChange, fields, errors = [] }: QueryRuleProp
 
         <div className="space-y-1 relative">
           <ValueInput
-            field={selectedField || { id: '', label: '', type: 'text', name: '' }}
-            operator={rule.operator}
-            value={rule.value}
-            onChange={(value) => onChange({ ...rule, value })}
+            rule={rule}
+            selectedField={selectedField}
+            onChange={onChange}
             errorMessage={getErrorMessage('value')}
           />
           {getErrorMessage('value') && (

@@ -1,11 +1,12 @@
 
+import * as React from 'react';
 import { useCustomDataMutations } from "./useCustomDataMutations";
 import type { CustomField } from "@/types/customField";
 
 export const useCustomFieldImport = () => {
   const { addCustomField } = useCustomDataMutations();
 
-  const handleImport = async (importedFields: CustomField[], table: 'tickets' | 'contacts' | 'companies') => {
+  const handleImport = React.useCallback(async (importedFields: CustomField[], table: 'tickets' | 'contacts' | 'companies') => {
     const timestamp = new Date().toISOString();
     // Add each imported field using the existing mutation
     for (const field of importedFields) {
@@ -30,7 +31,7 @@ export const useCustomFieldImport = () => {
         }
       });
     }
-  };
+  }, [addCustomField]);
 
   return { handleImport };
 };

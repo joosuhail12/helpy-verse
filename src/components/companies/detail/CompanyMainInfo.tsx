@@ -1,4 +1,3 @@
-
 import { Company } from '@/types/company';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Building2, Globe, Calendar, Phone, Mail, MapPin, Users, Banknote, Info } from 'lucide-react';
@@ -23,7 +22,7 @@ export const CompanyMainInfo = ({ company }: CompanyMainInfoProps) => {
             </div>
             <InlineEditField
               value={company.name}
-              company={company.id}
+              companyId={company.id}
               field="name"
               label="Company Name"
               validation={[{ type: 'required', value: '', message: 'Company name is required' }]}
@@ -37,7 +36,7 @@ export const CompanyMainInfo = ({ company }: CompanyMainInfoProps) => {
             </div>
             <InlineEditField
               value={company.website || ''}
-              company={company.id}
+              companyId={company.id}
               field="website"
               label="Website"
             />
@@ -50,7 +49,7 @@ export const CompanyMainInfo = ({ company }: CompanyMainInfoProps) => {
             </div>
             <InlineEditField
               value={company.industry || ''}
-              company={company.id}
+              companyId={company.id}
               field="industry"
               label="Industry"
             />
@@ -63,7 +62,7 @@ export const CompanyMainInfo = ({ company }: CompanyMainInfoProps) => {
             </div>
             <InlineEditField
               value={String(company.numberOfEmployees || '')}
-              company={company.id}
+              companyId={company.id}
               field="numberOfEmployees"
               label="Employee Count"
               type="number"
@@ -77,7 +76,7 @@ export const CompanyMainInfo = ({ company }: CompanyMainInfoProps) => {
             </div>
             <InlineEditField
               value={String(company.annualRevenue || '')}
-              company={company.id}
+              companyId={company.id}
               field="annualRevenue"
               label="Annual Revenue"
               type="number"
@@ -91,7 +90,7 @@ export const CompanyMainInfo = ({ company }: CompanyMainInfoProps) => {
             </div>
             <InlineEditField
               value={company.description || ''}
-              company={company.id}
+              companyId={company.id}
               field="description"
               label="Description"
               type="rich-text"
@@ -106,31 +105,31 @@ export const CompanyMainInfo = ({ company }: CompanyMainInfoProps) => {
             <div className="space-y-2">
               <InlineEditField
                 value={company.location?.street || ''}
-                company={company.id}
+                companyId={company.id}
                 field="location.street"
                 label="Street"
               />
               <InlineEditField
                 value={company.location?.city || ''}
-                company={company.id}
+                companyId={company.id}
                 field="location.city"
                 label="City"
               />
               <InlineEditField
                 value={company.location?.state || ''}
-                company={company.id}
+                companyId={company.id}
                 field="location.state"
                 label="State"
               />
               <InlineEditField
                 value={company.location?.country || ''}
-                company={company.id}
+                companyId={company.id}
                 field="location.country"
                 label="Country"
               />
               <InlineEditField
                 value={company.location?.zipcode || ''}
-                company={company.id}
+                companyId={company.id}
                 field="location.zipcode"
                 label="Postal Code"
               />
@@ -144,7 +143,7 @@ export const CompanyMainInfo = ({ company }: CompanyMainInfoProps) => {
             </div>
             <InlineEditField
               value={company.phone || ''}
-              company={company.id}
+              companyId={company.id}
               field="phone"
               label="Phone"
             />
@@ -157,7 +156,7 @@ export const CompanyMainInfo = ({ company }: CompanyMainInfoProps) => {
             </div>
             <InlineEditField
               value={company.email || ''}
-              company={company.id}
+              companyId={company.id}
               field="email"
               label="Email"
             />
@@ -171,19 +170,19 @@ export const CompanyMainInfo = ({ company }: CompanyMainInfoProps) => {
             <div className="space-y-2">
               <InlineEditField
                 value={company.socialMedia?.linkedin || ''}
-                company={company.id}
+                companyId={company.id}
                 field="socialMedia.linkedin"
                 label="LinkedIn"
               />
               <InlineEditField
                 value={company.socialMedia?.twitter || ''}
-                company={company.id}
+                companyId={company.id}
                 field="socialMedia.twitter"
                 label="Twitter"
               />
               <InlineEditField
                 value={company.socialMedia?.facebook || ''}
-                company={company.id}
+                companyId={company.id}
                 field="socialMedia.facebook"
                 label="Facebook"
               />

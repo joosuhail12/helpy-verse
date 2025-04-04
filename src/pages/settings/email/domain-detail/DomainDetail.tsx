@@ -1,5 +1,5 @@
 
-import React from 'react';
+import * as React from 'react';
 import { useParams } from 'react-router-dom';
 import { mockDomains } from '@/mock/domains';
 import { DomainDNSCard } from '../domains/components/DomainDNSCard';

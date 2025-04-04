@@ -1,16 +1,14 @@
 
 import type { CannedResponse } from '@/mock/cannedResponses';
-import { EntityState } from '@reduxjs/toolkit';
 
-export interface CannedResponsesState extends EntityState<CannedResponse, string> {
+export interface CannedResponsesState {
+  responses: CannedResponse[];
   loading: boolean;
   error: string | null;
-  selectedResponseId: string | null;
+  selectedResponse: CannedResponse | null;
   versionHistory: {
     responseId: string;
     versions: CannedResponse['versions'];
   } | null;
   categories: string[];
 }
-
-export { CannedResponse };
