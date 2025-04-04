@@ -9,6 +9,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/components/ui/use-toast';
 import ChatWidgetPreview from './ChatWidgetPreview';
 import { DataCollectionConfig } from '@/components/automation/chatbots/DataCollectionConfig';
+import { useCustomFields } from '@/hooks/useCustomFields';
+import type { DataCollectionField } from '@/types/chatbot';
 
 // Mock data for available fields - in a real implementation, this would be fetched from the API
 const AVAILABLE_FIELDS = [
@@ -24,24 +26,24 @@ const AVAILABLE_FIELDS = [
   { id: 'company_name', name: 'Company Name', type: 'text', object: 'company' },
   { id: 'company_website', name: 'Website', type: 'text', object: 'company' },
   { id: 'company_industry', name: 'Industry', type: 'text', object: 'company' },
-  { id: 'company_size', name: 'Company Size', type: 'number', object: 'company' },
+  { id: 'company_size', name: 'Company Size', type: 'text', object: 'company' },
 ];
 
 const BehaviorSettings: React.FC = () => {
   // In a real implementation, these would be fetched from the backend
   const [collectUserData, setCollectUserData] = useState(true);
   const [welcomeMessage, setWelcomeMessage] = useState("Hi there! 👋 How can I help you today?");
-  const [selectedFields, setSelectedFields] = useState([
+  const [selectedFields, setSelectedFields] = useState<DataCollectionField[]>([
     {
       id: 'contact_email',
       label: 'Email',
-      type: 'email',
+      type: 'email', // This must be one of: "text" | "email" | "phone" | "select"
       required: true
     },
     {
       id: 'contact_firstname',
       label: 'First Name',
-      type: 'text',
+      type: 'text', // This must be one of: "text" | "email" | "phone" | "select"
       required: false
     }
   ]);
@@ -54,7 +56,7 @@ const BehaviorSettings: React.FC = () => {
     });
   };
 
-  const handleFieldsChange = (fields) => {
+  const handleFieldsChange = (fields: DataCollectionField[]) => {
     setSelectedFields(fields);
   };
 
