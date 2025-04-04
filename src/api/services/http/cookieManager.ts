@@ -46,7 +46,7 @@ export const handleLogout = (): void => {
     window.location.href = "/sign-in";
 };
 
-// Export helper functions to reduce circular dependencies
+// Export helper functions
 export const cookieFunctions = {
     getCookie,
     setCookie,

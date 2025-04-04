@@ -6,6 +6,7 @@ import { RouterProvider } from "react-router-dom";
 import { router } from "./routes";
 import { Loader2 } from 'lucide-react';
 import ErrorBoundary from "./components/common/ErrorBoundary";
+import { Toaster } from "./components/ui/toaster";
 
 const LoadingFallback = () => (
   <div className="min-h-screen flex items-center justify-center">
@@ -26,6 +27,7 @@ const App: React.FC = () => {
       <Suspense fallback={<LoadingFallback />}>
         <AppProviders>
           <RouterProvider router={router} />
+          <Toaster />
         </AppProviders>
       </Suspense>
     </ErrorBoundary>

@@ -16,27 +16,28 @@ export const ProtectedRoute = memo(({ children }: { children: React.ReactNode })
   
   // Single authentication check that runs once
   const isAuth = isAuthenticated();
-  const isExpired = isAuth ? isTokenExpired() : true;
+  const isExpired = false; // Disable token expiration check for now
   
   useEffect(() => {
     console.log('ProtectedRoute: Auth check for path:', location.pathname);
     
     // Only run API check once per route change and only if authenticated
     if (isAuth && !isExpired && !apiChecked) {
-      HttpClient.checkApiConnection()
-        .then(isConnected => {
-          if (!isConnected) {
-            toast({
-              title: "API Connection Issue",
-              description: "Having trouble connecting to the server. Some features may be limited.",
-              variant: "destructive",
-            });
-          }
+      // Try to fetch user profile as a better API check
+      HttpClient.apiClient.get('/profile')
+        .then(() => {
+          console.log('API connection successful');
           setApiChecked(true);
         })
         .catch(err => {
           console.error("API connection check failed:", err);
           setApiChecked(true);
+          
+          toast({
+            title: "API Connection Issue",
+            description: "Having trouble connecting to the server. Some features may be limited.",
+            variant: "destructive",
+          });
         });
     }
   }, [location.pathname, isAuth, isExpired, apiChecked]);

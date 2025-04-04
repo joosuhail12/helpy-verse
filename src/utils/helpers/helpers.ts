@@ -2,17 +2,6 @@
 /**
  * Common utility helpers used throughout the application
  */
-import { 
-  getCookie as getStorageCookie, 
-  setCookie as setStorageCookie, 
-  handleLogout as handleStorageLogout 
-} from "@/api/services/http/cookieManager";
-import { handleSetToken as tokenManagerSetToken } from "@/utils/auth/tokenManager";
-
-// Re-export storage functions from cookieManager to avoid circular dependencies
-export const getCookie = getStorageCookie;
-export const setCookie = setStorageCookie;
-export const handleLogout = handleStorageLogout;
 
 // Base64 encoding for email addresses (simple obfuscation)
 export const encryptBase64 = (text: string): string => {
@@ -29,6 +18,27 @@ export const decryptBase64 = (encoded: string): string => {
   }
 };
 
+// Set/get cookie functions that use localStorage
+export const setCookie = (name: string, value: string, exdays: number = 30): void => {
+  try {
+    localStorage.setItem(name, value);
+  } catch (error) {
+    console.error("Error setting localStorage:", error);
+  }
+};
+
+export const getCookie = (name: string): string => {
+  try {
+    const localValue = localStorage.getItem(name);
+    if (localValue) {
+      return localValue;
+    }
+  } catch (error) {
+    console.error("Error accessing localStorage:", error);
+  }
+  return "";
+};
+
 // Set workspace ID in localStorage
 export const setWorkspaceId = (workspaceId: string): void => {
   if (!workspaceId) return;
@@ -38,8 +48,22 @@ export const setWorkspaceId = (workspaceId: string): void => {
   console.log(`Workspace ID set to: ${workspaceId}`);
 };
 
-// Re-export the token manager's handleSetToken function
-export const handleSetToken = tokenManagerSetToken;
+// Set token function
+export const handleSetToken = (token: string): boolean => {
+  if (!token) {
+    console.error("Cannot set empty token");
+    return false;
+  }
+  
+  try {
+    console.log("Setting auth token in localStorage");
+    localStorage.setItem("token", token);
+    return true;
+  } catch (error) {
+    console.error("Error setting token:", error);
+    return false;
+  }
+};
 
 // Format date to a readable format
 export const formatDate = (date: Date | string | number): string => {

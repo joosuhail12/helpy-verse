@@ -3,11 +3,28 @@
  * Token and authentication management utility functions
  */
 import { HttpClient } from "@/api/services/http";
-import { cookieFunctions } from "@/api/services/http/cookieManager";
 import { jwtDecode } from "jwt-decode";
 
-// Get storage helpers from cookieFunctions to avoid circular dependencies
-const { getCookie, setCookie } = cookieFunctions;
+// Get storage helpers to avoid circular dependencies
+const getCookie = (name: string): string => {
+  try {
+    const localValue = localStorage.getItem(name);
+    if (localValue) {
+      return localValue;
+    }
+  } catch (error) {
+    console.error("Error accessing localStorage:", error);
+  }
+  return "";
+};
+
+const setCookie = (name: string, value: string, exdays: number = 30): void => {
+  try {
+    localStorage.setItem(name, value);
+  } catch (error) {
+    console.error("Error setting localStorage:", error);
+  }
+};
 
 // Logout User
 export const handleLogout = async (): Promise<void> => {
@@ -103,24 +120,25 @@ export const isTokenExpired = (): boolean => {
   try {
     // First check if the token has the right format for JWT
     if (!token.includes('.')) {
-      console.warn("Token does not appear to be in JWT format");
-      return true; // Consider non-JWT tokens as expired
+      console.log("Token does not appear to be in JWT format, treating as a custom token format");
+      // For non-JWT tokens, assume not expired and rely on server validation
+      return false;
     }
     
-    // Now try to decode it
+    // If it's a JWT, try to decode it
     const decoded = jwtDecode<{exp?: number}>(token);
     if (!decoded || !decoded.exp) {
       console.warn("Token has no expiration claim");
-      return true;
+      return false; // If we can't determine expiration, let the server validate it
     }
     
     // Check if current time is past expiration
     const currentTime = Math.floor(Date.now() / 1000);
     return decoded.exp < currentTime;
   } catch (error) {
-    console.error("Error checking token expiration:", error);
-    // To be safe, we'll consider any token we can't validate as expired
-    return true;
+    console.log("Error checking token expiration (possibly not a JWT token):", error);
+    // If we can't validate the token format, let the server validate it
+    return false;
   }
 };
 

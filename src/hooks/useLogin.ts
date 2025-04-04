@@ -3,10 +3,9 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from './useAppDispatch';
 import { useAppSelector } from './useAppSelector';
-// Import loginUser from authActions
 import { loginUser } from '../store/slices/auth/authActions';
 import { toast } from '../components/ui/use-toast';
-import { handleSetToken, isAuthenticated } from '@/utils/auth/tokenManager';
+import { isAuthenticated } from '@/utils/auth/tokenManager';
 import { HttpClient } from '@/api/services/http';
 
 // Create a memoized selector for auth state
@@ -79,7 +78,7 @@ export const useLogin = (redirectPath: string = '/home/inbox/all') => {
     if (isSubmitting || !email || !password) return;
     
     // Check if offline first
-    if (isOffline || HttpClient.isOffline()) {
+    if (isOffline || !navigator.onLine) {
       toast({
         title: 'You\'re offline',
         description: 'Please check your internet connection and try again.',
@@ -143,7 +142,7 @@ export const useLogin = (redirectPath: string = '/home/inbox/all') => {
     password,
     setPassword,
     loading: loading || isSubmitting,
-    isOffline,
+    isOffline: isOffline || !navigator.onLine,
     handleLoginSubmit
   };
 };

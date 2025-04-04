@@ -1,14 +1,5 @@
-
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { HttpClient } from "@/api/services/http";
-import { 
-  encryptBase64,
-  setCookie,
-  setWorkspaceId,
-  handleSetToken
-} from '@/utils/helpers/helpers';
-import { get } from "lodash";
-import { Credentials, PasswordResetConfirmation, PasswordResetRequest, RegistrationCredentials } from './types';
 import { AUTH_ENDPOINTS } from '@/api/services/http/config';
 import { 
   setAuthLoading, 
@@ -16,7 +7,34 @@ import {
   setAuthSuccess, 
   setUserData 
 } from './authSlice';
+import { get } from "lodash";
+import type { Credentials, PasswordResetConfirmation, PasswordResetRequest, RegistrationCredentials } from './types';
 import type { AppDispatch, RootState } from '@/store/store';
+
+// Create encryptBase64 function here to avoid circular dependencies
+const encryptBase64 = (text: string): string => {
+  return window.btoa(unescape(encodeURIComponent(text)));
+};
+
+// Create setToken helper to avoid circular dependencies
+const setToken = (token: string): boolean => {
+  if (!token) return false;
+  
+  try {
+    localStorage.setItem("token", token);
+    return true;
+  } catch (e) {
+    console.error("Failed to set token:", e);
+    return false;
+  }
+};
+
+// Create setWorkspaceId helper to avoid circular dependencies
+const setWorkspaceId = (id: string): void => {
+  if (id) {
+    localStorage.setItem("workspaceId", id);
+  }
+};
 
 // Create action creator functions that dispatch the slice actions
 export const loginUser = (credentials: Credentials) => async (dispatch: AppDispatch) => {
@@ -24,7 +42,7 @@ export const loginUser = (credentials: Credentials) => async (dispatch: AppDispa
     dispatch(setAuthLoading(true));
     
     // Check for offline status first
-    if (HttpClient.isOffline()) {
+    if (!navigator.onLine) {
       console.error("Device is offline - cannot connect to authentication server");
       dispatch(setAuthError("You are currently offline. Please check your internet connection and try again."));
       return {
@@ -50,13 +68,18 @@ export const loginUser = (credentials: Credentials) => async (dispatch: AppDispa
     if (loginData) {
       const email = loginData?.username || credentials.email;
       const encryptedEmail = encryptBase64(email);
-      setCookie("agent_email", encryptedEmail);
+      localStorage.setItem("agent_email", encryptedEmail);
 
-      // Set the token in the cookie and Axios headers
+      // Set the token in the localStorage and Axios headers
       const token = loginData?.accessToken?.token || "";
       if (token) {
         console.log("Setting token from login response");
-        handleSetToken(token);
+        setToken(token);
+        
+        // Configure Axios with the new token
+        if (HttpClient && HttpClient.setAxiosDefaultConfig) {
+          HttpClient.setAxiosDefaultConfig(token);
+        }
         
         // Store user ID for convenience if available
         if (loginData.id) {
@@ -73,14 +96,11 @@ export const loginUser = (credentials: Credentials) => async (dispatch: AppDispa
         return { error: { message: "Authentication server did not provide a valid token. Please try again." } };
       }
 
-      // Set workspace ID if available - only in cookie
+      // Set workspace ID if available
       const workspaceId = get(response.data, "data.defaultWorkspaceId", "");
       if (workspaceId) {
         setWorkspaceId(workspaceId);
       }
-
-      // Configure Axios with the new token
-      HttpClient.setAxiosDefaultConfig();
       
       dispatch(setAuthSuccess(response.data));
       return { data: response.data };
@@ -96,7 +116,7 @@ export const loginUser = (credentials: Credentials) => async (dispatch: AppDispa
     let errorDetails = {};
     
     // Check if this is an offline error
-    if (error.isOfflineError || !navigator.onLine) {
+    if (!navigator.onLine) {
       errorMessage = "You are currently offline. Please check your internet connection and try again.";
       errorDetails = { isOfflineError: true };
     }

@@ -1,5 +1,5 @@
 
-import { useEffect, memo } from 'react';
+import { useEffect, memo, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { toast } from '@/components/ui/use-toast';
 import { isAuthenticated } from '@/utils/auth/tokenManager';
@@ -10,24 +10,31 @@ import { HttpClient } from '@/api/services/http';
  * Also performs API connectivity check
  */
 const RootRedirect: React.FC = memo(() => {
+  const [apiChecked, setApiChecked] = useState(false);
+
   useEffect(() => {
+    // Skip API check if already performed
+    if (apiChecked) return;
+    
     console.log('RootRedirect: Checking API connectivity');
     
-    // Single API check on component mount
-    HttpClient.checkApiConnection()
-      .then(isConnected => {
-        if (!isConnected) {
-          toast({
-            title: "API Connection Issue",
-            description: "Could not connect to the API. Some features may not work correctly.",
-            variant: "destructive",
-          });
-        }
+    // Check API profile endpoint instead of health endpoint
+    HttpClient.apiClient.get('/profile')
+      .then(() => {
+        console.log('API connection successful');
+        setApiChecked(true);
       })
       .catch(error => {
         console.error("API connection check failed:", error);
+        setApiChecked(true);
+        
+        toast({
+          title: "API Connection Issue",
+          description: "Could not connect to the API. Some features may not work correctly.",
+          variant: "destructive",
+        });
       });
-  }, []);
+  }, [apiChecked]);
 
   // Check authentication directly - only once
   const isAuth = isAuthenticated();

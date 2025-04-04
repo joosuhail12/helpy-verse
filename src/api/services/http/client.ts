@@ -1,85 +1,87 @@
 
-import axios from 'axios';
-import { API_BASE_URL, LLM_SERVICE_URL, DEFAULT_TIMEOUT, CONTACTS_TIMEOUT, CORS_CONFIG } from './config';
+import axios, { AxiosInstance } from 'axios';
 import { 
   requestInterceptor, 
-  requestErrorInterceptor, 
+  requestErrorInterceptor,
   responseInterceptor, 
-  responseErrorInterceptor 
+  responseErrorInterceptor
 } from './interceptors';
-import { cookieFunctions } from './cookieManager';
 
-// A function to create an axios instance with proper config
-const createApiClient = (baseURL, timeout) => {
-    const client = axios.create({
-        baseURL,
-        headers: {
-            "Content-Type": "application/json",
-            ...CORS_CONFIG.headers
-        },
-        timeout,
-        withCredentials: CORS_CONFIG.withCredentials,
-    });
+// Get correct API URL from environment variables
+const API_BASE_URL = import.meta.env.VITE_REACT_APP_API_URL || 'https://dev-socket.pullseai.com/api';
+
+// Create the HTTP client with a single shared instance
+export class HttpClient {
+  static apiClient: AxiosInstance = axios.create({
+    baseURL: API_BASE_URL,
+    timeout: 30000,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  // Initialize the API client with interceptors
+  static {
+    console.log('Initializing API client with base URL:', API_BASE_URL);
     
-    // Add request and response interceptors
-    client.interceptors.request.use(requestInterceptor, requestErrorInterceptor);
-    client.interceptors.response.use(responseInterceptor, responseErrorInterceptor);
+    // Add interceptors
+    this.apiClient.interceptors.request.use(
+      requestInterceptor,
+      requestErrorInterceptor
+    );
+
+    this.apiClient.interceptors.response.use(
+      responseInterceptor, 
+      responseErrorInterceptor
+    );
+  }
+
+  // Set Axios default config with token
+  static setAxiosDefaultConfig(token?: string): void {
+    // If token is provided, use it; otherwise, try to get it from localStorage
+    const authToken = token || localStorage.getItem('token') || '';
     
-    return client;
-};
-
-// Initialize Axios instances with proper configuration
-const apiClient = createApiClient(API_BASE_URL, DEFAULT_TIMEOUT);
-const contactsClient = createApiClient(API_BASE_URL, CONTACTS_TIMEOUT);
-const llmService = createApiClient(LLM_SERVICE_URL, 60000);
-
-// Set up default axios configuration
-const setAxiosDefaultConfig = (token?: string): void => {
-    try {
-        // If token is provided, use it
-        if (token) {
-            apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-            contactsClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-            llmService.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-            console.log("Authorization header set for API clients with provided token");
-        } else {
-            // We'll handle this in the request interceptor instead
-            console.log("No token provided, will check in interceptor");
-        }
-    } catch (error) {
-        console.error("Error setting API client configuration:", error);
+    if (authToken) {
+      console.log('Authorization header set for API clients with provided token');
+      this.apiClient.defaults.headers.common['Authorization'] = `Bearer ${authToken}`;
+    } else {
+      console.log('No token available for API client configuration');
+      delete this.apiClient.defaults.headers.common['Authorization'];
     }
-};
+  }
 
-// Debug function to check API connectivity
-const checkApiConnection = async () => {
+  // Check if client is offline
+  static isOffline(): boolean {
+    return !navigator.onLine;
+  }
+  
+  // Helper method to check API connection
+  static async checkApiConnection(): Promise<boolean> {
+    if (!navigator.onLine) {
+      console.log('Device is offline, skipping API connection check');
+      return false;
+    }
+    
     try {
-        console.log(`Checking API connection to ${API_BASE_URL}`);
-        // First try the health endpoint
-        const response = await apiClient.get('/health', { timeout: 5000 })
-          .catch(() => {
-            // If health endpoint fails, try a simple GET to the base URL
-            return apiClient.get('/', { timeout: 5000 });
-          });
-        console.log('API connection check result:', response.status);
+      console.log('Checking API connection to', API_BASE_URL);
+      
+      // Try a simple profile endpoint instead of health endpoint
+      await this.apiClient.get('/profile');
+      console.log('API connection test successful');
+      return true;
+    } catch (error) {
+      // Try alternative endpoint
+      try {
+        await this.apiClient.get('/');
+        console.log('API connection successful on base endpoint');
         return true;
-    } catch (error) {
-        console.error('API connection check failed:', error.message);
+      } catch (secondError) {
+        console.error('API connection test failed:', secondError);
         return false;
+      }
     }
-};
+  }
+}
 
-// Offline check utility
-export const isOffline = (): boolean => {
-  return !navigator.onLine;
-};
-
-// Export API Client
-export const HttpClient = {
-    apiClient, 
-    contactsClient, 
-    llmService,
-    setAxiosDefaultConfig,
-    isOffline,
-    checkApiConnection,
-};
+// Export the HttpClient class
+export default HttpClient;
