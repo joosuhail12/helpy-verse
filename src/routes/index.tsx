@@ -27,8 +27,8 @@ const SignUp = React.lazy(() => import('../pages/SignUp'));
 const NotFound = React.lazy(() => import('../pages/NotFound'));
 const LandingPage = React.lazy(() => import('../pages/LandingPage'));
 
-// Lazy load dashboard layout
-const DashboardLayoutComponent = React.lazy(() => import('../layouts/DashboardLayout'));
+// Lazy load dashboard layout - use a direct import to avoid dynamic import issues
+const DashboardLayout = React.lazy(() => import('../layouts/DashboardLayout'));
 
 // Helper to wrap components with Suspense and RouteErrorBoundary
 const withSuspenseAndErrorHandling = (Component) => (
@@ -70,7 +70,7 @@ export const router = createBrowserRouter([
     element: (
       <PrivateRoute>
         <React.Suspense fallback={<LoadingSpinner />}>
-          <DashboardLayoutComponent />
+          <DashboardLayout />
         </React.Suspense>
       </PrivateRoute>
     ),

@@ -3,7 +3,7 @@ import * as React from 'react';
 import { Routes, Route, Navigate } from "react-router-dom";
 import LoadingFallback from './LoadingFallback';
 
-// Lazily import layouts and pages
+// Lazily import layouts 
 const DashboardLayout = React.lazy(() => import('@/layouts/DashboardLayout'));
 
 // Import route configs
@@ -18,7 +18,7 @@ const ResetPassword = React.lazy(() => import('@/pages/ResetPassword'));
 const SignUp = React.lazy(() => import('@/pages/SignUp'));
 const NotFound = React.lazy(() => import('@/pages/NotFound'));
 const LandingPage = React.lazy(() => import('@/pages/LandingPage'));
-const SignIn = React.lazy(() => import('@/pages/SignIn'));  // Make sure this matches the exported component name exactly
+const SignIn = React.lazy(() => import('@/pages/SignIn'));
 
 const AppRoutes: React.FC = () => {
   return (

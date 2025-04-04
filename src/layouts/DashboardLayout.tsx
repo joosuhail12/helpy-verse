@@ -15,7 +15,7 @@ const LoadingSpinner = () => (
  * Main dashboard layout that includes the sidebar and main content area
  * Wraps content in route-level error boundary and suspense fallback
  */
-const DashboardLayout = () => {
+const DashboardLayout: React.FC = () => {
   return (
     <div className="h-screen flex overflow-hidden bg-background">
       <Sidebar />
