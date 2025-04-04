@@ -7,9 +7,12 @@ import TeamsLoadingState from '@/components/teams/TeamsLoadingState';
 import TeamsEmptyState from '@/components/teams/TeamsEmptyState';
 import TeamsList from '@/components/teams/TeamsList';
 import { Button } from "@/components/ui/button";
-import { Plus, Users } from "lucide-react";
+import { Plus, Users, AlertCircle, RefreshCw } from "lucide-react";
 import { fetchTeams } from '@/store/slices/teams/teamsSlice';
 import { selectAllTeams, selectTeamsLoading, selectTeamsError } from '@/store/slices/teams/selectors';
+import { Card } from '@/components/ui/card';
+import { useState } from 'react';
+import { useAuthCheck } from '@/hooks/useAuthCheck';
 
 const Teams = () => {
   const navigate = useNavigate();
@@ -17,25 +20,61 @@ const Teams = () => {
   const teams = useAppSelector(selectAllTeams);
   const loading = useAppSelector(selectTeamsLoading);
   const error = useAppSelector(selectTeamsError);
+  const [isRetrying, setIsRetrying] = useState(false);
+  const { isAuthenticated, isLoading: authLoading, error: authError } = useAuthCheck();
 
   useEffect(() => {
-    // Fetch teams from API on component mount
-    // Pass an empty object as params to meet the expected arguments
-    dispatch(fetchTeams({}));
-  }, [dispatch]);
+    // Fetch teams from API only if authenticated
+    if (isAuthenticated) {
+      dispatch(fetchTeams({}));
+    }
+  }, [dispatch, isAuthenticated]);
 
-  if (error) {
+  const handleRetry = () => {
+    setIsRetrying(true);
+    dispatch(fetchTeams({}))
+      .finally(() => setIsRetrying(false));
+  };
+
+  if (authLoading || loading) {
+    return <TeamsLoadingState />;
+  }
+
+  if (authError) {
     return (
       <div className="p-6">
-        <div className="bg-red-50 text-red-500 p-4 rounded-lg">
-          Failed to load teams: {error}. Please try again later.
-        </div>
+        <Card className="p-6 text-center">
+          <div className="flex flex-col items-center">
+            <AlertCircle className="h-12 w-12 text-destructive mb-2" />
+            <h3 className="text-xl font-semibold mb-2">Authentication Error</h3>
+            <p className="text-muted-foreground mb-4">{authError}</p>
+            <p className="text-sm">Please sign in to view teams.</p>
+          </div>
+        </Card>
       </div>
     );
   }
 
-  if (loading) {
-    return <TeamsLoadingState />;
+  if (error) {
+    return (
+      <div className="p-6">
+        <Card className="p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <AlertCircle className="h-5 w-5 text-destructive" />
+            <p className="font-medium text-destructive">Error loading teams</p>
+          </div>
+          <p className="text-muted-foreground mb-4">{error}</p>
+          <Button 
+            onClick={handleRetry} 
+            disabled={isRetrying}
+            className="flex gap-2 items-center"
+          >
+            {isRetrying && <RefreshCw className="h-4 w-4 animate-spin" />}
+            {isRetrying ? 'Retrying...' : 'Try Again'}
+          </Button>
+        </Card>
+      </div>
+    );
   }
 
   return (

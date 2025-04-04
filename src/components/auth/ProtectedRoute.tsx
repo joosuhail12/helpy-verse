@@ -1,10 +1,10 @@
-
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { useEffect, useState } from 'react';
 import { Loader2, WifiOff, AlertTriangle, RefreshCw, LogIn } from 'lucide-react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { fetchUserData, refreshAuthToken } from '@/store/slices/authSlice';
+import { fetchUserData } from '@/store/slices/authSlice';
+import { refreshAuthToken } from '@/store/slices/auth/authActions';
 import { HttpClient } from '@/api/services/http';
 import { AuthService } from '@/services/authService';
 import { WorkspaceService } from '@/services/workspaceService';
@@ -21,7 +21,6 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { loading } = useAppSelector((state) => state.auth);
   const [hasValidToken, setHasValidToken] = useState(false);
   
-  // Listen for online/offline status changes
   useEffect(() => {
     const handleOnline = () => setIsOffline(false);
     const handleOffline = () => setIsOffline(true);
@@ -39,7 +38,6 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     const checkAuth = async () => {
       console.log('ProtectedRoute: Checking authentication status');
       
-      // Check if offline
       if (isOffline) {
         console.log('ProtectedRoute: Device is offline');
         setAuthError('You are currently offline. Please check your internet connection.');
@@ -47,19 +45,15 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
         return;
       }
       
-      // Get token from our centralized Auth Service
       const token = AuthService.getAuthToken();
       const isTokenPresent = !!token;
-      console.log('ProtectedRoute: Token exists:', isTokenPresent, isTokenPresent ? 'Token value found' : 'No token value', 'Current path:', location.pathname);
+      console.log('ProtectedRoute: Token exists:', isTokenPresent, isTokenPresent ? 'Token value found' : 'No token found', 'Current path:', location.pathname);
       
-      // Check token validity
       if (isTokenPresent) {
-        // Check if token is expired
         if (AuthService.isTokenExpired()) {
           console.log('ProtectedRoute: Token is expired, attempting refresh');
           
           try {
-            // Try to refresh the token
             const refreshResult = await dispatch(refreshAuthToken()).unwrap();
             
             if (refreshResult?.data?.accessToken?.token) {
@@ -80,7 +74,6 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
             return;
           }
         } else {
-          // Token exists and is not expired
           setHasValidToken(true);
         }
         
@@ -88,16 +81,13 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
         HttpClient.setAxiosDefaultConfig(token);
         
         try {
-          // Validate workspace context
           if (!WorkspaceService.hasWorkspaceId()) {
             console.log('ProtectedRoute: No workspace ID found, fetching user data to get workspace ID');
           }
           
-          // Try to fetch user data to get or validate workspace ID
           await dispatch(fetchUserData());
           console.log('ProtectedRoute: Successfully fetched user data');
           
-          // Double-check workspace ID after fetching user data
           if (!WorkspaceService.hasWorkspaceId()) {
             console.warn('ProtectedRoute: Still no workspace ID after fetching user data');
             setAuthError('Unable to determine your workspace. Please sign in again.');
@@ -106,7 +96,6 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
         } catch (error: any) {
           console.error("Error fetching user data:", error);
           
-          // If it's a 401, the token is probably invalid
           if (error?.response?.status === 401) {
             console.log('Token appears to be invalid');
             setHasValidToken(false);
@@ -118,16 +107,13 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
           } else if (error?.isTimeoutError) {
             setAuthError('The server is taking too long to respond. Please try again later.');
           } else {
-            // For other errors, we still continue since we have a token
             console.warn('Non-fatal error while fetching user data:', error?.message || 'Unknown error');
           }
         }
       } else {
-        console.log('ProtectedRoute: No token found');
         setHasValidToken(false);
       }
       
-      // Short delay to ensure state is settled
       setTimeout(() => {
         setIsChecking(false);
       }, 500);
@@ -136,19 +122,16 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     checkAuth();
   }, [dispatch, location.pathname, isOffline, isRetrying]);
 
-  // Handle retry
   const handleRetry = async () => {
     setIsRetrying(true);
     setIsChecking(true);
     setAuthError(null);
     
     try {
-      // Clear and check token
       if (AuthService.isTokenExpired()) {
         await dispatch(refreshAuthToken());
       }
       
-      // Check if online
       if (navigator.onLine) {
         setIsOffline(false);
       } else {
@@ -164,7 +147,6 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  // Handle offline state
   if (isOffline) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gray-50">
@@ -190,7 +172,6 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  // Show loading state while checking
   if (isChecking || loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-gray-50">
@@ -200,7 +181,6 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  // Show auth error if we have one
   if (authError) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gray-50">
@@ -235,13 +215,11 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  // Check authentication with our service
   if (hasValidToken && AuthService.isAuthenticated()) {
     console.log('ProtectedRoute: Valid token exists, rendering protected content', location.pathname);
     return <>{children}</>;
   }
 
-  // No token, redirect to login
   console.log('ProtectedRoute: No valid token found, redirecting to login');
   return <Navigate to="/sign-in" state={{ from: location.pathname }} replace />;
 };
