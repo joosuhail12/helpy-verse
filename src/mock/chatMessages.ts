@@ -14,7 +14,7 @@ export const MOCK_CONVERSATIONS = {
     {
       id: uuidv4(),
       sender: 'agent',
-      content: 'I understand you're having an issue with your order. Could you please provide more details about the problem?',
+      content: 'I understand you\'re having an issue with your order. Could you please provide more details about the problem?',
       timestamp: new Date(Date.now() - 3540000), // 59 minutes ago
       conversationId,
       readBy: ['user']
@@ -29,7 +29,7 @@ export const MOCK_CONVERSATIONS = {
     {
       id: uuidv4(),
       sender: 'agent',
-      content: 'I apologize for the mistake. I'll arrange for a return and shipment of the correct item right away.',
+      content: 'I apologize for the mistake. I\'ll arrange for a return and shipment of the correct item right away.',
       timestamp: new Date(Date.now() - 3420000), // 57 minutes ago
       conversationId,
       readBy: ['user']
@@ -44,7 +44,7 @@ export const MOCK_CONVERSATIONS = {
     {
       id: uuidv4(),
       sender: 'agent',
-      content: 'We'll ship the correct item within 24 hours, and it should arrive in 2-3 business days. We'll also send a return label for the incorrect item.',
+      content: 'We\'ll ship the correct item within 24 hours, and it should arrive in 2-3 business days. We\'ll also send a return label for the incorrect item.',
       timestamp: new Date(Date.now() - 3300000), // 55 minutes ago
       conversationId,
       readBy: ['user']
@@ -69,14 +69,14 @@ export const MOCK_CONVERSATIONS = {
     {
       id: uuidv4(),
       sender: 'user',
-      content: 'I can't log into my account. It keeps saying "invalid credentials".',
+      content: 'I can\'t log into my account. It keeps saying "invalid credentials".',
       timestamp: new Date(Date.now() - 7200000), // 2 hours ago
       conversationId
     },
     {
       id: uuidv4(),
       sender: 'agent',
-      content: 'I'm sorry to hear you're having trouble logging in. Let me help you troubleshoot this issue. Have you tried resetting your password?',
+      content: 'I\'m sorry to hear you\'re having trouble logging in. Let me help you troubleshoot this issue. Have you tried resetting your password?',
       timestamp: new Date(Date.now() - 7140000), // 119 minutes ago
       conversationId,
       readBy: ['user']
