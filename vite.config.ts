@@ -40,15 +40,7 @@ export default defineConfig(({ mode }) => ({
     }
   },
   plugins: [
-    react({
-      // Remove jsxRuntime option as it's not supported in @vitejs/plugin-react-swc
-      swcOptions: {
-        // You can add SWC-specific options here if needed
-        jsx: {
-          importSource: 'react'
-        }
-      }
-    }),
+    react(),
     mode === 'development' &&
     componentTagger(),
   ].filter(Boolean),
