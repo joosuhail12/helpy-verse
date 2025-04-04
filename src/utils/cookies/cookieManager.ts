@@ -55,6 +55,9 @@ export const deleteCookie = (name: string): void => {
     }
 };
 
+// Add removeCookie as an alias for deleteCookie for compatibility
+export const removeCookie = deleteCookie;
+
 // Check if cookie exists - new helper function
 export const cookieExists = (name: string): boolean => {
     return getCookie(name) !== "";

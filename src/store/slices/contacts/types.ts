@@ -8,3 +8,6 @@ export interface ContactsState {
   error: string | null;
   lastFetchTime: number | null;
 }
+
+// Adding the missing cache duration constant
+export const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds

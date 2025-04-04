@@ -1,5 +1,5 @@
 
-import { setCookie, removeCookie } from '../cookies/cookieManager';
+import { setCookie, deleteCookie as removeCookie, getCookie } from '../cookies/cookieManager';
 
 export const setAuthCookie = (token: string, expiryDays: number = 30) => {
   setCookie('customerToken', token, expiryDays);

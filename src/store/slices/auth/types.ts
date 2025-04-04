@@ -45,8 +45,8 @@ export interface Credentials {
 export interface RegistrationCredentials {
   email: string;
   password: string;
-  firstName: string;
-  lastName: string;
+  fullName: string;  // Added to match SignUpForm usage
+  companyName: string; // Added to match SignUpForm usage
 }
 
 export interface PasswordResetRequest {
@@ -56,6 +56,8 @@ export interface PasswordResetRequest {
 export interface PasswordResetConfirmation {
   token: string;
   password: string;
+  rid?: string;      // Added to match ResetPassword.tsx usage
+  tenantId?: string; // Added to match ResetPassword.tsx usage
 }
 
 export type Permissions = string[];
