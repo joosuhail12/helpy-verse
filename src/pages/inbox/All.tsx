@@ -6,10 +6,9 @@ import TicketList from '@/components/inbox/TicketList';
 import { fetchTickets } from '@/store/slices/inbox/inboxActions';
 import { selectTickets, selectInboxLoading } from '@/store/slices/inbox/inboxSlice';
 import { CreateTicketDialog } from '@/components/inbox/components/ticket-form';
-import { getWorkspaceId, isAuthenticated } from '@/utils/auth/tokenManager';
-import { Loader2 } from 'lucide-react';
-import { Navigate } from 'react-router-dom';
+import { getWorkspaceId } from '@/utils/auth/tokenManager';
 import { toast } from '@/components/ui/use-toast';
+import AuthCheck from '@/components/auth/AuthCheck';
 
 /**
  * AllTickets component displays all tickets in the inbox
@@ -19,89 +18,56 @@ const AllTickets: React.FC = () => {
   const tickets = useAppSelector(selectTickets);
   const isLoading = useAppSelector(selectInboxLoading);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [isAuthChecking, setIsAuthChecking] = useState(true);
-  const [isAuthorized, setIsAuthorized] = useState(false);
 
   useEffect(() => {
-    // First check if user is authenticated
-    const checkAuth = () => {
-      const auth = isAuthenticated();
-      setIsAuthorized(auth);
-      setIsAuthChecking(false);
-      
-      if (!auth) {
-        console.error('User not authenticated, cannot fetch tickets');
-      }
-    };
+    console.log('All tickets component mounted, fetching tickets');
+    const workspaceId = getWorkspaceId();
     
-    checkAuth();
-  }, []);
-
-  useEffect(() => {
-    // Only fetch tickets if user is authenticated
-    if (isAuthorized) {
-      console.log('All tickets component mounted, fetching tickets');
-      const workspaceId = getWorkspaceId();
-      
-      if (workspaceId) {
-        console.log('Fetching tickets with workspace ID:', workspaceId);
-        dispatch(fetchTickets()).catch((error) => {
-          console.error('Error fetching tickets:', error);
-          toast({
-            title: "Error fetching tickets",
-            description: "Please try refreshing the page",
-            variant: "destructive"
-          });
-        });
-      } else {
-        console.error('No workspace ID available, cannot fetch tickets');
+    if (workspaceId) {
+      console.log('Fetching tickets with workspace ID:', workspaceId);
+      dispatch(fetchTickets()).catch((error) => {
+        console.error('Error fetching tickets:', error);
         toast({
-          title: "Workspace not found",
-          description: "Please select a workspace first",
+          title: "Error fetching tickets",
+          description: "Please try refreshing the page",
           variant: "destructive"
         });
-      }
+      });
+    } else {
+      console.error('No workspace ID available, cannot fetch tickets');
+      toast({
+        title: "Workspace not found",
+        description: "Please select a workspace first",
+        variant: "destructive"
+      });
     }
-  }, [dispatch, isAuthorized]);
-
-  // Show loading indicator while checking authentication
-  if (isAuthChecking) {
-    return (
-      <div className="h-full w-full flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <span className="ml-2">Verifying credentials...</span>
-      </div>
-    );
-  }
-
-  // Redirect if not authenticated
-  if (!isAuthorized && !isAuthChecking) {
-    return <Navigate to="/sign-in" replace />;
-  }
+  }, [dispatch]);
 
   return (
-    <div className="h-full w-full flex flex-col overflow-hidden">
-      <div className="flex-none p-4 border-b bg-white">
-        <h1 className="text-xl font-semibold">All Tickets</h1>
-        <p className="text-sm text-gray-500">View and manage all support tickets</p>
-      </div>
-      
-      <div className="flex-1 overflow-hidden">
-        <TicketList 
-          tickets={tickets} 
-          isLoading={isLoading}
-          onCreateTicket={() => setCreateDialogOpen(true)}
+    <AuthCheck>
+      <div className="h-full w-full flex flex-col overflow-hidden">
+        <div className="flex-none p-4 border-b bg-white">
+          <h1 className="text-xl font-semibold">All Tickets</h1>
+          <p className="text-sm text-gray-500">View and manage all support tickets</p>
+        </div>
+        
+        <div className="flex-1 overflow-hidden">
+          <TicketList 
+            tickets={tickets} 
+            isLoading={isLoading}
+            onCreateTicket={() => setCreateDialogOpen(true)}
+          />
+        </div>
+
+        <CreateTicketDialog
+          open={createDialogOpen}
+          onOpenChange={setCreateDialogOpen}
+          onTicketCreated={(ticket) => {
+            setCreateDialogOpen(false);
+          }}
         />
       </div>
-
-      <CreateTicketDialog
-        open={createDialogOpen}
-        onOpenChange={setCreateDialogOpen}
-        onTicketCreated={(ticket) => {
-          setCreateDialogOpen(false);
-        }}
-      />
-    </div>
+    </AuthCheck>
   );
 };
 

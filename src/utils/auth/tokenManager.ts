@@ -65,21 +65,44 @@ export const handleSetToken = (token: string): boolean => {
 // 🟢 Check if user is authenticated - check localStorage only
 export const isAuthenticated = (): boolean => {
   try {
-    const tokenInStorage = !!localStorage.getItem("token");
-    return tokenInStorage;
+    const token = getAuthToken();
+    if (!token) return false;
+    
+    // Check if token is expired
+    if (isTokenExpired()) {
+      console.warn("Auth token is expired");
+      return false;
+    }
+    
+    return true;
   } catch (error) {
     console.error("Error checking authentication:", error);
     return false;
   }
 };
 
-// 🟢 Get auth token - from localStorage only
+// 🟢 Get auth token - from localStorage only with validation
 export const getAuthToken = (): string => {
-  const storageToken = localStorage.getItem("token");
-  return storageToken || "";
+  try {
+    const storageToken = localStorage.getItem("token");
+    
+    // Basic validation to ensure token exists and has expected format
+    if (storageToken && storageToken.split('.').length === 3) {
+      return storageToken;
+    } else if (storageToken) {
+      console.warn("Retrieved token does not appear to be in valid JWT format");
+      return storageToken; // Still return it, but log a warning
+    }
+    
+    console.warn("No valid auth token found in storage");
+    return "";
+  } catch (error) {
+    console.error("Error retrieving auth token:", error);
+    return "";
+  }
 };
 
-// Check if token is expired - safer version that handles invalid tokens
+// Enhanced token expiration check with better error handling
 export const isTokenExpired = (): boolean => {
   const token = getAuthToken();
   if (!token) return true;
@@ -100,7 +123,20 @@ export const isTokenExpired = (): boolean => {
     
     // Check if current time is past expiration
     const currentTime = Math.floor(Date.now() / 1000);
-    return decoded.exp < currentTime;
+    const isExpired = decoded.exp < currentTime;
+    
+    if (isExpired) {
+      console.warn(`Token expired at ${new Date(decoded.exp * 1000).toLocaleString()}`);
+      return true;
+    }
+    
+    // Calculate and log remaining time for debugging
+    const remainingTime = decoded.exp - currentTime;
+    const remainingHours = Math.floor(remainingTime / 3600);
+    const remainingMinutes = Math.floor((remainingTime % 3600) / 60);
+    
+    console.log(`Token valid for approximately ${remainingHours} hours and ${remainingMinutes} minutes`);
+    return false;
   } catch (error) {
     console.error("Error checking token expiration:", error);
     // To be safe, we'll consider any token we can't validate as expired
