@@ -14,8 +14,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import type { Contact } from '@/types/contact';
 import ContactListItem from './ContactListItem';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { selectContact, fetchCustomers, setSelectedContacts } from '@/store/slices/contacts/contactsSlice';
 import { useAppSelector } from '@/hooks/useAppSelector';
+import { selectContact, fetchCustomers, setSelectedContacts } from '@/store/slices/contacts/contactsSlice';
 import { LoadingState } from './LoadingState';
 
 interface ContactListProps {
@@ -24,6 +24,7 @@ interface ContactListProps {
 }
 
 const ContactList = ({ contacts, loading = false }: ContactListProps) => {
+  console.log('ContactList rendered with', contacts?.length, 'contacts');
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { selectedContacts } = useAppSelector(state => state.contacts);
@@ -66,7 +67,7 @@ const ContactList = ({ contacts, loading = false }: ContactListProps) => {
     return <LoadingState />;
   }
 
-  if (contacts.length === 0) {
+  if (!contacts || contacts.length === 0) {
     console.log('Rendering empty state');
     return (
       <div className="p-6 text-center border rounded-md bg-white">

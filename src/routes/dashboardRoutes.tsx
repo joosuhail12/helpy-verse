@@ -12,8 +12,9 @@ const LoadingSpinner = () => (
   </div>
 );
 
-// Lazy load dashboard pages
+// Lazy load dashboard pages - fixed imports to ensure proper lazy loading
 const Dashboard = lazy(() => import('../pages/Dashboard'));
+const ContactsPage = lazy(() => import('../pages/contacts/index'));
 const AllContacts = lazy(() => import('../pages/contacts/All'));
 const Companies = lazy(() => import('../pages/contacts/Companies'));
 const CompanyDetail = lazy(() => import('../pages/contacts/CompanyDetail'));
@@ -36,19 +37,29 @@ export const dashboardRoutes = [
     element: withSuspenseAndProtection(Dashboard),
   },
   {
-    path: 'contacts/all',
-    element: withSuspenseAndProtection(AllContacts),
-  },
-  {
-    path: 'contacts/companies',
-    element: withSuspenseAndProtection(Companies),
-  },
-  {
-    path: 'contacts/companies/:id',
-    element: withSuspenseAndProtection(CompanyDetail),
-  },
-  {
-    path: 'contacts/:id',
-    element: withSuspenseAndProtection(ContactDetail),
+    path: 'contacts',
+    element: withSuspenseAndProtection(ContactsPage),
+    children: [
+      {
+        path: '',
+        element: <Navigate to="all" replace />,
+      },
+      {
+        path: 'all',
+        element: withSuspenseAndProtection(AllContacts),
+      },
+      {
+        path: 'companies',
+        element: withSuspenseAndProtection(Companies),
+      },
+      {
+        path: 'companies/:id',
+        element: withSuspenseAndProtection(CompanyDetail),
+      },
+      {
+        path: ':id',
+        element: withSuspenseAndProtection(ContactDetail),
+      },
+    ],
   },
 ];
