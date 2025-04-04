@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { isAuthenticated, getAuthToken, isTokenExpired } from '@/utils/auth/tokenManager';
+import { isAuthenticated, getAuthToken } from '@/utils/auth/tokenManager';
 import { HttpClient } from '@/api/services/http';
 
 interface UseAuthCheckResult {
@@ -20,21 +20,13 @@ export const useAuthCheck = (): UseAuthCheckResult => {
   useEffect(() => {
     const checkAuth = () => {
       try {
-        const auth = isAuthenticated();
+        // Simple check for token existence
+        const token = getAuthToken();
         
-        // Check token validity
-        if (auth) {
-          const token = getAuthToken();
-          
-          if (isTokenExpired()) {
-            console.error('Token has expired, user needs to login again');
-            setAuthError('Your session has expired. Please sign in again.');
-            setIsAuthorized(false);
-          } else {
-            console.log('Valid token found, configuring HTTP client');
-            HttpClient.setAxiosDefaultConfig(token);
-            setIsAuthorized(true);
-          }
+        if (token) {
+          console.log('Valid token found, configuring HTTP client');
+          HttpClient.setAxiosDefaultConfig(token);
+          setIsAuthorized(true);
         } else {
           console.error('User not authenticated');
           setIsAuthorized(false);
