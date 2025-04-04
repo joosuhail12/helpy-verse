@@ -7,7 +7,6 @@ import { loginUser } from '../store/slices/authSlice';
 import { toast } from '../components/ui/use-toast';
 import { handleSetToken, isAuthenticated } from '@/utils/auth/tokenManager';
 import { HttpClient } from '@/api/services/http';
-import { AuthResponse } from '@/store/slices/auth/types';
 
 /**
  * Custom hook to handle login functionality
@@ -44,10 +43,13 @@ export const useLogin = (redirectPath: string = '/home/inbox/all') => {
       
       if (typeof auth.error === 'string') {
         errorMessage = auth.error;
-      } else if (auth.error && typeof auth.error === 'object' && 'message' in auth.error) {
-        // Use a type assertion with unknown as an intermediate step
-        const errorObject = auth.error as unknown as { message?: string };
-        errorMessage = errorObject.message || 'Login failed. Please try again.';
+      } else if (auth.error && typeof auth.error === 'object') {
+        // Type assertion with unknown as an intermediate step
+        const errorObject = auth.error as unknown;
+        if (errorObject && typeof errorObject === 'object' && 'message' in errorObject) {
+          const typedError = errorObject as { message: string };
+          errorMessage = typedError.message || errorMessage;
+        }
       }
         
       toast({
@@ -60,7 +62,18 @@ export const useLogin = (redirectPath: string = '/home/inbox/all') => {
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isSubmitting || !email || !password) return;
+    
+    if (isSubmitting) return;
+    
+    // Validate required fields
+    if (!email || !password) {
+      toast({
+        title: 'Required Fields',
+        description: 'Please enter both email and password',
+        variant: 'destructive',
+      });
+      return;
+    }
     
     // Check if offline first
     if (isOffline || HttpClient.isOffline()) {

@@ -1,4 +1,3 @@
-
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { 
   AuthResponse, 
@@ -17,7 +16,11 @@ export const loginUser = createAsyncThunk<AuthResponse, Credentials>(
       console.log('Attempting login with:', credentials.email);
       
       // Use HttpClient instead of direct fetch
-      const response = await HttpClient.apiClient.post('/auth/login', credentials);
+      const response = await HttpClient.apiClient.post('/auth/login', {
+        email: credentials.email,
+        password: credentials.password
+      });
+      
       console.log('Login response:', response.data);
       
       // Check if response has the expected structure
@@ -55,9 +58,13 @@ export const loginUser = createAsyncThunk<AuthResponse, Credentials>(
       console.error('Login API error:', error);
       
       // Improved error handling with more details
-      const errorMessage = error.response?.data?.message || 
-                          error.message || 
-                          'Login failed. Please check your credentials and try again.';
+      let errorMessage = 'Login failed. Please check your credentials and try again.';
+      
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
       
       return rejectWithValue(errorMessage);
     }
