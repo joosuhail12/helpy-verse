@@ -6,7 +6,7 @@ import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { fetchUserProfile } from '@/store/slices/user/userSlice';
 
-const Dashboard = () => {
+const Dashboard: React.FC = () => {
   const dispatch = useAppDispatch();
   const auth = useAppSelector((state) => state.auth);
   const userState = useAppSelector((state) => state.user);
@@ -122,7 +122,6 @@ const Dashboard = () => {
               <CardTitle>Recent Activity</CardTitle>
             </CardHeader>
             <CardContent>
-              {/* Activity content would go here */}
               <p className="text-muted-foreground">Your recent activities will appear here.</p>
             </CardContent>
           </Card>
@@ -133,7 +132,6 @@ const Dashboard = () => {
               <CardTitle>Analytics</CardTitle>
             </CardHeader>
             <CardContent>
-              {/* Analytics content would go here */}
               <p className="text-muted-foreground">Analytics data will be displayed here.</p>
             </CardContent>
           </Card>

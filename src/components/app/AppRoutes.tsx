@@ -8,7 +8,8 @@ import RootRedirect from './RootRedirect';
 // Import directly instead of lazy loading for problematic components
 import DashboardLayout from '@/layouts/DashboardLayout';
 import AllInbox from '@/pages/inbox/All';
-import SignIn from '@/pages/SignIn'; // Import SignIn directly
+import SignIn from '@/pages/SignIn';
+import Dashboard from '@/pages/Dashboard'; // Import Dashboard directly
 
 // Import route configs
 import { dashboardRoutes } from '@/routes/dashboardRoutes';
@@ -36,7 +37,7 @@ const AppRoutes: React.FC = () => {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/home" element={<RootRedirect />} />
-        <Route path="/sign-in" element={<SignIn />} /> {/* Direct import instead of lazy loading */}
+        <Route path="/sign-in" element={<SignIn />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/sign-up" element={<SignUp />} />
@@ -46,7 +47,10 @@ const AppRoutes: React.FC = () => {
             <DashboardLayout />
           </ProtectedRoute>
         }>
-          {/* Define critical routes directly */}
+          {/* Define Dashboard route directly */}
+          <Route path="" element={<Dashboard />} />
+          
+          {/* Define other critical routes directly */}
           <Route path="inbox/all" element={<AllInbox />} />
           <Route path="inbox/your-inbox" element={
             <React.Suspense fallback={<LoadingFallback />}>
@@ -65,7 +69,7 @@ const AppRoutes: React.FC = () => {
           } />
           
           {/* Add nested routes from configs */}
-          {renderRoutes(dashboardRoutes)}
+          {renderRoutes(dashboardRoutes.filter(route => route.path !== ''))}
           {renderRoutes(settingsRoutes)}
           {renderRoutes(automationRoutes)}
         </Route>

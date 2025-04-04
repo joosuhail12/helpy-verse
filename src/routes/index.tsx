@@ -10,7 +10,8 @@ import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import LandingPage from '@/pages/LandingPage';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import AllInbox from '@/pages/inbox/All';
-import SignIn from '@/pages/SignIn'; // Import SignIn directly instead of lazy loading
+import SignIn from '@/pages/SignIn'; 
+import Dashboard from '@/pages/Dashboard'; // Import Dashboard directly
 
 // Lazy load auth pages and other components with consistent fallback
 const LoadingSpinner = () => (
@@ -86,6 +87,15 @@ export const router = createBrowserRouter([
       </ProtectedRoute>
     ),
     children: [
+      // Define Dashboard route directly (not lazy loaded)
+      {
+        path: '',
+        element: (
+          <RouteErrorBoundary>
+            <Dashboard />
+          </RouteErrorBoundary>
+        ),
+      },
       // Define critical inbox routes directly
       {
         path: 'inbox/all',
@@ -130,8 +140,8 @@ export const router = createBrowserRouter([
         path: 'inbox',
         element: <Navigate to="all" replace />,
       },
-      // Process all settings routes with proper error handling
-      ...processRoutes([...dashboardRoutes, ...settingsRoutes, ...automationRoutes]),
+      // Process all other routes with proper error handling
+      ...processRoutes([...dashboardRoutes.filter(route => route.path !== ''), ...settingsRoutes, ...automationRoutes]),
     ],
   },
   {

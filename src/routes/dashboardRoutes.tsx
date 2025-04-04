@@ -12,8 +12,10 @@ const LoadingSpinner = () => (
   </div>
 );
 
-// Lazy load dashboard pages
-const Dashboard = React.lazy(() => import('../pages/Dashboard'));
+// Import Dashboard directly instead of lazy loading to fix the error
+import Dashboard from '../pages/Dashboard';
+
+// Lazy load other pages
 const AllContacts = React.lazy(() => import('../pages/contacts/All'));
 const Companies = React.lazy(() => import('../pages/contacts/Companies'));
 const CompanyDetail = React.lazy(() => import('../pages/contacts/CompanyDetail'));
@@ -30,10 +32,19 @@ const withSuspenseAndProtection = (Component) => (
   </ProtectedRoute>
 );
 
+// For Dashboard, use the direct import instead of lazy loading
+const withDashboardProtection = () => (
+  <ProtectedRoute>
+    <RouteErrorBoundary>
+      <Dashboard />
+    </RouteErrorBoundary>
+  </ProtectedRoute>
+);
+
 export const dashboardRoutes = [
   {
     path: '',
-    element: withSuspenseAndProtection(Dashboard),
+    element: withDashboardProtection(),
   },
   {
     path: 'contacts/all',
