@@ -1,5 +1,5 @@
-// src/pages/contacts/Companies.tsx
-import { useEffect } from 'react';
+
+import * as React from 'react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { fetchCompanies } from '@/store/slices/companies/companiesSlice';
@@ -12,7 +12,7 @@ const Companies = () => {
   const dispatch = useAppDispatch();
   const { companies, loading, error } = useAppSelector((state) => state.companies);
 
-  useEffect(() => {
+  React.useEffect(() => {
     dispatch(fetchCompanies());
   }, [dispatch]);
 
