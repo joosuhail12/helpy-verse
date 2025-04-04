@@ -1,0 +1,255 @@
+
+import React, { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
+import { ChatWidgetConfig } from '@/api/chat-widget/types';
+import chatWidgetAPI from '@/api/chat-widget';
+import IsolatedChatWidget from '@/components/chat-widget/IsolatedChatWidget';
+import { ChatWidgetProvider } from '@/context/ChatWidgetContext';
+
+/**
+ * Demo component showing how to use the Chat Widget API
+ */
+const ChatWidgetDemo: React.FC = () => {
+  const [initialized, setInitialized] = useState(false);
+  const [messages, setMessages] = useState<any[]>([]);
+  const [messageText, setMessageText] = useState('');
+  const [fileUrl, setFileUrl] = useState('');
+  const [primaryColor, setPrimaryColor] = useState('#9b87f5');
+  const [widgetConfig, setWidgetConfig] = useState<ChatWidgetConfig>({
+    workspaceId: '6c22b22f-7bdf-43db-b7c1-9c5884125c63',
+    theme: {
+      colors: {
+        primary: '#9b87f5'
+      },
+      position: 'right',
+      compact: false
+    },
+    labels: {
+      welcomeTitle: 'Welcome to Demo Chat',
+      welcomeSubtitle: 'Try out the chat widget API'
+    },
+    features: {
+      typingIndicator: true,
+      fileAttachments: true
+    },
+    events: {
+      onMessageReceived: (message) => {
+        console.log('New message received:', message);
+      }
+    }
+  });
+  
+  // Initialize the chat widget on component mount
+  useEffect(() => {
+    const initWidget = async () => {
+      // Initialize the widget
+      const success = await chatWidgetAPI.initialize(widgetConfig);
+      setInitialized(success);
+    };
+    
+    initWidget();
+  }, []);
+  
+  // Load messages
+  const handleLoadMessages = async () => {
+    try {
+      const fetchedMessages = await chatWidgetAPI.message.getAll();
+      setMessages(fetchedMessages);
+    } catch (error) {
+      console.error('Failed to load messages:', error);
+    }
+  };
+  
+  // Send a message
+  const handleSendMessage = async () => {
+    if (!messageText.trim()) return;
+    
+    try {
+      await chatWidgetAPI.message.send(messageText);
+      setMessageText('');
+      // Refresh messages
+      handleLoadMessages();
+    } catch (error) {
+      console.error('Failed to send message:', error);
+    }
+  };
+  
+  // Add attachment
+  const handleAddAttachment = async () => {
+    if (!fileUrl.trim()) return;
+    
+    try {
+      // Create a fetch request to get the file
+      const response = await fetch(fileUrl);
+      const blob = await response.blob();
+      const fileName = fileUrl.split('/').pop() || 'file';
+      
+      // Create a File object from the blob
+      const file = new File([blob], fileName, { type: blob.type });
+      
+      // Add the file as an attachment using the API
+      await chatWidgetAPI.attachments.add(file);
+      setFileUrl('');
+    } catch (error) {
+      console.error('Failed to add attachment:', error);
+    }
+  };
+  
+  // Remove all attachments
+  const handleRemoveAttachments = async () => {
+    try {
+      const attachments = await chatWidgetAPI.attachments.getAll();
+      for (const attachment of attachments) {
+        await chatWidgetAPI.attachments.remove(attachment.id);
+      }
+    } catch (error) {
+      console.error('Failed to remove attachments:', error);
+    }
+  };
+  
+  // Toggle widget visibility
+  const handleToggleWidget = async () => {
+    try {
+      await chatWidgetAPI.widget.toggle();
+    } catch (error) {
+      console.error('Failed to toggle widget:', error);
+    }
+  };
+  
+  // Update theme
+  const handleUpdateTheme = async () => {
+    try {
+      await chatWidgetAPI.theme.update({
+        colors: {
+          primary: primaryColor
+        }
+      });
+      
+      // Update the local config
+      setWidgetConfig(prev => ({
+        ...prev,
+        theme: {
+          ...prev.theme,
+          colors: {
+            ...prev.theme?.colors,
+            primary: primaryColor
+          }
+        }
+      }));
+    } catch (error) {
+      console.error('Failed to update theme:', error);
+    }
+  };
+  
+  return (
+    <div className="flex flex-col gap-4">
+      <Card className="w-full max-w-3xl mx-auto">
+        <CardHeader>
+          <CardTitle>Chat Widget API Demo</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="control">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="control">Controls</TabsTrigger>
+              <TabsTrigger value="messaging">Messaging</TabsTrigger>
+              <TabsTrigger value="files">Files</TabsTrigger>
+              <TabsTrigger value="theme">Theme</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="control" className="space-y-4 py-4">
+              <div>
+                <p className="mb-2">Widget Status: {initialized ? 'Initialized' : 'Not Initialized'}</p>
+                <div className="flex gap-2">
+                  <Button onClick={handleToggleWidget}>Toggle Widget</Button>
+                  <Button variant="outline" onClick={() => chatWidgetAPI.widget.open()}>Open Widget</Button>
+                  <Button variant="outline" onClick={() => chatWidgetAPI.widget.close()}>Close Widget</Button>
+                </div>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="messaging" className="space-y-4 py-4">
+              <div>
+                <Button onClick={handleLoadMessages} className="mb-4">Load Messages</Button>
+                <div className="border rounded-md p-4 h-40 overflow-y-auto mb-4">
+                  {messages.length > 0 ? (
+                    messages.map((msg, idx) => (
+                      <div key={idx} className="mb-2">
+                        <strong>{msg.sender}:</strong> {msg.content}
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-gray-500">No messages yet</p>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <Input 
+                    value={messageText}
+                    onChange={(e) => setMessageText(e.target.value)}
+                    placeholder="Type a message" 
+                  />
+                  <Button onClick={handleSendMessage}>Send</Button>
+                </div>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="files" className="space-y-4 py-4">
+              <div>
+                <p className="mb-2">Add Attachment</p>
+                <div className="flex gap-2 mb-4">
+                  <Input 
+                    value={fileUrl}
+                    onChange={(e) => setFileUrl(e.target.value)}
+                    placeholder="File URL" 
+                  />
+                  <Button onClick={handleAddAttachment}>Add</Button>
+                </div>
+                <Button variant="outline" onClick={handleRemoveAttachments}>
+                  Remove All Attachments
+                </Button>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="theme" className="space-y-4 py-4">
+              <div>
+                <p className="mb-2">Change Primary Color</p>
+                <div className="flex gap-2">
+                  <Input 
+                    type="color"
+                    value={primaryColor}
+                    onChange={(e) => setPrimaryColor(e.target.value)}
+                    className="w-20"
+                  />
+                  <Input 
+                    value={primaryColor}
+                    onChange={(e) => setPrimaryColor(e.target.value)}
+                    placeholder="#9b87f5" 
+                  />
+                  <Button onClick={handleUpdateTheme}>Update Theme</Button>
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
+      
+      {/* Show the isolated widget below the demo */}
+      <div className="my-8">
+        <h2 className="text-xl font-semibold mb-4 text-center">Isolated Widget Demo</h2>
+        <div className="relative h-96 border rounded-lg overflow-hidden">
+          <ChatWidgetProvider>
+            <IsolatedChatWidget 
+              workspaceId={widgetConfig.workspaceId} 
+              config={widgetConfig}
+            />
+          </ChatWidgetProvider>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ChatWidgetDemo;

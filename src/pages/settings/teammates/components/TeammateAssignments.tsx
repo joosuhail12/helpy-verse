@@ -35,12 +35,12 @@ export const TeammateAssignments = ({ teammateId }: TeammateAssignmentsProps) =>
                 key={assignment.id} 
                 className="p-4 border rounded-md shadow-sm"
               >
-                <h4 className="font-medium">{assignment.teamName}</h4>
+                <h4 className="font-medium">{assignment.teamName || 'Team'}</h4>
                 <p className="text-sm text-muted-foreground">
                   Role: {assignment.role || 'Member'}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  Joined: {new Date(assignment.startDate || new Date()).toLocaleDateString()}
+                  Joined: {new Date(assignment.startDate || assignment.assignedAt || new Date()).toLocaleDateString()}
                 </p>
               </div>
             ))}

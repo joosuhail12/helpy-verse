@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
-import { enable2FA, verify2FA, disable2FA } from '@/store/slices/teammates/teammatesSlice';
+import { enable2FA, verify2FA, disable2FA } from '@/store/slices/teammates/actions';
 import { useToast } from '@/hooks/use-toast';
 import { ShieldCheck, ShieldOff, QrCode } from 'lucide-react';
 
@@ -32,7 +31,7 @@ export const TwoFactorSetup: React.FC<TwoFactorSetupProps> = ({ teammateId }) =>
     setIsEnabling(true);
     try {
       const result = await dispatch(enable2FA(teammateId)).unwrap();
-      setSetupKey(result.setupKey);
+      setSetupKey(result.qrCode);
       toast({
         title: '2FA Setup Initiated',
         description: 'Please scan the QR code with your authenticator app.',
@@ -56,7 +55,7 @@ export const TwoFactorSetup: React.FC<TwoFactorSetupProps> = ({ teammateId }) =>
     try {
       await dispatch(verify2FA({ 
         teammateId, 
-        code: verificationCode 
+        verificationCode 
       })).unwrap();
       
       toast({

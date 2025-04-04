@@ -1,138 +1,134 @@
 
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import type { Teammate } from '@/types/teammate';
 import { getTeammates, getTeammateById } from '@/api/services/teammatesService';
-import { getAuthToken } from '@/utils/auth/tokenManager';
+import type { ActivityLog, TeamAssignment, Session } from '@/types/teammate';
 
-// Helper to simulate API call for mocked features that aren't implemented yet
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
+// Thunk to fetch all teammates
 export const fetchTeammates = createAsyncThunk(
-  'teammates/fetchTeammates',
+  'teammates/fetchAll',
   async (_, { rejectWithValue }) => {
     try {
-      const workspaceId = localStorage.getItem('workspaceId');
-      console.log('Fetching teammates with workspace ID:', workspaceId);
-      
-      if (!workspaceId) {
-        console.error('Cannot fetch teammates: No workspace ID found');
-        return rejectWithValue('No workspace ID found. Please refresh the page.');
-      }
-      
-      // Get auth token directly from localStorage using tokenManager
-      const authToken = getAuthToken();
-      if (!authToken) {
-        console.error('Cannot fetch teammates: No auth token found');
-        return rejectWithValue('No authentication token found. Please log in again.');
-      }
-      
+      console.log('Fetching all teammates...');
       const teammates = await getTeammates();
-      console.log('Teammates API response:', teammates);
-      
-      // Ensure we always return an array, even if the API returned nothing
-      return Array.isArray(teammates) ? teammates : [];
+      console.log(`Successfully fetched ${teammates.length} teammates`);
+      return teammates;
     } catch (error: any) {
-      console.error('Failed to fetch teammates:', error);
-      
-      // Handle unauthorized errors specifically
-      if (error.response?.status === 401 || error.response?.data?.code === 'UNAUTHORIZED') {
-        return rejectWithValue('Authentication failed. Please log in again.');
-      }
-      
-      // Provide more detailed error information
-      return rejectWithValue({
-        message: error.message || 'Failed to fetch teammates',
-        status: error.response?.status,
-        data: error.response?.data
-      });
+      console.error('Error fetching teammates:', error);
+      return rejectWithValue(error.message || 'Failed to fetch teammates');
     }
   }
 );
 
+// Thunk to fetch a specific teammate by ID
 export const fetchTeammateDetails = createAsyncThunk(
-  'teammates/fetchTeammateDetails',
-  async (id: string, { rejectWithValue }) => {
+  'teammates/fetchDetails',
+  async (teammateId: string, { rejectWithValue }) => {
     try {
-      const workspaceId = localStorage.getItem('workspaceId');
-      
-      if (!workspaceId) {
-        console.error('Cannot fetch teammate details: No workspace ID found');
-        return rejectWithValue('No workspace ID found. Please refresh the page.');
-      }
-      
-      // Get auth token
-      const authToken = getAuthToken();
-      if (!authToken) {
-        console.error('Cannot fetch teammate details: No auth token found');
-        return rejectWithValue('No authentication token found. Please log in again.');
-      }
-      
-      console.log(`Fetching details for teammate ID: ${id}`);
-      const teammate = await getTeammateById(id);
-      console.log('Teammate details response:', teammate);
-      
-      if (!teammate) {
-        return rejectWithValue(`Teammate with ID ${id} not found`);
-      }
-      
+      console.log(`Fetching details for teammate with ID: ${teammateId}`);
+      const teammate = await getTeammateById(teammateId);
+      console.log('Teammate details fetched successfully:', teammate);
       return teammate;
     } catch (error: any) {
-      console.error(`Error fetching teammate with ID ${id}:`, error);
-      
-      // Handle unauthorized errors specifically
-      if (error.response?.status === 401) {
-        return rejectWithValue('Authentication failed. Please log in again.');
-      }
-      
-      return rejectWithValue(error.message || `Failed to fetch teammate with ID ${id}`);
+      console.error(`Error fetching teammate details for ID ${teammateId}:`, error);
+      return rejectWithValue(error.message || 'Failed to fetch teammate details');
     }
   }
 );
 
+// Thunk to fetch activities for a specific teammate
 export const fetchTeammateActivities = createAsyncThunk(
-  'teammates/fetchTeammateActivities',
+  'teammates/fetchActivities',
   async (teammateId: string, { rejectWithValue }) => {
     try {
-      // This is still mocked as the API isn't available yet
-      await delay(1000);
-      return { 
-        teammateId, 
-        activities: [] // Empty array since we don't have the API yet
-      };
+      // This would call an API in production
+      console.log(`Fetching activities for teammate ${teammateId}`);
+      
+      // Using mock data for now
+      const mockActivities: ActivityLog[] = [
+        {
+          id: '1',
+          teammateId,
+          action: 'login',
+          timestamp: new Date().toISOString(),
+          details: {},
+          type: 'login',
+          description: 'Logged in to the system'
+        },
+        {
+          id: '2',
+          teammateId,
+          action: 'update',
+          timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+          details: {},
+          type: 'update',
+          description: 'Updated profile information'
+        }
+      ];
+      
+      return mockActivities;
     } catch (error: any) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(error.message || 'Failed to fetch teammate activities');
     }
   }
 );
 
+// Thunk to fetch team assignments for a specific teammate
 export const fetchTeammateAssignments = createAsyncThunk(
-  'teammates/fetchTeammateAssignments',
+  'teammates/fetchAssignments',
   async (teammateId: string, { rejectWithValue }) => {
     try {
-      // This is still mocked as the API isn't available yet
-      await delay(1000);
-      return { 
-        teammateId, 
-        assignments: [] // Empty array since we don't have the API yet
-      };
+      // This would call an API in production
+      console.log(`Fetching assignments for teammate ${teammateId}`);
+      
+      // Using mock data for now
+      const mockAssignments: TeamAssignment[] = [
+        {
+          id: '1',
+          teammateId,
+          teamId: 'team-1',
+          teamName: 'Support Team',
+          role: 'Lead',
+          assignedAt: '2023-01-01T08:00:00Z',
+          startDate: '2023-01-01T08:00:00Z',
+          status: 'active'
+        }
+      ];
+      
+      return mockAssignments;
     } catch (error: any) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(error.message || 'Failed to fetch teammate assignments');
     }
   }
 );
 
+// Thunk to fetch sessions for a specific teammate
 export const fetchTeammateSessions = createAsyncThunk(
-  'teammates/fetchTeammateSessions',
+  'teammates/fetchSessions',
   async (teammateId: string, { rejectWithValue }) => {
     try {
-      // This is still mocked as the API isn't available yet
-      await delay(1000);
-      return { 
-        teammateId, 
-        sessions: [] // Empty array since we don't have the API yet
-      };
+      // This would call an API in production
+      console.log(`Fetching sessions for teammate ${teammateId}`);
+      
+      // Using mock data for now
+      const mockSessions: Session[] = [
+        {
+          id: '1',
+          teammateId,
+          deviceType: 'desktop',
+          deviceName: 'Chrome on Windows',
+          location: 'New York, USA',
+          lastActive: new Date().toISOString(),
+          ipAddress: '192.168.1.1',
+          startTime: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+          endTime: null,
+          userAgent: 'Mozilla/5.0',
+          active: true
+        }
+      ];
+      
+      return mockSessions;
     } catch (error: any) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(error.message || 'Failed to fetch teammate sessions');
     }
   }
 );

@@ -43,7 +43,7 @@ const ConversationHeader = ({ ticket, onClose, activeUsers }: ConversationHeader
                 <div className="flex -space-x-2">
                   {activeUsers.slice(0, 3).map((user) => (
                     <Avatar key={user.userId} className="h-6 w-6 border-2 border-white">
-                      <span className="text-xs">{user.name[0]}</span>
+                      <span className="text-xs">{user.name?.[0] || user.userId[0]}</span>
                     </Avatar>
                   ))}
                   {activeUsers.length > 3 && (

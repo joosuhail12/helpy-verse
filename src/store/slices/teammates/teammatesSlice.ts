@@ -1,18 +1,18 @@
+
 import { createSlice } from '@reduxjs/toolkit';
 import { TeammatesState } from './types';
-import {
-  fetchTeammates,
-  fetchTeammateDetails,
+import { 
+  fetchTeammates, 
+  fetchTeammateDetails, 
+  addTeammate,
+  updateTeammate,
+  updateTeammatesRole,
   fetchTeammateActivities,
   fetchTeammateAssignments,
   fetchTeammateSessions,
-  updateTeammate,
-  enable2FA,
-  verify2FA,
-  disable2FA,
   terminateSession,
-  resetPassword
-} from './actions';
+  resendInvitation
+} from './thunks';
 
 const initialState: TeammatesState = {
   teammates: [],
@@ -29,110 +29,78 @@ const initialState: TeammatesState = {
 const teammatesSlice = createSlice({
   name: 'teammates',
   initialState,
-  reducers: {},
+  reducers: {
+    clearTeammateDetails: (state) => {
+      state.selectedTeammate = null;
+    },
+    incrementRetryCount: (state) => {
+      state.retryCount += 1;
+    },
+    resetRetryCount: (state) => {
+      state.retryCount = 0;
+    }
+  },
   extraReducers: (builder) => {
     builder
-      // fetchTeammates
+      // Fetch all teammates
       .addCase(fetchTeammates.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(fetchTeammates.fulfilled, (state, action) => {
-        state.loading = false;
         state.teammates = action.payload;
+        state.loading = false;
         state.lastFetchTime = Date.now();
         state.retryCount = 0;
       })
       .addCase(fetchTeammates.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload as string;
-        state.retryCount += 1;
+        state.error = action.error.message || 'Failed to fetch teammates';
       })
       
-      // fetchTeammateDetails
+      // Fetch specific teammate details
       .addCase(fetchTeammateDetails.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(fetchTeammateDetails.fulfilled, (state, action) => {
-        state.loading = false;
         state.selectedTeammate = action.payload;
-        
-        // Also update this teammate in the main teammates array if it exists
-        const index = state.teammates.findIndex(t => t.id === action.payload.id);
-        if (index !== -1) {
-          state.teammates[index] = action.payload;
-        } else {
-          // If not found in the array, add it
-          state.teammates.push(action.payload);
-        }
+        state.loading = false;
       })
       .addCase(fetchTeammateDetails.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload as string;
+        state.error = action.error.message || 'Failed to fetch teammate details';
       })
       
-      // fetchTeammateActivities
-      .addCase(fetchTeammateActivities.fulfilled, (state, action) => {
-        const { teammateId, activities } = action.payload;
-        state.activities[teammateId] = activities;
+      // Add other reducer cases for the newly added thunks
+      .addCase(addTeammate.fulfilled, (state, action) => {
+        state.teammates.push(action.payload);
       })
       
-      // fetchTeammateAssignments
-      .addCase(fetchTeammateAssignments.fulfilled, (state, action) => {
-        const { teammateId, assignments } = action.payload;
-        state.assignments[teammateId] = assignments;
-      })
-      
-      // fetchTeammateSessions
-      .addCase(fetchTeammateSessions.fulfilled, (state, action) => {
-        const { teammateId, sessions } = action.payload;
-        state.sessions[teammateId] = sessions;
-      })
-      
-      // updateTeammate
       .addCase(updateTeammate.fulfilled, (state, action) => {
-        const updatedTeammate = action.payload;
-        state.teammates = state.teammates.map(teammate => 
-          teammate.id === updatedTeammate.id ? updatedTeammate : teammate
-        );
-        if (state.selectedTeammate?.id === updatedTeammate.id) {
-          state.selectedTeammate = updatedTeammate;
+        const index = state.teammates.findIndex(t => t.id === action.payload.id);
+        if (index !== -1) {
+          state.teammates[index] = {...state.teammates[index], ...action.payload};
         }
       })
       
-      // 2FA operations
-      .addCase(verify2FA.fulfilled, (state, action) => {
-        if (state.selectedTeammate && state.selectedTeammate.id === action.payload.teammateId) {
-          state.selectedTeammate.is2FAEnabled = true;
-        }
-        const teammateIndex = state.teammates.findIndex(t => t.id === action.payload.teammateId);
-        if (teammateIndex !== -1) {
-          state.teammates[teammateIndex].is2FAEnabled = true;
-        }
-      })
-      .addCase(disable2FA.fulfilled, (state, action) => {
-        if (state.selectedTeammate && state.selectedTeammate.id === action.payload.teammateId) {
-          state.selectedTeammate.is2FAEnabled = false;
-        }
-        const teammateIndex = state.teammates.findIndex(t => t.id === action.payload.teammateId);
-        if (teammateIndex !== -1) {
-          state.teammates[teammateIndex].is2FAEnabled = false;
-        }
+      .addCase(fetchTeammateActivities.fulfilled, (state, action) => {
+        // Store activities by teammate ID
+        state.activities[action.meta.arg] = action.payload;
       })
       
-      // Session operations
-      .addCase(terminateSession.fulfilled, (state, action) => {
-        const { teammateId, sessionId } = action.payload;
-        if (state.sessions[teammateId]) {
-          state.sessions[teammateId] = state.sessions[teammateId].filter(
-            session => session.id !== sessionId
-          );
-        }
+      .addCase(fetchTeammateAssignments.fulfilled, (state, action) => {
+        // Store assignments by teammate ID
+        state.assignments[action.meta.arg] = action.payload;
+      })
+      
+      .addCase(fetchTeammateSessions.fulfilled, (state, action) => {
+        // Store sessions by teammate ID
+        state.sessions[action.payload.teammateId] = action.payload.sessions;
       });
-  },
+  }
 });
 
-export const teammatesReducer = teammatesSlice.reducer;
-export * from './actions';
-export * from './selectors';
+export const { clearTeammateDetails, incrementRetryCount, resetRetryCount } = teammatesSlice.actions;
+
+export default teammatesSlice.reducer;

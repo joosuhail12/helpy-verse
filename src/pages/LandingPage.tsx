@@ -1,12 +1,20 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import ConnectedChatWidget from '@/components/chat-widget/ConnectedChatWidget';
 
+/**
+ * Landing page that is accessible without authentication
+ * Serves as an entry point to the application for new users
+ */
 const LandingPage = () => {
   const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-purple-50">
+      {/* Use our connected chat widget that pulls settings from Redux */}
+      <ConnectedChatWidget workspaceId="6c22b22f-7bdf-43db-b7c1-9c5884125c63" />
+      
       {/* Hero Section */}
       <div className="container mx-auto px-4 py-20">
         <div className="flex flex-col items-center text-center max-w-4xl mx-auto">

@@ -2,7 +2,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { Contact } from '@/types/contact';
 import { RootState } from '../../store';
-import { customerService } from '@/api/services/customerService';
+import { contactsService } from '@/api/services';
 import { CACHE_DURATION } from './types';
 
 export const fetchCustomers = createAsyncThunk(
@@ -18,7 +18,7 @@ export const fetchCustomers = createAsyncThunk(
         return null;
       }
       
-      const response = await customerService.fetchCustomers();
+      const response = await contactsService.getAll();
       console.log('Customer service response:', response);
       return response.data;
     } catch (error: any) {
@@ -33,8 +33,8 @@ export const fetchContactById = createAsyncThunk(
   async (contactId: string, { rejectWithValue }) => {
     try {
       console.log(`Fetching contact details for ID: ${contactId}`);
-      const response = await customerService.getCustomerDetails(contactId);
-      return response.data;
+      const contact = await contactsService.getById(contactId);
+      return contact;
     } catch (error: any) {
       console.error(`Error fetching contact ${contactId}:`, error);
       const errorMessage = error.message || 'Failed to fetch contact details';
@@ -50,8 +50,8 @@ export const createContact = createAsyncThunk(
   'contacts/createContact',
   async (contactData: Partial<Contact>, { rejectWithValue }) => {
     try {
-      const response = await customerService.createCustomer(contactData as any);
-      return response.data;
+      const contact = await contactsService.create(contactData);
+      return contact;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to create contact');
     }
@@ -64,16 +64,16 @@ export const addContact = createContact;
 // Define the return type for update operations
 interface UpdateContactPayload {
   contactId: string;
-  data: Contact;  // This ensures data is properly typed as Contact
+  data: Contact;
 }
 
 export const updateContact = createAsyncThunk<UpdateContactPayload, { contactId: string; data: Partial<Contact> }>(
   'contacts/updateContact',
   async ({ contactId, data }, { rejectWithValue }) => {
     try {
-      const response = await customerService.updateCustomer(contactId, data);
+      const updatedContact = await contactsService.update(contactId, data);
       // Return a properly typed object containing both contactId and response data
-      return { contactId, data: response.data as Contact };
+      return { contactId, data: updatedContact };
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to update contact');
     }
@@ -84,9 +84,9 @@ export const updateContactCompany = createAsyncThunk<UpdateContactPayload, { con
   'contacts/updateContactCompany',
   async ({ contactId, companyId }, { rejectWithValue }) => {
     try {
-      const response = await customerService.updateCustomer(contactId, { company: companyId });
+      const updatedContact = await contactsService.update(contactId, { company: companyId });
       // Return a properly typed object containing both contactId and response data
-      return { contactId, data: response.data as Contact };
+      return { contactId, data: updatedContact };
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to update contact company');
     }
@@ -97,7 +97,7 @@ export const deleteContact = createAsyncThunk(
   'contacts/deleteContact',
   async (contactId: string, { rejectWithValue }) => {
     try {
-      await customerService.deleteContact(contactId);
+      await contactsService.delete(contactId);
       return contactId;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to delete contact');

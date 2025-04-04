@@ -9,6 +9,8 @@ import AppQueryProvider from './AppQueryProvider';
 import AppErrorBoundary from './AppErrorBoundary';
 import CaslProvider from "@/components/CaslProvider";
 import AppInitializer from './AppInitializer';
+import { ThemeProvider } from '@/context/ThemeContext';
+import { WidgetStateProvider } from '@/widgets/chat/context/WidgetStateContext';
 
 interface AppProvidersProps {
   children: React.ReactNode;
@@ -19,21 +21,33 @@ interface AppProvidersProps {
  * with necessary providers and error boundaries.
  */
 const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
+  // Make sure React is properly initialized before rendering
+  if (!React || !React.createElement) {
+    console.error("React is not properly initialized in AppProviders");
+    return <div>Error initializing application</div>;
+  }
+
   return (
     <AppErrorBoundary>
-      <Provider store={store}>
-        <AppQueryProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <CaslProvider>
-              <AppInitializer>
-                {children}
-              </AppInitializer>
-            </CaslProvider>
-          </TooltipProvider>
-        </AppQueryProvider>
-      </Provider>
+      <React.StrictMode>
+        <Provider store={store}>
+          <ThemeProvider initialTheme={{}}>
+            <WidgetStateProvider>
+              <AppQueryProvider>
+                <TooltipProvider>
+                  <Toaster />
+                  <Sonner />
+                  <CaslProvider>
+                    <AppInitializer>
+                      {children}
+                    </AppInitializer>
+                  </CaslProvider>
+                </TooltipProvider>
+              </AppQueryProvider>
+            </WidgetStateProvider>
+          </ThemeProvider>
+        </Provider>
+      </React.StrictMode>
     </AppErrorBoundary>
   );
 };

@@ -1,33 +1,61 @@
 
 import { useCallback } from 'react';
-import { queueMessage, getQueuedMessages, clearQueuedMessages } from '@/utils/ably/messaging/offlineQueue';
-import { ChatMessage } from '@/types/chat';
+import { ChatMessage } from '@/components/chat-widget/components/conversation/types';
 
 export const useOfflineMessaging = (conversationId: string) => {
-  const queueMessageCallback = useCallback(
+  const getStorageKey = useCallback(() => {
+    return `offline_messages_${conversationId}`;
+  }, [conversationId]);
+
+  const queueMessage = useCallback(
     async (message: ChatMessage) => {
-      return queueMessage(message);
+      const key = getStorageKey();
+      const storedMessages = localStorage.getItem(key);
+      let queuedMessages: ChatMessage[] = [];
+
+      if (storedMessages) {
+        try {
+          queuedMessages = JSON.parse(storedMessages);
+        } catch (e) {
+          console.error('Error parsing stored messages:', e);
+        }
+      }
+
+      queuedMessages.push(message);
+      localStorage.setItem(key, JSON.stringify(queuedMessages));
     },
-    [conversationId]
+    [getStorageKey]
   );
 
-  const getQueuedMessagesCallback = useCallback(
-    async () => {
-      return getQueuedMessages(conversationId);
-    },
-    [conversationId]
-  );
+  const getQueuedMessages = useCallback(async (): Promise<ChatMessage[]> => {
+    const key = getStorageKey();
+    const storedMessages = localStorage.getItem(key);
 
-  const clearQueuedMessagesCallback = useCallback(
-    async () => {
-      return clearQueuedMessages(conversationId);
-    },
-    [conversationId]
-  );
+    if (!storedMessages) {
+      return [];
+    }
+
+    try {
+      return JSON.parse(storedMessages);
+    } catch (e) {
+      console.error('Error parsing stored messages:', e);
+      return [];
+    }
+  }, [getStorageKey]);
+
+  const clearQueuedMessages = useCallback(async () => {
+    localStorage.removeItem(getStorageKey());
+  }, [getStorageKey]);
+
+  const hasQueuedMessages = useCallback(async (): Promise<boolean> => {
+    const messages = await getQueuedMessages();
+    return messages.length > 0;
+  }, [getQueuedMessages]);
 
   return {
-    queueMessage: queueMessageCallback,
-    getQueuedMessages: getQueuedMessagesCallback,
-    clearQueuedMessages: clearQueuedMessagesCallback
+    queueMessage,
+    getQueuedMessages,
+    clearQueuedMessages,
+    hasQueuedMessages
   };
 };

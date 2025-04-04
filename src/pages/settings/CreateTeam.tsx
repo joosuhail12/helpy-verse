@@ -125,10 +125,10 @@ const CreateTeam = () => {
 
       <div className="grid gap-8">
         <TeamBasicInfo
-          teamName={teamName}
-          setTeamName={setTeamName}
-          selectedIcon={selectedIcon}
-          setSelectedIcon={setSelectedIcon}
+          name={teamName}
+          setName={setTeamName}
+          icon={selectedIcon}
+          setIcon={setSelectedIcon}
           teammates={teammates}
           selectedTeammates={selectedTeammates}
           onTeammateToggle={toggleTeammate}
