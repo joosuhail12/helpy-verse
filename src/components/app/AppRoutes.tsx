@@ -12,24 +12,24 @@ import { inboxRoutes } from '@/routes/inboxRoutes';
 import { settingsRoutes } from '@/routes/settingsRoutes';
 import { automationRoutes } from '@/routes/automationRoutes';
 
-// Lazy load auth pages correctly
-const ForgotPasswordLazy = React.lazy(() => import('@/pages/ForgotPassword'));
-const ResetPasswordLazy = React.lazy(() => import('@/pages/ResetPassword'));
-const SignUpLazy = React.lazy(() => import('@/pages/SignUp'));
-const NotFoundLazy = React.lazy(() => import('@/pages/NotFound'));
-const LandingPageLazy = React.lazy(() => import('@/pages/LandingPage'));
-const SignInLazy = React.lazy(() => import('@/pages/SignIn'));
+// Lazy load auth pages correctly - using consistent naming
+const ForgotPassword = React.lazy(() => import('@/pages/ForgotPassword'));
+const ResetPassword = React.lazy(() => import('@/pages/ResetPassword'));
+const SignUp = React.lazy(() => import('@/pages/SignUp'));
+const NotFound = React.lazy(() => import('@/pages/NotFound'));
+const LandingPage = React.lazy(() => import('@/pages/LandingPage'));
+const SignIn = React.lazy(() => import('@/pages/SignIn'));  // Make sure this matches the exported component name exactly
 
 const AppRoutes: React.FC = () => {
   return (
     <React.Suspense fallback={<LoadingFallback />}>
       <Routes>
-        <Route path="/" element={<LandingPageLazy />} />
+        <Route path="/" element={<LandingPage />} />
         <Route path="/home" element={<Navigate to="/home/inbox/all" replace />} />
-        <Route path="/sign-in" element={<SignInLazy />} />
-        <Route path="/forgot-password" element={<ForgotPasswordLazy />} />
-        <Route path="/reset-password" element={<ResetPasswordLazy />} />
-        <Route path="/sign-up" element={<SignUpLazy />} />
+        <Route path="/sign-in" element={<SignIn />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/sign-up" element={<SignUp />} />
         
         <Route path="/home" element={<DashboardLayout />}>
           {/* Add nested routes */}
@@ -39,7 +39,7 @@ const AppRoutes: React.FC = () => {
           {renderRoutes(automationRoutes)}
         </Route>
         
-        <Route path="*" element={<NotFoundLazy />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </React.Suspense>
   );

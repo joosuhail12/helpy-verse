@@ -8,7 +8,7 @@ export interface Message {
   content: string;
   timestamp: string;
   isCustomer: boolean;
-  sender: string; // Added to match the interface in types.ts
+  sender: string; // Required field to match the interface in types.ts
   isInternalNote?: boolean;
   readBy?: string[];
   reactions?: Record<string, string[]>;

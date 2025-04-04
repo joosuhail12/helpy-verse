@@ -19,7 +19,7 @@ import { inboxRoutes } from './inboxRoutes';
 import { settingsRoutes } from './settingsRoutes';
 import { automationRoutes } from './automationRoutes';
 
-// Lazy load components
+// Lazy load components - make sure to use consistent naming pattern
 const SignIn = React.lazy(() => import('../pages/SignIn'));
 const ForgotPassword = React.lazy(() => import('../pages/ForgotPassword'));
 const ResetPassword = React.lazy(() => import('../pages/ResetPassword'));

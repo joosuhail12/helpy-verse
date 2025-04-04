@@ -2,7 +2,7 @@
 /**
  * User presence management service using Ably
  */
-import { getAblyChannel } from '../ably';
+import { getAblyChannel, getWorkspaceChannelName } from '../ably';
 
 export interface PresenceData {
   clientId: string;
@@ -17,7 +17,7 @@ export const enterPresence = async (
   conversationId: string,
   presenceData: PresenceData
 ): Promise<void> => {
-  const channelName = `${workspaceId}:conversations:${conversationId}`;
+  const channelName = getWorkspaceChannelName(workspaceId, `conversations:${conversationId}`);
   
   // Enter presence
   const channel = await getAblyChannel(channelName);
@@ -29,7 +29,7 @@ export const updatePresence = async (
   conversationId: string,
   presenceData: PresenceData
 ): Promise<void> => {
-  const channelName = `${workspaceId}:conversations:${conversationId}`;
+  const channelName = getWorkspaceChannelName(workspaceId, `conversations:${conversationId}`);
   
   // Use enter instead of update since our mock implementation doesn't have update
   const channel = await getAblyChannel(channelName);
@@ -40,7 +40,7 @@ export const leavePresence = async (
   workspaceId: string,
   conversationId: string
 ): Promise<void> => {
-  const channelName = `${workspaceId}:conversations:${conversationId}`;
+  const channelName = getWorkspaceChannelName(workspaceId, `conversations:${conversationId}`);
   
   // Leave presence
   const channel = await getAblyChannel(channelName);
@@ -51,7 +51,7 @@ export const getPresent = async (
   workspaceId: string,
   conversationId: string
 ): Promise<PresenceData[]> => {
-  const channelName = `${workspaceId}:conversations:${conversationId}`;
+  const channelName = getWorkspaceChannelName(workspaceId, `conversations:${conversationId}`);
   
   // Get present clients
   const channel = await getAblyChannel(channelName);
