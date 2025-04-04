@@ -45,7 +45,7 @@ export interface Content {
   createdAt: string;
   lastUpdated: string;
   author: User;
-  messageCount: number;
+  messageCount?: number;
   chatbots?: Array<{ id: string; name: string }>;
   tags?: ContentTag[];
   sharedWith?: User[];

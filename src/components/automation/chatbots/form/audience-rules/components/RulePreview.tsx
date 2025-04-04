@@ -1,8 +1,8 @@
 
 import { QueryGroup, QueryField } from '@/types/queryBuilder';
 import { RulesSummary } from '@/components/common/query-builder/components/RulesSummary';
-import { AudienceSizeEstimator } from './AudienceSizeEstimator';
-import { SampleMatchesPreview } from './SampleMatchesPreview';
+import AudienceSizeEstimator from './AudienceSizeEstimator';
+import SampleMatchesPreview from './SampleMatchesPreview';
 import { RuleConflictDetector } from './RuleConflictDetector';
 import { DataConstraintValidator } from './DataConstraintValidator';
 

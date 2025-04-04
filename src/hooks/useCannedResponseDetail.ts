@@ -4,8 +4,12 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { toast } from '@/components/ui/use-toast';
-import { fetchCannedResponses, deleteCannedResponse } from '@/store/slices/cannedResponses/actions';
-import { selectCannedResponseById } from '@/store/slices/cannedResponses/selectors';
+import { fetchCannedResponseById, deleteCannedResponse } from '@/store/slices/cannedResponses/actions';
+import { 
+  selectCannedResponseByIdSelector, 
+  selectCannedResponsesLoading, 
+  selectCannedResponsesError 
+} from '@/store/slices/cannedResponses/selectors';
 
 export const useCannedResponseDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -15,14 +19,15 @@ export const useCannedResponseDetail = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   
   // Use selectors to get data from the store
-  const response = useAppSelector(state => selectCannedResponseById(state, id || ''));
-  const loading = useAppSelector(state => state.cannedResponses.loading);
-  const error = useAppSelector(state => state.cannedResponses.error);
+  const response = useAppSelector(id ? selectCannedResponseByIdSelector(id) : () => null);
+  const loading = useAppSelector(selectCannedResponsesLoading);
+  const error = useAppSelector(selectCannedResponsesError);
   const teams = useAppSelector(state => state.teams.teams);
   
   useEffect(() => {
-    // Fetch all responses
-    dispatch(fetchCannedResponses());
+    if (id) {
+      dispatch(fetchCannedResponseById(id));
+    }
   }, [dispatch, id]);
   
   const handleDelete = async () => {

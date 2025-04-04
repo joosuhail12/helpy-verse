@@ -1,32 +1,52 @@
 
 import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from '../../store';
+import { selectAllCannedResponses, selectCannedResponseById } from './adapter';
 
-// Base selector
-const getCannedResponsesState = (state: RootState) => state.cannedResponses;
+// Base selector to get the cannedResponses slice
+const selectCannedResponsesState = (state: RootState) => state.cannedResponses;
 
-// Memoized selectors
+// Derived selectors
 export const selectCannedResponses = createSelector(
-  [getCannedResponsesState],
-  (state) => state?.responses || []
+  [selectCannedResponsesState],
+  (state) => selectAllCannedResponses(state)
 );
 
 export const selectCannedResponsesLoading = createSelector(
-  [getCannedResponsesState],
-  (state) => state?.loading || false
+  [selectCannedResponsesState],
+  (state) => state.loading
 );
 
 export const selectCannedResponsesError = createSelector(
-  [getCannedResponsesState],
-  (state) => state?.error || null
+  [selectCannedResponsesState],
+  (state) => state.error
+);
+
+export const selectSelectedCannedResponseId = createSelector(
+  [selectCannedResponsesState],
+  (state) => state.selectedResponseId
 );
 
 export const selectSelectedCannedResponse = createSelector(
-  [getCannedResponsesState],
-  (state) => state?.selectedResponse || null
+  [selectCannedResponsesState, selectSelectedCannedResponseId],
+  (state, selectedId) => {
+    if (!selectedId) return null;
+    return selectCannedResponseById(state, selectedId);
+  }
 );
 
-export const selectCannedResponseById = createSelector(
-  [selectCannedResponses, (_, id: string) => id],
-  (responses, id) => responses.find(response => response.id === id) || null
+export const selectCannedResponseByIdSelector = (id: string) => 
+  createSelector(
+    [selectCannedResponsesState],
+    (state) => selectCannedResponseById(state, id)
+  );
+
+export const selectCannedResponseCategories = createSelector(
+  [selectCannedResponsesState],
+  (state) => state.categories
+);
+
+export const selectVersionHistory = createSelector(
+  [selectCannedResponsesState],
+  (state) => state.versionHistory
 );

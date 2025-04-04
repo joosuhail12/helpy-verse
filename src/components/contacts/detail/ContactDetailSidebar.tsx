@@ -1,88 +1,94 @@
 
-import React from 'react';
-import { Contact } from '@/types/contact';
-import { ContactTags } from './ContactTags';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Mail, Phone, Edit, Archive } from 'lucide-react';
-import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { useNavigate } from 'react-router-dom';
-import { updateContact } from '@/store/slices/contacts/contactsSlice';
+import { Contact } from '@/types/contact';
+import { ContactBasicInfo } from './info/ContactBasicInfo';
+import { ContactCommunicationInfo } from './info/ContactCommunicationInfo';
+import { ContactSocialInfo } from './info/ContactSocialInfo';
+import { ContactStatusInfo } from './info/ContactStatusInfo';
+import { ContactDatesInfo } from './info/ContactDatesInfo';
+import { ContactTags } from './ContactTags';
 
 interface ContactDetailSidebarProps {
   contact: Contact;
 }
 
 export const ContactDetailSidebar = ({ contact }: ContactDetailSidebarProps) => {
-  const dispatch = useAppDispatch();
-  const navigate = useNavigate();
-
-  const handleArchive = () => {
-    dispatch(updateContact({
-      contactId: contact.id,
-      data: { status: 'inactive' }
-    }))
-      .then(() => {
-        navigate('/home/contacts/all');
-      });
-  };
-
-  // Format the phone number if present
-  const formattedPhone = contact.phone ? (
-    <Button variant="link" className="p-0 h-auto font-normal text-blue-500" asChild>
-      <a href={`tel:${contact.phone}`}>{contact.phone}</a>
-    </Button>
-  ) : (
-    <span className="text-gray-500 italic">No phone</span>
-  );
-
   return (
-    <Card className="bg-white">
-      <CardContent className="pt-6">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
-            <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xl font-medium">
-              {contact.firstname?.[0]}{contact.lastname?.[0]}
-            </div>
-            <div>
-              <h2 className="text-xl font-semibold">
-                {contact.firstname} {contact.lastname}
-              </h2>
-              <p className="text-muted-foreground">
-                {typeof contact.title === 'string' ? contact.title : 'No title'}
-              </p>
-            </div>
-          </div>
-          <Button variant="ghost" size="icon">
-            <Edit className="h-4 w-4" />
+    <div className="space-y-6">
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg">Basic Information</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ContactBasicInfo contact={contact} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg">Contact Information</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ContactCommunicationInfo contact={contact} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg">Status</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ContactStatusInfo contact={contact} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg">Social Profiles</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ContactSocialInfo contact={contact} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg">Dates</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ContactDatesInfo contact={contact} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg">Tags</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ContactTags contact={contact} tags={contact.tags || []} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg">Actions</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          <Button className="w-full" variant="outline">
+            Send Email
           </Button>
-        </div>
-
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <Mail className="h-4 w-4 text-muted-foreground" />
-            <Button variant="link" className="p-0 h-auto font-normal text-blue-500" asChild>
-              <a href={`mailto:${contact.email}`}>{contact.email}</a>
-            </Button>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <Phone className="h-4 w-4 text-muted-foreground" />
-            {formattedPhone}
-          </div>
-        </div>
-
-        <div className="mt-6 pt-6 border-t">
-          <ContactTags contactId={contact.id} tags={contact.tags} />
-        </div>
-
-        <div className="mt-6 pt-6 border-t">
-          <Button variant="destructive" size="sm" className="w-full" onClick={handleArchive}>
-            <Archive className="h-4 w-4 mr-2" />
-            Archive Contact
+          <Button className="w-full" variant="outline">
+            Call Contact
           </Button>
-        </div>
-      </CardContent>
-    </Card>
+          <Button className="w-full" variant="outline">
+            Schedule Meeting
+          </Button>
+          <Button className="w-full" variant="destructive">
+            Delete Contact
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
   );
 };

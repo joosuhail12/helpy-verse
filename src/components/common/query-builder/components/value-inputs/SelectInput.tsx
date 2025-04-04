@@ -1,6 +1,6 @@
 
+import React from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { cn } from '@/lib/utils';
 
 interface SelectInputProps {
   value: string;
@@ -9,11 +9,16 @@ interface SelectInputProps {
   errorMessage?: string | null;
 }
 
-export const SelectInput = ({ value, onChange, options, errorMessage }: SelectInputProps) => {
+export const SelectInput: React.FC<SelectInputProps> = ({ 
+  value, 
+  onChange, 
+  options,
+  errorMessage 
+}) => {
   return (
     <Select value={value} onValueChange={onChange}>
-      <SelectTrigger className={cn("w-[200px]", errorMessage && "border-red-500")}>
-        <SelectValue placeholder="Select value" />
+      <SelectTrigger className={`w-full ${errorMessage ? 'border-red-500' : ''}`}>
+        <SelectValue placeholder="Select an option" />
       </SelectTrigger>
       <SelectContent>
         {options.map((option) => (

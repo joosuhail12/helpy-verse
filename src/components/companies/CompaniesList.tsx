@@ -1,80 +1,55 @@
 
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { 
+  toggleCompanySelection,
+} from '@/store/slices/companies/companiesSlice';
+import { 
+  selectAllCompanies, 
+  selectCompaniesLoading,
+  selectSelectedCompanyIds 
+} from '@/store/slices/companies/selectors';
 import { CompanyListItem } from './CompanyListItem';
 import { LoadingState } from './LoadingState';
-import { Checkbox } from "@/components/ui/checkbox";
-import type { Company } from '@/types/company';
-import { setSelectedCompanies } from '@/store/slices/companies/companiesSlice';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 
-interface CompaniesListProps {
-  companies: Company[];
-  loading: boolean;
+export interface CompanyListItemProps {
+  company: any;
+  onToggleSelect: (id: string) => void;
+  isSelected: boolean;
 }
 
-export const CompaniesList = ({ companies, loading }: CompaniesListProps) => {
+export const CompaniesList = () => {
   const dispatch = useAppDispatch();
-  const selectedCompanies = useAppSelector((state) => state.companies.selectedCompanies);
+  const companies = useAppSelector(selectAllCompanies);
+  const loading = useAppSelector(selectCompaniesLoading);
+  const selectedCompanyIds = useAppSelector(selectSelectedCompanyIds);
 
-  const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      dispatch(setSelectedCompanies(companies?.map(company => company.id)));
-    } else {
-      dispatch(setSelectedCompanies([]));
-    }
+  const handleToggleSelection = (id: string) => {
+    dispatch(toggleCompanySelection(id));
   };
 
-  if (loading) {
+  if (loading && companies.length === 0) {
     return <LoadingState />;
-  }
-  console.log(companies);
-  if (companies.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <h3 className="text-lg font-medium text-gray-900">No companies yet</h3>
-        <p className="mt-1 text-sm text-gray-500">
-          Get started by adding your first company
-        </p>
-      </div>
-    );
   }
 
   return (
-    <div className="bg-white rounded-lg shadow">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-12">
-              <Checkbox
-                checked={selectedCompanies.length === companies.length}
-                onCheckedChange={handleSelectAll}
-                aria-label="Select all companies"
-              />
-            </TableHead>
-            <TableHead>Name</TableHead>
-            <TableHead>Website</TableHead>
-            <TableHead>Industry</TableHead>
-            <TableHead>Type</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Location</TableHead>
-            <TableHead>Employees</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {companies?.map(company => (
-            <CompanyListItem key={company.id} company={company} />
+    <div className="space-y-4">
+      {companies.length === 0 ? (
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">No companies found</p>
+        </div>
+      ) : (
+        <ul className="divide-y">
+          {companies.map((company) => (
+            <CompanyListItem 
+              key={company.id} 
+              company={company} 
+              isSelected={selectedCompanyIds.includes(company.id)}
+              onToggleSelect={handleToggleSelection}
+            />
           ))}
-        </TableBody>
-      </Table>
+        </ul>
+      )}
     </div>
   );
 };

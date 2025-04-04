@@ -1,40 +1,43 @@
 
 import { configureStore } from '@reduxjs/toolkit';
-
-// Import all reducers using named imports to avoid circular dependencies
-import { authReducer } from './slices/auth/authSlice';
+import { setupListeners } from '@reduxjs/toolkit/query';
+import { baseApi } from '@/api/baseApi';
 import { actionsReducer } from './slices/actions/actionsSlice';
 import contentReducer from './slices/content/contentSlice';
 import contentCenterReducer from './slices/automation/contentCenterSlice';
 import contactsReducer from './slices/contacts/contactsSlice';
 import companiesReducer from './slices/companies/companiesSlice';
-import ticketsReducer from './slices/tickets/ticketsSlice';
-import tagsReducer from './slices/tagsSlice';
+import inboxReducer from './slices/inbox/inboxSlice';
+import tagsReducer from './slices/tags/tagsSlice';
+import { teammatesReducer } from './slices/teammates/teammatesSlice';
 import teamsReducer from './slices/teams/teamsSlice';
-import { chatWidgetSettingsReducer } from './slices/chatWidgetSettings';
 import { emailChannelsReducer } from './slices/emailChannels/emailChannelsSlice';
 import { cannedResponsesReducer } from './slices/cannedResponses/cannedResponsesSlice';
 import { chatbotsReducer } from './slices/chatbots/chatbotsSlice';
 import userReducer from './slices/user/userSlice';
-import teammatesSlice from './slices/teammates/teammatesSlice';
+import { securityReducer } from './slices/securitySlice';
+import legacyContactsReducer from './slices/contactSlice';
+import authReducer from './slices/auth/authSlice';
 
 // Define the root reducer with all slices
 const rootReducer = {
+  [baseApi.reducerPath]: baseApi.reducer, // Add the API reducer
   auth: authReducer,
   actions: actionsReducer,
   content: contentReducer,
   contentCenter: contentCenterReducer,
   contacts: contactsReducer,
+  legacyContacts: legacyContactsReducer, // Keep for backward compatibility
   companies: companiesReducer,
-  tickets: ticketsReducer, // Renamed from inbox to tickets for clarity
+  inbox: inboxReducer,
   tags: tagsReducer,
-  teammates: teammatesSlice,
+  teammates: teammatesReducer,
   teams: teamsReducer,
   emailChannels: emailChannelsReducer,
   cannedResponses: cannedResponsesReducer,
   chatbots: chatbotsReducer,
   user: userReducer,
-  chatWidgetSettings: chatWidgetSettingsReducer,
+  security: securityReducer,
 };
 
 export const store = configureStore({
@@ -42,11 +45,12 @@ export const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: false,
-    }),
+    }).concat(baseApi.middleware),
   devTools: process.env.NODE_ENV !== 'production',
 });
 
+// Optional, but required for refetchOnFocus/refetchOnReconnect behaviors
+setupListeners(store.dispatch);
+
 export type AppDispatch = typeof store.dispatch;
 export type RootState = ReturnType<typeof store.getState>;
-
-export default store;

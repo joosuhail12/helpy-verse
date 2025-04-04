@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { updateContact, clearSelection } from '@/store/slices/contacts/contactsSlice';
+import { updateContact, clearSelection } from '@/store/slices/contacts/actions';
 import { AlignCenter, Check, ChevronDown } from 'lucide-react';
 
 interface StatusActionsProps {
@@ -25,8 +25,8 @@ export const StatusActions: React.FC<StatusActionsProps> = ({ selectedContactIds
       // Update each contact
       for (const contactId of selectedContactIds) {
         await dispatch(updateContact({
-          contactId,
-          data: { status }
+          id: contactId,
+          updates: { status }
         })).unwrap();
       }
 

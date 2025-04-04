@@ -1,25 +1,28 @@
 
-import { Card } from '@/components/ui/card';
-import { AlertTriangle } from 'lucide-react';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { AlertCircle } from 'lucide-react';
 
-interface CompanyNotFoundProps {
-  onGoBack: () => void;
+export interface CompanyNotFoundProps {
+  companyId: string;
 }
 
-export const CompanyNotFound = ({ onGoBack }: CompanyNotFoundProps) => {
+export const CompanyNotFound: React.FC<CompanyNotFoundProps> = ({ companyId }) => {
+  const navigate = useNavigate();
+
   return (
-    <div className="p-6">
-      <Card className="p-6 flex flex-col items-center justify-center space-y-4">
-        <AlertTriangle className="h-12 w-12 text-yellow-500" />
-        <h2 className="text-xl font-semibold text-gray-800">Company Not Found</h2>
-        <p className="text-muted-foreground text-center">
-          The company you're looking for doesn't exist or has been deleted.
+    <div className="flex flex-col items-center justify-center h-full p-6">
+      <div className="bg-white rounded-lg shadow-md p-8 max-w-md w-full text-center">
+        <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+        <h2 className="text-2xl font-semibold mb-2">Company Not Found</h2>
+        <p className="text-gray-600 mb-6">
+          The company with ID {companyId} could not be found. It may have been deleted or you might not have permission to view it.
         </p>
-        <Button variant="default" onClick={onGoBack} className="mt-4">
+        <Button onClick={() => navigate('/contacts/companies')}>
           Return to Companies
         </Button>
-      </Card>
+      </div>
     </div>
   );
 };

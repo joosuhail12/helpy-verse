@@ -1,54 +1,19 @@
 
-import React, { useState, Suspense, lazy, useEffect } from 'react';
+import React, { useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { X, MessageSquare } from 'lucide-react';
 import { ChatProvider } from '@/context/ChatContext';
 import { AblyProvider } from '@/context/AblyContext';
 import { ThemeProvider, ThemeConfig } from '@/context/ThemeContext';
-import { ChatWidgetSettings } from '@/store/slices/chatWidgetSettings/types';
-import ToggleButton from './components/button/ToggleButton';
-import { Loader2 } from 'lucide-react';
-import '@/styles/chat-widget-theme.css';
-
-// Lazy load the widget container
-const ChatWidgetWrapper = lazy(() => import('./components/wrapper/ChatWidgetWrapper'));
-const ChatWidgetContainer = lazy(() => import('./container/ChatWidgetContainer'));
+import ChatWidgetContainer from './container/ChatWidgetContainer';
 
 interface ChatWidgetProps {
   workspaceId: string;
   theme?: Partial<ThemeConfig>;
-  settings?: Partial<ChatWidgetSettings>;
 }
 
-export const ChatWidget: React.FC<ChatWidgetProps> = ({ 
-  workspaceId, 
-  theme = {}, 
-  settings
-}) => {
+export const ChatWidget: React.FC<ChatWidgetProps> = ({ workspaceId, theme = {} }) => {
   const [isOpen, setIsOpen] = useState(false);
-
-  // Apply settings to theme if provided
-  const combinedTheme: Partial<ThemeConfig> = {
-    ...theme,
-    // Override with settings if provided
-    ...(settings?.appearance && {
-      position: settings.appearance.position,
-      compact: settings.appearance.compact,
-      colors: {
-        ...theme.colors,
-        primary: settings.appearance.primaryColor
-      },
-      labels: {
-        ...theme.labels,
-        welcomeTitle: settings.content?.welcomeTitle,
-        welcomeSubtitle: settings.content?.welcomeSubtitle
-      },
-      features: {
-        typingIndicator: settings.features?.enableTypingIndicator,
-        reactions: settings.features?.enableReactions,
-        fileAttachments: settings.features?.enableFileAttachments,
-        readReceipts: settings.features?.enableReadReceipts
-      }
-    })
-  };
 
   const toggleWidget = () => {
     setIsOpen((prev) => !prev);
@@ -57,32 +22,48 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({
   return (
     <AblyProvider workspaceId={workspaceId}>
       <ChatProvider workspaceId={workspaceId}>
-        <ThemeProvider initialTheme={combinedTheme}>
-          {isOpen && (
-            <Suspense fallback={
-              <div className="fixed bottom-20 right-4 rounded-xl shadow-lg bg-white p-4 z-50">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              </div>
-            }>
-              <ChatWidgetWrapper 
-                isOpen={isOpen}
-                position={combinedTheme.position === 'left' ? 'left' : 'right'}
-                compact={Boolean(combinedTheme.compact)}
-              >
-                <ChatWidgetContainer 
-                  onClose={() => setIsOpen(false)} 
-                  workspaceId={workspaceId} 
-                  position={combinedTheme.position === 'left' ? 'left' : 'right'} 
-                  compact={Boolean(combinedTheme.compact)}
-                />
-              </ChatWidgetWrapper>
-            </Suspense>
-          )}
-          <div className={`fixed bottom-4 z-50 ${combinedTheme.position === 'left' ? 'left-4' : 'right-4'}`}>
-            <ToggleButton 
-              isOpen={isOpen} 
-              onClick={toggleWidget} 
-            />
+        <ThemeProvider initialTheme={theme}>
+          <div className={`fixed bottom-4 z-50 flex flex-col items-end`} 
+            style={{ 
+              [theme.position === 'left' ? 'left' : 'right']: '1rem',
+              alignItems: theme.position === 'left' ? 'flex-start' : 'flex-end' 
+            }}
+          >
+            <AnimatePresence>
+              {isOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                  transition={{ duration: 0.2 }}
+                  className={`mb-3 ${theme.compact ? 'w-72' : 'w-80 sm:w-96'} h-[600px] bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-200`}
+                >
+                  <ChatWidgetContainer 
+                    onClose={() => setIsOpen(false)} 
+                    workspaceId={workspaceId} 
+                    position={theme.position === 'left' ? 'left' : 'right'} 
+                    compact={Boolean(theme.compact)}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
+            
+            <button
+              onClick={toggleWidget}
+              className={`${
+                isOpen ? 'bg-red-500 hover:bg-red-600' : 'bg-primary hover:bg-primary/90'
+              } w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-colors`}
+              aria-label={isOpen ? 'Close chat' : 'Open chat'}
+              style={{ 
+                backgroundColor: isOpen ? '#ef4444' : theme.colors?.primary 
+              }}
+            >
+              {isOpen ? (
+                <X className="h-6 w-6 text-white" />
+              ) : (
+                <MessageSquare className="h-6 w-6 text-white" />
+              )}
+            </button>
           </div>
         </ThemeProvider>
       </ChatProvider>

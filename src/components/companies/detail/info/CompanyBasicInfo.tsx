@@ -13,7 +13,7 @@ export const CompanyBasicInfo = ({ company }: CompanyBasicInfoProps) => {
         <p className="text-sm font-medium text-muted-foreground">Company Name</p>
         <InlineEditField
           value={company.name}
-          companyId={company.id}
+          company={company.id}
           field="name"
           label="Company Name"
         />
@@ -22,7 +22,7 @@ export const CompanyBasicInfo = ({ company }: CompanyBasicInfoProps) => {
         <p className="text-sm font-medium text-muted-foreground">Industry</p>
         <InlineEditField
           value={company.industry || ''}
-          companyId={company.id}
+          company={company.id}
           field="industry"
           label="Industry"
         />
@@ -31,7 +31,7 @@ export const CompanyBasicInfo = ({ company }: CompanyBasicInfoProps) => {
         <p className="text-sm font-medium text-muted-foreground">Employees</p>
         <InlineEditField
           value={company.numberOfEmployees?.toString() || ''}
-          companyId={company.id}
+          company={company.id}
           field="numberOfEmployees"
           label="Employees"
           type="number"
@@ -41,7 +41,7 @@ export const CompanyBasicInfo = ({ company }: CompanyBasicInfoProps) => {
         <p className="text-sm font-medium text-muted-foreground">Annual Revenue</p>
         <InlineEditField
           value={company.annualRevenue?.toString() || ''}
-          companyId={company.id}
+          company={company.id}
           field="annualRevenue"
           label="Annual Revenue"
           type="number"

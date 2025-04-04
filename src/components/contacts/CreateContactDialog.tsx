@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { addContact } from '@/store/slices/contacts/contactsSlice';
+import { addContact } from '@/store/slices/contacts/actions/contactsManage';
 import { useToast } from '@/hooks/use-toast';
 import { v4 as uuidv4 } from 'uuid';
 import { Contact } from '@/types/contact';
@@ -35,8 +35,8 @@ const CreateContactDialog = ({ open, onOpenChange }: CreateContactDialogProps) =
         firstname,
         lastname,
         email,
-        type: isCustomer ? 'customer' : 'visitor' as const,
-        status: 'active' as const,
+        type: isCustomer ? 'customer' : 'visitor',
+        status: 'active',
         tags: [],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),

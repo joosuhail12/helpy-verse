@@ -1,7 +1,6 @@
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { QueryField } from '@/types/queryBuilder';
-import { cn } from '@/lib/utils';
 
 interface FieldSelectProps {
   value: string;
@@ -11,22 +10,41 @@ interface FieldSelectProps {
   errorMessage?: string | null;
 }
 
-export const FieldSelect = ({ value, onChange, fields, disabled, errorMessage }: FieldSelectProps) => {
+export const FieldSelect = ({
+  value,
+  onChange,
+  fields,
+  disabled,
+  errorMessage,
+}: FieldSelectProps) => {
+  // Group fields by type for better organization
+  const groupedFields = fields.reduce((acc, field) => {
+    const type = field.type.charAt(0).toUpperCase() + field.type.slice(1);
+    if (!acc[type]) {
+      acc[type] = [];
+    }
+    acc[type].push(field);
+    return acc;
+  }, {} as Record<string, QueryField[]>);
+
   return (
-    <Select 
-      value={value} 
-      onValueChange={onChange}
-      disabled={disabled}
-    >
-      <SelectTrigger className={cn("w-[200px]", errorMessage && "border-red-500")}>
+    <Select value={value} onValueChange={onChange} disabled={disabled}>
+      <SelectTrigger className={`w-[200px] ${errorMessage ? 'border-red-500' : ''}`}>
         <SelectValue placeholder="Select field" />
       </SelectTrigger>
       <SelectContent>
-        {fields.map((field) => (
-          <SelectItem key={field.id} value={field.id}>
-            {field.label}
-          </SelectItem>
+        {Object.entries(groupedFields).map(([type, typeFields]) => (
+          <SelectGroup key={type} className="mt-2">
+            {typeFields.map((field) => (
+              <SelectItem key={field.id} value={field.id}>
+                {field.label}
+              </SelectItem>
+            ))}
+          </SelectGroup>
         ))}
+        {fields.length === 0 && (
+          <div className="p-2 text-sm text-muted-foreground">No fields available</div>
+        )}
       </SelectContent>
     </Select>
   );

@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from 'react';
 import type { Tag, SortField, FilterEntity } from '@/types/tag';
-import { tagService } from '@/api/services/tagService';
+import { tagService } from '@/api/tagsApi';
 
 export const useTags = (
   searchQuery: string = "",

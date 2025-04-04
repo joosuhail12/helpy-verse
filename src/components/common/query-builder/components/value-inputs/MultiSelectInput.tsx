@@ -1,37 +1,41 @@
 
-import { Badge } from '@/components/ui/badge';
-import { Check } from 'lucide-react';
+import React from 'react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 
 interface MultiSelectInputProps {
   value: string[];
   onChange: (value: string[]) => void;
   options: string[];
+  errorMessage?: string | null;
 }
 
-export const MultiSelectInput = ({ value, onChange, options }: MultiSelectInputProps) => {
-  const handleOptionClick = (option: string) => {
-    const newValues = value.includes(option)
-      ? value.filter((v) => v !== option)
-      : [...value, option];
-    onChange(newValues);
+export const MultiSelectInput: React.FC<MultiSelectInputProps> = ({
+  value = [],
+  onChange,
+  options,
+  errorMessage
+}) => {
+  const handleToggleOption = (option: string) => {
+    if (value.includes(option)) {
+      onChange(value.filter(item => item !== option));
+    } else {
+      onChange([...value, option]);
+    }
   };
 
   return (
-    <div className="space-y-2">
-      <div className="flex flex-wrap gap-2">
-        {options.map((option) => (
-          <div
-            key={option}
-            onClick={() => handleOptionClick(option)}
-            className="cursor-pointer"
-          >
-            <Badge variant={value.includes(option) ? "default" : "outline"}>
-              {option}
-              {value.includes(option) && <Check className="ml-1 h-3 w-3" />}
-            </Badge>
-          </div>
-        ))}
-      </div>
+    <div className={`space-y-2 ${errorMessage ? 'border-red-500 border rounded p-2' : ''}`}>
+      {options.map((option) => (
+        <div key={option} className="flex items-center space-x-2">
+          <Checkbox
+            id={`option-${option}`}
+            checked={value.includes(option)}
+            onCheckedChange={() => handleToggleOption(option)}
+          />
+          <Label htmlFor={`option-${option}`} className="text-sm">{option}</Label>
+        </div>
+      ))}
     </div>
   );
 };

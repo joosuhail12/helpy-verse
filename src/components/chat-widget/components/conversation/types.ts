@@ -1,63 +1,34 @@
 
-import { 
-  ChatMessage, 
-  Conversation, 
-  TypingStatus, 
-  FileAttachment 
-} from '@/types/chat';
-
-// Re-export types from the core definitions using 'export type'
-export type { 
-  ChatMessage, 
-  Conversation, 
-  TypingStatus, 
-  FileAttachment 
-};
-
-/**
- * Props for the conversation view component
- */
-export interface ConversationViewProps {
-  workspaceId: string;
+export interface ChatMessage {
+  id: string;
+  sender: 'user' | 'agent' | 'system';
+  content: string;
+  timestamp: Date | string;
   conversationId: string;
-  onBack?: () => void;
-  compact?: boolean;
-}
-
-/**
- * Props for the message list component
- */
-export interface MessageListProps {
-  messages: ChatMessage[];
-  isLoading: boolean;
-  typingIndicator?: {
-    agentName?: string;
-    users: TypingStatus[];
-  };
-}
-
-/**
- * Props for individual message items
- */
-export interface MessageItemProps {
-  message: ChatMessage;
-  isCurrentUser: boolean;
-  showReadReceipt?: boolean;
-  onReactionToggle?: (messageId: string, emoji: string) => void;
-}
-
-/**
- * Props for the message input component
- */
-export interface MessageInputProps {
-  value: string;
-  onChange: (value: string) => void;
-  onSend: () => void;
-  disabled?: boolean;
-  placeholder?: string;
+  metadata?: Record<string, any>;
   attachments?: FileAttachment[];
-  onAttachmentAdd?: (files: File[]) => void;
-  onAttachmentRemove?: (id: string) => void;
-  showEmojiPicker?: boolean;
-  onEmojiSelect?: (emoji: string) => void;
+  reactions?: Record<string, string[]>;
+  readBy?: string[];
+}
+
+export interface Conversation {
+  id: string;
+  title?: string;
+  lastMessage?: string;
+  lastMessageTimestamp?: string;
+  unreadCount?: number;
+}
+
+export interface TypingStatus {
+  userId: string;
+  username: string;
+  isTyping: boolean;
+}
+
+export interface FileAttachment {
+  id: string;
+  name: string;
+  type: string;
+  url: string;
+  size: number;
 }

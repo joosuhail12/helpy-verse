@@ -15,7 +15,7 @@ export const CompanyPreferences = ({ company }: CompanyPreferencesProps) => {
           <p className="text-sm font-medium text-muted-foreground">Preferred Language</p>
           <InlineEditField
             value={company.preferredLanguage || ''}
-            companyId={company.id}
+            company={company.id}
             field="preferredLanguage"
             label="Preferred Language"
           />
@@ -24,7 +24,7 @@ export const CompanyPreferences = ({ company }: CompanyPreferencesProps) => {
           <p className="text-sm font-medium text-muted-foreground">Timezone</p>
           <InlineEditField
             value={company.timezone || ''}
-            companyId={company.id}
+            company={company.id}
             field="timezone"
             label="Timezone"
           />
@@ -33,7 +33,7 @@ export const CompanyPreferences = ({ company }: CompanyPreferencesProps) => {
           <p className="text-sm font-medium text-muted-foreground">Business Model</p>
           <InlineEditField
             value={company.businessModel || ''}
-            companyId={company.id}
+            company={company.id}
             field="businessModel"
             label="Business Model"
           />
@@ -42,7 +42,7 @@ export const CompanyPreferences = ({ company }: CompanyPreferencesProps) => {
           <p className="text-sm font-medium text-muted-foreground">Market Segment</p>
           <InlineEditField
             value={company.marketSegment || ''}
-            companyId={company.id}
+            company={company.id}
             field="marketSegment"
             label="Market Segment"
           />

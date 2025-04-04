@@ -1,7 +1,7 @@
 
-import { QueryGroup, QueryField } from '@/types/queryBuilder';
+import React from 'react';
 import { QueryGroupComponent } from './QueryGroupComponent';
-import type { ValidationError } from '@/components/automation/chatbots/form/audience-rules/utils/validation';
+import type { QueryGroup, QueryField, ValidationError } from '@/types/queryBuilder';
 
 interface QueryBuilderProps {
   value: QueryGroup;
@@ -10,12 +10,17 @@ interface QueryBuilderProps {
   errors?: ValidationError[];
 }
 
-export const QueryBuilder = ({ value, onChange, fields, errors = [] }: QueryBuilderProps) => {
+export const QueryBuilder: React.FC<QueryBuilderProps> = ({ 
+  value, 
+  onChange, 
+  fields, 
+  errors = [] 
+}) => {
   return (
     <QueryGroupComponent
       group={value}
-      onChange={onChange}
       fields={fields}
+      onChange={onChange}
       depth={0}
       maxDepth={3}
       errors={errors}

@@ -1,142 +1,133 @@
 
-import { useState, useEffect, useRef } from 'react';
-import { Pencil } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
-import { CustomFieldType } from '@/types/customField';
-import { validateFieldValue } from '@/components/settings/customData/utils/fieldValidation';
+import React, { useState } from 'react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { updateCompany } from '@/store/slices/companies/companiesSlice';
-import { EditField } from '@/components/contacts/detail/inline-edit/EditField';
-import { DisplayValue } from '@/components/contacts/detail/inline-edit/DisplayValue';
-import { EditButtons } from '@/components/contacts/detail/inline-edit/EditButtons';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { PencilIcon, CheckIcon, XIcon } from 'lucide-react';
 
-interface InlineEditFieldProps {
-  value: string | number | boolean | string[];
-  companyId: string;
+export interface InlineEditFieldProps {
+  value: string;
+  company: string;  // Company ID
   field: string;
   label: string;
-  type?: CustomFieldType;
-  options?: string[];
-  validation?: {
-    type: 'required' | 'minLength' | 'maxLength' | 'regex' | 'min' | 'max';
-    value: string | number;
-    message: string;
-  }[];
+  type?: 'text' | 'number' | 'email' | 'phone' | 'url' | 'rich-text';
+  validation?: Array<{ type: string; value: string; message: string }>;
 }
 
 export const InlineEditField = ({
   value,
-  companyId,
+  company,
   field,
   label,
   type = 'text',
-  options = [],
-  validation = []
+  validation = [],
 }: InlineEditFieldProps) => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [editValue, setEditValue] = useState<string | number | boolean | string[]>(value);
-  const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const { toast } = useToast();
-  const inputRef = useRef<HTMLInputElement>(null);
   const dispatch = useAppDispatch();
+  const [isEditing, setIsEditing] = useState(false);
+  const [inputValue, setInputValue] = useState(value);
+  const [error, setError] = useState('');
 
-  useEffect(() => {
-    if (isEditing && inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [isEditing]);
-
-  const handleSave = async () => {
-    const mockField = {
-      id: field,
-      name: label,
-      type,
-      required: validation.some(v => v.type === 'required'),
-      validationRules: validation,
-      description: '',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      history: []
-    };
-
-    const validationErrors = validateFieldValue(editValue, mockField);
-    if (validationErrors.length > 0) {
-      setError(validationErrors[0]);
-      toast({
-        title: 'Validation Error',
-        description: validationErrors[0],
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    setIsSaving(true);
-    setError(null);
-    try {
-      // Correctly structure the updates parameter
-      const updates: Record<string, any> = {};
-      updates[field] = editValue;
-      
-      await dispatch(updateCompany({ id: companyId, updates }));
-      setIsEditing(false);
-      toast({
-        title: 'Success',
-        description: `${label} has been updated.`,
-      });
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: `Failed to update ${label.toLowerCase()}.`,
-        variant: 'destructive',
-      });
-    } finally {
-      setIsSaving(false);
-    }
+  const handleEdit = () => {
+    setIsEditing(true);
+    setInputValue(value);
+    setError('');
   };
 
   const handleCancel = () => {
-    setEditValue(value);
     setIsEditing(false);
-    setError(null);
+    setInputValue(value);
+    setError('');
   };
 
-  if (isEditing) {
-    return (
-      <div className="space-y-1">
-        <div className="flex items-center gap-2">
-          <EditField
-            type={type}
-            value={editValue}
-            onChange={(newValue) => setEditValue(newValue)}
-            options={options}
-            isSaving={isSaving}
-            inputRef={inputRef}
-            field={field}
-          />
-          <EditButtons
-            onSave={handleSave}
-            onCancel={handleCancel}
-            isSaving={isSaving}
-          />
-        </div>
-        {error && <p className="text-sm text-red-500">{error}</p>}
-      </div>
+  const validateInput = (): boolean => {
+    for (const rule of validation) {
+      if (rule.type === 'required' && !inputValue) {
+        setError(rule.message);
+        return false;
+      }
+      if (rule.type === 'regex' && !new RegExp(rule.value).test(inputValue)) {
+        setError(rule.message);
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const handleSave = () => {
+    if (!validateInput()) {
+      return;
+    }
+
+    dispatch(
+      updateCompany({
+        companyId: company,
+        data: {
+          [field]: inputValue,
+        },
+      })
     );
-  }
+    setIsEditing(false);
+    setError('');
+  };
+
+  const renderInput = () => {
+    if (type === 'rich-text') {
+      return (
+        <Textarea
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          className={`w-full ${error ? 'border-red-500' : ''}`}
+          rows={4}
+        />
+      );
+    }
+
+    return (
+      <Input
+        type={type}
+        value={inputValue}
+        onChange={(e) => setInputValue(e.target.value)}
+        className={`w-full ${error ? 'border-red-500' : ''}`}
+      />
+    );
+  };
 
   return (
-    <div className="group flex items-center gap-2">
-      <DisplayValue type={type} value={value} />
-      <Button
-        size="sm"
-        variant="ghost"
-        onClick={() => setIsEditing(true)}
-        className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-      >
-        <Pencil className="h-4 w-4 text-gray-500" />
-      </Button>
+    <div className="mb-4 group">
+      <div className="flex justify-between items-center mb-1">
+        <label className="text-sm text-muted-foreground">{label}</label>
+        {!isEditing && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="opacity-0 group-hover:opacity-100 transition-opacity"
+            onClick={handleEdit}
+          >
+            <PencilIcon className="h-4 w-4" />
+          </Button>
+        )}
+      </div>
+
+      {isEditing ? (
+        <div className="space-y-2">
+          {renderInput()}
+          {error && <p className="text-sm text-red-500">{error}</p>}
+          <div className="flex space-x-2">
+            <Button size="sm" onClick={handleSave}>
+              <CheckIcon className="h-4 w-4 mr-1" /> Save
+            </Button>
+            <Button size="sm" variant="outline" onClick={handleCancel}>
+              <XIcon className="h-4 w-4 mr-1" /> Cancel
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <div className="min-h-[24px] py-1">
+          {value ? value : <span className="text-muted-foreground italic">Not set</span>}
+        </div>
+      )}
     </div>
   );
 };

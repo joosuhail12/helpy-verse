@@ -2,11 +2,11 @@
 import { Contact } from '@/types/contact';
 
 export interface ContactsState {
-  items: Contact[];
-  contacts: Contact[];
+  entities: Record<string, Contact>;
+  ids: string[];
   contactDetails: Contact | null;
-  selectedContact: Contact | null;
-  selectedContacts: string[];
+  selectedContactId: string | null;
+  selectedContactIds: string[];
   loading: boolean;
   error: string | null;
   lastFetchTime: number | null;

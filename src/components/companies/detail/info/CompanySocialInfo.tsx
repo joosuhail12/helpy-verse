@@ -17,7 +17,7 @@ export const CompanySocialInfo = ({ company }: CompanySocialInfoProps) => {
           <p className="text-sm font-medium text-muted-foreground">LinkedIn</p>
           <InlineEditField
             value={socialMedia.linkedin || ''}
-            companyId={company.id}
+            company={company.id}
             field="socialMedia.linkedin"
             label="LinkedIn"
             type="url"
@@ -27,7 +27,7 @@ export const CompanySocialInfo = ({ company }: CompanySocialInfoProps) => {
           <p className="text-sm font-medium text-muted-foreground">Twitter</p>
           <InlineEditField
             value={socialMedia.twitter || ''}
-            companyId={company.id}
+            company={company.id}
             field="socialMedia.twitter"
             label="Twitter"
             type="url"
@@ -37,7 +37,7 @@ export const CompanySocialInfo = ({ company }: CompanySocialInfoProps) => {
           <p className="text-sm font-medium text-muted-foreground">Facebook</p>
           <InlineEditField
             value={socialMedia.facebook || ''}
-            companyId={company.id}
+            company={company.id}
             field="socialMedia.facebook"
             label="Facebook"
             type="url"

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import {
   Dialog,
@@ -9,33 +10,24 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { toast } from "@/hooks/use-toast";
-import { tagService } from '@/api/services/tagService';
-import { updateTag } from '@/store/slices/tagsSlice';
+import { useToast } from "@/hooks/use-toast";
+import { updateTag } from '@/store/slices/tags/tagsSlice';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-
-interface Tag {
-  id: string;
-  name: string;
-  color: string;
-  counts: {
-    tickets: number;
-    contacts: number;
-    companies: number;
-  };
-}
+import type { Tag } from '@/types/tag';
 
 interface EditTagDialogProps {
   tag: Tag;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSave: (data: Partial<Tag>) => void;
 }
 
-const EditTagDialog = ({ tag, open, onOpenChange }: EditTagDialogProps) => {
+const EditTagDialog = ({ tag, open, onOpenChange, onSave }: EditTagDialogProps) => {
   const [name, setName] = useState(tag.name);
   const [color, setColor] = useState(tag.color);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const dispatch = useAppDispatch();
+  const { toast } = useToast();
+  
   useEffect(() => {
     setName(tag.name);
     setColor(tag.color);
@@ -46,20 +38,12 @@ const EditTagDialog = ({ tag, open, onOpenChange }: EditTagDialogProps) => {
     setIsSubmitting(true);
 
     try {
-      // Dispatch the Redux action instead of calling tagService directly
-      const resultAction = await dispatch(updateTag({ id: tag.id, tag: { name, color } }));
-
-      // Check if the update was successful
-      if (updateTag.fulfilled.match(resultAction)) {
-        toast({
-          title: "Success",
-          description: `Successfully updated tag "${resultAction.payload.tags[0].name}"`,
-        });
-
-        onOpenChange(false); // Close dialog on success
-      } else {
-        throw new Error("Update failed");
-      }
+      onSave({ name, color });
+      
+      toast({
+        title: "Success",
+        description: `Successfully updated tag "${name}"`,
+      });
     } catch (error) {
       toast({
         title: "Error",

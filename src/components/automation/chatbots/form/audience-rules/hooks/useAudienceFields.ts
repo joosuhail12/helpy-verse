@@ -1,7 +1,7 @@
 
 import { QueryField } from '@/types/queryBuilder';
-import { mockAudienceFields } from '@/mock/audienceFields';
+import { audienceFields } from '@/mock/audienceFields';
 
 export const useAudienceFields = (): QueryField[] => {
-  return mockAudienceFields;
+  return audienceFields;
 };

@@ -13,12 +13,11 @@ export const LoadingSpinner = () => (
   </div>
 );
 
-// Import route components - fixing the imports to match the exported names
-import { DashboardRoutes } from './dashboardRoutes';
-import { InboxRoutes } from './inboxRoutes';
-import { AutomationRoutes } from './automationRoutes';
-// Import settings routes correctly
-import SettingsRoutes from './settingsRoutes';
+// Import route modules
+import { dashboardRoutes } from './dashboardRoutes';
+import { inboxRoutes } from './inboxRoutes';
+import { settingsRoutes } from './settingsRoutes';
+import { automationRoutes } from './automationRoutes';
 
 // Lazy load components
 const SignIn = lazy(() => import('../pages/SignIn'));
@@ -31,7 +30,7 @@ const LandingPage = lazy(() => import('../pages/LandingPage'));
 // Lazy load dashboard layout - make sure it's imported correctly
 const DashboardLayout = lazy(() => import('../layouts/DashboardLayout'));
 
-// Helper to wrap components with Suspense and RouteErrorHandling
+// Helper to wrap components with Suspense and RouteErrorBoundary
 const withSuspenseAndErrorHandling = (Component) => (
   <RouteErrorBoundary>
     <Suspense fallback={<LoadingSpinner />}>
@@ -94,17 +93,10 @@ export const router = createBrowserRouter([
       </PrivateRoute>
     ),
     children: [
-      ...DashboardRoutes,
-      ...InboxRoutes,
-      ...AutomationRoutes,
-      {
-        path: "settings/*",
-        element: (
-          <Suspense fallback={<LoadingSpinner />}>
-            <SettingsRoutes />
-          </Suspense>
-        )
-      }
+      ...dashboardRoutes,
+      ...inboxRoutes,
+      ...settingsRoutes, 
+      ...automationRoutes,
     ],
   },
   {

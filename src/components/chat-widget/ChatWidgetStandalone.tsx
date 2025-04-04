@@ -1,9 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useTheme } from '@/hooks/useTheme';
-import ConnectedChatWidget from './ConnectedChatWidget';
-import { Provider } from 'react-redux';
-import { store } from '@/store/store';
+import { ChatWidget } from './ChatWidget';
 
 /**
  * Standalone chat widget component that can be embedded on any website
@@ -27,12 +25,7 @@ const ChatWidgetStandalone: React.FC = () => {
 
   if (!mounted) return null;
 
-  // Wrap in Redux provider to access settings
-  return (
-    <Provider store={store}>
-      <ConnectedChatWidget workspaceId="6c22b22f-7bdf-43db-b7c1-9c5884125c63" />
-    </Provider>
-  );
+  return <ChatWidget workspaceId="6c22b22f-7bdf-43db-b7c1-9c5884125c63" />;
 };
 
 export default ChatWidgetStandalone;
