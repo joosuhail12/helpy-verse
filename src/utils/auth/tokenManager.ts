@@ -3,10 +3,11 @@
  * Token and authentication management utility functions
  */
 import { HttpClient } from "@/api/services/http";
+import { cookieFunctions } from "@/api/services/http/cookieManager";
 import { jwtDecode } from "jwt-decode";
 
-// Get storage helpers from HttpClient to avoid circular dependencies
-const { getCookie, setCookie } = HttpClient;
+// Get storage helpers from cookieFunctions to avoid circular dependencies
+const { getCookie, setCookie } = cookieFunctions;
 
 // Logout User
 export const handleLogout = async (): Promise<void> => {
