@@ -42,7 +42,6 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     react({
       jsxImportSource: 'react',
-      // Removed the babel configuration that was causing the error
     }),
     mode === 'development' &&
     componentTagger(),

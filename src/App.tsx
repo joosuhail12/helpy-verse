@@ -1,5 +1,5 @@
 
-import React, { Suspense } from "react";
+import React from "react";
 import AppProviders from "./components/app/AppProviders";
 import AppRoutes from "./components/app/AppRoutes";
 import DynamicImportErrorBoundary from "./components/common/DynamicImportErrorBoundary";
@@ -9,13 +9,13 @@ const App = () => {
   return (
     <AppProviders>
       <DynamicImportErrorBoundary fallbackMessage="Failed to load application routes">
-        <Suspense fallback={
+        <React.Suspense fallback={
           <div className="flex items-center justify-center h-screen">
             <LoadingSpinner />
           </div>
         }>
           <AppRoutes />
-        </Suspense>
+        </React.Suspense>
       </DynamicImportErrorBoundary>
     </AppProviders>
   );
