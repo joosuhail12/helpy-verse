@@ -1,5 +1,5 @@
 
-import { useEffect, memo, useState } from 'react';
+import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { toast } from '@/components/ui/use-toast';
 import { isAuthenticated } from '@/utils/auth/tokenManager';
@@ -9,10 +9,10 @@ import { HttpClient } from '@/api/services/http';
  * Component to handle root path redirects based on authentication state
  * Also performs API connectivity check
  */
-const RootRedirect: React.FC = memo(() => {
-  const [apiChecked, setApiChecked] = useState(false);
+const RootRedirect: React.FC = React.memo(() => {
+  const [apiChecked, setApiChecked] = React.useState(false);
 
-  useEffect(() => {
+  React.useEffect(() => {
     // Skip API check if already performed
     if (apiChecked) return;
     

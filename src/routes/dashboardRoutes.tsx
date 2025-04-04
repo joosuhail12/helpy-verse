@@ -1,5 +1,5 @@
 
-import { lazy, Suspense } from 'react';
+import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { ProtectedRoute } from '../components/auth/ProtectedRoute';
 import { Loader2 } from 'lucide-react';
@@ -13,19 +13,19 @@ const LoadingSpinner = () => (
 );
 
 // Lazy load dashboard pages
-const Dashboard = lazy(() => import('../pages/Dashboard'));
-const AllContacts = lazy(() => import('../pages/contacts/All'));
-const Companies = lazy(() => import('../pages/contacts/Companies'));
-const CompanyDetail = lazy(() => import('../pages/contacts/CompanyDetail'));
-const ContactDetail = lazy(() => import('../pages/contacts/Detail'));
+const Dashboard = React.lazy(() => import('../pages/Dashboard'));
+const AllContacts = React.lazy(() => import('../pages/contacts/All'));
+const Companies = React.lazy(() => import('../pages/contacts/Companies'));
+const CompanyDetail = React.lazy(() => import('../pages/contacts/CompanyDetail'));
+const ContactDetail = React.lazy(() => import('../pages/contacts/Detail'));
 
 // Helper function to wrap a component with Suspense, ProtectedRoute and RouteErrorBoundary
 const withSuspenseAndProtection = (Component) => (
   <ProtectedRoute>
     <RouteErrorBoundary>
-      <Suspense fallback={<LoadingSpinner />}>
+      <React.Suspense fallback={<LoadingSpinner />}>
         <Component />
-      </Suspense>
+      </React.Suspense>
     </RouteErrorBoundary>
   </ProtectedRoute>
 );

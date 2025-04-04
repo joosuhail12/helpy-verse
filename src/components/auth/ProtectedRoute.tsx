@@ -1,7 +1,7 @@
 
+import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { isAuthenticated, isTokenExpired } from '@/utils/auth/tokenManager';
-import { useEffect, useState, memo } from 'react';
 import { toast } from '@/components/ui/use-toast';
 import { HttpClient } from '@/api/services/http';
 import ErrorBoundary from '@/components/common/ErrorBoundary';
@@ -10,15 +10,15 @@ import ErrorBoundary from '@/components/common/ErrorBoundary';
  * Enhanced ProtectedRoute component that handles authentication checks
  * and redirects to login if user is not authenticated
  */
-export const ProtectedRoute = memo(({ children }: { children: React.ReactNode }) => {
+export const ProtectedRoute = React.memo(({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
-  const [apiChecked, setApiChecked] = useState(false);
+  const [apiChecked, setApiChecked] = React.useState(false);
   
   // Single authentication check that runs once
   const isAuth = isAuthenticated();
   const isExpired = false; // Disable token expiration check for now
   
-  useEffect(() => {
+  React.useEffect(() => {
     console.log('ProtectedRoute: Auth check for path:', location.pathname);
     
     // Only run API check once per route change and only if authenticated

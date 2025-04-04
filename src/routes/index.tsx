@@ -1,4 +1,5 @@
-import * as React from 'react';
+
+import React from 'react';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import RootRedirect from '../components/app/RootRedirect';
