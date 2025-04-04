@@ -25,8 +25,7 @@ import {
 import { getUserPermission } from './auth/permissionActions';
 
 // Import the auth slice functions directly 
-// (not the default export to avoid circular dependencies)
-import { logout, clearError } from './auth/authSlice';
+import { logout, clearError, reducer } from './auth/authSlice';
 
 // Re-export everything
 export { 
@@ -45,6 +44,5 @@ export {
 // Re-export types
 export type { Permission, Permissions, AuthState, ActionType };
 
-// Import and export the reducer separately
-import { reducer as authReducer } from './auth/authSlice';
-export default authReducer;
+// Export the reducer separately
+export default reducer;

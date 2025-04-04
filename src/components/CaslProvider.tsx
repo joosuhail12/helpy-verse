@@ -2,7 +2,9 @@
 import React, { useEffect } from "react";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { useAppSelector } from "@/hooks/useAppSelector";
-import { fetchUserProfile, fetchWorkspaceData, getUserPermission } from "@/store/slices/authSlice";
+// Fix imports to prevent circular dependencies
+import { fetchUserProfile, fetchWorkspaceData } from "@/store/slices/auth/userActions";
+import { getUserPermission } from "@/store/slices/auth/permissionActions";
 
 interface CaslProviderProps {
     children: React.ReactNode;
