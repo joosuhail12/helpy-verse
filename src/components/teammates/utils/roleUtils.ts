@@ -1,52 +1,37 @@
 
-import type { Teammate } from '@/types/teammate';
+import { type Teammate } from '@/types/teammate';
 
 export const getRoleBadgeVariant = (role?: Teammate['role']) => {
-  if (!role) return 'outline';
-  
   switch (role) {
-    case 'SUPER_ADMIN':
-    case 'ORGANIZATION_ADMIN':
-      return 'destructive';
-    case 'WORKSPACE_ADMIN':
+    case 'admin':
       return 'default';
-    case 'WORKSPACE_AGENT':
+    case 'supervisor':
+      return 'secondary';
+    case 'agent':
+      return 'outline';
+    case 'viewer':
       return 'secondary';
     default:
       return 'outline';
   }
 };
 
-export const getRoleDescription = (role?: Teammate['role']) => {
-  if (!role) return 'Standard user with basic access privileges';
-  
-  switch (role) {
-    case 'SUPER_ADMIN':
-      return 'Full access to all system features and settings';
-    case 'ORGANIZATION_ADMIN':
-      return 'Administrative access across the entire organization';
-    case 'WORKSPACE_ADMIN':
-      return 'Administrative access within this workspace';
-    case 'WORKSPACE_AGENT':
-      return 'Standard user with basic access privileges';
-    default:
-      return 'Standard user with basic access privileges';
-  }
+export const getRoleDisplayName = (role?: Teammate['role']) => {
+  if (!role) return 'Not Assigned';
+  return role.charAt(0).toUpperCase() + role.slice(1);
 };
 
-export const getRoleDisplayName = (role?: Teammate['role']) => {
-  if (!role) return 'Agent';
-  
+export const getRoleDescription = (role?: Teammate['role']) => {
   switch (role) {
-    case 'SUPER_ADMIN':
-      return 'Super Admin';
-    case 'ORGANIZATION_ADMIN':
-      return 'Org Admin';
-    case 'WORKSPACE_ADMIN':
-      return 'Admin';
-    case 'WORKSPACE_AGENT':
-      return 'Agent';
+    case 'admin':
+      return 'Full access to all settings and data';
+    case 'supervisor':
+      return 'Can manage teams and view all data';
+    case 'agent':
+      return 'Can handle tickets and interact with customers';
+    case 'viewer':
+      return 'Read-only access to data';
     default:
-      return 'Agent';
+      return 'Role permissions not defined';
   }
 };

@@ -1,8 +1,15 @@
 
-import type { Teammate } from '@/types/teammate';
+import { type Teammate } from '@/types/teammate';
 
 export const getStatusDescription = (status: Teammate['status']) => {
-  return status === 'active' 
-    ? 'Currently active and can access the system' 
-    : 'Account is deactivated';
+  switch (status) {
+    case 'active':
+      return 'User has full access to their account';
+    case 'inactive':
+      return 'User account is disabled';
+    case 'pending':
+      return 'User has been invited but has not yet accepted';
+    default:
+      return 'Unknown status';
+  }
 };
