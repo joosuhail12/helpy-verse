@@ -4,7 +4,6 @@ import { createBrowserRouter } from 'react-router-dom';
 import RootRedirect from '../components/app/RootRedirect';
 import { PrivateRoute } from '@/utils/helpers/Routes';
 import ProtectedRouteWrapper from '@/components/auth/ProtectedRouteWrapper';
-import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 // Import route modules
 import { dashboardRoutes } from './dashboardRoutes';
