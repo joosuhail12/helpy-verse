@@ -5,7 +5,6 @@ import { Loader2 } from 'lucide-react';
 import RootRedirect from '../components/app/RootRedirect';
 import RouteErrorBoundary from '@/components/app/RouteErrorBoundary';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
-import { isAuthenticated } from '@/utils/auth/tokenManager';
 
 // Define LoadingSpinner first to avoid reference errors
 export const LoadingSpinner = () => (
@@ -14,31 +13,31 @@ export const LoadingSpinner = () => (
   </div>
 );
 
-// Import directly instead of lazy loading for problematic components
-import AllInbox from '@/pages/inbox/All';
+// Import directly instead of lazy loading for LandingPage to prevent initialization errors
+import LandingPage from '@/pages/LandingPage';
 import DashboardLayout from '@/layouts/DashboardLayout';
+import AllInbox from '@/pages/inbox/All';
+
+// Lazy load auth pages and other components
+const SignIn = React.lazy(() => import('../pages/SignIn'));
+const ForgotPassword = React.lazy(() => import('../pages/ForgotPassword'));
+const ResetPassword = React.lazy(() => import('../pages/ResetPassword'));
+const SignUp = React.lazy(() => import('../pages/SignUp'));
+const NotFound = React.lazy(() => import('../pages/NotFound'));
+const YourInbox = React.lazy(() => import('../pages/inbox/YourInbox'));
+const UnassignedInbox = React.lazy(() => import('../pages/inbox/Unassigned'));
+const MentionsInbox = React.lazy(() => import('../pages/inbox/Mentions'));
 
 // Import route modules
 import { dashboardRoutes } from './dashboardRoutes';
 import { settingsRoutes } from './settingsRoutes';
 import { automationRoutes } from './automationRoutes';
 
-// Lazy load auth pages and other components correctly
-const SignIn = React.lazy(() => import('../pages/SignIn'));
-const ForgotPassword = React.lazy(() => import('../pages/ForgotPassword'));
-const ResetPassword = React.lazy(() => import('../pages/ResetPassword'));
-const SignUp = React.lazy(() => import('../pages/SignUp'));
-const NotFound = React.lazy(() => import('../pages/NotFound'));
-const LandingPage = React.lazy(() => import('../pages/LandingPage'));
-const YourInbox = React.lazy(() => import('../pages/inbox/YourInbox'));
-const UnassignedInbox = React.lazy(() => import('../pages/inbox/Unassigned'));
-const MentionsInbox = React.lazy(() => import('../pages/inbox/Mentions'));
-
 // Helper to wrap components with Suspense and RouteErrorBoundary
-const withSuspenseAndErrorHandling = (Component: React.FC) => (
+const withSuspenseAndErrorHandling = (Component) => (
   <RouteErrorBoundary>
     <React.Suspense fallback={<LoadingSpinner />}>
-      <Component />
+      {Component}
     </React.Suspense>
   </RouteErrorBoundary>
 );
@@ -47,7 +46,11 @@ const withSuspenseAndErrorHandling = (Component: React.FC) => (
 export const router = createBrowserRouter([
   {
     path: '/',
-    element: withSuspenseAndErrorHandling(LandingPage),
+    element: (
+      <RouteErrorBoundary>
+        <LandingPage />
+      </RouteErrorBoundary>
+    ),
   },
   {
     path: '/home',
@@ -55,19 +58,19 @@ export const router = createBrowserRouter([
   },
   {
     path: '/sign-in',
-    element: withSuspenseAndErrorHandling(SignIn),
+    element: withSuspenseAndErrorHandling(<SignIn />),
   },
   {
     path: '/forgot-password',
-    element: withSuspenseAndErrorHandling(ForgotPassword),
+    element: withSuspenseAndErrorHandling(<ForgotPassword />),
   },
   {
     path: '/reset-password',
-    element: withSuspenseAndErrorHandling(ResetPassword),
+    element: withSuspenseAndErrorHandling(<ResetPassword />),
   },
   {
     path: '/sign-up',
-    element: withSuspenseAndErrorHandling(SignUp),
+    element: withSuspenseAndErrorHandling(<SignUp />),
   },
   {
     path: '/home',
@@ -79,7 +82,7 @@ export const router = createBrowserRouter([
       </ProtectedRoute>
     ),
     children: [
-      // Define critical inbox routes directly to avoid dynamic import issues
+      // Define critical inbox routes directly
       {
         path: 'inbox/all',
         element: (
@@ -131,7 +134,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '*',
-    element: withSuspenseAndErrorHandling(NotFound),
+    element: withSuspenseAndErrorHandling(<NotFound />),
   },
 ]);
 

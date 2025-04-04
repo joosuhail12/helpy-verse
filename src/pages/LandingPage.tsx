@@ -63,27 +63,6 @@ const LandingPage = () => {
         </div>
       </div>
 
-      {/* Testimonials Section */}
-      <div className="container mx-auto px-4 py-16 bg-white rounded-xl my-16">
-        <h2 className="text-3xl font-bold text-center mb-12 text-gray-900">
-          Trusted by Teams Everywhere
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-          <div className="bg-gray-50 p-6 rounded-xl">
-            <p className="text-gray-700 italic mb-4">
-              "This platform has transformed how we handle customer support. Our response times have decreased by 35% while customer satisfaction is at an all-time high."
-            </p>
-            <p className="font-semibold text-gray-900">Sarah Johnson, Customer Success Manager</p>
-          </div>
-          <div className="bg-gray-50 p-6 rounded-xl">
-            <p className="text-gray-700 italic mb-4">
-              "The automation capabilities have freed up our support team to focus on complex issues while routine inquiries are handled automatically."
-            </p>
-            <p className="font-semibold text-gray-900">Michael Chen, Support Operations Director</p>
-          </div>
-        </div>
-      </div>
-
       {/* CTA Section */}
       <div className="container mx-auto px-4 py-16 text-center">
         <h2 className="text-3xl font-bold mb-6 text-gray-900">
@@ -99,49 +78,9 @@ const LandingPage = () => {
       </div>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12 mt-10">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
-              <h3 className="text-xl font-bold mb-4">Product</h3>
-              <ul className="space-y-2">
-                <li>Features</li>
-                <li>Pricing</li>
-                <li>Use Cases</li>
-                <li>Roadmap</li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-xl font-bold mb-4">Resources</h3>
-              <ul className="space-y-2">
-                <li>Documentation</li>
-                <li>API</li>
-                <li>Community</li>
-                <li>Blog</li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-xl font-bold mb-4">Company</h3>
-              <ul className="space-y-2">
-                <li>About Us</li>
-                <li>Careers</li>
-                <li>Contact</li>
-                <li>Partners</li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-xl font-bold mb-4">Legal</h3>
-              <ul className="space-y-2">
-                <li>Privacy Policy</li>
-                <li>Terms of Service</li>
-                <li>Security</li>
-                <li>Compliance</li>
-              </ul>
-            </div>
-          </div>
-          <div className="mt-12 text-center">
-            <p>© 2023 Support Platform. All rights reserved.</p>
-          </div>
+      <footer className="bg-gray-900 text-white py-8">
+        <div className="container mx-auto px-4 text-center">
+          <p>© 2023 Support Platform. All rights reserved.</p>
         </div>
       </footer>
     </div>
