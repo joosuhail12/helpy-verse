@@ -1,3 +1,4 @@
+
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { useEffect, useState } from 'react';
@@ -16,6 +17,8 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const [authError, setAuthError] = useState<string | null>(null);
   const { loading } = useAppSelector((state) => state.auth);
   const [hasValidToken, setHasValidToken] = useState(false);
+  
+  console.log('ProtectedRoute: Rendering', location.pathname);
   
   // Listen for online/offline status changes
   useEffect(() => {
@@ -46,7 +49,7 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
       // Get token directly from tokenManager
       const token = getAuthToken();
       const isTokenPresent = !!token;
-      console.log('ProtectedRoute: Token exists:', isTokenPresent, isTokenPresent ? 'Token value found' : 'No token value', 'Current path:', location.pathname);
+      console.log('ProtectedRoute: Token exists:', isTokenPresent, 'Token value:', token ? 'Found' : 'Not Found', 'Current path:', location.pathname);
       
       // Check token validity
       if (isTokenPresent) {
@@ -57,8 +60,8 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
         
         try {
           // Try to fetch user data
-          await dispatch(fetchUserData());
-          console.log('ProtectedRoute: Successfully fetched user data');
+          const result = await dispatch(fetchUserData());
+          console.log('ProtectedRoute: Fetched user data result:', result);
         } catch (error: any) {
           console.error("Error fetching user data:", error);
           

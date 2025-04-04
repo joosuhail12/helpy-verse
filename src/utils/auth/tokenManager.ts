@@ -68,8 +68,9 @@ export const handleSetToken = (token: string): boolean => {
 // 🟢 Check if user is authenticated - check localStorage only
 export const isAuthenticated = (): boolean => {
   try {
-    const tokenInStorage = !!localStorage.getItem("token");
-    return tokenInStorage;
+    const token = localStorage.getItem("token");
+    console.log(`isAuthenticated check: Token ${token ? 'exists' : 'does not exist'}`);
+    return !!token;
   } catch (error) {
     console.error("Error checking authentication:", error);
     return false;
@@ -78,8 +79,14 @@ export const isAuthenticated = (): boolean => {
 
 // 🟢 Get auth token - from localStorage only
 export const getAuthToken = (): string => {
-  const storageToken = localStorage.getItem("token");
-  return storageToken || "";
+  try {
+    const storageToken = localStorage.getItem("token");
+    console.log(`getAuthToken: ${storageToken ? 'Token found' : 'No token'}`);
+    return storageToken || "";
+  } catch (error) {
+    console.error("Error getting auth token:", error);
+    return "";
+  }
 };
 
 // Check if token is expired - safer version that handles invalid tokens

@@ -2,6 +2,8 @@
 import * as React from 'react';
 import { Routes, Route, Navigate } from "react-router-dom";
 import LoadingFallback from './LoadingFallback';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+import RootRedirect from './RootRedirect';
 
 // Lazily import layouts 
 const DashboardLayout = React.lazy(() => import('@/layouts/DashboardLayout'));
@@ -25,13 +27,17 @@ const AppRoutes: React.FC = () => {
     <React.Suspense fallback={<LoadingFallback />}>
       <Routes>
         <Route path="/" element={<LandingPage />} />
-        <Route path="/home" element={<Navigate to="/home/inbox/all" replace />} />
+        <Route path="/home" element={<RootRedirect />} />
         <Route path="/sign-in" element={<SignIn />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/sign-up" element={<SignUp />} />
         
-        <Route path="/home" element={<DashboardLayout />}>
+        <Route path="/home" element={
+          <ProtectedRoute>
+            <DashboardLayout />
+          </ProtectedRoute>
+        }>
           {/* Add nested routes */}
           {renderRoutes(dashboardRoutes)}
           {renderRoutes(inboxRoutes)}
