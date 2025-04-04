@@ -1,6 +1,12 @@
 
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { AuthResponse, Credentials, RegistrationCredentials, PasswordResetRequest, PasswordResetConfirmation } from './types';
+import { 
+  AuthResponse, 
+  Credentials, 
+  RegistrationCredentials, 
+  PasswordResetRequest, 
+  PasswordResetConfirmation 
+} from './types';
 import { setAuthCookie, clearAuthCookie } from '@/utils/auth/cookieManager';
 
 export const loginUser = createAsyncThunk<AuthResponse, Credentials>(
@@ -19,7 +25,12 @@ export const loginUser = createAsyncThunk<AuthResponse, Credentials>(
       }
       
       const data = await response.json();
-      setAuthCookie(data.data.accessToken.token);
+      
+      // Store token in cookie
+      if (data && data.data && data.data.accessToken && data.data.accessToken.token) {
+        setAuthCookie(data.data.accessToken.token);
+      }
+      
       return data;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Login failed');
@@ -43,7 +54,12 @@ export const registerUser = createAsyncThunk<AuthResponse, RegistrationCredentia
       }
       
       const data = await response.json();
-      setAuthCookie(data.data.accessToken.token);
+      
+      // Store token in cookie if available
+      if (data && data.data && data.data.accessToken && data.data.accessToken.token) {
+        setAuthCookie(data.data.accessToken.token);
+      }
+      
       return data;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Registration failed');

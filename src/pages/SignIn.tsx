@@ -1,5 +1,5 @@
 
-import { memo, useEffect } from "react";
+import React, { useEffect } from "react";
 import { Logo } from "@/components/auth/Logo";
 import { FeatureList } from "@/components/auth/FeatureList";
 import { LoginForm } from "@/components/auth/LoginForm";
@@ -11,7 +11,11 @@ import { useAppSelector } from "@/hooks/useAppSelector";
 import ErrorBoundary from "@/components/common/ErrorBoundary";
 import { isAuthenticated } from "@/utils/auth/tokenManager";
 
-export const SignIn = memo(() => {
+/**
+ * SignIn page component
+ * Handles the sign-in process and UI
+ */
+const SignIn = () => {
   console.log('SignIn component rendering'); // Debug log
   const navigate = useNavigate();
   const location = useLocation();
@@ -69,8 +73,6 @@ export const SignIn = memo(() => {
       </div>
     </div>
   );
-});
-
-SignIn.displayName = 'SignIn';
+};
 
 export default SignIn;

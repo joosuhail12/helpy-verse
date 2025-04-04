@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from './useAppDispatch';
@@ -40,19 +41,10 @@ export const useLogin = (redirectPath: string = '/home/inbox/all') => {
       // Fix TypeScript error by ensuring auth.error is not null and has the right format
       let errorMessage = 'Login failed. Please try again.';
       
-      // Make sure to use conditionals that fully satisfy TypeScript's type guard
-      if (auth.error !== null) {
-        if (typeof auth.error === 'object' && auth.error !== null) {
-          const errorObj = auth.error as { message?: string };
-          if (errorObj.message && typeof errorObj.message === 'string') {
-            errorMessage = errorObj.message;
-          }
-        } else if (typeof auth.error === 'string') {
-          errorMessage = auth.error;
-        } else {
-          // Convert any other type to string safely
-          errorMessage = String(auth.error);
-        }
+      if (typeof auth.error === 'string') {
+        errorMessage = auth.error;
+      } else if (auth.error && typeof auth.error === 'object') {
+        errorMessage = auth.error.message || 'Login failed. Please try again.';
       }
         
       toast({

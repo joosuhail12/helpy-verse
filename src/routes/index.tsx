@@ -19,8 +19,10 @@ import { inboxRoutes } from './inboxRoutes';
 import { settingsRoutes } from './settingsRoutes';
 import { automationRoutes } from './automationRoutes';
 
-// Lazy load components
-const SignIn = lazy(() => import('../pages/SignIn'));
+// Import SignIn directly to avoid dynamic import issues
+import SignIn from '../pages/SignIn';
+
+// Lazy load other components
 const ForgotPassword = lazy(() => import('../pages/ForgotPassword'));
 const ResetPassword = lazy(() => import('../pages/ResetPassword'));
 const SignUp = lazy(() => import('../pages/SignUp'));
@@ -69,7 +71,12 @@ export const router = createBrowserRouter([
   },
   {
     path: '/sign-in',
-    element: withSuspenseAndErrorHandling(SignIn),
+    // Use SignIn directly without lazy loading since it's a critical component
+    element: (
+      <RouteErrorBoundary>
+        <SignIn />
+      </RouteErrorBoundary>
+    ),
   },
   {
     path: '/forgot-password',
