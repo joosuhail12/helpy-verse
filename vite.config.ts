@@ -42,12 +42,7 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     react({
       jsxImportSource: 'react',
-      // Make sure babel helpers are used consistently
-      babel: {
-        babelrc: false,
-        configFile: false,
-        plugins: []
-      }
+      // Removed the babel configuration that was causing the error
     }),
     mode === 'development' &&
     componentTagger(),
