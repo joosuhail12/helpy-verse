@@ -2,7 +2,7 @@
 import React, { useEffect } from "react";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { useAppSelector } from "@/hooks/useAppSelector";
-// Fix imports to prevent circular dependencies
+// Fix imports to use action creators directly from their files
 import { fetchUserProfile, fetchWorkspaceData } from "@/store/slices/auth/userActions";
 import { getUserPermission } from "@/store/slices/auth/permissionActions";
 

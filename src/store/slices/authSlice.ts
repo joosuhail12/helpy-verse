@@ -13,19 +13,38 @@ import {
   loginUser, 
   registerUser, 
   requestPasswordReset, 
-  confirmPasswordReset 
+  confirmPasswordReset,
+  loginUserThunk,
+  registerUserThunk,
+  requestPasswordResetThunk,
+  confirmPasswordResetThunk
 } from './auth/authActions';
 
 import { 
   fetchUserData, 
   fetchUserProfile, 
-  fetchWorkspaceData 
+  fetchWorkspaceData,
+  fetchUserDataThunk,
+  fetchUserProfileThunk,
+  fetchWorkspaceDataThunk
 } from './auth/userActions';
 
-import { getUserPermission } from './auth/permissionActions';
+import { 
+  getUserPermission,
+  getUserPermissionThunk
+} from './auth/permissionActions';
 
 // Import the auth slice functions directly 
-import { logout, clearError, reducer } from './auth/authSlice';
+import { 
+  logout, 
+  clearError, 
+  setAuthLoading,
+  setAuthError,
+  setAuthSuccess,
+  setPermissions,
+  setUserData,
+  reducer 
+} from './auth/authSlice';
 
 // Re-export everything
 export { 
@@ -38,7 +57,21 @@ export {
   fetchUserData,
   fetchUserProfile,
   fetchWorkspaceData,
-  getUserPermission
+  getUserPermission,
+  setAuthLoading,
+  setAuthError,
+  setAuthSuccess,
+  setPermissions,
+  setUserData,
+  // Legacy thunks
+  loginUserThunk,
+  registerUserThunk,
+  requestPasswordResetThunk,
+  confirmPasswordResetThunk,
+  fetchUserDataThunk,
+  fetchUserProfileThunk,
+  fetchWorkspaceDataThunk,
+  getUserPermissionThunk
 };
 
 // Re-export types

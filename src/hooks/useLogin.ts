@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from './useAppDispatch';
 import { useAppSelector } from './useAppSelector';
-// Import loginUser directly from authActions to avoid circular dependencies
+// Import loginUser from authActions
 import { loginUser } from '../store/slices/auth/authActions';
 import { toast } from '../components/ui/use-toast';
 import { handleSetToken, isAuthenticated } from '@/utils/auth/tokenManager';
@@ -83,11 +83,11 @@ export const useLogin = (redirectPath: string = '/home/inbox/all') => {
       setIsSubmitting(true);
       console.log('Login attempt for:', email);
       
-      // Real login process
-      const result = await dispatch(loginUser({ email, password })).unwrap();
+      // Call the loginUser action creator function
+      const result = await dispatch(loginUser({ email, password }));
       
       // Handle successful login
-      if (result && result.data && result.data.accessToken) {
+      if (result && !result.error) {
         console.log('Login successful');
         
         toast({
