@@ -20,6 +20,7 @@ const CustomData = lazy(() => import('../pages/settings/CustomData'));
 const CustomObjects = lazy(() => import('../pages/settings/CustomObjects'));
 const CustomObjectDetail = lazy(() => import('../pages/settings/CustomObjectDetail'));
 const Teammates = lazy(() => import('../pages/settings/Teammates'));
+const TeammatesPage = lazy(() => import('../pages/settings/teammates/TeammatesPage'));
 const TeammateDetail = lazy(() => import('../pages/settings/teammates/TeammateDetail'));
 const Teams = lazy(() => import('../pages/settings/Teams'));
 const TeamDetail = lazy(() => import('../pages/settings/TeamDetail'));
@@ -97,7 +98,7 @@ export const settingsRoutes = [
         path: 'teammates',
         element: (
           <RouteErrorBoundary>
-            <TeammateDetail />
+            <TeammatesPage />
           </RouteErrorBoundary>
         ),
       },

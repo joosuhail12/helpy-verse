@@ -1,63 +1,52 @@
 
-import { useTeammatesData } from '@/hooks/useTeammatesData';
-import { useTeammateFilters } from '@/hooks/useTeammateFilters';
-import { useTeammateActions } from '@/hooks/useTeammateActions';
-import { useTeammateSorting } from '@/hooks/useTeammateSorting';
-import { useTeammatePagination } from '@/hooks/useTeammatePagination';
-import { useTeammateSelection } from '@/hooks/useTeammateSelection';
-
-import TeammatesPageHeader from '@/components/teammates/TeammatesPageHeader';
-import TeammatesFilters from '@/components/teammates/TeammatesFilters';
-import TeammatesBulkActions from '@/components/teammates/TeammatesBulkActions';
+import * as React from 'react';
+import { Button } from '@/components/ui/button';
+import { Plus, Users } from 'lucide-react';
+import { ScrollArea } from "@/components/ui/scroll-area";
+import TeammatesHeader from './components/TeammatesHeader';
 import TeammatesTable from '@/components/teammates/TeammatesTable';
-import LoadingState from '@/components/teammates/LoadingState';
-import EmptyState from '@/components/teammates/EmptyState';
-import TeammatesErrorBoundary from '@/components/teammates/TeammatesErrorBoundary';
+import TeammatesFilters from './components/TeammatesFilters';
+import TeammatesEmptyState from './components/TeammatesEmptyState';
 import TeammatesErrorView from '@/components/teammates/TeammatesErrorView';
+import { useTeammatesData } from '@/hooks/useTeammatesData';
+import { useTeammateActions } from '@/hooks/useTeammateActions';
+import { useTeammatesTableData } from './hooks/useTeammatesTableData';
+import type { Teammate } from '@/types/teammate';
 
-const ITEMS_PER_PAGE = 10;
-
+/**
+ * TeammatesPage component displays a list of all teammates
+ */
 const TeammatesPage = () => {
-  // Data fetching
   const { teammates, loading, error, retrying, handleRetry } = useTeammatesData();
-
-  // Filtering
-  const {
-    searchQuery,
-    setSearchQuery,
-    roleFilter,
-    setRoleFilter,
-    statusFilter,
-    setStatusFilter,
-    handleQuickFilterClick,
-    filteredTeammates
-  } = useTeammateFilters(teammates);
-
-  // Sorting
-  const { sortBy, sortDirection, sortedTeammates, handleSort } = useTeammateSorting(filteredTeammates);
-
-  // Pagination
-  const { currentPage, setCurrentPage, totalPages, paginatedTeammates } = useTeammatePagination(
-    sortedTeammates,
-    ITEMS_PER_PAGE
-  );
-
-  // Selection
-  const { selectedTeammates, setSelectedTeammates, handleSelectAll, handleSelectTeammate } = 
-    useTeammateSelection(paginatedTeammates);
-
-  // Teammate actions
-  const { handleResendInvitation, handleUpdateTeammate } = useTeammateActions();
-
-  if (loading) {
+  const { handleResendInvitation } = useTeammateActions();
+  const { 
+    filteredTeammates, 
+    selectedTeammates,
+    sortBy,
+    sortDirection,
+    currentPage,
+    pageSize,
+    handleSort,
+    handleSelectAll,
+    handleSelectTeammate,
+    handlePageChange,
+    totalPages
+  } = useTeammatesTableData(teammates);
+  
+  // Show loading state
+  if (loading && !retrying) {
     return (
-      <div className="p-6">
-        <LoadingState />
+      <div className="flex items-center justify-center h-full min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-sm text-muted-foreground">Loading teammates...</p>
+        </div>
       </div>
     );
   }
 
-  if (error) {
+  // Show error state
+  if (error && teammates.length === 0) {
     return (
       <TeammatesErrorView 
         error={error}
@@ -67,48 +56,51 @@ const TeammatesPage = () => {
     );
   }
 
+  // Show empty state
+  if (teammates.length === 0) {
+    return <TeammatesEmptyState />;
+  }
+
   return (
-    <TeammatesErrorBoundary>
+    <ScrollArea className="h-[calc(100vh-4rem)]">
       <div className="p-6 space-y-6">
-        <TeammatesPageHeader onRefresh={handleRetry} isRefreshing={retrying} />
+        <TeammatesHeader />
+        
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-xl font-medium mb-1">
+              All Teammates ({teammates.length})
+            </h2>
+            <p className="text-sm text-gray-500">
+              Manage your workspace teammates and permissions
+            </p>
+          </div>
+          <Button>
+            <Plus className="mr-2 h-4 w-4" />
+            Add Teammate
+          </Button>
+        </div>
 
-        <TeammatesFilters
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          roleFilter={roleFilter}
-          onRoleFilterChange={setRoleFilter}
-          statusFilter={statusFilter}
-          onStatusFilterChange={setStatusFilter}
-          onQuickFilterClick={handleQuickFilterClick}
+        <TeammatesFilters 
+          totalCount={teammates.length}
+          selectedCount={selectedTeammates.length}
         />
-
-        {selectedTeammates.length > 0 && (
-          <TeammatesBulkActions
-            selectedIds={selectedTeammates}
-            onClearSelection={() => setSelectedTeammates([])}
-          />
-        )}
-
-        {sortedTeammates.length === 0 ? (
-          <EmptyState />
-        ) : (
-          <TeammatesTable
-            teammates={paginatedTeammates}
-            selectedTeammates={selectedTeammates}
-            onSelectAll={handleSelectAll}
-            onSelectTeammate={handleSelectTeammate}
-            onResendInvitation={handleResendInvitation}
-            onUpdateTeammate={handleUpdateTeammate}
-            sortBy={sortBy}
-            sortDirection={sortDirection}
-            onSort={handleSort}
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-          />
-        )}
+        
+        <TeammatesTable 
+          teammates={filteredTeammates}
+          selectedTeammates={selectedTeammates}
+          onSelectAll={handleSelectAll}
+          onSelectTeammate={handleSelectTeammate}
+          onResendInvitation={handleResendInvitation}
+          sortBy={sortBy}
+          sortDirection={sortDirection}
+          onSort={handleSort}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+        />
       </div>
-    </TeammatesErrorBoundary>
+    </ScrollArea>
   );
 };
 

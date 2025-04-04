@@ -1,5 +1,5 @@
 
-import React, { Suspense } from 'react';
+import * as React from 'react';
 import { useLocation, Outlet } from 'react-router-dom';
 import TeammatesPage from './teammates/TeammatesPage';
 import { Loader2 } from 'lucide-react';
@@ -24,9 +24,9 @@ const TeammatesContent = () => {
       {isListPage ? (
         <TeammatesPage />
       ) : (
-        <Suspense fallback={<LoadingSpinner />}>
+        <React.Suspense fallback={<LoadingSpinner />}>
           <Outlet />
-        </Suspense>
+        </React.Suspense>
       )}
     </div>
   );
@@ -37,9 +37,9 @@ const TeammatesContent = () => {
  */
 const Teammates = () => {
   return (
-    <Suspense fallback={<LoadingSpinner />}>
+    <React.Suspense fallback={<LoadingSpinner />}>
       <TeammatesContent />
-    </Suspense>
+    </React.Suspense>
   );
 };
 
