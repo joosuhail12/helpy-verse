@@ -17,6 +17,8 @@ export default defineConfig(({ mode }) => ({
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
           'ui-components': ['@/components/ui'],
+          'redux': ['@reduxjs/toolkit', 'react-redux'],
+          'auth': ['@/utils/auth', '@/store/slices/auth']
         }
       }
     }
@@ -29,7 +31,9 @@ export default defineConfig(({ mode }) => ({
       'react-dom',
       'react-router-dom',
       '@reduxjs/toolkit',
-      'react-redux'
+      'react-redux',
+      'axios',
+      'jwt-decode'
     ],
     esbuildOptions: {
       target: 'es2020',
