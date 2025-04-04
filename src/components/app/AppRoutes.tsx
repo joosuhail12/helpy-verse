@@ -8,6 +8,7 @@ import RootRedirect from './RootRedirect';
 // Import directly instead of lazy loading for problematic components
 import DashboardLayout from '@/layouts/DashboardLayout';
 import AllInbox from '@/pages/inbox/All';
+import SignIn from '@/pages/SignIn'; // Import SignIn directly
 
 // Import route configs
 import { dashboardRoutes } from '@/routes/dashboardRoutes';
@@ -21,7 +22,6 @@ const ResetPassword = React.lazy(() => import('@/pages/ResetPassword'));
 const SignUp = React.lazy(() => import('@/pages/SignUp'));
 const NotFound = React.lazy(() => import('@/pages/NotFound'));
 const LandingPage = React.lazy(() => import('@/pages/LandingPage'));
-const SignIn = React.lazy(() => import('@/pages/SignIn'));
 
 // Lazy load other inbox pages
 const YourInbox = React.lazy(() => import('@/pages/inbox/YourInbox'));
@@ -36,7 +36,7 @@ const AppRoutes: React.FC = () => {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/home" element={<RootRedirect />} />
-        <Route path="/sign-in" element={<SignIn />} />
+        <Route path="/sign-in" element={<SignIn />} /> {/* Direct import instead of lazy loading */}
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/sign-up" element={<SignUp />} />

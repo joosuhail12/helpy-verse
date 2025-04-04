@@ -1,4 +1,3 @@
-
 import * as React from 'react';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
@@ -10,6 +9,7 @@ import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import LandingPage from '@/pages/LandingPage';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import AllInbox from '@/pages/inbox/All';
+import SignIn from '@/pages/SignIn'; // Import SignIn directly instead of lazy loading
 
 // Lazy load auth pages and other components with consistent fallback
 const LoadingSpinner = () => (
@@ -18,7 +18,7 @@ const LoadingSpinner = () => (
   </div>
 );
 
-const SignIn = React.lazy(() => import('../pages/SignIn'));
+// Lazy load these components instead
 const ForgotPassword = React.lazy(() => import('../pages/ForgotPassword'));
 const ResetPassword = React.lazy(() => import('../pages/ResetPassword'));
 const SignUp = React.lazy(() => import('../pages/SignUp'));
@@ -57,7 +57,11 @@ export const router = createBrowserRouter([
   },
   {
     path: '/sign-in',
-    element: withSuspenseAndErrorHandling(<SignIn />),
+    element: (
+      <RouteErrorBoundary>
+        <SignIn />
+      </RouteErrorBoundary>
+    ),
   },
   {
     path: '/forgot-password',
