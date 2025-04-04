@@ -1,115 +1,132 @@
 
-import axios, { InternalAxiosRequestConfig, AxiosError, AxiosResponse, AxiosInstance } from 'axios';
+import { AxiosResponse, InternalAxiosRequestConfig } from 'axios';
+import { get } from 'lodash';
+import { handleLogout } from './cookieManager';
+import { getAuthToken } from '@/utils/auth/tokenManager';
+import { store } from '@/store/store';
 
-// Define HttpConfig locally since it's not exported from config
-const HttpConfig = {
-  DEBUG: process.env.NODE_ENV === 'development'
-};
-
-// Create a utility to check if we're in client-side code
-const isClientSide = () => {
-  return typeof window !== 'undefined';
-};
-
-// Helper to check if a URL is an auth request
-const isAuthRequest = (url: string | undefined): boolean => {
-  return !!url && (
-    url.includes('/auth/login') || 
-    url.endsWith('/auth/login') || 
-    url.includes('/auth/register') || 
-    url.includes('/auth/refresh')
-  );
-};
-
-// Add request interceptor
-export const setupRequestInterceptor = (axiosInstance: AxiosInstance) => {
-  axiosInstance.interceptors.request.use(
-    (config: InternalAxiosRequestConfig) => {
-      // Clone the config to avoid mutating the original
-      const newConfig = { ...config };
-
-      // Skip adding workspace_id for all auth requests
-      if (isAuthRequest(newConfig.url)) {
-        if (HttpConfig.DEBUG) {
-          console.log(`Auth request detected: ${newConfig.url} - skipping workspace_id`);
-        }
-        
-        // Ensure we have the right content type for auth requests
-        if (!newConfig.headers['Content-Type']) {
-          newConfig.headers['Content-Type'] = 'application/json';
-        }
-        
-        return newConfig;
-      }
-
-      // Get the workspace_id from localStorage if we're in a browser
-      const workspaceId = isClientSide() ? localStorage.getItem('workspaceId') : null;
-
-      // Only add workspace_id to query params if it exists
-      if (workspaceId) {
-        // Initialize params object if it doesn't exist
-        if (!newConfig.params) {
-          newConfig.params = {};
-        }
-        
-        // Add workspace_id parameter
-        newConfig.params.workspace_id = workspaceId;
-        
-        if (process.env.NODE_ENV === 'development' || HttpConfig.DEBUG) {
-          console.log(`Request to ${newConfig.url} with workspace_id: ${workspaceId}`);
-        }
-      }
-
-      // Log requests in development mode
-      if (process.env.NODE_ENV === 'development' || HttpConfig.DEBUG) {
-        console.log(`API Request to: ${newConfig.url} with params:`, newConfig.params);
-        if (newConfig.data) {
-          console.log('Request body:', newConfig.data);
-        }
-      }
-
-      return newConfig;
-    },
-    (error: AxiosError) => {
-      return Promise.reject(error);
+// Request Interceptor - Adds Token & Workspace ID to all requests
+export const requestInterceptor = async (config: InternalAxiosRequestConfig): Promise<InternalAxiosRequestConfig> => {
+    // Check for network connectivity first
+    if (!navigator.onLine) {
+        console.error("Network is offline - request will likely fail");
     }
-  );
+    
+    // Get token for each request
+    const token = getAuthToken();
+    
+    if (token) {
+        config.headers.set("Authorization", `Bearer ${token}`);
+    } else {
+        // Try getting token from Redux store as fallback
+        const state = store.getState();
+        const storeToken = state.auth?.user?.data?.accessToken?.token;
+        
+        if (storeToken) {
+            config.headers.set("Authorization", `Bearer ${storeToken}`);
+            console.log("Using token from Redux store");
+        } else {
+            console.warn(`Making API request without authentication token to: ${config.url}`);
+        }
+    }
+
+    // Get workspace_id from localStorage
+    const workspaceId = localStorage.getItem("workspaceId");
+    
+    // Always add workspace_id to all requests
+    if (workspaceId) {
+        // Add workspace_id to params if they exist, otherwise create params
+        if (!config.params) {
+            config.params = {};
+        }
+        
+        if (!config.params.workspace_id) {
+            config.params.workspace_id = workspaceId;
+        }
+        console.log(`Request to ${config.url} with workspace_id: ${workspaceId}`);
+    } else {
+        console.warn(`Making API request without workspace_id to: ${config.url}`);
+    }
+
+    console.log(`API Request to: ${config.url} with params:`, config.params);
+    return config;
 };
 
-// Add response interceptor
-export const setupResponseInterceptor = (axiosInstance: AxiosInstance) => {
-  axiosInstance.interceptors.response.use(
-    (response: AxiosResponse) => {
-      // Log response in development mode
-      if (process.env.NODE_ENV === 'development' || HttpConfig.DEBUG) {
-        console.log(`API Response from ${response.config.url}:`, {
-          status: response.status,
-          data: response.data
+export const requestErrorInterceptor = (error: any) => {
+    console.error("Request interceptor error:", error);
+    return Promise.reject(error);
+};
+
+// Response Interceptor - Handles Successful Responses and Errors
+export const responseInterceptor = (response: AxiosResponse) => {
+    console.log(`API Response from ${response.config.url}: Status ${response.status}`);
+    return response;
+};
+
+export const responseErrorInterceptor = (error: any) => {
+    // Extract the meaningful error information
+    const status = error.response?.status;
+    const errorMessage = get(error, "response.data.message", "Unknown error occurred");
+    const errorCode = get(error, "response.data.code", "");
+    const requestUrl = error.config?.url;
+    const timeout = error.code === 'ECONNABORTED';
+
+    if (timeout) {
+        console.error(`API Timeout after ${error.config?.timeout || 'unknown'}ms: ${requestUrl}`);
+        return Promise.reject({
+            message: "Request timed out. The server is taking too long to respond.",
+            isTimeoutError: true,
+            originalError: error
         });
-      }
-      return response;
-    },
-    (error: AxiosError) => {
-      // Log errors in development mode
-      if (process.env.NODE_ENV === 'development' || HttpConfig.DEBUG) {
-        // Fix type issues with error response
-        const errorResponseData = error.response?.data as Record<string, unknown> | undefined;
-        console.error(
-          `API Error: ${error.response?.status} ${
-            errorResponseData && typeof errorResponseData === 'object' ? String(errorResponseData.message || '') : ''
-          } (${
-            errorResponseData && typeof errorResponseData === 'object' ? String(errorResponseData.code || 'UNKNOWN_ERROR') : 'UNKNOWN_ERROR'
-          }) on ${error.config?.url}`,
-          error
-        );
-      }
-      return Promise.reject(error);
     }
-  );
-};
 
-// Setup all interceptors
-export const setupInterceptors = (axiosInstance: AxiosInstance) => {
-  setupRequestInterceptor(axiosInstance);
-  setupResponseInterceptor(axiosInstance);
+    console.error(`API Error: ${status || 'network'} ${errorMessage} (${errorCode}) on ${requestUrl}`);
+
+    // Network errors - provide a clearer message
+    if (!navigator.onLine || error.code === 'ERR_NETWORK' || error.message.includes('Network Error')) {
+        console.log('Network error detected - server might be unavailable');
+        error.isOfflineError = true;
+        // Don't log out on network errors, just report the issue
+        return Promise.reject({
+            message: "Cannot connect to the server. Please check your network connection and try again later.",
+            isOfflineError: true,
+            originalError: error
+        });
+    }
+
+    // CORS errors
+    if (error.message.includes('CORS')) {
+        console.error('CORS error detected:', error.message);
+        return Promise.reject({
+            message: "There was a CORS error. This usually means the API server is not configured to accept requests from this origin.",
+            isCorsError: true,
+            originalError: error
+        });
+    }
+
+    // Handle authentication errors
+    if (status === 401 || errorCode === "UNAUTHORIZED") {
+        console.warn("Authentication error detected, logging out");
+        handleLogout();
+        
+        return Promise.reject({
+            message: "Authentication failed. Please sign in again.",
+            isAuthError: true,
+            originalError: error
+        });
+    }
+
+    // For server errors, provide a clearer message
+    if (status >= 500) {
+        return Promise.reject({
+            message: "Server error. Please try again later.",
+            isServerError: true,
+            originalError: error
+        });
+    }
+
+    return Promise.reject({
+        message: errorMessage || "An error occurred while communicating with the server.",
+        originalError: error
+    });
 };

@@ -1,11 +1,11 @@
-
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from './useAppDispatch';
 import { useAppSelector } from './useAppSelector';
-import { loginUser } from '../store/slices/auth/authActions';
+import { loginUser } from '../store/slices/authSlice';
 import { toast } from '../components/ui/use-toast';
+import { handleSetToken, isAuthenticated } from '@/utils/auth/tokenManager';
 import { HttpClient } from '@/api/services/http';
-import { useAuthContext } from './useAuthContext';
 
 /**
  * Custom hook to handle login functionality
@@ -16,7 +16,7 @@ export const useLogin = (redirectPath: string = '/home/inbox/all') => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const dispatch = useAppDispatch();
-  const { login } = useAuthContext();
+  const navigate = useNavigate();
   const auth = useAppSelector((state) => state.auth);
   const loading = auth?.loading ?? false;
   
@@ -65,27 +65,7 @@ export const useLogin = (redirectPath: string = '/home/inbox/all') => {
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Login form submitted');
-    
-    // Validate inputs before submitting
-    if (isSubmitting || !email.trim() || !password.trim()) {
-      if (!email.trim()) {
-        console.log('Email validation failed - empty email');
-        toast({
-          title: 'Validation Error',
-          description: 'Email is required',
-          variant: 'destructive',
-        });
-      } else if (!password.trim()) {
-        console.log('Password validation failed - empty password');
-        toast({
-          title: 'Validation Error',
-          description: 'Password is required',
-          variant: 'destructive',
-        });
-      }
-      return;
-    }
+    if (isSubmitting || !email || !password) return;
     
     // Check if offline first
     if (isOffline || HttpClient.isOffline()) {
@@ -99,48 +79,34 @@ export const useLogin = (redirectPath: string = '/home/inbox/all') => {
     
     try {
       setIsSubmitting(true);
-      console.log('Login attempt with credentials:', { email: email.trim() });
+      console.log('Login attempt for:', email);
       
-      // Log what's going to be sent to the API - with more detail
-      console.log('Sending login request with payload:', {
-        email: email.trim(),
-        password: 'REDACTED',
-        payload_type: 'JSON object',
-        url: '/auth/login'
-      });
-      
-      // Real login process with trimmed values to avoid whitespace issues
-      const result = await dispatch(loginUser({ 
-        email: email.trim(), 
-        password: password.trim() 
-      })).unwrap();
-      
-      console.log('Login result received:', result ? 'success' : 'failure');
+      // Real login process
+      const result = await dispatch(loginUser({ email, password })).unwrap();
       
       // Handle successful login
       if (result && result.data && result.data.accessToken) {
-        console.log('Login successful, token received');
-        
-        // Use the centralized auth context to set token and update state
-        login(result.data.accessToken.token);
+        console.log('Login successful');
         
         toast({
           title: 'Success',
           description: 'Logged in successfully',
         });
         
-        // Redirect after a short delay to allow state to update
+        // Double-check auth status before redirecting
         setTimeout(() => {
-          console.log('Redirecting to:', redirectPath);
-          window.location.href = redirectPath;
+          if (isAuthenticated()) {
+            console.log('Redirecting to:', redirectPath);
+            navigate(redirectPath, { replace: true });
+          } else {
+            console.error('Login appeared successful but token was not set correctly');
+            toast({
+              title: 'Login Error',
+              description: 'Authentication succeeded but session setup failed. Please try again.',
+              variant: 'destructive',
+            });
+          }
         }, 300);
-      } else {
-        console.error('Missing token in login response:', result);
-        toast({
-          title: 'Login Error',
-          description: 'Invalid response from server',
-          variant: 'destructive',
-        });
       }
     } catch (error: any) {
       console.error('Login error:', error);

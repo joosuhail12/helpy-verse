@@ -1,19 +1,17 @@
+import { AbilityBuilder, AbilityClass, InferSubjects, PureAbility } from "@casl/ability";
+import { Permission } from "@/store/slices/auth/types";
 
-import { AbilityBuilder, createMongoAbility } from "@casl/ability";
+// Create/export the ActionType type if it doesn't already exist
+export type ActionType = "create" | "read" | "update" | "delete" | "archive" | "manage";
 
-// Define types for actions and subjects
-export type ActionType = 'create' | 'read' | 'update' | 'delete' | 'manage';
-export type SubjectType = 'all' | 'User' | 'Teammate' | 'Team' | 'Company' | 'Contact' | 'Ticket';
+type Subjects = InferSubjects<{ subject: string } | 'all'>;
+export type AppAbility = PureAbility<[ActionType, Subjects]>;
 
-// Define the AppAbility type for our application
-export type AppAbility = ReturnType<typeof defineAppAbility>;
-
-// Function to create a new ability instance
 export const defineAppAbility = () => {
-  const { can: allow, build } = new AbilityBuilder(createMongoAbility);
+  const { can, build } = new AbilityBuilder(PureAbility as AbilityClass<AppAbility>);
 
-  // By default, don't allow any actions
-  // Permissions will be added when user logs in
+  // Define default abilities (if any)
+  // can('read', 'Article'); // Example: can read articles
 
   return build();
 };

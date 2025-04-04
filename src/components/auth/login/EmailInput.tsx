@@ -32,7 +32,6 @@ export const EmailInput: React.FC<EmailInputProps> = ({
                  placeholder:text-gray-400 text-gray-800"
         required
         disabled={disabled}
-        autoComplete="email"
       />
     </div>
   );

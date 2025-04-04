@@ -1,7 +1,5 @@
 
 import { HttpClient } from '@/api/services/http';
-import { ErrorHandlerService } from '@/utils/error/errorHandlerService';
-import { toast } from '@/components/ui/use-toast';
 
 // Get correct API URL from environment variables
 const API_BASE_URL = import.meta.env.VITE_REACT_APP_API_URL || '/api';
@@ -45,54 +43,32 @@ const setupApi = () => {
     } else {
       console.warn('API service initialized without workspace ID - API requests may fail');
     }
-    
-    // Connection status check
-    window.addEventListener('online', () => {
-      toast({
-        title: 'Connection Restored',
-        description: 'Your internet connection has been restored.',
-      });
-    });
-    
-    window.addEventListener('offline', () => {
-      toast({
-        title: 'Connection Lost',
-        description: 'You are currently offline. Some features may be unavailable.',
-        variant: 'destructive',
-      });
-    });
-    
   } catch (error) {
     console.error('Error setting up API client:', error);
   }
 };
 
-/**
- * Function to retry failed requests with exponential backoff
- * Uses the centralized ErrorHandlerService
- */
-const retryRequest = async <T>(
-  requestFn: () => Promise<T>, 
-  maxRetries = 2,
-  baseDelay = 1000
-): Promise<T> => {
-  return ErrorHandlerService.retryWithBackoff(requestFn, maxRetries, baseDelay);
-};
-
-/**
- * API request wrapper for consistent error handling
- */
-const safeRequest = async <T>(requestFn: () => Promise<T>): Promise<T> => {
-  try {
-    return await requestFn();
-  } catch (error) {
-    // Use the centralized error handler
-    throw ErrorHandlerService.handleApiError(error);
+// Function to retry failed requests
+const retryRequest = async (requestFn: () => Promise<any>, maxRetries = 2): Promise<any> => {
+  let lastError;
+  for (let i = 0; i <= maxRetries; i++) {
+    try {
+      return await requestFn();
+    } catch (error) {
+      console.warn(`Request failed (attempt ${i + 1}/${maxRetries + 1}):`, error);
+      lastError = error;
+      
+      // Wait before retrying (exponential backoff)
+      if (i < maxRetries) {
+        await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, i)));
+      }
+    }
   }
+  throw lastError;
 };
 
 // Initialize on import
 setupApi();
 
-export { retryRequest, safeRequest };
+export { retryRequest };
 export default api;

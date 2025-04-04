@@ -70,7 +70,7 @@ const TeammateDetailView = ({
         {isAdmin && !isEditing && (
           <TeammatePermissions 
             teammateId={teammate.id}
-            currentPermissions={teammate.permissions || []}
+            currentPermissions={teammate.permissions}
           />
         )}
 

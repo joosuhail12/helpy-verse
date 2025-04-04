@@ -1,90 +1,146 @@
 
 /**
- * Token Manager (LEGACY)
- * This file is maintained for backward compatibility.
- * New code should use src/services/authService.ts instead.
+ * Token and authentication management utility functions
+ * Using localStorage only (no cookies)
  */
+import { HttpClient, cookieFunctions } from "@/api/services/http";
+import { jwtDecode } from "jwt-decode";
 
-// Constants
-const TOKEN_KEY = "token";
-const USER_ID_KEY = "userId";
-const ROLE_KEY = "role";
-const WORKSPACE_ID_KEY = "workspaceId";
+// Get storage helpers from HttpClient to avoid circular dependencies
+const { getCookie, setCookie } = cookieFunctions;
 
-// Re-export basic token functions without directly importing AuthService
-export const handleLogout = () => {
-  // Clear all authentication data
-  localStorage.removeItem(TOKEN_KEY);
-  localStorage.removeItem(USER_ID_KEY);
-  localStorage.removeItem(ROLE_KEY);
-  localStorage.removeItem(WORKSPACE_ID_KEY);
-  sessionStorage.removeItem(TOKEN_KEY);
-  
-  // Force page refresh and redirect to sign-in
-  window.location.href = "/sign-in";
+// 🟢 Logout User
+export const handleLogout = async (): Promise<void> => {
+  try {
+    // Attempt to call logout endpoint if we have a token
+    const token = getAuthToken();
+    if (token) {
+      try {
+        await HttpClient.apiClient.post('/auth/logout');
+        console.log('Logout API call successful');
+      } catch (error) {
+        console.warn('Logout API call failed, proceeding with local logout', error);
+      }
+    }
+  } catch (error) {
+    console.error('Error during logout process:', error);
+  } finally {
+    // Clear all tokens and storage
+    localStorage.removeItem("token");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("role");
+    localStorage.removeItem("workspaceId");
+    sessionStorage.removeItem("token");
+    
+    console.log("User logged out - cleared all tokens and storage");
+    
+    // Force page refresh and redirect to sign-in
+    window.location.href = "/sign-in";
+  }
 };
 
+// 🟢 Set Auth Token
 export const handleSetToken = (token: string): boolean => {
+  // Check if token is valid
+  if (!token) {
+    console.error("Cannot set empty token");
+    return false;
+  }
+  
   try {
-    if (!token) {
-      console.error("Cannot set empty token");
-      return false;
+    console.log("Setting auth token:", token.substring(0, 10) + "...");
+    
+    // Store in localStorage only
+    localStorage.setItem("token", token);
+    
+    // Configure axios with the new token
+    if (HttpClient && HttpClient.setAxiosDefaultConfig) {
+      HttpClient.setAxiosDefaultConfig(token);
     }
-
-    // Store token in localStorage
-    localStorage.setItem(TOKEN_KEY, token);
-    console.log("Auth token set successfully");
+    
     return true;
   } catch (error) {
-    console.error("Error setting auth token:", error);
+    console.error("Error setting token:", error);
     return false;
   }
 };
 
+// 🟢 Check if user is authenticated - check localStorage only
 export const isAuthenticated = (): boolean => {
   try {
-    const token = localStorage.getItem(TOKEN_KEY);
-    return !!token; // Simple check for token existence
+    const tokenInStorage = !!localStorage.getItem("token");
+    return tokenInStorage;
   } catch (error) {
-    console.error("Error checking authentication status:", error);
+    console.error("Error checking authentication:", error);
     return false;
   }
 };
 
+// 🟢 Get auth token - from localStorage only
 export const getAuthToken = (): string => {
-  return localStorage.getItem(TOKEN_KEY) || "";
+  const storageToken = localStorage.getItem("token");
+  return storageToken || "";
 };
 
+// Check if token is expired - safer version that handles invalid tokens
 export const isTokenExpired = (): boolean => {
-  // Basic implementation without JWT decode
-  return !getAuthToken();
+  const token = getAuthToken();
+  if (!token) return true;
+  
+  try {
+    // First check if the token has the right format for JWT
+    if (!token.includes('.')) {
+      console.warn("Token does not appear to be in JWT format");
+      return true; // Consider non-JWT tokens as expired
+    }
+    
+    // Now try to decode it
+    const decoded = jwtDecode<{exp?: number}>(token);
+    if (!decoded || !decoded.exp) {
+      console.warn("Token has no expiration claim");
+      return true;
+    }
+    
+    // Check if current time is past expiration
+    const currentTime = Math.floor(Date.now() / 1000);
+    return decoded.exp < currentTime;
+  } catch (error) {
+    console.error("Error checking token expiration:", error);
+    // To be safe, we'll consider any token we can't validate as expired
+    return true;
+  }
 };
 
-// Workspace management
+// 🟢 Workspace ID Management - Use localStorage
 export const setWorkspaceId = (id: string): void => {
   if (id) {
-    localStorage.setItem(WORKSPACE_ID_KEY, id);
+    try {
+      localStorage.setItem("workspaceId", id);
+      console.log("Workspace ID set in localStorage:", id);
+    } catch (error) {
+      console.error("Error setting workspace ID in localStorage:", error);
+    }
   }
 };
 
 export const getWorkspaceId = (): string => {
-  return localStorage.getItem(WORKSPACE_ID_KEY) || "";
+  try {
+    const storageId = localStorage.getItem("workspaceId");
+    if (storageId) {
+      console.log("Got workspace ID from localStorage:", storageId);
+      return storageId;
+    }
+  } catch (error) {
+    console.warn("Error accessing workspace ID in localStorage:", error);
+  }
+  
+  return "";
 };
 
-// Role checks - simplified versions
-export const isOrganizationAdmin = (): boolean => {
-  return localStorage.getItem(ROLE_KEY) === "ORGANIZATION_ADMIN";
-};
+// 🟢 Role Checks
+export const isOrganizationAdmin = (): boolean => localStorage.getItem("role") === "ORGANIZATION_ADMIN";
+export const isWorkspaceAdmin = (): boolean => localStorage.getItem("role") === "WORKSPACE_ADMIN";
+export const isWorkspaceAgent = (): boolean => localStorage.getItem("role") === "WORKSPACE_AGENT";
 
-export const isWorkspaceAdmin = (): boolean => {
-  return localStorage.getItem(ROLE_KEY) === "WORKSPACE_ADMIN";
-};
-
-export const isWorkspaceAgent = (): boolean => {
-  return localStorage.getItem(ROLE_KEY) === "WORKSPACE_AGENT";
-};
-
-// User ID getter
-export const getUserId = (): string => {
-  return localStorage.getItem(USER_ID_KEY) || "";
-};
+// 🟢 Get User ID
+export const getUserId = (): string | null => localStorage.getItem("userId");

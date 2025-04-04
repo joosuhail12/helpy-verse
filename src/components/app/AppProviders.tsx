@@ -9,7 +9,6 @@ import AppQueryProvider from './AppQueryProvider';
 import AppErrorBoundary from './AppErrorBoundary';
 import CaslProvider from "@/components/CaslProvider";
 import AppInitializer from './AppInitializer';
-import { AuthProvider } from '@/contexts/AuthContext';
 
 interface AppProvidersProps {
   children: React.ReactNode;
@@ -23,19 +22,17 @@ const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
   return (
     <AppErrorBoundary>
       <Provider store={store}>
-        <AuthProvider>
-          <AppQueryProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Sonner />
-              <CaslProvider>
-                <AppInitializer>
-                  {children}
-                </AppInitializer>
-              </CaslProvider>
-            </TooltipProvider>
-          </AppQueryProvider>
-        </AuthProvider>
+        <AppQueryProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <CaslProvider>
+              <AppInitializer>
+                {children}
+              </AppInitializer>
+            </CaslProvider>
+          </TooltipProvider>
+        </AppQueryProvider>
       </Provider>
     </AppErrorBoundary>
   );

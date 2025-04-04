@@ -3,7 +3,6 @@ import { useEffect } from 'react';
 import { HttpClient } from "@/api/services/http";
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { fetchUserData } from '@/store/slices/auth/userActions';
-import { useAuthContext } from '@/hooks/useAuthContext';
 
 export const initializeApp = () => {
   // Check localStorage for token
@@ -34,21 +33,41 @@ interface AppInitializerProps {
 
 const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
   const dispatch = useAppDispatch();
-  const { isAuthenticated } = useAuthContext();
   
   useEffect(() => {
     // Initialize app with authentication if token exists
     try {
       initializeApp();
       
-      // Load user data to get workspaceId if we have a token and are authenticated
-      if (isAuthenticated) {
+      // Load user data to get workspaceId if we have a token
+      const token = localStorage.getItem("token");
+      if (token) {
         dispatch(fetchUserData());
       }
     } catch (error) {
       console.error("Error during app initialization:", error);
     }
-  }, [dispatch, isAuthenticated]);
+    
+    // Set up event listener for storage changes (for multi-tab synchronization)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "token" && !e.newValue) {
+        // Token was removed in another tab, log out here too
+        window.location.href = "/sign-in";
+      }
+      
+      // Also sync workspace ID changes across tabs
+      if (e.key === "workspaceId" && e.newValue !== localStorage.getItem("workspaceId")) {
+        localStorage.setItem("workspaceId", e.newValue || "");
+        console.log("Workspace ID synced from another tab:", e.newValue);
+      }
+    };
+    
+    window.addEventListener("storage", handleStorageChange);
+    
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, [dispatch]);
 
   return <>{children}</>;
 };

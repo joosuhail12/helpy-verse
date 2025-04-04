@@ -3,25 +3,24 @@ export interface Teammate {
   id: string;
   name: string;
   email: string;
-  role?: 'admin' | 'supervisor' | 'agent' | 'viewer' | 'WORKSPACE_AGENT' | 'WORKSPACE_ADMIN' | 'ORGANIZATION_ADMIN' | 'SUPER_ADMIN' | string;
-  status: 'active' | 'inactive' | 'pending' | string;
+  role?: 'WORKSPACE_AGENT' | 'ORGANIZATION_ADMIN' | 'WORKSPACE_ADMIN' | 'SUPER_ADMIN';
+  teamId: string | null;
+  createdBy: string;
+  status: 'active' | 'inactive';
+  lastActive: string | null;
+  createdAt: string;
   avatar?: string;
-  lastActive?: string | Date;
-  teamId?: string;
-  createdAt?: string | Date;
-  updatedAt?: string | Date;
-  createdBy?: string;
-  permissions?: string[];
+  permissions: string[];
   is2FAEnabled?: boolean;
 }
 
 export interface NewTeammate {
   first_name: string;
   last_name: string;
-  email: string;
   password: string;
   confirm_password: string;
-  role: string;
+  email: string;
+  role: 'WORKSPACE_AGENT' | 'ORGANIZATION_ADMIN' | 'WORKSPACE_ADMIN' | 'SUPER_ADMIN';
 }
 
 export interface ActivityLog {
@@ -30,6 +29,7 @@ export interface ActivityLog {
   type: string;
   description: string;
   timestamp: string;
+  metadata?: Record<string, any>;
 }
 
 export interface TeamAssignment {
@@ -37,8 +37,9 @@ export interface TeamAssignment {
   teammateId: string;
   teamName: string;
   role: string;
-  status: string;
-  startDate: string;
+  status: 'active' | 'pending' | 'inactive';
+  startDate?: string;
+  endDate?: string;
 }
 
 export interface Session {
@@ -48,5 +49,5 @@ export interface Session {
   deviceName: string;
   location: string;
   lastActive: string;
-  ipAddress: string;
+  ipAddress?: string;
 }

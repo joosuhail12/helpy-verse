@@ -2,9 +2,10 @@
 import axios from 'axios';
 import { API_BASE_URL, LLM_SERVICE_URL, DEFAULT_TIMEOUT, CONTACTS_TIMEOUT, CORS_CONFIG } from './config';
 import { 
-  setupRequestInterceptor, 
-  setupResponseInterceptor,
-  setupInterceptors
+  requestInterceptor, 
+  requestErrorInterceptor, 
+  responseInterceptor, 
+  responseErrorInterceptor 
 } from './interceptors';
 import { cookieFunctions } from './cookieManager';
 
@@ -20,9 +21,9 @@ const createApiClient = (baseURL, timeout) => {
         withCredentials: CORS_CONFIG.withCredentials,
     });
     
-    // Add request and response interceptors - using the setup functions
-    setupRequestInterceptor(client);
-    setupResponseInterceptor(client);
+    // Add request and response interceptors
+    client.interceptors.request.use(requestInterceptor, requestErrorInterceptor);
+    client.interceptors.response.use(responseInterceptor, responseErrorInterceptor);
     
     return client;
 };
@@ -35,18 +36,6 @@ const contactsClient = createApiClient(API_BASE_URL, CONTACTS_TIMEOUT);
 
 // ✅ LLM Service Instance
 const llmService = createApiClient(LLM_SERVICE_URL, 60000);
-
-// Create a direct client without interceptors for auth requests
-const createAuthClient = () => {
-    return axios.create({
-        baseURL: API_BASE_URL,
-        headers: {
-            "Content-Type": "application/json"
-        },
-        timeout: DEFAULT_TIMEOUT,
-        withCredentials: CORS_CONFIG.withCredentials,
-    });
-};
 
 // ✅ Set up default axios configuration
 const setAxiosDefaultConfig = (token?: string): void => {
@@ -80,18 +69,6 @@ const checkApiConnection = async () => {
     }
 };
 
-// Helper for direct API calls without interceptors
-const createDirectApiClient = () => {
-    return axios.create({
-        baseURL: API_BASE_URL,
-        headers: {
-            "Content-Type": "application/json"
-        },
-        timeout: DEFAULT_TIMEOUT,
-        withCredentials: CORS_CONFIG.withCredentials,
-    });
-};
-
 // Offline check utility
 export const isOffline = (): boolean => {
   return !navigator.onLine;
@@ -102,8 +79,6 @@ export const HttpClient = {
     apiClient, 
     contactsClient, 
     llmService,
-    authClient: createAuthClient,
-    directClient: createDirectApiClient,
     setAxiosDefaultConfig,
     isOffline,
     checkApiConnection,

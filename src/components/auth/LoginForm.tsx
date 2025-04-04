@@ -1,5 +1,6 @@
 
-import React, { memo, useState } from 'react';
+import React, { memo } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useLogin } from '../../hooks/useLogin';
 import { LoginFormHeader } from './login/LoginFormHeader';
 import { EmailInput } from './login/EmailInput';
@@ -8,17 +9,16 @@ import { LoginButton } from './login/LoginButton';
 import { LoginLinks } from './login/LoginLinks';
 import { WifiOff } from 'lucide-react';
 import { Button } from '../ui/button';
-import { toast } from '../ui/use-toast';
-import axios from 'axios';
-import { API_BASE_URL } from '@/api/services/http/config';
 
 /**
  * The main login form component
  * Handles login functionality and renders all login-related UI
  */
 export const LoginForm = memo(() => {
-  // Use a default redirect path instead of relying on useLocation
-  const defaultRedirectPath = '/home/inbox/all';
+  const location = useLocation();
+  
+  // Get redirect path from location state or default to /home
+  const from = location.state?.from || '/home';
   
   // Use the login hook to handle login functionality
   const {
@@ -29,67 +29,7 @@ export const LoginForm = memo(() => {
     loading,
     isOffline,
     handleLoginSubmit
-  } = useLogin(defaultRedirectPath);
-
-  console.log('LoginForm rendering with state:', { email, loading, isOffline });
-
-  // Debug function for direct API test
-  const handleDebugConnection = async () => {
-    if (!email || !password) {
-      toast({
-        title: "Debug Error",
-        description: "Please enter both email and password to test the connection",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    try {
-      toast({
-        title: "Debug Info",
-        description: "Attempting direct API connection...",
-      });
-      
-      // Show exactly what we're sending
-      const payload = {
-        email: email.trim(),
-        password: password.trim()
-      };
-      
-      console.log('Debug: Sending direct API request to', `${API_BASE_URL}/auth/login`);
-      console.log('Debug: Request payload', { ...payload, password: '[REDACTED]' });
-
-      // Create a new axios instance without interceptors
-      const response = await axios.post(`${API_BASE_URL}/auth/login`, payload, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-
-      console.log('Debug direct API response:', response);
-      
-      toast({
-        title: "Debug Success",
-        description: "Direct API call successful. Check console for details.",
-      });
-    } catch (error: any) {
-      console.error('Debug API error:', error);
-      
-      const errorDetails = error.response ? {
-        status: error.response.status,
-        statusText: error.response.statusText,
-        data: error.response.data
-      } : { message: error.message };
-      
-      console.log('Debug: Full error details:', errorDetails);
-      
-      toast({
-        title: "Debug Error",
-        description: `Error: ${error.response?.data?.message || error.message || 'Unknown error'}`,
-        variant: "destructive"
-      });
-    }
-  };
+  } = useLogin(from);
 
   // Display offline warning if needed
   if (isOffline) {
@@ -135,10 +75,7 @@ export const LoginForm = memo(() => {
         />
 
         <div className="pt-2">
-          <LoginButton 
-            isLoading={loading} 
-            onDebug={handleDebugConnection}
-          />
+          <LoginButton isLoading={loading} />
         </div>
       </form>
 

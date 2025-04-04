@@ -1,252 +1,167 @@
-
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { HttpClient } from '@/api/services/http';
-import { AuthService } from '@/services/authService';
-import { PasswordResetConfirmation, PasswordResetRequest, RegistrationCredentials } from './types';
+import { HttpClient } from "@/api/services/http";
+import { 
+  encryptBase64,
+  setCookie,
+  setWorkspaceId,
+  handleSetToken
+} from '@/utils/helpers/helpers';
+import { get } from "lodash";
+import { Credentials, PasswordResetConfirmation, PasswordResetRequest, RegistrationCredentials } from './types';
+import { AUTH_ENDPOINTS } from '@/api/services/http/config';
 
-// Define action types
-export const LOGIN = 'auth/login';
-export const LOGOUT = 'auth/logout';
-export const REFRESH_TOKEN = 'auth/refreshToken';
-export const REGISTER_USER = 'auth/register';
-export const REQUEST_PASSWORD_RESET = 'auth/requestPasswordReset';
-export const CONFIRM_PASSWORD_RESET = 'auth/confirmPasswordReset';
+// Authentication actions
 
-// Define interfaces for action payloads
-interface LoginCredentials {
-  email: string;
-  password: string;
-}
-
-// Login action - directly handles authentication
 export const loginUser = createAsyncThunk(
-  LOGIN,
-  async (credentials: LoginCredentials, { rejectWithValue }) => {
+  "auth/login",
+  async (credentials: Credentials, { rejectWithValue }) => {
     try {
-      console.log('Auth action: Attempting login with email:', credentials.email);
+      // Check for offline status first
+      if (HttpClient.isOffline()) {
+        console.error("Device is offline - cannot connect to authentication server");
+        return rejectWithValue({
+          message: "You are currently offline. Please check your internet connection and try again.",
+          isOfflineError: true
+        });
+      }
       
-      // Use a clean auth client without interceptors for login
-      const authClient = HttpClient.authClient();
+      console.log("Attempting login for:", credentials.email);
       
-      // Log exactly what's being sent
-      console.log('Auth action: Sending login request to server with payload:', {
-        ...credentials,
-        password: '[REDACTED]'
+      // Ensure we're using the consistent endpoint from config
+      const response = await HttpClient.apiClient.post(AUTH_ENDPOINTS.LOGIN, {
+        username: credentials.email,
+        password: credentials.password,
+        recaptchaId: "",
       });
+
+      console.log("Login response received:", response.status);
       
-      const response = await authClient.post('/auth/login', {
-        email: credentials.email,
-        password: credentials.password
-      }, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      console.log('Auth action: Login response received:', {
-        status: response.status,
-        success: !!response.data,
-        hasToken: !!(response.data?.data?.accessToken?.token)
-      });
-      
-      // Handle successful login
-      if (response.data?.data?.accessToken?.token) {
-        AuthService.setAuthToken(response.data.data.accessToken.token);
-        
-        // If there's user data, store it
-        if (response.data.data.user) {
-          AuthService.setUserId(response.data.data.user.id);
-          AuthService.setUserRole(response.data.data.user.role);
+      const loginData = response.data?.data;
+      if (loginData) {
+        const email = loginData?.username || credentials.email;
+        const encryptedEmail = encryptBase64(email);
+        setCookie("agent_email", encryptedEmail);
+
+        // Set the token in the cookie and Axios headers
+        const token = loginData?.accessToken?.token || "";
+        if (token) {
+          console.log("Setting token from login response");
+          handleSetToken(token);
           
-          // Store workspace if available
-          if (response.data.data.user.workspace?.id) {
-            localStorage.setItem('workspaceId', response.data.data.user.workspace.id);
-            console.log('Workspace ID set from login response:', response.data.data.user.workspace.id);
+          // Store user ID for convenience if available
+          if (loginData.id) {
+            localStorage.setItem("userId", loginData.id);
           }
+          
+          // Store user role if available
+          if (loginData.role) {
+            localStorage.setItem("role", loginData.role);
+          }
+        } else {
+          console.error("No token received in login response");
+          return rejectWithValue("Authentication server did not provide a valid token. Please try again.");
         }
+
+        // Set workspace ID if available - only in cookie
+        const workspaceId = get(response.data, "data.defaultWorkspaceId", "");
+        if (workspaceId) {
+          setWorkspaceId(workspaceId);
+        }
+
+        // Configure Axios with the new token
+        HttpClient.setAxiosDefaultConfig();
+      } else {
+        console.error("Login response missing data structure:", response.data);
+        return rejectWithValue("Invalid server response format");
       }
       
       return response.data;
     } catch (error: any) {
-      console.error('Auth action: Login error:', error.response || error);
+      console.error("Login error:", error);
       
-      // Enhance error message with response details if available
-      const errorMessage = error.response?.data?.message || error.message || 'Login failed';
-      const statusCode = error.response?.status;
+      // Check if this is an offline error
+      if (error.isOfflineError || !navigator.onLine) {
+        return rejectWithValue({
+          message: "You are currently offline. Please check your internet connection and try again.",
+          isOfflineError: true
+        });
+      }
       
-      console.log(`Auth action: Login failed with status ${statusCode}: ${errorMessage}`);
+      // Check if this is an auth error
+      if (error.isAuthError) {
+        return rejectWithValue({
+          message: "Invalid email or password. Please check your credentials and try again.",
+          isAuthError: true
+        });
+      }
       
-      return rejectWithValue({
-        message: errorMessage,
-        status: statusCode,
-        error: error.response?.data || error.message
+      // Check if this is a server error
+      if (error.isServerError) {
+        return rejectWithValue({
+          message: "The authentication server is currently unavailable. Please try again later.",
+          isServerError: true
+        });
+      }
+      
+      // Provide more specific error messages based on the error type
+      if (error.code === 'ERR_NETWORK') {
+        return rejectWithValue({
+          message: "Cannot connect to the authentication server. Please check your network connection or try again later.",
+          isOfflineError: true
+        });
+      }
+      
+      // Log detailed error information for debugging
+      console.error("Error details:", {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message
       });
+      
+      return rejectWithValue(error.response?.data?.message || "Login failed. Please check your credentials and try again.");
     }
   }
 );
 
-// Register user action
 export const registerUser = createAsyncThunk(
-  REGISTER_USER,
-  async (userData: RegistrationCredentials, { rejectWithValue }) => {
+  'auth/register',
+  async (credentials: RegistrationCredentials, { rejectWithValue }) => {
     try {
-      console.log('Auth action: Attempting registration with email:', userData.email);
+      const response = await HttpClient.apiClient.post(AUTH_ENDPOINTS.REGISTER, credentials);
       
-      // Use auth client without interceptors
-      const authClient = HttpClient.authClient();
-      
-      const response = await authClient.post('/auth/register', userData, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      console.log('Auth action: Registration response received:', {
-        status: response.status,
-        success: !!response.data
-      });
-      
-      // Handle successful registration
-      if (response.data?.data?.accessToken?.token) {
-        AuthService.setAuthToken(response.data.data.accessToken.token);
-        
-        if (response.data.data.user) {
-          AuthService.setUserId(response.data.data.user.id);
-          AuthService.setUserRole(response.data.data.user.role);
-        }
+      // If registration returns a token, set it
+      const token = get(response, 'data.data.accessToken.token', '');
+      if (token) {
+        handleSetToken(token);
       }
       
       return response.data;
     } catch (error: any) {
-      console.error('Auth action: Registration error:', error.response || error);
-      
-      const errorMessage = error.response?.data?.message || error.message || 'Registration failed';
-      const statusCode = error.response?.status;
-      
-      return rejectWithValue({
-        message: errorMessage,
-        status: statusCode,
-        error: error.response?.data || error.message
-      });
+      return rejectWithValue(error.response?.data?.message || "Registration failed");
     }
   }
 );
 
-// Request password reset action
 export const requestPasswordReset = createAsyncThunk(
-  REQUEST_PASSWORD_RESET,
-  async (data: PasswordResetRequest, { rejectWithValue }) => {
+  'auth/requestPasswordReset',
+  async (credentials: PasswordResetRequest, { rejectWithValue }) => {
     try {
-      console.log('Auth action: Requesting password reset for email:', data.email);
-      
-      // Use auth client without interceptors
-      const authClient = HttpClient.authClient();
-      
-      const response = await authClient.post('/auth/forgot-password', {
-        email: data.email
-      }, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      console.log('Auth action: Password reset request response:', {
-        status: response.status,
-        success: !!response.data
-      });
-      
+      const response = await HttpClient.apiClient.post(AUTH_ENDPOINTS.FORGOT_PASSWORD, credentials);
       return response.data;
     } catch (error: any) {
-      console.error('Auth action: Password reset request error:', error.response || error);
-      
-      const errorMessage = error.response?.data?.message || error.message || 'Password reset request failed';
-      
-      return rejectWithValue({
-        message: errorMessage,
-        error: error.response?.data || error.message
-      });
+      return rejectWithValue(error.response?.data?.message || 'Password reset request failed');
     }
   }
 );
 
-// Confirm password reset action
 export const confirmPasswordReset = createAsyncThunk(
-  CONFIRM_PASSWORD_RESET,
-  async (data: PasswordResetConfirmation, { rejectWithValue }) => {
+  'auth/confirmPasswordReset',
+  async (credentials: PasswordResetConfirmation, { rejectWithValue }) => {
     try {
-      console.log('Auth action: Confirming password reset');
-      
-      // Use auth client without interceptors
-      const authClient = HttpClient.authClient();
-      
-      // Prepare the payload
-      const payload = {
-        token: data.token,
-        password: data.password,
-        confirmPassword: data.confirmPassword || data.password
-      };
-      
-      // Add optional fields if they exist
-      if (data.rid) {
-        payload['rid'] = data.rid;
-      }
-      
-      if (data.tenantId) {
-        payload['tenantId'] = data.tenantId;
-      }
-      
-      const response = await authClient.post('/auth/reset-password', payload, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      console.log('Auth action: Password reset confirmation response:', {
-        status: response.status,
-        success: !!response.data
-      });
-      
+      const response = await HttpClient.apiClient.post(AUTH_ENDPOINTS.RESET_PASSWORD, credentials);
       return response.data;
     } catch (error: any) {
-      console.error('Auth action: Password reset confirmation error:', error.response || error);
-      
-      const errorMessage = error.response?.data?.message || error.message || 'Password reset failed';
-      
-      return rejectWithValue({
-        message: errorMessage,
-        error: error.response?.data || error.message
-      });
-    }
-  }
-);
-
-// Refresh token action
-export const refreshAuthToken = createAsyncThunk(
-  REFRESH_TOKEN,
-  async (_, { rejectWithValue }) => {
-    try {
-      // Check if we have a refresh token first
-      const refreshToken = localStorage.getItem('refreshToken');
-      
-      if (!refreshToken) {
-        throw new Error('No refresh token available');
-      }
-      
-      // Use direct API call without interceptors for token refresh
-      const authClient = HttpClient.authClient();
-      const response = await authClient.post('/auth/refresh', {
-        refreshToken
-      });
-      
-      // Update token in storage
-      if (response.data?.data?.accessToken?.token) {
-        AuthService.setAuthToken(response.data.data.accessToken.token);
-      }
-      
-      return response.data;
-    } catch (error: any) {
-      console.error('Token refresh failed:', error.response || error);
-      return rejectWithValue(error.response?.data || error.message);
+      return rejectWithValue(error.response?.data?.message || 'Password reset failed');
     }
   }
 );

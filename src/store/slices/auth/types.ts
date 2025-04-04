@@ -1,5 +1,37 @@
 
-import { UserProfile } from '@/types/user';
+import { ActionType } from "@/utils/ability";
+
+export interface Permission {
+  action: ActionType | ActionType[];
+  subject: string;
+  conditions?: {
+    clineId: string;
+  };
+}
+
+export type Permissions = Permission[];
+
+export interface AuthState {
+  isAuthenticated: boolean;
+  user: {
+    status: "success" | "error";
+    message: string;
+    data: {
+      id: string;
+      accessToken: {
+        token: string;
+        expiry: number;
+        issuedAt: string;
+        userAgent: string;
+        ip: string;
+      };
+      defaultWorkspaceId: string;
+    };
+  } | null;
+  loading: boolean;
+  error: string | null;
+  permissions: Permissions;
+}
 
 export interface Credentials {
   email: string;
@@ -7,10 +39,10 @@ export interface Credentials {
 }
 
 export interface RegistrationCredentials {
-  fullName?: string;
+  fullName: string;
   email: string;
   password: string;
-  companyName?: string;
+  companyName: string;
 }
 
 export interface PasswordResetRequest {
@@ -20,42 +52,6 @@ export interface PasswordResetRequest {
 export interface PasswordResetConfirmation {
   token: string;
   password: string;
-  confirmPassword?: string;
   rid?: string;
   tenantId?: string;
-}
-
-export interface AuthResponse {
-  data: {
-    id: string;
-    accessToken: {
-      token: string;
-      expiresAt: string;
-    };
-    defaultWorkspaceId?: string;
-    email?: string;
-    role?: string;
-    profile?: UserProfile;
-    currentWorkspace?: any;
-  };
-  message: string;
-  status: string;
-}
-
-export interface AuthError {
-  message: string;
-  code?: string;
-  isOfflineError?: boolean;
-  isAuthError?: boolean;
-  isServerError?: boolean;
-  isTimeoutError?: boolean;
-}
-
-export interface AuthState {
-  isAuthenticated: boolean;
-  user: AuthResponse | null;
-  loading: boolean;
-  error: AuthError | null;
-  permissions: string[];
-  workspaces: any[];
 }

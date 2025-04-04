@@ -1,9 +1,8 @@
 
 import React, { useEffect } from "react";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
-import { fetchUserProfile, fetchWorkspaceData } from "@/store/slices/auth/userActions";
-import { getUserPermission } from "@/store/slices/auth/authSlice";
-import { useAuthContext } from "@/hooks/useAuthContext";
+import { useAppSelector } from "@/hooks/useAppSelector";
+import { fetchUserProfile, fetchWorkspaceData, getUserPermission } from "@/store/slices/authSlice";
 
 interface CaslProviderProps {
     children: React.ReactNode;
@@ -11,7 +10,8 @@ interface CaslProviderProps {
 
 const CaslProvider: React.FC<CaslProviderProps> = ({ children }) => {
     const dispatch = useAppDispatch();
-    const { isAuthenticated } = useAuthContext();
+    const auth = useAppSelector((state) => state.auth);
+    const isAuthenticated = auth?.isAuthenticated || false;
 
     useEffect(() => {
         if (isAuthenticated) {

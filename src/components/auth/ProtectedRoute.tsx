@@ -1,29 +1,24 @@
 
 import { Navigate, useLocation } from 'react-router-dom';
+import { useAppSelector } from '@/hooks/useAppSelector';
 import { useEffect, useState } from 'react';
-import { Loader2, WifiOff, AlertTriangle, RefreshCw, LogIn } from 'lucide-react';
+import { Loader2, WifiOff, AlertTriangle } from 'lucide-react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { fetchUserData } from '@/store/slices/authSlice';
+import { HttpClient } from '@/api/services/http';
+import { isAuthenticated, getAuthToken } from '@/utils/auth/tokenManager';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { useAuthContext } from '@/hooks/useAuthContext';
 
 export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   const dispatch = useAppDispatch();
-  const { 
-    isAuthenticated, 
-    isLoading: authLoading, 
-    hasWorkspace,
-    refreshToken,
-    validateAuthContext
-  } = useAuthContext();
-  
   const [isChecking, setIsChecking] = useState(true);
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const [authError, setAuthError] = useState<string | null>(null);
-  const [isRetrying, setIsRetrying] = useState(false);
+  const { loading } = useAppSelector((state) => state.auth);
+  const [hasValidToken, setHasValidToken] = useState(false);
   
+  // Listen for online/offline status changes
   useEffect(() => {
     const handleOnline = () => setIsOffline(false);
     const handleOffline = () => setIsOffline(true);
@@ -41,6 +36,7 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     const checkAuth = async () => {
       console.log('ProtectedRoute: Checking authentication status');
       
+      // Check if offline
       if (isOffline) {
         console.log('ProtectedRoute: Device is offline');
         setAuthError('You are currently offline. Please check your internet connection.');
@@ -48,145 +44,111 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
         return;
       }
       
-      if (!isAuthenticated) {
-        console.warn('ProtectedRoute: Not authenticated, will redirect to login');
-        setAuthError('Authentication required');
-        setIsChecking(false);
-        return;
-      }
-
-      if (!hasWorkspace) {
-        console.warn('ProtectedRoute: No workspace ID found');
+      // Get token directly from tokenManager
+      const token = getAuthToken();
+      const isTokenPresent = !!token;
+      console.log('ProtectedRoute: Token exists:', isTokenPresent, isTokenPresent ? 'Token value found' : 'No token value', 'Current path:', location.pathname);
+      
+      // Check token validity
+      if (isTokenPresent) {
+        // Token exists, consider it valid for this session
+        setHasValidToken(true);
+        console.log('ProtectedRoute: Found token, configuring axios');
+        HttpClient.setAxiosDefaultConfig(token);
         
         try {
-          // Try to fetch user data to get workspace ID
-          await dispatch(fetchUserData()).unwrap();
-          
-          // Check if we now have a workspace ID
-          if (!validateAuthContext()) {
-            setAuthError('Unable to determine your workspace. Please sign in again.');
-            setIsChecking(false);
-            return;
-          }
-        } catch (error) {
+          // Try to fetch user data
+          await dispatch(fetchUserData());
+          console.log('ProtectedRoute: Successfully fetched user data');
+        } catch (error: any) {
           console.error("Error fetching user data:", error);
-          setAuthError('Failed to load workspace data. Please sign in again.');
-          setIsChecking(false);
-          return;
+          
+          // If it's a 401, the token is probably invalid
+          if (error?.response?.status === 401) {
+            console.log('Token appears to be invalid');
+            setHasValidToken(false);
+            setAuthError('Your session has expired. Please sign in again.');
+          } else if (error?.isOfflineError) {
+            setAuthError('Cannot connect to the server. Please check your internet connection.');
+          }
+          // For other errors, we still continue since we have a token
         }
-      }
-
-      // All checks passed
-      setAuthError(null);
-      setIsChecking(false);
-    };
-
-    // Only run check if not already authenticated or if retrying
-    if (!isChecking || authLoading) {
-      return;
-    }
-    
-    checkAuth();
-  }, [dispatch, location.pathname, isOffline, isRetrying, isAuthenticated, hasWorkspace, validateAuthContext, isChecking, authLoading]);
-
-  const handleRetry = async () => {
-    setIsRetrying(true);
-    setIsChecking(true);
-    setAuthError(null);
-    
-    try {
-      if (isAuthenticated) {
-        await refreshToken();
+      } else {
+        console.log('ProtectedRoute: No token found');
+        setHasValidToken(false);
       }
       
-      if (navigator.onLine) {
-        setIsOffline(false);
-      } else {
-        setIsOffline(true);
-        throw new Error("Still offline");
-      }
-    } catch (error) {
-      console.error("Retry failed:", error);
-    } finally {
+      // Short delay to ensure state is settled
       setTimeout(() => {
-        setIsRetrying(false);
-      }, 1000);
-    }
-  };
+        setIsChecking(false);
+      }, 500);
+    };
+    
+    checkAuth();
+  }, [dispatch, location.pathname, isOffline]);
 
+  // Handle offline state
   if (isOffline) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gray-50">
-        <Card className="w-full max-w-md p-6 shadow-lg">
-          <div className="flex flex-col items-center text-center">
-            <WifiOff className="h-16 w-16 text-destructive mb-4" />
-            <h1 className="text-2xl font-bold mb-2">You're offline</h1>
-            <p className="text-center text-muted-foreground mb-6">
-              You need an internet connection to access this page
-            </p>
-            <Button 
-              onClick={handleRetry} 
-              variant="outline"
-              className="flex items-center gap-2"
-              disabled={isRetrying}
-            >
-              {isRetrying && <RefreshCw className="h-4 w-4 animate-spin" />}
-              {isRetrying ? 'Checking connection...' : 'Try Again'}
-            </Button>
-          </div>
-        </Card>
+      <div className="min-h-screen flex flex-col items-center justify-center p-4">
+        <WifiOff className="h-16 w-16 text-destructive mb-4" />
+        <h1 className="text-2xl font-bold mb-2">You're offline</h1>
+        <p className="text-center text-muted-foreground mb-6">
+          You need an internet connection to access this page
+        </p>
+        <Button 
+          onClick={() => window.location.reload()} 
+          variant="outline"
+        >
+          Try Again
+        </Button>
       </div>
     );
   }
 
-  if (isChecking || authLoading) {
+  // Show loading state while checking
+  if (isChecking || loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-gray-50">
-        <Loader2 className="h-12 w-12 animate-spin text-primary" />
-        <div className="text-lg text-primary font-medium">Checking authentication...</div>
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <span className="ml-2 text-primary">Checking authentication...</span>
       </div>
     );
   }
 
+  // Show auth error if we have one
   if (authError) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gray-50">
-        <Card className="w-full max-w-md p-6 shadow-lg">
-          <div className="flex flex-col items-center text-center">
-            <AlertTriangle className="h-16 w-16 text-destructive mb-4" />
-            <h1 className="text-2xl font-bold mb-2">Authentication Error</h1>
-            <p className="text-center text-muted-foreground mb-6">
-              {authError}
-            </p>
-            <div className="flex gap-3">
-              <Button 
-                onClick={handleRetry} 
-                variant="outline"
-                className="flex items-center gap-2"
-                disabled={isRetrying}
-              >
-                {isRetrying && <RefreshCw className="h-4 w-4 animate-spin" />}
-                {isRetrying ? 'Retrying...' : 'Try Again'}
-              </Button>
-              <Button 
-                onClick={() => window.location.href = '/sign-in'}
-                className="flex items-center gap-2"
-              >
-                <LogIn className="h-4 w-4" />
-                Sign In
-              </Button>
-            </div>
-          </div>
-        </Card>
+      <div className="min-h-screen flex flex-col items-center justify-center p-4">
+        <AlertTriangle className="h-16 w-16 text-destructive mb-4" />
+        <h1 className="text-2xl font-bold mb-2">Authentication Error</h1>
+        <p className="text-center text-muted-foreground mb-6">
+          {authError}
+        </p>
+        <div className="flex gap-3">
+          <Button 
+            onClick={() => window.location.reload()} 
+            variant="outline"
+          >
+            Try Again
+          </Button>
+          <Button 
+            onClick={() => window.location.href = '/sign-in'}
+          >
+            Sign In
+          </Button>
+        </div>
       </div>
     );
   }
 
-  if (isAuthenticated && validateAuthContext()) {
-    console.log('ProtectedRoute: Valid authentication, rendering protected content', location.pathname);
+  // Simple but reliable check based on token existence
+  if (hasValidToken && isAuthenticated()) {
+    console.log('ProtectedRoute: Token exists, rendering protected content', location.pathname);
     return <>{children}</>;
   }
 
-  console.log('ProtectedRoute: Authentication validation failed, redirecting to login');
+  // No token, redirect to login
+  console.log('ProtectedRoute: No token found, redirecting to login');
   return <Navigate to="/sign-in" state={{ from: location.pathname }} replace />;
 };
