@@ -19,7 +19,7 @@ const withProtection = (Component) => (
 export const inboxRoutes = [
   {
     path: 'inbox',
-    element: <Navigate to="all" replace />,
+    element: <Navigate to="/home/inbox/all" replace />,
   },
   {
     path: 'inbox/your-inbox',
