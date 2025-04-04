@@ -1,4 +1,6 @@
 
+import * as React from 'react';
+
 /**
  * Debug utilities for tracking component renders
  */
