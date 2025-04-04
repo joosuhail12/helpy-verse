@@ -20,17 +20,19 @@ interface AppProvidersProps {
 const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
   return (
     <AppErrorBoundary>
-      <Provider store={store}>
-        <AppQueryProvider>
-          <TooltipProvider>
-            <CaslProvider>
-              <Toaster />
-              <Sonner />
-              {children}
-            </CaslProvider>
-          </TooltipProvider>
-        </AppQueryProvider>
-      </Provider>
+      <React.StrictMode>
+        <Provider store={store}>
+          <AppQueryProvider>
+            <TooltipProvider>
+              <CaslProvider>
+                <Toaster />
+                <Sonner />
+                {children}
+              </CaslProvider>
+            </TooltipProvider>
+          </AppQueryProvider>
+        </Provider>
+      </React.StrictMode>
     </AppErrorBoundary>
   );
 };

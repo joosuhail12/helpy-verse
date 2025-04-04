@@ -40,7 +40,17 @@ export default defineConfig(({ mode }) => ({
     }
   },
   plugins: [
-    react(),
+    react({
+      jsxImportSource: 'react',
+      // Ensure React is properly initialized and used
+      devTools: true,
+      // Make sure babel helpers are used consistently
+      babel: {
+        babelrc: false,
+        configFile: false,
+        plugins: []
+      }
+    }),
     mode === 'development' &&
     componentTagger(),
   ].filter(Boolean),
@@ -50,7 +60,7 @@ export default defineConfig(({ mode }) => ({
       "react": path.resolve(__dirname, "./node_modules/react"),
       "react-dom": path.resolve(__dirname, "./node_modules/react-dom"),
     },
-    dedupe: ['react', 'react-dom']
+    dedupe: ['react', 'react-dom', 'react-redux', '@reduxjs/toolkit']
   },
   esbuild: {
     logOverride: { 'this-is-undefined-in-esm': 'silent' }
