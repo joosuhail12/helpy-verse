@@ -1,6 +1,7 @@
 
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { HttpClient } from "@/api/services/http";
+import { WorkspaceService } from '@/services/workspaceService';
 import { AUTH_ENDPOINTS } from "@/api/services/http/config";
 
 export const fetchUserData = createAsyncThunk(
@@ -13,23 +14,10 @@ export const fetchUserData = createAsyncThunk(
       
       // Save workspace ID from response to localStorage if it exists
       if (response.data.data?.defaultWorkspaceId) {
-        try {
-          const workspaceId = response.data.data.defaultWorkspaceId;
-          
-          // Set the workspace ID in localStorage
-          localStorage.setItem("workspaceId", workspaceId);
-          console.log(`✅ Workspace ID saved to localStorage: ${workspaceId}`);
-          
-          // Verify localStorage was set correctly
-          const verifiedValue = localStorage.getItem("workspaceId");
-          if (verifiedValue) {
-            console.log("✅ Workspace ID saved to localStorage and verified:", verifiedValue);
-          } else {
-            console.error("❌ Failed to save workspace ID to localStorage - verification failed");
-          }
-        } catch (storageError) {
-          console.error("Error saving workspace ID to localStorage:", storageError);
-        }
+        const workspaceId = response.data.data.defaultWorkspaceId;
+        
+        // Use our centralized workspace service
+        WorkspaceService.setWorkspaceId(workspaceId);
       } else {
         console.warn("No default workspace ID found in user profile response");
       }
@@ -49,22 +37,9 @@ export const fetchUserProfile = createAsyncThunk(
       const response = await HttpClient.apiClient.get(AUTH_ENDPOINTS.USER_PROFILE);
       console.log("User profile fetched:", response.data);
       
-      // Save workspace ID from response to localStorage if it exists
+      // Save workspace ID using our centralized service
       if (response.data.data?.defaultWorkspaceId) {
-        try {
-          // Set the workspace ID in localStorage
-          localStorage.setItem("workspaceId", response.data.data.defaultWorkspaceId);
-          
-          // Verify localStorage was set correctly
-          const verifiedValue = localStorage.getItem("workspaceId");
-          if (verifiedValue) {
-            console.log("✅ Workspace ID saved to localStorage and verified:", verifiedValue);
-          } else {
-            console.error("❌ Failed to save workspace ID to localStorage - verification failed");
-          }
-        } catch (storageError) {
-          console.error("Error saving workspace ID to localStorage:", storageError);
-        }
+        WorkspaceService.setWorkspaceId(response.data.data.defaultWorkspaceId);
       } else {
         console.warn("No default workspace ID found in user profile response");
       }
@@ -80,7 +55,13 @@ export const fetchWorkspaceData = createAsyncThunk(
   "auth/fetchWorkspaceData",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await HttpClient.apiClient.get("/workspace/6c22b22f-7bdf-43db-b7c1-9c5884125c63");
+      // Get workspace ID from our service
+      const workspaceId = WorkspaceService.getWorkspaceId();
+      if (!workspaceId) {
+        return rejectWithValue("No workspace ID available. Please log in again.");
+      }
+      
+      const response = await HttpClient.apiClient.get(`/workspace/${workspaceId}`);
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || "Failed to fetch workspace data");

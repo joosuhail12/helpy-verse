@@ -1,7 +1,7 @@
 
 import { ReactNode } from "react";
 import { Navigate, useLocation } from "react-router-dom";
-import { isAuthenticated } from "@/utils/auth/tokenManager";
+import { AuthService } from "@/services/authService";
 
 // Define RouteProps Interface
 interface RouteProps {
@@ -13,7 +13,7 @@ export const PrivateRoute = ({ children }: RouteProps): JSX.Element => {
     const location = useLocation();
     console.log("PrivateRoute: Checking authentication status for path:", location.pathname);
     
-    const isAuth = isAuthenticated();
+    const isAuth = AuthService.isAuthenticated();
     console.log(`PrivateRoute: Token exists: ${isAuth ? 'true' : 'false'} ${isAuth ? 'Token value found' : 'No token found'}`);
     
     if (isAuth) {
@@ -36,5 +36,5 @@ export const PublicRoute = ({ children }: RouteProps): JSX.Element => {
         return <>{children}</>;
     }
     
-    return isAuthenticated() ? <Navigate to="/home/inbox/all" /> : <>{children}</>;
+    return AuthService.isAuthenticated() ? <Navigate to="/home/inbox/all" /> : <>{children}</>;
 };

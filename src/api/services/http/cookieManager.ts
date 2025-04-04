@@ -1,10 +1,14 @@
 
 /**
  * Storage management utilities to handle authentication tokens and other data
- * Now using only localStorage (no cookies)
+ * Standardized to use localStorage only (no cookies)
+ * 
+ * LEGACY FILE: New code should use AuthService and WorkspaceService instead.
  */
 
-// Helper function to get data from localStorage
+import { AuthService } from '@/services/authService';
+
+// Helper function to get data from localStorage - for backward compatibility
 export const getCookie = (name: string): string => {
     try {
         const localValue = localStorage.getItem(name);
@@ -19,7 +23,7 @@ export const getCookie = (name: string): string => {
     return "";
 };
 
-// Helper function to set data in localStorage
+// Helper function to set data in localStorage - for backward compatibility
 export const setCookie = (name: string, value: string, exdays: number = 30): void => {
     try {
         // Store in localStorage only
@@ -30,20 +34,10 @@ export const setCookie = (name: string, value: string, exdays: number = 30): voi
     }
 };
 
-// Logout function to clear local storage
+// Logout function - now uses AuthService
 export const handleLogout = (): void => {
-    // Clear localStorage
-    localStorage.removeItem("token");
-    localStorage.removeItem("userId");
-    localStorage.removeItem("role");
-    localStorage.removeItem("workspaceId");
-    localStorage.removeItem("customerToken");
-    sessionStorage.removeItem("token");
-    
-    console.log("User logged out - localStorage cleared");
-    
-    // Use direct navigation for reliability
-    window.location.href = "/sign-in";
+    console.log("Using legacy logout. Consider using AuthService.logout() instead.");
+    AuthService.logout();
 };
 
 // Export helper functions to reduce circular dependencies

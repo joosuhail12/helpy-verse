@@ -1,10 +1,12 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from './useAppDispatch';
 import { useAppSelector } from './useAppSelector';
 import { loginUser } from '../store/slices/authSlice';
 import { toast } from '../components/ui/use-toast';
-import { handleSetToken, isAuthenticated } from '@/utils/auth/tokenManager';
+import { AuthService } from '@/services/authService';
+import { WorkspaceService } from '@/services/workspaceService';
 import { HttpClient } from '@/api/services/http';
 
 /**
@@ -93,9 +95,14 @@ export const useLogin = (redirectPath: string = '/home/inbox/all') => {
           description: 'Logged in successfully',
         });
         
+        // Ensure workspace ID is set
+        if (!WorkspaceService.hasWorkspaceId()) {
+          console.warn('Missing workspace ID after login, this may cause issues');
+        }
+        
         // Double-check auth status before redirecting
         setTimeout(() => {
-          if (isAuthenticated()) {
+          if (AuthService.isAuthenticated()) {
             console.log('Redirecting to:', redirectPath);
             navigate(redirectPath, { replace: true });
           } else {

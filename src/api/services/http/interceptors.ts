@@ -1,8 +1,7 @@
-
 import { AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import { get } from 'lodash';
-import { handleLogout } from './cookieManager';
-import { getAuthToken } from '@/utils/auth/tokenManager';
+import { AuthService } from '@/services/authService';
+import { WorkspaceService } from '@/services/workspaceService';
 import { store } from '@/store/store';
 
 // Request Interceptor - Adds Token & Workspace ID to all requests
@@ -12,8 +11,8 @@ export const requestInterceptor = async (config: InternalAxiosRequestConfig): Pr
         console.error("Network is offline - request will likely fail");
     }
     
-    // Get token for each request
-    const token = getAuthToken();
+    // Get token from our centralized auth service
+    const token = AuthService.getAuthToken();
     
     if (token) {
         config.headers.set("Authorization", `Bearer ${token}`);
@@ -30,8 +29,8 @@ export const requestInterceptor = async (config: InternalAxiosRequestConfig): Pr
         }
     }
 
-    // Get workspace_id from localStorage
-    const workspaceId = localStorage.getItem("workspaceId");
+    // Get workspace_id from our centralized workspace service
+    const workspaceId = WorkspaceService.getWorkspaceId();
     
     // Always add workspace_id to all requests
     if (workspaceId) {
@@ -104,10 +103,10 @@ export const responseErrorInterceptor = (error: any) => {
         });
     }
 
-    // Handle authentication errors
+    // Handle authentication errors - now using our Auth Service
     if (status === 401 || errorCode === "UNAUTHORIZED") {
         console.warn("Authentication error detected, logging out");
-        handleLogout();
+        AuthService.logout();
         
         return Promise.reject({
             message: "Authentication failed. Please sign in again.",

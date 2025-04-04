@@ -9,7 +9,7 @@ import { useForm } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import ErrorBoundary from "@/components/common/ErrorBoundary";
-import { isAuthenticated } from "@/utils/auth/tokenManager";
+import { AuthService } from "@/services/authService";
 
 export const SignIn = memo(() => {
   console.log('SignIn component rendering'); // Debug log
@@ -27,9 +27,9 @@ export const SignIn = memo(() => {
     },
   });
 
-  // Redirect if already authenticated - using tokenManager's isAuthenticated
+  // Redirect if already authenticated - using AuthService's isAuthenticated
   useEffect(() => {
-    if (isAuthenticated()) {
+    if (AuthService.isAuthenticated()) {
       console.log('User is authenticated, redirecting to:', from); // Debug log
       
       // Navigate to target location

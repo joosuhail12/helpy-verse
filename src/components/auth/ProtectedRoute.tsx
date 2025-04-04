@@ -6,7 +6,8 @@ import { Loader2, WifiOff, AlertTriangle } from 'lucide-react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { fetchUserData } from '@/store/slices/authSlice';
 import { HttpClient } from '@/api/services/http';
-import { isAuthenticated, getAuthToken } from '@/utils/auth/tokenManager';
+import { AuthService } from '@/services/authService';
+import { WorkspaceService } from '@/services/workspaceService';
 import { Button } from '@/components/ui/button';
 
 export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -44,22 +45,43 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
         return;
       }
       
-      // Get token directly from tokenManager
-      const token = getAuthToken();
+      // Get token from our centralized Auth Service
+      const token = AuthService.getAuthToken();
       const isTokenPresent = !!token;
       console.log('ProtectedRoute: Token exists:', isTokenPresent, isTokenPresent ? 'Token value found' : 'No token value', 'Current path:', location.pathname);
       
       // Check token validity
       if (isTokenPresent) {
-        // Token exists, consider it valid for this session
+        // Check if token is expired
+        if (AuthService.isTokenExpired()) {
+          console.log('ProtectedRoute: Token is expired');
+          setHasValidToken(false);
+          setAuthError('Your session has expired. Please sign in again.');
+          setIsChecking(false);
+          return;
+        }
+        
+        // Token exists and is not expired, consider it valid
         setHasValidToken(true);
-        console.log('ProtectedRoute: Found token, configuring axios');
+        console.log('ProtectedRoute: Found valid token, configuring axios');
         HttpClient.setAxiosDefaultConfig(token);
         
         try {
-          // Try to fetch user data
+          // Validate workspace context
+          if (!WorkspaceService.hasWorkspaceId()) {
+            console.log('ProtectedRoute: No workspace ID found, fetching user data to get workspace ID');
+          }
+          
+          // Try to fetch user data to get or validate workspace ID
           await dispatch(fetchUserData());
           console.log('ProtectedRoute: Successfully fetched user data');
+          
+          // Double-check workspace ID after fetching user data
+          if (!WorkspaceService.hasWorkspaceId()) {
+            console.warn('ProtectedRoute: Still no workspace ID after fetching user data');
+            setAuthError('Unable to determine your workspace. Please sign in again.');
+            setHasValidToken(false);
+          }
         } catch (error: any) {
           console.error("Error fetching user data:", error);
           
@@ -142,13 +164,13 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  // Simple but reliable check based on token existence
-  if (hasValidToken && isAuthenticated()) {
-    console.log('ProtectedRoute: Token exists, rendering protected content', location.pathname);
+  // Check authentication with our service
+  if (hasValidToken && AuthService.isAuthenticated()) {
+    console.log('ProtectedRoute: Valid token exists, rendering protected content', location.pathname);
     return <>{children}</>;
   }
 
   // No token, redirect to login
-  console.log('ProtectedRoute: No token found, redirecting to login');
+  console.log('ProtectedRoute: No valid token found, redirecting to login');
   return <Navigate to="/sign-in" state={{ from: location.pathname }} replace />;
 };

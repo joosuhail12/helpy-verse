@@ -1,17 +1,14 @@
+
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { HttpClient } from "@/api/services/http";
-import { 
-  encryptBase64,
-  setCookie,
-  setWorkspaceId,
-  handleSetToken
-} from '@/utils/helpers/helpers';
+import { AuthService } from '@/services/authService';
+import { WorkspaceService } from '@/services/workspaceService';
+import { encryptBase64 } from '@/utils/helpers/helpers';
 import { get } from "lodash";
 import { Credentials, PasswordResetConfirmation, PasswordResetRequest, RegistrationCredentials } from './types';
 import { AUTH_ENDPOINTS } from '@/api/services/http/config';
 
 // Authentication actions
-
 export const loginUser = createAsyncThunk(
   "auth/login",
   async (credentials: Credentials, { rejectWithValue }) => {
@@ -40,32 +37,38 @@ export const loginUser = createAsyncThunk(
       if (loginData) {
         const email = loginData?.username || credentials.email;
         const encryptedEmail = encryptBase64(email);
-        setCookie("agent_email", encryptedEmail);
+        localStorage.setItem("agent_email", encryptedEmail);
 
-        // Set the token in the cookie and Axios headers
+        // Set the token using our centralized auth service
         const token = loginData?.accessToken?.token || "";
         if (token) {
           console.log("Setting token from login response");
-          handleSetToken(token);
+          const tokenSet = AuthService.setAuthToken(token);
+          
+          if (!tokenSet) {
+            return rejectWithValue("Failed to set authentication token");
+          }
           
           // Store user ID for convenience if available
           if (loginData.id) {
-            localStorage.setItem("userId", loginData.id);
+            AuthService.setUserId(loginData.id);
           }
           
           // Store user role if available
           if (loginData.role) {
-            localStorage.setItem("role", loginData.role);
+            AuthService.setUserRole(loginData.role);
           }
         } else {
           console.error("No token received in login response");
           return rejectWithValue("Authentication server did not provide a valid token. Please try again.");
         }
 
-        // Set workspace ID if available - only in cookie
+        // Set workspace ID if available using our centralized workspace service
         const workspaceId = get(response.data, "data.defaultWorkspaceId", "");
         if (workspaceId) {
-          setWorkspaceId(workspaceId);
+          WorkspaceService.setWorkspaceId(workspaceId);
+        } else {
+          console.warn("No workspace ID found in login response");
         }
 
         // Configure Axios with the new token
