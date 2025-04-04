@@ -19,7 +19,7 @@ import { inboxRoutes } from './inboxRoutes';
 import { settingsRoutes } from './settingsRoutes';
 import { automationRoutes } from './automationRoutes';
 
-// Import SignIn directly to avoid dynamic import issues
+// Import SignIn directly without lazy loading to avoid dynamic import issues
 import SignIn from '../pages/SignIn';
 
 // Lazy load other components
@@ -71,7 +71,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/sign-in',
-    // Use SignIn directly without lazy loading since it's a critical component
+    // Use SignIn directly without lazy loading
     element: (
       <RouteErrorBoundary>
         <SignIn />

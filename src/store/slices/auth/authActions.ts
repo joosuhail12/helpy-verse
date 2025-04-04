@@ -7,33 +7,33 @@ import {
   PasswordResetRequest, 
   PasswordResetConfirmation 
 } from './types';
-import { setAuthCookie, clearAuthCookie } from '@/utils/auth/cookieManager';
+import { handleSetToken } from '@/utils/auth/tokenManager';
+import { HttpClient } from '@/api/services/http';
 
 export const loginUser = createAsyncThunk<AuthResponse, Credentials>(
   'auth/login',
   async (credentials, { rejectWithValue }) => {
     try {
-      // Simulate API call for now - replace with actual API call
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(credentials),
-      });
+      // Use HttpClient instead of direct fetch
+      const response = await HttpClient.apiClient.post('/auth/login', credentials);
       
-      if (!response.ok) {
-        throw new Error('Login failed');
+      // Check if response has the expected structure
+      if (response.data && response.data.accessToken) {
+        // Store token using tokenManager's handleSetToken
+        handleSetToken(response.data.accessToken.token || response.data.accessToken);
+        return response.data;
       }
       
-      const data = await response.json();
-      
-      // Store token in cookie
-      if (data && data.data && data.data.accessToken && data.data.accessToken.token) {
-        setAuthCookie(data.data.accessToken.token);
-      }
-      
-      return data;
+      return response.data;
     } catch (error: any) {
-      return rejectWithValue(error.message || 'Login failed');
+      console.error('Login API error:', error);
+      
+      // Improved error handling with more details
+      const errorMessage = error.response?.data?.message || 
+                          error.message || 
+                          'Login failed. Please check your credentials and try again.';
+      
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -42,27 +42,26 @@ export const registerUser = createAsyncThunk<AuthResponse, RegistrationCredentia
   'auth/register',
   async (registrationData, { rejectWithValue }) => {
     try {
-      // Simulate API call for now - replace with actual API call  
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(registrationData),
-      });
+      // Use HttpClient instead of direct fetch
+      const response = await HttpClient.apiClient.post('/auth/register', registrationData);
       
-      if (!response.ok) {
-        throw new Error('Registration failed');
+      // Check if response has the expected structure
+      if (response.data && response.data.accessToken) {
+        // Store token using tokenManager's handleSetToken
+        handleSetToken(response.data.accessToken.token || response.data.accessToken);
+        return response.data;
       }
       
-      const data = await response.json();
-      
-      // Store token in cookie if available
-      if (data && data.data && data.data.accessToken && data.data.accessToken.token) {
-        setAuthCookie(data.data.accessToken.token);
-      }
-      
-      return data;
+      return response.data;
     } catch (error: any) {
-      return rejectWithValue(error.message || 'Registration failed');
+      console.error('Registration API error:', error);
+      
+      // Improved error handling
+      const errorMessage = error.response?.data?.message || 
+                          error.message || 
+                          'Registration failed. Please try again.';
+      
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -71,18 +70,16 @@ export const requestPasswordReset = createAsyncThunk<void, PasswordResetRequest>
   'auth/requestPasswordReset',
   async (passwordResetRequest, { rejectWithValue }) => {
     try {
-      // Simulate API call for now - replace with actual API call
-      const response = await fetch('/api/auth/request-password-reset', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(passwordResetRequest),
-      });
-      
-      if (!response.ok) {
-        throw new Error('Password reset request failed');
-      }
+      // Use HttpClient instead of direct fetch
+      await HttpClient.apiClient.post('/auth/reset-password-request', passwordResetRequest);
     } catch (error: any) {
-      return rejectWithValue(error.message || 'Password reset request failed');
+      console.error('Password reset request API error:', error);
+      
+      const errorMessage = error.response?.data?.message || 
+                          error.message || 
+                          'Password reset request failed. Please try again.';
+      
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -91,18 +88,16 @@ export const confirmPasswordReset = createAsyncThunk<void, PasswordResetConfirma
   'auth/confirmPasswordReset',
   async (passwordResetConfirmation, { rejectWithValue }) => {
     try {
-      // Simulate API call for now - replace with actual API call
-      const response = await fetch('/api/auth/confirm-password-reset', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(passwordResetConfirmation),
-      });
-      
-      if (!response.ok) {
-        throw new Error('Password reset confirmation failed');
-      }
+      // Use HttpClient instead of direct fetch
+      await HttpClient.apiClient.post('/auth/reset-password-confirm', passwordResetConfirmation);
     } catch (error: any) {
-      return rejectWithValue(error.message || 'Password reset confirmation failed');
+      console.error('Password reset confirmation API error:', error);
+      
+      const errorMessage = error.response?.data?.message || 
+                          error.message || 
+                          'Password reset confirmation failed. Please try again.';
+      
+      return rejectWithValue(errorMessage);
     }
   }
 );

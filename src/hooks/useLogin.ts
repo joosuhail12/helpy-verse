@@ -38,7 +38,7 @@ export const useLogin = (redirectPath: string = '/home/inbox/all') => {
   // Check for auth errors and show toast
   useEffect(() => {
     if (auth.error && !loading && !isSubmitting) {
-      // Fix TypeScript error by ensuring auth.error is treated with the correct type
+      // Better type handling for auth.error
       let errorMessage = 'Login failed. Please try again.';
       
       if (typeof auth.error === 'string') {
@@ -99,6 +99,29 @@ export const useLogin = (redirectPath: string = '/home/inbox/all') => {
               description: 'Authentication succeeded but session setup failed. Please try again.',
               variant: 'destructive',
             });
+          }
+        }, 300);
+      } else if (result && result.accessToken) {
+        // Alternative response structure
+        console.log('Login successful (alternative response structure)');
+        
+        // Ensure token is set
+        if (typeof result.accessToken === 'string') {
+          handleSetToken(result.accessToken);
+        } else if (result.accessToken.token) {
+          handleSetToken(result.accessToken.token);
+        }
+        
+        toast({
+          title: 'Success',
+          description: 'Logged in successfully',
+        });
+        
+        // Navigate after successful login
+        setTimeout(() => {
+          if (isAuthenticated()) {
+            console.log('Redirecting to:', redirectPath);
+            navigate(redirectPath, { replace: true });
           }
         }, 300);
       }
