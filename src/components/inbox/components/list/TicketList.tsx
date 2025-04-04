@@ -22,9 +22,15 @@ interface TicketListProps {
   tickets: Ticket[];
   isLoading?: boolean;
   onTicketCreated?: (ticket: Ticket) => void;
+  onCreateTicket?: () => void;
 }
 
-const TicketList = ({ tickets: initialTickets, isLoading = false, onTicketCreated }: TicketListProps) => {
+const TicketList = ({ 
+  tickets: initialTickets, 
+  isLoading = false, 
+  onTicketCreated,
+  onCreateTicket 
+}: TicketListProps) => {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   
@@ -59,13 +65,21 @@ const TicketList = ({ tickets: initialTickets, isLoading = false, onTicketCreate
     setSelectedTicket(null);
   };
 
+  const handleCreateTicketClick = () => {
+    if (onCreateTicket) {
+      onCreateTicket();
+    } else {
+      setCreateDialogOpen(true);
+    }
+  };
+
   if (isLoading) {
     return <LoadingState />;
   }
 
   if (tickets.length === 0 && !isLoading) {
     return (
-      <EmptyTicketState onCreateTicket={() => setCreateDialogOpen(true)} />
+      <EmptyTicketState onCreateTicket={handleCreateTicketClick} />
     );
   }
 
@@ -100,7 +114,7 @@ const TicketList = ({ tickets: initialTickets, isLoading = false, onTicketCreate
                   />
                   <ViewToggle viewMode={viewMode} onChangeViewMode={setViewMode} />
                   <Button
-                    onClick={() => setCreateDialogOpen(true)}
+                    onClick={handleCreateTicketClick}
                     size="sm"
                     className="ml-auto sm:ml-2"
                   >
@@ -165,7 +179,7 @@ const TicketList = ({ tickets: initialTickets, isLoading = false, onTicketCreate
                 />
                 <ViewToggle viewMode={viewMode} onChangeViewMode={setViewMode} />
                 <Button
-                  onClick={() => setCreateDialogOpen(true)}
+                  onClick={handleCreateTicketClick}
                   size="sm"
                   className="ml-auto sm:ml-2"
                 >
@@ -200,11 +214,13 @@ const TicketList = ({ tickets: initialTickets, isLoading = false, onTicketCreate
         </div>
       )}
 
-      <CreateTicketDialog
-        open={createDialogOpen}
-        onOpenChange={setCreateDialogOpen}
-        onTicketCreated={handleTicketCreated}
-      />
+      {!onCreateTicket && (
+        <CreateTicketDialog
+          open={createDialogOpen}
+          onOpenChange={setCreateDialogOpen}
+          onTicketCreated={handleTicketCreated}
+        />
+      )}
     </div>
   );
 };

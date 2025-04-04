@@ -1,15 +1,17 @@
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import TicketList from '@/components/inbox/TicketList';
 import { fetchTickets } from '@/store/slices/inbox/inboxActions';
 import { selectTickets, selectInboxLoading } from '@/store/slices/inbox/inboxSlice';
+import { CreateTicketDialog } from '@/components/inbox/components/ticket-form';
 
 const AllTickets = () => {
   const dispatch = useAppDispatch();
   const tickets = useAppSelector(selectTickets);
   const isLoading = useAppSelector(selectInboxLoading);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
   useEffect(() => {
     dispatch(fetchTickets());
@@ -26,8 +28,17 @@ const AllTickets = () => {
         <TicketList 
           tickets={tickets} 
           isLoading={isLoading}
+          onCreateTicket={() => setCreateDialogOpen(true)}
         />
       </div>
+
+      <CreateTicketDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+        onTicketCreated={(ticket) => {
+          setCreateDialogOpen(false);
+        }}
+      />
     </div>
   );
 };

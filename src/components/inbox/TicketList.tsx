@@ -7,6 +7,7 @@ import { addTicket } from '@/store/slices/inbox/inboxSlice';
 interface TicketListProps {
   tickets: Ticket[];
   isLoading?: boolean;
+  onCreateTicket?: () => void;
 }
 
 const TicketList = (props: TicketListProps) => {
