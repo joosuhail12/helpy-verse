@@ -9,6 +9,7 @@ interface TicketListProps {
 }
 
 const TicketList = (props: TicketListProps) => {
+  console.log('TicketList props:', props);
   return <ListComponent {...props} />;
 };
 

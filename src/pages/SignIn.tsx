@@ -1,18 +1,17 @@
 
-import React, { useEffect } from "react";
+import { memo, useEffect } from "react";
 import { Logo } from "@/components/auth/Logo";
 import { FeatureList } from "@/components/auth/FeatureList";
 import { LoginForm } from "@/components/auth/LoginForm";
+import { Form } from "@/components/ui/form";
+import { FormProvider } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import ErrorBoundary from "@/components/common/ErrorBoundary";
 import { isAuthenticated } from "@/utils/auth/tokenManager";
 
-/**
- * SignIn page component
- * Handles the sign-in process and UI
- */
-const SignIn = () => {
+export const SignIn = memo(() => {
   console.log('SignIn component rendering'); // Debug log
   const navigate = useNavigate();
   const location = useLocation();
@@ -21,6 +20,13 @@ const SignIn = () => {
   // Get redirect path from location state or default to /home
   const from = location.state?.from || '/home';
   
+  const methods = useForm({
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  });
+
   // Redirect if already authenticated - using tokenManager's isAuthenticated
   useEffect(() => {
     if (isAuthenticated()) {
@@ -54,11 +60,17 @@ const SignIn = () => {
           </ErrorBoundary>
         </div>
         <ErrorBoundary>
-          <LoginForm />
+          <Form {...methods}>
+            <FormProvider {...methods}>
+              <LoginForm />
+            </FormProvider>
+          </Form>
         </ErrorBoundary>
       </div>
     </div>
   );
-};
+});
+
+SignIn.displayName = 'SignIn';
 
 export default SignIn;

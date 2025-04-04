@@ -2,7 +2,7 @@
 import React, { useEffect } from "react";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { useAppSelector } from "@/hooks/useAppSelector";
-import { fetchUserProfile, fetchWorkspaceData, getUserPermission } from "@/store/slices/auth/authSlice";
+import { fetchUserProfile, fetchWorkspaceData, getUserPermission } from "@/store/slices/authSlice";
 
 interface CaslProviderProps {
     children: React.ReactNode;
@@ -16,10 +16,10 @@ const CaslProvider: React.FC<CaslProviderProps> = ({ children }) => {
     useEffect(() => {
         if (isAuthenticated) {
             dispatch(fetchUserProfile()); 
-            dispatch(fetchWorkspaceData(auth?.user?.workspace?.id || '')); 
+            dispatch(fetchWorkspaceData());
             dispatch(getUserPermission()); 
         }
-    }, [dispatch, isAuthenticated, auth?.user?.workspace?.id]);
+    }, [dispatch, isAuthenticated]);
 
     return <>{children}</>;
 };

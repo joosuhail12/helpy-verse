@@ -19,25 +19,22 @@ interface AppProvidersProps {
  * with necessary providers and error boundaries.
  */
 const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
-  // Explicitly configure React to use hooks in this component
   return (
-    <React.Fragment>
+    <AppErrorBoundary>
       <Provider store={store}>
-        <AppErrorBoundary>
-          <AppQueryProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Sonner />
-              <CaslProvider>
-                <AppInitializer>
-                  {children}
-                </AppInitializer>
-              </CaslProvider>
-            </TooltipProvider>
-          </AppQueryProvider>
-        </AppErrorBoundary>
+        <AppQueryProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <CaslProvider>
+              <AppInitializer>
+                {children}
+              </AppInitializer>
+            </CaslProvider>
+          </TooltipProvider>
+        </AppQueryProvider>
       </Provider>
-    </React.Fragment>
+    </AppErrorBoundary>
   );
 };
 

@@ -1,140 +1,167 @@
-
 import { createAsyncThunk } from '@reduxjs/toolkit';
+import { HttpClient } from "@/api/services/http";
 import { 
-  AuthResponse, 
-  Credentials, 
-  RegistrationCredentials, 
-  PasswordResetRequest, 
-  PasswordResetConfirmation 
-} from './types';
-import { handleSetToken } from '@/utils/auth/tokenManager';
-import { HttpClient } from '@/api/services/http';
+  encryptBase64,
+  setCookie,
+  setWorkspaceId,
+  handleSetToken
+} from '@/utils/helpers/helpers';
+import { get } from "lodash";
+import { Credentials, PasswordResetConfirmation, PasswordResetRequest, RegistrationCredentials } from './types';
+import { AUTH_ENDPOINTS } from '@/api/services/http/config';
 
-export const loginUser = createAsyncThunk<AuthResponse, Credentials>(
-  'auth/login',
-  async (credentials, { rejectWithValue }) => {
+// Authentication actions
+
+export const loginUser = createAsyncThunk(
+  "auth/login",
+  async (credentials: Credentials, { rejectWithValue }) => {
     try {
-      console.log('Attempting login with:', credentials.email);
+      // Check for offline status first
+      if (HttpClient.isOffline()) {
+        console.error("Device is offline - cannot connect to authentication server");
+        return rejectWithValue({
+          message: "You are currently offline. Please check your internet connection and try again.",
+          isOfflineError: true
+        });
+      }
       
-      // Ensure we're sending the right structure expected by the API
-      const loginPayload = {
-        email: credentials.email,
-        password: credentials.password
-      };
+      console.log("Attempting login for:", credentials.email);
       
-      // Use HttpClient instead of direct fetch
-      const response = await HttpClient.apiClient.post('/auth/login', loginPayload);
+      // Ensure we're using the consistent endpoint from config
+      const response = await HttpClient.apiClient.post(AUTH_ENDPOINTS.LOGIN, {
+        username: credentials.email,
+        password: credentials.password,
+        recaptchaId: "",
+      });
+
+      console.log("Login response received:", response.status);
       
-      console.log('Login response:', response.data);
-      
-      // Check if response has the expected structure
-      if (response.data) {
-        let token = null;
-        
-        // Handle different response structures
-        if (response.data.accessToken) {
-          if (typeof response.data.accessToken === 'string') {
-            token = response.data.accessToken;
-          } else if (response.data.accessToken.token) {
-            token = response.data.accessToken.token;
-          }
-        } else if (response.data.data && response.data.data.accessToken) {
-          if (typeof response.data.data.accessToken === 'string') {
-            token = response.data.data.accessToken;
-          } else if (response.data.data.accessToken.token) {
-            token = response.data.data.accessToken.token;
-          }
-        }
-        
+      const loginData = response.data?.data;
+      if (loginData) {
+        const email = loginData?.username || credentials.email;
+        const encryptedEmail = encryptBase64(email);
+        setCookie("agent_email", encryptedEmail);
+
+        // Set the token in the cookie and Axios headers
+        const token = loginData?.accessToken?.token || "";
         if (token) {
-          console.log('Token found, storing:', token.substring(0, 10) + '...');
-          // Store token using tokenManager's handleSetToken
+          console.log("Setting token from login response");
           handleSetToken(token);
+          
+          // Store user ID for convenience if available
+          if (loginData.id) {
+            localStorage.setItem("userId", loginData.id);
+          }
+          
+          // Store user role if available
+          if (loginData.role) {
+            localStorage.setItem("role", loginData.role);
+          }
         } else {
-          console.warn('No token found in response:', response.data);
+          console.error("No token received in login response");
+          return rejectWithValue("Authentication server did not provide a valid token. Please try again.");
         }
-        
-        return response.data;
+
+        // Set workspace ID if available - only in cookie
+        const workspaceId = get(response.data, "data.defaultWorkspaceId", "");
+        if (workspaceId) {
+          setWorkspaceId(workspaceId);
+        }
+
+        // Configure Axios with the new token
+        HttpClient.setAxiosDefaultConfig();
+      } else {
+        console.error("Login response missing data structure:", response.data);
+        return rejectWithValue("Invalid server response format");
       }
       
       return response.data;
     } catch (error: any) {
-      console.error('Login API error:', error);
+      console.error("Login error:", error);
       
-      // Improved error handling with more details
-      let errorMessage = 'Login failed. Please check your credentials and try again.';
-      
-      if (error.response?.data?.message) {
-        errorMessage = error.response.data.message;
-      } else if (error.message) {
-        errorMessage = error.message;
+      // Check if this is an offline error
+      if (error.isOfflineError || !navigator.onLine) {
+        return rejectWithValue({
+          message: "You are currently offline. Please check your internet connection and try again.",
+          isOfflineError: true
+        });
       }
       
-      return rejectWithValue(errorMessage);
+      // Check if this is an auth error
+      if (error.isAuthError) {
+        return rejectWithValue({
+          message: "Invalid email or password. Please check your credentials and try again.",
+          isAuthError: true
+        });
+      }
+      
+      // Check if this is a server error
+      if (error.isServerError) {
+        return rejectWithValue({
+          message: "The authentication server is currently unavailable. Please try again later.",
+          isServerError: true
+        });
+      }
+      
+      // Provide more specific error messages based on the error type
+      if (error.code === 'ERR_NETWORK') {
+        return rejectWithValue({
+          message: "Cannot connect to the authentication server. Please check your network connection or try again later.",
+          isOfflineError: true
+        });
+      }
+      
+      // Log detailed error information for debugging
+      console.error("Error details:", {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message
+      });
+      
+      return rejectWithValue(error.response?.data?.message || "Login failed. Please check your credentials and try again.");
     }
   }
 );
 
-export const registerUser = createAsyncThunk<AuthResponse, RegistrationCredentials>(
+export const registerUser = createAsyncThunk(
   'auth/register',
-  async (registrationData, { rejectWithValue }) => {
+  async (credentials: RegistrationCredentials, { rejectWithValue }) => {
     try {
-      // Use HttpClient instead of direct fetch
-      const response = await HttpClient.apiClient.post('/auth/register', registrationData);
+      const response = await HttpClient.apiClient.post(AUTH_ENDPOINTS.REGISTER, credentials);
       
-      // Check if response has the expected structure
-      if (response.data && response.data.accessToken) {
-        // Store token using tokenManager's handleSetToken
-        handleSetToken(response.data.accessToken.token || response.data.accessToken);
-        return response.data;
+      // If registration returns a token, set it
+      const token = get(response, 'data.data.accessToken.token', '');
+      if (token) {
+        handleSetToken(token);
       }
       
       return response.data;
     } catch (error: any) {
-      console.error('Registration API error:', error);
-      
-      // Improved error handling
-      const errorMessage = error.response?.data?.message || 
-                          error.message || 
-                          'Registration failed. Please try again.';
-      
-      return rejectWithValue(errorMessage);
+      return rejectWithValue(error.response?.data?.message || "Registration failed");
     }
   }
 );
 
-export const requestPasswordReset = createAsyncThunk<void, PasswordResetRequest>(
+export const requestPasswordReset = createAsyncThunk(
   'auth/requestPasswordReset',
-  async (passwordResetRequest, { rejectWithValue }) => {
+  async (credentials: PasswordResetRequest, { rejectWithValue }) => {
     try {
-      // Use HttpClient instead of direct fetch
-      await HttpClient.apiClient.post('/auth/reset-password-request', passwordResetRequest);
+      const response = await HttpClient.apiClient.post(AUTH_ENDPOINTS.FORGOT_PASSWORD, credentials);
+      return response.data;
     } catch (error: any) {
-      console.error('Password reset request API error:', error);
-      
-      const errorMessage = error.response?.data?.message || 
-                          error.message || 
-                          'Password reset request failed. Please try again.';
-      
-      return rejectWithValue(errorMessage);
+      return rejectWithValue(error.response?.data?.message || 'Password reset request failed');
     }
   }
 );
 
-export const confirmPasswordReset = createAsyncThunk<void, PasswordResetConfirmation>(
+export const confirmPasswordReset = createAsyncThunk(
   'auth/confirmPasswordReset',
-  async (passwordResetConfirmation, { rejectWithValue }) => {
+  async (credentials: PasswordResetConfirmation, { rejectWithValue }) => {
     try {
-      // Use HttpClient instead of direct fetch
-      await HttpClient.apiClient.post('/auth/reset-password-confirm', passwordResetConfirmation);
+      const response = await HttpClient.apiClient.post(AUTH_ENDPOINTS.RESET_PASSWORD, credentials);
+      return response.data;
     } catch (error: any) {
-      console.error('Password reset confirmation API error:', error);
-      
-      const errorMessage = error.response?.data?.message || 
-                          error.message || 
-                          'Password reset confirmation failed. Please try again.';
-      
-      return rejectWithValue(errorMessage);
+      return rejectWithValue(error.response?.data?.message || 'Password reset failed');
     }
   }
 );

@@ -57,14 +57,11 @@ export const LoginForm = memo(() => {
     );
   }
 
-  // Log the current email and password to help with debugging
-  console.log('Current form state:', { emailSet: !!email, passwordSet: !!password });
-
   return (
     <div className="space-y-6 rounded-2xl bg-white/50 backdrop-blur-sm p-6 shadow-xl border border-white/20">
       <LoginFormHeader />
 
-      <form onSubmit={handleLoginSubmit} className="space-y-5" noValidate>
+      <form onSubmit={handleLoginSubmit} className="space-y-5">
         <EmailInput 
           value={email} 
           onChange={(e) => setEmail(e.target.value)} 

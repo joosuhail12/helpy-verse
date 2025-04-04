@@ -19,7 +19,6 @@ export const documentationContent: Content[] = [
     type: 'file',
     status: 'completed',
     createdAt: subDays(today, 5).toISOString(),
-    updatedAt: subDays(today, 1).toISOString(), // Add the missing property
     lastUpdated: subDays(today, 1).toISOString(),
     author: defaultAuthor,
     messageCount: 1250,
@@ -69,7 +68,6 @@ export const documentationContent: Content[] = [
     type: 'file',
     status: 'failed',
     createdAt: subDays(today, 5).toISOString(),
-    updatedAt: subDays(today, 2).toISOString(), // Add the missing property
     lastUpdated: subDays(today, 2).toISOString(),
     author: defaultAuthor,
     messageCount: 180,
@@ -88,7 +86,6 @@ export const documentationContent: Content[] = [
     type: 'snippet',
     status: 'completed',
     createdAt: subDays(today, 5).toISOString(),
-    updatedAt: subDays(today, 1).toISOString(), // Add the missing property
     lastUpdated: subDays(today, 1).toISOString(),
     author: defaultAuthor,
     messageCount: 567,

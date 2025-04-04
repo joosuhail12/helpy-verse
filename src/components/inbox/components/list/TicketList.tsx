@@ -1,10 +1,22 @@
 
-import React from 'react';
-import { Ticket } from '@/types/ticket';
-import { Loader2 } from 'lucide-react';
-import ViewToggle from './ViewToggle';
 import { useState } from 'react';
-import { ViewMode } from '@/types/ticket';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
+import { useTicketList } from '../../hooks/useTicketList';
+import SortingControls from '../../SortingControls';
+import ViewToggle from './ViewToggle';
+import { Ticket, ViewMode } from '@/types/ticket';
+import TicketListItem from '../TicketListItem';
+import EmptyTicketState from '../../EmptyTicketState';
+import SelectionControls from '../../SelectionControls';
+import { CreateTicketDialog } from '../../components/ticket-form';
+import ConversationPanelContainer from './ConversationPanelContainer';
+import LoadingState from '../LoadingState';
+import { 
+  ResizablePanelGroup, 
+  ResizablePanel, 
+  ResizableHandle 
+} from '@/components/ui/resizable';
 
 interface TicketListProps {
   tickets: Ticket[];
@@ -12,89 +24,187 @@ interface TicketListProps {
   onTicketCreated?: (ticket: Ticket) => void;
 }
 
-const TicketList: React.FC<TicketListProps> = ({ tickets, isLoading, onTicketCreated }) => {
-  const [viewMode, setViewMode] = useState<ViewMode>('list');
+const TicketList = ({ tickets: initialTickets, isLoading = false, onTicketCreated }: TicketListProps) => {
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
+  
+  const {
+    tickets,
+    setTickets,
+    selectedTickets,
+    sortField,
+    sortDirection,
+    handleSort,
+    viewMode,
+    setViewMode,
+    handleSelectTicket,
+    handleSelectAll,
+    allSelected,
+    indeterminate,
+  } = useTicketList(initialTickets);
+
+  console.log('TicketList rendering with tickets:', tickets.length, 'isLoading:', isLoading);
+
+  const handleTicketCreated = (newTicket: Ticket) => {
+    setTickets([newTicket, ...tickets]);
+    setCreateDialogOpen(false);
+    onTicketCreated?.(newTicket);
+  };
+
+  const handleTicketClick = (ticket: Ticket) => {
+    setSelectedTicket(ticket);
+  };
+
+  const handleCloseConversation = () => {
+    setSelectedTicket(null);
+  };
 
   if (isLoading) {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+    return <LoadingState />;
   }
 
-  if (tickets.length === 0) {
+  if (tickets.length === 0 && !isLoading) {
     return (
-      <div className="flex h-full flex-col items-center justify-center p-4">
-        <div className="text-center">
-          <h3 className="text-lg font-medium">No tickets found</h3>
-          <p className="text-sm text-muted-foreground mt-2">
-            There are no tickets to display in this view.
-          </p>
-          <button
-            className="mt-4 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90"
-            onClick={() => {
-              if (onTicketCreated) {
-                // Create a simple example ticket for demonstration
-                const newTicket: Ticket = {
-                  id: Math.random().toString(36).substring(7),
-                  subject: 'New ticket',
-                  customer: 'New Customer',
-                  lastMessage: 'This is a new ticket created for demonstration.',
-                  assignee: null,
-                  tags: [],
-                  status: 'open',
-                  priority: 'medium',
-                  createdAt: new Date().toISOString(),
-                  isUnread: true,
-                  recipients: ['example@example.com']
-                };
-                onTicketCreated(newTicket);
-              }
-            }}
-          >
-            Create a ticket
-          </button>
-        </div>
-      </div>
+      <EmptyTicketState onCreateTicket={() => setCreateDialogOpen(true)} />
     );
   }
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex justify-between items-center p-3 border-b">
-        <div>
-          <span className="text-sm font-medium">{tickets.length} tickets</span>
-        </div>
-        <ViewToggle currentView={viewMode} onViewChange={setViewMode} />
-      </div>
-      
-      <div className="overflow-auto flex-1">
-        <ul className="divide-y">
-          {tickets.map((ticket) => (
-            <li key={ticket.id} className="p-4 hover:bg-gray-50 cursor-pointer">
-              <div className="flex justify-between">
-                <div>
-                  <h3 className="font-medium">{ticket.subject}</h3>
-                  <p className="text-sm text-gray-500 truncate">{ticket.lastMessage}</p>
+    <div className="flex h-full w-full overflow-hidden">
+      {selectedTicket ? (
+        <ResizablePanelGroup
+          direction="horizontal"
+          className="w-full h-full transition-all duration-300 ease-in-out"
+        >
+          <ResizablePanel 
+            defaultSize={40} 
+            minSize={25}
+            className="flex flex-col overflow-hidden"
+          >
+            <div className="flex-none bg-white z-10 border-b p-4">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <SelectionControls
+                    onSelectAll={handleSelectAll}
+                    allSelected={allSelected}
+                    indeterminate={indeterminate}
+                    selectedCount={selectedTickets.length}
+                  />
                 </div>
-                <div className="flex flex-col items-end">
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    ticket.priority === 'high' ? 'bg-red-100 text-red-800' :
-                    ticket.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-green-100 text-green-800'
-                  }`}>
-                    {ticket.priority}
-                  </span>
-                  <span className="text-xs text-gray-500 mt-1">
-                    {new Date(ticket.createdAt).toLocaleDateString()}
-                  </span>
+                <div className="flex items-center gap-2 flex-wrap justify-end">
+                  <SortingControls
+                    sortField={sortField}
+                    sortDirection={sortDirection}
+                    onSort={handleSort}
+                    compact
+                  />
+                  <ViewToggle viewMode={viewMode} onChangeViewMode={setViewMode} />
+                  <Button
+                    onClick={() => setCreateDialogOpen(true)}
+                    size="sm"
+                    className="ml-auto sm:ml-2"
+                  >
+                    <Plus className="h-4 w-4 mr-1" />
+                    Create Ticket
+                  </Button>
                 </div>
               </div>
-            </li>
-          ))}
-        </ul>
-      </div>
+            </div>
+
+            <div className="flex-1 overflow-auto p-4">
+              <div className="space-y-2">
+                {tickets.map((ticket) => (
+                  <div 
+                    key={ticket.id} 
+                    onClick={() => handleTicketClick(ticket)}
+                    className="cursor-pointer transition-all duration-200 hover:translate-y-[-2px] hover:shadow-md"
+                  >
+                    <TicketListItem
+                      ticket={ticket}
+                      isSelected={selectedTickets.includes(ticket.id)}
+                      isActive={selectedTicket?.id === ticket.id} // Mark as active if this is the selected ticket
+                      onSelect={(e: React.MouseEvent) => {
+                        e.stopPropagation();
+                        handleSelectTicket(ticket.id);
+                      }}
+                      viewMode={viewMode}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </ResizablePanel>
+
+          <ResizableHandle withHandle className="transition-opacity duration-300 hover:opacity-100 opacity-40" />
+
+          <ResizablePanel defaultSize={60} minSize={30}>
+            <ConversationPanelContainer 
+              selectedTicket={selectedTicket} 
+              onClose={handleCloseConversation} 
+            />
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      ) : (
+        <div className="flex-1 flex flex-col overflow-hidden animate-fade-in">
+          <div className="flex-none bg-white z-10 border-b p-4">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+              <div className="flex items-center gap-2">
+                <SelectionControls
+                  onSelectAll={handleSelectAll}
+                  allSelected={allSelected}
+                  indeterminate={indeterminate}
+                  selectedCount={selectedTickets.length}
+                />
+              </div>
+              <div className="flex items-center gap-2 flex-wrap justify-end">
+                <SortingControls
+                  sortField={sortField}
+                  sortDirection={sortDirection}
+                  onSort={handleSort}
+                  compact
+                />
+                <ViewToggle viewMode={viewMode} onChangeViewMode={setViewMode} />
+                <Button
+                  onClick={() => setCreateDialogOpen(true)}
+                  size="sm"
+                  className="ml-auto sm:ml-2"
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Create Ticket
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-auto p-4">
+            <div className="space-y-2">
+              {tickets.map((ticket) => (
+                <div 
+                  key={ticket.id} 
+                  onClick={() => handleTicketClick(ticket)}
+                  className="cursor-pointer transition-all duration-200 hover:translate-y-[-2px] hover:shadow-md"
+                >
+                  <TicketListItem
+                    ticket={ticket}
+                    isSelected={selectedTickets.includes(ticket.id)}
+                    onSelect={(e: React.MouseEvent) => {
+                      e.stopPropagation();
+                      handleSelectTicket(ticket.id);
+                    }}
+                    viewMode={viewMode}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <CreateTicketDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+        onTicketCreated={handleTicketCreated}
+      />
     </div>
   );
 };

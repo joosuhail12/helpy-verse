@@ -1,7 +1,5 @@
 
 import React from 'react';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 
 interface EmailInputProps {
   value: string;
@@ -14,25 +12,19 @@ export const EmailInput: React.FC<EmailInputProps> = ({
   onChange, 
   disabled = false 
 }) => {
-  // Add debug logging for email input changes
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log('Email input changed to:', e.target.value);
-    onChange(e);
-  };
-
   return (
     <div className="space-y-2">
-      <Label 
+      <label 
         htmlFor="email" 
         className="block text-gray-700 font-medium text-sm transition-colors duration-300"
       >
         Email
-      </Label>
-      <Input
+      </label>
+      <input
         id="email"
         type="email"
         value={value}
-        onChange={handleChange}
+        onChange={onChange}
         placeholder="hello@example.com"
         className="w-full px-4 py-2.5 rounded-lg bg-white/70 border border-gray-200 
                  focus:border-primary/30 focus:ring-2 focus:ring-primary/20 
@@ -40,9 +32,6 @@ export const EmailInput: React.FC<EmailInputProps> = ({
                  placeholder:text-gray-400 text-gray-800"
         required
         disabled={disabled}
-        autoComplete="email"
-        aria-required="true"
-        spellCheck="false"
       />
     </div>
   );

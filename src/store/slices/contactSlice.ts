@@ -3,8 +3,8 @@ import { createSlice } from '@reduxjs/toolkit';
 import { RootState } from '../store';
 
 // Define contact state type
-interface ContactsState {
-  contacts: any[]; // Change items to contacts to match the selectors
+interface ContactState {
+  items: any[];
   contactDetails: any | null;
   selectedContact: any | null;
   selectedContacts: string[];
@@ -14,8 +14,8 @@ interface ContactsState {
 }
 
 // Initial state
-const initialState: ContactsState = {
-  contacts: [], // Change items to contacts to match the selectors
+const initialState: ContactState = {
+  items: [],
   contactDetails: null,
   selectedContact: null,
   selectedContacts: [],
@@ -56,7 +56,7 @@ const contactSlice = createSlice({
 export const { setSelectedContacts, clearSelectedContacts, toggleSelectContact, selectContact, clearSelection } = contactSlice.actions;
 
 // Selectors
-export const selectContacts = (state: RootState) => state.contacts?.contacts ?? [];
+export const selectContacts = (state: RootState) => state.contacts?.items ?? [];
 export const selectContactsLoading = (state: RootState) => state.contacts?.loading ?? false;
 export const selectContactsError = (state: RootState) => state.contacts?.error ?? null;
 export const selectContactDetails = (state: RootState) => state.contacts?.contactDetails ?? null;

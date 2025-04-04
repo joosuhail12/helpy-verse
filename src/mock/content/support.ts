@@ -19,7 +19,6 @@ export const supportContent: Content[] = [
     type: 'website',
     status: 'processing',
     createdAt: subDays(today, 5).toISOString(),
-    updatedAt: subDays(today, 1).toISOString(), // Add the missing property
     lastUpdated: subDays(today, 1).toISOString(),
     author: defaultAuthor,
     messageCount: 2100,

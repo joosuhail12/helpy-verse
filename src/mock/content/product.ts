@@ -19,7 +19,6 @@ export const productContent: Content[] = [
     type: 'website',
     status: 'queued',
     createdAt: today.toISOString(),
-    updatedAt: today.toISOString(), // Add the missing property
     lastUpdated: today.toISOString(),
     author: defaultAuthor,
     messageCount: 0,

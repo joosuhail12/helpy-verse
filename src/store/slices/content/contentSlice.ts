@@ -1,43 +1,29 @@
-import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
-import type { Content, ContentStatus, SortField } from '@/types/content';
 
-export interface ContentState {
-  items: Content[];
-  selectedId: string | null;
-  selectedIds: string[];
-  loading: boolean;
-  error: string | null;
-  filters: {
-    status: ContentStatus | null;
-    category: string | null;
-    chatbot: string | null;
-  };
-  sort: {
-    field: SortField;
-    direction: 'asc' | 'desc';
-  };
-  search: {
-    query: string;
-    suggestions: string[];
-    history: string[];
-  };
-}
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import type { Content, ContentState, SortField, ContentStatus } from '@/types/content';
 
+// Initial state
 const initialState: ContentState = {
   items: [],
-  selectedId: null,
-  selectedIds: [],
   loading: false,
   error: null,
+  selectedContentId: null,
+  selectedContent: null,
+  statusFilter: null,
+  categoryFilter: null,
+  chatbotFilter: null,
+  sort: {
+    field: 'lastUpdated',
+    direction: 'desc'
+  },
   filters: {
     status: null,
     category: null,
-    chatbot: null,
+    chatbot: null
   },
-  sort: {
-    field: 'lastUpdated',
-    direction: 'desc',
-  },
+  selectedIds: [],
+  searchQuery: '',
+  lastFetchTime: null,
   search: {
     query: '',
     suggestions: [],
@@ -45,34 +31,103 @@ const initialState: ContentState = {
   }
 };
 
-export const updateContent = createAsyncThunk(
-  'content/updateContent',
-  async ({ id, data }: { id: string, data: Partial<Content> }) => {
-    return { id, data };
+// Async thunks
+export const fetchContents = createAsyncThunk(
+  'content/fetchContents',
+  async (_, { rejectWithValue }) => {
+    try {
+      // Mock API call
+      const response = await new Promise<Content[]>(resolve => {
+        setTimeout(() => resolve([]), 500);
+      });
+      return response;
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to fetch contents');
+    }
   }
 );
 
+export const updateContent = createAsyncThunk(
+  'content/updateContent',
+  async ({ id, data }: { id: string, data: Partial<Content> }, { rejectWithValue }) => {
+    try {
+      // Mock API call
+      const response = await new Promise<Content>(resolve => {
+        setTimeout(() => resolve({ id, ...data } as Content), 500);
+      });
+      return { id, updates: response };
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to update content');
+    }
+  }
+);
+
+export const updateContentStatus = createAsyncThunk(
+  'content/updateContentStatus',
+  async ({ ids, status }: { ids: string[], status: ContentStatus }, { dispatch }) => {
+    // Implementation for bulk status update
+    for (const id of ids) {
+      await dispatch(updateContent({ id, data: { status } }));
+    }
+    return { ids, status };
+  }
+);
+
+export const deleteContents = createAsyncThunk(
+  'content/deleteContents',
+  async (ids: string[], { rejectWithValue }) => {
+    try {
+      // Mock API call
+      await new Promise<void>(resolve => setTimeout(resolve, 500));
+      return ids;
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to delete contents');
+    }
+  }
+);
+
+export const reassignChatbot = createAsyncThunk(
+  'content/reassignChatbot',
+  async ({ contentIds, chatbotId, chatbotName }: { contentIds: string[], chatbotId: string, chatbotName: string }, { dispatch }) => {
+    // Implementation for reassigning chatbot
+    for (const id of contentIds) {
+      await dispatch(updateContent({ 
+        id, 
+        data: { 
+          chatbots: [{ id: chatbotId, name: chatbotName }] 
+        } 
+      }));
+    }
+    return { contentIds, chatbotId, chatbotName };
+  }
+);
+
+// Slice
 const contentSlice = createSlice({
   name: 'content',
   initialState,
   reducers: {
     selectContent: (state, action: PayloadAction<string>) => {
-      state.selectedId = action.payload;
+      state.selectedContentId = action.payload;
+      state.selectedContent = state.items.find(item => item.id === action.payload) || null;
     },
-    toggleContentSelection: (state, action: PayloadAction<string>) => {
-      const id = action.payload;
-      const index = state.selectedIds.indexOf(id);
-      if (index !== -1) {
-        state.selectedIds.splice(index, 1);
-      } else {
-        state.selectedIds.push(id);
+    deselectContent: (state) => {
+      if (state.selectedContentId) {
+        state.selectedContentId = null;
+        state.selectedContent = null;
       }
     },
-    setSelectedContents: (state, action: PayloadAction<string[]>) => {
-      state.selectedIds = action.payload;
+    setStatusFilter: (state, action: PayloadAction<string | null>) => {
+      state.statusFilter = action.payload;
     },
-    clearSelection: (state) => {
-      state.selectedIds = [];
+    setCategoryFilter: (state, action: PayloadAction<string | null>) => {
+      state.categoryFilter = action.payload;
+    },
+    setChatbotFilter: (state, action: PayloadAction<string | null>) => {
+      state.chatbotFilter = action.payload;
+    },
+    setSearchQuery: (state, action: PayloadAction<string>) => {
+      state.searchQuery = action.payload;
     },
     setSortField: (state, action: PayloadAction<SortField>) => {
       state.sort.field = action.payload;
@@ -80,111 +135,103 @@ const contentSlice = createSlice({
     setSortDirection: (state, action: PayloadAction<'asc' | 'desc'>) => {
       state.sort.direction = action.payload;
     },
-    setFilter: (state, action: PayloadAction<{ key: 'status' | 'category' | 'chatbot', value: string | null }>) => {
-      const { key, value } = action.payload;
-      state.filters[key] = value as any;
-    },
-    setStatusFilter: (state, action: PayloadAction<ContentStatus | null>) => {
-      state.filters.status = action.payload;
-    },
-    setCategoryFilter: (state, action: PayloadAction<string | null>) => {
-      state.filters.category = action.payload;
-    },
-    setChatbotFilter: (state, action: PayloadAction<string | null>) => {
-      state.filters.chatbot = action.payload;
-    },
     clearFilters: (state) => {
-      state.filters = {
-        status: null,
-        category: null,
-        chatbot: null,
-      };
+      state.statusFilter = null;
+      state.categoryFilter = null;
+      state.chatbotFilter = null;
+      state.searchQuery = '';
     },
-    updateContentStatus: (state, action: PayloadAction<{ ids: string[], status: ContentStatus }>) => {
-      const { ids, status } = action.payload;
-      state.items = state.items.map(item => 
-        ids.includes(item.id) ? { ...item, status } : item
-      );
-    },
-    reassignChatbot: (state, action: PayloadAction<{ contentIds: string[], chatbotId: string, chatbotName: string }>) => {
-      const { contentIds, chatbotId, chatbotName } = action.payload;
-      state.items = state.items.map(item => {
-        if (contentIds.includes(item.id)) {
-          const newChatbots = [...(item.chatbots || [])];
-          if (!newChatbots.some(bot => bot.id === chatbotId)) {
-            newChatbots.push({ id: chatbotId, name: chatbotName });
-          }
-          return { ...item, chatbots: newChatbots };
-        }
-        return item;
-      });
-    },
-    deleteContents: (state, action: PayloadAction<string[]>) => {
-      const ids = action.payload;
-      state.items = state.items.filter(item => !ids.includes(item.id));
-    },
-    setSearchQuery: (state, action: PayloadAction<string>) => {
-      state.search.query = action.payload;
-      if (action.payload && !state.search.history.includes(action.payload)) {
-        state.search.history = [action.payload, ...state.search.history].slice(0, 10);
-      }
-    },
-    updateSearchSuggestions: (state) => {
-      const query = state.search.query.toLowerCase();
-      if (!query) {
-        state.search.suggestions = [];
-        return;
-      }
+    toggleContentSelection: (state, action: PayloadAction<string>) => {
+      const contentId = action.payload;
+      const index = state.selectedIds.indexOf(contentId);
       
-      state.search.suggestions = state.items
-        .filter(item => item.title.toLowerCase().includes(query))
-        .map(item => item.title)
-        .slice(0, 5);
+      if (index === -1) {
+        state.selectedIds.push(contentId);
+      } else {
+        state.selectedIds.splice(index, 1);
+      }
+    },
+    selectAllContents: (state) => {
+      state.selectedIds = state.items.map(item => item.id);
+    },
+    clearSelection: (state) => {
+      state.selectedIds = [];
+    },
+    updateSearchSuggestions: (state, action: PayloadAction<string[]>) => {
+      if (state.search) {
+        state.search.suggestions = action.payload;
+      }
     },
     clearSearch: (state) => {
-      state.search.query = '';
-      state.search.suggestions = [];
+      if (state.search) {
+        state.search.query = '';
+        state.search.suggestions = [];
+      }
+      state.searchQuery = '';
     },
     clearSearchHistory: (state) => {
-      state.search.history = [];
+      if (state.search) {
+        state.search.history = [];
+      }
     }
   },
   extraReducers: (builder) => {
     builder
-      .addCase(updateContent.pending, (state) => {
+      .addCase(fetchContents.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(updateContent.fulfilled, (state, action) => {
+      .addCase(fetchContents.fulfilled, (state, action) => {
         state.loading = false;
-        const { id, data } = action.payload;
-        state.items = state.items.map(item =>
-          item.id === id ? { ...item, ...data } : item
-        );
+        state.items = action.payload;
+        state.lastFetchTime = Date.now();
       })
-      .addCase(updateContent.rejected, (state, action) => {
+      .addCase(fetchContents.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Failed to update content';
+        state.error = action.payload as string;
+      })
+      .addCase(updateContent.fulfilled, (state, action) => {
+        const { id, updates } = action.payload;
+        const contentIndex = state.items.findIndex(item => item.id === id);
+        
+        if (contentIndex !== -1) {
+          state.items[contentIndex] = { ...state.items[contentIndex], ...updates };
+          
+          // Update selected content if it's the one being updated
+          if (state.selectedContentId === id && state.selectedContent) {
+            state.selectedContent = { ...state.selectedContent, ...updates };
+          }
+        }
+      })
+      .addCase(deleteContents.fulfilled, (state, action) => {
+        const deletedIds = action.payload;
+        state.items = state.items.filter(item => !deletedIds.includes(item.id));
+        
+        // Clear selection if selected content was deleted
+        if (state.selectedContentId && deletedIds.includes(state.selectedContentId)) {
+          state.selectedContentId = null;
+          state.selectedContent = null;
+        }
+        
+        // Update selected content IDs
+        state.selectedIds = state.selectedIds.filter(id => !deletedIds.includes(id));
       });
-  },
+  }
 });
 
-export const {
-  selectContent,
-  toggleContentSelection,
-  setSelectedContents,
-  clearSelection,
-  setSortField,
-  setSortDirection,
-  setFilter,
+export const { 
+  selectContent, 
+  deselectContent,
   setStatusFilter,
   setCategoryFilter,
   setChatbotFilter,
-  clearFilters,
-  updateContentStatus,
-  reassignChatbot,
-  deleteContents,
   setSearchQuery,
+  setSortField,
+  setSortDirection,
+  clearFilters,
+  toggleContentSelection,
+  selectAllContents,
+  clearSelection,
   updateSearchSuggestions,
   clearSearch,
   clearSearchHistory

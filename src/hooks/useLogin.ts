@@ -1,9 +1,8 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from './useAppDispatch';
 import { useAppSelector } from './useAppSelector';
-import { loginUser } from '../store/slices/auth/authSlice';
+import { loginUser } from '../store/slices/authSlice';
 import { toast } from '../components/ui/use-toast';
 import { handleSetToken, isAuthenticated } from '@/utils/auth/tokenManager';
 import { HttpClient } from '@/api/services/http';
@@ -38,17 +37,21 @@ export const useLogin = (redirectPath: string = '/home/inbox/all') => {
   // Check for auth errors and show toast
   useEffect(() => {
     if (auth.error && !loading && !isSubmitting) {
-      // Better type handling for auth.error
+      // Fix TypeScript error by ensuring auth.error is not null and has the right format
       let errorMessage = 'Login failed. Please try again.';
       
-      if (typeof auth.error === 'string') {
-        errorMessage = auth.error;
-      } else if (auth.error && typeof auth.error === 'object') {
-        // Type assertion with unknown as an intermediate step
-        const errorObject = auth.error as unknown;
-        if (errorObject && typeof errorObject === 'object' && 'message' in errorObject) {
-          const typedError = errorObject as { message: string };
-          errorMessage = typedError.message || errorMessage;
+      // Make sure to use conditionals that fully satisfy TypeScript's type guard
+      if (auth.error !== null) {
+        if (typeof auth.error === 'object' && auth.error !== null) {
+          const errorObj = auth.error as { message?: string };
+          if (errorObj.message && typeof errorObj.message === 'string') {
+            errorMessage = errorObj.message;
+          }
+        } else if (typeof auth.error === 'string') {
+          errorMessage = auth.error;
+        } else {
+          // Convert any other type to string safely
+          errorMessage = String(auth.error);
         }
       }
         
@@ -62,18 +65,7 @@ export const useLogin = (redirectPath: string = '/home/inbox/all') => {
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (isSubmitting) return;
-    
-    // Validate required fields
-    if (!email || !password) {
-      toast({
-        title: 'Required Fields',
-        description: 'Please enter both email and password',
-        variant: 'destructive',
-      });
-      return;
-    }
+    if (isSubmitting || !email || !password) return;
     
     // Check if offline first
     if (isOffline || HttpClient.isOffline()) {
@@ -89,62 +81,32 @@ export const useLogin = (redirectPath: string = '/home/inbox/all') => {
       setIsSubmitting(true);
       console.log('Login attempt for:', email);
       
-      // Updated to ensure credentials are correctly structured
-      const credentials = {
-        email: email.trim(),
-        password
-      };
+      // Real login process
+      const result = await dispatch(loginUser({ email, password })).unwrap();
       
-      // Log what we're sending to help debug
-      console.log('Sending login credentials:', { email: credentials.email });
-      
-      const result = await dispatch(loginUser(credentials)).unwrap();
-      
-      console.log('Login result:', result);
-      
-      // Extract and store token regardless of response structure
-      let token = null;
-      
-      // Handle different result structures
-      if (result.data && result.data.accessToken) {
-        // Handle nested data.accessToken structure
-        if (typeof result.data.accessToken === 'string') {
-          token = result.data.accessToken;
-        } else if (result.data.accessToken.token) {
-          token = result.data.accessToken.token;
-        }
-      } else if (result.accessToken) {
-        // Handle direct accessToken structure
-        if (typeof result.accessToken === 'string') {
-          token = result.accessToken;
-        } else if (result.accessToken.token) {
-          token = result.accessToken.token;
-        }
-      }
-      
-      if (token) {
-        // Ensure token is set
-        handleSetToken(token);
+      // Handle successful login
+      if (result && result.data && result.data.accessToken) {
+        console.log('Login successful');
         
         toast({
           title: 'Success',
           description: 'Logged in successfully',
         });
         
-        // Navigate after successful login
+        // Double-check auth status before redirecting
         setTimeout(() => {
           if (isAuthenticated()) {
             console.log('Redirecting to:', redirectPath);
             navigate(redirectPath, { replace: true });
+          } else {
+            console.error('Login appeared successful but token was not set correctly');
+            toast({
+              title: 'Login Error',
+              description: 'Authentication succeeded but session setup failed. Please try again.',
+              variant: 'destructive',
+            });
           }
         }, 300);
-      } else {
-        console.error('No token found in the response');
-        toast({
-          title: 'Login Error',
-          description: 'Authentication succeeded but no token was found. Please try again.',
-          variant: 'destructive',
-        });
       }
     } catch (error: any) {
       console.error('Login error:', error);

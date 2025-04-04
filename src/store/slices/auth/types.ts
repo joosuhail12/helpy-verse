@@ -1,48 +1,36 @@
 
+import { ActionType } from "@/utils/ability";
+
+export interface Permission {
+  action: ActionType | ActionType[];
+  subject: string;
+  conditions?: {
+    clineId: string;
+  };
+}
+
+export type Permissions = Permission[];
+
 export interface AuthState {
   isAuthenticated: boolean;
-  user: any | null;
+  user: {
+    status: "success" | "error";
+    message: string;
+    data: {
+      id: string;
+      accessToken: {
+        token: string;
+        expiry: number;
+        issuedAt: string;
+        userAgent: string;
+        ip: string;
+      };
+      defaultWorkspaceId: string;
+    };
+  } | null;
   loading: boolean;
   error: string | null;
-  permissions: string[];
-}
-
-export interface LoginCredentials {
-  email: string;
-  password: string;
-}
-
-export interface RegistrationData {
-  email: string;
-  password: string;
-  firstName: string;
-  lastName: string;
-}
-
-export interface ResetPasswordData {
-  email: string;
-}
-
-export interface ConfirmPasswordResetData {
-  token: string;
-  password: string;
-}
-
-// Update AuthResponse interface to match the actual API response structure
-export interface AuthResponse {
-  data?: {
-    accessToken?: string | {
-      token: string;
-    };
-    user?: any;
-  };
-  accessToken?: string | {
-    token: string;
-  };
-  user?: any;
-  message?: string;
-  token?: string; // Some APIs might return a direct token
-  success?: boolean; // Some APIs include a success flag
+  permissions: Permissions;
 }
 
 export interface Credentials {
@@ -51,9 +39,9 @@ export interface Credentials {
 }
 
 export interface RegistrationCredentials {
+  fullName: string;
   email: string;
   password: string;
-  fullName: string;
   companyName: string;
 }
 
@@ -66,11 +54,4 @@ export interface PasswordResetConfirmation {
   password: string;
   rid?: string;
   tenantId?: string;
-}
-
-export type Permissions = string[];
-
-export interface Permission {
-  action: string;
-  subject: string;
 }
