@@ -44,7 +44,9 @@ export const useLogin = (redirectPath: string = '/home/inbox/all') => {
       if (typeof auth.error === 'string') {
         errorMessage = auth.error;
       } else if (auth.error && typeof auth.error === 'object' && 'message' in auth.error) {
-        errorMessage = auth.error.message as string || 'Login failed. Please try again.';
+        // Use a type assertion with unknown as an intermediate step
+        const errorObject = auth.error as unknown as { message?: string };
+        errorMessage = errorObject.message || 'Login failed. Please try again.';
       }
         
       toast({
