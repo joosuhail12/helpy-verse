@@ -89,8 +89,12 @@ export const useLogin = (redirectPath: string = '/home/inbox/all') => {
       setIsSubmitting(true);
       console.log('Login attempt for:', email);
       
-      // Real login process
-      const result = await dispatch(loginUser({ email, password })).unwrap();
+      // Real login process - pass the credentials properly
+      const result = await dispatch(loginUser({ 
+        email: email.trim(), 
+        password 
+      })).unwrap();
+      
       console.log('Login result:', result);
       
       // Extract and store token regardless of response structure

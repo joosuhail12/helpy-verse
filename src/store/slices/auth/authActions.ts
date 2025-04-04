@@ -16,10 +16,7 @@ export const loginUser = createAsyncThunk<AuthResponse, Credentials>(
       console.log('Attempting login with:', credentials.email);
       
       // Use HttpClient instead of direct fetch
-      const response = await HttpClient.apiClient.post('/auth/login', {
-        email: credentials.email,
-        password: credentials.password
-      });
+      const response = await HttpClient.apiClient.post('/auth/login', credentials);
       
       console.log('Login response:', response.data);
       

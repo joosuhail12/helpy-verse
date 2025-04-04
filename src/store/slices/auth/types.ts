@@ -31,7 +31,7 @@ export interface ConfirmPasswordResetData {
 // Update AuthResponse interface to match the actual API response structure
 export interface AuthResponse {
   data?: {
-    accessToken: string | {
+    accessToken?: string | {
       token: string;
     };
     user?: any;
@@ -41,6 +41,8 @@ export interface AuthResponse {
   };
   user?: any;
   message?: string;
+  token?: string; // Some APIs might return a direct token
+  success?: boolean; // Some APIs include a success flag
 }
 
 export interface Credentials {

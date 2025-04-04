@@ -43,6 +43,7 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
           required
           disabled={disabled}
           autoComplete="current-password"
+          aria-required="true"
         />
         <Button
           type="button"
@@ -51,6 +52,7 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
           className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 p-0"
           onClick={togglePasswordVisibility}
           tabIndex={-1}
+          aria-label={showPassword ? "Hide password" : "Show password"}
         >
           {showPassword ? (
             <EyeOff className="h-4 w-4 text-gray-500" />

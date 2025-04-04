@@ -1,7 +1,7 @@
 
 import { HttpClient } from '@/api/services/http';
 
-// Get correct API URL from environment variables
+// Get correct API URL from environment variables - default to the dev API URL
 const API_BASE_URL = import.meta.env.VITE_REACT_APP_API_URL || 'https://dev-socket.pullseai.com/api';
 
 // Re-export the main API client for direct usage
@@ -41,8 +41,19 @@ const setupApi = () => {
         return config;
       });
     } else {
-      console.warn('API service initialized without workspace ID - some requests may not work correctly');
+      console.warn('API service initialized without workspace ID - some requests may still work');
     }
+    
+    // Add specific error handling for auth endpoints
+    HttpClient.apiClient.interceptors.response.use(
+      response => response,
+      error => {
+        if (error.config?.url?.includes('/auth/') && error.response?.status === 404) {
+          console.error('Auth endpoint not found:', error.config.url);
+        }
+        return Promise.reject(error);
+      }
+    );
   } catch (error) {
     console.error('Error setting up API client:', error);
   }

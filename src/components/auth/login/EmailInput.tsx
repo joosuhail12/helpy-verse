@@ -35,6 +35,8 @@ export const EmailInput: React.FC<EmailInputProps> = ({
         required
         disabled={disabled}
         autoComplete="email"
+        aria-required="true"
+        spellCheck="false"
       />
     </div>
   );

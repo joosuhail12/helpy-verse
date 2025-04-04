@@ -61,7 +61,7 @@ export const LoginForm = memo(() => {
     <div className="space-y-6 rounded-2xl bg-white/50 backdrop-blur-sm p-6 shadow-xl border border-white/20">
       <LoginFormHeader />
 
-      <form onSubmit={handleLoginSubmit} className="space-y-5">
+      <form onSubmit={handleLoginSubmit} className="space-y-5" noValidate>
         <EmailInput 
           value={email} 
           onChange={(e) => setEmail(e.target.value)} 
