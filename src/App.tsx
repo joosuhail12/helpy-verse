@@ -1,6 +1,5 @@
 
 import * as React from "react";
-import { Suspense, useEffect } from "react";
 import AppProviders from "./components/app/AppProviders";
 import { RouterProvider } from "react-router-dom";
 import { router } from "./routes";
@@ -24,12 +23,12 @@ const App: React.FC = () => {
   
   return (
     <ErrorBoundary>
-      <Suspense fallback={<LoadingFallback />}>
+      <React.Suspense fallback={<LoadingFallback />}>
         <AppProviders>
           <RouterProvider router={router} />
           <Toaster />
         </AppProviders>
-      </Suspense>
+      </React.Suspense>
     </ErrorBoundary>
   );
 };

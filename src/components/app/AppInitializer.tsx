@@ -1,5 +1,5 @@
 
-import { useEffect } from 'react';
+import * as React from 'react';
 import { HttpClient } from "@/api/services/http";
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { fetchUserData } from '@/store/slices/auth/userActions';
@@ -34,7 +34,7 @@ interface AppInitializerProps {
 const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
   const dispatch = useAppDispatch();
   
-  useEffect(() => {
+  React.useEffect(() => {
     // Initialize app with authentication if token exists
     try {
       initializeApp();

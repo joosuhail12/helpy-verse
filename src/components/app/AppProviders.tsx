@@ -1,6 +1,5 @@
 
 import * as React from 'react';
-import { useEffect, memo } from 'react';
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -20,9 +19,9 @@ interface AppProvidersProps {
  * Top-level providers component that wraps the entire application
  * with necessary providers and error boundaries.
  */
-const AppProviders: React.FC<AppProvidersProps> = memo(({ children }) => {
+const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
   // Initialize app only once on component mount
-  useEffect(() => {
+  React.useEffect(() => {
     try {
       console.log("Initializing app from AppProviders component");
       initializeApp();
@@ -63,8 +62,6 @@ const AppProviders: React.FC<AppProvidersProps> = memo(({ children }) => {
       </AppQueryProvider>
     </AppErrorBoundary>
   );
-});
-
-AppProviders.displayName = 'AppProviders';
+};
 
 export default AppProviders;
