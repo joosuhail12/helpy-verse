@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAppDispatch } from "../../hooks/useAppDispatch";
 import { useAppSelector } from "../../hooks/useAppSelector";
-import { requestPasswordReset } from "../../store/slices/authSlice";
+import { requestPasswordReset } from "../../store/slices/auth/authActions";
 import { toast } from "../../components/ui/use-toast";
 
 export const ForgotPasswordForm = () => {
@@ -15,15 +15,23 @@ export const ForgotPasswordForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await dispatch(requestPasswordReset({ email })).unwrap();
-      toast({
-        title: "Success",
-        description: "Password reset instructions have been sent to your email",
-      });
-    } catch (error) {
+      const result = await dispatch(requestPasswordReset({ email }));
+      if (!result.error) {
+        toast({
+          title: "Success",
+          description: "Password reset instructions have been sent to your email",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: result.error.message || "Failed to send reset instructions. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to send reset instructions. Please try again.",
+        description: error.message || "Failed to send reset instructions. Please try again.",
         variant: "destructive",
       });
     }

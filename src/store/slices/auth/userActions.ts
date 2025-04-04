@@ -3,7 +3,7 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import { HttpClient } from "@/api/services/http";
 import { AUTH_ENDPOINTS } from "@/api/services/http/config";
 import { setUserData, setAuthLoading, setAuthError } from './authSlice';
-import { AppDispatch } from '@/store/store';
+import type { AppDispatch } from '@/store/store';
 
 // Direct action creators
 export const fetchUserData = () => async (dispatch: AppDispatch) => {
@@ -102,7 +102,7 @@ export const fetchWorkspaceData = () => async (dispatch: AppDispatch) => {
 export const fetchUserDataThunk = createAsyncThunk(
   "user/fetchData",
   async (_, { rejectWithValue, dispatch }) => {
-    const result = await fetchUserData()(dispatch);
+    const result = await fetchUserData()(dispatch as AppDispatch);
     if (result.error) return rejectWithValue(result.error);
     return result.data;
   }
@@ -111,7 +111,7 @@ export const fetchUserDataThunk = createAsyncThunk(
 export const fetchUserProfileThunk = createAsyncThunk(
   "auth/fetchUserProfile",
   async (_, { rejectWithValue, dispatch }) => {
-    const result = await fetchUserProfile()(dispatch);
+    const result = await fetchUserProfile()(dispatch as AppDispatch);
     if (result.error) return rejectWithValue(result.error);
     return result.data;
   }
@@ -120,7 +120,7 @@ export const fetchUserProfileThunk = createAsyncThunk(
 export const fetchWorkspaceDataThunk = createAsyncThunk(
   "auth/fetchWorkspaceData",
   async (_, { rejectWithValue, dispatch }) => {
-    const result = await fetchWorkspaceData()(dispatch);
+    const result = await fetchWorkspaceData()(dispatch as AppDispatch);
     if (result.error) return rejectWithValue(result.error);
     return result.data;
   }

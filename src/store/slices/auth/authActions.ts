@@ -16,7 +16,7 @@ import {
   setAuthSuccess, 
   setUserData 
 } from './authSlice';
-import { AppDispatch } from '@/store/store';
+import type { AppDispatch, RootState } from '@/store/store';
 
 // Create action creator functions that dispatch the slice actions
 export const loginUser = (credentials: Credentials) => async (dispatch: AppDispatch) => {
@@ -188,7 +188,7 @@ export const confirmPasswordReset = (credentials: PasswordResetConfirmation) => 
 export const loginUserThunk = createAsyncThunk(
   "auth/login",
   async (credentials: Credentials, { rejectWithValue, dispatch }) => {
-    const result = await loginUser(credentials)(dispatch);
+    const result = await loginUser(credentials)(dispatch as AppDispatch);
     if (result.error) return rejectWithValue(result.error);
     return result.data;
   }
@@ -197,7 +197,7 @@ export const loginUserThunk = createAsyncThunk(
 export const registerUserThunk = createAsyncThunk(
   'auth/register',
   async (credentials: RegistrationCredentials, { rejectWithValue, dispatch }) => {
-    const result = await registerUser(credentials)(dispatch);
+    const result = await registerUser(credentials)(dispatch as AppDispatch);
     if (result.error) return rejectWithValue(result.error);
     return result.data;
   }
@@ -206,7 +206,7 @@ export const registerUserThunk = createAsyncThunk(
 export const requestPasswordResetThunk = createAsyncThunk(
   'auth/requestPasswordReset',
   async (credentials: PasswordResetRequest, { rejectWithValue, dispatch }) => {
-    const result = await requestPasswordReset(credentials)(dispatch);
+    const result = await requestPasswordReset(credentials)(dispatch as AppDispatch);
     if (result.error) return rejectWithValue(result.error);
     return result.data;
   }
@@ -215,7 +215,7 @@ export const requestPasswordResetThunk = createAsyncThunk(
 export const confirmPasswordResetThunk = createAsyncThunk(
   'auth/confirmPasswordReset',
   async (credentials: PasswordResetConfirmation, { rejectWithValue, dispatch }) => {
-    const result = await confirmPasswordReset(credentials)(dispatch);
+    const result = await confirmPasswordReset(credentials)(dispatch as AppDispatch);
     if (result.error) return rejectWithValue(result.error);
     return result.data;
   }

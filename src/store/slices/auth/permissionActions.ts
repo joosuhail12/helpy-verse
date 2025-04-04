@@ -2,7 +2,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { HttpClient } from "@/api/services/http";
 import { setPermissions, setAuthLoading, setAuthError } from './authSlice';
-import { AppDispatch } from '@/store/store';
+import type { AppDispatch } from '@/store/store';
 
 // Permission related actions
 export const getUserPermission = () => async (dispatch: AppDispatch) => {
@@ -24,7 +24,7 @@ export const getUserPermission = () => async (dispatch: AppDispatch) => {
 export const getUserPermissionThunk = createAsyncThunk(
   "auth/getUserPermission",
   async (_, { rejectWithValue, dispatch }) => {
-    const result = await getUserPermission()(dispatch);
+    const result = await getUserPermission()(dispatch as AppDispatch);
     if (result.error) return rejectWithValue(result.error);
     return result.data;
   }

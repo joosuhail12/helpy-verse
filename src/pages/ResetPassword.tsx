@@ -9,7 +9,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { ArrowLeft, Loader2, Check } from 'lucide-react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
-import { confirmPasswordReset } from '@/store/slices/authSlice';
+import { confirmPasswordReset } from '@/store/slices/auth/authActions';
 
 const ResetPassword = () => {
   const [searchParams] = useSearchParams();
@@ -63,25 +63,29 @@ const ResetPassword = () => {
     
     setLoading(true);
     try {
-      await dispatch(confirmPasswordReset({
+      const result = await dispatch(confirmPasswordReset({
         token: token as string,
         password,
         rid: rid || '',
         tenantId: tenantId || ''
-      })).unwrap();
+      }));
       
-      setSuccess(true);
-      toast({
-        title: "Password reset successful",
-        description: "Your password has been updated. You can now sign in with your new password.",
-      });
-      
-      // Redirect to login after a brief delay
-      setTimeout(() => {
-        navigate('/sign-in');
-      }, 3000);
-    } catch (error) {
-      // Error is handled by the useEffect that watches authState.error
+      if (!result.error) {
+        setSuccess(true);
+        toast({
+          title: "Password reset successful",
+          description: "Your password has been updated. You can now sign in with your new password.",
+        });
+        
+        // Redirect to login after a brief delay
+        setTimeout(() => {
+          navigate('/sign-in');
+        }, 3000);
+      } else {
+        setError(result.error.message || "Failed to reset password. The link may be expired or invalid.");
+      }
+    } catch (error: any) {
+      setError(error.message || "An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);
     }

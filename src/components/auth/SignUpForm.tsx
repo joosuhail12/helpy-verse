@@ -4,7 +4,7 @@ import { useState, memo } from "react";
 import { Link } from "react-router-dom";
 import { useAppDispatch } from "../../hooks/useAppDispatch";
 import { useAppSelector } from "../../hooks/useAppSelector";
-import { registerUser } from "../../store/slices/authSlice";
+import { registerUser } from "../../store/slices/auth/authActions";
 import { toast } from "../../components/ui/use-toast";
 
 export const SignUpForm = memo(() => {
@@ -18,15 +18,23 @@ export const SignUpForm = memo(() => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await dispatch(registerUser({ fullName, email, password, companyName })).unwrap();
-      toast({
-        title: "Success",
-        description: "Account created successfully",
-      });
-    } catch (error) {
+      const result = await dispatch(registerUser({ fullName, email, password, companyName }));
+      if (!result.error) {
+        toast({
+          title: "Success",
+          description: "Account created successfully",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: result.error.message || "Registration failed. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Registration failed. Please try again.",
+        description: error.message || "Registration failed. Please try again.",
         variant: "destructive",
       });
     }
