@@ -1,9 +1,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { Conversation, ChatMessage } from '@/components/chat-widget/components/conversation/types';
-import { useAbly } from '@/context/AblyContext';
-import { MOCK_CONVERSATIONS } from '@/mock/chatMessages';
+import type { Conversation, ChatMessage } from '@/types/conversation';
 
 interface UseChatReturn {
   conversations: Conversation[];
@@ -21,7 +19,7 @@ export const useChat = (): UseChatReturn => {
   const [currentConversation, setCurrentConversation] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loadingMessages, setLoadingMessages] = useState(false);
-  const { workspaceId } = useAbly();
+  const workspaceId = 'default-workspace';
   const [mockConversationsInitialized, setMockConversationsInitialized] = useState(false);
 
   // Initialize with mock conversations
@@ -175,35 +173,32 @@ export const useChat = (): UseChatReturn => {
   const getMessages = useCallback(async (conversationId: string): Promise<ChatMessage[]> => {
     setLoadingMessages(true);
     
-    // Check if it's one of our mock conversations
-    const conversation = conversations.find(c => c.id === conversationId);
-    if (conversation?.type && MOCK_CONVERSATIONS[conversation.type as keyof typeof MOCK_CONVERSATIONS]) {
-      const mockMessageGenerator = MOCK_CONVERSATIONS[conversation.type as keyof typeof MOCK_CONVERSATIONS];
-      const mockMessages = mockMessageGenerator(conversationId);
-      setLoadingMessages(false);
-      return mockMessages;
-    }
-    
-    // Filter messages for this conversation
-    const conversationMessages = messages.filter(m => m.conversationId === conversationId);
-    
-    // If there are no messages yet, add a welcome message
-    let resultMessages = [...conversationMessages];
-    if (resultMessages.length === 0) {
-      const welcomeMessage: ChatMessage = {
-        id: uuidv4(),
-        sender: 'agent',
-        content: 'Hello! How can I help you today?',
-        timestamp: new Date(),
-        conversationId
-      };
+    try {
+      // Handle different conversation types
+      const conversation = conversations.find(c => c.id === conversationId);
       
-      resultMessages = [welcomeMessage];
-      setMessages(prev => [...prev, welcomeMessage]);
+      // Filter messages for this conversation
+      const conversationMessages = messages.filter(m => m.conversationId === conversationId);
+      
+      // If there are no messages yet, add a welcome message
+      let resultMessages = [...conversationMessages];
+      if (resultMessages.length === 0) {
+        const welcomeMessage: ChatMessage = {
+          id: uuidv4(),
+          sender: 'agent',
+          content: 'Hello! How can I help you today?',
+          timestamp: new Date(),
+          conversationId
+        };
+        
+        resultMessages = [welcomeMessage];
+        setMessages(prev => [...prev, welcomeMessage]);
+      }
+      
+      return resultMessages;
+    } finally {
+      setLoadingMessages(false);
     }
-    
-    setLoadingMessages(false);
-    return resultMessages;
   }, [messages, conversations]);
 
   return {

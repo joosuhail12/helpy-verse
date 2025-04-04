@@ -1,62 +1,60 @@
 
-import { useState } from 'react';
-import { useToast } from "@/hooks/use-toast";
-import { getAblyChannel } from '@/utils/ably';
-import type { Message } from '../types';
+import { useState, useCallback } from 'react';
 import type { Ticket } from '@/types/ticket';
+import { getAblyChannel } from '@/utils/ably';
+
+export interface Message {
+  id: string;
+  content: string;
+  timestamp: string;
+  isCustomer: boolean;
+  isInternalNote?: boolean;
+  readBy?: string[];
+  reactions?: Record<string, string[]>;
+}
 
 export const useMessages = (ticket: Ticket) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [isInternalNote, setIsInternalNote] = useState(false);
-  const { toast } = useToast();
 
-  const initializeMessages = () => {
-    setMessages([{
-      id: ticket.id,
-      content: ticket.lastMessage,
-      sender: ticket.customer,
-      timestamp: ticket.createdAt,
-      isCustomer: true,
-      readBy: []
-    }]);
-  };
-
-  const handleSendMessage = async () => {
+  const handleSendMessage = useCallback(async () => {
     if (!newMessage.trim()) return;
-
+    
     setIsSending(true);
+    
     try {
-      const channel = await getAblyChannel(`ticket:${ticket.id}`);
-      const newMsg: Message = {
-        id: crypto.randomUUID(),
+      // Create a new message object
+      const message: Message = {
+        id: Date.now().toString(),
         content: newMessage,
-        sender: 'Agent',
         timestamp: new Date().toISOString(),
         isCustomer: false,
-        type: isInternalNote ? 'internal_note' : 'message',
-        readBy: ['Agent']
+        isInternalNote
       };
-
-      await channel.publish('new-message', newMsg);
-      setMessages(prev => [...prev, newMsg]);
-      setNewMessage('');
-      setIsInternalNote(false);
       
-      toast({
-        description: isInternalNote ? "Internal note added" : "Message sent successfully",
-      });
+      // Add to local state
+      setMessages(prev => [...prev, message]);
+      
+      // In a real app, we would send to an API
+      const channel = await getAblyChannel(`ticket:${ticket.id}`);
+      await channel.publish('message:new', message);
+      
+      // Clear input
+      setNewMessage('');
     } catch (error) {
       console.error('Error sending message:', error);
-      toast({
-        variant: "destructive",
-        description: "Failed to send message. Please try again.",
-      });
     } finally {
       setIsSending(false);
     }
-  };
+  }, [newMessage, isInternalNote, ticket.id]);
+
+  const initializeMessages = useCallback(async () => {
+    // In a real app, we would fetch messages from an API
+    // For now, return empty array
+    return [];
+  }, []);
 
   return {
     messages,

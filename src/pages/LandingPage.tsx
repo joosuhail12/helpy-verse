@@ -1,9 +1,7 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { ChatWidget } from '@/components/chat-widget/ChatWidget';
-import { ThemeConfig } from '@/context/ThemeContext';
 
 /**
  * Landing page that is accessible without authentication
@@ -12,41 +10,8 @@ import { ThemeConfig } from '@/context/ThemeContext';
 const LandingPage = () => {
   const navigate = useNavigate();
 
-  // Example of white-labeled theme
-  const chatTheme: Partial<ThemeConfig> = {
-    colors: {
-      primary: '#9b87f5',
-      primaryForeground: '#ffffff',
-      background: '#ffffff',
-      backgroundSecondary: '#f9f9f9', // Added the missing backgroundSecondary property
-      foreground: '#1A1F2C', 
-      border: '#eaeaea',
-      userMessage: '#9b87f5',
-      userMessageText: '#ffffff',
-      agentMessage: '#f1f1f1',
-      agentMessageText: '#1A1F2C',
-      inputBackground: '#f9f9f9'
-    },
-    position: 'right',
-    compact: false,
-    labels: {
-      welcomeTitle: 'Hello there.',
-      welcomeSubtitle: 'How can we help?',
-      askQuestionButton: 'Ask a question',
-      recentMessagesTitle: 'Recent message',
-      noMessagesText: 'No messages yet. Start a conversation!',
-      messagePlaceholder: 'Type a message...'
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-purple-50">
-      {/* Direct inclusion of the ChatWidget component with custom theme */}
-      <ChatWidget 
-        workspaceId="6c22b22f-7bdf-43db-b7c1-9c5884125c63" 
-        theme={chatTheme}
-      />
-      
       {/* Hero Section */}
       <div className="container mx-auto px-4 py-20">
         <div className="flex flex-col items-center text-center max-w-4xl mx-auto">

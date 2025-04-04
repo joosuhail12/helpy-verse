@@ -58,6 +58,7 @@
     "@tiptap/suggestion": "^2.1.12",
     "@types/prismjs": "^1.26.5",
     "@types/uuid": "^10.0.0",
+    "ably": "^2.6.5",
     "axios": "^1.8.1",
     "casl": "^0.2.0",
     "class-variance-authority": "^0.7.1",
