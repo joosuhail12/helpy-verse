@@ -3,7 +3,6 @@
  * Common utility helpers used throughout the application
  */
 import { cookieFunctions } from "@/api/services/http";
-import { handleSetToken as tokenManagerSetToken } from "@/utils/auth/tokenManager";
 
 // Re-export storage functions from cookieManager to avoid circular dependencies
 export const { getCookie, setCookie, handleLogout } = cookieFunctions;
@@ -32,9 +31,6 @@ export const setWorkspaceId = (workspaceId: string): void => {
   console.log(`Workspace ID set to: ${workspaceId}`);
 };
 
-// Re-export the token manager's handleSetToken function
-export const handleSetToken = tokenManagerSetToken;
-
 // Format date to a readable format
 export const formatDate = (date: Date | string | number): string => {
   const d = new Date(date);
@@ -44,4 +40,25 @@ export const formatDate = (date: Date | string | number): string => {
 // Check if running in development mode
 export const isDevelopment = (): boolean => {
   return import.meta.env.MODE === 'development';
+};
+
+// Handle setting token - direct implementation to avoid circular dependency
+export const handleSetToken = (token: string): boolean => {
+  if (!token) {
+    console.error("Cannot set empty token");
+    return false;
+  }
+  
+  try {
+    console.log("Setting auth token:", token.substring(0, 10) + "...");
+    
+    // Store in localStorage only
+    localStorage.setItem("token", token);
+    
+    // The token manager will configure axios with this token
+    return true;
+  } catch (error) {
+    console.error("Error setting token:", error);
+    return false;
+  }
 };
