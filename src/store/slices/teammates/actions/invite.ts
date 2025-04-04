@@ -1,16 +1,5 @@
 
-import { createAsyncThunk } from '@reduxjs/toolkit';
-import { resendTeammateInvitation } from '@/api/services/teammatesService';
+import { resendInvitation as resendInvitationThunk } from '../thunks';
 
-// Resend invitation action
-export const resendInvitation = createAsyncThunk(
-  'teammates/resendInvitation',
-  async (teammateId: string, { rejectWithValue }) => {
-    try {
-      await resendTeammateInvitation(teammateId);
-      return { teammateId, success: true };
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to resend invitation');
-    }
-  }
-);
+// Re-export the invitation thunk
+export const resendInvitation = resendInvitationThunk;

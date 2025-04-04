@@ -1,47 +1,44 @@
 
 import { useState, useEffect } from 'react';
 
-type Theme = 'light' | 'dark' | 'system';
+type Theme = 'light' | 'dark';
 
-export function useTheme() {
-  const [theme, setThemeState] = useState<Theme>(() => {
-    // Run localStorage access in a try-catch to handle SSR environments
-    try {
-      const storedTheme = localStorage.getItem('theme');
-      if (storedTheme && (storedTheme === 'light' || storedTheme === 'dark' || storedTheme === 'system')) {
-        return storedTheme;
-      }
-      return 'system';
-    } catch (error) {
-      console.error('Failed to get theme from localStorage:', error);
-      return 'system';
-    }
-  });
+export const useTheme = () => {
+  const [theme, setTheme] = useState<Theme | null>(null);
 
   useEffect(() => {
-    try {
-      const root = window.document.documentElement;
-      
-      if (theme === 'system') {
-        const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
-          ? 'dark'
-          : 'light';
-        
-        root.classList.remove('light', 'dark');
-        root.classList.add(systemTheme);
-      } else {
-        root.classList.remove('light', 'dark');
-        root.classList.add(theme);
-      }
-      
-      localStorage.setItem('theme', theme);
-    } catch (error) {
-      console.error('Failed to set theme:', error);
+    // Get theme from localStorage or user preference
+    const savedTheme = localStorage.getItem('theme') as Theme | null;
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    const initialTheme = savedTheme || (prefersDark ? 'dark' : 'light');
+    setTheme(initialTheme);
+    
+    // Apply theme to document
+    applyTheme(initialTheme);
+  }, []);
+
+  const applyTheme = (newTheme: Theme) => {
+    const root = document.documentElement;
+    
+    if (newTheme === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
     }
-  }, [theme]);
+    
+    localStorage.setItem('theme', newTheme);
+  };
+
+  const updateTheme = (newTheme: Theme) => {
+    setTheme(newTheme);
+    applyTheme(newTheme);
+  };
 
   return {
     theme,
-    setTheme: (theme: Theme) => setThemeState(theme),
+    setTheme: updateTheme,
+    isDark: theme === 'dark',
+    isLight: theme === 'light',
   };
-}
+};

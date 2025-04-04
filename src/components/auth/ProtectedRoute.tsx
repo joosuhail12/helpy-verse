@@ -4,7 +4,7 @@ import { useAppSelector } from '@/hooks/useAppSelector';
 import { useEffect, useState } from 'react';
 import { Loader2, WifiOff, AlertTriangle } from 'lucide-react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { fetchUserData } from '@/store/slices/auth/userActions';
+import { fetchUserData } from '@/store/slices/authSlice';
 import { HttpClient } from '@/api/services/http';
 import { isAuthenticated, getAuthToken } from '@/utils/auth/tokenManager';
 import { Button } from '@/components/ui/button';
@@ -34,7 +34,7 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   
   useEffect(() => {
     const checkAuth = async () => {
-      console.log('ProtectedRoute: Checking authentication status for path:', location.pathname);
+      console.log('ProtectedRoute: Checking authentication status');
       
       // Check if offline
       if (isOffline) {
@@ -58,8 +58,8 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
         
         try {
           // Try to fetch user data
-          const result = await dispatch(fetchUserData()).unwrap();
-          console.log('ProtectedRoute: Successfully fetched user data', result);
+          await dispatch(fetchUserData());
+          console.log('ProtectedRoute: Successfully fetched user data');
         } catch (error: any) {
           console.error("Error fetching user data:", error);
           
@@ -81,19 +81,11 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
       // Short delay to ensure state is settled
       setTimeout(() => {
         setIsChecking(false);
-      }, 300);
+      }, 500);
     };
     
     checkAuth();
   }, [dispatch, location.pathname, isOffline]);
-
-  // Add a debug log for settings routes
-  useEffect(() => {
-    if (location.pathname.includes('/settings')) {
-      console.log('Settings route detected:', location.pathname);
-      console.log('Auth checking state:', { isChecking, hasValidToken, isAuthenticated: isAuthenticated() });
-    }
-  }, [location.pathname, isChecking, hasValidToken]);
 
   // Handle offline state
   if (isOffline) {
@@ -114,9 +106,8 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  // Show loading state while checking - reduce timeout to prevent long waits
-  if (isChecking) {
-    console.log("Still checking authentication...", { isChecking, loading });
+  // Show loading state while checking
+  if (isChecking || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -158,6 +149,6 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   }
 
   // No token, redirect to login
-  console.log('ProtectedRoute: No valid token found, redirecting to login');
+  console.log('ProtectedRoute: No token found, redirecting to login');
   return <Navigate to="/sign-in" state={{ from: location.pathname }} replace />;
 };

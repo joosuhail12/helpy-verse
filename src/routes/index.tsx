@@ -13,12 +13,12 @@ export const LoadingSpinner = () => (
   </div>
 );
 
-// Import route components
+// Import route components - fixing the imports to match the exported names
 import { DashboardRoutes } from './dashboardRoutes';
 import { InboxRoutes } from './inboxRoutes';
 import { AutomationRoutes } from './automationRoutes';
-// Import settings routes correctly - using the named export instead of default
-import { SettingsRoutes } from './settingsRoutes';
+// Import settings routes correctly
+import SettingsRoutes from './settingsRoutes';
 
 // Lazy load components
 const SignIn = lazy(() => import('../pages/SignIn'));
@@ -28,7 +28,7 @@ const SignUp = lazy(() => import('../pages/SignUp'));
 const NotFound = lazy(() => import('../pages/NotFound'));
 const LandingPage = lazy(() => import('../pages/LandingPage'));
 
-// Lazy load dashboard layout
+// Lazy load dashboard layout - make sure it's imported correctly
 const DashboardLayout = lazy(() => import('../layouts/DashboardLayout'));
 
 // Helper to wrap components with Suspense and RouteErrorHandling
@@ -39,6 +39,25 @@ const withSuspenseAndErrorHandling = (Component) => (
     </Suspense>
   </RouteErrorBoundary>
 );
+
+// Log all available routes for debugging
+const logRoutes = (routes) => {
+  console.log('Available routes:');
+  const flattenRoutes = (routeArray, parentPath = '') => {
+    routeArray.forEach(route => {
+      if (route.path) {
+        const fullPath = parentPath ? `${parentPath}/${route.path}` : route.path;
+        console.log(`- ${fullPath}`);
+      }
+      if (route.children) {
+        const nextParent = route.path ? (parentPath ? `${parentPath}/${route.path}` : route.path) : parentPath;
+        flattenRoutes(route.children, nextParent);
+      }
+    });
+  };
+  
+  flattenRoutes(routes);
+};
 
 export const router = createBrowserRouter([
   {
@@ -78,7 +97,14 @@ export const router = createBrowserRouter([
       ...DashboardRoutes,
       ...InboxRoutes,
       ...AutomationRoutes,
-      ...SettingsRoutes
+      {
+        path: "settings/*",
+        element: (
+          <Suspense fallback={<LoadingSpinner />}>
+            <SettingsRoutes />
+          </Suspense>
+        )
+      }
     ],
   },
   {
@@ -86,5 +112,9 @@ export const router = createBrowserRouter([
     element: withSuspenseAndErrorHandling(NotFound),
   },
 ]);
+
+// Log the routes for debugging
+logRoutes(router.routes);
+console.log('Routes initialized:', router.routes);
 
 export default router;

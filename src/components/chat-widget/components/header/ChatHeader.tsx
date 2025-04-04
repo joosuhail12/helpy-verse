@@ -1,43 +1,66 @@
 
 import React from 'react';
-import { X, ChevronLeft } from 'lucide-react';
+import { ArrowLeft, X } from 'lucide-react';
 import { useThemeContext } from '@/context/ThemeContext';
+import AgentAvatarGroup from './AgentAvatarGroup';
+import { useAgentPresence } from '@/hooks/chat/useAgentPresence';
 
-interface ChatHeaderProps {
+export interface ChatHeaderProps {
   title: string;
-  onClose: (() => void) | null;
-  onBackClick: (() => void) | null;
-  className?: string;
+  onBackClick?: (() => void) | null;
+  onClose?: () => void;
+  workspaceId?: string;
+  conversationId?: string;
 }
 
-const ChatHeader: React.FC<ChatHeaderProps> = ({ title, onClose, onBackClick, className = '' }) => {
+const ChatHeader: React.FC<ChatHeaderProps> = ({ 
+  title, 
+  onBackClick, 
+  onClose,
+  workspaceId,
+  conversationId 
+}) => {
   const { colors } = useThemeContext();
+  
+  // Only fetch agent presence if we have workspace and conversation IDs
+  const shouldFetchPresence = !!(workspaceId && conversationId);
+  const { agents } = shouldFetchPresence 
+    ? useAgentPresence(workspaceId, conversationId)
+    : { agents: [] };
 
   return (
     <div 
-      className={`flex items-center justify-between p-4 border-b ${className}`}
-      style={{ borderColor: colors.border, backgroundColor: colors.background }}
+      className="p-4 border-b flex items-center space-x-3" 
+      style={{ borderColor: colors.border, backgroundColor: colors.background, color: colors.foreground }}
     >
-      <div className="flex items-center">
-        {onBackClick && (
-          <button 
-            onClick={onBackClick}
-            className="mr-2 p-1 rounded-md hover:bg-gray-100 flex items-center justify-center"
-            aria-label="Go back"
-          >
-            <ChevronLeft className="h-5 w-5 text-gray-500" />
-          </button>
+      {onBackClick && (
+        <button 
+          onClick={onBackClick}
+          className="rounded-full p-1 hover:bg-gray-100 transition-colors"
+          style={{ color: colors.foreground }}
+          aria-label="Go back"
+        >
+          <ArrowLeft size={20} />
+        </button>
+      )}
+      
+      <div className="flex-1 flex items-center space-x-3">
+        <h2 className="font-medium truncate">{title}</h2>
+        
+        {/* Show agent avatars only if we have presence data */}
+        {shouldFetchPresence && agents.length > 0 && (
+          <AgentAvatarGroup agents={agents} />
         )}
-        <h2 className="font-medium text-base">{title}</h2>
       </div>
       
       {onClose && (
-        <button 
+        <button
           onClick={onClose}
-          className="p-1 rounded-md hover:bg-gray-100 flex items-center justify-center"
+          className="rounded-full p-1 hover:bg-gray-100 transition-colors"
+          style={{ color: colors.foreground }}
           aria-label="Close chat"
         >
-          <X className="h-5 w-5 text-gray-500" />
+          <X size={20} />
         </button>
       )}
     </div>

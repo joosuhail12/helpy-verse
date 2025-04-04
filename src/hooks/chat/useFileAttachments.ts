@@ -2,11 +2,12 @@
 import { useState, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
-interface FileAttachment {
+export interface FileAttachment {
   id: string;
   file: File;
   previewUrl?: string;
-  uploadProgress: number;
+  uploadProgress?: number;
+  status: 'idle' | 'uploading' | 'success' | 'error';
   error?: string;
 }
 
@@ -17,11 +18,11 @@ export const useFileAttachments = () => {
   const [attachments, setAttachments] = useState<FileAttachment[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   
-  // Add attachments to the list
+  // Add new file attachments
   const addAttachments = useCallback((files: File[]) => {
     const newAttachments = files.map(file => {
       // Create preview URL for images
-      let previewUrl: string | undefined = undefined;
+      let previewUrl: string | undefined;
       if (file.type.startsWith('image/')) {
         previewUrl = URL.createObjectURL(file);
       }
@@ -30,19 +31,21 @@ export const useFileAttachments = () => {
         id: uuidv4(),
         file,
         previewUrl,
+        status: 'idle' as const,
         uploadProgress: 0
       };
     });
     
     setAttachments(prev => [...prev, ...newAttachments]);
+    return newAttachments;
   }, []);
   
-  // Remove an attachment by ID
+  // Remove an attachment
   const removeAttachment = useCallback((id: string) => {
     setAttachments(prev => {
       const attachment = prev.find(a => a.id === id);
       
-      // Revoke object URL if it exists
+      // Revoke object URL if it exists to prevent memory leaks
       if (attachment?.previewUrl) {
         URL.revokeObjectURL(attachment.previewUrl);
       }
@@ -53,7 +56,7 @@ export const useFileAttachments = () => {
   
   // Clear all attachments
   const clearAttachments = useCallback(() => {
-    // Revoke all preview URLs
+    // Revoke all object URLs
     attachments.forEach(attachment => {
       if (attachment.previewUrl) {
         URL.revokeObjectURL(attachment.previewUrl);
@@ -63,42 +66,82 @@ export const useFileAttachments = () => {
     setAttachments([]);
   }, [attachments]);
   
-  // Simulate uploading attachments
-  const uploadAttachments = useCallback(async (conversationId: string): Promise<string[]> => {
+  // Update attachment status
+  const updateAttachmentStatus = useCallback((
+    id: string, 
+    status: FileAttachment['status'], 
+    progress?: number, 
+    error?: string
+  ) => {
+    setAttachments(prev => 
+      prev.map(attachment => 
+        attachment.id === id 
+          ? { 
+              ...attachment, 
+              status, 
+              uploadProgress: progress !== undefined ? progress : attachment.uploadProgress,
+              error 
+            } 
+          : attachment
+      )
+    );
+  }, []);
+  
+  // Upload attachments to server
+  const uploadAttachments = useCallback(async (
+    conversationId: string, 
+    onUploadProgress?: (percentage: number) => void
+  ): Promise<string[]> => {
     if (attachments.length === 0) return [];
     
     setIsUploading(true);
+    const filesToUpload = attachments.filter(a => a.status === 'idle');
     
+    // In a real implementation, you would upload files to your server here
+    // This is a mock implementation
     try {
-      // In a real app, this would upload files to a server
-      // For demo purposes, we'll simulate the upload process
-      const uploadedUrls: string[] = [];
+      const fileUrls: string[] = [];
       
-      for (let i = 0; i < attachments.length; i++) {
-        const attachment = attachments[i];
+      for (let i = 0; i < filesToUpload.length; i++) {
+        const attachment = filesToUpload[i];
+        updateAttachmentStatus(attachment.id, 'uploading', 0);
         
-        // Simulate progress updates
+        // Simulate upload progress
         for (let progress = 0; progress <= 100; progress += 10) {
-          setAttachments(prev => prev.map(a => 
-            a.id === attachment.id ? { ...a, uploadProgress: progress } : a
-          ));
+          await new Promise(resolve => setTimeout(resolve, 100));
+          updateAttachmentStatus(attachment.id, 'uploading', progress);
           
-          // Small delay to simulate network
-          await new Promise(resolve => setTimeout(resolve, 50));
+          if (onUploadProgress) {
+            onUploadProgress((progress / 100) * filesToUpload.length);
+          }
         }
         
-        // Add fake URL for the uploaded file
-        uploadedUrls.push(`https://example.com/uploads/${conversationId}/${attachment.id}-${attachment.file.name}`);
+        // Mock file URL
+        const fileUrl = `https://api.example.com/files/${conversationId}/${attachment.file.name}`;
+        fileUrls.push(fileUrl);
+        
+        updateAttachmentStatus(attachment.id, 'success', 100);
       }
       
-      return uploadedUrls;
+      return fileUrls;
     } catch (error) {
-      console.error('Error uploading attachments:', error);
+      console.error('Error uploading files:', error);
+      
+      // Mark all uploading files as errored
+      filesToUpload.forEach(attachment => {
+        updateAttachmentStatus(
+          attachment.id, 
+          'error', 
+          undefined, 
+          error instanceof Error ? error.message : 'Upload failed'
+        );
+      });
+      
       return [];
     } finally {
       setIsUploading(false);
     }
-  }, [attachments]);
+  }, [attachments, updateAttachmentStatus]);
   
   return {
     attachments,
@@ -106,6 +149,7 @@ export const useFileAttachments = () => {
     addAttachments,
     removeAttachment,
     clearAttachments,
+    updateAttachmentStatus,
     uploadAttachments
   };
 };

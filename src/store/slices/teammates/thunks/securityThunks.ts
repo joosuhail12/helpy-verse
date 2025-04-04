@@ -1,61 +1,57 @@
 
 import { createAsyncThunk } from '@reduxjs/toolkit';
 
-// Enable 2FA for a teammate
+// Helper to simulate API call for mocked features that aren't implemented yet
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 export const enable2FA = createAsyncThunk(
   'teammates/enable2FA',
   async (teammateId: string, { rejectWithValue }) => {
     try {
-      console.log(`Enabling 2FA for teammate with ID: ${teammateId}`);
-      // Mocked API response
-      return {
-        qrCode: 'otpauth://totp/Helpy:user@example.com?secret=JBSWY3DPEHPK3PXP&issuer=Helpy',
-        setupKey: 'JBSWY3DPEHPK3PXP'
-      };
+      // This is still mocked as the API isn't available yet
+      await delay(1000);
+      return { teammateId, setupKey: 'MOCK-2FA-SETUP-KEY' };
     } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to enable 2FA');
+      return rejectWithValue(error.message);
     }
   }
 );
 
-// Verify 2FA setup
 export const verify2FA = createAsyncThunk(
   'teammates/verify2FA',
-  async ({ teammateId, verificationCode }: { teammateId: string, verificationCode: string }, { rejectWithValue }) => {
+  async ({ teammateId, code }: { teammateId: string; code: string }, { rejectWithValue }) => {
     try {
-      console.log(`Verifying 2FA code for teammate with ID: ${teammateId}`);
-      // Mocked API call
-      return { success: true };
+      // This is still mocked as the API isn't available yet
+      await delay(1000);
+      return { teammateId, success: true };
     } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to verify 2FA code');
+      return rejectWithValue(error.message);
     }
   }
 );
 
-// Disable 2FA
 export const disable2FA = createAsyncThunk(
   'teammates/disable2FA',
   async (teammateId: string, { rejectWithValue }) => {
     try {
-      console.log(`Disabling 2FA for teammate with ID: ${teammateId}`);
-      // Mocked API call
-      return { success: true };
+      // This is still mocked as the API isn't available yet
+      await delay(1000);
+      return { teammateId, success: true };
     } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to disable 2FA');
+      return rejectWithValue(error.message);
     }
   }
 );
 
-// Reset password
 export const resetPassword = createAsyncThunk(
   'teammates/resetPassword',
-  async ({ teammateId, newPassword }: { teammateId: string, newPassword: string }, { rejectWithValue }) => {
+  async ({ teammateId, newPassword }: { teammateId: string; newPassword: string }, { rejectWithValue }) => {
     try {
-      console.log(`Resetting password for teammate with ID: ${teammateId}`);
-      // Mocked API call
-      return { success: true };
+      // This is still mocked as the API isn't available yet
+      await delay(1000);
+      return { teammateId, success: true };
     } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to reset password');
+      return rejectWithValue(error.message);
     }
   }
 );

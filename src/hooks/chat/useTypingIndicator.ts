@@ -1,98 +1,141 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAbly } from '@/context/AblyContext';
-import * as Ably from 'ably';
 
-interface TypingUser {
+export interface TypingUser {
   clientId: string;
   name?: string;
+  timestamp: number;
 }
 
+/**
+ * Hook to handle typing indicators in a chat
+ */
 export const useTypingIndicator = (conversationId: string) => {
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
-  const [isUserTyping, setIsUserTyping] = useState<boolean>(false);
-  const ably = useAbly();
+  const { client, clientId, getChannelName } = useAbly();
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const channelRef = useRef<any>(null);
 
-  // Custom event name for typing indicators
-  const TYPING_EVENT = 'typing';
-
-  const sendTypingIndicator = useCallback(
-    (isTyping: boolean, userName?: string) => {
-      if (!conversationId || !ably.client) return;
-
-      const channelName = `typing:${conversationId}`;
-      const channel = ably.getChannel(channelName);
-
-      setIsUserTyping(isTyping);
-
-      try {
-        // Use ts-expect-error since we know the method exists at runtime
-        // @ts-expect-error: Using channel.publish which exists at runtime
-        channel.publish(TYPING_EVENT, { 
-          isTyping, 
-          clientId: ably.clientId,
-          name: userName || 'User',
-          timestamp: Date.now() 
-        }, (err) => {
-          if (err) {
-            console.error('Error publishing typing indicator:', err);
-          }
-        });
-      } catch (error) {
-        console.error('Error publishing typing indicator:', error);
-      }
-    },
-    [conversationId, ably, TYPING_EVENT]
-  );
+  // Clear typing users after a timeout
+  const TYPING_TIMEOUT = 3000;
 
   useEffect(() => {
-    if (!conversationId || !ably.client) return;
+    if (!client || !conversationId) return;
 
-    const channelName = `typing:${conversationId}`;
-    const channel = ably.getChannel(channelName);
+    // Initialize channel
+    const channelName = getChannelName(conversationId);
+    const channel = client.channels.get(channelName);
+    channelRef.current = channel;
 
-    // Create a named handler function for the subscription
-    const typingHandler = (message: Ably.Types.Message) => {
-      const { isTyping, clientId, name, timestamp } = message.data;
-
-      if (clientId === ably.clientId) {
-        // It's our own typing indicator, just update local state
-        setIsUserTyping(isTyping);
-        return;
-      }
-
-      if (isTyping) {
-        setTypingUsers(prev => {
-          // Don't add duplicate users
-          if (prev.some(user => user.clientId === clientId)) {
-            return prev;
-          }
-          return [...prev, { clientId, name }];
-        });
-
-        // Clear typing indicator after 3 seconds
-        setTimeout(() => {
-          setTypingUsers(prev => 
-            prev.filter(user => user.clientId !== clientId)
-          );
-        }, 3000);
-      } else {
-        setTypingUsers(prev => 
-          prev.filter(user => user.clientId !== clientId)
-        );
-      }
+    // Handle typing start events
+    const handleTypingStart = (message: any) => {
+      const typingData = message.data as TypingUser;
+      
+      // Don't show our own typing indicator
+      if (typingData.clientId === clientId) return;
+      
+      setTypingUsers(prevUsers => {
+        // Check if this user is already in the typing users list
+        const existingUserIndex = prevUsers.findIndex(user => user.clientId === typingData.clientId);
+        
+        if (existingUserIndex >= 0) {
+          // Update existing user's timestamp
+          const updatedUsers = [...prevUsers];
+          updatedUsers[existingUserIndex] = {
+            ...updatedUsers[existingUserIndex],
+            timestamp: Date.now()
+          };
+          return updatedUsers;
+        } else {
+          // Add new typing user
+          return [...prevUsers, { ...typingData, timestamp: Date.now() }];
+        }
+      });
     };
 
-    // Use appropriate method for Ably subscriptions
-    // @ts-expect-error: TYPING_EVENT is a valid event name at runtime
-    channel.on(TYPING_EVENT, typingHandler);
+    // Handle typing stop events
+    const handleTypingStop = (message: any) => {
+      const { clientId: typingClientId } = message.data;
+      
+      setTypingUsers(prevUsers => 
+        prevUsers.filter(user => user.clientId !== typingClientId)
+      );
+    };
 
+    // Subscribe to typing events
+    const startSubscription = channel.subscribe('typing:start', handleTypingStart);
+    const stopSubscription = channel.subscribe('typing:stop', handleTypingStop);
+
+    // Return cleanup function
     return () => {
-      // Clean up subscription
-      // @ts-expect-error: TYPING_EVENT is a valid event name at runtime
-      channel.off(TYPING_EVENT, typingHandler);
+      // First check if channelRef.current exists before trying to unsubscribe
+      if (channelRef.current) {
+        // Use try/catch to handle potential errors during cleanup
+        try {
+          channelRef.current.unsubscribe('typing:start', handleTypingStart);
+          channelRef.current.unsubscribe('typing:stop', handleTypingStop);
+        } catch (error) {
+          console.error('Error unsubscribing from typing events:', error);
+        }
+      }
+      
+      // Clear any existing timeout
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
     };
-  }, [conversationId, ably, TYPING_EVENT]);
+  }, [client, clientId, conversationId, getChannelName]);
+
+  // Clean up stale typing indicators
+  useEffect(() => {
+    if (typingUsers.length === 0) return;
+    
+    // Clear previous timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    
+    // Set new timeout to check for stale typing indicators
+    typingTimeoutRef.current = setTimeout(() => {
+      const now = Date.now();
+      setTypingUsers(prevUsers => 
+        prevUsers.filter(user => (now - user.timestamp) < TYPING_TIMEOUT)
+      );
+    }, 1000);
+    
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+    };
+  }, [typingUsers]);
+
+  // Send typing indicator
+  const sendTypingIndicator = (isTyping: boolean, name?: string) => {
+    if (!channelRef.current || !clientId) return;
+    
+    try {
+      const eventName = isTyping ? 'typing:start' : 'typing:stop';
+      const payload = {
+        clientId,
+        name,
+        timestamp: Date.now()
+      };
+      
+      channelRef.current.publish(eventName, payload);
+    } catch (error) {
+      console.error('Error sending typing indicator:', error);
+    }
+  };
+
+  // Utility function to check if there are active typing users
+  const isUserTyping = (specificClientId?: string) => {
+    if (specificClientId) {
+      return typingUsers.some(user => user.clientId === specificClientId);
+    }
+    return typingUsers.length > 0;
+  };
 
   return {
     typingUsers,

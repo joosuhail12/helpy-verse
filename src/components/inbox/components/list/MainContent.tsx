@@ -177,7 +177,7 @@ const MainContent = ({
                 >
                   <TicketListItem
                     ticket={ticket}
-                    viewMode={selectedTicketForChat || isMobile ? "compact" as ViewMode : viewMode}
+                    viewMode={selectedTicketForChat || isMobile ? "compact" : viewMode}
                     isSelected={selectedTickets.includes(ticket.id)}
                     isLoading={!!loadingStates[ticket.id]}
                     isActive={selectedTicketForChat?.id === ticket.id}

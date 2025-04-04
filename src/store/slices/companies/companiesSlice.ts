@@ -1,7 +1,7 @@
 
 import { createSlice, createAsyncThunk, PayloadAction, createSelector } from '@reduxjs/toolkit';
 import { RootState } from '../../store';
-import { companiesService } from '@/api/services';
+import { companiesService } from '@/api/services/companiesService';
 import { Company } from '@/types/company';
 
 export interface CompaniesState {
@@ -24,6 +24,7 @@ const initialState: CompaniesState = {
   lastFetchTime: null
 };
 
+// Cache duration in milliseconds (5 minutes)
 export const CACHE_DURATION = 5 * 60 * 1000;
 
 export const fetchCompanies = createAsyncThunk(
@@ -34,12 +35,13 @@ export const fetchCompanies = createAsyncThunk(
       const state = getState() as RootState;
       const { lastFetchTime } = state.companies;
       
+      // Use cache if data is fresh
       if (lastFetchTime && Date.now() - lastFetchTime < CACHE_DURATION) {
         console.log('Using cached companies data');
         return null;
       }
 
-      const response = await companiesService.getAll();
+      const response = await companiesService.fetchCompanies();
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to fetch companies');
@@ -51,8 +53,8 @@ export const fetchCompanyById = createAsyncThunk(
   'companies/fetchCompanyById',
   async (id: string, { rejectWithValue }) => {
     try {
-      const response = await companiesService.getById(id);
-      return response;
+      const response = await companiesService.getCompany(id);
+      return response.data;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to fetch company details');
     }
@@ -63,8 +65,8 @@ export const createCompany = createAsyncThunk(
   'companies/createCompany',
   async (company: Omit<Company, 'id' | 'createdAt' | 'updatedAt'>, { rejectWithValue }) => {
     try {
-      const response = await companiesService.create(company);
-      return response;
+      const response = await companiesService.createCompany(company);
+      return response.data.companyList[0];
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to create company');
     }
@@ -75,8 +77,8 @@ export const updateCompany = createAsyncThunk(
   'companies/updateCompany',
   async ({ id, updates }: { id: string; updates: Partial<Company> }, { rejectWithValue }) => {
     try {
-      const response = await companiesService.update(id, updates);
-      return response;
+      const response = await companiesService.updateCompany(id, updates);
+      return response.data;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to update company');
     }
@@ -87,7 +89,7 @@ export const deleteCompany = createAsyncThunk(
   'companies/deleteCompany',
   async (id: string, { rejectWithValue }) => {
     try {
-      await companiesService.delete(id);
+      await companiesService.deleteCompany(id);
       return id;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to delete company');
@@ -128,7 +130,7 @@ const companiesSlice = createSlice({
       })
       .addCase(fetchCompanies.fulfilled, (state, action) => {
         state.loading = false;
-        if (action.payload) {
+        if (action.payload) { // Only update if we got new data (not using cache)
           state.companies = action.payload;
           state.lastFetchTime = Date.now();
         }
@@ -201,6 +203,7 @@ const companiesSlice = createSlice({
   },
 });
 
+// Export action creators
 export const { 
   selectCompany, 
   clearSelectedCompany, 
@@ -209,8 +212,10 @@ export const {
   setSelectedCompanies 
 } = companiesSlice.actions;
 
+// Base selector
 const getCompaniesState = (state: RootState) => state.companies;
 
+// Memoized selectors using createSelector
 export const selectCompanies = createSelector(
   [getCompaniesState],
   (state) => state.companies

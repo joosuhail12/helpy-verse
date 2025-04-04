@@ -1,48 +1,63 @@
-export interface ChatMessage {
-  id: string;
-  content: string;
-  sender: 'user' | 'agent' | 'system';
-  timestamp: string | Date;
+
+import { 
+  ChatMessage, 
+  Conversation, 
+  TypingStatus, 
+  FileAttachment 
+} from '@/types/chat';
+
+// Re-export types from the core definitions using 'export type'
+export type { 
+  ChatMessage, 
+  Conversation, 
+  TypingStatus, 
+  FileAttachment 
+};
+
+/**
+ * Props for the conversation view component
+ */
+export interface ConversationViewProps {
+  workspaceId: string;
   conversationId: string;
-  status?: 'sent' | 'delivered' | 'read' | 'error';
-  readBy?: string[];
-  attachment?: {
-    url: string;
-    name: string;
-    type: string;
-    size: number;
+  onBack?: () => void;
+  compact?: boolean;
+}
+
+/**
+ * Props for the message list component
+ */
+export interface MessageListProps {
+  messages: ChatMessage[];
+  isLoading: boolean;
+  typingIndicator?: {
+    agentName?: string;
+    users: TypingStatus[];
   };
+}
+
+/**
+ * Props for individual message items
+ */
+export interface MessageItemProps {
+  message: ChatMessage;
+  isCurrentUser: boolean;
+  showReadReceipt?: boolean;
+  onReactionToggle?: (messageId: string, emoji: string) => void;
+}
+
+/**
+ * Props for the message input component
+ */
+export interface MessageInputProps {
+  value: string;
+  onChange: (value: string) => void;
+  onSend: () => void;
+  disabled?: boolean;
+  placeholder?: string;
   attachments?: FileAttachment[];
-  reactions?: {
-    type: string;
-    count: number;
-    userReacted: boolean;
-  }[];
-  metadata?: Record<string, any>;
-}
-
-export interface FileAttachment {
-  id: string;
-  name: string;
-  type: string;
-  url: string;
-  size: number;
-  thumbnailUrl?: string;
-  uploadProgress?: number;
-}
-
-export interface TypingUser {
-  clientId: string;
-  name?: string;
-}
-
-export interface Conversation {
-  id: string;
-  title: string;
-  lastMessage?: string;
-  lastMessageTimestamp?: string;
-  unreadCount?: number;
-  participants?: string[];
-  type?: string;
-  status?: 'active' | 'resolved' | 'pending';
+  onAttachmentAdd?: (files: File[]) => void;
+  onAttachmentRemove?: (id: string) => void;
+  showEmojiPicker?: boolean;
+  onEmojiSelect?: (emoji: string) => void;
 }

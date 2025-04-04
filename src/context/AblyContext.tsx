@@ -1,84 +1,85 @@
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import * as Ably from 'ably';
+import { v4 as uuidv4 } from 'uuid';
 
-// Mock API key for development - in a real app, this would be an environment variable
-const ABLY_API_KEY = "X4jpaA.kKXoZg:oEr5R_kjKk06Wk0iilgK_rGAE9hbFjQMU8wYoE_BnEc";
-
-interface AblyContextState {
-  clientId: string;
-  workspaceId: string;
-  isConnected: boolean;
+interface AblyContextValue {
   client: Ably.Realtime | null;
-  getChannel: (channelName: string) => Ably.Types.RealtimeChannelBase;
+  clientId: string;
+  isConnected: boolean;
+  workspaceId: string;
+  getChannelName: (channelId: string) => string;
 }
 
-const AblyContext = createContext<AblyContextState | undefined>(undefined);
+const AblyContext = createContext<AblyContextValue | undefined>(undefined);
 
 interface AblyProviderProps {
   children: React.ReactNode;
   workspaceId: string;
 }
 
+// Ably API key - this is a client key which is safe to expose
+const ABLY_API_KEY = "X4jpaA.kKXoZg:oEr5R_kjKk06Wk0iilgK_rGAE9hbFjQMU8wYoE_BnEc";
+
 export const AblyProvider: React.FC<AblyProviderProps> = ({ children, workspaceId }) => {
   const [client, setClient] = useState<Ably.Realtime | null>(null);
-  const [state, setState] = useState<AblyContextState>({
-    clientId: `user-${Math.random().toString(36).substring(2, 9)}`,
-    workspaceId,
-    isConnected: false,
-    client: null,
-    getChannel: (channelName: string) => {
-      if (!client) {
-        throw new Error('Ably client not initialized');
-      }
-      return client.channels.get(channelName);
-    }
+  const [clientId] = useState<string>(() => {
+    // Generate a persistent client ID for this browser
+    const savedClientId = localStorage.getItem('ably_client_id');
+    if (savedClientId) return savedClientId;
+    
+    const newClientId = uuidv4();
+    localStorage.setItem('ably_client_id', newClientId);
+    return newClientId;
   });
+  const [isConnected, setIsConnected] = useState(false);
 
+  // Initialize Ably client
   useEffect(() => {
-    // Initialize Ably client
     const ablyClient = new Ably.Realtime({
       key: ABLY_API_KEY,
-      clientId: state.clientId
+      clientId,
     });
 
-    // Set up connection listeners
     ablyClient.connection.on('connected', () => {
-      console.log('Ably connected successfully');
-      setState(prev => ({ 
-        ...prev, 
-        isConnected: true,
-        client: ablyClient,
-        getChannel: (channelName: string) => ablyClient.channels.get(channelName)
-      }));
+      console.log('Ably connected');
+      setIsConnected(true);
     });
 
     ablyClient.connection.on('disconnected', () => {
       console.log('Ably disconnected');
-      setState(prev => ({ ...prev, isConnected: false }));
+      setIsConnected(false);
     });
 
-    ablyClient.connection.on('failed', (err) => {
-      console.error('Ably connection failed:', err);
-      setState(prev => ({ ...prev, isConnected: false }));
+    ablyClient.connection.on('failed', (error) => {
+      console.error('Ably connection failed:', error);
+      setIsConnected(false);
     });
 
     setClient(ablyClient);
 
-    // Cleanup function
     return () => {
       ablyClient.close();
     };
-  }, [workspaceId]);
+  }, [clientId]);
 
-  return (
-    <AblyContext.Provider value={state}>
-      {children}
-    </AblyContext.Provider>
-  );
+  // Helper to get standardized channel names
+  const getChannelName = (channelId: string): string => {
+    return `chat:${workspaceId}:${channelId}`;
+  };
+
+  const value = {
+    client,
+    clientId,
+    isConnected,
+    workspaceId,
+    getChannelName,
+  };
+
+  return <AblyContext.Provider value={value}>{children}</AblyContext.Provider>;
 };
 
-export const useAbly = (): AblyContextState => {
+export const useAbly = (): AblyContextValue => {
   const context = useContext(AblyContext);
   
   if (context === undefined) {

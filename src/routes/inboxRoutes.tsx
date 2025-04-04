@@ -12,9 +12,9 @@ const LoadingSpinner = () => (
   </div>
 );
 
-// Lazy load inbox pages - Fix the import paths to use the exact path without potential casing issues
+// Lazy load inbox pages
 const YourInbox = lazy(() => import('../pages/inbox/YourInbox'));
-const AllInbox = lazy(() => import('../pages/inbox/All')); // Fixed import path back to lowercase folder
+const AllInbox = lazy(() => import('../pages/inbox/All'));
 const UnassignedInbox = lazy(() => import('../pages/inbox/Unassigned'));
 const MentionsInbox = lazy(() => import('../pages/inbox/Mentions'));
 

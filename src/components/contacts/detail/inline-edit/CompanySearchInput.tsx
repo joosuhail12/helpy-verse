@@ -4,7 +4,7 @@ import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem } from '@/components/ui/command';
-import { companiesService } from '@/api/services';
+import { companiesService } from '@/api/services/companiesService';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from '@/components/ui/use-toast';
 import { useAppSelector } from '@/hooks/useAppSelector';
@@ -27,7 +27,7 @@ export const CompanySearchInput = ({ value, onChange, disabled }: CompanySearchI
   // Fetch companies from the API if needed
   const { data: companiesResponse, isLoading, error } = useQuery({
     queryKey: ['companies', searchQuery],
-    queryFn: () => companiesService.getAll({ 
+    queryFn: () => companiesService.fetchCompanies({ 
       searchQuery,
       limit: 10
     }),
@@ -36,7 +36,7 @@ export const CompanySearchInput = ({ value, onChange, disabled }: CompanySearchI
   });
 
   // Use API response if available, otherwise use cached companies
-  const companies = companiesResponse?.data || cachedCompanies || [];
+  const companies = companiesResponse?.companies || cachedCompanies || [];
 
   useEffect(() => {
     setInputValue(value);

@@ -1,9 +1,10 @@
 
-import React from 'react';
-import LazyMessagesView from '@/widgets/chat/views/LazyMessagesView';
-import { View } from '@/widgets/chat/types';
+import React, { Suspense } from 'react';
+import { Loader2 } from 'lucide-react';
 
-interface LazyMessagesViewComponentProps {
+const MessagesViewLazy = React.lazy(() => import('./MessagesView'));
+
+interface LazyMessagesViewProps {
   workspaceId: string;
   onClose: () => void;
   setActiveView: (view: string) => void;
@@ -11,23 +12,18 @@ interface LazyMessagesViewComponentProps {
 }
 
 /**
- * Re-export of the consolidated LazyMessagesView with adapter for component-specific props
+ * Lazy-loaded MessagesView component with loading fallback
  */
-const LazyMessagesViewComponent: React.FC<LazyMessagesViewComponentProps> = (props) => {
-  // Create a handler for the onSelectConversation that properly works with the function from props.setActiveView
-  const handleSelectConversation = () => {
-    props.setActiveView('conversation');
-  };
-
+const LazyMessagesView: React.FC<LazyMessagesViewProps> = (props) => {
   return (
-    <LazyMessagesView
-      workspaceId={props.workspaceId}
-      onClose={props.onClose}
-      setActiveView={props.setActiveView as (view: View) => void}
-      onStartConversation={props.onStartConversation}
-      onSelectConversation={handleSelectConversation}
-    />
+    <Suspense fallback={
+      <div className="flex items-center justify-center h-full">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+      </div>
+    }>
+      <MessagesViewLazy {...props} />
+    </Suspense>
   );
 };
 
-export default LazyMessagesViewComponent;
+export default LazyMessagesView;

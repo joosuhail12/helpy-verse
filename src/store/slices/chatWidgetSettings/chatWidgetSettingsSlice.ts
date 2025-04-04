@@ -1,7 +1,6 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { ChatWidgetSettings, ChatWidgetSettingsState } from './types';
-import { loadChatWidgetSettings } from './actions';
 
 const initialSettings: ChatWidgetSettings = {
   appearance: {
@@ -96,14 +95,6 @@ export const chatWidgetSettingsSlice = createSlice({
     resetSettings: (state) => {
       state.settings = initialSettings;
     }
-  },
-  extraReducers: (builder) => {
-    builder
-      .addCase(loadChatWidgetSettings.fulfilled, (state, action) => {
-        if (action.payload) {
-          state.settings = action.payload;
-        }
-      });
   }
 });
 
@@ -118,6 +109,4 @@ export const {
   resetSettings
 } = chatWidgetSettingsSlice.actions;
 
-export const chatWidgetSettingsReducer = chatWidgetSettingsSlice.reducer;
-
-export default chatWidgetSettingsReducer;
+export default chatWidgetSettingsSlice.reducer;

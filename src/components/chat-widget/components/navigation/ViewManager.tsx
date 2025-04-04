@@ -5,8 +5,6 @@ import { useChat } from '@/hooks/chat/useChat';
 import LazyHomeView from '../../views/LazyHomeView';
 import LazyMessagesView from '../../views/LazyMessagesView';
 import LazyConversationView from '../conversation/LazyConversationView';
-import PoweredByFooter from '@/widgets/chat/components/footer/PoweredByFooter';
-import Navigation from './Navigation';
 
 interface ViewManagerProps {
   activeView: View;
@@ -14,8 +12,6 @@ interface ViewManagerProps {
   workspaceId: string;
   onClose: () => void;
   onStartConversation: (message: string) => Promise<void>;
-  onSelectConversation: (conversationId: string) => void;
-  onStartNewConversation: () => Promise<void>;
 }
 
 /**
@@ -27,55 +23,37 @@ const ViewManager: React.FC<ViewManagerProps> = ({
   setActiveView,
   workspaceId,
   onClose,
-  onStartConversation,
-  onSelectConversation,
-  onStartNewConversation
+  onStartConversation
 }) => {
   const { currentConversation } = useChat();
   
   return (
-    <div className="flex flex-col h-full overflow-hidden">
-      <div className="flex-1 overflow-hidden">
-        {activeView === 'home' && (
-          <LazyHomeView 
-            workspaceId={workspaceId} 
-            onClose={onClose} 
-            setActiveView={setActiveView} 
-            onSelectConversation={onSelectConversation}
-            onStartNewConversation={onStartNewConversation}
-          />
-        )}
-        
-        {activeView === 'messages' && (
-          <LazyMessagesView 
-            workspaceId={workspaceId} 
-            onClose={onClose} 
-            setActiveView={setActiveView} 
-            onStartConversation={onStartConversation}
-          />
-        )}
-        
-        {activeView === 'conversation' && currentConversation && (
-          <LazyConversationView 
-            conversationId={currentConversation.id} 
-            workspaceId={workspaceId} 
-            onBack={() => setActiveView('messages')} 
-            onClose={onClose}
-          />
-        )}
-      </div>
+    <>
+      {activeView === 'home' && (
+        <LazyHomeView 
+          workspaceId={workspaceId} 
+          onClose={onClose} 
+          setActiveView={(view: View) => setActiveView(view)} 
+        />
+      )}
       
-      {/* Footer container with navigation and powered by footer */}
-      <div className="mt-auto">
-        {/* Navigation appears on home and messages views */}
-        {(activeView === 'home' || activeView === 'messages') && (
-          <Navigation activeView={activeView} setActiveView={setActiveView} />
-        )}
-        
-        {/* PoweredByFooter appears at the bottom after navigation */}
-        <PoweredByFooter />
-      </div>
-    </div>
+      {activeView === 'messages' && (
+        <LazyMessagesView 
+          workspaceId={workspaceId} 
+          onClose={onClose} 
+          setActiveView={(view: View) => setActiveView(view)} 
+          onStartConversation={onStartConversation}
+        />
+      )}
+      
+      {activeView === 'conversation' && currentConversation && (
+        <LazyConversationView 
+          conversationId={currentConversation.id} 
+          workspaceId={workspaceId} 
+          onBack={() => setActiveView('messages')} 
+        />
+      )}
+    </>
   );
 };
 

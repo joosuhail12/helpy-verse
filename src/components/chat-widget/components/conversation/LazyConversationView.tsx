@@ -8,7 +8,6 @@ interface LazyConversationViewProps {
   conversationId: string;
   workspaceId: string;
   onBack: () => void;
-  onClose: () => void;
 }
 
 /**

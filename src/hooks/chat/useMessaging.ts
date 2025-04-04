@@ -66,7 +66,7 @@ export const useMessaging = ({ conversationId, workspaceId, userName }: Messagin
             id: uuidv4(),
             sender: 'agent',
             content: 'Hello! How can I help you today?',
-            timestamp: new Date().toISOString(),
+            timestamp: new Date(),
             conversationId
           };
           
@@ -110,13 +110,13 @@ export const useMessaging = ({ conversationId, workspaceId, userName }: Messagin
   
   // Handle typing status
   const handleTyping = useCallback(() => {
-    sendTypingIndicator(true);
+    sendTypingIndicator(true, userName);
     
     // Automatically turn off typing indicator after a delay
     setTimeout(() => {
-      sendTypingIndicator(false);
+      sendTypingIndicator(false, userName);
     }, 3000);
-  }, [sendTypingIndicator]);
+  }, [sendTypingIndicator, userName]);
   
   // Handle input change
   const handleInputChange = useCallback((text: string) => {
@@ -137,7 +137,7 @@ export const useMessaging = ({ conversationId, workspaceId, userName }: Messagin
       id: uuidv4(),
       content,
       sender: 'user',
-      timestamp: new Date().toISOString(),
+      timestamp: new Date(),
       conversationId,
       metadata: {
         ...metadata,

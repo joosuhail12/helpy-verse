@@ -1,5 +1,5 @@
 
-import React, { useState, Suspense, lazy } from 'react';
+import React, { useState, Suspense, lazy, useEffect } from 'react';
 import { ChatProvider } from '@/context/ChatContext';
 import { AblyProvider } from '@/context/AblyContext';
 import { ThemeProvider, ThemeConfig } from '@/context/ThemeContext';
@@ -7,7 +7,6 @@ import { ChatWidgetSettings } from '@/store/slices/chatWidgetSettings/types';
 import ToggleButton from './components/button/ToggleButton';
 import { Loader2 } from 'lucide-react';
 import '@/styles/chat-widget-theme.css';
-import { MotionConfig } from 'framer-motion'; // Import MotionConfig
 
 // Lazy load the widget container
 const ChatWidgetWrapper = lazy(() => import('./components/wrapper/ChatWidgetWrapper'));
@@ -55,40 +54,36 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({
     setIsOpen((prev) => !prev);
   };
 
-  const position = combinedTheme.position === 'left' ? 'left' : 'right';
-
   return (
     <AblyProvider workspaceId={workspaceId}>
       <ChatProvider workspaceId={workspaceId}>
         <ThemeProvider initialTheme={combinedTheme}>
-          <MotionConfig> {/* Wrap with MotionConfig to provide motion context */}
-            {isOpen && (
-              <Suspense fallback={
-                <div className={`fixed bottom-20 ${position === 'left' ? 'left-4' : 'right-4'} rounded-xl shadow-lg bg-white p-4 z-50`}>
-                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                </div>
-              }>
-                <ChatWidgetWrapper 
-                  isOpen={isOpen}
-                  position={position}
+          {isOpen && (
+            <Suspense fallback={
+              <div className="fixed bottom-20 right-4 rounded-xl shadow-lg bg-white p-4 z-50">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            }>
+              <ChatWidgetWrapper 
+                isOpen={isOpen}
+                position={combinedTheme.position === 'left' ? 'left' : 'right'}
+                compact={Boolean(combinedTheme.compact)}
+              >
+                <ChatWidgetContainer 
+                  onClose={() => setIsOpen(false)} 
+                  workspaceId={workspaceId} 
+                  position={combinedTheme.position === 'left' ? 'left' : 'right'} 
                   compact={Boolean(combinedTheme.compact)}
-                >
-                  <ChatWidgetContainer 
-                    onClose={() => setIsOpen(false)} 
-                    workspaceId={workspaceId} 
-                    position={position}
-                    compact={Boolean(combinedTheme.compact)}
-                  />
-                </ChatWidgetWrapper>
-              </Suspense>
-            )}
-            <div className={`fixed bottom-4 z-50 ${position === 'left' ? 'left-4' : 'right-4'}`}>
-              <ToggleButton 
-                isOpen={isOpen} 
-                onClick={toggleWidget} 
-              />
-            </div>
-          </MotionConfig>
+                />
+              </ChatWidgetWrapper>
+            </Suspense>
+          )}
+          <div className={`fixed bottom-4 z-50 ${combinedTheme.position === 'left' ? 'left-4' : 'right-4'}`}>
+            <ToggleButton 
+              isOpen={isOpen} 
+              onClick={toggleWidget} 
+            />
+          </div>
         </ThemeProvider>
       </ChatProvider>
     </AblyProvider>

@@ -1,71 +1,88 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useAbly } from '@/context/AblyContext';
 import { ChatMessage } from '@/components/chat-widget/components/conversation/types';
-import * as Ably from 'ably';
 
 interface MessageSubscriptionOptions {
   onMessage?: (message: ChatMessage) => void;
 }
 
 export const useMessageSubscription = (
-  conversationId: string,
+  conversationId: string, 
   workspaceId: string,
-  options?: MessageSubscriptionOptions
+  options: MessageSubscriptionOptions = {}
 ) => {
+  const { client, getChannelName } = useAbly();
+  const [channel, setChannel] = useState<any>(null);
   const [isSubscribed, setIsSubscribed] = useState(false);
-  const ably = useAbly();
+  const [subscription, setSubscription] = useState<any>(null);
 
+  // Initialize channel
   useEffect(() => {
-    if (!conversationId || !workspaceId || !ably.client) return;
-
-    const channelName = `chat:${workspaceId}:${conversationId}`;
-    const channel = ably.getChannel(channelName);
-
-    // Subscribe to messages using the Ably on method
-    const callbackHandler = (message: Ably.Types.Message) => {
-      if (options?.onMessage) {
-        options.onMessage(message.data);
+    if (!client) return;
+    
+    const channelName = getChannelName(conversationId);
+    const channelInstance = client.channels.get(channelName);
+    
+    setChannel({ channel: channelInstance });
+    
+    return () => {
+      if (client && client.channels) {
+        client.channels.release(channelName);
       }
     };
+  }, [client, conversationId, getChannelName]);
 
-    // Using proper Ably on/off methods for event subscription
-    // The correct type for events in Ably is as a string literal for the on/off methods
-    // @ts-expect-error: 'message' is a valid event name at runtime
-    channel.on('message', callbackHandler);
-    setIsSubscribed(true);
-
+  // Subscribe to messages
+  useEffect(() => {
+    if (!channel || !channel.channel) return;
+    
+    const handleMessage = (message: any) => {
+      const messageData = message.data as ChatMessage;
+      
+      if (options.onMessage) {
+        options.onMessage(messageData);
+      }
+    };
+    
+    let sub: any = null;
+    
+    try {
+      // Subscribe to messages
+      sub = channel.channel.subscribe('message', handleMessage);
+      setSubscription(sub);
+      setIsSubscribed(true);
+    } catch (error) {
+      console.error('Error subscribing to channel:', error);
+    }
+    
     return () => {
-      // @ts-expect-error: 'message' is a valid event name at runtime
-      channel.off('message', callbackHandler);
+      try {
+        // Check if channel exists before unsubscribing
+        if (channel && channel.channel) {
+          channel.channel.unsubscribe('message', handleMessage);
+        }
+      } catch (err) {
+        console.error('Error unsubscribing:', err);
+      }
       setIsSubscribed(false);
     };
-  }, [conversationId, workspaceId, ably, options]);
+  }, [channel, options]);
 
+  // Function to manually publish a message
   const publishMessage = useCallback(
-    async (message: ChatMessage) => {
-      if (!conversationId || !workspaceId || !ably.client) return;
-
-      const channelName = `chat:${workspaceId}:${conversationId}`;
-      const channel = ably.getChannel(channelName);
-
+    async (message: ChatMessage): Promise<boolean> => {
+      if (!channel || !channel.channel) return false;
+      
       try {
-        // Properly type the publish method with a Promise
-        await new Promise<void>((resolve, reject) => {
-          // @ts-expect-error: Using channel.publish which exists at runtime
-          channel.publish('message', message, (err) => {
-            if (err) {
-              reject(err);
-            } else {
-              resolve();
-            }
-          });
-        });
+        await channel.channel.publish('message', message);
+        return true;
       } catch (error) {
         console.error('Error publishing message:', error);
+        return false;
       }
     },
-    [conversationId, workspaceId, ably]
+    [channel]
   );
 
   return {

@@ -1,250 +1,93 @@
-/* Base Chat Widget Styles */
 
-/* Container for the chat widget */
-.chat-widget-container {
-  position: fixed;
-  z-index: 9999;
-  bottom: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-.chat-widget-container-left {
-  left: 20px;
-}
-
-.chat-widget-container-right {
-  right: 20px;
-}
-
-/* Main chat window */
-.chat-widget-main {
-  display: flex;
-  flex-direction: column;
-  background-color: white;
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  margin-bottom: 16px;
-  border: 1px solid #e5e7eb;
-  height: 70vh;
-  max-height: 600px;
-  width: 100%;
-}
-
-.chat-widget-main-compact {
-  width: 320px;
-}
-
-.chat-widget-main-full {
-  width: 380px;
-}
-
-/* Toggle button styles */
-.chat-toggle-button {
-  width: 56px;
-  height: 56px;
-  border-radius: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-.chat-toggle-button:hover {
-  transform: scale(1.05);
-}
-
-.chat-toggle-button-closed {
-  background-color: #9b87f5;
-}
-
-.chat-toggle-button-open {
-  background-color: #ef4444;
-}
-
-/* Navigation */
-.pullse-chat-nav {
-  display: flex;
-  border-top: 1px solid #e5e7eb;
-  background-color: #fff;
-}
-
-.pullse-chat-nav-item {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 8px 0;
-  color: #64748b;
-  font-size: 12px;
-  cursor: pointer;
-}
-
-.pullse-chat-nav-item.active {
-  color: #9b87f5;
-}
-
-.pullse-chat-nav-item span {
-  margin-top: 4px;
-}
-
-/* Badge for notifications */
-.pullse-chat-badge {
-  position: absolute;
-  top: -4px;
-  right: -4px;
-  background-color: #ef4444;
-  color: white;
-  font-size: 10px;
-  width: 16px;
-  height: 16px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Message styles */
-.chat-message {
-  margin-bottom: 12px;
-  display: flex;
-}
-
-.chat-message-user {
-  justify-content: flex-end;
-}
-
-.chat-message-agent {
-  justify-content: flex-start;
-}
-
-.chat-message-content {
-  max-width: 80%;
-  padding: 12px;
-  border-radius: 16px;
-  overflow-wrap: break-word;
-}
-
-.chat-message-user .chat-message-content {
-  background-color: #9b87f5;
-  color: white;
-  border-bottom-right-radius: 4px;
-}
-
-.chat-message-agent .chat-message-content {
-  background-color: #f3f4f6;
-  color: #1f2937;
-  border-bottom-left-radius: 4px;
-}
-
-.chat-message-time {
-  font-size: 10px;
-  margin-top: 4px;
-  opacity: 0.7;
-}
-
-/* Input area */
-.chat-input-container {
-  display: flex;
-  align-items: flex-end;
-  border-top: 1px solid #e5e7eb;
-  padding: 12px;
-  background-color: white;
-}
-
-.chat-input-textarea {
-  flex: 1;
-  border: 1px solid #e5e7eb;
-  border-radius: 20px;
-  padding: 8px 12px;
-  resize: none;
-  min-height: 40px;
-  max-height: 120px;
-  outline: none;
-  font-family: inherit;
-  font-size: 14px;
-}
-
-.chat-input-textarea:focus {
-  border-color: #9b87f5;
-  box-shadow: 0 0 0 2px rgba(155, 135, 245, 0.2);
-}
-
-.chat-send-button {
-  background-color: #9b87f5;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-left: 8px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.chat-send-button:hover {
-  background-color: #8670e3;
-}
-
-.chat-send-button:disabled {
-  background-color: #d1d5db;
-  cursor: not-allowed;
-}
-
-/* Typing indicator */
-.typing-indicator {
-  display: flex;
-  align-items: center;
-  padding: 6px 12px;
-  font-size: 12px;
-  color: #64748b;
-}
-
-.typing-indicator-dots {
-  display: flex;
-  margin-left: 8px;
-}
-
-.typing-indicator-dot {
-  background-color: #64748b;
-  border-radius: 50%;
-  width: 4px;
-  height: 4px;
-  margin: 0 1px;
-  animation: typingAnimation 1.4s infinite ease-in-out;
-}
-
-.typing-indicator-dot:nth-child(1) {
-  animation-delay: 0s;
-}
-
-.typing-indicator-dot:nth-child(2) {
-  animation-delay: 0.2s;
-}
-
-.typing-indicator-dot:nth-child(3) {
-  animation-delay: 0.4s;
-}
-
-@keyframes typingAnimation {
-  0% {
-    transform: scale(1);
-    opacity: 0.6;
+@layer components {
+  /* Chat widget container */
+  .chat-widget-container {
+    @apply fixed bottom-4 z-50 flex flex-col items-end;
   }
-  50% {
-    transform: scale(1.5);
-    opacity: 1;
+  
+  .chat-widget-container-left {
+    @apply items-start left-4;
   }
-  100% {
-    transform: scale(1);
-    opacity: 0.6;
+  
+  .chat-widget-container-right {
+    @apply items-end right-4;
+  }
+
+  /* Widget main container */
+  .chat-widget-main {
+    @apply mb-3 bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-200 flex flex-col h-[600px];
+  }
+  
+  .chat-widget-main-compact {
+    @apply w-72;
+  }
+  
+  .chat-widget-main-full {
+    @apply w-80 sm:w-96;
+  }
+  
+  /* Message styling */
+  .chat-message {
+    @apply py-2 px-3 rounded-lg max-w-[80%] mb-2;
+  }
+  
+  .chat-message-user {
+    @apply bg-primary text-white ml-auto rounded-br-sm;
+  }
+  
+  .chat-message-agent {
+    @apply mr-auto rounded-bl-sm;
+  }
+  
+  /* Toggle button styles */
+  .chat-toggle-button {
+    @apply w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-colors;
+  }
+  
+  .chat-toggle-button-open {
+    @apply bg-red-500 hover:bg-red-600;
+  }
+  
+  .chat-toggle-button-closed {
+    @apply bg-primary hover:bg-primary/90;
+  }
+  
+  /* Header styles */
+  .chat-header {
+    @apply border-b p-3 flex items-center justify-between;
+  }
+  
+  /* Input area styles */
+  .chat-input-container {
+    @apply border-t p-3 flex items-end gap-2;
+  }
+  
+  .chat-input-textarea {
+    @apply flex-1 resize-none rounded-lg p-2 max-h-32 min-h-[40px] focus:outline-none focus:ring-2;
+  }
+  
+  .chat-input-button {
+    @apply p-2 rounded-full transition-colors flex-shrink-0;
+  }
+  
+  /* Typing indicator */
+  .typing-indicator {
+    @apply flex items-center py-2;
+  }
+  
+  .typing-indicator-bubble {
+    @apply flex justify-center items-center px-3 py-1 rounded-full bg-opacity-10;
+  }
+  
+  .typing-indicator-dots {
+    @apply flex space-x-1 mr-2;
+  }
+  
+  .typing-indicator-dot {
+    @apply w-2 h-2 rounded-full animate-bounce;
   }
 }

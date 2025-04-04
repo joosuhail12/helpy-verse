@@ -11,7 +11,6 @@ interface ChatWidgetContainerProps {
   workspaceId: string;
   position?: 'left' | 'right';
   compact?: boolean;
-  instanceId?: string;
 }
 
 export type View = 'home' | 'messages' | 'conversation';
@@ -20,8 +19,7 @@ const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({
   onClose, 
   workspaceId,
   position = 'right',
-  compact = false,
-  instanceId = 'default'
+  compact = false 
 }) => {
   const { conversations, currentConversation, selectConversation, createNewConversation } = useChat();
   const { colors } = useThemeContext();
@@ -35,18 +33,10 @@ const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({
 
   // Function to handle starting a new conversation when user sends first message
   const handleStartConversation = useCallback(async (message: string) => {
-    if (!message.trim()) {
-      // If no message, just navigate to the messages view
-      setActiveView('messages');
-      return;
-    }
-    
     setIsLoading(true);
     try {
-      // Use the string ID returned by createNewConversation
       const newConversationId = await createNewConversation(`Conversation ${new Date().toLocaleString()}`);
       selectConversation(newConversationId);
-      setActiveView('conversation');
       // Now we can handle the message in the conversation component
     } catch (error) {
       console.error('Failed to create conversation:', error);
@@ -54,27 +44,6 @@ const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({
       setIsLoading(false);
     }
   }, [createNewConversation, selectConversation]);
-
-  // Function to start a new conversation without a message
-  const handleStartNewConversation = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      // Use the string ID returned by createNewConversation
-      const newConversationId = await createNewConversation(`Conversation ${new Date().toLocaleString()}`);
-      selectConversation(newConversationId);
-      setActiveView('conversation');
-    } catch (error) {
-      console.error('Failed to create conversation:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [createNewConversation, selectConversation]);
-
-  // Fixed: Pass the conversation ID string
-  const handleSelectConversation = useCallback((conversationId: string) => {
-    selectConversation(conversationId);
-    setActiveView('conversation');
-  }, [selectConversation]);
 
   if (isLoading) {
     return <LoadingState compact={compact} />;
@@ -91,9 +60,9 @@ const ChatWidgetContainer: React.FC<ChatWidgetContainerProps> = ({
         workspaceId={workspaceId}
         onClose={onClose}
         onStartConversation={handleStartConversation}
-        onSelectConversation={handleSelectConversation}
-        onStartNewConversation={handleStartNewConversation}
       />
+      
+      <Navigation activeView={activeView} setActiveView={setActiveView} />
     </div>
   );
 };

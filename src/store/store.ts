@@ -11,13 +11,12 @@ import companiesReducer from './slices/companies/companiesSlice';
 import ticketsReducer from './slices/tickets/ticketsSlice';
 import tagsReducer from './slices/tagsSlice';
 import teamsReducer from './slices/teams/teamsSlice';
-import { chatWidgetSettingsReducer } from './slices/chatWidgetSettings/chatWidgetSettingsSlice';
+import { chatWidgetSettingsReducer } from './slices/chatWidgetSettings';
 import { emailChannelsReducer } from './slices/emailChannels/emailChannelsSlice';
 import { cannedResponsesReducer } from './slices/cannedResponses/cannedResponsesSlice';
 import { chatbotsReducer } from './slices/chatbots/chatbotsSlice';
 import userReducer from './slices/user/userSlice';
-import teammatesReducer from './slices/teammates/teammatesSlice';
-import { chatReducer } from './slices/chat/chatSlice';
+import teammatesSlice from './slices/teammates/teammatesSlice';
 
 // Define the root reducer with all slices
 const rootReducer = {
@@ -27,20 +26,17 @@ const rootReducer = {
   contentCenter: contentCenterReducer,
   contacts: contactsReducer,
   companies: companiesReducer,
-  tickets: ticketsReducer,
+  tickets: ticketsReducer, // Renamed from inbox to tickets for clarity
   tags: tagsReducer,
-  teammates: teammatesReducer,
+  teammates: teammatesSlice,
   teams: teamsReducer,
   emailChannels: emailChannelsReducer,
   cannedResponses: cannedResponsesReducer,
   chatbots: chatbotsReducer,
   user: userReducer,
   chatWidgetSettings: chatWidgetSettingsReducer,
-  chat: chatReducer,
 };
 
-// Create store with proper error handling
-console.log("Initializing Redux store...");
 export const store = configureStore({
   reducer: rootReducer,
   middleware: (getDefaultMiddleware) =>
@@ -49,7 +45,6 @@ export const store = configureStore({
     }),
   devTools: process.env.NODE_ENV !== 'production',
 });
-console.log("Redux store initialized successfully");
 
 export type AppDispatch = typeof store.dispatch;
 export type RootState = ReturnType<typeof store.getState>;

@@ -1,17 +1,20 @@
 
 import { createAsyncThunk } from '@reduxjs/toolkit';
+import { TeammatesState } from '../types';
 
-// Export teammate data functionality
+// Export teammates function
 export const exportTeammates = createAsyncThunk(
   'teammates/exportTeammates',
-  async (params: string[] | { format?: string }, { rejectWithValue }) => {
+  async (teammateIds: string[], { getState, rejectWithValue }) => {
     try {
-      console.log('Exporting teammates:', params);
-      // In a real implementation, this would generate and download a file
-      // For now, just log the action
-      return { success: true };
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to export teammates');
+      const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+      await delay(1000); // Simulate API call until endpoint is ready
+      const state = getState() as { teammates: TeammatesState };
+      const selectedTeammates = state.teammates.teammates.filter(t => teammateIds.includes(t.id));
+      console.log('Exporting teammates:', selectedTeammates);
+      return teammateIds;
+    } catch (error) {
+      return rejectWithValue('Failed to export teammates');
     }
   }
 );
