@@ -3,7 +3,11 @@
  * Common utility helpers used throughout the application
  */
 import { cookieFunctions } from "@/api/services/http";
-import { handleSetToken as tokenManagerSetToken } from "@/utils/auth/tokenManager";
+import { 
+  handleSetToken as tokenManagerSetToken,
+  getWorkspaceId,
+  setWorkspaceId as setWorkspaceIdFn
+} from "@/utils/auth/tokenManager";
 
 // Re-export storage functions from cookieManager to avoid circular dependencies
 export const { getCookie, setCookie, handleLogout } = cookieFunctions;
@@ -26,9 +30,7 @@ export const decryptBase64 = (encoded: string): string => {
 // Set workspace ID in localStorage
 export const setWorkspaceId = (workspaceId: string): void => {
   if (!workspaceId) return;
-  
-  // Set in localStorage
-  localStorage.setItem("workspaceId", workspaceId);
+  setWorkspaceIdFn(workspaceId);
   console.log(`Workspace ID set to: ${workspaceId}`);
 };
 
