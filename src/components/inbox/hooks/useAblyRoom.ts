@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useToast } from "@/hooks/use-toast";
-import { getAblyChatRoom, getAblyChatClient } from '@/utils/ably';
+import { getAblyChatRoom, getAblyChatClient, initAbly } from '@/utils/ably';
 import debounce from 'lodash/debounce';
 import type { Message, UserPresence } from '../types';
 import type { Ticket } from '@/types/ticket';
@@ -25,7 +25,11 @@ export const useAblyRoom = (ticket: Ticket) => {
     // Get current user info once when component mounts
     useEffect(() => {
         const authState = store.getState() as any;
-        currentUserRef.current = authState?.auth?.user?.data?.name || 'Agent';
+        const userName = authState?.auth?.user?.data?.name;
+        console.log('User name from Redux store:', userName);
+        console.log('Auth state:', authState?.auth);
+        currentUserRef.current = userName || 'Agent';
+        console.log('Using sender name:', currentUserRef.current);
     }, [store]);
 
     // Initialize messages with the initial ticket message
@@ -47,6 +51,7 @@ export const useAblyRoom = (ticket: Ticket) => {
     useEffect(() => {
         let isComponentMounted = true;
         let roomInstance: any;
+        let directChannelSubscription: any = null;
 
         const setupRoom = async () => {
             setIsLoading(true);
@@ -54,6 +59,70 @@ export const useAblyRoom = (ticket: Ticket) => {
 
             try {
                 console.log('Setting up chat room for ticket:', ticket.id);
+
+                // DIRECT CHANNEL SUBSCRIPTION
+                // Subscribe directly to the Ably channel in addition to the Chat SDK
+                try {
+                    const ablyClient = await initAbly();
+                    if (ablyClient) {
+                        const channelName = `ticket:${ticket.id}`;
+                        const channel = ablyClient.channels.get(channelName);
+
+                        // Store subscription for cleanup
+                        directChannelSubscription = channel.subscribe('message', (message: any) => {
+                            if (!isComponentMounted) return;
+
+                            console.log('Received direct channel message:', message);
+
+                            // Extract data from the message
+                            const data = message.data;
+                            if (!data) {
+                                console.error('Message data is empty:', message);
+                                return;
+                            }
+
+                            const extras = data.extras || {};
+
+                            // Set sender name based on message source
+                            let senderName = extras.senderName || extras.sender || 'Unknown';
+
+                            // Get message content, ensuring it contains HTML
+                            let content = data.text || '';
+                            if (content && !content.includes('<')) {
+                                // If content doesn't appear to be HTML, wrap it in paragraph tags
+                                content = `<p>${content}</p>`;
+                            }
+
+                            const newMsg: Message = {
+                                id: message.id || `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                                content: content,
+                                sender: senderName,
+                                timestamp: extras.timestamp || new Date().toISOString(),
+                                isCustomer: extras.isCustomer === true,
+                                type: extras.type || 'message',
+                                readBy: extras.readBy || []
+                            };
+
+                            console.log('Adding direct message to state:', newMsg);
+
+                            // Use a function to update messages to prevent race conditions
+                            setMessages(prev => {
+                                // Check if this message ID already exists to prevent duplicates
+                                if (prev.some(m => m.id === newMsg.id)) {
+                                    console.log('Message already exists in state, not adding duplicate');
+                                    return prev;
+                                }
+
+                                console.log('Adding new message to state array, current count:', prev.length);
+                                return [...prev, newMsg];
+                            });
+                        });
+
+                        console.log('Set up direct channel subscription for', channelName);
+                    }
+                } catch (err) {
+                    console.error('Error setting up direct channel subscription:', err);
+                }
 
                 // Get chat client
                 const chatClient = await getAblyChatClient();
@@ -66,6 +135,11 @@ export const useAblyRoom = (ticket: Ticket) => {
 
                 // Get chat room with all features enabled
                 const room = await chatClient.rooms.get(`ticket:${ticket.id}`, AllFeaturesEnabled);
+
+                // Log diagnostic info using type assertion
+                console.log('Room has messages object:', !!room.messages);
+
+                // Store room instance
                 roomInstance = room;
                 roomRef.current = room; // Store room in ref for access in other methods
 
@@ -90,10 +164,26 @@ export const useAblyRoom = (ticket: Ticket) => {
                     }
                 });
 
-                // Attempt to attach to the room
+                // Attaching to room
                 console.log('Attaching to room');
                 await room.attach();
                 console.log('Room attached');
+
+                // Log additional diagnostics with safe property access
+                try {
+                    // Safely access internal properties with type assertion
+                    const internalRoom = room as any;
+                    if (internalRoom._ably && internalRoom._ably.channels) {
+                        const channelState = internalRoom._ably.channels.get(internalRoom.id)?.state;
+                        console.log('Channel state:', channelState);
+                    }
+
+                    if (internalRoom._ably && internalRoom._ably.connection) {
+                        console.log('Connection state:', internalRoom._ably.connection.state);
+                    }
+                } catch (err) {
+                    console.warn('Could not access internal room properties:', err);
+                }
 
                 setIsLoading(false);
             } catch (error) {
@@ -110,6 +200,13 @@ export const useAblyRoom = (ticket: Ticket) => {
 
             console.log('Setting up message subscription');
 
+            // Verify that room.messages exists and has a subscribe method
+            if (!room.messages || typeof room.messages.subscribe !== 'function') {
+                console.error('Room messages capability is not available!');
+                setError('Message functionality is not available. Please refresh and try again.');
+                return;
+            }
+
             // Subscribe to messages
             room.messages.subscribe((messageEvent: any) => {
                 if (!isComponentMounted) return;
@@ -123,11 +220,14 @@ export const useAblyRoom = (ticket: Ticket) => {
 
                 // Set sender name based on message source
                 let senderName;
+
                 if (isFromCurrentUser) {
+                    // This is a message from the current agent
                     senderName = currentUserRef.current;
-                } else if (extras.isCustomer || !extras.sender || extras.sender === 'customer') {
-                    // For customer messages, use the ticket's customer name
-                    senderName = ticket.customer || 'Customer';
+                } else if (extras.isCustomer === true) {
+                    // This is explicitly marked as a customer message
+                    // Use the ticket's customer name with fallback
+                    senderName = ticket.customer || extras.senderName || 'Customer';
                 } else {
                     // For other agent messages
                     senderName = extras.senderName || extras.sender || 'Agent';
@@ -138,7 +238,7 @@ export const useAblyRoom = (ticket: Ticket) => {
                     content: message.text || '',
                     sender: senderName,
                     timestamp: messageEvent.timestamp || new Date().toISOString(),
-                    isCustomer: extras.isCustomer || (!isFromCurrentUser && !extras.sender),
+                    isCustomer: extras.isCustomer === true,
                     type: extras.type || 'message',
                     readBy: extras.readBy || []
                 };
@@ -276,6 +376,16 @@ export const useAblyRoom = (ticket: Ticket) => {
             console.log('Cleaning up room');
             isComponentMounted = false;
 
+            // Clean up direct channel subscription
+            if (directChannelSubscription) {
+                try {
+                    directChannelSubscription.unsubscribe();
+                    console.log('Unsubscribed from direct channel');
+                } catch (err) {
+                    console.warn('Error unsubscribing from direct channel:', err);
+                }
+            }
+
             // Add a flag to prevent additional operations during cleanup
             if (roomInstance) {
                 try {
@@ -384,47 +494,112 @@ export const useAblyRoom = (ticket: Ticket) => {
         }
     }, [debouncedStopTyping]);
 
-    // Send message functionality
+    // Completely replace the handleSendMessage function with a more direct approach
     const handleSendMessage = async () => {
-        if (!newMessage.trim()) return;
+        console.log("handleSendMessage called in useAblyRoom");
+        if (!newMessage || !newMessage.trim()) {
+            console.log("Message is empty, not sending");
+            return;
+        }
 
         setIsSending(true);
+        console.log("Setting isSending to true");
+
         try {
-            const room = await getAblyChatRoom(`ticket:${ticket.id}`);
-            if (!room || (room as any)._isBeingCleaned) {
-                throw new Error('Could not connect to chat room or room is being cleaned up');
+            // Try to get an Ably client directly
+            console.log("Getting Ably client directly");
+            const ablyClient = await initAbly();
+            if (!ablyClient) {
+                throw new Error("Failed to initialize Ably client");
             }
 
-            // Get current user name
-            const senderName = currentUserRef.current;
+            // Create the channel name using the ticket ID
+            const channelName = `ticket:${ticket.id}`;
+            console.log("Using channel name:", channelName);
 
+            // Get or create the channel
+            const channel = ablyClient.channels.get(channelName);
+            console.log("Got channel:", !!channel);
+
+            // Get chat client to try both methods of sending
+            const chatClient = await getAblyChatClient();
+            if (!chatClient) {
+                throw new Error("Failed to initialize Ably Chat client");
+            }
+
+            // Prepare the message data - make sure it's compatible with both the ConversationPanel and AblyTest
+            const senderName = currentUserRef.current || "Agent";
             const messageData = {
                 text: newMessage,
                 extras: {
                     sender: senderName,
-                    senderName: senderName, // Add explicit sender name
+                    senderName: senderName,
+                    senderId: senderName, // Add senderId to match AblyTest format
                     isCustomer: false,
-                    type: isInternalNote ? 'internal_note' : 'message',
+                    type: isInternalNote ? "internal_note" : "message",
                     readBy: [senderName],
-                    timestamp: new Date().toISOString() // Ensure timestamp is set
+                    timestamp: new Date().toISOString()
                 }
             };
+            console.log("Message data prepared:", JSON.stringify(messageData));
 
-            await room.messages.send(messageData);
-            setNewMessage('');
+            // IMPORTANT: Try both methods to ensure compatibility with both components
+
+            // 1. Publish directly to the channel (for the ConversationPanel)
+            console.log("Publishing message directly to channel");
+            await channel.publish("message", messageData);
+            console.log("Message published successfully to direct channel");
+
+            // 2. Also try sending via the Chat SDK (for the AblyTest component)
+            try {
+                console.log("Attempting to send via Chat SDK as well");
+                // Get room
+                const chatRoom = await chatClient.rooms.get(channelName);
+
+                // Send via Chat SDK
+                if (chatRoom && chatRoom.messages && typeof chatRoom.messages.send === 'function') {
+                    await chatRoom.messages.send(messageData);
+                    console.log("Message also sent via Chat SDK");
+                } else {
+                    console.warn("Chat SDK message sending not available");
+                }
+            } catch (err) {
+                console.warn("Could not send via Chat SDK (this is okay if direct channel publish worked):", err);
+            }
+
+            // To ensure the message appears immediately, add it directly to our state
+            // This helps in case there are issues with the subscription
+            const newMsg: Message = {
+                id: `local-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                content: newMessage,
+                sender: senderName,
+                timestamp: new Date().toISOString(),
+                isCustomer: false,
+                type: isInternalNote ? "internal_note" : "message",
+                readBy: [senderName]
+            };
+
+            console.log("Adding local copy of sent message to state");
+            setMessages(prev => [...prev, newMsg]);
+
+            // Clear the message and update state
+            setNewMessage("");
             setIsInternalNote(false);
 
             toast({
                 description: isInternalNote ? "Internal note added" : "Message sent successfully",
             });
         } catch (error) {
-            console.error('Error sending message:', error);
+            console.error("Error in direct message send:", error);
+            const errorMsg = error instanceof Error ? error.message : "Unknown error";
+
             toast({
                 variant: "destructive",
-                description: "Failed to send message. Please try again.",
+                description: `Failed to send message: ${errorMsg}`,
             });
         } finally {
             setIsSending(false);
+            console.log("Setting isSending to false");
         }
     };
 

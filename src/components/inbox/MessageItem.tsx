@@ -192,13 +192,15 @@ const MessageItem = ({ message, ticket }: MessageItemProps) => {
     <div className="flex gap-3">
       <Avatar className="h-8 w-8">
         <span className="text-xs">
-          {message.isCustomer ? ticket.customer[0] : 'A'}
+          {message.isCustomer
+            ? ticket.customer[0]
+            : (message.sender ? message.sender[0].toUpperCase() : 'A')}
         </span>
       </Avatar>
       <div className="flex-1">
         <div className="flex items-center gap-2">
           <span className="font-medium text-sm">
-            {message.isCustomer ? ticket.customer : 'Agent'}
+            {message.isCustomer ? ticket.customer : message.sender || 'Agent'}
           </span>
           <span className="text-xs text-muted-foreground flex items-center gap-1">
             <Clock className="h-3 w-3" />

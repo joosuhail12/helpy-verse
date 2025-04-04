@@ -150,7 +150,7 @@ const AblyTest = () => {
 
             // Set up message handler before attaching
             chatRoom.messages.subscribe((messageEvent: any) => {
-                console.log('Received message:', messageEvent);
+                console.log('Received message via Chat SDK:', messageEvent);
 
                 const msg = messageEvent.message;
                 const extras = msg.extras || {};
@@ -158,14 +158,43 @@ const AblyTest = () => {
                 // Display the sender name from extras
                 const senderName = extras.senderName || extras.sender || 'Unknown';
 
-                setMessages(prev => [...prev, {
-                    id: messageEvent.id,
-                    content: msg.text || '',
-                    sender: senderName,
-                    timestamp: messageEvent.timestamp,
-                    isSystem: extras.isSystem || false,
-                    isCurrentUser: extras.sender === 'You' || extras.senderId === userId
-                }]);
+                // Ensure content has HTML format if needed
+                let content = msg.text || '';
+                if (content && !content.includes('<')) {
+                    content = `<p>${content}</p>`;
+                }
+
+                // Check if message is from current user
+                const isCurrentUser =
+                    extras.sender === username ||
+                    extras.senderId === userId ||
+                    extras.senderName === username;
+
+                setMessages(prev => {
+                    // Check for duplicates before adding
+                    const msgId = messageEvent.id || `sdk-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+
+                    // Look for matching ID or very similar content+time
+                    const isDuplicate = prev.some(m =>
+                        m.id === msgId ||
+                        (m.content === content && Math.abs(new Date(m.timestamp).getTime() - new Date(messageEvent.timestamp || Date.now()).getTime()) < 1000)
+                    );
+
+                    if (isDuplicate) {
+                        console.log('Chat SDK message appears to be duplicate, not adding');
+                        return prev;
+                    }
+
+                    console.log('Adding Chat SDK message to state');
+                    return [...prev, {
+                        id: msgId,
+                        content: content,
+                        sender: senderName,
+                        timestamp: messageEvent.timestamp,
+                        isSystem: extras.isSystem || false,
+                        isCurrentUser: isCurrentUser
+                    }];
+                });
             });
 
             // Set up status change handler
@@ -224,6 +253,71 @@ const AblyTest = () => {
             console.log('Successfully attached to room');
             setRoom(chatRoom);
 
+            // Add direct channel subscription for messages sent via direct publish
+            try {
+                console.log('Setting up direct channel subscription in AblyTest');
+                const directChannel = ablyClient.channels.get(fullRoomId);
+
+                directChannel.subscribe('message', (message: any) => {
+                    console.log('AblyTest received direct channel message:', message);
+
+                    const data = message.data;
+                    if (!data) {
+                        console.error('Direct message data is empty:', message);
+                        return;
+                    }
+
+                    const extras = data.extras || {};
+                    const senderName = extras.senderName || extras.sender || 'Unknown';
+
+                    // Check if this message is from the current user - we need to check multiple identifiers
+                    const isCurrentUser =
+                        extras.sender === username ||
+                        extras.senderId === userId ||
+                        extras.senderName === username;
+
+                    // Add the message to our state if it doesn't already exist
+                    setMessages(prev => {
+                        // Generate a unique ID if needed
+                        const msgId = message.id || `direct-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+
+                        // Check for duplicates - look for matching ID or very similar content+time
+                        const isDuplicate = prev.some(m =>
+                            m.id === msgId ||
+                            (m.content === data.text && Math.abs(new Date(m.timestamp).getTime() - new Date(extras.timestamp || Date.now()).getTime()) < 1000)
+                        );
+
+                        if (isDuplicate) {
+                            console.log('Message appears to be a duplicate, not adding');
+                            return prev;
+                        }
+
+                        // Ensure content has HTML format if needed
+                        let content = data.text || '';
+                        if (content && !content.includes('<')) {
+                            content = `<p>${content}</p>`;
+                        }
+
+                        const newMsg = {
+                            id: msgId,
+                            content: content,
+                            sender: senderName,
+                            timestamp: extras.timestamp || new Date().toISOString(),
+                            isSystem: extras.isSystem || false,
+                            isCurrentUser: isCurrentUser
+                        };
+
+                        console.log('Adding direct message to AblyTest state:', newMsg);
+                        return [...prev, newMsg];
+                    });
+                });
+
+                setDiagnosticInfo(prev => `${prev}\nDirect channel subscription also set up`);
+            } catch (err) {
+                console.error('Error setting up direct channel subscription:', err);
+                setDiagnosticInfo(prev => `${prev}\nError setting up direct subscription: ${err.message}`);
+            }
+
             // Add presence diagnostics
             try {
                 const hasPresence = chatRoom.presence &&
@@ -259,16 +353,37 @@ const AblyTest = () => {
 
         setIsSending(true);
         try {
-            await room.messages.send({
+            // Prepare the message data
+            const messageData = {
                 text: message,
                 extras: {
-                    sender: 'You',
+                    sender: username,  // Use actual username as sender (not 'You')
                     senderName: username, // Include the actual user name
                     senderId: userId, // Include user ID for identification
                     userInitials: userInitials,
                     isCustomer: true // Mark as customer for the conversation panel
                 }
-            });
+            };
+
+            // Method 1: Send via Chat SDK
+            await room.messages.send(messageData);
+
+            // Method 2: Also publish directly to the channel
+            try {
+                console.log("Also publishing directly to channel for compatibility");
+                const ablyClient = await initAbly();
+                if (ablyClient) {
+                    // Get the raw channel with the same name
+                    const channelName = room.id; // This should be "ticket:roomId"
+                    const channel = ablyClient.channels.get(channelName);
+
+                    // Publish directly
+                    await channel.publish("message", messageData);
+                    console.log("Message published directly to channel:", channelName);
+                }
+            } catch (err) {
+                console.warn("Could not publish directly to channel (this is okay if Chat SDK worked):", err);
+            }
 
             setMessage('');
         } catch (error) {
@@ -509,7 +624,7 @@ const AblyTest = () => {
                                                 <div className="font-medium text-xs mb-1">
                                                     {msg.sender} • {new Date(msg.timestamp).toLocaleTimeString()}
                                                 </div>
-                                                <div>{msg.content}</div>
+                                                <div dangerouslySetInnerHTML={{ __html: msg.content }} />
                                             </div>
                                         ))}
                                         <div ref={messagesEndRef} />

@@ -28,17 +28,39 @@ const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
   } = useConversation(ticket);
 
   const handleKeyPress = async (e: React.KeyboardEvent<HTMLDivElement>) => {
+    console.log("Key press in ConversationPanel:", e.key);
+
     if (e.key === 'Enter' && !e.shiftKey) {
+      console.log("Enter key pressed without shift - attempting to send message");
       e.preventDefault();
-      await handleSendMessage();
-    } else {
-      if (typeof handleTyping === 'function') {
-        try {
-          await handleTyping();
-        } catch (err) {
-          console.error('Error handling typing indicator:', err);
-        }
+
+      // Debug message content
+      console.log("Message content before sending:", newMessage);
+
+      if (!newMessage || newMessage.trim() === '' || newMessage === '<p></p>') {
+        console.log("Message is empty, not sending");
+        return;
       }
+
+      // Call the send message function
+      await handleSendMessageWrapper();
+    } else if (e.key !== 'Enter' && typeof handleTyping === 'function') {
+      try {
+        await handleTyping();
+      } catch (err) {
+        console.error('Error handling typing indicator:', err);
+      }
+    }
+  };
+
+  const handleSendMessageWrapper = async () => {
+    console.log("Send button clicked in ConversationPanel");
+    console.log("Current message content:", newMessage);
+
+    try {
+      await handleSendMessage();
+    } catch (error) {
+      console.error("Error in ConversationPanel handleSendMessage:", error);
     }
   };
 
@@ -76,7 +98,7 @@ const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
           newMessage={newMessage}
           onMessageChange={setNewMessage}
           onKeyPress={handleKeyPress}
-          onSendMessage={handleSendMessage}
+          onSendMessage={handleSendMessageWrapper}
           ticket={ticket}
           isSending={isSending}
           isInternalNote={isInternalNote}

@@ -41,18 +41,23 @@ const MessageInput = ({
   // Safely access customer name with fallback
   const customerName = customerData?.name || ticket?.customer || 'Customer';
 
-  // Create content change handler first
+  // Improve the handleContentChange function to ensure HTML is correctly captured
   const handleContentChange = useCallback(({ editor }: { editor: any }) => {
-    if (editor) {
+    if (editor && typeof editor.getHTML === 'function') {
       const html = editor.getHTML();
-      onMessageChange(html);
+      console.log("Editor content changed:", html);
 
-      // Trigger typing indicator whenever content changes
-      if (html && html !== '<p></p>' && handleTyping) {
-        handleTyping();
+      // Only update if the content has actually changed
+      if (html !== newMessage) {
+        onMessageChange(html);
+
+        // Trigger typing indicator whenever content changes
+        if (html && html !== '<p></p>' && handleTyping) {
+          handleTyping();
+        }
       }
     }
-  }, [onMessageChange, handleTyping]);
+  }, [onMessageChange, handleTyping, newMessage]);
 
   // Create editor config with proper wrapper function
   const editorConfig = createEditorConfig(
@@ -114,6 +119,52 @@ const MessageInput = ({
     }
   };
 
+  // Also improve the handleSendClick function
+  const handleSendClick = () => {
+    console.log("Send button clicked in MessageInput");
+
+    // Make sure we have the latest content from the editor
+    if (editor && typeof editor.getHTML === 'function') {
+      const currentHTML = editor.getHTML();
+      console.log("Current editor HTML:", currentHTML);
+
+      // Update the message if it's different
+      if (currentHTML !== newMessage) {
+        onMessageChange(currentHTML);
+      }
+    }
+
+    // Debug the current message state
+    console.log("Current message state:", newMessage);
+
+    // Check if the message is valid before sending
+    const content = newMessage || '';
+    const isEmptyHtml = !content ||
+      content.trim() === '' ||
+      content === '<p></p>' ||
+      content === '<p><br></p>' ||
+      content === '<p>&nbsp;</p>';
+
+    if (isEmptyHtml) {
+      console.log("Message is empty or contains only HTML placeholders, not sending");
+      return;
+    }
+
+    // Make sure our message has proper HTML structure
+    // If it doesn't appear to be HTML, wrap it in paragraph tags
+    let messageToSend = content;
+    if (messageToSend && !messageToSend.startsWith('<')) {
+      messageToSend = `<p>${messageToSend}</p>`;
+      // Update the message state with proper HTML
+      onMessageChange(messageToSend);
+    }
+
+    console.log("Proceeding to send message:", messageToSend);
+
+    // Call the provided onSendMessage function
+    onSendMessage();
+  };
+
   return (
     <div className="border-t p-4 bg-white">
       <div className={cn(
@@ -161,7 +212,7 @@ const MessageInput = ({
             disabled && "opacity-50 cursor-not-allowed",
             isInternalNote && "bg-yellow-500"
           )}
-          onClick={onSendMessage}
+          onClick={handleSendClick}
           disabled={disabled || isSending}
         >
           {isSending ? 'Sending...' : isInternalNote ? 'Add Note' : 'Send Reply'}
