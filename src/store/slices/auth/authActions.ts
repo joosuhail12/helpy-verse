@@ -18,9 +18,23 @@ export const loginUser = createAsyncThunk(
     try {
       console.log('Attempting login with:', credentials.email);
       
+      if (!credentials.email || !credentials.email.trim()) {
+        return rejectWithValue({ message: 'Email is required' });
+      }
+      
+      if (!credentials.password || !credentials.password.trim()) {
+        return rejectWithValue({ message: 'Password is required' });
+      }
+      
+      // Ensure clean data by trimming whitespace
+      const cleanCredentials = {
+        email: credentials.email.trim(),
+        password: credentials.password.trim()
+      };
+      
       const response = await HttpClient.apiClient.post<AuthResponse>(
         '/auth/login', 
-        credentials
+        cleanCredentials
       );
       
       if (!response.data?.data?.accessToken?.token) {
@@ -51,7 +65,25 @@ export const loginUser = createAsyncThunk(
       return response.data;
     } catch (error: any) {
       console.error('Login error:', error);
-      return rejectWithValue(error.response?.data || { message: error.message });
+      
+      // Check for specific error status codes
+      if (error.response?.status === 422) {
+        // Validation error
+        return rejectWithValue({
+          message: error.response?.data?.message || 'Invalid email or password',
+          code: error.response?.data?.code || 'VALIDATION_FAILED'
+        });
+      }
+      
+      // Handle network errors
+      if (!navigator.onLine || error.message?.includes('Network Error')) {
+        return rejectWithValue({
+          message: 'Cannot connect to the server. Please check your internet connection.',
+          isOfflineError: true
+        });
+      }
+      
+      return rejectWithValue(error.response?.data || { message: error.message || 'Login failed' });
     }
   }
 );
@@ -61,9 +93,27 @@ export const registerUser = createAsyncThunk(
   'auth/register',
   async (userData: RegistrationCredentials, { rejectWithValue }) => {
     try {
+      // Validate required fields
+      if (!userData.email || !userData.email.trim()) {
+        return rejectWithValue({ message: 'Email is required' });
+      }
+      
+      if (!userData.password || !userData.password.trim()) {
+        return rejectWithValue({ message: 'Password is required' });
+      }
+      
+      // Clean user data
+      const cleanUserData = {
+        ...userData,
+        email: userData.email.trim(),
+        password: userData.password.trim(),
+        fullName: userData.fullName?.trim(),
+        companyName: userData.companyName?.trim()
+      };
+      
       const response = await HttpClient.apiClient.post<AuthResponse>(
         '/auth/register', 
-        userData
+        cleanUserData
       );
       
       if (!response.data?.data?.accessToken?.token) {
@@ -88,7 +138,7 @@ export const registerUser = createAsyncThunk(
       return response.data;
     } catch (error: any) {
       console.error('Registration error:', error);
-      return rejectWithValue(error.response?.data || { message: error.message });
+      return rejectWithValue(error.response?.data || { message: error.message || 'Registration failed' });
     }
   }
 );
@@ -98,15 +148,23 @@ export const requestPasswordReset = createAsyncThunk(
   'auth/requestReset',
   async (data: PasswordResetRequest, { rejectWithValue }) => {
     try {
+      if (!data.email || !data.email.trim()) {
+        return rejectWithValue({ message: 'Email is required' });
+      }
+      
+      const cleanData = {
+        email: data.email.trim()
+      };
+      
       const response = await HttpClient.apiClient.post(
         '/auth/password/reset/request', 
-        data
+        cleanData
       );
       
       return response.data;
     } catch (error: any) {
       console.error('Password reset request error:', error);
-      return rejectWithValue(error.response?.data || { message: error.message });
+      return rejectWithValue(error.response?.data || { message: error.message || 'Password reset request failed' });
     }
   }
 );
@@ -116,15 +174,31 @@ export const confirmPasswordReset = createAsyncThunk(
   'auth/confirmReset',
   async (data: PasswordResetConfirmation, { rejectWithValue }) => {
     try {
+      if (!data.token || !data.token.trim()) {
+        return rejectWithValue({ message: 'Reset token is required' });
+      }
+      
+      if (!data.password || !data.password.trim()) {
+        return rejectWithValue({ message: 'New password is required' });
+      }
+      
+      const cleanData = {
+        token: data.token.trim(),
+        password: data.password.trim(),
+        confirmPassword: data.confirmPassword?.trim(),
+        rid: data.rid,
+        tenantId: data.tenantId
+      };
+      
       const response = await HttpClient.apiClient.post(
         '/auth/password/reset/confirm', 
-        data
+        cleanData
       );
       
       return response.data;
     } catch (error: any) {
       console.error('Password reset confirmation error:', error);
-      return rejectWithValue(error.response?.data || { message: error.message });
+      return rejectWithValue(error.response?.data || { message: error.message || 'Password reset failed' });
     }
   }
 );
@@ -181,7 +255,7 @@ export const refreshAuthToken = createAsyncThunk(
         });
       }
       
-      return rejectWithValue(error.response?.data || { message: error.message });
+      return rejectWithValue(error.response?.data || { message: error.message || 'Token refresh failed' });
     }
   }
 );

@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from './useAppDispatch';
 import { useAppSelector } from './useAppSelector';
-import { loginUser } from '../store/slices/authSlice';
+import { loginUser } from '../store/slices/auth/authActions';
 import { toast } from '../components/ui/use-toast';
 import { AuthService } from '@/services/authService';
 import { WorkspaceService } from '@/services/workspaceService';
@@ -67,7 +67,24 @@ export const useLogin = (redirectPath: string = '/home/inbox/all') => {
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isSubmitting || !email || !password) return;
+    
+    // Validate inputs before submitting
+    if (isSubmitting || !email.trim() || !password.trim()) {
+      if (!email.trim()) {
+        toast({
+          title: 'Validation Error',
+          description: 'Email is required',
+          variant: 'destructive',
+        });
+      } else if (!password.trim()) {
+        toast({
+          title: 'Validation Error',
+          description: 'Password is required',
+          variant: 'destructive',
+        });
+      }
+      return;
+    }
     
     // Check if offline first
     if (isOffline || HttpClient.isOffline()) {
@@ -83,8 +100,11 @@ export const useLogin = (redirectPath: string = '/home/inbox/all') => {
       setIsSubmitting(true);
       console.log('Login attempt for:', email);
       
-      // Real login process
-      const result = await dispatch(loginUser({ email, password })).unwrap();
+      // Real login process with trimmed values to avoid whitespace issues
+      const result = await dispatch(loginUser({ 
+        email: email.trim(), 
+        password: password.trim() 
+      })).unwrap();
       
       // Handle successful login
       if (result && result.data && result.data.accessToken) {
