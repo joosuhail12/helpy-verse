@@ -21,6 +21,8 @@ export interface PasswordResetConfirmation {
   token: string;
   password: string;
   confirmPassword?: string;
+  rid?: string;
+  tenantId?: string;
 }
 
 export interface AuthResponse {
@@ -33,6 +35,8 @@ export interface AuthResponse {
     defaultWorkspaceId?: string;
     email?: string;
     role?: string;
+    profile?: UserProfile;
+    currentWorkspace?: any;
   };
   message: string;
   status: string;

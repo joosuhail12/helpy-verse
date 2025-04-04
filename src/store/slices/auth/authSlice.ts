@@ -185,7 +185,7 @@ const authSlice = createSlice({
             ...state.user,
             data: {
               ...state.user.data,
-              profile: action.payload?.data?.profile || state.user.data.profile
+              profile: action.payload?.data?.profile || action.payload?.data
             }
           };
         } else {
