@@ -1,23 +1,50 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/components/ui/use-toast';
 import ChatWidgetPreview from './ChatWidgetPreview';
+import { DataCollectionConfig } from '@/components/automation/chatbots/DataCollectionConfig';
+
+// Mock data for available fields - in a real implementation, this would be fetched from the API
+const AVAILABLE_FIELDS = [
+  // Contact fields
+  { id: 'contact_firstname', name: 'First Name', type: 'text', object: 'contact' },
+  { id: 'contact_lastname', name: 'Last Name', type: 'text', object: 'contact' },
+  { id: 'contact_email', name: 'Email', type: 'email', object: 'contact' },
+  { id: 'contact_phone', name: 'Phone Number', type: 'phone', object: 'contact' },
+  { id: 'contact_title', name: 'Job Title', type: 'text', object: 'contact' },
+  { id: 'contact_timezone', name: 'Timezone', type: 'text', object: 'contact' },
+  
+  // Company fields
+  { id: 'company_name', name: 'Company Name', type: 'text', object: 'company' },
+  { id: 'company_website', name: 'Website', type: 'text', object: 'company' },
+  { id: 'company_industry', name: 'Industry', type: 'text', object: 'company' },
+  { id: 'company_size', name: 'Company Size', type: 'number', object: 'company' },
+];
 
 const BehaviorSettings: React.FC = () => {
   // In a real implementation, these would be fetched from the backend
-  const [autoOpen, setAutoOpen] = useState(false);
-  const [autoOpenDelay, setAutoOpenDelay] = useState(30);
-  const [enableHumanHandoff, setEnableHumanHandoff] = useState(true);
   const [collectUserData, setCollectUserData] = useState(true);
-  const [inactivityTimeout, setInactivityTimeout] = useState(60);
-  const [inactivityAction, setInactivityAction] = useState<string>('prompt');
-  const [queryHandling, setQueryHandling] = useState<string>('continuous');
+  const [welcomeMessage, setWelcomeMessage] = useState("Hi there! 👋 How can I help you today?");
+  const [selectedFields, setSelectedFields] = useState([
+    {
+      id: 'contact_email',
+      label: 'Email',
+      type: 'email',
+      required: true
+    },
+    {
+      id: 'contact_firstname',
+      label: 'First Name',
+      type: 'text',
+      required: false
+    }
+  ]);
 
   const handleSaveChanges = () => {
     // In a real implementation, we would save changes to the backend here
@@ -27,53 +54,27 @@ const BehaviorSettings: React.FC = () => {
     });
   };
 
+  const handleFieldsChange = (fields) => {
+    setSelectedFields(fields);
+  };
+
   return (
     <div className="space-y-8">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="space-y-6">
-          <h2 className="text-lg font-medium">Engagement</h2>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="autoOpen">Auto-Open Chat</Label>
-                <p className="text-sm text-muted-foreground">Automatically open the chat after a delay</p>
-              </div>
-              <Switch
-                id="autoOpen"
-                checked={autoOpen}
-                onCheckedChange={setAutoOpen}
-              />
-            </div>
-            
-            {autoOpen && (
-              <div className="space-y-2">
-                <Label htmlFor="autoOpenDelay">Auto-Open Delay (seconds)</Label>
-                <Input
-                  id="autoOpenDelay"
-                  type="number"
-                  min="0"
-                  value={autoOpenDelay}
-                  onChange={(e) => setAutoOpenDelay(parseInt(e.target.value) || 0)}
-                />
-              </div>
-            )}
-          </div>
-
-          <Separator />
-
-          <h2 className="text-lg font-medium">Human Handoff</h2>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="humanHandoff">Enable Human Handoff</Label>
-                <p className="text-sm text-muted-foreground">Allow users to request human assistance</p>
-              </div>
-              <Switch
-                id="humanHandoff"
-                checked={enableHumanHandoff}
-                onCheckedChange={setEnableHumanHandoff}
-              />
-            </div>
+          <h2 className="text-lg font-medium">Welcome Message</h2>
+          <div className="space-y-2">
+            <Label htmlFor="welcomeMessage">Initial Message</Label>
+            <Textarea 
+              id="welcomeMessage"
+              placeholder="Enter the message that will be shown when the chat widget is first opened"
+              className="min-h-[100px] resize-none"
+              value={welcomeMessage}
+              onChange={(e) => setWelcomeMessage(e.target.value)}
+            />
+            <p className="text-sm text-muted-foreground">
+              This message will be displayed to users when they first open the chat widget.
+            </p>
           </div>
 
           <Separator />
@@ -83,7 +84,7 @@ const BehaviorSettings: React.FC = () => {
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label htmlFor="collectData">Collect User Data</Label>
-                <p className="text-sm text-muted-foreground">Collect name, email before starting chat</p>
+                <p className="text-sm text-muted-foreground">Collect information from users before starting chat</p>
               </div>
               <Switch
                 id="collectData"
@@ -91,49 +92,17 @@ const BehaviorSettings: React.FC = () => {
                 onCheckedChange={setCollectUserData}
               />
             </div>
-          </div>
 
-          <Separator />
-
-          <h2 className="text-lg font-medium">Conversation Handling</h2>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="queryHandling">Query Handling</Label>
-              <Select value={queryHandling} onValueChange={setQueryHandling}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select query handling method" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="single">Single Query (Answer one question at a time)</SelectItem>
-                  <SelectItem value="continuous">Continuous (Remember conversation history)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="inactivityTimeout">Inactivity Timeout (seconds)</Label>
-              <Input
-                id="inactivityTimeout"
-                type="number"
-                min="0"
-                value={inactivityTimeout}
-                onChange={(e) => setInactivityTimeout(parseInt(e.target.value) || 0)}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="inactivityAction">Inactivity Action</Label>
-              <Select value={inactivityAction} onValueChange={setInactivityAction}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select action" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="close">Close chat</SelectItem>
-                  <SelectItem value="handoff">Handoff to human</SelectItem>
-                  <SelectItem value="prompt">Prompt user</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            {collectUserData && (
+              <div className="mt-4 border border-gray-100 rounded-md p-4 bg-gray-50">
+                <DataCollectionConfig
+                  enabled={collectUserData}
+                  fields={selectedFields}
+                  onEnableChange={setCollectUserData}
+                  onFieldsChange={handleFieldsChange}
+                />
+              </div>
+            )}
           </div>
 
           <div className="pt-4">
