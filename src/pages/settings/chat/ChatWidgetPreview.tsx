@@ -2,7 +2,7 @@
 import React from 'react';
 import { useThemeContext } from '@/context/ThemeContext';
 import { Button } from '@/components/ui/button';
-import { MessageCircle, Send } from 'lucide-react';
+import { MessageCircle, Send, Star, ThumbsUp, ThumbsDown } from 'lucide-react';
 
 const ChatWidgetPreview: React.FC = () => {
   const { colors, position, compact, labels } = useThemeContext();
@@ -82,6 +82,31 @@ const ChatWidgetPreview: React.FC = () => {
                 </div>
               </div>
             ))}
+
+            {/* Rating UI */}
+            <div className="flex flex-col items-center mt-4 p-3 bg-gray-50 rounded-lg">
+              <p className="text-sm text-gray-600 mb-2">How would you rate your experience?</p>
+              <div className="flex items-center gap-4">
+                <Button variant="outline" size="sm" className="rounded-full p-2 h-auto w-auto">
+                  <ThumbsDown className="h-5 w-5 text-gray-500" />
+                </Button>
+                <div className="flex gap-1">
+                  {[1, 2, 3, 4, 5].map((rating) => (
+                    <Button 
+                      key={rating}
+                      variant="outline" 
+                      size="sm"
+                      className="p-1 h-8 w-8"
+                    >
+                      <Star className={`h-5 w-5 ${rating <= 3 ? 'text-gray-400' : 'text-amber-400'}`} />
+                    </Button>
+                  ))}
+                </div>
+                <Button variant="outline" size="sm" className="rounded-full p-2 h-auto w-auto">
+                  <ThumbsUp className="h-5 w-5 text-gray-500" />
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
 

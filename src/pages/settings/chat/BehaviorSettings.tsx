@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -51,6 +50,7 @@ const BehaviorSettings: React.FC = () => {
   const [enableReceipts, setEnableReceipts] = useState(true);
   const [enableMessageReactions, setEnableMessageReactions] = useState(true);
   const [showAgentPresence, setShowAgentPresence] = useState(true);
+  const [enableConversationRating, setEnableConversationRating] = useState(true);
   
   const [selectedFields, setSelectedFields] = useState<DataCollectionField[]>([
     {
@@ -217,6 +217,19 @@ const BehaviorSettings: React.FC = () => {
                 id="agentPresence"
                 checked={showAgentPresence}
                 onCheckedChange={setShowAgentPresence}
+              />
+            </div>
+            
+            {/* Conversation Rating */}
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="conversationRating">Enable Conversation Rating</Label>
+                <p className="text-sm text-muted-foreground">Allow visitors to rate their conversation experience</p>
+              </div>
+              <Switch
+                id="conversationRating"
+                checked={enableConversationRating}
+                onCheckedChange={setEnableConversationRating}
               />
             </div>
           </div>
