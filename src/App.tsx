@@ -7,7 +7,7 @@ import LoadingSpinner from "./components/common/LoadingSpinner";
 
 const App = () => {
   return (
-    <React.Fragment>
+    <React.StrictMode>
       <AppProviders>
         <DynamicImportErrorBoundary fallbackMessage="Failed to load application routes">
           <Suspense fallback={
@@ -19,7 +19,7 @@ const App = () => {
           </Suspense>
         </DynamicImportErrorBoundary>
       </AppProviders>
-    </React.Fragment>
+    </React.StrictMode>
   );
 };
 
