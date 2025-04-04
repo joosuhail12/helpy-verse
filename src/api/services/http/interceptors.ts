@@ -1,5 +1,5 @@
 
-import axios, { InternalAxiosRequestConfig, AxiosError, AxiosResponse } from 'axios';
+import axios, { InternalAxiosRequestConfig, AxiosError, AxiosResponse, AxiosInstance } from 'axios';
 
 // Define HttpConfig locally since it's not exported from config
 const HttpConfig = {
@@ -12,7 +12,7 @@ const isClientSide = () => {
 };
 
 // Add request interceptor
-export const setupRequestInterceptor = (axiosInstance: typeof axios) => {
+export const setupRequestInterceptor = (axiosInstance: AxiosInstance) => {
   axiosInstance.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
       // Clone the config to avoid mutating the original
@@ -50,7 +50,7 @@ export const setupRequestInterceptor = (axiosInstance: typeof axios) => {
 };
 
 // Add response interceptor
-export const setupResponseInterceptor = (axiosInstance: typeof axios) => {
+export const setupResponseInterceptor = (axiosInstance: AxiosInstance) => {
   axiosInstance.interceptors.response.use(
     (response: AxiosResponse) => {
       // Log response in development mode
@@ -82,7 +82,7 @@ export const setupResponseInterceptor = (axiosInstance: typeof axios) => {
 };
 
 // Setup all interceptors
-export const setupInterceptors = (axiosInstance: typeof axios) => {
+export const setupInterceptors = (axiosInstance: AxiosInstance) => {
   setupRequestInterceptor(axiosInstance);
   setupResponseInterceptor(axiosInstance);
 };
