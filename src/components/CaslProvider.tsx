@@ -1,5 +1,5 @@
 
-import * as React from "react";
+import React, { useEffect, useState } from "react";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { useAppSelector } from "@/hooks/useAppSelector";
 // Fix imports to use action creators directly from their files
@@ -16,9 +16,9 @@ const selectAuthStatus = (state: any) => state.auth.isAuthenticated;
 const CaslProvider: React.FC<CaslProviderProps> = ({ children }) => {
     const dispatch = useAppDispatch();
     const isAuthenticated = useAppSelector(selectAuthStatus);
-    const [dataFetched, setDataFetched] = React.useState(false);
+    const [dataFetched, setDataFetched] = useState(false);
 
-    React.useEffect(() => {
+    useEffect(() => {
         // Only fetch data once when authenticated
         if (isAuthenticated && !dataFetched) {
             console.log("CaslProvider: Fetching user data and permissions");
