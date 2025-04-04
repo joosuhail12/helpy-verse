@@ -32,10 +32,14 @@ export const loginUser = createAsyncThunk(
         password: credentials.password.trim()
       };
       
+      console.log('Sending login request with:', { email: cleanCredentials.email });
+      
       const response = await HttpClient.apiClient.post<AuthResponse>(
         '/auth/login', 
         cleanCredentials
       );
+      
+      console.log('Login response:', response.data);
       
       if (!response.data?.data?.accessToken?.token) {
         console.error('Login response missing token:', response.data);

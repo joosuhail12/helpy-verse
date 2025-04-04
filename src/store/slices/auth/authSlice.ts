@@ -1,4 +1,3 @@
-
 import { createSlice } from '@reduxjs/toolkit';
 import { AuthService } from '@/services/authService';
 import { AuthState } from './types';
@@ -14,7 +13,7 @@ import {
   fetchUserProfile, 
   fetchWorkspaceData 
 } from './userActions';
-import { getUserPermission } from './permissionActions';
+import { getUserPermission } from './authSlice';
 import { toast } from '@/components/ui/use-toast';
 import { 
   isAuthError, 
@@ -22,6 +21,22 @@ import {
   isServerError,
   isTimeoutError
 } from '@/utils/error/errorTypes';
+
+export const getUserPermission = createAsyncThunk(
+  'auth/getUserPermission',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await fetch('/api/permissions');
+      if (!response.ok) {
+        throw new Error('Failed to fetch permissions');
+      }
+      const data = await response.json();
+      return data;
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to get permissions');
+    }
+  }
+);
 
 const initialState: AuthState = {
   isAuthenticated: AuthService.isAuthenticated(),
@@ -372,8 +387,7 @@ export {
   refreshAuthToken,
   fetchUserData,
   fetchUserProfile,
-  fetchWorkspaceData,
-  getUserPermission
+  fetchWorkspaceData
 };
 
 export default authSlice.reducer;

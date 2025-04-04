@@ -106,9 +106,11 @@ export const useLogin = (redirectPath: string = '/home/inbox/all') => {
         password: password.trim() 
       })).unwrap();
       
+      console.log('Login result:', result);
+      
       // Handle successful login
       if (result && result.data && result.data.accessToken) {
-        console.log('Login successful');
+        console.log('Login successful, token:', result.data.accessToken.token);
         
         // Use the centralized auth context to set token and update state
         login(result.data.accessToken.token);
@@ -123,6 +125,13 @@ export const useLogin = (redirectPath: string = '/home/inbox/all') => {
           console.log('Redirecting to:', redirectPath);
           navigate(redirectPath, { replace: true });
         }, 300);
+      } else {
+        console.error('Missing token in login response:', result);
+        toast({
+          title: 'Login Error',
+          description: 'Invalid response from server',
+          variant: 'destructive',
+        });
       }
     } catch (error: any) {
       console.error('Login error:', error);
