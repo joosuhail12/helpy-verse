@@ -1,15 +1,8 @@
-
-import { lazy, Suspense, ReactNode } from 'react';
-import { ProtectedRoute } from '../components/auth/ProtectedRoute';
-import { Loader2 } from 'lucide-react';
+import { lazy, ReactNode } from 'react';
+import ProtectedRouteWrapper from '@/components/auth/ProtectedRouteWrapper';
+import { Suspense } from 'react';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
 import RouteErrorBoundary from '@/components/app/RouteErrorBoundary';
-
-// Define LoadingSpinner explicitly in this file to avoid reference errors
-const LoadingSpinner = () => (
-  <div className="min-h-screen flex items-center justify-center">
-    <Loader2 className="h-8 w-8 animate-spin text-primary" />
-  </div>
-);
 
 // Lazy load settings pages
 const Settings = lazy(() => import('../pages/Settings'));
@@ -29,81 +22,86 @@ const CannedResponses = lazy(() => import('../pages/settings/CannedResponses'));
 const CreateCannedResponse = lazy(() => import('../pages/settings/CreateCannedResponse'));
 const CannedResponseDetail = lazy(() => import('../pages/settings/CannedResponseDetail'));
 
-// Helper to wrap components with Suspense, ProtectedRoute and RouteErrorBoundary
-const withSuspenseAndProtection = (component: ReactNode) => (
-  <ProtectedRoute>
-    <RouteErrorBoundary>
-      <Suspense fallback={<LoadingSpinner />}>
-        {component}
-      </Suspense>
-    </RouteErrorBoundary>
-  </ProtectedRoute>
+// Helper function to wrap components with protection
+const withProtection = (component: ReactNode) => (
+  <ProtectedRouteWrapper>
+    {component}
+  </ProtectedRouteWrapper>
+);
+
+// Helper for child routes that don't need the full wrapper
+const withSuspenseOnly = (Component: React.ComponentType) => (
+  <RouteErrorBoundary>
+    <Suspense fallback={<LoadingSpinner />}>
+      <Component />
+    </Suspense>
+  </RouteErrorBoundary>
 );
 
 export const settingsRoutes = [
   {
     path: 'settings',
-    element: withSuspenseAndProtection(<Settings />),
+    element: withProtection(<Settings />),
     children: [
       {
         path: 'email/domains',
-        element: <Suspense fallback={<LoadingSpinner />}><EmailDomainsSettings /></Suspense>,
+        element: withSuspenseOnly(EmailDomainsSettings),
       },
       {
         path: 'email/domains/:id',
-        element: <Suspense fallback={<LoadingSpinner />}><EmailDomainDetail /></Suspense>,
+        element: withSuspenseOnly(EmailDomainDetail),
       },
       {
         path: 'email/channels',
-        element: <Suspense fallback={<LoadingSpinner />}><EmailChannels /></Suspense>,
+        element: withSuspenseOnly(EmailChannels),
       },
       {
         path: 'tags',
-        element: <Suspense fallback={<LoadingSpinner />}><Tags /></Suspense>,
+        element: withSuspenseOnly(Tags),
       },
       {
         path: 'custom-data',
-        element: <Suspense fallback={<LoadingSpinner />}><CustomData /></Suspense>,
+        element: withSuspenseOnly(CustomData),
       },
       {
         path: 'custom-objects',
-        element: <Suspense fallback={<LoadingSpinner />}><CustomObjects /></Suspense>,
+        element: withSuspenseOnly(CustomObjects),
       },
       {
         path: 'custom-objects/:id',
-        element: <Suspense fallback={<LoadingSpinner />}><CustomObjectDetail /></Suspense>,
+        element: withSuspenseOnly(CustomObjectDetail),
       },
       {
         path: 'teammates',
-        element: <Suspense fallback={<LoadingSpinner />}><Teammates /></Suspense>,
+        element: withSuspenseOnly(Teammates),
       },
       {
         path: 'teammates/:id',
-        element: <Suspense fallback={<LoadingSpinner />}><TeammateDetail /></Suspense>,
+        element: withSuspenseOnly(TeammateDetail),
       },
       {
         path: 'teams',
-        element: <Suspense fallback={<LoadingSpinner />}><Teams /></Suspense>,
+        element: withSuspenseOnly(Teams),
       },
       {
         path: 'teams/:id',
-        element: <Suspense fallback={<LoadingSpinner />}><TeamDetail /></Suspense>,
+        element: withSuspenseOnly(TeamDetail),
       },
       {
         path: 'teams/:id/edit',
-        element: <Suspense fallback={<LoadingSpinner />}><EditTeam /></Suspense>,
+        element: withSuspenseOnly(EditTeam),
       },
       {
         path: 'canned-responses',
-        element: <Suspense fallback={<LoadingSpinner />}><CannedResponses /></Suspense>,
+        element: withSuspenseOnly(CannedResponses),
       },
       {
         path: 'canned-responses/create',
-        element: <Suspense fallback={<LoadingSpinner />}><CreateCannedResponse /></Suspense>,
+        element: withSuspenseOnly(CreateCannedResponse),
       },
       {
         path: 'canned-responses/:id',
-        element: <Suspense fallback={<LoadingSpinner />}><CannedResponseDetail /></Suspense>,
+        element: withSuspenseOnly(CannedResponseDetail),
       }
     ],
   },

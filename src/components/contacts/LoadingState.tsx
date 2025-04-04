@@ -1,5 +1,5 @@
 
-import { Skeleton } from '@/components/ui/skeleton';
+import React from 'react';
 import {
   Table,
   TableBody,
@@ -8,40 +8,50 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Skeleton } from '@/components/ui/skeleton';
 
-export const LoadingState = () => {
+const LoadingState = () => {
   return (
-    <div className="bg-white rounded-lg shadow">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-12">
-              <Skeleton className="h-4 w-4" />
-            </TableHead>
-            <TableHead><Skeleton className="h-4 w-20" /></TableHead>
-            <TableHead><Skeleton className="h-4 w-32" /></TableHead>
-            <TableHead><Skeleton className="h-4 w-24" /></TableHead>
-            <TableHead><Skeleton className="h-4 w-16" /></TableHead>
-            <TableHead><Skeleton className="h-4 w-16" /></TableHead>
-            <TableHead><Skeleton className="h-4 w-24" /></TableHead>
-            <TableHead><Skeleton className="h-4 w-16" /></TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {[...Array(5)].map((_, index) => (
-            <TableRow key={index}>
-              <TableCell><Skeleton className="h-4 w-4" /></TableCell>
-              <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-              <TableCell><Skeleton className="h-4 w-48" /></TableCell>
-              <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-              <TableCell><Skeleton className="h-4 w-20" /></TableCell>
-              <TableCell><Skeleton className="h-4 w-20" /></TableCell>
-              <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-              <TableCell><Skeleton className="h-4 w-8" /></TableCell>
+    <div className="border rounded-md bg-white">
+      <div className="w-full overflow-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-12">
+                <Skeleton className="h-4 w-4" />
+              </TableHead>
+              <TableHead><Skeleton className="h-4 w-32" /></TableHead>
+              <TableHead><Skeleton className="h-4 w-32" /></TableHead>
+              <TableHead><Skeleton className="h-4 w-24" /></TableHead>
+              <TableHead className="text-right"><Skeleton className="h-4 w-24 ml-auto" /></TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {Array(5).fill(0).map((_, index) => (
+              <TableRow key={index}>
+                <TableCell>
+                  <Skeleton className="h-4 w-4" />
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-8 w-8 rounded-full" />
+                    <div className="space-y-1">
+                      <Skeleton className="h-4 w-24" />
+                      <Skeleton className="h-3 w-32" />
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                <TableCell className="text-right"><Skeleton className="h-8 w-16 ml-auto" /></TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 };
+
+export default LoadingState;

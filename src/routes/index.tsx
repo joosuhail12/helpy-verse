@@ -1,17 +1,9 @@
-
 import { lazy, Suspense } from 'react';
 import { createBrowserRouter } from 'react-router-dom';
-import { Loader2 } from 'lucide-react';
 import RootRedirect from '../components/app/RootRedirect';
 import RouteErrorBoundary from '@/components/app/RouteErrorBoundary';
 import { PrivateRoute } from '@/utils/helpers/Routes';
-
-// Define LoadingSpinner first to avoid reference errors
-export const LoadingSpinner = () => (
-  <div className="min-h-screen flex items-center justify-center">
-    <Loader2 className="h-8 w-8 animate-spin text-primary" />
-  </div>
-);
+import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 // Import route modules
 import { dashboardRoutes } from './dashboardRoutes';
