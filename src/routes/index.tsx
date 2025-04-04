@@ -1,8 +1,9 @@
-import { lazy, Suspense } from 'react';
+
+import { lazy } from 'react';
 import { createBrowserRouter } from 'react-router-dom';
 import RootRedirect from '../components/app/RootRedirect';
-import RouteErrorBoundary from '@/components/app/RouteErrorBoundary';
 import { PrivateRoute } from '@/utils/helpers/Routes';
+import ProtectedRouteWrapper from '@/components/auth/ProtectedRouteWrapper';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 // Import route modules
@@ -22,13 +23,11 @@ const LandingPage = lazy(() => import('../pages/LandingPage'));
 // Lazy load dashboard layout
 const DashboardLayoutComponent = lazy(() => import('../layouts/DashboardLayout'));
 
-// Helper to wrap components with Suspense and RouteErrorBoundary
-const withSuspenseAndErrorHandling = (Component) => (
-  <RouteErrorBoundary>
-    <Suspense fallback={<LoadingSpinner />}>
-      <Component />
-    </Suspense>
-  </RouteErrorBoundary>
+// Helper to wrap components with ProtectedRouteWrapper
+const withProtection = (Component) => (
+  <ProtectedRouteWrapper>
+    <Component />
+  </ProtectedRouteWrapper>
 );
 
 // Log all available routes for debugging
@@ -53,7 +52,7 @@ const logRoutes = (routes) => {
 export const router = createBrowserRouter([
   {
     path: '/',
-    element: withSuspenseAndErrorHandling(LandingPage),
+    element: <LandingPage />,
   },
   {
     path: '/home',
@@ -61,27 +60,25 @@ export const router = createBrowserRouter([
   },
   {
     path: '/sign-in',
-    element: withSuspenseAndErrorHandling(SignIn),
+    element: <SignIn />,
   },
   {
     path: '/forgot-password',
-    element: withSuspenseAndErrorHandling(ForgotPassword),
+    element: <ForgotPassword />,
   },
   {
     path: '/reset-password',
-    element: withSuspenseAndErrorHandling(ResetPassword),
+    element: <ResetPassword />,
   },
   {
     path: '/sign-up',
-    element: withSuspenseAndErrorHandling(SignUp),
+    element: <SignUp />,
   },
   {
     path: '/home',
     element: (
       <PrivateRoute>
-        <Suspense fallback={<LoadingSpinner />}>
-          <DashboardLayoutComponent />
-        </Suspense>
+        <DashboardLayoutComponent />
       </PrivateRoute>
     ),
     children: [
@@ -93,7 +90,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '*',
-    element: withSuspenseAndErrorHandling(NotFound),
+    element: <NotFound />,
   },
 ]);
 

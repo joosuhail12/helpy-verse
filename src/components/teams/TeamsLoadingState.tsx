@@ -1,6 +1,10 @@
 
 import { Skeleton } from "@/components/ui/skeleton";
+import LoadingSpinner from "@/components/common/LoadingSpinner";
 
+/**
+ * Loading state for the teams list page
+ */
 const TeamsLoadingState = () => {
   return (
     <div className="p-6 space-y-6">

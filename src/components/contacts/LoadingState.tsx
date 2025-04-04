@@ -10,7 +10,9 @@ import {
 } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 
-// Change to default export or named export
+/**
+ * Loading state skeleton for the contacts list table
+ */
 const LoadingState: React.FC = () => {
   return (
     <div className="border rounded-md bg-white">
