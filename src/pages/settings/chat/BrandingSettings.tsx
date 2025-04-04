@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useThemeContext } from '@/context/ThemeContext';
+import { useThemeContext, ThemeConfig } from '@/context/ThemeContext';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
@@ -12,9 +12,10 @@ import ChatWidgetPreview from './ChatWidgetPreview';
 const BrandingSettings: React.FC = () => {
   const { colors, position, compact, labels, updateTheme } = useThemeContext();
 
-  const handleColorChange = (colorKey: string, value: string) => {
+  const handleColorChange = (colorKey: keyof ThemeConfig['colors'], value: string) => {
     updateTheme({
       colors: {
+        ...colors, // Include all existing colors
         [colorKey]: value,
       },
     });
@@ -28,9 +29,10 @@ const BrandingSettings: React.FC = () => {
     updateTheme({ compact: isCompact });
   };
   
-  const handleLabelChange = (labelKey: string, value: string) => {
+  const handleLabelChange = (labelKey: keyof ThemeConfig['labels'], value: string) => {
     updateTheme({
       labels: {
+        ...labels, // Include all existing labels
         [labelKey]: value,
       },
     });
