@@ -1,7 +1,8 @@
 
 import React from "react";
+import { RouterProvider } from "react-router-dom";
+import { router } from "./routes";
 import AppProviders from "./components/app/AppProviders";
-import AppRoutes from "./components/app/AppRoutes";
 import ErrorBoundary from "./components/common/ErrorBoundary";
 import { Toaster } from "./components/ui/toaster";
 
@@ -21,7 +22,7 @@ const App: React.FC = () => {
         </div>
       }>
         <AppProviders>
-          <AppRoutes />
+          <RouterProvider router={router} />
           <Toaster />
         </AppProviders>
       </React.Suspense>

@@ -1,5 +1,6 @@
 
 import axios, { AxiosInstance } from 'axios';
+// Import the interceptors first, before using them
 import { 
   requestInterceptor, 
   requestErrorInterceptor,

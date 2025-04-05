@@ -44,8 +44,10 @@ const setupApi = () => {
       console.warn('API service initialized without workspace ID - API requests may fail');
       
       // Set a default workspace ID for development testing - remove in production
-      localStorage.setItem('workspaceId', '6c22b22f-7bdf-43db-b7c1-9c5884125c63');
-      console.log('DEVELOPMENT: Set default workspace ID for testing');
+      if (import.meta.env.DEV) {
+        localStorage.setItem('workspaceId', '6c22b22f-7bdf-43db-b7c1-9c5884125c63');
+        console.log('DEVELOPMENT: Set default workspace ID for testing');
+      }
     }
   } catch (error) {
     console.error('Error setting up API client:', error);
@@ -71,8 +73,12 @@ const retryRequest = async (requestFn: () => Promise<any>, maxRetries = 2): Prom
   throw lastError;
 };
 
-// Initialize on import
-setupApi();
+// Initialize on import - but make sure we're running in browser context first
+if (typeof window !== 'undefined') {
+  setTimeout(() => {
+    setupApi();
+  }, 0);
+}
 
 export { retryRequest };
 export default api;
