@@ -3,11 +3,19 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { handleLogout as tokenHandleLogout } from '@/utils/auth/tokenManager';
 import { AuthState } from './types';
 
-// Import isAuthenticated function directly to avoid circular dependencies
-import { isAuthenticated } from '@/utils/auth/tokenManager';
+// Define a simple initial authentication check function
+// instead of importing from tokenManager to avoid circular dependency
+const checkInitialAuthState = (): boolean => {
+  try {
+    return !!localStorage.getItem("token");
+  } catch (error) {
+    console.error("Error checking initial auth state:", error);
+    return false;
+  }
+};
 
 const initialState: AuthState = {
-  isAuthenticated: isAuthenticated(),
+  isAuthenticated: checkInitialAuthState(),
   user: null,
   loading: false,
   error: null,

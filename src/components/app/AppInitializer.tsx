@@ -1,74 +1,77 @@
 
-import * as React from 'react';
-import { HttpClient } from "@/api/services/http";
+import React, { useEffect, useState } from 'react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { fetchUserData } from '@/store/slices/auth/userActions';
-
-export const initializeApp = () => {
-  // Check localStorage for token
-  const token = localStorage.getItem("token");
-  
-  // Check for workspace ID in localStorage
-  const workspaceId = localStorage.getItem("workspaceId");
-  
-  if (token) {
-    console.log("App initialization: Found token, setting up auth");
-    // Configure HTTP client
-    HttpClient.setAxiosDefaultConfig(token);
-  } else {
-    console.log("App initialization: No token found");
-  }
-  
-  // Log workspace ID status
-  if (workspaceId) {
-    console.log("App initialization: Found workspace ID:", workspaceId);
-  } else {
-    console.warn("App initialization: No workspace ID found - API requests will likely fail");
-  }
-};
+import { HttpClient } from '@/api/services/http';
+import { isAuthenticated } from '@/utils/auth/tokenManager';
+import ErrorDisplay from './ErrorDisplay';
+import { toast } from '@/components/ui/use-toast';
 
 interface AppInitializerProps {
   children: React.ReactNode;
 }
 
+/**
+ * Component responsible for initializing app-wide services and configurations
+ */
 const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
   const dispatch = useAppDispatch();
+  const [initialized, setInitialized] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
-  React.useEffect(() => {
-    // Initialize app with authentication if token exists
-    try {
-      initializeApp();
-      
-      // Load user data to get workspaceId if we have a token
-      const token = localStorage.getItem("token");
-      if (token) {
-        dispatch(fetchUserData());
-      }
-    } catch (error) {
-      console.error("Error during app initialization:", error);
-    }
-    
-    // Set up event listener for storage changes (for multi-tab synchronization)
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === "token" && !e.newValue) {
-        // Token was removed in another tab, log out here too
-        window.location.href = "/sign-in";
-      }
-      
-      // Also sync workspace ID changes across tabs
-      if (e.key === "workspaceId" && e.newValue !== localStorage.getItem("workspaceId")) {
-        localStorage.setItem("workspaceId", e.newValue || "");
-        console.log("Workspace ID synced from another tab:", e.newValue);
+  useEffect(() => {
+    const initializeApp = async () => {
+      try {
+        console.log('Initializing application...');
+        
+        // Set up API client with token if authenticated
+        if (isAuthenticated()) {
+          const token = localStorage.getItem('token');
+          if (token) {
+            HttpClient.setAxiosDefaultConfig(token);
+            console.log('HTTP client configured with auth token');
+          }
+        }
+        
+        // Set default workspace ID for development if needed
+        if (import.meta.env.DEV && !localStorage.getItem('workspaceId')) {
+          localStorage.setItem('workspaceId', '6c22b22f-7bdf-43db-b7c1-9c5884125c63');
+          console.log('DEV: Set default workspace ID for development');
+        }
+        
+        // App successfully initialized
+        setInitialized(true);
+        console.log('Application initialization complete');
+      } catch (err) {
+        console.error('Failed to initialize application:', err);
+        setError('Failed to initialize application. Please refresh the page.');
+        
+        toast({
+          title: 'Initialization Error',
+          description: 'There was a problem starting the application.',
+          variant: 'destructive',
+        });
       }
     };
     
-    window.addEventListener("storage", handleStorageChange);
-    
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
-    };
+    initializeApp();
   }, [dispatch]);
-
+  
+  // Show error if initialization failed
+  if (error) {
+    return <ErrorDisplay message={error} onRetry={() => window.location.reload()} />;
+  }
+  
+  // Show loading if still initializing
+  if (!initialized) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        <span className="ml-2 text-lg">Initializing application...</span>
+      </div>
+    );
+  }
+  
+  // Render children once initialized
   return <>{children}</>;
 };
 

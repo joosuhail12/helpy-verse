@@ -5,6 +5,7 @@ import { router } from "./routes";
 import AppProviders from "./components/app/AppProviders";
 import ErrorBoundary from "./components/common/ErrorBoundary";
 import { Toaster } from "./components/ui/toaster";
+import AppInitializer from "./components/app/AppInitializer";
 
 /**
  * Root application component that initializes the app and provides
@@ -22,8 +23,10 @@ const App: React.FC = () => {
         </div>
       }>
         <AppProviders>
-          <RouterProvider router={router} />
-          <Toaster />
+          <AppInitializer>
+            <RouterProvider router={router} />
+            <Toaster />
+          </AppInitializer>
         </AppProviders>
       </React.Suspense>
     </ErrorBoundary>
