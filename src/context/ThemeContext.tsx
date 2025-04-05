@@ -1,19 +1,14 @@
 
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useState, useContext, ReactNode } from 'react';
 
+// Define the context shape
 export interface ThemeConfig {
   colors: {
     primary: string;
-    primaryForeground: string;
     background: string;
-    backgroundSecondary: string;
-    foreground: string;
-    border: string;
+    foreground: string; 
     userMessage: string;
-    userMessageText: string;
     agentMessage: string;
-    agentMessageText: string;
-    inputBackground: string;
   };
   position: 'left' | 'right';
   compact: boolean;
@@ -21,31 +16,34 @@ export interface ThemeConfig {
     x: number;
     y: number;
   };
-  logo: string | null;
-  launcherIcon: string | null;
   labels: {
     welcomeTitle: string;
     welcomeSubtitle: string;
     askQuestionButton: string;
-    recentMessagesTitle: string;
-    noMessagesText: string;
-    messagePlaceholder: string;
   };
+  logo: string | null;
+  launcherIcon: string | null;
 }
 
+interface ThemeContextType {
+  colors: ThemeConfig['colors'];
+  position: ThemeConfig['position'];
+  compact: ThemeConfig['compact'];
+  positionOffset: ThemeConfig['positionOffset'];
+  labels: ThemeConfig['labels'];
+  logo: ThemeConfig['logo'];
+  launcherIcon: ThemeConfig['launcherIcon'];
+  updateTheme: (config: Partial<ThemeConfig>) => void;
+}
+
+// Default theme configuration
 const defaultTheme: ThemeConfig = {
   colors: {
-    primary: '#9b87f5',
-    primaryForeground: '#ffffff',
-    background: '#ffffff',
-    backgroundSecondary: '#f9f9f9',
-    foreground: '#1A1F2C',
-    border: '#eaeaea',
-    userMessage: '#9b87f5',
-    userMessageText: '#ffffff',
-    agentMessage: '#f1f1f1',
-    agentMessageText: '#1A1F2C',
-    inputBackground: '#f9f9f9'
+    primary: '#7C3AED', // Purple
+    background: '#FFFFFF',
+    foreground: '#1F2937',
+    userMessage: '#EEF2FF',
+    agentMessage: '#F3F4F6',
   },
   position: 'right',
   compact: false,
@@ -53,81 +51,55 @@ const defaultTheme: ThemeConfig = {
     x: 0,
     y: 0
   },
+  labels: {
+    welcomeTitle: 'Chat Support',
+    welcomeSubtitle: 'We\'re here to help',
+    askQuestionButton: 'Ask a question',
+  },
   logo: null,
   launcherIcon: null,
-  labels: {
-    welcomeTitle: 'Hello there.',
-    welcomeSubtitle: 'How can we help?',
-    askQuestionButton: 'Ask a question',
-    recentMessagesTitle: 'Recent messages',
-    noMessagesText: 'No messages yet. Start a conversation!',
-    messagePlaceholder: 'Type a message...'
-  }
 };
 
-interface ThemeContextType extends ThemeConfig {
-  updateTheme: (theme: Partial<ThemeConfig>) => void;
-}
+// Create context with default values
+const ThemeContext = createContext<ThemeContextType>({
+  ...defaultTheme,
+  updateTheme: () => {},
+});
 
-// Create the context with a default undefined value that will be properly 
-// initialized in the provider
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+export const ThemeProvider: React.FC<{children: ReactNode}> = ({ children }) => {
+  const [theme, setTheme] = useState<ThemeConfig>(defaultTheme);
 
-interface ThemeProviderProps {
-  children: React.ReactNode;
-  initialTheme?: Partial<ThemeConfig>;
-}
-
-export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children, initialTheme = {} }) => {
-  const [theme, setTheme] = useState<ThemeConfig>({
-    ...defaultTheme,
-    ...initialTheme,
-    colors: {
-      ...defaultTheme.colors,
-      ...(initialTheme.colors || {})
-    },
-    positionOffset: {
-      ...defaultTheme.positionOffset,
-      ...(initialTheme.positionOffset || {})
-    },
-    labels: {
-      ...defaultTheme.labels,
-      ...(initialTheme.labels || {})
-    }
-  });
-
-  const updateTheme = (newTheme: Partial<ThemeConfig>) => {
-    setTheme(prev => ({
-      ...prev,
-      ...newTheme,
+  const updateTheme = (config: Partial<ThemeConfig>) => {
+    setTheme(prevTheme => ({
+      ...prevTheme,
+      ...config,
       colors: {
-        ...prev.colors,
-        ...(newTheme.colors || {})
+        ...prevTheme.colors,
+        ...(config.colors || {})
       },
       positionOffset: {
-        ...prev.positionOffset,
-        ...(newTheme.positionOffset || {})
+        ...prevTheme.positionOffset,
+        ...(config.positionOffset || {})
       },
       labels: {
-        ...prev.labels,
-        ...(newTheme.labels || {})
+        ...prevTheme.labels,
+        ...(config.labels || {})
       }
     }));
   };
 
-  // Provide both the theme state and the updateTheme function
   return (
-    <ThemeContext.Provider value={{ ...theme, updateTheme }}>
+    <ThemeContext.Provider
+      value={{
+        ...theme,
+        updateTheme,
+      }}
+    >
       {children}
     </ThemeContext.Provider>
   );
 };
 
-// Custom hook to use the theme context with proper error handling
-export const useThemeContext = () => {
-  const context = useContext(ThemeContext);
-  if (context === undefined) {
-    throw new Error('useThemeContext must be used within a ThemeProvider');
-  }
-  return context;
-};
+export const useThemeContext = () => useContext(ThemeContext);
+
+export default ThemeContext;

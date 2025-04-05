@@ -1,279 +1,295 @@
 
-import React, { useState, useEffect } from 'react';
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { toast } from "@/components/ui/use-toast";
-import {
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { PlusCircle, X, ArrowUpDown, ArrowDown, ArrowUp } from 'lucide-react';
+import { 
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
+import { 
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { PlusCircle, X, Mail, User, Phone, Building2, AlertCircle } from "lucide-react";
+} from '@/components/ui/select';
 import type { DataCollectionField } from '@/types/chatbot';
-
-interface TableInfo {
-  id: string;
-  name: string;
-  connectedTo?: string;
-}
-
-interface FieldInfo {
-  id: string;
-  name: string;
-  type: string;
-  object: string;
-}
 
 interface FieldSelectorProps {
   fields: DataCollectionField[];
-  tables: TableInfo[];
-  availableFields: FieldInfo[];
+  availableFields: Array<{
+    id: string;
+    name: string;
+    type: string;
+    object: string;
+  }>;
+  tables: Array<{
+    id: string;
+    name: string;
+    connectedTo?: string;
+  }>;
   onFieldsChange: (fields: DataCollectionField[]) => void;
   ensureEmailRequired?: boolean;
 }
 
 export const FieldSelector: React.FC<FieldSelectorProps> = ({
   fields,
-  tables,
   availableFields,
+  tables,
   onFieldsChange,
-  ensureEmailRequired = true
+  ensureEmailRequired = false,
 }) => {
-  const [selectedTable, setSelectedTable] = useState<string>("");
-  const [selectedFieldId, setSelectedFieldId] = useState<string>("");
-  
-  // Filtered fields based on the selected table
-  const filteredFields = availableFields.filter(field => {
-    if (!selectedTable) return false;
-    
-    if (selectedTable === 'contacts') {
-      return field.object === 'contact';
-    } else if (selectedTable === 'companies') {
-      return field.object === 'company';
-    } else {
-      // For custom objects, match by id prefix or other criteria
-      const customTable = tables.find(table => table.id === selectedTable);
-      if (customTable?.connectedTo === 'contacts') {
-        return field.object === 'contact';
-      } else if (customTable?.connectedTo === 'companies') {
-        return field.object === 'company';
-      }
-      return false;
-    }
-  });
+  const [isAddingField, setIsAddingField] = useState(false);
+  const [selectedFieldId, setSelectedFieldId] = useState('');
+  const [selectedFieldLabel, setSelectedFieldLabel] = useState('');
+  const [isRequiredField, setIsRequiredField] = useState(false);
+  const [activeTable, setActiveTable] = useState(tables[0]?.id || '');
 
-  // Fields that are available to add (not already added)
-  const availableToAdd = filteredFields.filter(
-    field => !fields.some(f => f.id === field.id)
-  );
-
-  const addField = () => {
+  const handleAddField = () => {
     if (!selectedFieldId) return;
     
-    const fieldToAdd = availableFields.find(f => f.id === selectedFieldId);
-    if (!fieldToAdd) return;
-
-    if (fields.some(f => f.id === selectedFieldId)) return;
-
-    // Map the field type to one of the allowed types
-    let fieldType: "text" | "email" | "phone" | "select" = "text";
-    if (fieldToAdd.type === 'email') fieldType = "email";
-    else if (fieldToAdd.type === 'phone') fieldType = "phone";
-    else if (fieldToAdd.type === 'select') fieldType = "select";
-
+    const fieldType = availableFields.find(f => f.id === selectedFieldId)?.type || 'text';
+    
     const newField: DataCollectionField = {
-      id: fieldToAdd.id,
-      label: fieldToAdd.name,
-      type: fieldType,
-      required: fieldToAdd.id === 'contact_email' || false,
+      id: selectedFieldId,
+      label: selectedFieldLabel || availableFields.find(f => f.id === selectedFieldId)?.name || '',
+      type: fieldType as 'text' | 'email' | 'phone' | 'select',
+      required: isRequiredField
     };
     
-    onFieldsChange([...fields, newField]);
+    const updatedFields = [...fields, newField];
+    onFieldsChange(updatedFields);
+    
+    // Reset form
+    setIsAddingField(false);
     setSelectedFieldId('');
+    setSelectedFieldLabel('');
+    setIsRequiredField(false);
   };
 
-  const removeField = (id: string) => {
-    // If email field is being removed and ensureEmailRequired is true, skip removal
-    if (id === 'contact_email' && ensureEmailRequired) {
-      toast({
-        title: "Cannot remove email field",
-        description: "The email field is required for data collection.",
-        variant: "destructive"
-      });
+  const handleRemoveField = (fieldId: string) => {
+    // Don't allow removing email field if ensureEmailRequired is true
+    if (ensureEmailRequired && fieldId === 'contact_email') {
       return;
     }
     
-    onFieldsChange(fields.filter(field => field.id !== id));
+    const updatedFields = fields.filter(field => field.id !== fieldId);
+    onFieldsChange(updatedFields);
   };
 
-  const updateField = (id: string, updates: Partial<DataCollectionField>) => {
-    // If trying to make email not required and ensureEmailRequired is true, skip update
-    if (id === 'contact_email' && updates.required === false && ensureEmailRequired) {
+  const handleToggleRequired = (fieldId: string) => {
+    // Don't allow toggling email field if ensureEmailRequired is true
+    if (ensureEmailRequired && fieldId === 'contact_email') {
       return;
     }
     
-    onFieldsChange(fields.map(field => 
-      field.id === id ? { ...field, ...updates } : field
-    ));
+    const updatedFields = fields.map(field => {
+      if (field.id === fieldId) {
+        return { ...field, required: !field.required };
+      }
+      return field;
+    });
+    
+    onFieldsChange(updatedFields);
   };
 
-  // Get icon for a field based on its type
-  const getFieldIcon = (fieldId: string) => {
-    if (fieldId.includes('email')) return Mail;
-    if (fieldId.includes('phone')) return Phone;
-    if (fieldId.includes('company')) return Building2;
-    return User;
+  const handleMoveField = (index: number, direction: 'up' | 'down') => {
+    if (
+      (direction === 'up' && index === 0) || 
+      (direction === 'down' && index === fields.length - 1)
+    ) {
+      return;
+    }
+    
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    const updatedFields = [...fields];
+    const field = updatedFields[index];
+    
+    updatedFields.splice(index, 1);
+    updatedFields.splice(newIndex, 0, field);
+    
+    onFieldsChange(updatedFields);
   };
 
-  // Get table name by id
-  const getTableName = (tableId: string) => {
-    const table = tables.find(t => t.id === tableId);
-    return table ? table.name : tableId;
-  };
+  // Filter available fields to exclude already selected ones
+  const filteredAvailableFields = availableFields.filter(
+    field => !fields.find(f => f.id === field.id) && 
+    field.object === activeTable.split('_')[0]
+  );
 
   return (
-    <div className="space-y-6">
-      <h3 className="text-base font-medium">Configure Data Collection Fields</h3>
-      
-      <div className="rounded-lg border border-gray-200 p-4 bg-white">
-        <div className="flex items-end gap-4 mb-4">
-          <div className="flex-1">
-            <Label className="mb-2 block">Select Data Source</Label>
-            <Select 
-              value={selectedTable} 
-              onValueChange={(value) => {
-                setSelectedTable(value);
-                setSelectedFieldId("");
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select a table" />
-              </SelectTrigger>
-              <SelectContent>
-                {tables.map((table) => (
-                  <SelectItem key={table.id} value={table.id}>
-                    {table.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        
-        {selectedTable && (
-          <div className="flex items-end gap-4">
-            <div className="flex-1">
-              <Label className="mb-2 block">Select Field to Add</Label>
-              <Select 
-                value={selectedFieldId} 
-                onValueChange={setSelectedFieldId}
-                disabled={!selectedTable}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a field" />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableToAdd.length === 0 ? (
-                    <SelectItem value="none" disabled>No fields available</SelectItem>
-                  ) : (
-                    availableToAdd.map((field) => (
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h3 className="text-sm font-medium">Data Collection Fields</h3>
+        <Dialog open={isAddingField} onOpenChange={setIsAddingField}>
+          <DialogTrigger asChild>
+            <Button variant="outline" size="sm">
+              <PlusCircle className="h-4 w-4 mr-1" />
+              Add Field
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add Data Collection Field</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="dataObject">Data Object</Label>
+                <Select 
+                  value={activeTable} 
+                  onValueChange={setActiveTable}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select data object" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {tables.map(table => (
+                      <SelectItem key={table.id} value={table.id}>
+                        {table.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="fieldSelect">Select Field</Label>
+                <Select 
+                  value={selectedFieldId} 
+                  onValueChange={setSelectedFieldId}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choose a field" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {filteredAvailableFields.map(field => (
                       <SelectItem key={field.id} value={field.id}>
                         {field.name}
                       </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
+                    ))}
+                    {filteredAvailableFields.length === 0 && (
+                      <SelectItem value="no-fields" disabled>
+                        No fields available
+                      </SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="fieldLabel">Display Label (optional)</Label>
+                <Input
+                  id="fieldLabel"
+                  placeholder="Enter custom label"
+                  value={selectedFieldLabel}
+                  onChange={(e) => setSelectedFieldLabel(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Leave blank to use the default field name
+                </p>
+              </div>
+              
+              <div className="flex items-center space-x-2 pt-2">
+                <Checkbox 
+                  id="required"
+                  checked={isRequiredField}
+                  onCheckedChange={() => setIsRequiredField(!isRequiredField)}
+                />
+                <Label htmlFor="required" className="text-sm font-normal">
+                  Make this field required
+                </Label>
+              </div>
             </div>
-            <Button 
-              type="button" 
-              onClick={addField} 
-              disabled={!selectedFieldId || !selectedTable}
-              className="mb-0.5"
-            >
-              <PlusCircle className="h-4 w-4 mr-2" />
-              Add Field
-            </Button>
-          </div>
-        )}
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsAddingField(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleAddField} disabled={!selectedFieldId}>
+                Add Field
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
 
-      <div className="space-y-4">
-        <h4 className="font-medium">Selected Fields</h4>
-        
-        {fields.length === 0 && (
-          <div className="text-center py-8 border-2 border-dashed rounded-lg">
-            <AlertCircle className="h-8 w-8 mx-auto text-gray-400 mb-2" />
-            <p className="text-sm text-gray-500">
-              No fields added yet. Add fields to collect information from visitors.
-            </p>
-          </div>
-        )}
-
-        {fields.map((field) => {
-          const FieldIcon = getFieldIcon(field.id);
-          const fieldInfo = availableFields.find(f => f.id === field.id);
-          const tableName = fieldInfo ? 
-            (fieldInfo.object === 'contact' ? 'Contacts' : 
-             fieldInfo.object === 'company' ? 'Companies' : 'Custom') : 
-            'Unknown';
-          
-          return (
+      {fields.length === 0 ? (
+        <div className="text-center py-6 bg-gray-50 border border-dashed border-gray-300 rounded-md">
+          <p className="text-sm text-gray-500">
+            No data collection fields defined yet.
+          </p>
+          <Button 
+            variant="link" 
+            size="sm" 
+            className="mt-2"
+            onClick={() => setIsAddingField(true)}
+          >
+            <PlusCircle className="h-4 w-4 mr-1" />
+            Add your first field
+          </Button>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {fields.map((field, index) => (
             <div 
               key={field.id} 
-              className="flex items-start gap-4 p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+              className="flex items-center justify-between bg-gray-50 p-2 rounded-md"
             >
-              <div className="mt-1">
-                <FieldIcon className="h-5 w-5 text-gray-500" />
+              <div className="flex items-center space-x-2">
+                <Badge variant={field.required ? "default" : "outline"} className="h-6">
+                  {field.required ? "Required" : "Optional"}
+                </Badge>
+                <span>{field.label}</span>
+                <span className="text-xs text-gray-500">({field.type})</span>
               </div>
-              <div className="flex-1">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label className="text-base">{field.label}</Label>
-                    <p className="text-sm text-gray-500 mt-0.5">
-                      From {tableName} table
-                    </p>
-                  </div>
-                  <div className="flex items-center space-x-4">
-                    <div className="flex items-center gap-2">
-                      <Switch
-                        checked={field.required}
-                        onCheckedChange={(checked) => updateField(field.id, { required: checked })}
-                        disabled={field.id === 'contact_email' && ensureEmailRequired}
-                      />
-                      <Label className="text-sm">Required</Label>
-                    </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => removeField(field.id)}
-                      className="h-8 w-8 text-gray-500 hover:text-gray-700"
-                      disabled={field.id === 'contact_email' && ensureEmailRequired}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 mt-2">
-                  <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">
-                    Type: {field.type}
-                  </span>
-                </div>
+              <div className="flex items-center space-x-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleToggleRequired(field.id)}
+                  disabled={ensureEmailRequired && field.id === 'contact_email'}
+                >
+                  {field.required ? "Make Optional" : "Make Required"}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handleMoveField(index, 'up')}
+                  disabled={index === 0}
+                >
+                  <ArrowUp className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handleMoveField(index, 'down')}
+                  disabled={index === fields.length - 1}
+                >
+                  <ArrowDown className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-destructive hover:text-destructive"
+                  onClick={() => handleRemoveField(field.id)}
+                  disabled={ensureEmailRequired && field.id === 'contact_email'}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
               </div>
             </div>
-          );
-        })}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
+
+export default FieldSelector;

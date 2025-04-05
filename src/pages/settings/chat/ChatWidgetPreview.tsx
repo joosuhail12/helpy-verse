@@ -1,179 +1,158 @@
 
 import React from 'react';
 import { useThemeContext } from '@/context/ThemeContext';
-import { Button } from '@/components/ui/button';
-import { MessageCircle, Send, Star, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { ChevronRight, MessageSquare, Send, Paperclip, Smile } from 'lucide-react';
+import { mockMessages } from '@/mock/chatMessages';
+import { Avatar } from '@/components/ui/avatar';
+import { AvatarImage } from '@/components/ui/avatar';
 
-const ChatWidgetPreview: React.FC = () => {
+const ChatWidgetPreview = () => {
   const { 
     colors, 
     position, 
     compact, 
-    labels, 
-    logo, 
-    launcherIcon, 
+    labels,
+    logo,
+    launcherIcon,
     positionOffset 
   } = useThemeContext();
-
-  // Sample messages for the preview
-  const messages = [
-    { 
-      id: '1', 
-      content: 'Hello! How can I help you today?', 
-      sender: 'agent',
-      timestamp: new Date(Date.now() - 600000).toISOString(),
-    },
-    {
-      id: '2',
-      content: 'I have a question about your services.',
-      sender: 'user',
-      timestamp: new Date(Date.now() - 500000).toISOString(),
-    },
-    {
-      id: '3',
-      content: "I'd be happy to help with that. What would you like to know specifically?",
-      sender: 'agent',
-      timestamp: new Date(Date.now() - 400000).toISOString(),
-    }
-  ];
-
-  // Calculate position with offsets
-  const getPositionStyle = () => {
-    const basePosition = position === 'right' ? 'right-4' : 'left-4';
-    
-    // Calculate position with offset
-    const xOffset = positionOffset?.x || 0;
-    const yOffset = positionOffset?.y || 0;
-    
-    return {
-      [position]: `calc(1rem + ${xOffset}px)`,
-      bottom: `calc(1rem + ${yOffset}px)`,
-    };
-  };
-
+  
+  // Show only the 5 most recent messages in reverse chronological order
+  const messages = [...mockMessages].reverse().slice(0, 5);
+  
   return (
-    <div className="h-full flex flex-col relative">
-      {/* Widget Button */}
+    <div className="relative h-full">
+      {/* Chat launcher button */}
       <div 
-        className="absolute shadow-lg rounded-full p-3"
+        className="absolute z-10 rounded-full shadow-lg cursor-pointer"
         style={{ 
           backgroundColor: colors.primary,
-          ...getPositionStyle()
+          bottom: `${20 + positionOffset.y}px`,
+          ...(position === 'right' 
+            ? { right: `${20 + positionOffset.x}px` } 
+            : { left: `${20 + positionOffset.x}px` }),
+          width: '60px',
+          height: '60px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
         }}
       >
         {launcherIcon ? (
           <img 
             src={launcherIcon} 
             alt="Chat launcher" 
-            className="h-6 w-6"
+            className="w-8 h-8 object-contain"
           />
         ) : (
-          <MessageCircle size={24} style={{ color: colors.primaryForeground }} />
+          <MessageSquare className="text-white h-6 w-6" />
         )}
       </div>
-
-      {/* Widget Panel */}
+      
+      {/* Chat widget */}
       <div 
-        className={`absolute ${position === 'right' ? 'right-4' : 'left-4'} bottom-20 shadow-lg rounded-lg overflow-hidden flex flex-col`}
+        className="absolute rounded-lg shadow-xl overflow-hidden flex flex-col"
         style={{ 
           backgroundColor: colors.background,
-          width: compact ? '300px' : '380px',
+          bottom: `${90 + positionOffset.y}px`,
+          ...(position === 'right' 
+            ? { right: `${20 + positionOffset.x}px` } 
+            : { left: `${20 + positionOffset.x}px` }),
+          width: compact ? '300px' : '375px',
           height: '500px',
-          [position]: `calc(1rem + ${positionOffset.x}px)`,
-          bottom: `calc(5rem + ${positionOffset.y}px)`
         }}
       >
-        {/* Widget Header */}
+        {/* Header */}
         <div 
-          className="p-4 flex items-center gap-3"
-          style={{ backgroundColor: colors.primary, color: colors.primaryForeground }}
+          className="p-4 flex items-center justify-between"
+          style={{ backgroundColor: colors.primary }}
         >
-          {logo ? (
-            <img 
-              src={logo} 
-              alt="Company logo" 
-              className="h-6 object-contain"
-            />
-          ) : (
-            <MessageCircle />
-          )}
-          <div>
-            <h3 className="font-medium">{labels.welcomeTitle}</h3>
-            <p className="text-sm opacity-90">{labels.welcomeSubtitle}</p>
-          </div>
-        </div>
-
-        {/* Widget Messages */}
-        <div 
-          className="flex-1 overflow-y-auto p-4" 
-          style={{ color: colors.foreground }}
-        >
-          <div className="space-y-4">
-            {messages.map(message => (
-              <div 
-                key={message.id}
-                className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+          <div className="flex items-center">
+            {logo ? (
+              <img 
+                src={logo} 
+                alt="Company logo" 
+                className="h-8 mr-2 object-contain"
+              />
+            ) : null}
+            <div>
+              <h3 
+                className="font-medium"
+                style={{ color: '#ffffff' }}
               >
-                <div 
-                  className="max-w-[80%] rounded-lg px-4 py-2"
-                  style={{ 
-                    backgroundColor: message.sender === 'user' ? colors.userMessage : colors.agentMessage,
-                    color: message.sender === 'user' ? colors.userMessageText : colors.agentMessageText,
-                  }}
-                >
-                  {message.content}
-                </div>
-              </div>
-            ))}
-
-            {/* Rating UI */}
-            <div className="flex flex-col items-center mt-4 p-3 bg-gray-50 rounded-lg">
-              <p className="text-sm text-gray-600 mb-2">How would you rate your experience?</p>
-              <div className="flex items-center gap-4">
-                <Button variant="outline" size="sm" className="rounded-full p-2 h-auto w-auto">
-                  <ThumbsDown className="h-5 w-5 text-gray-500" />
-                </Button>
-                <div className="flex gap-1">
-                  {[1, 2, 3, 4, 5].map((rating) => (
-                    <Button 
-                      key={rating}
-                      variant="outline" 
-                      size="sm"
-                      className="p-1 h-8 w-8"
-                    >
-                      <Star className={`h-5 w-5 ${rating <= 3 ? 'text-gray-400' : 'text-amber-400'}`} />
-                    </Button>
-                  ))}
-                </div>
-                <Button variant="outline" size="sm" className="rounded-full p-2 h-auto w-auto">
-                  <ThumbsUp className="h-5 w-5 text-gray-500" />
-                </Button>
-              </div>
+                {labels.welcomeTitle || 'Chat Support'}
+              </h3>
+              <p 
+                className="text-xs"
+                style={{ color: 'rgba(255, 255, 255, 0.8)' }}
+              >
+                {labels.welcomeSubtitle || 'We\'re here to help'}
+              </p>
             </div>
           </div>
+          <button className="text-white hover:bg-white/10 rounded p-1">
+            <ChevronRight className="h-5 w-5" />
+          </button>
         </div>
-
-        {/* Widget Input */}
+        
+        {/* Chat messages */}
         <div 
-          className="p-3 border-t flex gap-2"
-          style={{ borderColor: colors.border }}
+          className="flex-1 overflow-y-auto p-4 space-y-4"
+          style={{ color: colors.foreground }}
         >
-          <input 
-            type="text" 
-            placeholder={labels.messagePlaceholder || "Type a message..."} 
-            className="flex-1 px-3 py-2 rounded-md text-sm"
-            style={{ 
-              backgroundColor: colors.inputBackground,
-              color: colors.foreground,
-              border: `1px solid ${colors.border}`
-            }}
-          />
-          <Button 
-            size="icon" 
-            style={{ backgroundColor: colors.primary, color: colors.primaryForeground }}
+          {messages.map(message => (
+            <div 
+              key={message.id}
+              className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
+            >
+              {!message.isUser && (
+                <Avatar className="h-8 w-8 mr-2">
+                  <AvatarImage src="/placeholder-avatar.jpg" alt="Agent" />
+                </Avatar>
+              )}
+              <div
+                className="rounded-lg px-3 py-2 max-w-[80%]"
+                style={{ 
+                  backgroundColor: message.isUser ? colors.userMessage : colors.agentMessage,
+                  color: colors.foreground
+                }}
+              >
+                <p className="text-sm">{message.content}</p>
+                <span className="text-xs opacity-70 block mt-1">
+                  {new Date(message.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+        
+        {/* Input area */}
+        <div className="border-t p-3 flex">
+          <div 
+            className="flex-1 rounded-l-lg border px-3 py-2 flex items-center"
+            style={{ backgroundColor: 'white', borderColor: 'rgba(0,0,0,0.1)' }}
           >
-            <Send size={18} />
-          </Button>
+            <input 
+              type="text" 
+              placeholder="Type your message..."
+              className="flex-1 outline-none text-sm bg-transparent"
+              style={{ color: colors.foreground }}
+            />
+            <div className="flex items-center">
+              <button className="p-1 hover:bg-gray-100 rounded mr-1">
+                <Paperclip className="h-4 w-4 text-gray-400" />
+              </button>
+              <button className="p-1 hover:bg-gray-100 rounded">
+                <Smile className="h-4 w-4 text-gray-400" />
+              </button>
+            </div>
+          </div>
+          <button 
+            className="rounded-r-lg px-3 flex items-center justify-center"
+            style={{ backgroundColor: colors.primary }}
+          >
+            <Send className="h-4 w-4 text-white" />
+          </button>
         </div>
       </div>
     </div>
