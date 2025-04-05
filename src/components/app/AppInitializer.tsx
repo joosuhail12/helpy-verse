@@ -10,7 +10,10 @@ interface AppInitializerProps {
   children: React.ReactNode;
 }
 
-// Export the initialization function for direct use
+/**
+ * Shared initialization function that can be used independently
+ * of the AppInitializer component
+ */
 export const initializeApp = (): void => {
   try {
     console.log('Initializing application services...');
@@ -99,4 +102,5 @@ const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
   return <>{children}</>;
 };
 
+// Make sure we export both the component as default and the initializeApp function
 export default AppInitializer;
