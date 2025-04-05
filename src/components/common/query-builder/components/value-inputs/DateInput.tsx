@@ -1,5 +1,5 @@
 
-import type { ComparisonOperator } from '@/types/queryBuilder';
+import { Operator } from '@/types/queryBuilder';
 import { CustomRangeInput } from './date/CustomRangeInput';
 import { RelativeDateInput } from './date/RelativeDateInput';
 import { RollingPeriodInput } from './date/RollingPeriodInput';
@@ -7,11 +7,11 @@ import { RollingPeriodInput } from './date/RollingPeriodInput';
 interface DateInputProps {
   value: string;
   onChange: (value: string) => void;
-  operator: ComparisonOperator;
+  operator: Operator;
 }
 
 export const DateInput = ({ value, onChange, operator }: DateInputProps) => {
-  if (operator === 'custom_range') {
+  if (operator === 'between') {
     return <CustomRangeInput value={value} onChange={onChange} />;
   }
 

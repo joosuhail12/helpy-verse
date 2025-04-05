@@ -19,7 +19,7 @@ const AVAILABLE_FIELDS = [
   { id: 'company_size', name: 'Company Size', type: 'text', object: 'company' },
 ];
 
-export const useCustomFields = () => {
+export const useCustomFields = (objectType?: string) => {
   const [fields, setFields] = useState(AVAILABLE_FIELDS);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -52,8 +52,13 @@ export const useCustomFields = () => {
     return fields.filter(field => field.object === objectType);
   };
 
+  // Return data in the format expected by components
   return {
-    fields,
+    data: {
+      contacts: objectType === 'contacts' ? fields.filter(field => field.object === 'contact') : [],
+      companies: objectType === 'companies' ? fields.filter(field => field.object === 'company') : [],
+      tickets: objectType === 'tickets' ? fields.filter(field => field.object === 'ticket') : []
+    },
     isLoading,
     error,
     getFieldsByObject

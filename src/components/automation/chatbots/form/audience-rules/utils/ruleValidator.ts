@@ -1,5 +1,5 @@
 
-import { QueryGroup, QueryRule } from "@/types/queryBuilder";
+import { QueryGroup, QueryRule, Operator } from "@/types/queryBuilder";
 
 export type ValidationResult = {
   isValid: boolean;
@@ -12,21 +12,6 @@ export type ValidationError = {
   ruleId?: string;
   field?: string;
 };
-
-type ComparisonOperator = 
-  | "equals" 
-  | "not_equals" 
-  | "contains" 
-  | "not_contains" 
-  | "starts_with" 
-  | "ends_with"
-  | "greater_than" 
-  | "less_than" 
-  | "between" 
-  | "in" 
-  | "not_in"
-  | "exists"
-  | "not_exists";
 
 export const validateQueryGroup = (group: QueryGroup): ValidationResult => {
   // Check if group has rules or groups
@@ -67,15 +52,15 @@ export const validateQueryRule = (rule: QueryRule): ValidationResult => {
 
   // Validate value based on operator
   if (
-    rule.operator !== ("exists" as ComparisonOperator) && 
-    rule.operator !== ("not_exists" as ComparisonOperator) &&
+    rule.operator !== 'is_empty' && 
+    rule.operator !== 'is_not_empty' &&
     rule.value === undefined
   ) {
     return { isValid: false, error: 'Value is required for this operator' };
   }
 
   // Validate "between" operator
-  if (rule.operator === "between" && Array.isArray(rule.value) && (rule.value.length !== 2 || rule.value[0] > rule.value[1])) {
+  if (rule.operator === 'between' && Array.isArray(rule.value) && (rule.value.length !== 2 || rule.value[0] > rule.value[1])) {
     return { isValid: false, error: 'Between operator requires two values in ascending order' };
   }
 
@@ -88,7 +73,7 @@ export const validateQueryRule = (rule: QueryRule): ValidationResult => {
 };
 
 export const ruleHasValue = (rule: QueryRule): boolean => {
-  if (rule.operator === ("exists" as ComparisonOperator) || rule.operator === ("not_exists" as ComparisonOperator)) {
+  if (rule.operator === 'is_empty' || rule.operator === 'is_not_empty') {
     return true;
   }
   

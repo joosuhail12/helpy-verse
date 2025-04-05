@@ -1,5 +1,5 @@
 
-import { QueryField, DataSource, FieldType } from '@/types/queryBuilder';
+import { QueryField } from '@/types/queryBuilder';
 
 export const mockAudienceFields: QueryField[] = [
   {
@@ -25,14 +25,24 @@ export const mockAudienceFields: QueryField[] = [
     label: 'Status',
     type: 'select',
     source: 'contacts',
-    options: ['Active', 'Inactive', 'Pending'],
+    options: [
+      { label: 'Active', value: 'Active' },
+      { label: 'Inactive', value: 'Inactive' },
+      { label: 'Pending', value: 'Pending' }
+    ],
   },
   {
     id: 'interests',
     label: 'Interests',
     type: 'multi-select',
     source: 'contacts',
-    options: ['Technology', 'Marketing', 'Sales', 'Support', 'Design'],
+    options: [
+      { label: 'Technology', value: 'Technology' },
+      { label: 'Marketing', value: 'Marketing' },
+      { label: 'Sales', value: 'Sales' },
+      { label: 'Support', value: 'Support' },
+      { label: 'Design', value: 'Design' }
+    ],
   },
   {
     id: 'is_verified',
@@ -81,14 +91,23 @@ export const mockAudienceFields: QueryField[] = [
     label: 'Subscription Type',
     type: 'select',
     source: 'contacts',
-    options: ['Basic', 'Premium', 'Enterprise'],
+    options: [
+      { label: 'Basic', value: 'Basic' },
+      { label: 'Premium', value: 'Premium' },
+      { label: 'Enterprise', value: 'Enterprise' }
+    ],
   },
   {
     id: 'tags',
     label: 'Tags',
     type: 'multi-select',
     source: 'contacts',
-    options: ['VIP', 'New', 'At Risk', 'Champion', 'Qualified'],
+    options: [
+      { label: 'VIP', value: 'VIP' },
+      { label: 'New', value: 'New' },
+      { label: 'At Risk', value: 'At Risk' },
+      { label: 'Champion', value: 'Champion' },
+      { label: 'Qualified', value: 'Qualified' }
+    ],
   },
 ];
-

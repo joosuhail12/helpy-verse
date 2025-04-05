@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { ShieldCheck, AlertTriangle } from 'lucide-react';
-import { QueryGroup, QueryRule, QueryField } from '@/types/queryBuilder';
+import { QueryGroup, QueryRule, QueryField, Operator } from '@/types/queryBuilder';
 import { useAudienceFields } from '../hooks/useAudienceFields';
 
 interface DataConstraintValidatorProps {
@@ -63,7 +63,7 @@ export const DataConstraintValidator = ({ queryGroup }: DataConstraintValidatorP
         
         // Check for selection from available options
         if (field.type === 'select' && field.options && 
-            !field.options.includes(rule.value as string) && 
+            !field.options.some(opt => opt.value === rule.value) && 
             rule.operator !== 'is_empty' && rule.operator !== 'is_not_empty') {
           newIssues.push({
             ruleId: rule.id,
