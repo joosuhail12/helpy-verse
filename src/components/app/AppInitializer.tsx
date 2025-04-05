@@ -10,6 +10,40 @@ interface AppInitializerProps {
   children: React.ReactNode;
 }
 
+// Export the initialization function for direct use
+export const initializeApp = (): void => {
+  try {
+    console.log('Initializing application services...');
+    
+    // Set up API client with token if authenticated
+    if (isAuthenticated()) {
+      const token = localStorage.getItem('token');
+      if (token) {
+        HttpClient.setAxiosDefaultConfig(token);
+        console.log('HTTP client configured with auth token');
+      }
+    }
+    
+    // Set default workspace ID for development if needed
+    if (import.meta.env.DEV && !localStorage.getItem('workspaceId')) {
+      localStorage.setItem('workspaceId', '6c22b22f-7bdf-43db-b7c1-9c5884125c63');
+      console.log('DEV: Set default workspace ID for development');
+    }
+    
+    console.log('Application core services initialized');
+  } catch (err) {
+    console.error('Failed to initialize application services:', err);
+    
+    toast({
+      title: 'Initialization Error',
+      description: 'There was a problem initializing application services.',
+      variant: 'destructive',
+    });
+    
+    throw err; // Re-throw to allow handling by error boundaries
+  }
+};
+
 /**
  * Component responsible for initializing app-wide services and configurations
  */
@@ -19,30 +53,20 @@ const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
   const [error, setError] = useState<string | null>(null);
   
   useEffect(() => {
-    const initializeApp = async () => {
+    const initializeAppComponent = async () => {
       try {
-        console.log('Initializing application...');
+        console.log('Initializing application component...');
         
-        // Set up API client with token if authenticated
-        if (isAuthenticated()) {
-          const token = localStorage.getItem('token');
-          if (token) {
-            HttpClient.setAxiosDefaultConfig(token);
-            console.log('HTTP client configured with auth token');
-          }
-        }
+        // Call the shared initialization function
+        initializeApp();
         
-        // Set default workspace ID for development if needed
-        if (import.meta.env.DEV && !localStorage.getItem('workspaceId')) {
-          localStorage.setItem('workspaceId', '6c22b22f-7bdf-43db-b7c1-9c5884125c63');
-          console.log('DEV: Set default workspace ID for development');
-        }
+        // Component-specific initialization can go here
         
         // App successfully initialized
         setInitialized(true);
         console.log('Application initialization complete');
       } catch (err) {
-        console.error('Failed to initialize application:', err);
+        console.error('Failed to initialize application component:', err);
         setError('Failed to initialize application. Please refresh the page.');
         
         toast({
@@ -53,7 +77,7 @@ const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
       }
     };
     
-    initializeApp();
+    initializeAppComponent();
   }, [dispatch]);
   
   // Show error if initialization failed
