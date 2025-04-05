@@ -6,14 +6,15 @@ import RootRedirect from '../components/app/RootRedirect';
 import RouteErrorBoundary from '@/components/app/RouteErrorBoundary';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 
-// Import directly instead of lazy loading for crucial components to avoid loading errors
+// Import directly instead of lazy loading for crucial components
 import LandingPage from '@/pages/LandingPage';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import AllInbox from '@/pages/inbox/All';
 import SignIn from '@/pages/SignIn'; 
-import Dashboard from '@/pages/Dashboard'; // Import Dashboard directly
+import Dashboard from '@/pages/Dashboard'; 
+import NotFound from '@/pages/NotFound'; // Import NotFound directly instead of lazy loading
 
-// Lazy load auth pages and other components with consistent fallback
+// Loading spinner component
 const LoadingSpinner = () => (
   <div className="min-h-screen flex items-center justify-center">
     <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -24,7 +25,6 @@ const LoadingSpinner = () => (
 const ForgotPassword = React.lazy(() => import('../pages/ForgotPassword'));
 const ResetPassword = React.lazy(() => import('../pages/ResetPassword'));
 const SignUp = React.lazy(() => import('../pages/SignUp'));
-const NotFound = React.lazy(() => import('../pages/NotFound'));
 const YourInbox = React.lazy(() => import('../pages/inbox/YourInbox'));
 const UnassignedInbox = React.lazy(() => import('../pages/inbox/Unassigned'));
 const MentionsInbox = React.lazy(() => import('../pages/inbox/Mentions'));
@@ -146,7 +146,11 @@ export const router = createBrowserRouter([
   },
   {
     path: '*',
-    element: withSuspenseAndErrorHandling(<NotFound />),
+    element: (
+      <RouteErrorBoundary>
+        <NotFound />
+      </RouteErrorBoundary>
+    ),
   },
 ]);
 

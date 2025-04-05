@@ -27,47 +27,50 @@ const CaslProvider: React.FC<CaslProviderProps> = ({ children }) => {
             console.log("CaslProvider: Fetching user data and permissions");
             setIsLoading(true);
             
-            // Create an array of promises for the async operations
-            const fetchPromises = [];
-            
-            // Add fetchUserProfile
-            fetchPromises.push(dispatch(fetchUserProfile()).catch(error => {
-                console.error("Error fetching user profile:", error);
-                return null; // Return null instead of rejecting the promise
-            }));
-            
-            // Use thunks that return PayloadAction types
-            if (typeof fetchWorkspaceDataThunk === 'function') {
-                fetchPromises.push(dispatch(fetchWorkspaceDataThunk()).catch(error => {
+            const fetchAllData = async () => {
+                try {
+                    await dispatch(fetchUserProfile()).unwrap();
+                    console.log("User profile fetched successfully");
+                } catch (error) {
+                    console.error("Error fetching user profile:", error);
+                    // Continue with other requests even if this one fails
+                }
+                
+                try {
+                    if (typeof fetchWorkspaceDataThunk === 'function') {
+                        await dispatch(fetchWorkspaceDataThunk()).unwrap();
+                        console.log("Workspace data fetched successfully");
+                    }
+                } catch (error) {
                     console.error("Error fetching workspace data:", error);
-                    return null;
-                }));
-            }
-            
-            if (typeof getUserPermissionThunk === 'function') {
-                fetchPromises.push(dispatch(getUserPermissionThunk()).catch(error => {
+                }
+                
+                try {
+                    if (typeof getUserPermissionThunk === 'function') {
+                        await dispatch(getUserPermissionThunk()).unwrap();
+                        console.log("User permissions fetched successfully");
+                    }
+                } catch (error) {
                     console.error("Error fetching user permissions:", error);
-                    return null;
-                }));
-            }
+                }
+                
+                // Mark as fetched regardless of errors to prevent endless retries
+                setDataFetched(true);
+                setIsLoading(false);
+                console.log("CaslProvider: Data fetching complete");
+            };
             
-            Promise.all(fetchPromises)
-                .then(() => {
-                    setDataFetched(true);
-                    setIsLoading(false);
-                    console.log("CaslProvider: Successfully fetched user data");
-                })
-                .catch(error => {
-                    console.error("Error in CaslProvider data fetching:", error);
-                    setDataFetched(true); // Still mark as fetched to prevent endless retries
-                    setIsLoading(false);
-                    
-                    toast({
-                        title: "Data Loading Error",
-                        description: "Some user data could not be loaded. Some features may be limited.",
-                        variant: "destructive",
-                    });
+            fetchAllData().catch(error => {
+                console.error("Error in CaslProvider data fetching:", error);
+                setDataFetched(true);
+                setIsLoading(false);
+                
+                toast({
+                    title: "Data Loading Error",
+                    description: "Some user data could not be loaded. Some features may be limited.",
+                    variant: "destructive",
                 });
+            });
         }
     }, [dispatch, isAuthenticated, dataFetched, isLoading]);
 

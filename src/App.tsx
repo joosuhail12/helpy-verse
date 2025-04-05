@@ -11,7 +11,7 @@ import { Toaster } from "./components/ui/toaster";
  * top-level error handling with fallbacks
  */
 const App: React.FC = () => {
-  console.log("App component rendering");
+  console.log("App component rendering with router");
   
   return (
     <ErrorBoundary>

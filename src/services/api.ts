@@ -75,6 +75,7 @@ const retryRequest = async (requestFn: () => Promise<any>, maxRetries = 2): Prom
 
 // Initialize on import - but make sure we're running in browser context first
 if (typeof window !== 'undefined') {
+  // Use setTimeout to ensure this runs after the HttpClient has been initialized
   setTimeout(() => {
     setupApi();
   }, 0);
