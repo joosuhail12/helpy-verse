@@ -1,11 +1,11 @@
 
 import axios, { AxiosInstance } from 'axios';
-// Import the interceptors first, before using them - but don't initialize them yet
+// Import the interceptors directly with their actual exported names
 import {
-  createRequestInterceptor,
-  createRequestErrorInterceptor,
-  createResponseInterceptor,
-  createResponseErrorInterceptor
+  requestInterceptor,
+  requestErrorInterceptor,
+  responseInterceptor,
+  responseErrorInterceptor
 } from './interceptors';
 
 // Get correct API URL from environment variables
@@ -34,13 +34,7 @@ export class HttpClient {
   static initializeInterceptors() {
     console.log('Initializing API client with base URL:', API_BASE_URL);
     
-    // Create interceptors
-    const requestInterceptor = createRequestInterceptor();
-    const requestErrorInterceptor = createRequestErrorInterceptor();
-    const responseInterceptor = createResponseInterceptor();
-    const responseErrorInterceptor = createResponseErrorInterceptor();
-    
-    // Add interceptors to main API client
+    // Add interceptors to main API client using the correctly named imports
     this.apiClient.interceptors.request.use(
       requestInterceptor,
       requestErrorInterceptor
