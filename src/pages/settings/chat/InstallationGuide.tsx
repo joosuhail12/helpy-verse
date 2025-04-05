@@ -63,7 +63,7 @@ export default function YourComponent() {
             <div className="space-y-2">
               <h3 className="text-sm font-medium">Copy this code into your website HTML</h3>
               <p className="text-sm text-muted-foreground">
-                Add this script right before the closing </code>{`</body>`}</code> tag of your website.
+                Add this script right before the closing {`</body>`} tag of your website.
               </p>
               
               <div className="relative">
@@ -147,10 +147,10 @@ export default function YourComponent() {
                   <h4 className="text-sm font-medium mb-2">Option 1: Install from WordPress Plugin Directory</h4>
                   <ol className="list-decimal list-inside text-sm space-y-2">
                     <li>Go to your WordPress admin dashboard</li>
-                    <li>Navigate to Plugins > Add New</li>
+                    <li>Navigate to Plugins {`>`} Add New</li>
                     <li>Search for "YourCompany Chat Widget"</li>
                     <li>Click "Install Now" and then "Activate"</li>
-                    <li>Navigate to Settings > Chat Widget to configure</li>
+                    <li>Navigate to Settings {`>`} Chat Widget to configure</li>
                   </ol>
                 </div>
                 
@@ -160,7 +160,7 @@ export default function YourComponent() {
                     <li>Download the plugin from our website</li>
                     <li>Upload the plugin files to the <code className="bg-gray-100 px-1 rounded">/wp-content/plugins/</code> directory</li>
                     <li>Activate the plugin through the 'Plugins' menu in WordPress</li>
-                    <li>Navigate to Settings > Chat Widget to configure</li>
+                    <li>Navigate to Settings {`>`} Chat Widget to configure</li>
                   </ol>
                   <Button className="mt-4" variant="outline">
                     <ExternalLink className="h-4 w-4 mr-2" />
