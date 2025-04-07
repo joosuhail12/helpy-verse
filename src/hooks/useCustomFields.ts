@@ -1,19 +1,21 @@
 
 import { useState, useEffect } from 'react';
 import { HttpClient } from '@/api/services/http';
+import { CustomField } from '@/types/customField';
 
-interface CustomField {
-  id: string;
-  name: string;
-  type: string;
-  options?: string[];
-  required: boolean;
-  description?: string;
+interface CustomFieldsData {
+  tickets?: CustomField[];
+  contacts?: CustomField[];
+  companies?: CustomField[];
+  fields?: CustomField[];
+  [key: string]: CustomField[] | undefined;
 }
 
 interface UseCustomFieldsResult {
   fields: CustomField[];
+  data: CustomFieldsData;
   loading: boolean;
+  isLoading: boolean;
   error: string | null;
   refetch: () => Promise<void>;
 }
@@ -22,6 +24,12 @@ export const useCustomFields = (objectType?: string): UseCustomFieldsResult => {
   const [fields, setFields] = useState<CustomField[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [data, setData] = useState<CustomFieldsData>({
+    tickets: [],
+    contacts: [],
+    companies: [],
+    fields: []
+  });
 
   const fetchFields = async () => {
     try {
@@ -37,7 +45,11 @@ export const useCustomFields = (objectType?: string): UseCustomFieldsResult => {
           type: 'select', 
           options: ['High', 'Medium', 'Low'],
           required: true, 
-          description: 'Ticket priority level'
+          description: 'Ticket priority level',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          history: [],
+          visible: true
         },
         { 
           id: 'custom_field_2', 
@@ -45,14 +57,22 @@ export const useCustomFields = (objectType?: string): UseCustomFieldsResult => {
           type: 'select', 
           options: ['Bug', 'Feature Request', 'Question', 'Support'],
           required: true, 
-          description: 'Issue category'
+          description: 'Issue category',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          history: [],
+          visible: true
         },
         { 
           id: 'custom_field_3', 
           name: 'Expected Resolution Date', 
           type: 'date', 
           required: false,
-          description: 'When the issue is expected to be resolved'
+          description: 'When the issue is expected to be resolved',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          history: [],
+          visible: true
         },
       ];
       
@@ -62,6 +82,20 @@ export const useCustomFields = (objectType?: string): UseCustomFieldsResult => {
         : mockFields;
       
       setFields(filteredFields);
+      
+      // Structure the data object based on field types
+      const newData: CustomFieldsData = {
+        tickets: [],
+        contacts: [],
+        companies: [],
+        fields: filteredFields
+      };
+      
+      if (objectType) {
+        newData[objectType] = filteredFields;
+      }
+      
+      setData(newData);
       setLoading(false);
     } catch (err) {
       console.error("Error fetching custom fields:", err);
@@ -76,5 +110,8 @@ export const useCustomFields = (objectType?: string): UseCustomFieldsResult => {
 
   const refetch = () => fetchFields();
 
-  return { fields, loading, error, refetch };
+  // For compatibility with components expecting isLoading
+  const isLoading = loading;
+
+  return { fields, data, loading, isLoading, error, refetch };
 };

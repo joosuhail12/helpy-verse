@@ -34,16 +34,15 @@ import {
   getUserPermissionThunk
 } from './auth/permissionActions';
 
-// Import the auth slice functions directly 
-import { 
+// Import the auth slice reducer directly 
+import authReducer, { 
   logout, 
   clearError, 
   setAuthLoading,
   setAuthError,
   setAuthSuccess,
   setPermissions,
-  setUserData,
-  reducer 
+  setUserData
 } from './auth/authSlice';
 
 // Re-export everything
@@ -77,5 +76,6 @@ export {
 // Re-export types
 export type { Permission, Permissions, AuthState, ActionType };
 
-// Export the reducer separately
-export default reducer;
+// Export the reducer
+export const reducer = authReducer;
+export default authReducer;

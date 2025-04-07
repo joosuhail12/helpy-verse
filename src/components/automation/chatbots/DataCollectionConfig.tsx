@@ -24,7 +24,7 @@ const AVAILABLE_TABLES = [
   { id: 'company', name: 'Company' },
 ];
 
-interface DataCollectionConfigProps {
+export interface DataCollectionConfigProps {
   fields: DataCollectionField[];
   onFieldsChange: (fields: DataCollectionField[]) => void;
   enabled: boolean;

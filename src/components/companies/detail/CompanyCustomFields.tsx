@@ -61,7 +61,7 @@ export const CompanyCustomFields = ({ company }: CompanyCustomFieldsProps) => {
         <div className="grid gap-6">
           {fields.map((field) => {
             // Convert field value to string for display
-            const fieldValue = company[field.id];
+            const fieldValue = company[field.id as keyof Company];
             const safeValue = fieldValue !== undefined && fieldValue !== null 
               ? String(fieldValue) 
               : '';
@@ -75,7 +75,7 @@ export const CompanyCustomFields = ({ company }: CompanyCustomFieldsProps) => {
                   field={field.id}
                   label={field.name}
                   type={typeMapping[field.type] || 'text'} // Default to text if type not recognized
-                  options={field.options ? field.options.map(opt => typeof opt === 'string' ? opt : opt.value) : undefined}
+                  options={field.options ? (typeof field.options[0] === 'string' ? field.options : field.options.map((opt: any) => opt.value)) : undefined}
                 />
               </div>
             );

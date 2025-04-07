@@ -33,11 +33,11 @@ const CustomData = () => {
   const [selectedTable, setSelectedTable] = useState<'tickets' | 'contacts' | 'companies'>('tickets');
   const [isAddFieldOpen, setIsAddFieldOpen] = useState(false);
   const [apiInitialized, setApiInitialized] = useState(false);
-  const { data: customFields, isLoading, error } = useCustomFields(selectedTable);
+  const { data, isLoading, error } = useCustomFields(selectedTable);
   const { handleImport } = useCustomFieldImport();
 
   // Get current fields and enrich them to be compatible with CustomField type
-  const currentFieldsRaw = customFields?.[selectedTable] || [];
+  const currentFieldsRaw = data?.[selectedTable] || [];
   const currentFields: CustomField[] = enrichFields(currentFieldsRaw);
 
   // Check API connection on component mount

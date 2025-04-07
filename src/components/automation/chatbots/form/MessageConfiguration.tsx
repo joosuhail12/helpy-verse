@@ -45,7 +45,7 @@ export const MessageConfiguration = () => {
                 <DataCollectionConfig
                   enabled={field.value.enabled}
                   fields={field.value.fields}
-                  onEnableChange={(enabled) => 
+                  onEnabledChange={(enabled) => 
                     form.setValue('dataCollection.enabled', enabled)
                   }
                   onFieldsChange={(fields) => 

@@ -14,8 +14,8 @@ export const selectPermissions = (state: RootState): AuthState['permissions'] =>
 export const selectUserId = (state: RootState): string | undefined => state.auth.user?.data?.id;
 export const selectUserEmail = (state: RootState): string | undefined => {
   const userData = state.auth.user?.data;
-  // Email might be in different locations based on API response structure
-  return userData?.email || userData?.username;
+  // Use optional chaining and type assertions to safely access potentially missing properties
+  return (userData as any)?.email || (userData as any)?.username;
 };
 
 export const selectWorkspaceId = (state: RootState): string | undefined => 
@@ -23,8 +23,8 @@ export const selectWorkspaceId = (state: RootState): string | undefined =>
 
 // Role-based selectors
 export const selectUserRole = (state: RootState): string | undefined => {
-  // Get role from user data if available
-  return state.auth.user?.data?.role;
+  // Get role from user data if available, using type assertion to avoid TypeScript errors
+  return (state.auth.user?.data as any)?.role;
 };
 
 export const selectIsAdmin = (state: RootState): boolean => {

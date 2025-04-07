@@ -12,6 +12,7 @@ export interface DataCollectionField {
 }
 
 export type ChatbotStatus = 'active' | 'inactive' | 'draft' | 'archived';
+export type ChatbotTone = 'friendly' | 'professional' | 'casual' | 'formal' | 'helpful' | 'custom';
 
 export interface ChatbotConfig {
   name: string;
@@ -37,4 +38,35 @@ export interface ChatbotPreset {
   config: Partial<ChatbotConfig>;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface Chatbot {
+  id: string;
+  name: string;
+  description?: string;
+  status: ChatbotStatus;
+  createdAt: string;
+  tone?: ChatbotTone;
+  avatarUrl?: string;
+  customInstructions?: string;
+  welcomeMessage: string;
+  humanHandoffMessage?: string;
+  audienceRules: {
+    id: string;
+    combinator: 'and' | 'or';
+    rules: any[];
+  };
+  dataCollection: {
+    enabled: boolean;
+    fields: DataCollectionField[];
+  };
+  behavior: {
+    queryHandling: 'single' | 'continuous';
+    postAnswerAction: 'continue' | 'close' | 'handoff';
+    inactivityTimeout: number;
+    inactivityAction: 'close' | 'handoff' | 'prompt';
+    enableHumanHandoff: boolean;
+  };
+  messageCount?: number;
+  category?: string;
 }
