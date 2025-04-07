@@ -151,6 +151,7 @@ export const useAblyRoom = (ticket: Ticket) => {
 
                         // Store for cleanup
                         (directChannelSubscription as any)._typingSubscription = typingSubscription;
+                        console.log('Typing subscription:', typingSubscription);
 
                         console.log('Set up direct typing subscription for', channelName);
                     }

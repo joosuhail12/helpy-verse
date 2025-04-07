@@ -66,8 +66,31 @@ const ConversationHeader = ({ ticket, onClose, activeUsers = [] }: ConversationH
         <div className="flex items-center gap-2">
           <h2 className="font-semibold text-lg truncate">{ticket.subject}</h2>
           <Badge variant="outline" className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary">
-            {/* TODO: Add avatar stack of the teammates actively working on this ticket */}
-            #{ticket.id}
+            <div className="flex items-center gap-2">
+              <div className="flex -space-x-2">
+                {activeUsers.map((user) => (
+                  <Tooltip key={user.userId}>
+                    <TooltipTrigger asChild>
+                      <Avatar className="h-6 w-6 border-2 border-white">
+                        <span className="text-xs">{user.name && user.name.length > 0 ? user.name[0] : '?'}</span>
+                      </Avatar>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-green-500" />
+                        <span>{user.name || 'Unknown'}</span>
+                        {user.lastActive && (
+                          <span className="text-xs text-muted-foreground">
+                            • active {formatDistanceToNow(new Date(user.lastActive), { addSuffix: true })}
+                          </span>
+                        )}
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                ))}
+              </div>
+              {/* <span>#{ticket.id}</span> */}
+            </div>
           </Badge>
         </div>
         <div className="flex items-center gap-2 mt-1">
