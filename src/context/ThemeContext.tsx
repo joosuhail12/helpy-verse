@@ -1,105 +1,52 @@
 
-import React, { createContext, useState, useContext, ReactNode } from 'react';
-
-// Define the context shape
-export interface ThemeConfig {
-  colors: {
-    primary: string;
-    background: string;
-    foreground: string; 
-    userMessage: string;
-    agentMessage: string;
-  };
-  position: 'left' | 'right';
-  compact: boolean;
-  positionOffset: {
-    x: number;
-    y: number;
-  };
-  labels: {
-    welcomeTitle: string;
-    welcomeSubtitle: string;
-    askQuestionButton: string;
-  };
-  logo: string | null;
-  launcherIcon: string | null;
-}
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 interface ThemeContextType {
-  colors: ThemeConfig['colors'];
-  position: ThemeConfig['position'];
-  compact: ThemeConfig['compact'];
-  positionOffset: ThemeConfig['positionOffset'];
-  labels: ThemeConfig['labels'];
-  logo: ThemeConfig['logo'];
-  launcherIcon: ThemeConfig['launcherIcon'];
-  updateTheme: (config: Partial<ThemeConfig>) => void;
+  theme: string;
+  setTheme: (theme: string) => void;
+  primaryColor: string;
+  setPrimaryColor: (color: string) => void;
+  secondaryColor: string;
+  setSecondaryColor: (color: string) => void;
 }
 
-// Default theme configuration
-const defaultTheme: ThemeConfig = {
-  colors: {
-    primary: '#7C3AED', // Purple
-    background: '#FFFFFF',
-    foreground: '#1F2937',
-    userMessage: '#EEF2FF',
-    agentMessage: '#F3F4F6',
-  },
-  position: 'right',
-  compact: false,
-  positionOffset: {
-    x: 0,
-    y: 0
-  },
-  labels: {
-    welcomeTitle: 'Chat Support',
-    welcomeSubtitle: 'We\'re here to help',
-    askQuestionButton: 'Ask a question',
-  },
-  logo: null,
-  launcherIcon: null,
-};
+const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-// Create context with default values
-const ThemeContext = createContext<ThemeContextType>({
-  ...defaultTheme,
-  updateTheme: () => {},
-});
+interface ThemeProviderProps {
+  children: ReactNode;
+  initialTheme?: string;
+  initialPrimaryColor?: string;
+  initialSecondaryColor?: string;
+}
 
-export const ThemeProvider: React.FC<{children: ReactNode}> = ({ children }) => {
-  const [theme, setTheme] = useState<ThemeConfig>(defaultTheme);
-
-  const updateTheme = (config: Partial<ThemeConfig>) => {
-    setTheme(prevTheme => ({
-      ...prevTheme,
-      ...config,
-      colors: {
-        ...prevTheme.colors,
-        ...(config.colors || {})
-      },
-      positionOffset: {
-        ...prevTheme.positionOffset,
-        ...(config.positionOffset || {})
-      },
-      labels: {
-        ...prevTheme.labels,
-        ...(config.labels || {})
-      }
-    }));
-  };
-
+export const ThemeProvider: React.FC<ThemeProviderProps> = ({
+  children,
+  initialTheme = 'light',
+  initialPrimaryColor = '#7c3aed',
+  initialSecondaryColor = '#0ea5e9'
+}) => {
+  const [theme, setTheme] = useState(initialTheme);
+  const [primaryColor, setPrimaryColor] = useState(initialPrimaryColor);
+  const [secondaryColor, setSecondaryColor] = useState(initialSecondaryColor);
+  
   return (
-    <ThemeContext.Provider
-      value={{
-        ...theme,
-        updateTheme,
-      }}
-    >
+    <ThemeContext.Provider value={{
+      theme,
+      setTheme,
+      primaryColor,
+      setPrimaryColor,
+      secondaryColor,
+      setSecondaryColor
+    }}>
       {children}
     </ThemeContext.Provider>
   );
 };
 
-export const useThemeContext = () => useContext(ThemeContext);
-
-export default ThemeContext;
+export const useTheme = (): ThemeContextType => {
+  const context = useContext(ThemeContext);
+  if (context === undefined) {
+    throw new Error('useTheme must be used within a ThemeProvider');
+  }
+  return context;
+};

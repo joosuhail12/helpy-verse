@@ -3,12 +3,11 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '@/hooks/useAppSelector';
-import type { RootState } from '@/store/store';
+import { selectIsAuthenticated } from '@/store/slices/auth/selectors';
 
 const Index = () => {
   const navigate = useNavigate();
-  const auth = useAppSelector((state: RootState) => state.auth);
-  const isAuthenticated = auth?.isAuthenticated || false;
+  const isAuthenticated = useAppSelector(selectIsAuthenticated);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100">

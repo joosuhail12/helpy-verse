@@ -68,6 +68,5 @@ export const {
   setUserData
 } = authSlice.actions;
 
-// Export the reducer both as named export and default export for better compatibility
-export const reducer = authSlice.reducer;
+// Export the reducer as default
 export default authSlice.reducer;

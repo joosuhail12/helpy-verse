@@ -1,37 +1,40 @@
 
-import type { QueryGroup } from './queryBuilder';
-
-export interface Chatbot {
-  id: string;
-  name: string;
-  description: string;
-  status: 'active' | 'inactive';
-  createdAt: string;
-  avatarUrl?: string;
-  tone: string;
-  customInstructions?: string;
-  welcomeMessage: string;
-  humanHandoffMessage: string;
-  audienceRules: QueryGroup;
-  dataCollection: {
-    enabled: boolean;
-    fields: DataCollectionField[];
-  };
-  behavior: {
-    queryHandling: 'single' | 'continuous';
-    postAnswerAction: 'continue' | 'close' | 'handoff';
-    inactivityTimeout: number;
-    inactivityAction: 'close' | 'handoff' | 'prompt';
-    enableHumanHandoff: boolean;
-  };
-}
-
-export type ChatbotTone = 'friendly' | 'professional' | 'casual' | 'formal' | 'helpful' | 'custom';
+// Common types used for chatbot and automation features
 
 export interface DataCollectionField {
   id: string;
   label: string;
-  type: 'text' | 'email' | 'phone' | 'select';
+  type: 'text' | 'email' | 'phone' | 'select' | 'multi-select' | 'date' | 'number' | 'checkbox';
   required: boolean;
-  options?: string[]; // For select type fields
+  options?: { label: string; value: string }[];
+  placeholder?: string;
+  description?: string;
+}
+
+export type ChatbotStatus = 'active' | 'inactive' | 'draft' | 'archived';
+
+export interface ChatbotConfig {
+  name: string;
+  description?: string;
+  welcomeMessage: string;
+  primaryColor: string;
+  logoUrl?: string;
+  collectData: boolean;
+  dataCollectionFields: DataCollectionField[];
+  showTicketStatusBar: boolean;
+  allowEndChat: boolean;
+  enableReceipts: boolean;
+  enableMessageReactions: boolean;
+  showAgentPresence: boolean;
+  enableConversationRating: boolean;
+  status: ChatbotStatus;
+}
+
+export interface ChatbotPreset {
+  id: string;
+  name: string;
+  description: string;
+  config: Partial<ChatbotConfig>;
+  createdAt: string;
+  updatedAt: string;
 }

@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/tooltip';
 import { Settings, CheckCircle, MessageCircle, AlertCircle, PauseCircle, XCircle, Power, LucideIcon } from 'lucide-react';
 import { UserStatus, statusConfig } from '@/types/userStatus';
-import type { RootState } from '@/store/store';
+import { selectUserId, selectUserEmail, selectUserRole } from '@/store/slices/auth/selectors';
 
 interface UserProfileCardProps {
   isCollapsed: boolean;
@@ -30,12 +30,14 @@ interface StatusIconsMap {
 
 const UserProfileCard = ({ isCollapsed }: UserProfileCardProps) => {
   const navigate = useNavigate();
-  const auth = useAppSelector((state: RootState) => state.auth);
+  const userId = useAppSelector(selectUserId);
+  const userEmail = useAppSelector(selectUserEmail);
+  const userRole = useAppSelector(selectUserRole) || 'user';
+  
   const [status, setStatus] = useState<UserStatus>('available');
 
-  // Extract user email and role safely
-  const userEmail = auth?.user?.data?.id || 'user@example.com'; // Fallback to a default
-  const userRole = 'user'; // Default role since it's not in the current auth state
+  // Fallback for email if not available in Redux state
+  const displayEmail = userEmail || userId || 'user@example.com';
 
   const statusIcons: StatusIconsMap = {
     'available': CheckCircle,
@@ -53,15 +55,15 @@ const UserProfileCard = ({ isCollapsed }: UserProfileCardProps) => {
       <div className="flex items-center gap-3 mb-2">
         {!isCollapsed && (
           <Avatar className="h-10 w-10">
-            <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${userEmail}`} />
+            <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${displayEmail}`} />
             <AvatarFallback>
-              {userEmail.charAt(0).toUpperCase()}
+              {displayEmail.charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
         )}
         
         <div className={`flex-1 ${isCollapsed ? 'hidden' : ''}`}>
-          <div className="font-medium text-sm">{userEmail}</div>
+          <div className="font-medium text-sm">{displayEmail}</div>
           <div className="text-xs text-muted-foreground">{userRole}</div>
         </div>
 

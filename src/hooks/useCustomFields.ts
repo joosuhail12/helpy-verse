@@ -1,78 +1,80 @@
 
 import { useState, useEffect } from 'react';
-import type { CustomField } from '@/types/customField';
+import { HttpClient } from '@/api/services/http';
 
-// Mock data for available fields - in a real implementation, this would fetch from an API
-const AVAILABLE_FIELDS = [
-  // Contact fields
-  { id: 'contact_firstname', name: 'First Name', type: 'text', object: 'contact', options: [] },
-  { id: 'contact_lastname', name: 'Last Name', type: 'text', object: 'contact', options: [] },
-  { id: 'contact_email', name: 'Email', type: 'email', object: 'contact', options: [] },
-  { id: 'contact_phone', name: 'Phone Number', type: 'phone', object: 'contact', options: [] },
-  { id: 'contact_title', name: 'Job Title', type: 'text', object: 'contact', options: [] },
-  { id: 'contact_timezone', name: 'Timezone', type: 'text', object: 'contact', options: [] },
-  
-  // Company fields
-  { id: 'company_name', name: 'Company Name', type: 'text', object: 'company', options: [] },
-  { id: 'company_website', name: 'Website', type: 'text', object: 'company', options: [] },
-  { id: 'company_industry', name: 'Industry', type: 'text', object: 'company', options: [] },
-  { id: 'company_size', name: 'Company Size', type: 'text', object: 'company', options: [] },
-];
+interface CustomField {
+  id: string;
+  name: string;
+  type: string;
+  options?: string[];
+  required: boolean;
+  description?: string;
+}
 
-// Add required fields to make compatible with CustomField type
-const enrichFieldsWithDefaults = (fields: any[]) => {
-  return fields.map(field => ({
-    ...field,
-    required: false,
-    description: field.description || '',
-    createdAt: field.createdAt || new Date().toISOString(),
-    updatedAt: field.updatedAt || new Date().toISOString(),
-    history: field.history || [],
-  }));
-};
+interface UseCustomFieldsResult {
+  fields: CustomField[];
+  loading: boolean;
+  error: string | null;
+  refetch: () => Promise<void>;
+}
 
-export const useCustomFields = (objectType?: string) => {
-  const [fields, setFields] = useState(AVAILABLE_FIELDS);
-  const [isLoading, setIsLoading] = useState(false);
+export const useCustomFields = (objectType?: string): UseCustomFieldsResult => {
+  const [fields, setFields] = useState<CustomField[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // In a real implementation, this would fetch fields from the backend
+  const fetchFields = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // In a real app, we'd fetch from API with proper endpoint
+      // For now we're mocking some data
+      const mockFields: CustomField[] = [
+        { 
+          id: 'custom_field_1', 
+          name: 'Priority', 
+          type: 'select', 
+          options: ['High', 'Medium', 'Low'],
+          required: true, 
+          description: 'Ticket priority level'
+        },
+        { 
+          id: 'custom_field_2', 
+          name: 'Category', 
+          type: 'select', 
+          options: ['Bug', 'Feature Request', 'Question', 'Support'],
+          required: true, 
+          description: 'Issue category'
+        },
+        { 
+          id: 'custom_field_3', 
+          name: 'Expected Resolution Date', 
+          type: 'date', 
+          required: false,
+          description: 'When the issue is expected to be resolved'
+        },
+      ];
+      
+      // Filter by object type if provided
+      const filteredFields = objectType 
+        ? mockFields.filter(f => f.id.startsWith(objectType)) 
+        : mockFields;
+      
+      setFields(filteredFields);
+      setLoading(false);
+    } catch (err) {
+      console.error("Error fetching custom fields:", err);
+      setError("Failed to load custom fields");
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchFields = async () => {
-      try {
-        setIsLoading(true);
-        // Replace with actual API call in a real implementation
-        // const response = await api.getCustomFields();
-        // setFields(response.data);
-        
-        // Mock async behavior
-        setTimeout(() => {
-          setFields(AVAILABLE_FIELDS);
-          setIsLoading(false);
-        }, 500);
-      } catch (err) {
-        setError('Failed to load custom fields');
-        setIsLoading(false);
-        console.error('Error loading custom fields:', err);
-      }
-    };
-
     fetchFields();
-  }, []);
+  }, [objectType]);
 
-  const getFieldsByObject = (objectType: string) => {
-    return fields.filter(field => field.object === objectType);
-  };
+  const refetch = () => fetchFields();
 
-  // Return data in the format expected by components
-  return {
-    data: {
-      contacts: objectType === 'contacts' ? enrichFieldsWithDefaults(fields.filter(field => field.object === 'contact')) : [],
-      companies: objectType === 'companies' ? enrichFieldsWithDefaults(fields.filter(field => field.object === 'company')) : [],
-      tickets: objectType === 'tickets' ? enrichFieldsWithDefaults(fields.filter(field => field.object === 'ticket')) : []
-    },
-    isLoading,
-    error,
-    getFieldsByObject
-  };
+  return { fields, loading, error, refetch };
 };
