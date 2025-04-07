@@ -19,22 +19,29 @@ export const useSourceFields = (selectedSource: ExtendedDataSource, fields: Quer
       if (customObject) {
         selectedFields.push(
           ...customObject.fields.map(field => {
-            // Check if field has options and handle them properly
-            const options = field.type === 'select' || field.type === 'multi-select' 
-              ? (field.options && Array.isArray(field.options)
-                ? field.options.map(opt => {
-                    if (typeof opt === 'string') {
-                      return { label: opt, value: opt };
-                    } else if (typeof opt === 'object' && opt !== null) {
-                      return { 
-                        label: (opt as any).label || String(opt), 
-                        value: (opt as any).value || String(opt) 
-                      };
-                    }
-                    return { label: String(opt), value: String(opt) };
-                  })
-                : [])
-              : undefined;
+            // Determine if this field type should have options
+            const isOptionType = field.type === 'select' || field.type === 'multi-select';
+            
+            // Create options array only if the field has options property and is of the right type
+            let options;
+            if (isOptionType) {
+              // Safely access options, which may not exist on the field type
+              const fieldOptions = (field as any).options;
+              
+              if (fieldOptions && Array.isArray(fieldOptions)) {
+                options = fieldOptions.map(opt => {
+                  if (typeof opt === 'string') {
+                    return { label: opt, value: opt };
+                  } else if (typeof opt === 'object' && opt !== null) {
+                    return { 
+                      label: (opt as any).label || String(opt), 
+                      value: (opt as any).value || String(opt) 
+                    };
+                  }
+                  return { label: String(opt), value: String(opt) };
+                });
+              }
+            }
 
             return {
               id: `${customObject.slug}_${field.id}`,
@@ -53,11 +60,14 @@ export const useSourceFields = (selectedSource: ExtendedDataSource, fields: Quer
       const customFields = mockCustomFields[selectedSource as keyof typeof mockCustomFields] || [];
       selectedFields.push(
         ...customFields.map(field => {
-          // Check if field has options and is of the right type before processing
-          const hasOptions = field.type === 'select' || field.type === 'multi-select';
-          const options = hasOptions && field.options && Array.isArray(field.options)
-            ? field.options.map(opt => ({ label: String(opt), value: String(opt) }))
-            : undefined;
+          // Determine if this field type should have options
+          const isOptionType = field.type === 'select' || field.type === 'multi-select';
+          
+          // Create options only if needed and if they exist
+          let options;
+          if (isOptionType && field.options && Array.isArray(field.options)) {
+            options = field.options.map(opt => ({ label: String(opt), value: String(opt) }));
+          }
 
           return {
             id: `custom_${field.id}`,
