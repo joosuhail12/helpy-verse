@@ -313,6 +313,42 @@ const AblyTest = () => {
                 });
 
                 setDiagnosticInfo(prev => `${prev}\nDirect channel subscription also set up`);
+
+                // Also subscribe to typing events directly
+                try {
+                    console.log('Setting up direct typing subscription in AblyTest');
+
+                    directChannel.subscribe('typing', (message: any) => {
+                        console.log('AblyTest received direct typing event:', message);
+
+                        const data = message.data;
+                        if (!data) return;
+
+                        const isTyping = data.isTyping === true;
+                        const memberName = data.name || 'Unknown';
+                        const isCustomer = data.isCustomer === true;
+
+                        // Skip self typing
+                        if (memberName === username) return;
+
+                        // Show "Agent is typing" for agent messages
+                        const displayName = isCustomer ? memberName : 'Agent';
+
+                        if (isTyping) {
+                            setTypingUsers(prev => [...new Set([...prev, displayName])]);
+                        } else {
+                            setTypingUsers(prev => prev.filter(user =>
+                                user !== displayName &&
+                                user !== 'Agent'
+                            ));
+                        }
+                    });
+
+                    setDiagnosticInfo(prev => `${prev}\nDirect typing subscription also set up`);
+                } catch (err) {
+                    console.error('Error setting up direct typing subscription:', err);
+                    setDiagnosticInfo(prev => `${prev}\nError setting up direct typing subscription: ${err.message}`);
+                }
             } catch (err) {
                 console.error('Error setting up direct channel subscription:', err);
                 setDiagnosticInfo(prev => `${prev}\nError setting up direct subscription: ${err.message}`);
@@ -404,18 +440,38 @@ const AblyTest = () => {
     };
 
     const handleTyping = async () => {
-        if (!message.trim() || !room || !room.presence || typeof room.presence.update !== 'function') {
-            return; // Skip if presence isn't available
-        }
+        if (!message.trim() || !room) return;
 
         try {
-            // Update presence with typing status and customer flag
-            await room.presence.update({
+            const typingData = {
                 isTyping: true,
                 name: username,
                 userId: userEmail || username,
                 isCustomer: true
-            });
+            };
+
+            // 1. Update typing via Chat SDK if available
+            if (room.presence && typeof room.presence.update === 'function') {
+                // Update presence with typing status and customer flag
+                await room.presence.update(typingData);
+            }
+
+            // 2. Also publish typing directly to the channel
+            try {
+                const ablyClient = await initAbly();
+                if (ablyClient) {
+                    const channelName = room.id; // This should be "ticket:roomId"
+                    const channel = ablyClient.channels.get(channelName);
+
+                    // Publish typing directly to channel
+                    channel.publish('typing', {
+                        ...typingData,
+                        timestamp: new Date().toISOString()
+                    });
+                }
+            } catch (err) {
+                console.warn('Error publishing typing directly to channel:', err);
+            }
 
             // Clear timeout if it exists
             if (typingTimeoutRef.current) {
@@ -425,13 +481,33 @@ const AblyTest = () => {
             // Set timeout to stop typing after 1.5 seconds
             typingTimeoutRef.current = setTimeout(async () => {
                 try {
+                    const stopTypingData = {
+                        isTyping: false,
+                        name: username,
+                        userId: userEmail || username,
+                        isCustomer: true
+                    };
+
+                    // 1. Stop typing via Chat SDK if available
                     if (room && room.presence && typeof room.presence.update === 'function') {
-                        await room.presence.update({
-                            isTyping: false,
-                            name: username,
-                            userId: userEmail || username,
-                            isCustomer: true
-                        });
+                        await room.presence.update(stopTypingData);
+                    }
+
+                    // 2. Also publish stop typing directly
+                    try {
+                        const ablyClient = await initAbly();
+                        if (ablyClient) {
+                            const channelName = room.id;
+                            const channel = ablyClient.channels.get(channelName);
+
+                            // Publish stop typing directly
+                            channel.publish('typing', {
+                                ...stopTypingData,
+                                timestamp: new Date().toISOString()
+                            });
+                        }
+                    } catch (err) {
+                        console.warn('Error publishing stop typing directly:', err);
                     }
                 } catch (error) {
                     console.error('Error stopping typing indicator:', error);

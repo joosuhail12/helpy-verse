@@ -118,7 +118,41 @@ export const useAblyRoom = (ticket: Ticket) => {
                             });
                         });
 
-                        console.log('Set up direct channel subscription for', channelName);
+                        // Add direct typing subscription
+                        const typingSubscription = channel.subscribe('typing', (message: any) => {
+                            if (!isComponentMounted) return;
+
+                            console.log('Received direct typing event:', message);
+
+                            const data = message.data;
+                            if (!data) return;
+
+                            const isTyping = data.isTyping === true;
+                            const memberName = data.name || 'Unknown';
+                            const isCustomer = data.isCustomer === true;
+
+                            // Skip self typing
+                            if (memberName === currentUserRef.current) return;
+
+                            // For the conversation panel, we want to show customer name is typing
+                            const displayName = isCustomer ?
+                                (ticket.customer || 'Customer') : // Use ticket customer name if available
+                                memberName; // Otherwise use the member name provided
+
+                            if (isTyping) {
+                                setTypingUsers(prev => [...new Set([...prev, displayName])]);
+                            } else {
+                                setTypingUsers(prev => prev.filter(user =>
+                                    user !== memberName &&
+                                    user !== (ticket.customer || 'Customer')
+                                ));
+                            }
+                        });
+
+                        // Store for cleanup
+                        (directChannelSubscription as any)._typingSubscription = typingSubscription;
+
+                        console.log('Set up direct typing subscription for', channelName);
                     }
                 } catch (err) {
                     console.error('Error setting up direct channel subscription:', err);
@@ -379,6 +413,16 @@ export const useAblyRoom = (ticket: Ticket) => {
             // Clean up direct channel subscription
             if (directChannelSubscription) {
                 try {
+                    // Clean up typing subscription if it exists
+                    if ((directChannelSubscription as any)._typingSubscription) {
+                        try {
+                            (directChannelSubscription as any)._typingSubscription.unsubscribe();
+                            console.log('Unsubscribed from direct typing channel');
+                        } catch (err) {
+                            console.warn('Error unsubscribing from direct typing channel:', err);
+                        }
+                    }
+
                     directChannelSubscription.unsubscribe();
                     console.log('Unsubscribed from direct channel');
                 } catch (err) {
@@ -434,20 +478,39 @@ export const useAblyRoom = (ticket: Ticket) => {
                     return;
                 }
 
-                // When stopping typing, include proper user identification
-                await room.presence.update({
+                const typingData = {
                     isTyping: false,
                     name: currentUserRef.current,
                     userId: currentUserRef.current,
                     isCustomer: false // Explicitly mark as not a customer
-                }).catch(err => {
-                    console.warn('Error stopping typing indicator:', err);
+                };
+
+                // 1. Stop typing via Chat SDK
+                await room.presence.update(typingData).catch(err => {
+                    console.warn('Error stopping typing indicator via Chat SDK:', err);
                 });
+
+                // 2. Also publish stop typing directly to the channel
+                try {
+                    const ablyClient = await initAbly();
+                    if (!ablyClient) return;
+
+                    const channelName = `ticket:${ticket.id}`;
+                    const channel = ablyClient.channels.get(channelName);
+
+                    // Publish typing stopped event directly to channel
+                    channel.publish('typing', {
+                        ...typingData,
+                        timestamp: new Date().toISOString()
+                    });
+                } catch (err) {
+                    console.warn('Error publishing stop typing directly to channel:', err);
+                }
             } catch (error) {
                 console.error('Error stopping typing indicator:', error);
             }
         }, 1000),
-        []
+        [ticket.id]
     );
 
     // Cleanup typing timeout on unmount
@@ -472,15 +535,39 @@ export const useAblyRoom = (ticket: Ticket) => {
                 return;
             }
 
-            // Update typing state in Ably presence with proper user identification
-            room.presence.update({
+            const typingData = {
                 isTyping: true,
                 name: currentUserRef.current,
                 userId: currentUserRef.current,
                 isCustomer: false // Explicitly mark as not a customer
-            }).catch(err => {
-                console.warn('Error updating typing status:', err);
+            };
+
+            // 1. Update typing state in Ably presence via Chat SDK
+            room.presence.update(typingData).catch(err => {
+                console.warn('Error updating typing status via Chat SDK:', err);
             });
+
+            // 2. Also publish a typing indicator directly to the channel
+            const publishTypingDirectly = async () => {
+                try {
+                    const ablyClient = await initAbly();
+                    if (!ablyClient) return;
+
+                    const channelName = `ticket:${ticket.id}`;
+                    const channel = ablyClient.channels.get(channelName);
+
+                    // Publish typing event directly to channel
+                    channel.publish('typing', {
+                        ...typingData,
+                        timestamp: new Date().toISOString()
+                    });
+                } catch (err) {
+                    console.warn('Error publishing typing directly to channel:', err);
+                }
+            };
+
+            // Execute the direct typing publish
+            publishTypingDirectly();
 
             // Clear timeout if it exists and set a new one
             if (typingTimeoutRef.current) {
@@ -492,7 +579,7 @@ export const useAblyRoom = (ticket: Ticket) => {
         } catch (error) {
             console.error('Error in handleTyping:', error);
         }
-    }, [debouncedStopTyping]);
+    }, [debouncedStopTyping, ticket.id]);
 
     // Completely replace the handleSendMessage function with a more direct approach
     const handleSendMessage = async () => {
