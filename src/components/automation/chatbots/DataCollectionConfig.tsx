@@ -3,9 +3,11 @@ import React, { useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { DataCollectionField } from '@/types/chatbot';
 import { FieldSelector } from '@/components/settings/chat/FieldSelector';
+import { AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 // Mock data for available fields - in a real implementation, this would be fetched from the API
 const AVAILABLE_FIELDS = [
@@ -22,6 +24,11 @@ const AVAILABLE_FIELDS = [
   { id: 'company_website', name: 'Website', type: 'url', object: 'company' },
   { id: 'company_industry', name: 'Industry', type: 'select', object: 'company' },
   { id: 'company_size', name: 'Company Size', type: 'select', object: 'company' },
+  
+  // Custom fields
+  { id: 'custom_feedback', name: 'Feedback Category', type: 'select', object: 'custom' },
+  { id: 'custom_priority', name: 'Priority Level', type: 'select', object: 'custom' },
+  { id: 'custom_source', name: 'Source Channel', type: 'select', object: 'custom' },
 ];
 
 // Mock data for available tables
@@ -45,12 +52,12 @@ export const DataCollectionConfig: React.FC<DataCollectionConfigProps> = ({
   onEnabledChange,
 }) => {
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="font-medium">Data Collection</h3>
+          <h3 className="font-medium text-base">Data Collection</h3>
           <p className="text-sm text-gray-500">
-            Collect information from users before starting a chat
+            Collect visitor information before starting a chat
           </p>
         </div>
         <Switch
@@ -60,9 +67,20 @@ export const DataCollectionConfig: React.FC<DataCollectionConfigProps> = ({
         />
       </div>
       
-      {enabled && (
+      {enabled ? (
         <Card>
-          <CardContent className="pt-4">
+          <CardHeader className="pb-1">
+            <CardTitle className="text-base font-medium">Configure Data Collection Fields</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-3">
+            {fields.length === 0 && (
+              <Alert variant="warning" className="mb-4">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  No fields are currently selected. Add at least one field to collect visitor information.
+                </AlertDescription>
+              </Alert>
+            )}
             <FieldSelector
               fields={fields}
               tables={AVAILABLE_TABLES}
@@ -72,6 +90,10 @@ export const DataCollectionConfig: React.FC<DataCollectionConfigProps> = ({
             />
           </CardContent>
         </Card>
+      ) : (
+        <div className="text-sm text-gray-500 italic">
+          Enable data collection to configure which fields to collect from visitors.
+        </div>
       )}
     </div>
   );

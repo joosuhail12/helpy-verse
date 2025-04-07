@@ -1,12 +1,16 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, Trash2, MoveUp, MoveDown, GripVertical, ListFilter } from 'lucide-react';
+import { Plus, Trash2, MoveUp, MoveDown, GripVertical, ListFilter, Database } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { DataCollectionField } from '@/types/chatbot';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface FieldSelectorProps {
   fields: DataCollectionField[];
@@ -24,8 +28,8 @@ export const FieldSelector: React.FC<FieldSelectorProps> = ({
   ensureEmailRequired = false,
 }) => {
   const [selectedTable, setSelectedTable] = useState(tables[0]?.id || '');
-  const [showFieldSelector, setShowFieldSelector] = useState(false);
-
+  const [addingFields, setAddingFields] = useState(false);
+  
   const handleAddField = (fieldId: string) => {
     const fieldToAdd = availableFields.find(f => f.id === fieldId);
     
@@ -40,7 +44,6 @@ export const FieldSelector: React.FC<FieldSelectorProps> = ({
     };
     
     onFieldsChange([...fields, newField]);
-    setShowFieldSelector(false);
   };
 
   const handleRemoveField = (index: number) => {
@@ -92,6 +95,27 @@ export const FieldSelector: React.FC<FieldSelectorProps> = ({
     return field ? field.name : fieldId;
   };
 
+  const getFieldObjectName = (fieldId: string) => {
+    const field = availableFields.find(f => f.id === fieldId);
+    if (!field) return '';
+    
+    const table = tables.find(t => t.id === field.object);
+    return table ? table.name : field.object;
+  };
+
+  // Group fields by their object type for better organization
+  const fieldsByTable = fields.reduce((acc, field) => {
+    const fieldInfo = availableFields.find(f => f.id === field.id);
+    const tableId = fieldInfo?.object || 'unknown';
+    
+    if (!acc[tableId]) {
+      acc[tableId] = [];
+    }
+    
+    acc[tableId].push(field);
+    return acc;
+  }, {} as Record<string, DataCollectionField[]>);
+
   // Filter available fields based on selected table
   const availableFieldsForTable = availableFields.filter(field => 
     field.object === selectedTable
@@ -104,66 +128,95 @@ export const FieldSelector: React.FC<FieldSelectorProps> = ({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium">Fields to collect from users</h3>
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
+          <h3 className="text-sm font-medium">Selected Fields</h3>
+          <Badge variant="outline" className="text-xs">
+            {fields.length} {fields.length === 1 ? 'field' : 'fields'}
+          </Badge>
+        </div>
         <Button
           variant="outline"
           size="sm"
           className="flex items-center gap-1"
-          onClick={() => setShowFieldSelector(!showFieldSelector)}
+          onClick={() => setAddingFields(!addingFields)}
         >
           <Plus className="h-4 w-4" />
-          <span>Add Field</span>
+          <span>Add Fields</span>
         </Button>
       </div>
 
-      {showFieldSelector && (
-        <Card className="border border-dashed">
-          <CardContent className="pt-4 pb-3">
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="table-select" className="text-sm">Select table</Label>
-                <Select 
-                  value={selectedTable}
-                  onValueChange={setSelectedTable}
-                >
-                  <SelectTrigger id="table-select" className="mt-1">
-                    <SelectValue placeholder="Select a table" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {tables.map(table => (
-                      <SelectItem key={table.id} value={table.id}>
-                        {table.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+      {addingFields && (
+        <Card className="border shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Add New Fields</CardTitle>
+            <CardDescription className="text-xs">
+              Select a table to see available fields
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="space-y-3">
+              <div className="grid grid-cols-12 gap-4">
+                <div className="col-span-5">
+                  <Label htmlFor="table-select" className="text-xs mb-1 block">Table</Label>
+                  <Select 
+                    value={selectedTable}
+                    onValueChange={setSelectedTable}
+                  >
+                    <SelectTrigger id="table-select" className="mt-1">
+                      <SelectValue placeholder="Select a table" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {tables.map(table => (
+                        <SelectItem key={table.id} value={table.id}>
+                          <div className="flex items-center gap-2">
+                            <Database className="h-3.5 w-3.5" />
+                            {table.name}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-              {selectedTable && selectableFields.length > 0 ? (
-                <div>
-                  <Label htmlFor="field-select" className="text-sm">Select field to add</Label>
-                  <div className="mt-2 max-h-40 overflow-y-auto space-y-1 p-1 border rounded-md">
-                    {selectableFields.map(field => (
-                      <div 
-                        key={field.id} 
-                        className="flex items-center justify-between p-2 hover:bg-gray-100 rounded cursor-pointer"
-                        onClick={() => handleAddField(field.id)}
-                      >
-                        <div>
-                          <div className="text-sm font-medium">{field.name}</div>
-                          <div className="text-xs text-gray-500">Type: {field.type}</div>
-                        </div>
-                        <Plus className="h-4 w-4 text-gray-500" />
+                <div className="col-span-7">
+                  <Label className="text-xs mb-1 block">Available Fields</Label>
+                  
+                  {!selectedTable ? (
+                    <div className="text-xs text-gray-500 py-3 text-center">
+                      Select a table to see available fields
+                    </div>
+                  ) : selectableFields.length === 0 ? (
+                    <div className="text-xs text-gray-500 py-3 text-center">
+                      All fields from this table have been added
+                    </div>
+                  ) : (
+                    <ScrollArea className="h-48 rounded-md border p-1">
+                      <div className="space-y-1">
+                        {selectableFields.map(field => (
+                          <div 
+                            key={field.id} 
+                            className="flex items-center justify-between p-2 hover:bg-gray-100 rounded cursor-pointer"
+                            onClick={() => handleAddField(field.id)}
+                          >
+                            <div>
+                              <div className="text-sm font-medium">{field.name}</div>
+                              <div className="text-xs text-gray-500 flex items-center gap-1">
+                                <Badge variant="outline" className="text-[10px] py-0 h-4">
+                                  {field.type}
+                                </Badge>
+                              </div>
+                            </div>
+                            <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
+                    </ScrollArea>
+                  )}
                 </div>
-              ) : (
-                <div className="text-sm text-gray-500 py-2">
-                  {selectedTable ? 'All available fields have been added' : 'Select a table to see fields'}
-                </div>
-              )}
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -175,63 +228,87 @@ export const FieldSelector: React.FC<FieldSelectorProps> = ({
           <p>No fields selected. Add fields to collect user information.</p>
         </div>
       ) : (
-        <div className="space-y-2">
-          {fields.map((field, index) => (
-            <div key={field.id} className="flex items-center gap-2 p-2 bg-gray-50 rounded-md border">
-              <div className="cursor-move">
-                <GripVertical className="h-4 w-4 text-gray-400" />
-              </div>
-              
-              <div className="flex-1">
-                <div className="font-medium text-sm">{getFieldDisplayName(field.id)}</div>
-                <div className="text-xs text-gray-500">{field.type}</div>
-              </div>
-              
-              <div className="flex items-center gap-1">
-                <div className="flex items-center mr-2">
-                  <Switch
-                    id={`required-${index}`}
-                    checked={field.required}
-                    onCheckedChange={() => handleToggleRequired(index)}
-                    disabled={ensureEmailRequired && field.id === 'contact_email' && field.required}
-                  />
-                  <Label htmlFor={`required-${index}`} className="ml-2 text-xs">
-                    Required
-                  </Label>
+        <div className="space-y-4">
+          {Object.entries(fieldsByTable).map(([tableId, tableFields]) => {
+            const tableName = tables.find(t => t.id === tableId)?.name || tableId;
+            
+            return (
+              <div key={tableId} className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Database className="h-4 w-4 text-gray-500" />
+                  <h4 className="text-sm font-medium">{tableName}</h4>
                 </div>
                 
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => handleMoveField(index, 'up')}
-                  disabled={index === 0}
-                  className="h-8 w-8"
-                >
-                  <MoveUp className="h-4 w-4" />
-                </Button>
-                
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => handleMoveField(index, 'down')}
-                  disabled={index === fields.length - 1}
-                  className="h-8 w-8"
-                >
-                  <MoveDown className="h-4 w-4" />
-                </Button>
-                
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => handleRemoveField(index)}
-                  disabled={ensureEmailRequired && field.id === 'contact_email'}
-                  className="h-8 w-8 text-red-500 hover:text-red-700"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                <div className="pl-6 space-y-2">
+                  {tableFields.map((field, fieldIndex) => {
+                    const index = fields.findIndex(f => f.id === field.id);
+                    
+                    return (
+                      <div key={field.id} className="flex items-center gap-2 p-2 bg-gray-50 rounded-md border">
+                        <div className="cursor-move">
+                          <GripVertical className="h-4 w-4 text-gray-400" />
+                        </div>
+                        
+                        <div className="flex-1">
+                          <div className="font-medium text-sm">{getFieldDisplayName(field.id)}</div>
+                          <div className="text-xs text-gray-500">
+                            <Badge variant="outline" className="text-[10px] py-0 h-4">
+                              {field.type}
+                            </Badge>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-1">
+                          <div className="flex items-center mr-2">
+                            <Switch
+                              id={`required-${index}`}
+                              checked={field.required}
+                              onCheckedChange={() => handleToggleRequired(index)}
+                              disabled={ensureEmailRequired && field.id === 'contact_email' && field.required}
+                              className="scale-90"
+                            />
+                            <Label htmlFor={`required-${index}`} className="ml-2 text-xs">
+                              Required
+                            </Label>
+                          </div>
+                          
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleMoveField(index, 'up')}
+                            disabled={index === 0}
+                            className="h-8 w-8"
+                          >
+                            <MoveUp className="h-4 w-4" />
+                          </Button>
+                          
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleMoveField(index, 'down')}
+                            disabled={index === fields.length - 1}
+                            className="h-8 w-8"
+                          >
+                            <MoveDown className="h-4 w-4" />
+                          </Button>
+                          
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleRemoveField(index)}
+                            disabled={ensureEmailRequired && field.id === 'contact_email'}
+                            className="h-8 w-8 text-red-500 hover:text-red-700"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
