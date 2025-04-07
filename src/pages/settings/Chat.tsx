@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import * as React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { MessageSquare } from 'lucide-react';
@@ -8,8 +8,8 @@ import BehaviorSettings from './chat/BehaviorSettings';
 import InstallationGuide from './chat/InstallationGuide';
 import { ThemeProvider } from '@/context/ThemeContext';
 
-const Chat = () => {
-  const [activeTab, setActiveTab] = useState('branding');
+const Chat: React.FC = () => {
+  const [activeTab, setActiveTab] = React.useState('branding');
   
   const handleTabChange = (value: string) => {
     setActiveTab(value);
