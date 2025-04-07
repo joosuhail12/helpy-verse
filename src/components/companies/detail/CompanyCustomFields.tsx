@@ -35,7 +35,7 @@ export const CompanyCustomFields = ({ company }: CompanyCustomFieldsProps) => {
   }
 
   // Check data.companies for backward compatibility
-  const fields = data?.fields || data?.companies || [];
+  const fields = data?.companies || [];
   
   if (!fields || fields.length === 0) {
     return null;
@@ -75,7 +75,7 @@ export const CompanyCustomFields = ({ company }: CompanyCustomFieldsProps) => {
                   field={field.id}
                   label={field.name}
                   type={typeMapping[field.type] || 'text'} // Default to text if type not recognized
-                  options={field.options}
+                  options={field.options ? field.options.map(opt => typeof opt === 'string' ? opt : opt.value) : undefined}
                 />
               </div>
             );

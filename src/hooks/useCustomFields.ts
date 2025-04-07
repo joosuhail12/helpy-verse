@@ -1,23 +1,35 @@
 
 import { useState, useEffect } from 'react';
-import type { DataCollectionField } from '@/types/chatbot';
+import type { CustomField } from '@/types/customField';
 
 // Mock data for available fields - in a real implementation, this would fetch from an API
 const AVAILABLE_FIELDS = [
   // Contact fields
-  { id: 'contact_firstname', name: 'First Name', type: 'text', object: 'contact' },
-  { id: 'contact_lastname', name: 'Last Name', type: 'text', object: 'contact' },
-  { id: 'contact_email', name: 'Email', type: 'email', object: 'contact' },
-  { id: 'contact_phone', name: 'Phone Number', type: 'phone', object: 'contact' },
-  { id: 'contact_title', name: 'Job Title', type: 'text', object: 'contact' },
-  { id: 'contact_timezone', name: 'Timezone', type: 'text', object: 'contact' },
+  { id: 'contact_firstname', name: 'First Name', type: 'text', object: 'contact', options: [] },
+  { id: 'contact_lastname', name: 'Last Name', type: 'text', object: 'contact', options: [] },
+  { id: 'contact_email', name: 'Email', type: 'email', object: 'contact', options: [] },
+  { id: 'contact_phone', name: 'Phone Number', type: 'phone', object: 'contact', options: [] },
+  { id: 'contact_title', name: 'Job Title', type: 'text', object: 'contact', options: [] },
+  { id: 'contact_timezone', name: 'Timezone', type: 'text', object: 'contact', options: [] },
   
   // Company fields
-  { id: 'company_name', name: 'Company Name', type: 'text', object: 'company' },
-  { id: 'company_website', name: 'Website', type: 'text', object: 'company' },
-  { id: 'company_industry', name: 'Industry', type: 'text', object: 'company' },
-  { id: 'company_size', name: 'Company Size', type: 'text', object: 'company' },
+  { id: 'company_name', name: 'Company Name', type: 'text', object: 'company', options: [] },
+  { id: 'company_website', name: 'Website', type: 'text', object: 'company', options: [] },
+  { id: 'company_industry', name: 'Industry', type: 'text', object: 'company', options: [] },
+  { id: 'company_size', name: 'Company Size', type: 'text', object: 'company', options: [] },
 ];
+
+// Add required fields to make compatible with CustomField type
+const enrichFieldsWithDefaults = (fields: any[]) => {
+  return fields.map(field => ({
+    ...field,
+    required: false,
+    description: field.description || '',
+    createdAt: field.createdAt || new Date().toISOString(),
+    updatedAt: field.updatedAt || new Date().toISOString(),
+    history: field.history || [],
+  }));
+};
 
 export const useCustomFields = (objectType?: string) => {
   const [fields, setFields] = useState(AVAILABLE_FIELDS);
@@ -55,9 +67,9 @@ export const useCustomFields = (objectType?: string) => {
   // Return data in the format expected by components
   return {
     data: {
-      contacts: objectType === 'contacts' ? fields.filter(field => field.object === 'contact') : [],
-      companies: objectType === 'companies' ? fields.filter(field => field.object === 'company') : [],
-      tickets: objectType === 'tickets' ? fields.filter(field => field.object === 'ticket') : []
+      contacts: objectType === 'contacts' ? enrichFieldsWithDefaults(fields.filter(field => field.object === 'contact')) : [],
+      companies: objectType === 'companies' ? enrichFieldsWithDefaults(fields.filter(field => field.object === 'company')) : [],
+      tickets: objectType === 'tickets' ? enrichFieldsWithDefaults(fields.filter(field => field.object === 'ticket')) : []
     },
     isLoading,
     error,

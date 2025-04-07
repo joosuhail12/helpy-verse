@@ -16,7 +16,16 @@ export type Operator =
   | 'not_in'
   | 'is_empty'
   | 'is_not_empty'
-  | 'between';
+  | 'between'
+  | 'last_n_days'
+  | 'next_n_days'
+  | 'rolling_days'
+  | 'this_week'
+  | 'this_month'
+  | 'this_year'
+  | 'last_week'
+  | 'last_month'
+  | 'last_year';
 
 export interface QueryRule {
   id: string;

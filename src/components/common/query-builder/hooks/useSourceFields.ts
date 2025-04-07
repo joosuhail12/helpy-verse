@@ -1,6 +1,6 @@
 
 import { useMemo } from 'react';
-import type { QueryField, DataSource } from '@/types/queryBuilder';
+import type { QueryField, DataSource, FieldType } from '@/types/queryBuilder';
 import { mockCustomObjects } from '@/mock/customObjects';
 import { mockCustomFields } from '@/mock/customFields';
 import { mapFieldType } from '../utils/fieldTypeMapping';
@@ -23,7 +23,10 @@ export const useSourceFields = (selectedSource: ExtendedDataSource, fields: Quer
             label: field.name,
             type: mapFieldType(field.type),
             source: 'custom_objects' as DataSource,
-            customObject: slug
+            customObject: slug,
+            options: field.type === 'select' || field.type === 'multi-select' 
+              ? field.options?.map(opt => ({ label: opt, value: opt }))
+              : undefined
           }))
         );
       }
@@ -37,7 +40,9 @@ export const useSourceFields = (selectedSource: ExtendedDataSource, fields: Quer
           label: field.name,
           type: mapFieldType(field.type),
           source: selectedSource as DataSource,
-          options: field.type === 'select' ? field.options : undefined
+          options: field.type === 'select' || field.type === 'multi-select'
+            ? field.options?.map(opt => ({ label: opt, value: opt }))
+            : undefined
         }))
       );
     }

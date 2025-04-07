@@ -10,6 +10,24 @@ import CustomDataTabs from '@/components/settings/customData/CustomDataTabs';
 import { toast } from '@/components/ui/use-toast';
 import { HttpClient } from '@/api/services/http';
 import { Loader2 } from 'lucide-react';
+import { CustomField } from '@/types/customField';
+
+// Helper to enrich fields with required CustomField properties
+const enrichFields = (fields: any[]): CustomField[] => {
+  return fields.map(field => ({
+    id: field.id,
+    name: field.name,
+    type: field.type as any, // Type casting as CustomFieldType
+    description: field.description || '',
+    required: field.required || false,
+    options: field.options || [],
+    visible: field.visible !== undefined ? field.visible : true,
+    createdAt: field.createdAt || new Date().toISOString(),
+    updatedAt: field.updatedAt || new Date().toISOString(),
+    history: field.history || [],
+    validationRules: field.validationRules || []
+  }));
+};
 
 const CustomData = () => {
   const [selectedTable, setSelectedTable] = useState<'tickets' | 'contacts' | 'companies'>('tickets');
@@ -18,7 +36,9 @@ const CustomData = () => {
   const { data: customFields, isLoading, error } = useCustomFields(selectedTable);
   const { handleImport } = useCustomFieldImport();
 
-  const currentFields = customFields?.[selectedTable] || [];
+  // Get current fields and enrich them to be compatible with CustomField type
+  const currentFieldsRaw = customFields?.[selectedTable] || [];
+  const currentFields: CustomField[] = enrichFields(currentFieldsRaw);
 
   // Check API connection on component mount
   useEffect(() => {

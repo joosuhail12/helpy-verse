@@ -2,10 +2,15 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 
+interface OptionType {
+  label: string;
+  value: string;
+}
+
 interface SelectInputProps {
   value: string;
   onChange: (value: string) => void;
-  options: string[];
+  options: OptionType[] | string[];
   errorMessage?: string | null;
 }
 
@@ -16,11 +21,16 @@ export const SelectInput = ({ value, onChange, options, errorMessage }: SelectIn
         <SelectValue placeholder="Select value" />
       </SelectTrigger>
       <SelectContent>
-        {options.map((option) => (
-          <SelectItem key={option} value={option}>
-            {option}
-          </SelectItem>
-        ))}
+        {options.map((option) => {
+          const optionValue = typeof option === 'string' ? option : option.value;
+          const optionLabel = typeof option === 'string' ? option : option.label;
+          
+          return (
+            <SelectItem key={optionValue} value={optionValue}>
+              {optionLabel}
+            </SelectItem>
+          );
+        })}
       </SelectContent>
     </Select>
   );
