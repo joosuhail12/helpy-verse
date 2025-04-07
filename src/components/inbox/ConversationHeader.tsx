@@ -67,29 +67,39 @@ const ConversationHeader = ({ ticket, onClose, activeUsers = [] }: ConversationH
           <h2 className="font-semibold text-lg truncate">{ticket.subject}</h2>
           <Badge variant="outline" className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary">
             <div className="flex items-center gap-2">
-              <div className="flex -space-x-2">
+              <div className="flex -space-x-2 relative">
                 {activeUsers.map((user) => (
-                  <Tooltip key={user.userId}>
-                    <TooltipTrigger asChild>
-                      <Avatar className="h-6 w-6 border-2 border-white">
-                        <span className="text-xs">{user.name && user.name.length > 0 ? user.name[0] : '?'}</span>
-                      </Avatar>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <div className="flex items-center gap-2">
+                  <div key={user.userId} className="relative">
+                    <Avatar className="h-7 w-7 border-2 border-white rounded-full flex items-center justify-center bg-primary/10">
+                      <span className="text-xs font-medium">{user.name && user.name.length > 0 ? user.name[0].toUpperCase() : '?'}</span>
+                    </Avatar>
+                    <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-white" />
+                  </div>
+                ))}
+              </div>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center gap-1 cursor-pointer">
+                    {/* <span>#{ticket.id}</span> */}
+                    <Users className="h-3.5 w-3.5" />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <div className="space-y-2">
+                    {activeUsers.map((user) => (
+                      <div key={user.userId} className="flex items-center gap-2">
                         <div className="w-2 h-2 rounded-full bg-green-500" />
-                        <span>{user.name || 'Unknown'}</span>
+                        <span className="font-medium">{user.name || 'Unknown'}</span>
                         {user.lastActive && (
                           <span className="text-xs text-muted-foreground">
                             • active {formatDistanceToNow(new Date(user.lastActive), { addSuffix: true })}
                           </span>
                         )}
                       </div>
-                    </TooltipContent>
-                  </Tooltip>
-                ))}
-              </div>
-              {/* <span>#{ticket.id}</span> */}
+                    ))}
+                  </div>
+                </TooltipContent>
+              </Tooltip>
             </div>
           </Badge>
         </div>

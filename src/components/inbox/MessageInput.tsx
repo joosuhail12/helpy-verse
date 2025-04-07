@@ -123,27 +123,16 @@ const MessageInput = ({
   const handleSendClick = () => {
     console.log("Send button clicked in MessageInput");
 
-    // Make sure we have the latest content from the editor
-    if (editor && typeof editor.getHTML === 'function') {
-      const currentHTML = editor.getHTML();
-      console.log("Current editor HTML:", currentHTML);
+    // Get the latest content from the editor
+    const currentHTML = editor?.getHTML() || '';
+    console.log("Current editor HTML:", currentHTML);
 
-      // Update the message if it's different
-      if (currentHTML !== newMessage) {
-        onMessageChange(currentHTML);
-      }
-    }
-
-    // Debug the current message state
-    console.log("Current message state:", newMessage);
-
-    // Check if the message is valid before sending
-    const content = newMessage || '';
-    const isEmptyHtml = !content ||
-      content.trim() === '' ||
-      content === '<p></p>' ||
-      content === '<p><br></p>' ||
-      content === '<p>&nbsp;</p>';
+    // Check if the message is empty or contains only HTML placeholders
+    const isEmptyHtml = !currentHTML ||
+      currentHTML.trim() === '' ||
+      currentHTML === '<p></p>' ||
+      currentHTML === '<p><br></p>' ||
+      currentHTML === '<p>&nbsp;</p>';
 
     if (isEmptyHtml) {
       console.log("Message is empty or contains only HTML placeholders, not sending");
@@ -151,18 +140,21 @@ const MessageInput = ({
     }
 
     // Make sure our message has proper HTML structure
-    // If it doesn't appear to be HTML, wrap it in paragraph tags
-    let messageToSend = content;
+    let messageToSend = currentHTML;
     if (messageToSend && !messageToSend.startsWith('<')) {
       messageToSend = `<p>${messageToSend}</p>`;
-      // Update the message state with proper HTML
-      onMessageChange(messageToSend);
     }
 
-    console.log("Proceeding to send message:", messageToSend);
+    // Update the message state with the latest content
+    onMessageChange(messageToSend);
 
     // Call the provided onSendMessage function
     onSendMessage();
+
+    // Clear the editor content after sending
+    if (editor) {
+      editor.commands.clearContent();
+    }
   };
 
   return (
