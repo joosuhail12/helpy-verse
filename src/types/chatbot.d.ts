@@ -17,15 +17,28 @@ export interface Chatbot {
     showTicketStatusBar: boolean;
     allowEndChat: boolean;
     enableMessageReactions: boolean;
+    enableDeliveryReceipts: boolean;
     showAgentPresence: boolean;
     enableConversationRating: boolean;
   };
   appearance?: {
     primaryColor: string;
+    backgroundColor: string;
+    textColor: string;
+    userMessageBackground: string;
+    agentMessageBackground: string;
     logo?: string;
+    headerLogo?: string;
+    launcherIcon?: string;
     position: 'left' | 'right';
     offsetX: number;
     offsetY: number;
+    compactMode: boolean;
+  };
+  textLabels?: {
+    welcomeTitle: string;
+    welcomeSubtitle: string;
+    askQuestionButton: string;
   };
   deployment?: {
     type: 'widget' | 'api' | 'embed';
