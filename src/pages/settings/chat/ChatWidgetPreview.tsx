@@ -70,10 +70,7 @@ const ChatWidgetPreview: React.FC<ChatWidgetPreviewProps> = ({
             type="text"
             placeholder="Type your message..."
             className="flex-1 border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1"
-            style={{ 
-              borderColor: "rgb(229, 231, 235)",
-              boxShadow: `focus-visible:ring-1 focus-visible:ring-${primaryColor}`
-            }}
+            style={{ borderColor: "rgb(229, 231, 235)" }}
           />
           <button 
             className="px-3 py-2 rounded-md text-white text-sm"

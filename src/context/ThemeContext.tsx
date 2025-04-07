@@ -1,42 +1,54 @@
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useState, useContext, ReactNode } from 'react';
 
 interface ThemeContextType {
-  theme: string;
-  setTheme: (theme: string) => void;
   primaryColor: string;
   setPrimaryColor: (color: string) => void;
   secondaryColor: string;
   setSecondaryColor: (color: string) => void;
+  fontSize: string;
+  setFontSize: (size: string) => void;
+  fontFamily: string;
+  setFontFamily: (font: string) => void;
 }
 
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+const defaultThemeContext: ThemeContextType = {
+  primaryColor: '#7c3aed', // Default primary color (purple)
+  setPrimaryColor: () => {},
+  secondaryColor: '#e5e7eb', // Default secondary color (gray)
+  setSecondaryColor: () => {},
+  fontSize: 'medium',
+  setFontSize: () => {},
+  fontFamily: 'Inter, system-ui, sans-serif',
+  setFontFamily: () => {},
+};
+
+export const ThemeContext = createContext<ThemeContextType>(defaultThemeContext);
 
 interface ThemeProviderProps {
   children: ReactNode;
-  initialTheme?: string;
-  initialPrimaryColor?: string;
-  initialSecondaryColor?: string;
+  initialTheme?: Partial<Omit<ThemeContextType, 'setPrimaryColor' | 'setSecondaryColor' | 'setFontSize' | 'setFontFamily'>>;
 }
 
-export const ThemeProvider: React.FC<ThemeProviderProps> = ({
+export const ThemeProvider: React.FC<ThemeProviderProps> = ({ 
   children,
-  initialTheme = 'light',
-  initialPrimaryColor = '#7c3aed',
-  initialSecondaryColor = '#0ea5e9'
+  initialTheme = {} 
 }) => {
-  const [theme, setTheme] = useState(initialTheme);
-  const [primaryColor, setPrimaryColor] = useState(initialPrimaryColor);
-  const [secondaryColor, setSecondaryColor] = useState(initialSecondaryColor);
-  
+  const [primaryColor, setPrimaryColor] = useState(initialTheme.primaryColor || defaultThemeContext.primaryColor);
+  const [secondaryColor, setSecondaryColor] = useState(initialTheme.secondaryColor || defaultThemeContext.secondaryColor);
+  const [fontSize, setFontSize] = useState(initialTheme.fontSize || defaultThemeContext.fontSize);
+  const [fontFamily, setFontFamily] = useState(initialTheme.fontFamily || defaultThemeContext.fontFamily);
+
   return (
     <ThemeContext.Provider value={{
-      theme,
-      setTheme,
       primaryColor,
       setPrimaryColor,
       secondaryColor,
-      setSecondaryColor
+      setSecondaryColor,
+      fontSize,
+      setFontSize,
+      fontFamily,
+      setFontFamily
     }}>
       {children}
     </ThemeContext.Provider>
@@ -50,3 +62,5 @@ export const useTheme = (): ThemeContextType => {
   }
   return context;
 };
+
+export default ThemeProvider;

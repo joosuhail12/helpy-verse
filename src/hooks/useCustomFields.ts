@@ -1,117 +1,57 @@
 
-import { useState, useEffect } from 'react';
-import { HttpClient } from '@/api/services/http';
-import { CustomField } from '@/types/customField';
+import { useQuery } from '@tanstack/react-query';
 
-interface CustomFieldsData {
-  tickets?: CustomField[];
+interface CustomField {
+  id: string;
+  name: string;
+  type: string;
+  required: boolean;
+  options?: string[];
+  object: string;
+}
+
+interface CustomFieldsResponse {
   contacts?: CustomField[];
   companies?: CustomField[];
-  fields?: CustomField[];
-  [key: string]: CustomField[] | undefined;
+  deals?: CustomField[];
+  tickets?: CustomField[];
 }
 
-interface UseCustomFieldsResult {
-  fields: CustomField[];
-  data: CustomFieldsData;
-  loading: boolean;
+export interface UseCustomFieldsResult {
+  data: CustomFieldsResponse | undefined;
   isLoading: boolean;
-  error: string | null;
-  refetch: () => Promise<void>;
+  isError: boolean;
+  error: Error | null;
 }
+
+// Mock API function to fetch custom fields
+const fetchCustomFields = async (objectType?: string): Promise<CustomFieldsResponse> => {
+  // In a real implementation, this would be an API call
+  // For now, we'll return mock data
+  return {
+    contacts: [
+      { id: 'field1', name: 'Preferred Contact Time', type: 'select', required: false, options: ['Morning', 'Afternoon', 'Evening'], object: 'contact' },
+      { id: 'field2', name: 'Lead Source', type: 'text', required: false, object: 'contact' },
+      { id: 'field3', name: 'Birthday', type: 'date', required: false, object: 'contact' }
+    ],
+    companies: [
+      { id: 'field4', name: 'Industry', type: 'select', required: false, options: ['Technology', 'Finance', 'Healthcare', 'Education', 'Retail'], object: 'company' },
+      { id: 'field5', name: 'Annual Revenue', type: 'number', required: false, object: 'company' },
+      { id: 'field6', name: 'Number of Employees', type: 'number', required: false, object: 'company' }
+    ],
+  };
+};
 
 export const useCustomFields = (objectType?: string): UseCustomFieldsResult => {
-  const [fields, setFields] = useState<CustomField[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-  const [data, setData] = useState<CustomFieldsData>({
-    tickets: [],
-    contacts: [],
-    companies: [],
-    fields: []
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ['customFields', objectType],
+    queryFn: () => fetchCustomFields(objectType)
   });
 
-  const fetchFields = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      // In a real app, we'd fetch from API with proper endpoint
-      // For now we're mocking some data
-      const mockFields: CustomField[] = [
-        { 
-          id: 'custom_field_1', 
-          name: 'Priority', 
-          type: 'select', 
-          options: ['High', 'Medium', 'Low'],
-          required: true, 
-          description: 'Ticket priority level',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          history: [],
-          visible: true
-        },
-        { 
-          id: 'custom_field_2', 
-          name: 'Category', 
-          type: 'select', 
-          options: ['Bug', 'Feature Request', 'Question', 'Support'],
-          required: true, 
-          description: 'Issue category',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          history: [],
-          visible: true
-        },
-        { 
-          id: 'custom_field_3', 
-          name: 'Expected Resolution Date', 
-          type: 'date', 
-          required: false,
-          description: 'When the issue is expected to be resolved',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          history: [],
-          visible: true
-        },
-      ];
-      
-      // Filter by object type if provided
-      const filteredFields = objectType 
-        ? mockFields.filter(f => f.id.startsWith(objectType)) 
-        : mockFields;
-      
-      setFields(filteredFields);
-      
-      // Structure the data object based on field types
-      const newData: CustomFieldsData = {
-        tickets: [],
-        contacts: [],
-        companies: [],
-        fields: filteredFields
-      };
-      
-      if (objectType) {
-        newData[objectType] = filteredFields;
-      }
-      
-      setData(newData);
-      setLoading(false);
-    } catch (err) {
-      console.error("Error fetching custom fields:", err);
-      setError("Failed to load custom fields");
-      setLoading(false);
-    }
+  return {
+    data,
+    isLoading,
+    isError,
+    error
   };
-
-  useEffect(() => {
-    fetchFields();
-  }, [objectType]);
-
-  const refetch = () => fetchFields();
-
-  // For compatibility with components expecting isLoading
-  const isLoading = loading;
-
-  return { fields, data, loading, isLoading, error, refetch };
 };
