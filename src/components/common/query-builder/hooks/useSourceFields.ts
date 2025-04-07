@@ -25,7 +25,7 @@ export const useSourceFields = (selectedSource: ExtendedDataSource, fields: Quer
             source: 'custom_objects' as DataSource,
             customObject: slug,
             options: field.type === 'select' || field.type === 'multi-select' 
-              ? field.options?.map(opt => ({ label: opt, value: opt }))
+              ? field.options?.map(opt => ({ label: typeof opt === 'string' ? opt : opt.label, value: typeof opt === 'string' ? opt : opt.value })) || []
               : undefined
           }))
         );
@@ -40,8 +40,8 @@ export const useSourceFields = (selectedSource: ExtendedDataSource, fields: Quer
           label: field.name,
           type: mapFieldType(field.type),
           source: selectedSource as DataSource,
-          options: field.type === 'select' || field.type === 'multi-select'
-            ? field.options?.map(opt => ({ label: opt, value: opt }))
+          options: (field.type === 'select' || field.type === 'multi-select') && Array.isArray(field.options)
+            ? field.options.map(opt => ({ label: opt, value: opt }))
             : undefined
         }))
       );
