@@ -1,11 +1,10 @@
-
 import * as React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Clipboard, Code, Desktop, Globe, Server } from 'lucide-react';
+import { Clipboard, Code, Globe, Server, Monitor } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import { useTheme } from '@/context/ThemeContext';
 
@@ -116,7 +115,7 @@ const InstallationGuide: React.FC = () => {
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center gap-2">
-                <Desktop className="h-5 w-5 text-muted-foreground" />
+                <Monitor className="h-5 w-5 text-muted-foreground" />
                 <h3 className="text-base font-medium">Preview</h3>
               </div>
               <div className="mt-4 p-4 border rounded-md bg-gray-50">
