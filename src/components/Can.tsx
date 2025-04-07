@@ -8,15 +8,15 @@ import { selectPermissions } from "@/store/slices/auth/selectors";
 export const AbilityContext = createContext<AppAbility | undefined>(undefined);
 
 export const Can = (props: any) => {
-  const permissions = useAppSelector(selectPermissions) || [];
+  const permissions = useAppSelector(selectPermissions);
   const [ability, setAbility] = useState<AppAbility>(defineAppAbility());
 
   useEffect(() => {
-    if (permissions && permissions.length > 0) {
+    if (permissions && permissions.can && permissions.can.length > 0) {
       const newAbility = defineAppAbility();
       // Type-casting to any to avoid TypeScript errors
       // The actual implementation of CASL will validate the rules
-      newAbility.update(permissions as any);
+      newAbility.update(permissions.can as any);
       setAbility(newAbility);
     }
   }, [permissions]);

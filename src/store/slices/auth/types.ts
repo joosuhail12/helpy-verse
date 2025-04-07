@@ -9,7 +9,10 @@ export interface Permission {
   };
 }
 
-export type Permissions = Permission[];
+export interface Permissions {
+  can: Permission[];
+  cannot: Permission[];
+}
 
 export interface AuthState {
   isAuthenticated: boolean;
@@ -31,6 +34,7 @@ export interface AuthState {
   loading: boolean;
   error: string | null;
   permissions: Permissions;
+  success: boolean;
 }
 
 export interface Credentials {
