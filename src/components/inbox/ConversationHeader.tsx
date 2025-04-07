@@ -66,6 +66,7 @@ const ConversationHeader = ({ ticket, onClose, activeUsers = [] }: ConversationH
         <div className="flex items-center gap-2">
           <h2 className="font-semibold text-lg truncate">{ticket.subject}</h2>
           <Badge variant="outline" className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary">
+            {/* TODO: Add avatar stack of the teammates actively working on this ticket */}
             #{ticket.id}
           </Badge>
         </div>
