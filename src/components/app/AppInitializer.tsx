@@ -19,6 +19,11 @@ export const initializeApp = () => {
 };
 
 const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
+  useEffect(() => {
+    // Run any component-specific initialization if needed
+    console.log("AppInitializer component mounted");
+  }, []);
+
   return <>{children}</>;
 };
 

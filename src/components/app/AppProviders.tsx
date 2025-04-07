@@ -9,7 +9,6 @@ import CaslProvider from "@/components/CaslProvider";
 import { HttpClient } from "@/api/services/http";
 import { toast } from "@/components/ui/use-toast";
 import { isAuthenticated } from "@/utils/auth/tokenManager";
-// Fix the import to correctly import the named export
 import AppInitializer, { initializeApp } from "./AppInitializer";
 
 interface AppProvidersProps {
