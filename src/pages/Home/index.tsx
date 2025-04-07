@@ -1,11 +1,16 @@
 
 import React from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
+import RouteErrorBoundary from '@/components/app/RouteErrorBoundary';
 
 const Home = () => {
+  const location = useLocation();
+  
   return (
     <div className="container mx-auto p-4">
-      <Outlet />
+      <RouteErrorBoundary>
+        <Outlet />
+      </RouteErrorBoundary>
     </div>
   );
 };
