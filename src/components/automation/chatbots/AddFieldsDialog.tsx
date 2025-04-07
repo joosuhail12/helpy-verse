@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Database, Plus } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Checkbox } from '@/components/ui/checkbox';
 import type { DataCollectionField } from '@/types/chatbot';
 
 interface AddFieldsDialogProps {
@@ -35,6 +36,7 @@ export const AddFieldsDialog = ({
 }: AddFieldsDialogProps) => {
   const [selectedTable, setSelectedTable] = useState(tables[0]?.id || '');
   const [selectedFields, setSelectedFields] = useState<string[]>([]);
+  const [requiredFields, setRequiredFields] = useState<string[]>([]);
 
   // Filter available fields based on selected table
   const availableFieldsForTable = availableFields.filter(
@@ -49,10 +51,24 @@ export const AddFieldsDialog = ({
   const handleTableChange = (tableId: string) => {
     setSelectedTable(tableId);
     setSelectedFields([]); // Reset selected fields when table changes
+    setRequiredFields([]); // Reset required fields when table changes
   };
 
   const toggleFieldSelection = (fieldId: string) => {
     setSelectedFields(prev => 
+      prev.includes(fieldId)
+        ? prev.filter(id => id !== fieldId)
+        : [...prev, fieldId]
+    );
+    
+    // If unselecting a field, also remove it from required fields
+    if (selectedFields.includes(fieldId)) {
+      setRequiredFields(prev => prev.filter(id => id !== fieldId));
+    }
+  };
+
+  const toggleRequiredField = (fieldId: string) => {
+    setRequiredFields(prev => 
       prev.includes(fieldId)
         ? prev.filter(id => id !== fieldId)
         : [...prev, fieldId]
@@ -66,17 +82,19 @@ export const AddFieldsDialog = ({
         id: field.id,
         label: field.name,
         type: field.type as any,
-        required: false
+        required: requiredFields.includes(field.id)
       }));
     
     onAddFields(fieldsToAdd);
     setSelectedFields([]);
+    setRequiredFields([]);
     onClose();
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={() => {
       setSelectedFields([]);
+      setRequiredFields([]);
       onClose();
     }}>
       <DialogContent className="sm:max-w-md">
@@ -122,25 +140,54 @@ export const AddFieldsDialog = ({
                   {selectableFields.map(field => (
                     <div
                       key={field.id}
-                      className={`flex items-center justify-between p-2 rounded-md cursor-pointer mb-1 ${
+                      className={`flex items-center justify-between p-2 rounded-md mb-1 ${
                         selectedFields.includes(field.id)
                           ? 'bg-primary/10 border border-primary/30'
                           : 'hover:bg-gray-100'
                       }`}
-                      onClick={() => toggleFieldSelection(field.id)}
                     >
-                      <div className="flex flex-col">
+                      <div 
+                        className="flex flex-col flex-1 cursor-pointer"
+                        onClick={() => toggleFieldSelection(field.id)}
+                      >
                         <span className="font-medium">{field.name}</span>
                         <Badge variant="outline" className="text-xs w-fit mt-1">
                           {field.type}
                         </Badge>
                       </div>
-                      <div className="flex items-center">
-                        {selectedFields.includes(field.id) ? (
-                          <Badge className="h-6">Selected</Badge>
-                        ) : (
-                          <Plus className="h-4 w-4 text-gray-400" />
+                      
+                      <div className="flex items-center gap-3">
+                        {selectedFields.includes(field.id) && (
+                          <div className="flex items-center gap-2">
+                            <Checkbox
+                              id={`required-${field.id}`}
+                              checked={requiredFields.includes(field.id)}
+                              onCheckedChange={() => toggleRequiredField(field.id)}
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                            <Label 
+                              htmlFor={`required-${field.id}`}
+                              className="text-xs cursor-pointer select-none"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleRequiredField(field.id);
+                              }}
+                            >
+                              Required
+                            </Label>
+                          </div>
                         )}
+                        
+                        <div
+                          className="flex items-center cursor-pointer"
+                          onClick={() => toggleFieldSelection(field.id)}
+                        >
+                          {selectedFields.includes(field.id) ? (
+                            <Badge className="h-6">Selected</Badge>
+                          ) : (
+                            <Plus className="h-4 w-4 text-gray-400" />
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))}
