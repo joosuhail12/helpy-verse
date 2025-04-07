@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from "react";
+import * as React from "react";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import { fetchUserProfile } from "@/store/slices/user/userSlice";
@@ -18,10 +18,10 @@ const selectAuthStatus = (state: any) => state.auth.isAuthenticated;
 const CaslProvider: React.FC<CaslProviderProps> = ({ children }) => {
     const dispatch = useAppDispatch();
     const isAuthenticated = useAppSelector(selectAuthStatus);
-    const [dataFetched, setDataFetched] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
+    const [dataFetched, setDataFetched] = React.useState(false);
+    const [isLoading, setIsLoading] = React.useState(false);
 
-    useEffect(() => {
+    React.useEffect(() => {
         // Only fetch data once when authenticated
         if (isAuthenticated && !dataFetched && !isLoading) {
             console.log("CaslProvider: Fetching user data and permissions");
