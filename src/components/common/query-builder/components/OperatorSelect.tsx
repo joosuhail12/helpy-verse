@@ -1,6 +1,7 @@
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { TooltipProvider } from '@/components/ui/tooltip-provider';
 import type { QueryField } from '@/types/queryBuilder';
 
 interface OperatorSelectProps {
@@ -189,4 +190,3 @@ export const OperatorSelect = ({
     </TooltipProvider>
   );
 };
-

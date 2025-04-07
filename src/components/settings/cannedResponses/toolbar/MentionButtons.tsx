@@ -7,6 +7,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { TooltipProvider } from '@/components/ui/tooltip-provider';
 
 interface MentionButtonsProps {
   onInsertPlaceholder: (type: 'customer' | 'company' | 'ticket') => void;
@@ -15,7 +16,7 @@ interface MentionButtonsProps {
 
 const MentionButtons = ({ onInsertPlaceholder, disabled = false }: MentionButtonsProps) => {
   return (
-    <>
+    <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
@@ -78,7 +79,7 @@ const MentionButtons = ({ onInsertPlaceholder, disabled = false }: MentionButton
           <p>Insert Ticket Reference</p>
         </TooltipContent>
       </Tooltip>
-    </>
+    </TooltipProvider>
   );
 };
 

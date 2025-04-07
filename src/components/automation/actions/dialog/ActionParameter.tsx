@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { CSS } from '@dnd-kit/utilities';
 import { useSortable } from '@dnd-kit/sortable';
@@ -18,9 +17,9 @@ import {
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { TooltipProvider } from '@/components/ui/tooltip-provider';
 import {
   Popover,
   PopoverContent,
@@ -197,4 +196,3 @@ export const ActionParameter = ({
     </div>
   );
 };
-

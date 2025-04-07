@@ -1,4 +1,3 @@
-
 import { TableBody, TableCell } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Star } from "lucide-react";
@@ -6,9 +5,9 @@ import { CustomField } from "@/types/customField";
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { TooltipProvider } from '@/components/ui/tooltip-provider';
 import { useState } from "react";
 import FieldPreview from "../FieldPreview";
 import { getFieldTypeIcon } from "./components/FieldTypeIcon";

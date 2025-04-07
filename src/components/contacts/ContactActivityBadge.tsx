@@ -5,9 +5,9 @@ import { Badge } from '@/components/ui/badge';
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { TooltipProvider } from '@/components/ui/tooltip-provider';
 import { MessageSquare, Clock } from 'lucide-react';
 
 interface ContactActivityBadgeProps {

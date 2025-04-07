@@ -6,7 +6,8 @@ import { Bot, Info, AlertTriangle } from "lucide-react";
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useToast } from '@/hooks/use-toast';
 import { customerService } from '@/api/services/customerService';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { TooltipProvider } from '@/components/ui/tooltip-provider';
 import { getAuthToken } from '@/utils/auth/tokenManager';
 
 interface CustomerHeaderProps {

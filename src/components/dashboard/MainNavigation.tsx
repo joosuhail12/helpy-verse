@@ -6,9 +6,9 @@ import { useEffect } from 'react';
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { TooltipProvider } from '@/components/ui/tooltip-provider';
 
 interface MainNavigationProps {
   activeMainNav: string;

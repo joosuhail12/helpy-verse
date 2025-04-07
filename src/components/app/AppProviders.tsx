@@ -1,6 +1,5 @@
 
 import * as React from 'react';
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import AppQueryProvider from './AppQueryProvider';
@@ -52,13 +51,11 @@ const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
   return (
     <AppErrorBoundary>
       <AppQueryProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <CaslProvider>
-            {children}
-          </CaslProvider>
-        </TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <CaslProvider>
+          {children}
+        </CaslProvider>
       </AppQueryProvider>
     </AppErrorBoundary>
   );

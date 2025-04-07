@@ -1,7 +1,8 @@
 
 import React from 'react';
 import { Label } from '@/components/ui/label';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { TooltipProvider } from '@/components/ui/tooltip-provider';
 import { Info } from 'lucide-react';
 
 interface FieldLabelProps {

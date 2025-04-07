@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Separator } from "@/components/ui/separator";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { TooltipProvider } from "@/components/ui/tooltip-provider";
 import type { Editor } from '@tiptap/react';
 import type { Ticket } from '@/types/ticket';
 import EmojiPickerButton from './EmojiPickerButton';
