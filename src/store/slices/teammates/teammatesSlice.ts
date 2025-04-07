@@ -134,7 +134,12 @@ const teammatesSlice = createSlice({
   },
 });
 
+// Export the reducer directly as a named export
+export const reducer = teammatesSlice.reducer;
+
+// Export separately named reducer
 export const teammatesReducer = teammatesSlice.reducer;
+
+// Export actions
 export * from './actions';
 export * from './selectors';
-export { teammatesReducer as reducer };
