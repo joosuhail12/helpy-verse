@@ -62,6 +62,7 @@ export const {
   setPermissions
 } = authSlice.actions;
 
-// Export the reducer
+// Export the reducer properly using both named export and default export
 export const authReducer = authSlice.reducer;
+export { authSlice };
 export default authSlice.reducer;

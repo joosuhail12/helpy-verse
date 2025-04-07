@@ -34,7 +34,7 @@ import {
   getUserPermissionThunk
 } from './auth/permissionActions';
 
-// Import the auth slice reducer directly 
+// Import the auth slice reducer directly - fix the export/import here
 import authReducer, { 
   logout, 
   clearError, 
@@ -42,7 +42,8 @@ import authReducer, {
   setAuthError,
   setAuthSuccess,
   setPermissions,
-  setUserData
+  setUserData,
+  authSlice
 } from './auth/authSlice';
 
 // Re-export everything
@@ -62,6 +63,7 @@ export {
   setAuthSuccess,
   setPermissions,
   setUserData,
+  authSlice,
   // Legacy thunks
   loginUserThunk,
   registerUserThunk,
@@ -77,5 +79,5 @@ export {
 export type { Permission, Permissions, AuthState, ActionType };
 
 // Export the reducer
-export const reducer = authReducer;
+export { authReducer };
 export default authReducer;
