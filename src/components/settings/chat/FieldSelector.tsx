@@ -1,10 +1,12 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, Trash2, MoveUp, MoveDown, GripVertical } from 'lucide-react';
+import { Plus, Trash2, MoveUp, MoveDown, GripVertical, ListFilter } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { DataCollectionField } from '@/types/chatbot';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface FieldSelectorProps {
   fields: DataCollectionField[];
@@ -22,24 +24,23 @@ export const FieldSelector: React.FC<FieldSelectorProps> = ({
   ensureEmailRequired = false,
 }) => {
   const [selectedTable, setSelectedTable] = useState(tables[0]?.id || '');
+  const [showFieldSelector, setShowFieldSelector] = useState(false);
 
-  const handleAddField = () => {
-    // Filter available fields to exclude already selected ones
-    const selectedFieldIds = fields.map(f => f.id);
-    const availableForSelection = availableFields
-      .filter(field => !selectedFieldIds.includes(field.id) && field.object === selectedTable);
+  const handleAddField = (fieldId: string) => {
+    const fieldToAdd = availableFields.find(f => f.id === fieldId);
     
-    if (availableForSelection.length === 0) return;
+    if (!fieldToAdd) return;
     
-    // Add the first available field
+    // Create new field
     const newField = {
-      id: availableForSelection[0].id,
-      label: availableForSelection[0].name,
-      type: availableForSelection[0].type as any,
-      required: false
+      id: fieldToAdd.id,
+      label: fieldToAdd.name,
+      type: fieldToAdd.type as any,
+      required: fieldToAdd.id === 'contact_email' && ensureEmailRequired // Make email required by default if needed
     };
     
     onFieldsChange([...fields, newField]);
+    setShowFieldSelector(false);
   };
 
   const handleRemoveField = (index: number) => {
@@ -91,6 +92,16 @@ export const FieldSelector: React.FC<FieldSelectorProps> = ({
     return field ? field.name : fieldId;
   };
 
+  // Filter available fields based on selected table
+  const availableFieldsForTable = availableFields.filter(field => 
+    field.object === selectedTable
+  );
+
+  // Filter out fields that are already selected
+  const selectableFields = availableFieldsForTable.filter(
+    field => !fields.some(f => f.id === field.id)
+  );
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -99,16 +110,69 @@ export const FieldSelector: React.FC<FieldSelectorProps> = ({
           variant="outline"
           size="sm"
           className="flex items-center gap-1"
-          onClick={handleAddField}
+          onClick={() => setShowFieldSelector(!showFieldSelector)}
         >
           <Plus className="h-4 w-4" />
           <span>Add Field</span>
         </Button>
       </div>
 
+      {showFieldSelector && (
+        <Card className="border border-dashed">
+          <CardContent className="pt-4 pb-3">
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="table-select" className="text-sm">Select table</Label>
+                <Select 
+                  value={selectedTable}
+                  onValueChange={setSelectedTable}
+                >
+                  <SelectTrigger id="table-select" className="mt-1">
+                    <SelectValue placeholder="Select a table" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {tables.map(table => (
+                      <SelectItem key={table.id} value={table.id}>
+                        {table.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {selectedTable && selectableFields.length > 0 ? (
+                <div>
+                  <Label htmlFor="field-select" className="text-sm">Select field to add</Label>
+                  <div className="mt-2 max-h-40 overflow-y-auto space-y-1 p-1 border rounded-md">
+                    {selectableFields.map(field => (
+                      <div 
+                        key={field.id} 
+                        className="flex items-center justify-between p-2 hover:bg-gray-100 rounded cursor-pointer"
+                        onClick={() => handleAddField(field.id)}
+                      >
+                        <div>
+                          <div className="text-sm font-medium">{field.name}</div>
+                          <div className="text-xs text-gray-500">Type: {field.type}</div>
+                        </div>
+                        <Plus className="h-4 w-4 text-gray-500" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="text-sm text-gray-500 py-2">
+                  {selectedTable ? 'All available fields have been added' : 'Select a table to see fields'}
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {fields.length === 0 ? (
-        <div className="text-sm text-gray-500 py-2">
-          No fields selected. Add fields to collect user information.
+        <div className="text-sm text-gray-500 py-2 border-2 border-dashed border-gray-200 rounded-md p-6 text-center">
+          <ListFilter className="h-10 w-10 mx-auto text-gray-400 mb-2" />
+          <p>No fields selected. Add fields to collect user information.</p>
         </div>
       ) : (
         <div className="space-y-2">

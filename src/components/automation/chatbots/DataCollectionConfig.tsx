@@ -1,11 +1,9 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Card, CardContent } from '@/components/ui/card';
-import { Plus, Trash2 } from 'lucide-react';
 import type { DataCollectionField } from '@/types/chatbot';
 import { FieldSelector } from '@/components/settings/chat/FieldSelector';
 
@@ -16,12 +14,21 @@ const AVAILABLE_FIELDS = [
   { id: 'contact_lastname', name: 'Last Name', type: 'text', object: 'contact' },
   { id: 'contact_email', name: 'Email', type: 'email', object: 'contact' },
   { id: 'contact_phone', name: 'Phone Number', type: 'phone', object: 'contact' },
+  { id: 'contact_company', name: 'Company', type: 'text', object: 'contact' },
+  { id: 'contact_jobTitle', name: 'Job Title', type: 'text', object: 'contact' },
+  
+  // Company fields
+  { id: 'company_name', name: 'Company Name', type: 'text', object: 'company' },
+  { id: 'company_website', name: 'Website', type: 'url', object: 'company' },
+  { id: 'company_industry', name: 'Industry', type: 'select', object: 'company' },
+  { id: 'company_size', name: 'Company Size', type: 'select', object: 'company' },
 ];
 
 // Mock data for available tables
 const AVAILABLE_TABLES = [
   { id: 'contact', name: 'Contact' },
   { id: 'company', name: 'Company' },
+  { id: 'custom', name: 'Custom Fields' },
 ];
 
 export interface DataCollectionConfigProps {

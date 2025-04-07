@@ -44,28 +44,6 @@ const BehaviorSettings: React.FC = () => {
   const [showAgentPresence, setShowAgentPresence] = useState(true);
   const [enableConversationRating, setEnableConversationRating] = useState(true);
 
-  const ensureEmailFieldIsRequired = (fields: DataCollectionField[]): DataCollectionField[] => {
-    const emailFieldIndex = fields.findIndex(field => field.id === 'contact_email');
-    if (emailFieldIndex === -1) {
-      // Email field doesn't exist, add it as required
-      return [
-        ...fields,
-        {
-          id: 'contact_email',
-          label: 'Email',
-          type: 'email',
-          required: true
-        }
-      ];
-    } else if (!fields[emailFieldIndex].required) {
-      // Email field exists but not required, update it
-      return fields.map(field => 
-        field.id === 'contact_email' ? { ...field, required: true } : field
-      );
-    }
-    return fields;
-  };
-
   const handleSaveChanges = () => {
     toast({
       title: "Settings saved",
@@ -74,9 +52,7 @@ const BehaviorSettings: React.FC = () => {
   };
 
   const handleFieldsChange = (fields: DataCollectionField[]) => {
-    // Ensure the email field is always required
-    const updatedFields = ensureEmailFieldIsRequired(fields);
-    setSelectedFields(updatedFields);
+    setSelectedFields(fields);
   };
 
   return (
@@ -100,30 +76,12 @@ const BehaviorSettings: React.FC = () => {
         <Separator />
 
         <h2 className="text-lg font-medium">Data Collection</h2>
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="collectData">Collect User Data</Label>
-              <p className="text-sm text-muted-foreground">Collect information from users before starting chat</p>
-            </div>
-            <Switch
-              id="collectData"
-              checked={collectUserData}
-              onCheckedChange={setCollectUserData}
-            />
-          </div>
-
-          {collectUserData && (
-            <div className="mt-4 border border-gray-100 rounded-md p-4 bg-gray-50">
-              <DataCollectionConfig 
-                fields={selectedFields}
-                onFieldsChange={handleFieldsChange}
-                enabled={collectUserData}
-                onEnabledChange={setCollectUserData}
-              />
-            </div>
-          )}
-        </div>
+        <DataCollectionConfig 
+          fields={selectedFields}
+          onFieldsChange={handleFieldsChange}
+          enabled={collectUserData}
+          onEnabledChange={setCollectUserData}
+        />
 
         <Separator />
         
