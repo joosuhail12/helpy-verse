@@ -1,8 +1,8 @@
 
-import React, { ReactNode, useEffect } from 'react';
+import * as React from 'react';
 
 interface AppInitializerProps {
-  children: ReactNode;
+  children: React.ReactNode;
 }
 
 // Initialize the application
@@ -19,7 +19,7 @@ export const initializeApp = () => {
 };
 
 const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
-  useEffect(() => {
+  React.useEffect(() => {
     // Run any component-specific initialization if needed
     console.log("AppInitializer component mounted");
   }, []);

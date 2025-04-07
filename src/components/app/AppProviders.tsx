@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import * as React from 'react';
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -21,7 +21,7 @@ interface AppProvidersProps {
  */
 const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
   // Initialize app only once on component mount
-  useEffect(() => {
+  React.useEffect(() => {
     try {
       console.log("Initializing app from AppProviders component");
       initializeApp();
