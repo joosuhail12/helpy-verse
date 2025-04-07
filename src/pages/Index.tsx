@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
@@ -6,7 +7,8 @@ import type { RootState } from '@/store/store';
 
 const Index = () => {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAppSelector((state: RootState) => state.auth);
+  const auth = useAppSelector((state: RootState) => state.auth);
+  const isAuthenticated = auth?.isAuthenticated || false;
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100">

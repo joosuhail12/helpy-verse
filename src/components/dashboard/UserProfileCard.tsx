@@ -30,11 +30,11 @@ interface StatusIconsMap {
 
 const UserProfileCard = ({ isCollapsed }: UserProfileCardProps) => {
   const navigate = useNavigate();
-  const { user } = useAppSelector((state: RootState) => state.auth);
+  const auth = useAppSelector((state: RootState) => state.auth);
   const [status, setStatus] = useState<UserStatus>('available');
 
   // Extract user email and role safely
-  const userEmail = user?.data?.id || 'user@example.com'; // Fallback to a default
+  const userEmail = auth?.user?.data?.id || 'user@example.com'; // Fallback to a default
   const userRole = 'user'; // Default role since it's not in the current auth state
 
   const statusIcons: StatusIconsMap = {

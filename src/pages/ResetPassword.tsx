@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { Logo } from "@/components/auth/Logo";
@@ -36,11 +35,11 @@ const ResetPassword = () => {
   }, [token]);
 
   useEffect(() => {
-    if (authState.error) {
+    if (authState && authState.error) {
       setError(authState.error);
       setLoading(false);
     }
-  }, [authState.error]);
+  }, [authState]);
 
   const validatePassword = () => {
     if (password.length < 8) {

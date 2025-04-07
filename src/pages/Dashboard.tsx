@@ -17,10 +17,10 @@ const Dashboard: React.FC = () => {
   const loading = userState?.loading || false;
 
   useEffect(() => {
-    if (auth.isAuthenticated) {
+    if (auth && auth.isAuthenticated) {
       dispatch(fetchUserProfile());
     }
-  }, [dispatch, auth.isAuthenticated]);
+  }, [dispatch, auth]);
 
   if (loading) {
     return (
