@@ -7,7 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/components/ui/use-toast';
-import { Save } from 'lucide-react';
+import { Save, Clock } from 'lucide-react';
 import ChatWidgetPreview from '@/pages/settings/chat/ChatWidgetPreview';
 import { DataCollectionConfig } from '@/components/automation/chatbots/DataCollectionConfig';
 import type { DataCollectionField } from '@/types/chatbot';
@@ -44,6 +44,9 @@ const BehaviorSettings: React.FC = () => {
   const [enableMessageReactions, setEnableMessageReactions] = useState(true);
   const [showAgentPresence, setShowAgentPresence] = useState(true);
   const [enableConversationRating, setEnableConversationRating] = useState(true);
+  
+  // Inactivity Timer
+  const [inactivityTimeout, setInactivityTimeout] = useState(10);
 
   const handleSaveChanges = () => {
     toast({
@@ -178,6 +181,40 @@ const BehaviorSettings: React.FC = () => {
                 checked={enableConversationRating}
                 onCheckedChange={setEnableConversationRating}
               />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg font-medium">Inactivity Settings</CardTitle>
+            <CardDescription>
+              Configure how long before a chat is considered inactive
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Clock className="h-4 w-4 text-muted-foreground" />
+                <Label htmlFor="inactivityTimeout">Inactivity Timer (minutes)</Label>
+              </div>
+              <div className="flex items-center gap-4">
+                <Input
+                  id="inactivityTimeout"
+                  type="number"
+                  min={1}
+                  max={60}
+                  value={inactivityTimeout}
+                  onChange={(e) => setInactivityTimeout(Number(e.target.value))}
+                  className="w-24"
+                />
+                <span className="text-sm text-muted-foreground">
+                  {inactivityTimeout === 1 ? '1 minute' : `${inactivityTimeout} minutes`}
+                </span>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                The chat will be marked as inactive after this period of no customer activity
+              </p>
             </div>
           </CardContent>
         </Card>

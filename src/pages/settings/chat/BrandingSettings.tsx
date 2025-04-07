@@ -27,7 +27,7 @@ const BrandingSettings = () => {
   const [welcomeTitle, setWelcomeTitle] = useState('Chat Support');
   const [welcomeSubtitle, setWelcomeSubtitle] = useState('We\'re here to help');
   const [askQuestionButton, setAskQuestionButton] = useState('Ask a question');
-  const [welcomeMessage, setWelcomeMessage] = useState('Hi there! 👋 How can I help you today?');
+  // Removed welcomeMessage state and UI elements
   
   // Assets
   const [headerLogo, setHeaderLogo] = useState<string | null>(null);
@@ -349,17 +349,6 @@ const BrandingSettings = () => {
               onChange={(e) => setAskQuestionButton(e.target.value)}
             />
           </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="welcomeMessage">Welcome Message</Label>
-            <Textarea 
-              id="welcomeMessage" 
-              value={welcomeMessage}
-              onChange={(e) => setWelcomeMessage(e.target.value)}
-              className="min-h-[100px]"
-            />
-            <p className="text-sm text-muted-foreground">This message will be displayed when a user opens the chat.</p>
-          </div>
         </div>
         
         <div className="pt-4">
@@ -374,7 +363,6 @@ const BrandingSettings = () => {
         <h2 className="text-lg font-medium">Preview</h2>
         <div className="border rounded-lg p-4 bg-gray-50">
           <ChatWidgetPreview 
-            welcomeMessage={welcomeMessage}
             welcomeTitle={welcomeTitle}
             welcomeSubtitle={welcomeSubtitle}
             askQuestionButton={askQuestionButton}
