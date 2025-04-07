@@ -257,15 +257,14 @@ export const useAblyRoom = (ticket: Ticket) => {
                 let senderName;
 
                 if (isFromCurrentUser) {
-                    // This is a message from the current agent
+                    // Use the actual user name for current user's messages
                     senderName = currentUserRef.current;
                 } else if (extras.isCustomer === true) {
-                    // This is explicitly marked as a customer message
-                    // Use the ticket's customer name with fallback
-                    senderName = ticket.customer || extras.senderName || 'Customer';
+                    // For customer messages
+                    senderName = extras.senderName || ticket.customer || 'Customer';
                 } else {
-                    // For other agent messages
-                    senderName = extras.senderName || extras.sender || 'Agent';
+                    // For other users' messages, use their actual names
+                    senderName = extras.senderName || extras.sender || 'Unknown User';
                 }
 
                 const newMsg: Message = {
@@ -585,14 +584,14 @@ export const useAblyRoom = (ticket: Ticket) => {
     // Completely replace the handleSendMessage function with a more direct approach
     const handleSendMessage = async () => {
         console.log("handleSendMessage called in useAblyRoom");
-        if (!newMessage || !newMessage.trim()) {
+
+        // Validate message content
+        if (!newMessage || newMessage.trim() === '' || newMessage === '<p></p>') {
             console.log("Message is empty, not sending");
             return;
         }
 
         setIsSending(true);
-        console.log("Setting isSending to true");
-
         try {
             // Try to get an Ably client directly
             console.log("Getting Ably client directly");
@@ -609,20 +608,14 @@ export const useAblyRoom = (ticket: Ticket) => {
             const channel = ablyClient.channels.get(channelName);
             console.log("Got channel:", !!channel);
 
-            // Get chat client to try both methods of sending
-            const chatClient = await getAblyChatClient();
-            if (!chatClient) {
-                throw new Error("Failed to initialize Ably Chat client");
-            }
-
-            // Prepare the message data - make sure it's compatible with both the ConversationPanel and AblyTest
-            const senderName = currentUserRef.current || "Agent";
+            // Prepare the message data
+            const senderName = currentUserRef.current;
             const messageData = {
                 text: newMessage,
                 extras: {
                     sender: senderName,
                     senderName: senderName,
-                    senderId: senderName, // Add senderId to match AblyTest format
+                    senderId: senderName,
                     isCustomer: false,
                     type: isInternalNote ? "internal_note" : "message",
                     readBy: [senderName],
@@ -631,32 +624,12 @@ export const useAblyRoom = (ticket: Ticket) => {
             };
             console.log("Message data prepared:", JSON.stringify(messageData));
 
-            // IMPORTANT: Try both methods to ensure compatibility with both components
-
-            // 1. Publish directly to the channel (for the ConversationPanel)
+            // Publish directly to the channel
             console.log("Publishing message directly to channel");
             await channel.publish("message", messageData);
             console.log("Message published successfully to direct channel");
 
-            // 2. Also try sending via the Chat SDK (for the AblyTest component)
-            try {
-                console.log("Attempting to send via Chat SDK as well");
-                // Get room
-                const chatRoom = await chatClient.rooms.get(channelName);
-
-                // Send via Chat SDK
-                if (chatRoom && chatRoom.messages && typeof chatRoom.messages.send === 'function') {
-                    await chatRoom.messages.send(messageData);
-                    console.log("Message also sent via Chat SDK");
-                } else {
-                    console.warn("Chat SDK message sending not available");
-                }
-            } catch (err) {
-                console.warn("Could not send via Chat SDK (this is okay if direct channel publish worked):", err);
-            }
-
-            // To ensure the message appears immediately, add it directly to our state
-            // This helps in case there are issues with the subscription
+            // Add to local state immediately
             const newMsg: Message = {
                 id: `local-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
                 content: newMessage,
@@ -667,10 +640,7 @@ export const useAblyRoom = (ticket: Ticket) => {
                 readBy: [senderName]
             };
 
-            console.log("Adding local copy of sent message to state");
             setMessages(prev => [...prev, newMsg]);
-
-            // Clear the message and update state
             setNewMessage("");
             setIsInternalNote(false);
 
@@ -678,16 +648,14 @@ export const useAblyRoom = (ticket: Ticket) => {
                 description: isInternalNote ? "Internal note added" : "Message sent successfully",
             });
         } catch (error) {
-            console.error("Error in direct message send:", error);
-            const errorMsg = error instanceof Error ? error.message : "Unknown error";
-
+            console.error("Error sending message:", error);
             toast({
                 variant: "destructive",
-                description: `Failed to send message: ${errorMsg}`,
+                description: "Failed to send message. Please try again.",
             });
+            throw error;
         } finally {
             setIsSending(false);
-            console.log("Setting isSending to false");
         }
     };
 
