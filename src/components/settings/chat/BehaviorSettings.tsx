@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -7,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/components/ui/use-toast';
 import { Save } from 'lucide-react';
-import ChatWidgetPreview from './ChatWidgetPreview';
+import ChatWidgetPreview from '@/pages/settings/chat/ChatWidgetPreview';
 import { DataCollectionConfig } from '@/components/automation/chatbots/DataCollectionConfig';
 import type { DataCollectionField } from '@/types/chatbot';
 import { useTheme } from '@/context/ThemeContext';
