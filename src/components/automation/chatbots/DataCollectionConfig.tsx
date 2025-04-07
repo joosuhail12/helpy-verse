@@ -4,10 +4,12 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import type { DataCollectionField } from '@/types/chatbot';
 import { FieldSelector } from '@/components/settings/chat/FieldSelector';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Plus } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AddFieldsDialog } from './AddFieldsDialog';
 
 // Mock data for available fields - in a real implementation, this would be fetched from the API
 const AVAILABLE_FIELDS = [
@@ -51,6 +53,14 @@ export const DataCollectionConfig: React.FC<DataCollectionConfigProps> = ({
   enabled,
   onEnabledChange,
 }) => {
+  const [isAddFieldsDialogOpen, setIsAddFieldsDialogOpen] = useState(false);
+
+  const handleAddFields = (newFields: DataCollectionField[]) => {
+    onFieldsChange([...fields, ...newFields]);
+  };
+
+  const existingFieldIds = fields.map(field => field.id);
+  
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
@@ -70,7 +80,18 @@ export const DataCollectionConfig: React.FC<DataCollectionConfigProps> = ({
       {enabled ? (
         <Card>
           <CardHeader className="pb-1">
-            <CardTitle className="text-base font-medium">Configure Data Collection Fields</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base font-medium">Configure Data Collection Fields</CardTitle>
+              <Button
+                variant="outline" 
+                size="sm"
+                className="flex items-center gap-1"
+                onClick={() => setIsAddFieldsDialogOpen(true)}
+              >
+                <Plus className="h-4 w-4" />
+                <span>Add Fields</span>
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="pt-3">
             {fields.length === 0 && (
@@ -95,6 +116,15 @@ export const DataCollectionConfig: React.FC<DataCollectionConfigProps> = ({
           Enable data collection to configure which fields to collect from visitors.
         </div>
       )}
+
+      <AddFieldsDialog
+        isOpen={isAddFieldsDialogOpen}
+        onClose={() => setIsAddFieldsDialogOpen(false)}
+        tables={AVAILABLE_TABLES}
+        availableFields={AVAILABLE_FIELDS}
+        onAddFields={handleAddFields}
+        existingFieldIds={existingFieldIds}
+      />
     </div>
   );
 };

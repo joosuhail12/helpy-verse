@@ -1,16 +1,12 @@
-
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Plus, Trash2, MoveUp, MoveDown, GripVertical, ListFilter, Database } from 'lucide-react';
+import React from 'react';
+import { Trash2, MoveUp, MoveDown, GripVertical, ListFilter, Database } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { DataCollectionField } from '@/types/chatbot';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { AlertCircle } from 'lucide-react';
 
 interface FieldSelectorProps {
   fields: DataCollectionField[];
@@ -27,25 +23,6 @@ export const FieldSelector: React.FC<FieldSelectorProps> = ({
   onFieldsChange,
   ensureEmailRequired = false,
 }) => {
-  const [selectedTable, setSelectedTable] = useState(tables[0]?.id || '');
-  const [addingFields, setAddingFields] = useState(false);
-  
-  const handleAddField = (fieldId: string) => {
-    const fieldToAdd = availableFields.find(f => f.id === fieldId);
-    
-    if (!fieldToAdd) return;
-    
-    // Create new field
-    const newField = {
-      id: fieldToAdd.id,
-      label: fieldToAdd.name,
-      type: fieldToAdd.type as any,
-      required: fieldToAdd.id === 'contact_email' && ensureEmailRequired // Make email required by default if needed
-    };
-    
-    onFieldsChange([...fields, newField]);
-  };
-
   const handleRemoveField = (index: number) => {
     // Check if this is the email field and we need to keep it
     const fieldToRemove = fields[index];
@@ -116,16 +93,6 @@ export const FieldSelector: React.FC<FieldSelectorProps> = ({
     return acc;
   }, {} as Record<string, DataCollectionField[]>);
 
-  // Filter available fields based on selected table
-  const availableFieldsForTable = availableFields.filter(field => 
-    field.object === selectedTable
-  );
-
-  // Filter out fields that are already selected
-  const selectableFields = availableFieldsForTable.filter(
-    field => !fields.some(f => f.id === field.id)
-  );
-
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between mb-2">
@@ -135,92 +102,7 @@ export const FieldSelector: React.FC<FieldSelectorProps> = ({
             {fields.length} {fields.length === 1 ? 'field' : 'fields'}
           </Badge>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          className="flex items-center gap-1"
-          onClick={() => setAddingFields(!addingFields)}
-        >
-          <Plus className="h-4 w-4" />
-          <span>Add Fields</span>
-        </Button>
       </div>
-
-      {addingFields && (
-        <Card className="border shadow-sm">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Add New Fields</CardTitle>
-            <CardDescription className="text-xs">
-              Select a table to see available fields
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="space-y-3">
-              <div className="grid grid-cols-12 gap-4">
-                <div className="col-span-5">
-                  <Label htmlFor="table-select" className="text-xs mb-1 block">Table</Label>
-                  <Select 
-                    value={selectedTable}
-                    onValueChange={setSelectedTable}
-                  >
-                    <SelectTrigger id="table-select" className="mt-1">
-                      <SelectValue placeholder="Select a table" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {tables.map(table => (
-                        <SelectItem key={table.id} value={table.id}>
-                          <div className="flex items-center gap-2">
-                            <Database className="h-3.5 w-3.5" />
-                            {table.name}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="col-span-7">
-                  <Label className="text-xs mb-1 block">Available Fields</Label>
-                  
-                  {!selectedTable ? (
-                    <div className="text-xs text-gray-500 py-3 text-center">
-                      Select a table to see available fields
-                    </div>
-                  ) : selectableFields.length === 0 ? (
-                    <div className="text-xs text-gray-500 py-3 text-center">
-                      All fields from this table have been added
-                    </div>
-                  ) : (
-                    <ScrollArea className="h-48 rounded-md border p-1">
-                      <div className="space-y-1">
-                        {selectableFields.map(field => (
-                          <div 
-                            key={field.id} 
-                            className="flex items-center justify-between p-2 hover:bg-gray-100 rounded cursor-pointer"
-                            onClick={() => handleAddField(field.id)}
-                          >
-                            <div>
-                              <div className="text-sm font-medium">{field.name}</div>
-                              <div className="text-xs text-gray-500 flex items-center gap-1">
-                                <Badge variant="outline" className="text-[10px] py-0 h-4">
-                                  {field.type}
-                                </Badge>
-                              </div>
-                            </div>
-                            <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
-                              <Plus className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                    </ScrollArea>
-                  )}
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {fields.length === 0 ? (
         <div className="text-sm text-gray-500 py-2 border-2 border-dashed border-gray-200 rounded-md p-6 text-center">
