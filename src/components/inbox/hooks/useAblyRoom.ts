@@ -280,10 +280,43 @@ export const useAblyRoom = (ticket: Ticket) => {
                 setMessages(prev => [...prev, newMsg]);
             });
 
+            // Setup read receipt subscription
+            try {
+                const ablyClient = initAbly();
+                if (!ablyClient) return;
+
+                const channelName = `ticket:${ticket.id}`;
+                const channel = ablyClient.then(client => {
+                    const ch = client.channels.get(channelName);
+
+                    // Subscribe to read receipt events
+                    ch.subscribe('message:read', (readEvent: any) => {
+                        const { messageId, readBy } = readEvent.data;
+
+                        if (messageId && readBy) {
+                            // Update the message's readBy status in local state
+                            setMessages(prevMessages =>
+                                prevMessages.map(msg =>
+                                    msg.id === messageId
+                                        ? { ...msg, readBy }
+                                        : msg
+                                )
+                            );
+                        }
+                    });
+
+                    return ch;
+                }).catch(err => {
+                    console.error('Error getting Ably channel for read receipts:', err);
+                    return null;
+                });
+            } catch (error) {
+                console.error('Error setting up read receipt subscription:', error);
+            }
+
             // Handle presence
             setupPresence(room).catch(err => console.error('Error setting up presence:', err));
         };
-
 
         const setupPresence = async (room: any) => {
             try {
@@ -403,7 +436,6 @@ export const useAblyRoom = (ticket: Ticket) => {
             }
         };
 
-
         setupRoom();
 
         return () => {
@@ -463,6 +495,62 @@ export const useAblyRoom = (ticket: Ticket) => {
             }
         };
     }, [ticket.id, toast]);
+
+    // Add automatic read receipt handling as a separate top-level useEffect
+    useEffect(() => {
+        if (!messages.length || !currentUserRef.current) return;
+
+        // Only attempt to mark messages that aren't from the current user
+        const messagesToMark = messages.filter(
+            msg => msg.sender !== currentUserRef.current &&
+                (!msg.readBy || !msg.readBy.includes(currentUserRef.current))
+        );
+
+        if (messagesToMark.length > 0) {
+            const markMessagesAsRead = async () => {
+                try {
+                    const client = await initAbly();
+                    if (!client) return;
+
+                    // Get the channel for the current ticket
+                    const chatChannel = client.channels.get(`ticket:${ticket.id}`);
+
+                    // Mark each message as read
+                    for (const msg of messagesToMark) {
+                        // Create a new readBy array if it doesn't exist
+                        const readBy = msg.readBy || [];
+
+                        // Skip if already marked by current user
+                        if (readBy.includes(currentUserRef.current)) continue;
+
+                        // Add current user to the readBy array
+                        const updatedReadBy = [...readBy, currentUserRef.current];
+
+                        // Publish an update to the message's readBy status
+                        await chatChannel.publish('message:read', {
+                            messageId: msg.id,
+                            readBy: updatedReadBy,
+                            reader: currentUserRef.current
+                        });
+
+                        // Update local state
+                        setMessages(prevMessages =>
+                            prevMessages.map(m =>
+                                m.id === msg.id
+                                    ? { ...m, readBy: updatedReadBy }
+                                    : m
+                            )
+                        );
+                    }
+                } catch (error) {
+                    console.error('Error marking messages as read:', error);
+                }
+            };
+
+            // Execute the marking
+            markMessagesAsRead();
+        }
+    }, [messages, ticket.id]);
 
     // Typing indicator functionality with proper cleanup
     const debouncedStopTyping = useCallback(

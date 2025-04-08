@@ -1,11 +1,17 @@
-import React from 'react';
-import { Avatar } from "@/components/ui/avatar";
+import React, { useState } from 'react';
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Check, CheckCheck, Smile } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import type { Message } from './types';
 import type { Ticket } from '@/types/ticket';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface MessageItemProps {
   message: Message;
@@ -14,10 +20,19 @@ interface MessageItemProps {
 }
 
 const MessageItem = ({ message, ticket, onReply }: MessageItemProps) => {
+  const [showReaders, setShowReaders] = useState(false);
+
   // Check if message is from the user (either UserTest30 or ClientTest30)
   const isFromUser = message.sender === 'UserTest30 test' ||
     message.sender === 'ClientTest30-workspace' ||
     message.sender.startsWith('ClientTest30');
+
+  // Display the read receipt only for outgoing messages
+  const shouldShowReadReceipt = isFromUser && message.readBy;
+
+  // Determine the read status
+  const isDelivered = message.readBy && message.readBy.length > 0;
+  const isRead = message.readBy && message.readBy.length > 1;
 
   return (
     <div className={cn(
@@ -25,7 +40,9 @@ const MessageItem = ({ message, ticket, onReply }: MessageItemProps) => {
       isFromUser ? "flex-row-reverse" : "flex-row"
     )}>
       <Avatar className="h-8 w-8 mt-1">
-        <span className="text-xs">{message.sender[0]?.toUpperCase()}</span>
+        <AvatarFallback className="bg-primary/10 text-primary">
+          {message.sender[0]?.toUpperCase()}
+        </AvatarFallback>
       </Avatar>
       <div className={cn(
         "flex flex-col gap-1 max-w-[80%]",
@@ -52,6 +69,54 @@ const MessageItem = ({ message, ticket, onReply }: MessageItemProps) => {
             Internal Note
           </div>
         )}
+
+        {/* Read receipt status */}
+        {shouldShowReadReceipt && (
+          <div className="flex items-center justify-end mt-1">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center text-xs text-muted-foreground gap-1 cursor-default">
+                    {isRead ? (
+                      <>
+                        <CheckCheck className="h-3 w-3" />
+                        <span>Read</span>
+                      </>
+                    ) : isDelivered ? (
+                      <>
+                        <Check className="h-3 w-3" />
+                        <span>Delivered</span>
+                      </>
+                    ) : (
+                      <span>Sending...</span>
+                    )}
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent className="p-2">
+                  {message.readBy && message.readBy.length > 0 ? (
+                    <div className="space-y-2">
+                      <p className="text-xs font-medium">Read by:</p>
+                      <div className="flex flex-col gap-2">
+                        {message.readBy.map((reader, index) => (
+                          <div key={index} className="flex items-center gap-2">
+                            <Avatar className="h-5 w-5">
+                              <AvatarFallback className="text-[10px]">
+                                {reader[0]?.toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span className="text-xs">{reader}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <p>Not read by anyone yet</p>
+                  )}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        )}
       </div>
       <div className={cn(
         "absolute right-4 top-4 flex items-center gap-2 opacity-0 transition-opacity",
@@ -65,15 +130,6 @@ const MessageItem = ({ message, ticket, onReply }: MessageItemProps) => {
         >
           <Smile className="h-4 w-4" />
         </Button>
-        {message.readBy?.length > 0 && (
-          <div className="flex items-center text-xs text-muted-foreground">
-            {message.readBy.length === 1 ? (
-              <Check className="h-4 w-4" />
-            ) : (
-              <CheckCheck className="h-4 w-4" />
-            )}
-          </div>
-        )}
       </div>
     </div>
   );
