@@ -15,6 +15,29 @@ export const initAbly = async () => {
       console.error('Ably API key not found in environment variables');
       throw new Error('Ably API key not found. Add VITE_ABLY_API_KEY to your .env file');
     }
+    // SECURITY IMPLEMENTATION FOR PRODUCTION:
+    // Replace direct API key usage with token auth:
+    // ably = new Ably.Realtime({
+    //   authUrl: '/api/ably/auth', // Server endpoint that generates tokens
+    //   clientId: uniqueId,
+    //   echoMessages: false
+    // });
+    // 
+    // On your server:
+    // app.post('/api/ably/auth', (req, res) => {
+    //   const tokenParams = {
+    //     clientId: req.body.clientId,
+    //     capability: {
+    //       "ticket:*": ["subscribe", "publish", "presence"], // Restrict to needed permissions
+    //     },
+    //     ttl: 3600 * 1000 // Expires after 1 hour
+    //   };
+    //   const rest = new Ably.Rest({ key: process.env.ABLY_API_KEY });
+    //   rest.auth.createTokenRequest(tokenParams, (err, tokenRequest) => {
+    //     if (err) return res.status(500).send('Error');
+    //     res.json(tokenRequest);
+    //   });
+    // });
 
     console.log('Initializing Ably with client ID');
 

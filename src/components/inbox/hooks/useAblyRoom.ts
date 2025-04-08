@@ -26,10 +26,18 @@ export const useAblyRoom = (ticket: Ticket) => {
     useEffect(() => {
         const authState = store.getState() as any;
         const userName = authState?.auth?.user?.data?.name;
+        // Add user email for better identification
+        const userEmail = authState?.auth?.user?.data?.email;
+
         console.log('User name from Redux store:', userName);
+        console.log('User email from Redux store:', userEmail);
         console.log('Auth state:', authState?.auth);
-        currentUserRef.current = userName || 'Agent';
-        console.log('Using sender name:', currentUserRef.current);
+
+        // Create a user identifier that includes email if available
+        const userId = userEmail ? `${userName || 'Agent'}|${userEmail}` : `${userName || 'Agent'}-${Date.now()}`;
+        currentUserRef.current = userId;
+
+        console.log('Using sender ID:', currentUserRef.current);
     }, [store]);
 
     // Initialize messages with the initial ticket message
@@ -291,17 +299,52 @@ export const useAblyRoom = (ticket: Ticket) => {
 
                     // Subscribe to read receipt events
                     ch.subscribe('message:read', (readEvent: any) => {
-                        const { messageId, readBy } = readEvent.data;
+                        const { messageId, readBy, reader, readAt } = readEvent.data;
+
+                        // Log read receipt event for debugging
+                        console.log(`Read receipt event:`, readEvent.data);
 
                         if (messageId && readBy) {
                             // Update the message's readBy status in local state
                             setMessages(prevMessages =>
                                 prevMessages.map(msg =>
                                     msg.id === messageId
-                                        ? { ...msg, readBy }
+                                        ? { ...msg, readBy, lastReadAt: readAt || new Date().toISOString() }
                                         : msg
                                 )
                             );
+                        }
+                    });
+
+                    // Ensure typing events are processed properly
+                    ch.subscribe('typing', (typingEvent: any) => {
+                        if (!isComponentMounted) return;
+
+                        const data = typingEvent.data;
+                        if (!data) return;
+
+                        console.log('Received typing event:', typingEvent);
+
+                        const isTyping = data.isTyping === true;
+                        const memberName = data.name || 'Unknown';
+                        // Extract display name if in format with | or -
+                        const displayName = memberName.includes('|')
+                            ? memberName.split('|')[0]
+                            : memberName.split('-')[0];
+
+                        const isCustomer = data.isCustomer === true;
+
+                        // Skip self typing
+                        if (memberName === currentUserRef.current) return;
+
+                        if (isTyping) {
+                            setTypingUsers(prev => [...new Set([...prev, displayName])]);
+                        } else {
+                            setTypingUsers(prev => prev.filter(user =>
+                                user !== displayName &&
+                                user !== memberName &&
+                                user !== (ticket.customer || 'Customer')
+                            ));
                         }
                     });
 
@@ -322,10 +365,11 @@ export const useAblyRoom = (ticket: Ticket) => {
             try {
                 console.log('Setting up presence');
 
-                // Enter presence with current user info
+                // Enter presence with current user info - use displayName for better readability
+                const displayName = currentUserRef.current.split(/[|-]/)[0];
                 await room.presence.enter({
                     userId: currentUserRef.current,
-                    name: currentUserRef.current,
+                    name: displayName, // Use displayName instead of the full ID
                     lastActive: new Date().toISOString(),
                     location: {
                         ticketId: ticket.id,
@@ -340,14 +384,24 @@ export const useAblyRoom = (ticket: Ticket) => {
                     if (!isComponentMounted) return;
                     console.log('Member entered:', member);
 
-                    const memberName = member.data.name;
+                    // Get display name for UI
+                    const memberData = member.data || {};
+                    const memberName = memberData.name || 'Unknown';
+
                     // Don't show toast for current user
-                    if (memberName !== currentUserRef.current) {
+                    if (memberData.userId !== currentUserRef.current) {
                         toast({
                             description: `${memberName} joined the conversation`,
                         });
                     }
-                    setActiveUsers(prev => [...prev, member.data as UserPresence]);
+
+                    // Ensure we're not adding duplicates
+                    setActiveUsers(prev => {
+                        // Check if user already exists
+                        const exists = prev.some(u => u.userId === memberData.userId);
+                        if (exists) return prev;
+                        return [...prev, memberData as UserPresence];
+                    });
                 });
 
                 room.presence.subscribe('leave', (member: any) => {
@@ -420,12 +474,27 @@ export const useAblyRoom = (ticket: Ticket) => {
 
                     if (presentMembers && Array.isArray(presentMembers)) {
                         console.log('Got presence members:', presentMembers);
-                        setActiveUsers(presentMembers.map((member: any) => ({
-                            userId: member.clientId,
-                            name: member.data?.name || 'Unknown',
-                            lastActive: member.data?.lastActive || new Date().toISOString(),
-                            location: member.data?.location
-                        })));
+
+                        // Map present members to active users
+                        const activeUsersList = presentMembers.map((member: any) => {
+                            // Get better name for display
+                            let displayName = member.data?.name || 'Unknown';
+                            if (member.clientId && member.clientId.includes('|')) {
+                                displayName = member.clientId.split('|')[0];
+                            } else if (member.clientId && member.clientId.includes('-')) {
+                                displayName = member.clientId.split('-')[0];
+                            }
+
+                            return {
+                                userId: member.clientId,
+                                name: displayName,
+                                lastActive: member.data?.lastActive || new Date().toISOString(),
+                                location: member.data?.location
+                            };
+                        });
+
+                        console.log('Setting active users:', activeUsersList);
+                        setActiveUsers(activeUsersList);
                     }
                 } catch (err) {
                     console.warn('Could not get presence members:', err);
@@ -448,15 +517,25 @@ export const useAblyRoom = (ticket: Ticket) => {
                     // Clean up typing subscription if it exists
                     if ((directChannelSubscription as any)._typingSubscription) {
                         try {
-                            (directChannelSubscription as any)._typingSubscription.unsubscribe();
-                            console.log('Unsubscribed from direct typing channel');
+                            // Check if unsubscribe method exists before calling it
+                            if (typeof (directChannelSubscription as any)._typingSubscription.unsubscribe === 'function') {
+                                (directChannelSubscription as any)._typingSubscription.unsubscribe();
+                                console.log('Unsubscribed from direct typing channel');
+                            } else {
+                                console.log('Typing subscription does not have unsubscribe method, skipping');
+                            }
                         } catch (err) {
                             console.warn('Error unsubscribing from direct typing channel:', err);
                         }
                     }
 
-                    directChannelSubscription.unsubscribe();
-                    console.log('Unsubscribed from direct channel');
+                    // Check if unsubscribe method exists on directChannelSubscription
+                    if (typeof directChannelSubscription.unsubscribe === 'function') {
+                        directChannelSubscription.unsubscribe();
+                        console.log('Unsubscribed from direct channel');
+                    } else {
+                        console.log('Direct channel subscription does not have unsubscribe method, skipping');
+                    }
                 } catch (err) {
                     console.warn('Error unsubscribing from direct channel:', err);
                 }
@@ -496,14 +575,116 @@ export const useAblyRoom = (ticket: Ticket) => {
         };
     }, [ticket.id, toast]);
 
-    // Add automatic read receipt handling as a separate top-level useEffect
+    // Modify the handleSendMessage function to include more metadata
+    const handleSendMessage = async () => {
+        console.log("handleSendMessage called in useAblyRoom");
+
+        // Validate message content
+        if (!newMessage || newMessage.trim() === '' || newMessage === '<p></p>') {
+            console.log("Message is empty, not sending");
+            return;
+        }
+
+        setIsSending(true);
+        try {
+            // Try to get an Ably client directly
+            console.log("Getting Ably client directly");
+            const ablyClient = await initAbly();
+            if (!ablyClient) {
+                throw new Error("Failed to initialize Ably client");
+            }
+
+            // Create the channel name using the ticket ID
+            const channelName = `ticket:${ticket.id}`;
+            console.log("Using channel name:", channelName);
+
+            // Get or create the channel
+            const channel = ablyClient.channels.get(channelName);
+            console.log("Got channel:", !!channel);
+
+            // Extract just the name part from the current user ID for better display
+            const displayName = currentUserRef.current.split('|')[0];
+
+            // Prepare the message data with enhanced metadata
+            const messageData = {
+                text: newMessage,
+                extras: {
+                    sender: currentUserRef.current,
+                    senderName: displayName,
+                    senderId: currentUserRef.current,
+                    isCustomer: false,
+                    type: isInternalNote ? "internal_note" : "message",
+                    // Initialize readBy with just the sender and timestamp
+                    readBy: [{
+                        userId: currentUserRef.current,
+                        name: displayName,
+                        readAt: new Date().toISOString()
+                    }],
+                    timestamp: new Date().toISOString()
+                }
+            };
+            console.log("Message data prepared:", JSON.stringify(messageData));
+
+            // Publish directly to the channel
+            console.log("Publishing message directly to channel");
+            await channel.publish("message", messageData);
+            console.log("Message published successfully to direct channel");
+
+            // Add to local state immediately
+            const newMsg: Message = {
+                id: `local-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                content: newMessage,
+                sender: currentUserRef.current,
+                senderName: displayName,
+                timestamp: new Date().toISOString(),
+                isCustomer: false,
+                type: isInternalNote ? "internal_note" : "message",
+                readBy: [{
+                    userId: currentUserRef.current,
+                    name: displayName,
+                    readAt: new Date().toISOString()
+                }]
+            };
+
+            setMessages(prev => [...prev, newMsg]);
+            setNewMessage("");
+            setIsInternalNote(false);
+
+            toast({
+                description: isInternalNote ? "Internal note added" : "Message sent successfully",
+            });
+        } catch (error) {
+            console.error("Error sending message:", error);
+            toast({
+                variant: "destructive",
+                description: "Failed to send message. Please try again.",
+            });
+            throw error;
+        } finally {
+            setIsSending(false);
+        }
+    };
+
+    // Replace the automatic read receipt handling with improved version
     useEffect(() => {
         if (!messages.length || !currentUserRef.current) return;
 
-        // Only attempt to mark messages that aren't from the current user
+        // Only attempt to mark messages that aren't sent by the current user
         const messagesToMark = messages.filter(
-            msg => msg.sender !== currentUserRef.current &&
-                (!msg.readBy || !msg.readBy.includes(currentUserRef.current))
+            msg => {
+                // Skip messages sent by current user
+                if (msg.sender === currentUserRef.current) return false;
+
+                // Check if already read by current user
+                const alreadyRead = Array.isArray(msg.readBy)
+                    ? msg.readBy.some(reader =>
+                        typeof reader === 'object'
+                            ? reader.userId === currentUserRef.current
+                            : reader === currentUserRef.current)
+                    : false;
+
+                return !alreadyRead;
+            }
         );
 
         if (messagesToMark.length > 0) {
@@ -515,22 +696,41 @@ export const useAblyRoom = (ticket: Ticket) => {
                     // Get the channel for the current ticket
                     const chatChannel = client.channels.get(`ticket:${ticket.id}`);
 
+                    // Extract display name (part before | or - in currentUserRef.current)
+                    const displayName = currentUserRef.current.split(/[|-]/)[0];
+
                     // Mark each message as read
                     for (const msg of messagesToMark) {
-                        // Create a new readBy array if it doesn't exist
-                        const readBy = msg.readBy || [];
+                        // Create a reader object with current timestamp
+                        const readerInfo = {
+                            userId: currentUserRef.current,
+                            name: displayName,
+                            readAt: new Date().toISOString()
+                        };
 
-                        // Skip if already marked by current user
-                        if (readBy.includes(currentUserRef.current)) continue;
+                        // Handle different readBy formats (array of objects or array of strings)
+                        let readBy = [];
+                        if (Array.isArray(msg.readBy)) {
+                            readBy = [...msg.readBy];
+                        } else if (msg.readBy) {
+                            readBy = [msg.readBy];
+                        }
 
-                        // Add current user to the readBy array
-                        const updatedReadBy = [...readBy, currentUserRef.current];
+                        // Add reader in the correct format
+                        const updatedReadBy = [...readBy, readerInfo];
+
+                        // Log read receipt for debugging
+                        console.log(`Marking message ${msg.id || 'unknown'} as read by ${displayName} (${currentUserRef.current})`);
+                        console.log(`Sender: ${msg.sender} (${msg.senderName || 'Unknown'})`);
+                        console.log(`Previous readers:`, readBy);
+                        console.log(`Updated readers:`, updatedReadBy);
 
                         // Publish an update to the message's readBy status
                         await chatChannel.publish('message:read', {
                             messageId: msg.id,
                             readBy: updatedReadBy,
-                            reader: currentUserRef.current
+                            reader: readerInfo,
+                            readAt: new Date().toISOString()
                         });
 
                         // Update local state
@@ -552,90 +752,25 @@ export const useAblyRoom = (ticket: Ticket) => {
         }
     }, [messages, ticket.id]);
 
-    // Typing indicator functionality with proper cleanup
-    const debouncedStopTyping = useCallback(
-        debounce(async () => {
-            try {
-                const room = roomRef.current;
-                // Skip if the room is being cleaned up
-                if (!room || (room as any)._isBeingCleaned) return;
-
-                // Verify presence is available
-                if (!room.presence || typeof room.presence.update !== 'function') {
-                    console.warn('Presence is not available for typing indicators');
-                    return;
-                }
-
-                const typingData = {
-                    isTyping: false,
-                    name: currentUserRef.current,
-                    userId: currentUserRef.current,
-                    isCustomer: false // Explicitly mark as not a customer
-                };
-
-                // 1. Stop typing via Chat SDK
-                await room.presence.update(typingData).catch(err => {
-                    console.warn('Error stopping typing indicator via Chat SDK:', err);
-                });
-
-                // 2. Also publish stop typing directly to the channel
-                try {
-                    const ablyClient = await initAbly();
-                    if (!ablyClient) return;
-
-                    const channelName = `ticket:${ticket.id}`;
-                    const channel = ablyClient.channels.get(channelName);
-
-                    // Publish typing stopped event directly to channel
-                    channel.publish('typing', {
-                        ...typingData,
-                        timestamp: new Date().toISOString()
-                    });
-                } catch (err) {
-                    console.warn('Error publishing stop typing directly to channel:', err);
-                }
-            } catch (error) {
-                console.error('Error stopping typing indicator:', error);
-            }
-        }, 1000),
-        [ticket.id]
-    );
-
-    // Cleanup typing timeout on unmount
-    useEffect(() => {
-        return () => {
-            if (typingTimeoutRef.current) {
-                clearTimeout(typingTimeoutRef.current);
-            }
-            debouncedStopTyping.cancel();
-        };
-    }, [debouncedStopTyping]);
-
+    // Fix typing indicator handling
     const handleTyping = useCallback(() => {
         const room = roomRef.current;
         // Skip if the room is being cleaned up
         if (!room || (room as any)._isBeingCleaned) return;
 
         try {
-            // First verify that presence is available
-            if (!room.presence || typeof room.presence.update !== 'function') {
-                console.warn('Presence is not available for typing indicators');
-                return;
-            }
+            // Extract display name (part before | or - in currentUserRef.current)
+            const displayName = currentUserRef.current.split(/[|-]/)[0];
 
             const typingData = {
                 isTyping: true,
-                name: currentUserRef.current,
+                name: currentUserRef.current, // Keep full ID for uniqueness
+                displayName: displayName, // Add display name for UI
                 userId: currentUserRef.current,
                 isCustomer: false // Explicitly mark as not a customer
             };
 
-            // 1. Update typing state in Ably presence via Chat SDK
-            room.presence.update(typingData).catch(err => {
-                console.warn('Error updating typing status via Chat SDK:', err);
-            });
-
-            // 2. Also publish a typing indicator directly to the channel
+            // Publish typing indicator directly to the channel
             const publishTypingDirectly = async () => {
                 try {
                     const ablyClient = await initAbly();
@@ -663,89 +798,43 @@ export const useAblyRoom = (ticket: Ticket) => {
             }
 
             // Set timeout to stop typing after 1.5 seconds of inactivity
-            typingTimeoutRef.current = setTimeout(debouncedStopTyping, 1500);
+            typingTimeoutRef.current = setTimeout(() => {
+                const stopTypingDirectly = async () => {
+                    try {
+                        const ablyClient = await initAbly();
+                        if (!ablyClient) return;
+
+                        const channelName = `ticket:${ticket.id}`;
+                        const channel = ablyClient.channels.get(channelName);
+
+                        // Publish typing stopped event directly to channel
+                        channel.publish('typing', {
+                            ...typingData,
+                            isTyping: false,
+                            timestamp: new Date().toISOString()
+                        });
+
+                        console.log('Published stop typing event');
+                    } catch (err) {
+                        console.warn('Error publishing stop typing:', err);
+                    }
+                };
+
+                stopTypingDirectly();
+            }, 1500);
         } catch (error) {
             console.error('Error in handleTyping:', error);
         }
-    }, [debouncedStopTyping, ticket.id]);
+    }, [ticket.id]);
 
-    // Completely replace the handleSendMessage function with a more direct approach
-    const handleSendMessage = async () => {
-        console.log("handleSendMessage called in useAblyRoom");
-
-        // Validate message content
-        if (!newMessage || newMessage.trim() === '' || newMessage === '<p></p>') {
-            console.log("Message is empty, not sending");
-            return;
-        }
-
-        setIsSending(true);
-        try {
-            // Try to get an Ably client directly
-            console.log("Getting Ably client directly");
-            const ablyClient = await initAbly();
-            if (!ablyClient) {
-                throw new Error("Failed to initialize Ably client");
+    // Cleanup typing timeout on unmount
+    useEffect(() => {
+        return () => {
+            if (typingTimeoutRef.current) {
+                clearTimeout(typingTimeoutRef.current);
             }
-
-            // Create the channel name using the ticket ID
-            const channelName = `ticket:${ticket.id}`;
-            console.log("Using channel name:", channelName);
-
-            // Get or create the channel
-            const channel = ablyClient.channels.get(channelName);
-            console.log("Got channel:", !!channel);
-
-            // Prepare the message data
-            const senderName = currentUserRef.current;
-            const messageData = {
-                text: newMessage,
-                extras: {
-                    sender: senderName,
-                    senderName: senderName,
-                    senderId: senderName,
-                    isCustomer: false,
-                    type: isInternalNote ? "internal_note" : "message",
-                    readBy: [senderName],
-                    timestamp: new Date().toISOString()
-                }
-            };
-            console.log("Message data prepared:", JSON.stringify(messageData));
-
-            // Publish directly to the channel
-            console.log("Publishing message directly to channel");
-            await channel.publish("message", messageData);
-            console.log("Message published successfully to direct channel");
-
-            // Add to local state immediately
-            const newMsg: Message = {
-                id: `local-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-                content: newMessage,
-                sender: senderName,
-                timestamp: new Date().toISOString(),
-                isCustomer: false,
-                type: isInternalNote ? "internal_note" : "message",
-                readBy: [senderName]
-            };
-
-            setMessages(prev => [...prev, newMsg]);
-            setNewMessage("");
-            setIsInternalNote(false);
-
-            toast({
-                description: isInternalNote ? "Internal note added" : "Message sent successfully",
-            });
-        } catch (error) {
-            console.error("Error sending message:", error);
-            toast({
-                variant: "destructive",
-                description: "Failed to send message. Please try again.",
-            });
-            throw error;
-        } finally {
-            setIsSending(false);
-        }
-    };
+        };
+    }, []);
 
     return {
         messages,
