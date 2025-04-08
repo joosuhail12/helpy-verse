@@ -1,5 +1,6 @@
 import type { Contact } from '@/types/contact';
 import { HttpClient } from '@/api/services/HttpClient';
+import type { Customer } from '@/types/customer';
 
 const API_URL = '/customer';
 
@@ -34,6 +35,12 @@ export interface CreateCustomerData {
     phoneCountry?: string;
     companyId?: string;
     workspace_id: string;
+}
+
+export interface UpdateCustomerResponse {
+    status: string;
+    message: string;
+    data: Customer;
 }
 
 export const customerService = {
@@ -128,9 +135,15 @@ export const customerService = {
     },
 
     // ✅ Update a customer
-    async updateCustomer(customer_id: string, customerData: Partial<Contact>): Promise<Contact> {
+    async updateCustomer(customerId: string, customerData: Partial<Customer>): Promise<UpdateCustomerResponse> {
         try {
-            const response = await HttpClient.apiClient.put<Contact>(`${API_URL}/${customer_id}`, customerData);
+            // Remove workspace_id from the body if it exists
+            const { workspace_id, ...cleanedData } = customerData as any;
+
+            const response = await HttpClient.apiClient.put<UpdateCustomerResponse>(
+                `${API_URL}/${customerId}`,
+                cleanedData
+            );
             return response.data;
         } catch (error) {
             console.error('Error updating customer:', error);

@@ -173,11 +173,17 @@ const CustomerContextPanel = ({ ticket }: CustomerContextPanelProps) => {
             isOpen={openSections[PanelSection.CONTACT]}
             onToggle={() => toggleSection(PanelSection.CONTACT)}
             isLoading={isLoadingCustomer}
-          // onUpdate={handleUpdateCustomer}
           />
 
           <CompanyInfoCard
-            // company={formattedCustomerData.company}
+            company={companyInfo ? {
+              id: 'company-id',
+              name: companyInfo,
+              status: 'active',
+              tierLevel: 'platinum',
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString()
+            } : null}
             isOpen={openSections[PanelSection.COMPANY]}
             onToggle={() => toggleSection(PanelSection.COMPANY)}
           />

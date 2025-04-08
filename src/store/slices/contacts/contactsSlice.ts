@@ -68,7 +68,10 @@ export const updateCustomer = createAsyncThunk(
   'customers/updateCustomer',
   async (customerData: Partial<Contact> & { customer_id: string }, { rejectWithValue }) => {
     try {
-      const updatedCustomer = await customerService.updateCustomer(customerData.customer_id, customerData);
+      // Extract customer_id from the payload to avoid sending it as part of the data
+      const { customer_id, ...dataToUpdate } = customerData;
+
+      const updatedCustomer = await customerService.updateCustomer(customer_id, dataToUpdate);
       return updatedCustomer.data;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to update customer');

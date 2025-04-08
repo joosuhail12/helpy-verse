@@ -2,8 +2,8 @@ import { getWorkspaceId, handleLogout, getCookie, getClientIdFromCookie } from "
 import axios, { AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from "axios";
 import { get } from "lodash";
 
-// const API_BASE_URL = 'http://localhost:4000/api';
-const API_BASE_URL = 'https://dev-socket.pullseai.com/api';
+const API_BASE_URL = 'http://localhost:4000/api';
+// const API_BASE_URL = 'https://dev-socket.pullseai.com/api';
 
 // const LLM_SERVICE_URL = 'http://localhost:4000/api';
 const LLM_SERVICE_URL = 'https://dev-socket.pullseai.com/api';

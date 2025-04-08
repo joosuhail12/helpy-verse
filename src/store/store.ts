@@ -12,6 +12,7 @@ import tagsReducer from './slices/tagsSlice';
 import emailChannelsReducer from './slices/emailChannels/emailChannelsSlice';
 import cannedResponsesReducer from './slices/cannedResponses/cannedResponsesSlice';
 import customersReducer from './slices/customers/customersSlice';
+import ticketsReducer from './slices/tickets/ticketsSlice';
 
 export const store = configureStore({
   reducer: {
@@ -28,6 +29,7 @@ export const store = configureStore({
     emailChannels: emailChannelsReducer,
     cannedResponses: cannedResponsesReducer,
     customers: customersReducer,
+    tickets: ticketsReducer,
   },
 });
 

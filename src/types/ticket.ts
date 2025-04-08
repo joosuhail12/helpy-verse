@@ -1,10 +1,13 @@
 export interface Ticket {
   id: string;
+  ticket_sno?: string;
+  sno?: number;
   subject: string;
   customer?: string;
   customerId?: string;
   lastMessage: string;
   assignee: string | null;
+  assigneeId?: string;
   company: string;
   tags: string[];
   status: 'open' | 'closed' | 'pending';
@@ -16,6 +19,12 @@ export interface Ticket {
   categories?: string[];
   hasNotification?: boolean;
   notificationType?: 'mention' | 'update' | 'assignment' | 'new_response' | 'new_ticket';
+  language?: string;
+  typeId?: string;
+  teamId?: string;
+  externalId?: string;
+  description?: string;
+  summary?: string;
 }
 
 export type SortField = 'date' | 'priority' | 'status';
