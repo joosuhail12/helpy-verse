@@ -63,6 +63,26 @@ export const TicketInlineEditField = ({
         }
     }, [isReduxLoading, reduxError, isSaving]);
 
+    // Force reset loading state if stuck for too long
+    useEffect(() => {
+        let forceResetTimer: NodeJS.Timeout;
+
+        if (isSaving) {
+            forceResetTimer = setTimeout(() => {
+                // If still saving after 5 seconds, force reset regardless of Redux state
+                setIsSaving(false);
+                setIsEditing(false);
+                dispatch(resetLoading());
+
+                console.log("Force-reset loading state applied");
+            }, 5000);
+        }
+
+        return () => {
+            if (forceResetTimer) clearTimeout(forceResetTimer);
+        };
+    }, [isSaving, dispatch]);
+
     // Reset editValue when value prop changes
     useEffect(() => {
         setEditValue(value);
@@ -82,6 +102,34 @@ export const TicketInlineEditField = ({
             dispatch(clearError());
         };
     }, [dispatch]);
+
+    // Sync with Redux loading state directly 
+    useEffect(() => {
+        // If Redux has explicitly set loading to false, make sure our local state reflects that
+        if (!isReduxLoading && isSaving) {
+            console.log('Syncing local loading state with Redux (false)');
+            setIsSaving(false);
+        }
+    }, [isReduxLoading, isSaving]);
+
+    // Update field view after edit completes
+    useEffect(() => {
+        // Check if edit just completed (was saving, now it's not)
+        const editJustCompleted = !isSaving && !isEditing;
+
+        if (editJustCompleted && currentTicketId) {
+            // Force a UI refresh after loading is done 
+            // by adding a small delay to ensure smooth transition
+            const refreshTimer = setTimeout(() => {
+                setEditValue(value);
+            }, 200);
+
+            return () => clearTimeout(refreshTimer);
+        }
+    }, [isSaving, isEditing, value]);
+
+    // Store current ticket ID for tracking
+    const currentTicketId = ticketId;
 
     const handleSave = async () => {
         // Validate field before saving
@@ -177,6 +225,11 @@ export const TicketInlineEditField = ({
         setEditValue(value);
         setIsEditing(false);
         setError(null);
+
+        // Ensure we clear all loading states
+        setIsSaving(false);
+        dispatch(resetLoading());
+        dispatch(clearError());
     };
 
     if (isEditing) {

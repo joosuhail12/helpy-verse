@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { UserCircle, Mail, Phone, Globe, ChevronUp, ChevronDown, Loader2, Building, MapPin } from "lucide-react";
+import { UserCircle, ChevronUp, ChevronDown, Loader2 } from "lucide-react";
 import { CustomerInlineEditField } from "./inline-edit/CustomerInlineEditField";
+import { AddressEdit } from "./inline-edit/AddressEdit";
 
 interface ContactInfoCardProps {
   customer: {
@@ -14,13 +15,18 @@ interface ContactInfoCardProps {
     title?: string,
     department?: string,
     timezone?: string,
+    street?: string,
+    city?: string,
+    state?: string,
+    postalCode?: string,
+    country?: string,
     address?: {
       street?: string,
       city?: string,
       state?: string,
       postalCode?: string,
       country?: string
-    }
+    } | string
   } | null;
   company: string | null;
   isOpen: boolean;
@@ -41,146 +47,71 @@ const ContactInfoCard = ({ customer, company, isOpen, onToggle, isLoading = fals
             {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
           </Button>
         </CollapsibleTrigger>
-        <CollapsibleContent className="p-4 pt-0">
+        <CollapsibleContent className="p-4 pt-0 space-y-3">
           {isLoading ? (
-            <div className="flex items-center justify-center p-4">
-              <Loader2 className="h-4 w-4 text-primary animate-spin" />
-              <span className="ml-2 text-sm text-gray-500">Loading contact information...</span>
+            <div className="flex justify-center py-4">
+              <Loader2 className="h-6 w-6 animate-spin" />
             </div>
           ) : (
-            <div className="space-y-2">
-              {/* Basic Info */}
-              <div className="flex items-center justify-between text-sm">
-                <div className="flex items-center gap-2">
-                  <Mail className="h-4 w-4 text-gray-400" />
-                  <span className="text-gray-500">Email</span>
-                </div>
-                {customer?.id ? (
-                  <CustomerInlineEditField
-                    value={customer?.email || ''}
-                    customerId={customer?.id}
-                    field="email"
-                    label="Email"
-                    type="email"
-                    validation={[
-                      { type: 'required', value: 'true', message: 'Email is required' },
-                      { type: 'regex', value: '^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$', message: 'Must be a valid email' }
-                    ]}
-                  />
-                ) : (
-                  <span className="text-gray-600">{customer?.email || 'No email available'}</span>
-                )}
+            <div className="grid gap-3 text-sm">
+              <div className="grid grid-cols-[120px_1fr] items-center gap-2 py-1.5">
+                <span className="text-gray-500 font-medium">Email</span>
+                <span className="text-gray-700">{customer?.email || "No email provided"}</span>
               </div>
 
-              <div className="flex items-center justify-between text-sm">
-                <div className="flex items-center gap-2">
-                  <Phone className="h-4 w-4 text-gray-400" />
-                  <span className="text-gray-500">Phone</span>
-                </div>
-                {customer?.id ? (
+              <div className="grid grid-cols-[120px_1fr] items-center gap-2 py-1.5">
+                <span className="text-gray-500 font-medium">Phone</span>
+                <div>
                   <CustomerInlineEditField
-                    value={customer?.phone || ''}
-                    customerId={customer?.id}
+                    value={customer?.phone || ""}
+                    customerId={customer?.id || ""}
                     field="phone"
                     label="Phone"
                     type="phone"
                   />
-                ) : (
-                  <span className="text-gray-600">{customer?.phone || 'No phone available'}</span>
-                )}
+                </div>
               </div>
 
-              <div className="flex items-center justify-between text-sm">
-                <div className="flex items-center gap-2">
-                  <Building className="h-4 w-4 text-gray-400" />
-                  <span className="text-gray-500">Title</span>
-                </div>
-                {customer?.id ? (
+              <div className="grid grid-cols-[120px_1fr] items-center gap-2 py-1.5">
+                <span className="text-gray-500 font-medium">Title</span>
+                <div>
                   <CustomerInlineEditField
-                    value={customer?.title || ''}
-                    customerId={customer?.id}
+                    value={customer?.title || ""}
+                    customerId={customer?.id || ""}
                     field="title"
                     label="Title"
                   />
-                ) : (
-                  <span className="text-gray-600">{customer?.title || 'No title information'}</span>
-                )}
+                </div>
               </div>
 
-              <div className="flex items-center justify-between text-sm">
-                <div className="flex items-center gap-2">
-                  <Globe className="h-4 w-4 text-gray-400" />
-                  <span className="text-gray-500">Company</span>
-                </div>
-                {customer?.id ? (
+              <div className="grid grid-cols-[120px_1fr] items-center gap-2 py-1.5">
+                <span className="text-gray-500 font-medium">Company</span>
+                <div>
                   <CustomerInlineEditField
-                    value={company || ''}
-                    customerId={customer?.id}
+                    value={company || ""}
+                    customerId={customer?.id || ""}
                     field="company"
                     label="Company"
                   />
-                ) : (
-                  <span className="text-gray-600">{company || 'No company information'}</span>
-                )}
+                </div>
               </div>
 
-              {/* Address Information if available */}
-              {customer?.address && (customer?.address?.street || customer?.address?.city) && (
-                <div className="mt-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <MapPin className="h-4 w-4 text-gray-400" />
-                    <span className="text-gray-500 font-medium">Address</span>
-                  </div>
-
-                  {customer?.id && customer?.address?.street !== undefined && (
-                    <div className="flex items-center justify-between text-sm pl-6 mb-1">
-                      <span className="text-gray-500">Street</span>
-                      <CustomerInlineEditField
-                        value={customer.address.street || ''}
-                        customerId={customer.id}
-                        field="street"
-                        label="Street"
-                      />
-                    </div>
-                  )}
-
-                  {customer?.id && customer?.address?.city !== undefined && (
-                    <div className="flex items-center justify-between text-sm pl-6 mb-1">
-                      <span className="text-gray-500">City</span>
-                      <CustomerInlineEditField
-                        value={customer.address.city || ''}
-                        customerId={customer.id}
-                        field="city"
-                        label="City"
-                      />
-                    </div>
-                  )}
-
-                  {customer?.id && customer?.address?.state !== undefined && (
-                    <div className="flex items-center justify-between text-sm pl-6 mb-1">
-                      <span className="text-gray-500">State</span>
-                      <CustomerInlineEditField
-                        value={customer.address.state || ''}
-                        customerId={customer.id}
-                        field="state"
-                        label="State"
-                      />
-                    </div>
-                  )}
-
-                  {customer?.id && customer?.address?.country !== undefined && (
-                    <div className="flex items-center justify-between text-sm pl-6">
-                      <span className="text-gray-500">Country</span>
-                      <CustomerInlineEditField
-                        value={customer.address.country || ''}
-                        customerId={customer.id}
-                        field="country"
-                        label="Country"
-                      />
-                    </div>
-                  )}
+              <div className="grid grid-cols-[120px_1fr] items-center gap-2 py-1.5">
+                <span className="text-gray-500 font-medium">Address</span>
+                <div>
+                  <AddressEdit
+                    initialValue={typeof customer?.address === 'string' ? customer?.address : ""}
+                    customerId={customer?.id}
+                    customer={{
+                      street: customer?.street || (typeof customer?.address !== 'string' ? customer?.address?.street : "") || "",
+                      city: customer?.city || (typeof customer?.address !== 'string' ? customer?.address?.city : "") || "",
+                      state: customer?.state || (typeof customer?.address !== 'string' ? customer?.address?.state : "") || "",
+                      postalCode: customer?.postalCode || (typeof customer?.address !== 'string' ? customer?.address?.postalCode : "") || "",
+                      country: customer?.country || (typeof customer?.address !== 'string' ? customer?.address?.country : "") || ""
+                    }}
+                  />
                 </div>
-              )}
+              </div>
             </div>
           )}
         </CollapsibleContent>
