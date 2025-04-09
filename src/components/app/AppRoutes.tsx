@@ -26,6 +26,7 @@ const LandingPage = React.lazy(() => import('@/pages/LandingPage'));
 const Companies = React.lazy(() => import('@/pages/contacts/Companies'));
 const CompanyDetail = React.lazy(() => import('@/pages/contacts/CompanyDetail'));
 const ContactDetail = React.lazy(() => import('@/pages/contacts/Detail'));
+const Workflows = React.lazy(() => import('@/pages/automation/Workflows'));
 
 /**
  * Main routing component for the application
@@ -127,6 +128,15 @@ const AppRoutes: React.FC = () => {
               </RouteErrorBoundary>
             } />
           </Route>
+          
+          {/* Automation routes */}
+          <Route path="automation/workflows" element={
+            <RouteErrorBoundary>
+              <React.Suspense fallback={<LoadingFallback />}>
+                <Workflows />
+              </React.Suspense>
+            </RouteErrorBoundary>
+          } />
         </Route>
         
         {/* Not found route */}
