@@ -213,7 +213,7 @@ export const WorkflowTableCard: React.FC<WorkflowTableCardProps> = ({
               </DropdownMenuItem>
               
               <WorkflowTagPicker
-                tags={workflow.tags?.filter(tag => !tag.id.startsWith('trigger-')) || []}
+                selectedTags={workflow.tags?.filter(tag => !tag.id.startsWith('trigger-')) || []}
                 allTags={allTags}
                 onChange={handleTagsChange}
               />
@@ -242,3 +242,4 @@ export const WorkflowTableCard: React.FC<WorkflowTableCardProps> = ({
     </motion.div>
   );
 };
+
