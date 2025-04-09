@@ -1,5 +1,5 @@
 
-import { lazy, Suspense, ReactNode } from 'react';
+import React, { lazy, Suspense, ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
 import { ProtectedRoute } from '../components/auth/ProtectedRoute';
 import { Loader2 } from 'lucide-react';

@@ -376,6 +376,16 @@ const CreateWorkflowModal: React.FC<CreateWorkflowModalProps> = ({
     if (open) {
       console.log('CreateWorkflowModal rendered with open:', open);
     }
+    
+    // Reset state when modal closes
+    if (!open) {
+      setSearchTerm('');
+      setSelectedTrigger(null);
+      setFocusedTriggerIndex(-1);
+      setNavigationError(null);
+      setCurrentPage(1);
+      setIsNavigating(false);
+    }
   }, [open]);
 
   useEffect(() => {
