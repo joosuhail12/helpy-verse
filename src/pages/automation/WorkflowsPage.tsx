@@ -45,7 +45,7 @@ import {
   DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
-import { Workflow, WorkflowType, WorkflowTag, WorkflowFolder, WorkflowStatus, WorkflowChange, WorkflowVersion, WorkflowDependency } from '@/types/workflow';
+import { Workflow, WorkflowType, WorkflowTag, WorkflowFolder, WorkflowStatus, WorkflowChange, WorkflowVersion, WorkflowDependency, WorkflowChangeType } from '@/types/workflow';
 import { WorkflowFolders } from './components/WorkflowFolders';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { WorkflowMetricsCard } from './components/WorkflowAnalytics';
@@ -528,7 +528,7 @@ const WorkflowsPage: React.FC = () => {
       field: 'version',
       oldValue: `${workflow.version || 1}`,
       newValue: `${version.version} (restored)`,
-      type: 'update'
+      type: 'update' as WorkflowChangeType
     };
     
     const newVersion: WorkflowVersion = {
@@ -569,10 +569,10 @@ const WorkflowsPage: React.FC = () => {
       createdAt: workflow.createdAt,
       createdBy: currentUser,
       changes: [
-        { field: 'name', newValue: workflow.name, type: 'add' },
-        { field: 'status', newValue: workflow.status, type: 'add' },
-        { field: 'type', newValue: workflow.type, type: 'add' },
-        ...(workflow.description ? [{ field: 'description', newValue: workflow.description, type: 'add' }] : [])
+        { field: 'name', newValue: workflow.name, type: 'add' as WorkflowChangeType },
+        { field: 'status', newValue: workflow.status, type: 'add' as WorkflowChangeType },
+        { field: 'type', newValue: workflow.type, type: 'add' as WorkflowChangeType },
+        ...(workflow.description ? [{ field: 'description', newValue: workflow.description, type: 'add' as WorkflowChangeType }] : [])
       ]
     };
     
