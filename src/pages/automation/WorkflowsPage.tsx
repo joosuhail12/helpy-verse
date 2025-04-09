@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { 
@@ -878,3 +879,94 @@ const WorkflowsPage: React.FC = () => {
                           Duplicate
                         </DropdownMenuItem>
                         <DropdownMenuItem className="text-destructive focus:text-destructive">
+                          <Trash className="h-4 w-4 mr-2" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
+                  
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => setState(prev => ({ ...prev, selectMode: false, selectedWorkflows: [] }))}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            )}
+            
+            {/* Workflow List */}
+            <div className="grid grid-cols-1 gap-4 mt-4">
+              {filteredWorkflows.length === 0 ? (
+                <div className="bg-muted/40 rounded-lg p-8 text-center">
+                  <div className="mx-auto w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-3">
+                    <Search className="h-6 w-6 text-muted-foreground" />
+                  </div>
+                  <h3 className="text-lg font-medium mb-1">No workflows found</h3>
+                  <p className="text-muted-foreground max-w-md mx-auto">
+                    {hasActiveFilters 
+                      ? "Try adjusting your search or filters to find what you're looking for."
+                      : "Get started by creating your first workflow."
+                    }
+                  </p>
+                  {hasActiveFilters && (
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="mt-4"
+                      onClick={clearFilters}
+                    >
+                      Clear all filters
+                    </Button>
+                  )}
+                </div>
+              ) : (
+                filteredWorkflows.map(workflow => (
+                  <WorkflowTableCard
+                    key={workflow.id}
+                    workflow={workflow}
+                    folders={state.folders}
+                    tags={state.tags}
+                    isSelected={state.selectedWorkflows.includes(workflow.id)}
+                    selectMode={state.selectMode}
+                    onSelect={toggleWorkflowSelection}
+                    onStatusToggle={handleWorkflowStatusToggle}
+                    onTagsChange={(tags) => handleTagsChange(workflow.id, tags)}
+                    onCreateTag={handleCreateTag}
+                    onDelete={() => handleDeleteWorkflow(workflow.id, workflow.name)}
+                    onDuplicate={handleDuplicateWorkflow}
+                    onAnalytics={() => openAnalyticsModal(workflow)}
+                    onMoveToFolder={(folderId) => handleMoveToFolder(workflow.id, folderId)}
+                  />
+                ))
+              )}
+            </div>
+          </div>
+        )}
+      </main>
+      
+      {/* Create Workflow Modal */}
+      {isCreateModalOpen && (
+        <CreateWorkflowModal
+          open={isCreateModalOpen}
+          onClose={handleCloseCreateModal}
+          folders={state.folders}
+          tags={state.tags}
+        />
+      )}
+      
+      {/* Analytics Modal */}
+      <Dialog open={isAnalyticsModalOpen} onOpenChange={(open) => !open && setIsAnalyticsModalOpen(false)}>
+        <DialogContent className="sm:max-w-3xl">
+          {selectedWorkflow && (
+            <WorkflowMetricsCard workflow={selectedWorkflow} />
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
+export default WorkflowsPage;
