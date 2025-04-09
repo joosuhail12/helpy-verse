@@ -131,8 +131,29 @@ const AppRoutes: React.FC = () => {
             } />
           </Route>
           
-          {/* Use automation routes */}
-          {automationRoutes}
+          {/* Automation routes - map them properly as Route components */}
+          {automationRoutes.map((route) => {
+            if (route.children) {
+              return (
+                <Route key={route.path} path={route.path} element={route.element}>
+                  {route.children.map((childRoute) => (
+                    <Route 
+                      key={`${route.path}/${childRoute.path}`}
+                      path={childRoute.path}
+                      element={childRoute.element}
+                    />
+                  ))}
+                </Route>
+              );
+            }
+            return (
+              <Route 
+                key={route.path} 
+                path={route.path} 
+                element={route.element} 
+              />
+            );
+          })}
         </Route>
         
         {/* Not found route */}
