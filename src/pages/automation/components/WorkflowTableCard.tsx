@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { format } from 'date-fns';
 import { 
@@ -41,12 +40,16 @@ interface WorkflowTableCardProps {
   onDuplicate: (id: string, newName: string) => void;
   onTagsChange: (workflowId: string, tags: WorkflowTag[]) => void;
   onMoveToFolder: (workflowId: string, folderId: string | null) => void;
-  allTags: WorkflowTag[];
-  isEven: boolean;
+  allTags?: WorkflowTag[];
+  tags?: WorkflowTag[];
+  folders?: WorkflowFolder[];
+  isEven?: boolean;
   selectMode?: boolean;
   isSelected?: boolean;
   onSelect?: (id: string) => void;
   onStatusToggle?: (id: string, status: 'Live' | 'Draft') => void;
+  onCreateTag?: (tag: WorkflowTag) => void;
+  onAnalytics?: (workflow: Workflow) => void;
 }
 
 export function WorkflowTableCard({
@@ -56,11 +59,15 @@ export function WorkflowTableCard({
   onTagsChange,
   onMoveToFolder,
   allTags,
-  isEven,
+  tags = [],
+  folders = [],
+  isEven = false,
   selectMode = false,
   isSelected = false,
   onSelect,
-  onStatusToggle
+  onStatusToggle,
+  onCreateTag,
+  onAnalytics
 }: WorkflowTableCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -166,9 +173,10 @@ export function WorkflowTableCard({
               {isExpanded && (
                 <div className="w-full mt-2">
                   <WorkflowTagsControl
-                    tags={allTags}
+                    tags={tags}
                     selectedTags={workflow.tags || []}
-                    onTagsChange={(tags) => onTagsChange(workflow.id, tags)}
+                    onTagsChange={(newTags) => onTagsChange(workflow.id, newTags)}
+                    onCreateNewTag={onCreateTag}
                   />
                 </div>
               )}
@@ -233,6 +241,13 @@ export function WorkflowTableCard({
               <ExternalLink className="mr-2 h-4 w-4" />
               Open Editor
             </DropdownMenuItem>
+            
+            {onAnalytics && (
+              <DropdownMenuItem onClick={() => onAnalytics(workflow)}>
+                <BarChart className="mr-2 h-4 w-4" />
+                View Analytics
+              </DropdownMenuItem>
+            )}
             
             <DropdownMenuSeparator />
             
