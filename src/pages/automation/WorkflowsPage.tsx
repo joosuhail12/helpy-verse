@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { 
@@ -57,8 +56,8 @@ import {
 } from '@/components/ui/resizable';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { WorkflowTagPicker } from './components/WorkflowTagPicker';
+import { cn } from '@/lib/utils';
 
-// Enhanced mock data with metrics and tags
 const workflows: Workflow[] = [
   {
     id: '1',
@@ -150,7 +149,6 @@ const workflows: Workflow[] = [
   },
 ];
 
-// Sample tags and folders
 const initialTags: WorkflowTag[] = [
   { id: 'tag1', name: 'Support', color: '#F87171' },
   { id: 'tag2', name: 'Urgent', color: '#FB923C' },
@@ -174,7 +172,6 @@ const initialFolders: WorkflowFolder[] = [
   },
 ];
 
-// Define type for our filters state
 interface DateRange {
   from: Date | undefined;
   to: Date | undefined;
@@ -220,16 +217,13 @@ const WorkflowsPage: React.FC = () => {
   const [isAnalyticsModalOpen, setIsAnalyticsModalOpen] = useState(false);
   const [selectedWorkflow, setSelectedWorkflow] = useState<Workflow | null>(null);
   
-  // Set up keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      // Ctrl+N: New workflow
       if (event.ctrlKey && event.key === 'n') {
         setIsCreateModalOpen(true);
         event.preventDefault();
       }
       
-      // Ctrl+F: Focus search
       if (event.ctrlKey && event.key === 'f') {
         const searchInput = document.getElementById('workflow-search');
         if (searchInput) {
@@ -238,7 +232,6 @@ const WorkflowsPage: React.FC = () => {
         event.preventDefault();
       }
       
-      // Escape: Exit select mode
       if (event.key === 'Escape' && state.selectMode) {
         setState(prev => ({
           ...prev,
@@ -264,11 +257,9 @@ const WorkflowsPage: React.FC = () => {
   };
 
   const handleDeleteWorkflow = (id: string, name: string) => {
-    // Here you would typically delete the workflow via API
     setState(prev => ({
       ...prev,
       workflows: prev.workflows.filter(w => w.id !== id),
-      // Also remove from folders
       folders: prev.folders.map(folder => ({
         ...folder,
         workflowIds: folder.workflowIds.filter(wId => wId !== id)
@@ -279,19 +270,16 @@ const WorkflowsPage: React.FC = () => {
   };
 
   const handleDuplicateWorkflow = (id: string, newName: string) => {
-    // Find the workflow to duplicate
     const workflowToDuplicate = state.workflows.find(w => w.id === id);
     
     if (!workflowToDuplicate) return;
     
-    // Create a new workflow with the same properties but a new ID and name
     const newWorkflow: Workflow = {
       ...workflowToDuplicate,
       id: `workflow-${Date.now()}`,
       name: newName,
       updatedAt: new Date(),
       createdAt: new Date(),
-      // Reset metrics for the new workflow
       metrics: {
         totalRuns: 0,
         successRate: 0,
@@ -314,7 +302,6 @@ const WorkflowsPage: React.FC = () => {
       isRefreshing: true
     }));
     
-    // Add refresh animation when sort changes
     setTimeout(() => {
       setState(prev => ({
         ...prev,
@@ -323,7 +310,6 @@ const WorkflowsPage: React.FC = () => {
     }, 500);
   };
   
-  // Toggle type filter handler
   const toggleTypeFilter = (type: WorkflowType) => {
     setState(prev => ({
       ...prev,
@@ -333,7 +319,6 @@ const WorkflowsPage: React.FC = () => {
     }));
   };
   
-  // Toggle tag filter handler
   const toggleTagFilter = (tagId: string) => {
     setState(prev => ({
       ...prev,
@@ -343,7 +328,6 @@ const WorkflowsPage: React.FC = () => {
     }));
   };
   
-  // Clear all filters
   const clearFilters = () => {
     setState(prev => ({
       ...prev,
@@ -356,7 +340,6 @@ const WorkflowsPage: React.FC = () => {
     }));
   };
   
-  // Toggle workflow selection
   const toggleWorkflowSelection = (id: string) => {
     setState(prev => ({
       ...prev,
@@ -366,7 +349,6 @@ const WorkflowsPage: React.FC = () => {
     }));
   };
   
-  // Select all workflows
   const selectAllWorkflows = () => {
     if (state.selectedWorkflows.length === filteredWorkflows.length) {
       setState(prev => ({
@@ -381,7 +363,6 @@ const WorkflowsPage: React.FC = () => {
     }
   };
   
-  // Batch status change
   const changeWorkflowsStatus = (status: WorkflowStatus) => {
     if (state.selectedWorkflows.length === 0) return;
     
@@ -399,7 +380,6 @@ const WorkflowsPage: React.FC = () => {
     toast.success(`${state.selectedWorkflows.length} workflows updated to "${status}" status`);
   };
 
-  // Handle tag changes for a workflow
   const handleTagsChange = (workflowId: string, tags: WorkflowTag[]) => {
     setState(prev => ({
       ...prev,
@@ -411,16 +391,13 @@ const WorkflowsPage: React.FC = () => {
     }));
   };
   
-  // Handle moving a workflow to a folder
   const handleMoveToFolder = (workflowId: string, folderId: string | null) => {
     setState(prev => {
-      // First, remove the workflow from any existing folder
       const updatedFolders = prev.folders.map(folder => ({
         ...folder,
         workflowIds: folder.workflowIds.filter(id => id !== workflowId)
       }));
       
-      // Then, add the workflow to the new folder if specified
       if (folderId) {
         const folderIndex = updatedFolders.findIndex(f => f.id === folderId);
         if (folderIndex !== -1) {
@@ -438,7 +415,6 @@ const WorkflowsPage: React.FC = () => {
     });
   };
   
-  // Handle creating a folder
   const handleCreateFolder = (folder: WorkflowFolder) => {
     setState(prev => ({
       ...prev,
@@ -449,7 +425,6 @@ const WorkflowsPage: React.FC = () => {
     toast.success(`Created folder "${folder.name}"`);
   };
   
-  // Handle updating a folder
   const handleUpdateFolder = (updatedFolder: WorkflowFolder) => {
     setState(prev => ({
       ...prev,
@@ -459,10 +434,8 @@ const WorkflowsPage: React.FC = () => {
     }));
   };
   
-  // Handle deleting a folder
   const handleDeleteFolder = (folderId: string) => {
     setState(prev => {
-      // First find the folder to get its name
       const folder = prev.folders.find(f => f.id === folderId);
       
       if (folder) {
@@ -477,7 +450,6 @@ const WorkflowsPage: React.FC = () => {
     });
   };
   
-  // Handle workflow status toggle
   const handleWorkflowStatusToggle = (id: string, status: WorkflowStatus) => {
     setState(prev => ({
       ...prev,
@@ -494,38 +466,30 @@ const WorkflowsPage: React.FC = () => {
     }
   };
   
-  // Handlers for analytics modal
   const openAnalyticsModal = (workflow: Workflow) => {
     setSelectedWorkflow(workflow);
     setIsAnalyticsModalOpen(true);
   };
 
-  // Filter workflows based on all criteria
   const filteredWorkflows = state.workflows
     .filter(workflow => {
-      // Filter by search term
       const matchesSearch = 
         state.searchTerm === '' || 
         workflow.name.toLowerCase().includes(state.searchTerm.toLowerCase()) ||
         (workflow.description?.toLowerCase().includes(state.searchTerm.toLowerCase()) || false);
       
-      // Filter by workflow type
       const matchesType = state.typeFilters.length === 0 || state.typeFilters.includes(workflow.type);
       
-      // Filter by status
       const matchesStatus = state.statusFilter === 'All' || workflow.status === state.statusFilter;
       
-      // Filter by date range
       const matchesDateRange = 
         !state.dateRange.from || !state.dateRange.to ||
         (workflow.updatedAt >= state.dateRange.from && workflow.updatedAt <= state.dateRange.to);
       
-      // Filter by folder
       const matchesFolder = 
         !state.selectedFolder || 
         state.folders.find(f => f.id === state.selectedFolder)?.workflowIds.includes(workflow.id);
       
-      // Filter by tags
       const matchesTags = 
         state.tagFilters.length === 0 || 
         (workflow.tags && workflow.tags.some(tag => state.tagFilters.includes(tag.id)));
@@ -538,13 +502,11 @@ const WorkflowsPage: React.FC = () => {
       return state.sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
     });
     
-  // Count workflows by type for filter badges
   const typeCount = state.workflows.reduce((acc, workflow) => {
     acc[workflow.type] = (acc[workflow.type] || 0) + 1;
     return acc;
   }, {} as Record<WorkflowType, number>);
   
-  // Analytics summary
   const analyticsSummary = {
     totalWorkflows: state.workflows.length,
     activeWorkflows: state.workflows.filter(w => w.status === 'Live').length,
@@ -555,7 +517,6 @@ const WorkflowsPage: React.FC = () => {
       : 0
   };
 
-  // Are there any active filters?
   const hasActiveFilters = 
     state.typeFilters.length > 0 || 
     state.statusFilter !== 'All' || 
@@ -564,15 +525,12 @@ const WorkflowsPage: React.FC = () => {
     state.tagFilters.length > 0 ||
     state.selectedFolder !== null;
 
-  // Show an analytics summary?
   const showAnalyticsSummary = analyticsSummary.totalRuns > 0;
 
   return (
     <ResizablePanelGroup direction="horizontal" className="min-h-[calc(100vh-8rem)]">
-      {/* Sidebar */}
       <ResizablePanel defaultSize={20} minSize={15} maxSize={25}>
         <div className="h-full p-4 border-r overflow-auto">
-          {/* Folder Navigation */}
           <WorkflowFolders
             folders={state.folders}
             onFolderCreate={handleCreateFolder}
@@ -583,7 +541,6 @@ const WorkflowsPage: React.FC = () => {
             className="mb-6"
           />
           
-          {/* Tags Filter */}
           <div className="mb-6">
             <h3 className="text-sm font-medium text-muted-foreground mb-2">Filter by Tag</h3>
             <div className="space-y-1">
@@ -616,7 +573,6 @@ const WorkflowsPage: React.FC = () => {
             </div>
           </div>
           
-          {/* Keyboard Shortcuts */}
           <div className="border-t border-border/40 pt-4 mt-4">
             <h3 className="text-sm font-medium text-muted-foreground mb-2">Keyboard Shortcuts</h3>
             <div className="space-y-2 text-sm">
@@ -642,13 +598,11 @@ const WorkflowsPage: React.FC = () => {
               </div>
             </div>
           </div>
-          
         </div>
       </ResizablePanel>
       
       <ResizableHandle withHandle />
       
-      {/* Main Content */}
       <ResizablePanel defaultSize={80}>
         <div className="container mx-auto p-4 space-y-8">
           <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -671,7 +625,6 @@ const WorkflowsPage: React.FC = () => {
           </header>
 
           <main>
-            {/* Analytics Summary Cards */}
             {showAnalyticsSummary && (
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                 <Card>
@@ -729,13 +682,12 @@ const WorkflowsPage: React.FC = () => {
                   </div>
                   
                   <div className="flex gap-2 flex-wrap">
-                    {/* Type filter */}
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button 
                           variant="outline" 
                           size="sm"
-                          className={`shadow-sm hover:shadow transition-all duration-200 flex items-center gap-1.5 ${state.typeFilters.length > 0 ? 'bg-primary/10 border-primary/30' : ''}`}
+                          className={`shadow-sm hover:shadow h-9 text-sm transition-all duration-200 flex items-center gap-1.5 ${state.typeFilters.length > 0 ? 'bg-primary/10 border-primary/30' : ''}`}
                         >
                           <Filter className="h-3.5 w-3.5" />
                           <span>Type</span>
@@ -773,7 +725,6 @@ const WorkflowsPage: React.FC = () => {
                       </PopoverContent>
                     </Popover>
                     
-                    {/* Status filter */}
                     <Select
                       value={state.statusFilter}
                       onValueChange={(value) => setState(prev => ({ ...prev, statusFilter: value as WorkflowStatus | 'All' }))}
@@ -790,7 +741,6 @@ const WorkflowsPage: React.FC = () => {
                       </SelectContent>
                     </Select>
                     
-                    {/* Date range filter */}
                     <DateRangePicker 
                       date={state.dateRange}
                       onDateChange={(dateRange) => setState(prev => ({ ...prev, dateRange }))}
@@ -798,7 +748,6 @@ const WorkflowsPage: React.FC = () => {
                       className={`h-9 ${state.dateRange.from ? 'bg-primary/10 border-primary/30' : ''}`}
                     />
                     
-                    {/* Clear filters button - only show if filters are applied */}
                     {hasActiveFilters && (
                       <Button 
                         variant="ghost" 
@@ -811,7 +760,6 @@ const WorkflowsPage: React.FC = () => {
                       </Button>
                     )}
                     
-                    {/* Sort button */}
                     <Button 
                       variant="outline" 
                       onClick={toggleSortOrder}
@@ -828,7 +776,6 @@ const WorkflowsPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Selection mode controls */}
                 {state.selectMode && (
                   <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg shadow-sm">
                     <div className="flex items-center gap-3">
@@ -880,7 +827,6 @@ const WorkflowsPage: React.FC = () => {
                 )}
 
                 <div className="rounded-xl overflow-hidden border border-border shadow-sm hover:shadow-md transition-all duration-300">
-                  {/* Table Header - With Gradient Background */}
                   <div className="grid grid-cols-12 bg-gradient-to-r from-muted/80 to-muted/40 text-sm font-medium text-muted-foreground p-4 border-b border-border/60">
                     {!state.selectMode ? (
                       <div className="col-span-5 md:col-span-5 flex items-center gap-2.5">
@@ -918,7 +864,6 @@ const WorkflowsPage: React.FC = () => {
                     <div className="col-span-1 md:col-span-1 text-right">Actions</div>
                   </div>
 
-                  {/* Table Body */}
                   <div className="divide-y divide-border/40">
                     {filteredWorkflows.map((workflow, index) => (
                       <WorkflowTableCard 
@@ -955,14 +900,12 @@ const WorkflowsPage: React.FC = () => {
             )}
           </main>
 
-          {/* Create Workflow Modal */}
           <CreateWorkflowModal 
             open={isCreateModalOpen} 
             onOpenChange={setIsCreateModalOpen} 
             onClose={handleCloseCreateModal} 
           />
           
-          {/* Analytics Modal */}
           <Dialog open={isAnalyticsModalOpen} onOpenChange={setIsAnalyticsModalOpen}>
             <DialogContent className="sm:max-w-2xl">
               {selectedWorkflow && (
