@@ -46,6 +46,8 @@ interface TriggerCategory {
 interface CreateWorkflowModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onClose?: () => void;
+  onWorkflowCreated?: (workflow: any) => void;
 }
 
 const triggerCategories: TriggerCategory[] = [
@@ -55,7 +57,7 @@ const triggerCategories: TriggerCategory[] = [
       { id: 'page_visit', name: 'Contact Visits Page', description: 'Triggered when a contact visits a page.' },
       { id: 'new_convo', name: 'New Conversation Started', description: 'When a contact opens a new conversation.' },
       { id: 'customer_message', name: 'Customer Sends Message', description: 'Triggered when the contact sends any message.' },
-      { id: 'customer_unresponsive', name: 'Contact Becomes Unresponsive', description: 'When a contact hasn't replied in a while.' }
+      { id: 'customer_unresponsive', name: 'Contact Becomes Unresponsive', description: 'When a contact hasn\'t replied in a while.' }
     ]
   },
   {
@@ -64,7 +66,7 @@ const triggerCategories: TriggerCategory[] = [
       { id: 'teammate_message', name: 'Teammate Sends Message', description: 'When a teammate sends any message.' },
       { id: 'note_added', name: 'Note Added to Conversation', description: 'When a teammate adds a note.' },
       { id: 'assignment_change', name: 'Conversation Reassigned', description: 'When a teammate changes assignment.' },
-      { id: 'agent_unresponsive', name: 'Teammate Becomes Unresponsive', description: 'When a teammate hasn't replied in a while.' },
+      { id: 'agent_unresponsive', name: 'Teammate Becomes Unresponsive', description: 'When a teammate hasn\'t replied in a while.' },
       { id: 'data_change', name: 'Contact or Ticket Data Changed', description: 'When any field is updated.' }
     ]
   },
@@ -94,12 +96,13 @@ const getTriggerIcon = (triggerId: string) => {
   }
 };
 
-const CreateWorkflowModal: React.FC<CreateWorkflowModalProps> = ({ open, onOpenChange }) => {
+const CreateWorkflowModal: React.FC<CreateWorkflowModalProps> = ({ open, onOpenChange, onClose, onWorkflowCreated }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
 
   const handleTriggerSelect = (triggerId: string) => {
     navigate(`/workflows/new?trigger=${triggerId}`);
+    if (onClose) onClose();
   };
 
   const filteredCategories = useMemo(() => {
