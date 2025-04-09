@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { 
@@ -864,4 +865,92 @@ const WorkflowsPage: React.FC = () => {
                     <DateRangePicker 
                       date={state.dateRange}
                       onDateChange={(dateRange) => setState(prev => ({ ...prev, dateRange }))}
-                      align
+                      align="end"
+                    />
+
+                    {hasActiveFilters && (
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={clearFilters}
+                        className="h-9"
+                      >
+                        <X className="h-4 w-4 mr-1" />
+                        Clear Filters
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                {filteredWorkflows.length === 0 ? (
+                  <div className="text-center py-12 border border-dashed rounded-lg">
+                    <p className="text-muted-foreground">No workflows match the current filters.</p>
+                    <Button 
+                      variant="link" 
+                      onClick={clearFilters}
+                      className="mt-2"
+                    >
+                      Clear all filters
+                    </Button>
+                  </div>
+                ) : (
+                  <div>
+                    <div className="grid grid-cols-12 py-3 px-4 font-medium text-sm text-muted-foreground border-b mb-1">
+                      <div className="col-span-5 md:col-span-5">Name</div>
+                      <div className="col-span-3 md:col-span-3">Status</div>
+                      <div className="col-span-3 md:col-span-3">Last Updated</div>
+                      <div className="col-span-1 md:col-span-1 text-right">Actions</div>
+                    </div>
+                                        
+                    {filteredWorkflows.map((workflow, index) => (
+                      <WorkflowTableCard
+                        key={workflow.id}
+                        workflow={workflow}
+                        isEven={index % 2 === 0}
+                        onDelete={handleDeleteWorkflow}
+                        onDuplicate={handleDuplicateWorkflow}
+                        onTagsChange={handleTagsChange}
+                        onMoveToFolder={handleMoveToFolder}
+                        allTags={state.tags}
+                        isSelected={state.selectedWorkflows.includes(workflow.id)}
+                        selectMode={state.selectMode}
+                        onSelect={toggleWorkflowSelection}
+                        onStatusToggle={handleWorkflowStatusToggle}
+                        onViewDetails={() => handleOpenDetailModal(workflow)}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </main>
+        </div>
+      </ResizablePanel>
+      
+      {isCreateModalOpen && (
+        <CreateWorkflowModal 
+          isOpen={isCreateModalOpen}
+          onClose={handleCloseCreateModal}
+          onWorkflowCreated={handleWorkflowCreated}
+        />
+      )}
+      
+      {isDetailModalOpen && selectedWorkflow && (
+        <WorkflowDetailModal
+          isOpen={isDetailModalOpen}
+          onClose={() => {
+            setIsDetailModalOpen(false);
+            setSelectedWorkflow(null);
+          }}
+          workflow={selectedWorkflow}
+          onDependenciesUpdate={handleUpdateDependencies}
+          onRestoreVersion={handleRestoreVersion}
+          allWorkflows={state.workflows}
+        />
+      )}
+    </ResizablePanelGroup>
+  );
+};
+
+export default WorkflowsPage;
+
