@@ -1,12 +1,13 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
   DropdownMenuItem, 
-  DropdownMenuTrigger 
+  DropdownMenuTrigger,
+  DropdownMenuSeparator
 } from '@/components/ui/dropdown-menu';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
@@ -22,31 +23,38 @@ import {
   File,
   Bot,
   MessageCircle,
-  Calendar
+  Calendar,
+  BarChart3,
+  Folders,
+  Tag
 } from 'lucide-react';
+import type { Workflow, WorkflowTag } from '@/types/workflow';
+import { WorkflowTagPicker } from './WorkflowTagPicker';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 interface WorkflowTableCardProps {
-  workflow: {
-    id: string;
-    name: string;
-    description?: string;
-    status: string;
-    updatedAt: Date;
-    type?: 'message' | 'automation' | 'schedule' | 'bot';
-  };
+  workflow: Workflow;
   onDelete: (id: string, name: string) => void;
   onDuplicate: (id: string, name: string) => void;
+  onTagsChange?: (id: string, tags: WorkflowTag[]) => void;
+  onMoveToFolder?: (id: string, folderId: string | null) => void;
+  allTags: WorkflowTag[];
   isEven?: boolean;
   selectMode?: boolean;
   isSelected?: boolean;
   onSelect?: (id: string) => void;
-  onStatusToggle?: (status: 'Live' | 'Draft') => void;
+  onStatusToggle?: (id: string, status: 'Live' | 'Draft') => void;
 }
 
 export const WorkflowTableCard: React.FC<WorkflowTableCardProps> = ({ 
   workflow, 
   onDelete, 
   onDuplicate,
+  onTagsChange,
+  onMoveToFolder,
+  allTags,
   isEven = false,
   selectMode = false,
   isSelected = false,
@@ -54,6 +62,43 @@ export const WorkflowTableCard: React.FC<WorkflowTableCardProps> = ({
   onStatusToggle
 }) => {
   const [expanded, setExpanded] = useState(false);
+  const [showAnalytics, setShowAnalytics] = useState(false);
+  const [isDuplicating, setIsDuplicating] = useState(false);
+  const [duplicateName, setDuplicateName] = useState(`${workflow.name} (Copy)`);
+
+  // Set up keyboard shortcut for toggle expanded
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Only apply shortcuts when this card is focused or expanded
+      if (!expanded) return;
+      
+      // Shift+E to expand/collapse
+      if (event.shiftKey && event.key === 'E') {
+        setExpanded(!expanded);
+        event.preventDefault();
+      }
+      
+      // Shift+T to toggle status
+      if (event.shiftKey && event.key === 'T' && onStatusToggle) {
+        onStatusToggle(workflow.id, workflow.status === 'Live' ? 'Draft' : 'Live');
+        event.preventDefault();
+      }
+      
+      // Shift+D to duplicate
+      if (event.shiftKey && event.key === 'D') {
+        setIsDuplicating(true);
+        event.preventDefault();
+      }
+    };
+
+    if (expanded) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [expanded, workflow.id, workflow.status, onStatusToggle]);
 
   const renderStatusBadge = (status: string) => {
     switch (status) {
@@ -100,12 +145,27 @@ export const WorkflowTableCard: React.FC<WorkflowTableCardProps> = ({
 
   const handleStatusToggle = () => {
     if (onStatusToggle) {
-      onStatusToggle(workflow.status === 'Live' ? 'Draft' : 'Live');
+      onStatusToggle(workflow.id, workflow.status === 'Live' ? 'Draft' : 'Live');
     }
   };
 
+  const handleDuplicate = () => {
+    if (duplicateName.trim()) {
+      onDuplicate(workflow.id, duplicateName.trim());
+      setIsDuplicating(false);
+      setDuplicateName('');
+      toast.success(`Workflow duplicated as "${duplicateName}"`);
+    }
+  };
+
+  const hasMetrics = workflow.metrics?.totalRuns && workflow.metrics?.totalRuns > 0;
+
   return (
-    <div className={`border-b border-border/40 group transition-all duration-300 ${isEven ? 'bg-muted/10' : 'bg-white'} ${expanded ? 'bg-muted/30' : ''}`}>
+    <div className={cn(
+      "border-b border-border/40 group transition-all duration-300", 
+      isEven ? 'bg-muted/10' : 'bg-white',
+      expanded ? 'bg-muted/30' : ''
+    )}>
       {/* Card Main Row */}
       <div className="grid grid-cols-12 items-center p-4 relative">
         <div className="col-span-5 md:col-span-5 flex items-center gap-2.5">
@@ -131,6 +191,29 @@ export const WorkflowTableCard: React.FC<WorkflowTableCardProps> = ({
               {getWorkflowIcon()}
             </div>
             <span className="font-semibold text-base tracking-tight text-gray-800 group-hover:text-primary/90 transition-colors duration-300 line-clamp-1">{workflow.name}</span>
+            
+            {/* Tags */}
+            {workflow.tags && workflow.tags.length > 0 && (
+              <div className="hidden sm:flex gap-1.5 ml-1">
+                {workflow.tags.slice(0, 2).map(tag => (
+                  <div 
+                    key={tag.id}
+                    className="px-1.5 py-0.5 rounded-full text-xs font-medium"
+                    style={{ 
+                      backgroundColor: `${tag.color}20`,
+                      color: tag.color
+                    }}
+                  >
+                    {tag.name}
+                  </div>
+                ))}
+                {workflow.tags.length > 2 && (
+                  <div className="px-1.5 py-0.5 rounded-full text-xs bg-muted/70 font-medium">
+                    +{workflow.tags.length - 2}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
         
@@ -168,18 +251,55 @@ export const WorkflowTableCard: React.FC<WorkflowTableCardProps> = ({
                 <span className="sr-only">Open menu</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48 shadow-md">
+            <DropdownMenuContent align="end" className="w-52 shadow-md">
               <DropdownMenuItem className="cursor-pointer flex items-center hover:text-primary focus:text-primary transition-colors duration-200">
                 <Pencil className="mr-2 h-4 w-4" />
                 Edit
+                <kbd className="ml-auto text-xs bg-muted px-1.5 py-0.5 rounded">Shift+E</kbd>
               </DropdownMenuItem>
               <DropdownMenuItem 
                 className="cursor-pointer flex items-center hover:text-primary focus:text-primary transition-colors duration-200"
-                onClick={() => onDuplicate(workflow.id, workflow.name)}
+                onClick={() => setIsDuplicating(true)}
               >
                 <Copy className="mr-2 h-4 w-4" />
                 Duplicate
+                <kbd className="ml-auto text-xs bg-muted px-1.5 py-0.5 rounded">Shift+D</kbd>
               </DropdownMenuItem>
+              
+              {hasMetrics && (
+                <DropdownMenuItem 
+                  className="cursor-pointer flex items-center hover:text-primary focus:text-primary transition-colors duration-200"
+                  onClick={() => setShowAnalytics(true)}
+                >
+                  <BarChart3 className="mr-2 h-4 w-4" />
+                  View Analytics
+                </DropdownMenuItem>
+              )}
+              
+              {onStatusToggle && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem 
+                    className="cursor-pointer flex items-center hover:text-primary focus:text-primary transition-colors duration-200"
+                    onClick={handleStatusToggle}
+                  >
+                    {workflow.status === 'Draft' ? (
+                      <>
+                        <Play className="mr-2 h-4 w-4 text-green-600" />
+                        Set as Live
+                      </>
+                    ) : (
+                      <>
+                        <PauseCircle className="mr-2 h-4 w-4 text-amber-600" />
+                        Set as Draft
+                      </>
+                    )}
+                    <kbd className="ml-auto text-xs bg-muted px-1.5 py-0.5 rounded">Shift+T</kbd>
+                  </DropdownMenuItem>
+                </>
+              )}
+              
+              <DropdownMenuSeparator />
               <DropdownMenuItem 
                 className="text-destructive cursor-pointer flex items-center focus:text-destructive transition-colors duration-200"
                 onClick={() => onDelete(workflow.id, workflow.name)}
@@ -201,6 +321,32 @@ export const WorkflowTableCard: React.FC<WorkflowTableCardProps> = ({
           {workflow.description && (
             <p className="text-muted-foreground mb-5 max-w-3xl leading-relaxed">{workflow.description}</p>
           )}
+          
+          <div className="flex flex-wrap gap-3 mb-5">
+            {/* Tags */}
+            {onTagsChange && (
+              <WorkflowTagPicker 
+                tags={allTags}
+                selectedTags={workflow.tags || []}
+                onTagsChange={(tags) => onTagsChange(workflow.id, tags)}
+                variant="compact"
+              />
+            )}
+            
+            {/* Run stats */}
+            {hasMetrics && (
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className="shadow-sm hover:shadow hover:bg-primary/5 transition-all duration-300"
+                onClick={() => setShowAnalytics(true)}
+              >
+                <BarChart3 className="mr-2 h-3.5 w-3.5" />
+                Analytics
+              </Button>
+            )}
+          </div>
+          
           <div className="flex gap-3 mt-3">
             <Button size="sm" variant="outline" className="shadow-sm hover:shadow hover:bg-primary/5 transition-all duration-300">
               <Pencil className="mr-2 h-3.5 w-3.5" />
@@ -211,8 +357,49 @@ export const WorkflowTableCard: React.FC<WorkflowTableCardProps> = ({
               Run Now
             </Button>
           </div>
+          
+          <div className="mt-3 text-xs text-muted-foreground">
+            <p>
+              <kbd className="bg-muted px-1.5 py-0.5 rounded mr-1">Shift+E</kbd> to expand/collapse
+              <kbd className="bg-muted px-1.5 py-0.5 rounded mx-1">Shift+T</kbd> to toggle status
+              <kbd className="bg-muted px-1.5 py-0.5 rounded mx-1">Shift+D</kbd> to duplicate
+            </p>
+          </div>
         </div>
       )}
+      
+      {/* Duplicate Dialog */}
+      <Dialog open={isDuplicating} onOpenChange={setIsDuplicating}>
+        <DialogContent className="sm:max-w-md">
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold">Duplicate Workflow</h2>
+            <p className="text-sm text-muted-foreground">
+              Create a copy of this workflow with a new name.
+            </p>
+            <div className="space-y-2">
+              <label htmlFor="duplicate-name" className="text-sm font-medium">
+                Name for the duplicate
+              </label>
+              <input
+                id="duplicate-name"
+                type="text"
+                value={duplicateName}
+                onChange={(e) => setDuplicateName(e.target.value)}
+                className="w-full px-3 py-2 border rounded-md"
+                autoFocus
+              />
+            </div>
+            <div className="flex justify-end gap-3 pt-3">
+              <Button variant="outline" onClick={() => setIsDuplicating(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleDuplicate} disabled={!duplicateName.trim()}>
+                Duplicate
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
-};
+}
