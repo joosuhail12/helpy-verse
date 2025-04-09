@@ -20,29 +20,24 @@ interface AppProvidersProps {
 const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
   // Initialize app only once on component mount
   React.useEffect(() => {
-    try {
-      console.log("Initializing app from AppProviders component");
-      
-      // Only check API connection once at app start if authenticated
-      if (isAuthenticated()) {
-        HttpClient.checkApiConnection()
-          .then(isConnected => {
-            console.log('Initial API connection test result:', isConnected ? 'Connected' : 'Failed');
-            
-            if (!isConnected) {
-              toast({
-                title: "Connection Issue",
-                description: "Could not connect to the API server. Some features may be unavailable.",
-                variant: "destructive",
-              });
-            }
-          })
-          .catch(error => {
-            console.error('Error checking API connection:', error);
-          });
-      }
-    } catch (error) {
-      console.error("App initialization error:", error);
+    // Check API connection once at app start if authenticated
+    if (isAuthenticated()) {
+      console.log('Checking API connection on app initialization');
+      HttpClient.checkApiConnection()
+        .then(isConnected => {
+          console.log('Initial API connection test result:', isConnected ? 'Connected' : 'Failed');
+          
+          if (!isConnected) {
+            toast({
+              title: "Connection Issue",
+              description: "Could not connect to the API server. Some features may be unavailable.",
+              variant: "destructive",
+            });
+          }
+        })
+        .catch(error => {
+          console.error('Error checking API connection:', error);
+        });
     }
   }, []);
 
