@@ -6,15 +6,9 @@ import { PlusCircle, ClipboardList, ArrowRight, Lightbulb } from 'lucide-react';
 
 interface EmptyWorkflowStateProps {
   onCreateClick: () => void;
-  title?: string;
-  description?: string;
 }
 
-export const EmptyWorkflowState: React.FC<EmptyWorkflowStateProps> = ({ 
-  onCreateClick,
-  title = "No workflows yet",
-  description = "Create your first workflow to automate support processes and save time."
-}) => {
+export const EmptyWorkflowState: React.FC<EmptyWorkflowStateProps> = ({ onCreateClick }) => {
   return (
     <div className="flex items-center justify-center min-h-[500px]">
       <Card className="w-full max-w-md text-center p-8 bg-white shadow-lg border-none transition-all duration-300 hover:shadow-xl rounded-xl overflow-hidden">
@@ -27,9 +21,9 @@ export const EmptyWorkflowState: React.FC<EmptyWorkflowStateProps> = ({
           </div>
           
           <div>
-            <CardTitle className="text-2xl mb-3 bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">{title}</CardTitle>
+            <CardTitle className="text-2xl mb-3 bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">No workflows yet</CardTitle>
             <CardDescription className="mb-6 text-base text-gray-500">
-              {description}
+              Create your first workflow to automate support processes and save time.
             </CardDescription>
           </div>
           

@@ -17,9 +17,6 @@ import SignIn from '@/pages/SignIn';
 import Contacts from '@/pages/Contacts';
 import AllContacts from '@/pages/contacts/All';
 
-// Import routing for automation
-import { automationRoutes } from '@/routes/automationRoutes';
-
 // Lazy load non-critical pages
 const ForgotPassword = React.lazy(() => import('@/pages/ForgotPassword'));
 const ResetPassword = React.lazy(() => import('@/pages/ResetPassword'));
@@ -29,6 +26,7 @@ const LandingPage = React.lazy(() => import('@/pages/LandingPage'));
 const Companies = React.lazy(() => import('@/pages/contacts/Companies'));
 const CompanyDetail = React.lazy(() => import('@/pages/contacts/CompanyDetail'));
 const ContactDetail = React.lazy(() => import('@/pages/contacts/Detail'));
+const Workflows = React.lazy(() => import('@/pages/automation/Workflows'));
 
 /**
  * Main routing component for the application
@@ -131,29 +129,14 @@ const AppRoutes: React.FC = () => {
             } />
           </Route>
           
-          {/* Automation routes - map them properly as Route components */}
-          {automationRoutes.map((route) => {
-            if (route.children) {
-              return (
-                <Route key={route.path} path={route.path} element={route.element}>
-                  {route.children.map((childRoute) => (
-                    <Route 
-                      key={`${route.path}/${childRoute.path}`}
-                      path={childRoute.path}
-                      element={childRoute.element}
-                    />
-                  ))}
-                </Route>
-              );
-            }
-            return (
-              <Route 
-                key={route.path} 
-                path={route.path} 
-                element={route.element} 
-              />
-            );
-          })}
+          {/* Automation routes */}
+          <Route path="automation/workflows" element={
+            <RouteErrorBoundary>
+              <React.Suspense fallback={<LoadingFallback />}>
+                <Workflows />
+              </React.Suspense>
+            </RouteErrorBoundary>
+          } />
         </Route>
         
         {/* Not found route */}

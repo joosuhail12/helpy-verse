@@ -6,6 +6,9 @@ import App from './App';
 import './index.css';
 import { store } from './store/store';
 
+// Ensure React is properly included
+console.log('React version:', React.version);
+
 // Create root and render app
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

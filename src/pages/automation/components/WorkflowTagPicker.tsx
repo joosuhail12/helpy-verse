@@ -19,28 +19,28 @@ import {
 import { WorkflowTag } from '@/types/workflow';
 
 export interface WorkflowTagPickerProps {
-  tags: WorkflowTag[]; // Changed from selectedTags to tags to match usage
+  selectedTags: WorkflowTag[];
   allTags: WorkflowTag[];
   onChange: (tags: WorkflowTag[]) => void;
 }
 
 export const WorkflowTagPicker: React.FC<WorkflowTagPickerProps> = ({
-  tags, // Changed from selectedTags to tags
+  selectedTags,
   allTags,
   onChange
 }) => {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState<string>("");
 
-  const selectedTagIds = tags.map((tag) => tag.id); // Changed from selectedTags to tags
+  const selectedTagIds = selectedTags.map((tag) => tag.id);
 
   const handleSelect = (tag: WorkflowTag) => {
     const isSelected = selectedTagIds.includes(tag.id);
     
     if (isSelected) {
-      onChange(tags.filter((t) => t.id !== tag.id)); // Changed from selectedTags to tags
+      onChange(selectedTags.filter((t) => t.id !== tag.id));
     } else {
-      onChange([...tags, tag]); // Changed from selectedTags to tags
+      onChange([...selectedTags, tag]);
     }
   };
 
@@ -52,7 +52,7 @@ export const WorkflowTagPicker: React.FC<WorkflowTagPickerProps> = ({
           size="sm"
           className="justify-start border-dashed h-8"
         >
-          {tags.length === 0 ? ( // Changed from selectedTags to tags
+          {selectedTags.length === 0 ? (
             <>
               <PlusCircleIcon className="h-3.5 w-3.5 mr-2" />
               <span>Add tags</span>
@@ -60,7 +60,7 @@ export const WorkflowTagPicker: React.FC<WorkflowTagPickerProps> = ({
           ) : (
             <>
               <span>
-                {tags.length} tag{tags.length > 1 ? 's' : ''} // Changed from selectedTags to tags
+                {selectedTags.length} tag{selectedTags.length > 1 ? 's' : ''}
               </span>
             </>
           )}

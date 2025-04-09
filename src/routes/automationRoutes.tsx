@@ -41,7 +41,6 @@ const ContentCenter = lazy(() => import('../pages/automation/ContentCenter').cat
   console.error('Failed to load ContentCenter:', err);
   throw new Error('Failed to load ContentCenter');
 }));
-// Import Workflows directly with better error handling
 const Workflows = lazy(() => import('../pages/automation/Workflows').catch((err) => {
   console.error('Failed to load Workflows:', err);
   throw new Error('Failed to load Workflows');
@@ -65,31 +64,31 @@ export const automationRoutes = [
     children: [
       {
         path: 'ai/action-center',
-        element: withSuspenseAndProtection(<ActionCenter />),
+        element: <RouteErrorBoundary><Suspense fallback={<LoadingSpinner />}><ActionCenter /></Suspense></RouteErrorBoundary>,
       },
       {
         path: 'ai/action-center/create',
-        element: withSuspenseAndProtection(<CreateAction />),
+        element: <RouteErrorBoundary><Suspense fallback={<LoadingSpinner />}><CreateAction /></Suspense></RouteErrorBoundary>,
       },
       {
         path: 'ai/chatbot-profiles',
-        element: withSuspenseAndProtection(<ChatbotProfiles />),
+        element: <RouteErrorBoundary><Suspense fallback={<LoadingSpinner />}><ChatbotProfiles /></Suspense></RouteErrorBoundary>,
       },
       {
         path: 'ai/chatbot-profiles/create',
-        element: withSuspenseAndProtection(<CreateChatbot />),
+        element: <RouteErrorBoundary><Suspense fallback={<LoadingSpinner />}><CreateChatbot /></Suspense></RouteErrorBoundary>,
       },
       {
         path: 'ai/chatbot-profiles/:id',
-        element: withSuspenseAndProtection(<ChatbotDetail />),
+        element: <RouteErrorBoundary><Suspense fallback={<LoadingSpinner />}><ChatbotDetail /></Suspense></RouteErrorBoundary>,
       },
       {
         path: 'ai/content-center',
-        element: withSuspenseAndProtection(<ContentCenter />),
+        element: <RouteErrorBoundary><Suspense fallback={<LoadingSpinner />}><ContentCenter /></Suspense></RouteErrorBoundary>,
       },
       {
         path: 'workflows',
-        element: withSuspenseAndProtection(<Workflows />),
+        element: <RouteErrorBoundary><Suspense fallback={<LoadingSpinner />}><Workflows /></Suspense></RouteErrorBoundary>,
       },
     ],
   },
