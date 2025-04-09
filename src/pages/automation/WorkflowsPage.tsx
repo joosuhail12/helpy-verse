@@ -57,6 +57,7 @@ import {
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { WorkflowTagPicker } from './components/WorkflowTagPicker';
 import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
 
 const workflows: Workflow[] = [
   {
