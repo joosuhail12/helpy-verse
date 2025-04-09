@@ -109,14 +109,21 @@ const WorkflowsPage: React.FC = () => {
                     />
                   ))
                 ) : (
-                  <WorkflowTableCard 
-                    workflows={workflows}
-                    onDelete={handleDeleteWorkflow}
-                    onDuplicate={handleDuplicateWorkflow}
-                    onTagsChange={() => {}}
-                    onMoveToFolder={() => {}}
-                    allTags={[]}
-                  />
+                  // Fix: The WorkflowTableCard expects a single workflow, not an array of workflows
+                  // We need to render this component for each workflow, not just once
+                  <div className="col-span-3">
+                    {workflows.map((workflow) => (
+                      <WorkflowTableCard 
+                        key={workflow.id}
+                        workflow={workflow} 
+                        onDelete={handleDeleteWorkflow}
+                        onDuplicate={handleDuplicateWorkflow}
+                        onTagsChange={() => {}}
+                        onMoveToFolder={() => {}}
+                        allTags={[]}
+                      />
+                    ))}
+                  </div>
                 )}
               </div>
             </div>
@@ -127,24 +134,18 @@ const WorkflowsPage: React.FC = () => {
         
         <TabsContent value="active">
           <EmptyWorkflowState
-            title="No active workflows"
-            description="You don't have any active workflows yet."
-            onCreateClick={() => setIsCreateModalOpen(true)}
+            onCreateClick={() => setIsCreateModalOpen(true)} 
           />
         </TabsContent>
         
         <TabsContent value="draft">
           <EmptyWorkflowState
-            title="No draft workflows"
-            description="You don't have any draft workflows yet."
             onCreateClick={() => setIsCreateModalOpen(true)}
           />
         </TabsContent>
         
         <TabsContent value="archived">
           <EmptyWorkflowState
-            title="No archived workflows"
-            description="You don't have any archived workflows yet."
             onCreateClick={() => setIsCreateModalOpen(true)}
           />
         </TabsContent>
