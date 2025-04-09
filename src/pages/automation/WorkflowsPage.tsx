@@ -58,6 +58,13 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { WorkflowTagPicker } from './components/WorkflowTagPicker';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import WorkflowDetailModal from './components/WorkflowDetailModal';
+
+const currentUser = {
+  id: 'user1',
+  name: 'John Doe',
+  avatar: 'https://api.dicebear.com/7.x/avatars/svg?seed=John'
+};
 
 const workflows: Workflow[] = [
   {
@@ -217,6 +224,7 @@ const WorkflowsPage: React.FC = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isAnalyticsModalOpen, setIsAnalyticsModalOpen] = useState(false);
   const [selectedWorkflow, setSelectedWorkflow] = useState<Workflow | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -470,6 +478,117 @@ const WorkflowsPage: React.FC = () => {
   const openAnalyticsModal = (workflow: Workflow) => {
     setSelectedWorkflow(workflow);
     setIsAnalyticsModalOpen(true);
+  };
+
+  const handleOpenDetailModal = (workflow: Workflow) => {
+    setSelectedWorkflow(workflow);
+    setIsDetailModalOpen(true);
+  };
+
+  const handleUpdateDependencies = (updatedWorkflow: Workflow) => {
+    setState(prev => ({
+      ...prev,
+      workflows: prev.workflows.map(w => 
+        w.id === updatedWorkflow.id ? updatedWorkflow : w
+      )
+    }));
+    
+    if (updatedWorkflow.dependencies) {
+      const targetWorkflowIds = new Set(updatedWorkflow.dependencies.map(d => d.targetWorkflowId));
+      
+      setState(prev => ({
+        ...prev,
+        workflows: prev.workflows.map(w => {
+          if (targetWorkflowIds.has(w.id)) {
+            return {
+              ...w,
+              dependents: [
+                ...(w.dependents || []).filter(d => d.sourceWorkflowId !== updatedWorkflow.id),
+                ...updatedWorkflow.dependencies!
+                  .filter(d => d.targetWorkflowId === w.id)
+                  .map(d => ({
+                    ...d,
+                    sourceWorkflowId: updatedWorkflow.id,
+                    targetWorkflowId: w.id
+                  }))
+              ]
+            };
+          }
+          return w;
+        })
+      }));
+    }
+  };
+
+  const handleRestoreVersion = (workflow: Workflow, versionId: string) => {
+    const version = workflow.versions?.find(v => v.id === versionId);
+    if (!version) return;
+    
+    const restorationChange: WorkflowChange = {
+      field: 'version',
+      oldValue: `${workflow.version || 1}`,
+      newValue: `${version.version} (restored)`,
+      type: 'update'
+    };
+    
+    const newVersion: WorkflowVersion = {
+      id: `v${Date.now()}`,
+      workflowId: workflow.id,
+      version: (workflow.version || 1) + 1,
+      createdAt: new Date(),
+      createdBy: currentUser,
+      changes: [restorationChange]
+    };
+    
+    setState(prev => ({
+      ...prev,
+      workflows: prev.workflows.map(w => 
+        w.id === workflow.id 
+          ? { 
+              ...w, 
+              version: (w.version || 1) + 1,
+              lastEditedBy: currentUser,
+              updatedAt: new Date(),
+              versions: [...(w.versions || []), newVersion]
+            } 
+          : w
+      )
+    }));
+    
+    setIsDetailModalOpen(false);
+    setSelectedWorkflow(null);
+    
+    toast.success(`Workflow restored to version ${version.version}`);
+  };
+
+  const handleWorkflowCreated = (workflow: Workflow) => {
+    const initialVersion: WorkflowVersion = {
+      id: `v${Date.now()}`,
+      workflowId: workflow.id,
+      version: 1,
+      createdAt: workflow.createdAt,
+      createdBy: currentUser,
+      changes: [
+        { field: 'name', newValue: workflow.name, type: 'add' },
+        { field: 'status', newValue: workflow.status, type: 'add' },
+        { field: 'type', newValue: workflow.type, type: 'add' },
+        ...(workflow.description ? [{ field: 'description', newValue: workflow.description, type: 'add' }] : [])
+      ]
+    };
+    
+    const workflowWithVersion = {
+      ...workflow,
+      version: 1,
+      lastEditedBy: currentUser,
+      versions: [initialVersion]
+    };
+    
+    setState(prev => ({
+      ...prev,
+      workflows: [...prev.workflows, workflowWithVersion]
+    }));
+    
+    toast.success(`Workflow "${workflow.name}" created successfully`);
   };
 
   const filteredWorkflows = state.workflows
@@ -880,6 +999,7 @@ const WorkflowsPage: React.FC = () => {
                         onSelect={toggleWorkflowSelection}
                         selectMode={state.selectMode}
                         onStatusToggle={handleWorkflowStatusToggle}
+                        onViewDetails={() => handleOpenDetailModal(workflow)}
                       />
                     ))}
                   </div>
@@ -904,22 +1024,18 @@ const WorkflowsPage: React.FC = () => {
           <CreateWorkflowModal 
             open={isCreateModalOpen} 
             onOpenChange={setIsCreateModalOpen} 
-            onClose={handleCloseCreateModal} 
+            onClose={handleCloseCreateModal}
+            onWorkflowCreated={handleWorkflowCreated}
           />
           
-          <Dialog open={isAnalyticsModalOpen} onOpenChange={setIsAnalyticsModalOpen}>
-            <DialogContent className="sm:max-w-2xl">
-              {selectedWorkflow && (
-                <div className="space-y-4">
-                  <h2 className="text-2xl font-semibold">{selectedWorkflow.name} Analytics</h2>
-                  <WorkflowMetricsCard 
-                    metrics={selectedWorkflow.metrics}
-                    runs={selectedWorkflow.runs}
-                  />
-                </div>
-              )}
-            </DialogContent>
-          </Dialog>
+          <WorkflowDetailModal
+            open={isDetailModalOpen}
+            onOpenChange={setIsDetailModalOpen}
+            workflow={selectedWorkflow}
+            allWorkflows={state.workflows}
+            onUpdateDependencies={handleUpdateDependencies}
+            onRestoreVersion={handleRestoreVersion}
+          />
         </div>
       </ResizablePanel>
     </ResizablePanelGroup>

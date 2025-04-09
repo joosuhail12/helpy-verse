@@ -37,6 +37,30 @@ export interface WorkflowRun {
   error?: string;
 }
 
+export interface WorkflowDependency {
+  id: string;
+  sourceWorkflowId: string;
+  targetWorkflowId: string;
+  type: 'trigger' | 'data' | 'sequence';
+  description?: string;
+}
+
+export interface WorkflowVersion {
+  id: string;
+  workflowId: string;
+  version: number;
+  createdAt: Date;
+  createdBy: User;
+  changes: WorkflowChange[];
+}
+
+export interface WorkflowChange {
+  field: string;
+  oldValue?: string | number | boolean;
+  newValue?: string | number | boolean;
+  type: 'update' | 'add' | 'remove';
+}
+
 export interface Workflow {
   id: string;
   name: string;
@@ -49,4 +73,9 @@ export interface Workflow {
   folderId?: string;
   metrics?: WorkflowMetrics;
   runs?: WorkflowRun[];
+  dependencies?: WorkflowDependency[];
+  dependents?: WorkflowDependency[];
+  versions?: WorkflowVersion[];
+  version?: number;
+  lastEditedBy?: User;
 }
