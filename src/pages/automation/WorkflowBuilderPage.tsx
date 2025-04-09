@@ -110,7 +110,7 @@ const WorkflowBuilderPage: React.FC = () => {
   
   // Drawers and configuration states
   const [triggerDrawerOpen, setTriggerDrawerOpen] = useState<boolean>(false);
-  const [selectedNode, setSelectedNode] = useState<WorkflowNode | null>(null);
+  const [selectedNode, setSelectedNode] = useState<Node<WorkflowNodeData> | null>(null);
   
   // Add connection handler for ReactFlow
   const onConnect = useCallback(
@@ -127,7 +127,7 @@ const WorkflowBuilderPage: React.FC = () => {
   
   // Handle node click to open configuration drawer
   const onNodeClick = useCallback((event: React.MouseEvent, node: Node<WorkflowNodeData>) => {
-    setSelectedNode(node as WorkflowNode);
+    setSelectedNode(node);
     if (node.type === 'trigger') {
       setTriggerDrawerOpen(true);
     }
@@ -136,7 +136,7 @@ const WorkflowBuilderPage: React.FC = () => {
   // Add new node to the flow
   const addNode = useCallback((type: NodeType, sourceNodeId: string, position?: XYPosition) => {
     const id = uuidv4();
-    const newNode: WorkflowNode = {
+    const newNode: Node<WorkflowNodeData> = {
       id,
       type: type as string,
       position: position || {
@@ -175,12 +175,12 @@ const WorkflowBuilderPage: React.FC = () => {
     
     // Add trigger node to the flow
     const triggerNodeId = uuidv4();
-    const triggerNode: WorkflowNode = {
+    const triggerNode: Node<WorkflowNodeData> = {
       id: triggerNodeId,
       type: 'trigger',
       position: getNodePosition(),
       data: {
-        label: `Trigger: ${triggerId.replace(/_/g, ' ')}`,
+        label: `Trigger: ${triggerId ? triggerId.replace(/_/g, ' ') : 'Unknown'}`,
         triggerId,
         configured: false
       }

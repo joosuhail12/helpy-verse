@@ -29,7 +29,7 @@ const ActionNode: React.FC<NodeProps<WorkflowNodeData>> = ({ data, isConnectable
   
   // Get the appropriate icon for this action type
   const IconComponent = actionType && actionType in actionIcons 
-    ? actionIcons[actionType]
+    ? actionIcons[actionType as keyof typeof actionIcons]
     : actionIcons.default;
   
   // Determine background color based on action type
