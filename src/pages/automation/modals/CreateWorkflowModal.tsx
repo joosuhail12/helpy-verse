@@ -373,13 +373,8 @@ const CreateWorkflowModal: React.FC<CreateWorkflowModalProps> = ({
   }, [navigate, onClose, recentTriggers, setRecentTriggers]);
 
   useEffect(() => {
-    if (!open) {
-      setSearchTerm('');
-      setSelectedTrigger(null);
-      setFocusedTriggerIndex(-1);
-      setNavigationError(null);
-      setCurrentPage(1);
-      setIsNavigating(false);
+    if (open) {
+      console.log('CreateWorkflowModal rendered with open:', open);
     }
   }, [open]);
 
