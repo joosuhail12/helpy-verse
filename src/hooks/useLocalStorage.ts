@@ -1,9 +1,9 @@
 
-import { useState, useEffect } from 'react';
+import * as React from 'react';
 
 export function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T | ((val: T) => T)) => void] {
   // State to store our value
-  const [storedValue, setStoredValue] = useState<T>(() => {
+  const [storedValue, setStoredValue] = React.useState<T>(() => {
     try {
       // Get from local storage by key
       const item = window.localStorage.getItem(key);
@@ -36,7 +36,7 @@ export function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T 
   };
 
   // Update local state if localStorage changes in another window
-  useEffect(() => {
+  React.useEffect(() => {
     function handleStorageChange(e: StorageEvent) {
       if (e.key === key && e.newValue) {
         try {
