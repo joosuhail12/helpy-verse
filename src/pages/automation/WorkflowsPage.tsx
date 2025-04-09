@@ -13,12 +13,15 @@ import {
   X,
   BarChart3,
   FolderClosed,
-  Tag
+  Tag,
+  LayoutGrid,
+  LayoutList
 } from 'lucide-react';
 import { format, subDays } from 'date-fns';
 import { CreateWorkflowModal } from './modals/CreateWorkflowModal';
 import { toast } from "sonner";
 import { WorkflowTableCard } from './components/WorkflowTableCard';
+import { WorkflowCard } from './components/WorkflowCard';
 import { EmptyWorkflowState } from './components/EmptyWorkflowState';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from "@/components/ui/checkbox";
@@ -199,6 +202,7 @@ interface WorkflowsPageState {
   selectedWorkflows: string[];
   selectMode: boolean;
   isRefreshing: boolean;
+  viewMode: 'table' | 'card';
 }
 
 const WorkflowsPage: React.FC = () => {
@@ -219,6 +223,7 @@ const WorkflowsPage: React.FC = () => {
     selectedWorkflows: [],
     selectMode: false,
     isRefreshing: false,
+    viewMode: 'card',
   });
   
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -591,6 +596,13 @@ const WorkflowsPage: React.FC = () => {
     toast.success(`Workflow "${workflow.name}" created successfully`);
   };
 
+  const toggleViewMode = () => {
+    setState(prev => ({
+      ...prev,
+      viewMode: prev.viewMode === 'card' ? 'table' : 'card'
+    }));
+  };
+
   const filteredWorkflows = state.workflows
     .filter(workflow => {
       const matchesSearch = 
@@ -802,6 +814,17 @@ const WorkflowsPage: React.FC = () => {
                   </div>
                   
                   <div className="flex gap-2 flex-wrap">
+                    <ToggleGroup type="single" value={state.viewMode} onValueChange={(value) => {
+                      if (value) setState(prev => ({ ...prev, viewMode: value as 'table' | 'card' }));
+                    }}>
+                      <ToggleGroupItem value="table" aria-label="Table view">
+                        <LayoutList className="h-4 w-4" />
+                      </ToggleGroupItem>
+                      <ToggleGroupItem value="card" aria-label="Card view">
+                        <LayoutGrid className="h-4 w-4" />
+                      </ToggleGroupItem>
+                    </ToggleGroup>
+
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button 
@@ -893,32 +916,47 @@ const WorkflowsPage: React.FC = () => {
                     </Button>
                   </div>
                 ) : (
-                  <div>
-                    <div className="grid grid-cols-12 py-3 px-4 font-medium text-sm text-muted-foreground border-b mb-1">
-                      <div className="col-span-5 md:col-span-5">Name</div>
-                      <div className="col-span-3 md:col-span-3">Status</div>
-                      <div className="col-span-3 md:col-span-3">Last Updated</div>
-                      <div className="col-span-1 md:col-span-1 text-right">Actions</div>
-                    </div>
+                  <>
+                    {state.viewMode === 'table' ? (
+                      <div>
+                        <div className="grid grid-cols-12 py-3 px-4 font-medium text-sm text-muted-foreground border-b mb-1">
+                          <div className="col-span-5 md:col-span-5">Name</div>
+                          <div className="col-span-3 md:col-span-3">Status</div>
+                          <div className="col-span-3 md:col-span-3">Last Updated</div>
+                          <div className="col-span-1 md:col-span-1 text-right">Actions</div>
+                        </div>
                                         
-                    {filteredWorkflows.map((workflow, index) => (
-                      <WorkflowTableCard
-                        key={workflow.id}
-                        workflow={workflow}
-                        isEven={index % 2 === 0}
-                        onDelete={handleDeleteWorkflow}
-                        onDuplicate={handleDuplicateWorkflow}
-                        onTagsChange={handleTagsChange}
-                        onMoveToFolder={handleMoveToFolder}
-                        allTags={state.tags}
-                        isSelected={state.selectedWorkflows.includes(workflow.id)}
-                        selectMode={state.selectMode}
-                        onSelect={toggleWorkflowSelection}
-                        onStatusToggle={handleWorkflowStatusToggle}
-                        onViewDetails={() => handleOpenDetailModal(workflow)}
-                      />
-                    ))}
-                  </div>
+                        {filteredWorkflows.map((workflow, index) => (
+                          <WorkflowTableCard
+                            key={workflow.id}
+                            workflow={workflow}
+                            isEven={index % 2 === 0}
+                            onDelete={handleDeleteWorkflow}
+                            onDuplicate={handleDuplicateWorkflow}
+                            onTagsChange={handleTagsChange}
+                            onMoveToFolder={handleMoveToFolder}
+                            allTags={state.tags}
+                            isSelected={state.selectedWorkflows.includes(workflow.id)}
+                            selectMode={state.selectMode}
+                            onSelect={toggleWorkflowSelection}
+                            onStatusToggle={handleWorkflowStatusToggle}
+                            onViewDetails={() => handleOpenDetailModal(workflow)}
+                          />
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {filteredWorkflows.map((workflow) => (
+                          <WorkflowCard
+                            key={workflow.id}
+                            workflow={workflow}
+                            onDelete={handleDeleteWorkflow}
+                            onDuplicate={handleDuplicateWorkflow}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             )}
