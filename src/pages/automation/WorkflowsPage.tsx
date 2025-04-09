@@ -119,7 +119,7 @@ const WorkflowsPage: React.FC = () => {
               <Button 
                 variant="outline" 
                 onClick={toggleSortOrder}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 shadow-sm hover:shadow transition-all duration-200"
                 size="sm"
               >
                 <span>Last Updated</span>
@@ -131,9 +131,9 @@ const WorkflowsPage: React.FC = () => {
               </Button>
             </div>
 
-            <div className="rounded-lg overflow-hidden border border-border shadow">
+            <div className="rounded-xl overflow-hidden border border-border shadow-sm hover:shadow-md transition-all duration-300">
               {/* Table Header */}
-              <div className="grid grid-cols-12 bg-muted/50 text-sm font-medium text-muted-foreground p-4">
+              <div className="grid grid-cols-12 bg-gradient-to-r from-muted/70 to-muted/50 text-sm font-medium text-muted-foreground p-4 border-b border-border/60">
                 <div className="col-span-5 md:col-span-5">Name</div>
                 <div className="col-span-3 md:col-span-3">Status</div>
                 <div className="col-span-3 md:col-span-3">Last Updated</div>
@@ -141,13 +141,14 @@ const WorkflowsPage: React.FC = () => {
               </div>
 
               {/* Table Body */}
-              <div className="divide-y divide-border/60">
-                {filteredWorkflows.map((workflow) => (
+              <div>
+                {filteredWorkflows.map((workflow, index) => (
                   <WorkflowTableCard 
                     key={workflow.id}
                     workflow={workflow}
                     onDelete={handleDeleteWorkflow}
                     onDuplicate={handleDuplicateWorkflow}
+                    isEven={index % 2 === 0}
                   />
                 ))}
               </div>
