@@ -3,9 +3,10 @@ import React from 'react';
 import { Handle, Position, NodeProps } from '@xyflow/react';
 import { GitBranch, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { WorkflowNodeData } from '@/types/workflow-builder';
 
-const ConditionNode: React.FC<NodeProps> = ({ data, isConnectable }) => {
-  const { label, configured, config } = data;
+const ConditionNode: React.FC<NodeProps<WorkflowNodeData>> = ({ data, isConnectable }) => {
+  const { label, configured } = data;
   
   return (
     <div className={cn(

@@ -9,14 +9,14 @@ import {
   useNodesState,
   useEdgesState,
   addEdge,
-  Node,
-  Edge,
   Connection,
+  Edge,
   XYPosition,
   useReactFlow,
   NodeTypes,
   ConnectionMode,
-  Panel
+  Panel,
+  Node
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
@@ -55,10 +55,11 @@ import { NodeConfigurator } from './components/workflow-builder/NodeConfigurator
 import { NodeSelector } from './components/workflow-builder/NodeSelector';
 
 import {
-  WorkflowNode,
-  WorkflowTriggerConfig,
+  WorkflowNodeData,
   NodeType,
-  NodeConfig
+  NodeConfig,
+  WorkflowTriggerConfig,
+  WorkflowNode
 } from '@/types/workflow-builder';
 
 // Node types mapping for ReactFlow
@@ -104,13 +105,12 @@ const WorkflowBuilderPage: React.FC = () => {
   const [isPublished, setIsPublished] = useState<boolean>(false);
   
   // Node and edge states for ReactFlow
-  const [nodes, setNodes, onNodesChange] = useNodesState<WorkflowNode>([]);
+  const [nodes, setNodes, onNodesChange] = useNodesState<WorkflowNodeData>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   
   // Drawers and configuration states
   const [triggerDrawerOpen, setTriggerDrawerOpen] = useState<boolean>(false);
   const [selectedNode, setSelectedNode] = useState<WorkflowNode | null>(null);
-  const [selectedNodeConfig, setSelectedNodeConfig] = useState<NodeConfig | null>(null);
   
   // Add connection handler for ReactFlow
   const onConnect = useCallback(
@@ -126,7 +126,7 @@ const WorkflowBuilderPage: React.FC = () => {
   );
   
   // Handle node click to open configuration drawer
-  const onNodeClick = useCallback((_, node: Node) => {
+  const onNodeClick = useCallback((event: React.MouseEvent, node: Node<WorkflowNodeData>) => {
     setSelectedNode(node as WorkflowNode);
     if (node.type === 'trigger') {
       setTriggerDrawerOpen(true);

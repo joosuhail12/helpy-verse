@@ -29,7 +29,8 @@ export const NodeConfigurator: React.FC<NodeConfiguratorProps> = ({
   onCancel
 }) => {
   const [isOpen, setIsOpen] = useState<boolean>(true);
-  const [config, setConfig] = useState<NodeConfig>(node.data.config || {});
+  const initialConfig = (node.data.config as NodeConfig) || {};
+  const [config, setConfig] = useState<NodeConfig>(initialConfig);
   
   const handleClose = () => {
     setIsOpen(false);
@@ -205,7 +206,7 @@ export const NodeConfigurator: React.FC<NodeConfiguratorProps> = ({
                     />
                     <Select 
                       value={config.unit || 'minutes'} 
-                      onValueChange={(value) => setConfig({...config, unit: value})}
+                      onValueChange={(value: 'minutes' | 'hours' | 'days') => setConfig({...config, unit: value})}
                     >
                       <SelectTrigger className="w-[150px]">
                         <SelectValue placeholder="Unit" />

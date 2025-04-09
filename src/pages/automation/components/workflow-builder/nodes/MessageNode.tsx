@@ -3,9 +3,11 @@ import React from 'react';
 import { Handle, Position, NodeProps } from '@xyflow/react';
 import { MessageSquare, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { WorkflowNodeData, NodeConfig } from '@/types/workflow-builder';
 
-const MessageNode: React.FC<NodeProps> = ({ data, isConnectable }) => {
+const MessageNode: React.FC<NodeProps<WorkflowNodeData>> = ({ data, isConnectable }) => {
   const { label, configured, config } = data;
+  const messageConfig = config as NodeConfig | undefined;
   
   return (
     <div className={cn(
@@ -26,10 +28,10 @@ const MessageNode: React.FC<NodeProps> = ({ data, isConnectable }) => {
       
       <div className="font-medium text-sm text-center">{label}</div>
       
-      {config?.message && (
+      {messageConfig?.message && (
         <div className="mt-2 text-xs text-muted-foreground line-clamp-2 text-center">
-          {config.message.substring(0, 50)}
-          {config.message.length > 50 ? '...' : ''}
+          {messageConfig.message.substring(0, 50)}
+          {messageConfig.message.length > 50 ? '...' : ''}
         </div>
       )}
       

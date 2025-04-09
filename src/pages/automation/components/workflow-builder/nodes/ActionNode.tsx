@@ -12,6 +12,7 @@ import {
   MessageSquareMore
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { WorkflowNodeData } from '@/types/workflow-builder';
 
 // Icon mapping for different action types
 const actionIcons: Record<string, React.FC<{ className?: string }>> = {
@@ -23,11 +24,13 @@ const actionIcons: Record<string, React.FC<{ className?: string }>> = {
   default: Cog
 };
 
-const ActionNode: React.FC<NodeProps> = ({ data, isConnectable }) => {
-  const { label, configured, config, actionType = 'default' } = data;
+const ActionNode: React.FC<NodeProps<WorkflowNodeData>> = ({ data, isConnectable }) => {
+  const { label, configured, actionType = 'default' } = data;
   
   // Get the appropriate icon for this action type
-  const IconComponent = actionIcons[actionType] || actionIcons.default;
+  const IconComponent = actionType && actionType in actionIcons 
+    ? actionIcons[actionType]
+    : actionIcons.default;
   
   // Determine background color based on action type
   let bgColorClass = "bg-gray-100";

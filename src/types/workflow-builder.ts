@@ -1,5 +1,5 @@
 
-import { Node, NodeProps } from '@xyflow/react';
+import { Node, Edge, NodeProps, Position } from '@xyflow/react';
 
 export type NodeType = 
   | 'trigger'
@@ -64,12 +64,12 @@ export interface WorkflowNodeData {
   triggerId?: string;
   actionType?: string;
   configured: boolean;
-  config?: NodeConfig;
+  config?: NodeConfig | WorkflowTriggerConfig;
+  [key: string]: unknown; // Add index signature to satisfy Record<string, unknown>
 }
 
-export interface WorkflowNode extends Node {
-  data: WorkflowNodeData;
-}
+// Instead of extending Node, define WorkflowNode with the structure we need
+export type WorkflowNode = Node<WorkflowNodeData>;
 
 export interface WorkflowTagPickerProps {
   selectedTags: { id: string; name: string; color: string }[];
