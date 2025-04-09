@@ -165,6 +165,10 @@ const CreateWorkflowModal: React.FC<CreateWorkflowModalProps> = ({
     
     // Reset state when modal closes
     if (!open) {
+      setStep(1);
+      setName('');
+      setDescription('');
+      setWorkflowType('automation');
       setSearchTerm('');
       setSelectedTrigger(null);
       setFocusedTriggerIndex(-1);
@@ -207,6 +211,8 @@ const CreateWorkflowModal: React.FC<CreateWorkflowModalProps> = ({
       
       // Simulate API call
       setTimeout(() => {
+        const selectedTriggerDetails = triggerOptions.find(t => t.id === selectedTrigger);
+        
         const newWorkflow: Workflow = {
           id: `workflow-${Date.now()}`,
           name,
@@ -215,10 +221,15 @@ const CreateWorkflowModal: React.FC<CreateWorkflowModalProps> = ({
           type: workflowType,
           updatedAt: new Date(),
           createdAt: new Date(),
-          trigger: {
-            id: selectedTrigger,
-            name: triggerOptions.find(t => t.id === selectedTrigger)?.name || '',
-          }
+          // Instead of adding a direct trigger property, let's use the tags to store trigger info
+          // since it's part of the existing interface
+          tags: [
+            { 
+              id: `trigger-${selectedTrigger}`, 
+              name: selectedTriggerDetails?.name || 'Unknown Trigger', 
+              color: '#60A5FA' 
+            }
+          ]
         };
         
         onWorkflowCreated(newWorkflow);
