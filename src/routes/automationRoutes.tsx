@@ -45,6 +45,10 @@ const Workflows = lazy(() => import('../pages/automation/Workflows').catch((err)
   console.error('Failed to load Workflows:', err);
   throw new Error('Failed to load Workflows');
 }));
+const WorkflowBuilderPage = lazy(() => import('../pages/automation/WorkflowBuilderPage').catch((err) => {
+  console.error('Failed to load WorkflowBuilderPage:', err);
+  throw new Error('Failed to load WorkflowBuilderPage');
+}));
 
 // Helper to wrap components with Suspense, ProtectedRoute and RouteErrorBoundary
 const withSuspenseAndProtection = (component: ReactNode) => (
@@ -89,6 +93,10 @@ export const automationRoutes = [
       {
         path: 'workflows',
         element: <RouteErrorBoundary><Suspense fallback={<LoadingSpinner />}><Workflows /></Suspense></RouteErrorBoundary>,
+      },
+      {
+        path: 'workflows/new/trigger/:triggerId',
+        element: <RouteErrorBoundary><Suspense fallback={<LoadingSpinner />}><WorkflowBuilderPage /></Suspense></RouteErrorBoundary>,
       },
     ],
   },

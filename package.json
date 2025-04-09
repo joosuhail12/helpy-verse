@@ -58,6 +58,7 @@
     "@tiptap/suggestion": "^2.1.12",
     "@types/prismjs": "^1.26.5",
     "@types/uuid": "^10.0.0",
+    "@xyflow/react": "^12.5.5",
     "ably": "^2.6.5",
     "axios": "^1.8.1",
     "casl": "^0.2.0",
