@@ -8,7 +8,8 @@ import {
   ExternalLink, 
   BellDot,
   FolderClosed,
-  Tag as TagIcon
+  Tag as TagIcon,
+  BarChart // Import BarChart from lucide-react
 } from 'lucide-react';
 import { 
   DropdownMenu, 

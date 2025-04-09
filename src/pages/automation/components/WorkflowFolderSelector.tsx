@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import {
   DropdownMenu,
@@ -21,12 +20,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { 
-  CaretSortIcon, 
-  PlusCircledIcon, 
-  Pencil2Icon, 
-  TrashIcon,
-  CheckIcon
-} from '@radix-ui/react-icons';
+  Check,
+  ChevronDown,
+  Plus,
+  Pencil,
+  Trash2
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { WorkflowFolder } from '@/types/workflow';
 import { FolderOpen, FolderPlus, FolderX } from 'lucide-react';
@@ -136,7 +135,7 @@ export function WorkflowFolderSelector({
                 </>
               )}
             </div>
-            <CaretSortIcon className="h-4 w-4 shrink-0 opacity-50" />
+            <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-[220px]" align="start">
@@ -149,7 +148,7 @@ export function WorkflowFolderSelector({
           >
             <div className="h-4 w-4" />
             All Workflows
-            {!selectedFolderId && <CheckIcon className="h-4 w-4 ml-auto" />}
+            {!selectedFolderId && <Check className="h-4 w-4 ml-auto" />}
           </DropdownMenuItem>
           
           {folders.length > 0 && <DropdownMenuSeparator />}
@@ -169,7 +168,7 @@ export function WorkflowFolderSelector({
                 >
                   <FolderOpen className="h-4 w-4 shrink-0 text-amber-500" />
                   <span className="truncate">{folder.name}</span>
-                  {selectedFolderId === folder.id && <CheckIcon className="h-3.5 w-3.5 ml-auto" />}
+                  {selectedFolderId === folder.id && <Check className="h-3.5 w-3.5 ml-auto" />}
                 </div>
                 <div className="flex opacity-0 group-hover:opacity-100 transition-opacity">
                   <Button
@@ -181,7 +180,7 @@ export function WorkflowFolderSelector({
                       handleEditFolder(folder);
                     }}
                   >
-                    <Pencil2Icon className="h-3.5 w-3.5" />
+                    <Pencil className="h-3.5 w-3.5" />
                   </Button>
                   <Button
                     variant="ghost"
@@ -192,7 +191,7 @@ export function WorkflowFolderSelector({
                       handleDeleteFolder(folder.id);
                     }}
                   >
-                    <TrashIcon className="h-3.5 w-3.5" />
+                    <Trash2 className="h-3.5 w-3.5" />
                   </Button>
                 </div>
               </DropdownMenuItem>
@@ -205,7 +204,7 @@ export function WorkflowFolderSelector({
             className="flex items-center gap-2 cursor-pointer"
             onClick={() => setIsCreateDialogOpen(true)}
           >
-            <PlusCircledIcon className="h-4 w-4 shrink-0" />
+            <Plus className="h-4 w-4 shrink-0" />
             Create New Folder
           </DropdownMenuItem>
         </DropdownMenuContent>

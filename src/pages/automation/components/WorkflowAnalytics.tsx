@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { format, formatDistance } from 'date-fns';
 import { Progress } from '@/components/ui/progress';
-import { WorkflowMetrics, WorkflowRun } from '@/types/workflow';
+import { WorkflowMetrics, WorkflowRun, Workflow } from '@/types/workflow';
 
 interface WorkflowMetricsCardProps {
   metrics?: WorkflowMetrics;

@@ -54,9 +54,6 @@ import { cn } from '@/lib/utils';
 import { WorkflowFolderSelector } from './components/WorkflowFolderSelector';
 import { WorkflowTagsControl } from './components/WorkflowTagsControl';
 
-// Now let's create the missing WorkflowMetricsCard component
-import { format, subDays } from 'date-fns';
-
 interface DateRange {
   from?: Date;
   to?: Date;
@@ -98,9 +95,7 @@ const WorkflowsPage: React.FC = () => {
   const [analyticsWorkflow, setAnalyticsWorkflow] = useState<Workflow | null>(null);
 
   useEffect(() => {
-    // Simulate fetching workflows, tags, and folders from an API
     const fetchWorkflows = async () => {
-      // Mock data for workflows
       const mockWorkflows: Workflow[] = [
         {
           id: '1',
@@ -167,7 +162,6 @@ const WorkflowsPage: React.FC = () => {
         },
       ];
 
-      // Mock data for tags
       const mockTags: WorkflowTag[] = [
         { id: 'tag-1', name: 'onboarding', color: '#A3E635' },
         { id: 'tag-2', name: 'reporting', color: '#60A5FA' },
@@ -175,7 +169,6 @@ const WorkflowsPage: React.FC = () => {
         { id: 'tag-4', name: 'urgent', color: '#F87171' },
       ];
 
-      // Mock data for folders
       const mockFolders: WorkflowFolder[] = [
         { id: 'folder-1', name: 'Customer Engagement', workflowIds: ['1', '3'] },
         { id: 'folder-2', name: 'Reporting', workflowIds: ['2'] },
@@ -386,7 +379,6 @@ const WorkflowsPage: React.FC = () => {
 
   return (
     <div className="container py-10">
-      {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold">Workflows</h1>
         <div className="space-x-2">
@@ -401,9 +393,7 @@ const WorkflowsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Toolbar */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        {/* Search */}
         <div className="col-span-1">
           <Input
             type="search"
@@ -413,9 +403,7 @@ const WorkflowsPage: React.FC = () => {
           />
         </div>
 
-        {/* Filters */}
         <div className="col-span-2 flex items-center space-x-4">
-          {/* Type Filter */}
           <Popover>
             <PopoverTrigger asChild>
               <Button variant="outline" className="gap-2">
@@ -457,7 +445,6 @@ const WorkflowsPage: React.FC = () => {
             </PopoverContent>
           </Popover>
 
-          {/* Status Filter */}
           <Select value={state.statusFilter} onValueChange={value => handleStatusFilter(value as 'Live' | 'Draft' | 'All')}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Status" />
@@ -469,7 +456,6 @@ const WorkflowsPage: React.FC = () => {
             </SelectContent>
           </Select>
 
-          {/* Tag Filter */}
           <Popover>
             <PopoverTrigger asChild>
               <Button variant="outline" className="gap-2">
@@ -492,7 +478,6 @@ const WorkflowsPage: React.FC = () => {
             </PopoverContent>
           </Popover>
 
-          {/* Date Range Filter */}
           <Popover>
             <PopoverTrigger asChild>
               <Button variant="outline" className="gap-2">
@@ -501,13 +486,15 @@ const WorkflowsPage: React.FC = () => {
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0">
-              <DateRangePicker onDateChange={handleDateRangeChange} />
+              <DateRangePicker 
+                date={state.dateRange} 
+                onDateChange={handleDateRangeChange} 
+              />
             </PopoverContent>
           </Popover>
         </div>
       </div>
 
-      {/* Bulk Actions */}
       {state.selectMode && (
         <Card className="mb-6">
           <CardContent className="flex items-center justify-between">
@@ -527,27 +514,14 @@ const WorkflowsPage: React.FC = () => {
               </span>
             </div>
             <div className="space-x-2">
-              <Button variant="outline" size="sm">
-                <Folder className="mr-2 h-4 w-4" />
-                Move to Folder
-              </Button>
-              <Button variant="outline" size="sm">
-                <Tag className="mr-2 h-4 w-4" />
-                Add Tags
-              </Button>
-              <Button variant="destructive" size="sm">
-                <Trash className="mr-2 h-4 w-4" />
-                Delete
-              </Button>
-              <Button variant="ghost" size="sm" onClick={toggleSelectMode}>
-                Cancel
+              <Button variant="outline" size="sm" onClick={toggleSelectMode}>
+                {state.selectMode ? 'Exit Select Mode' : 'Select Workflows'}
               </Button>
             </div>
           </CardContent>
         </Card>
       )}
 
-      {/* Table Header */}
       <div className="hidden md:grid grid-cols-12 gap-4 py-2 px-4 text-sm font-medium text-muted-foreground">
         <div className="col-span-5">
           Name <Button variant="ghost" size="icon" className="ml-2"><ArrowUp className="h-4 w-4" /></Button>
@@ -561,7 +535,6 @@ const WorkflowsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Workflow List */}
       {filteredWorkflows.length > 0 ? (
         <div className="divide-y divide-border">
           {filteredWorkflows.map((workflow, index) => (
@@ -589,7 +562,6 @@ const WorkflowsPage: React.FC = () => {
         <EmptyWorkflowState onCreateClick={() => setIsCreateModalOpen(true)} />
       )}
 
-      {/* Create Workflow Modal */}
       <CreateWorkflowModal
         open={isCreateModalOpen}
         onOpenChange={setIsCreateModalOpen}
@@ -598,11 +570,13 @@ const WorkflowsPage: React.FC = () => {
         tags={state.tags}
       />
 
-      {/* Analytics Modal */}
       <Dialog open={!!analyticsWorkflow} onOpenChange={() => closeAnalyticsModal()}>
         <DialogContent className="sm:max-w-[80%] lg:max-w-[70%] xl:max-w-[60%]">
           {analyticsWorkflow && (
-            <WorkflowMetricsCard workflow={analyticsWorkflow} />
+            <WorkflowMetricsCard 
+              metrics={analyticsWorkflow.metrics} 
+              runs={analyticsWorkflow.runs} 
+            />
           )}
         </DialogContent>
       </Dialog>
