@@ -1,39 +1,50 @@
-
-import React from 'react';
-import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
-import { Workflow, WorkflowStatus, WorkflowTag } from '@/types/workflow';
-import { Badge } from '@/components/ui/badge';
-import { 
-  Copy, 
-  Trash2, 
-  MoreVertical, 
+import React, { useState } from 'react';
+import { formatDistanceToNow } from 'date-fns';
+import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  MoreVertical,
+  Edit,
+  Copy,
+  Trash2,
   Tag,
-  Folder, 
-  CheckCircle2,
-  XCircle,
+  FolderClosed,
   BarChart3,
-  ArrowUpRight
+  ExternalLink
 } from 'lucide-react';
-import { 
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu";
-import { Button } from '@/components/ui/button';
-import { motion } from 'framer-motion';
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Workflow, WorkflowStatus, WorkflowTag } from '@/types/workflow';
 import { WorkflowTagPicker } from './WorkflowTagPicker';
+import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 interface WorkflowTableCardProps {
   workflow: Workflow;
   isEven?: boolean;
-  onDelete: (id: string, name: string) => void;
-  onDuplicate: (id: string, newName: string) => void;
-  onTagsChange: (workflowId: string, tags: WorkflowTag[]) => void;
-  onMoveToFolder: (workflowId: string, folderId: string | null) => void;
-  allTags: WorkflowTag[];
+  onDelete?: (id: string, name: string) => void;
+  onDuplicate?: (id: string, name: string) => void;
+  onTagsChange?: (workflowId: string, tags: WorkflowTag[]) => void;
+  onMoveToFolder?: (workflowId: string, folderId: string | null) => void;
+  allTags?: WorkflowTag[];
   isSelected?: boolean;
   selectMode?: boolean;
   onSelect?: (id: string) => void;
@@ -43,29 +54,35 @@ interface WorkflowTableCardProps {
 
 export const WorkflowTableCard: React.FC<WorkflowTableCardProps> = ({
   workflow,
-  isEven,
+  isEven = false,
   onDelete,
   onDuplicate,
   onTagsChange,
   onMoveToFolder,
-  allTags,
+  allTags = [],
   isSelected = false,
   selectMode = false,
   onSelect,
   onStatusToggle,
   onViewDetails
 }) => {
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDuplicateDialogOpen, setIsDuplicateDialogOpen] = useState(false);
+  const [isTagPickerOpen, setIsTagPickerOpen] = useState(false);
+  const [newName, setNewName] = useState(`${workflow.name} (Copy)`);
+  
   const handleDelete = () => {
-    onDelete(workflow.id, workflow.name);
+    if (onDelete) {
+      onDelete(workflow.id, workflow.name);
+    }
+    setIsDeleteDialogOpen(false);
   };
   
   const handleDuplicate = () => {
-    const newName = `${workflow.name} (copy)`;
-    onDuplicate(workflow.id, newName);
-  };
-  
-  const handleTagsChange = (tags: WorkflowTag[]) => {
-    onTagsChange(workflow.id, tags);
+    if (onDuplicate) {
+      onDuplicate(workflow.id, newName);
+    }
+    setIsDuplicateDialogOpen(false);
   };
   
   const handleStatusToggle = () => {
@@ -74,172 +91,233 @@ export const WorkflowTableCard: React.FC<WorkflowTableCardProps> = ({
     }
   };
   
-  // Extract trigger information from tags if present (for workflows created with our new format)
-  const triggerTag = workflow.tags?.find(tag => tag.id.startsWith('trigger-'));
+  const handleTagsChange = (tags: WorkflowTag[]) => {
+    if (onTagsChange) {
+      onTagsChange(workflow.id, tags);
+    }
+    setIsTagPickerOpen(false);
+    
+    toast.success(`Tags updated for "${workflow.name}"`);
+  };
   
   return (
-    <motion.div
-      whileHover={{ scale: 1.005, translateX: 3 }}
-      transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-      className={cn(
-        "grid grid-cols-12 py-4 px-4 border-b transition-all duration-100 group",
-        isEven ? "bg-background" : "bg-background/50",
-        selectMode && "hover:bg-primary/5 cursor-pointer",
-        isSelected && "bg-primary/10 border-l-4 border-l-primary"
-      )}
-      onClick={() => selectMode && onSelect && onSelect(workflow.id)}
-    >
-      <div className="col-span-5 md:col-span-5">
-        <div className="flex items-center space-x-3">
-          {selectMode && (
-            <div className={cn(
-              "w-5 h-5 rounded-md border flex-shrink-0",
-              isSelected ? "bg-primary border-primary" : "border-muted-foreground/30"
-            )}>
-              {isSelected && <CheckCircle2 className="h-5 w-5 text-white" />}
+    <div className={cn(
+      "grid grid-cols-12 py-4 px-4 group",
+      isEven ? "bg-muted/10" : "bg-card"
+    )}>
+      {!selectMode ? (
+        <div className="col-span-5 md:col-span-5 flex items-center gap-2.5 min-w-0">
+          <div
+            className={cn(
+              "w-2 h-2 rounded-full flex-shrink-0",
+              workflow.status === 'Live' ? "bg-green-500" : "bg-gray-300"
+            )}
+          />
+          <div className="truncate">
+            <div 
+              className="font-medium truncate"
+              onClick={onViewDetails}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => e.key === 'Enter' && onViewDetails && onViewDetails()}
+              aria-label={`View details of ${workflow.name}`}
+            >
+              {workflow.name}
             </div>
-          )}
-          <div className="min-w-0">
-            <div className="font-medium truncate">{workflow.name}</div>
-            <div className="text-sm text-muted-foreground truncate max-w-md">
-              {workflow.description || 'No description provided'}
+            {workflow.description && (
+              <div className="text-xs text-muted-foreground truncate mt-1">{workflow.description}</div>
+            )}
+            {workflow.tags && workflow.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mt-1.5">
+                {workflow.tags.map((tag) => (
+                  <Badge 
+                    key={tag.id} 
+                    variant="outline" 
+                    className="text-xs px-1.5 py-0"
+                    style={{
+                      borderColor: tag.color,
+                      color: tag.color
+                    }}
+                  >
+                    {tag.name}
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="col-span-5 md:col-span-5 flex items-center gap-2.5 min-w-0">
+          <Checkbox 
+            checked={isSelected}
+            onCheckedChange={() => onSelect && onSelect(workflow.id)}
+            className="ml-2"
+          />
+          <div className="truncate">
+            <div className="font-medium truncate">
+              {workflow.name}
             </div>
           </div>
         </div>
+      )}
+      
+      <div className="col-span-3 md:col-span-3 flex items-center">
+        <Switch 
+          checked={workflow.status === 'Live'} 
+          onCheckedChange={handleStatusToggle} 
+          className="mr-2" 
+          disabled={selectMode}
+        />
+        <span className={workflow.status === 'Live' ? "text-green-600" : "text-muted-foreground"}>
+          {workflow.status}
+        </span>
       </div>
       
-      <div className="col-span-3 md:col-span-3">
-        <div className="flex items-center space-x-2">
-          <Badge 
-            variant={workflow.status === 'Live' ? "success" : "outline"}
-            className="flex items-center space-x-1 hover:cursor-pointer"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleStatusToggle();
-            }}
-          >
-            {workflow.status === 'Live' ? (
-              <CheckCircle2 className="h-3 w-3 mr-1" />
-            ) : (
-              <XCircle className="h-3 w-3 mr-1" />
-            )}
-            {workflow.status}
-          </Badge>
-          
-          {triggerTag && (
-            <Badge variant="secondary" className="inline-flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-blue-400"></span>
-              {triggerTag.name}
-            </Badge>
-          )}
-        </div>
-        
-        <div className="mt-1.5 flex flex-wrap gap-1">
-          {workflow.tags?.filter(tag => !tag.id.startsWith('trigger-')).map((tag) => (
-            <div
-              key={tag.id}
-              className="px-2 py-0.5 rounded-full text-xs inline-flex items-center gap-1"
-              style={{ backgroundColor: `${tag.color}20`, color: tag.color }}
-            >
-              <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: tag.color }}></span>
-              {tag.name}
-            </div>
-          ))}
-        </div>
+      <div className="col-span-3 md:col-span-3 flex items-center text-muted-foreground">
+        {formatDistanceToNow(new Date(workflow.updatedAt), { addSuffix: true })}
+        {workflow.lastEditedBy && (
+          <span className="ml-1 text-xs">
+            by {workflow.lastEditedBy.name}
+          </span>
+        )}
       </div>
       
-      <div className="col-span-3 md:col-span-3 flex flex-col justify-center">
-        <div className="text-sm">
-          {format(new Date(workflow.updatedAt), 'MMM dd, yyyy')}
-        </div>
-        <div className="text-xs text-muted-foreground">
-          {format(new Date(workflow.updatedAt), 'h:mm a')}
-        </div>
-      </div>
-      
-      <div className="col-span-1 md:col-span-1 flex justify-end items-center">
-        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex space-x-1">
-          {workflow.metrics && workflow.metrics.totalRuns > 0 && (
+      <div className="col-span-1 md:col-span-1 flex items-center justify-end">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
             <Button 
               variant="ghost" 
-              size="icon"
-              className="h-8 w-8"
-              title="View Analytics"
+              size="sm" 
+              className="h-8 w-8 p-0 opacity-70 group-hover:opacity-100"
+              disabled={selectMode}
             >
-              <BarChart3 className="h-4 w-4" />
+              <MoreVertical className="h-4 w-4" />
+              <span className="sr-only">Open menu</span>
             </Button>
-          )}
-          
-          <Button 
-            variant="ghost" 
-            size="icon"
-            className="h-8 w-8"
-            title="View Details"
-            onClick={(e) => {
-              e.stopPropagation();
-              onViewDetails?.();
-            }}
-          >
-            <ArrowUpRight className="h-4 w-4" />
-          </Button>
-          
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button 
-                variant="ghost" 
-                size="icon"
-                className="h-8 w-8"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <MoreVertical className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuItem 
-                className="cursor-pointer"
-                onClick={handleStatusToggle}
-              >
-                {workflow.status === 'Draft' ? (
-                  <>
-                    <CheckCircle2 className="mr-2 h-4 w-4" />
-                    <span>Set as Live</span>
-                  </>
-                ) : (
-                  <>
-                    <XCircle className="mr-2 h-4 w-4" />
-                    <span>Set as Draft</span>
-                  </>
-                )}
-              </DropdownMenuItem>
-              
-              <WorkflowTagPicker
-                selectedTags={workflow.tags?.filter(tag => !tag.id.startsWith('trigger-')) || []}
-                allTags={allTags}
-                onChange={handleTagsChange}
-              />
-              
-              <DropdownMenuItem 
-                className="cursor-pointer"
-                onClick={handleDuplicate}
-              >
-                <Copy className="mr-2 h-4 w-4" />
-                <span>Duplicate</span>
-              </DropdownMenuItem>
-              
-              <DropdownMenuSeparator />
-              
-              <DropdownMenuItem 
-                className="cursor-pointer text-destructive focus:text-destructive" 
-                onClick={handleDelete}
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                <span>Delete</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-[180px]">
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            
+            <DropdownMenuItem onClick={onViewDetails}>
+              <ExternalLink className="mr-2 h-4 w-4" />
+              View details
+            </DropdownMenuItem>
+            
+            <DropdownMenuItem>
+              <Edit className="mr-2 h-4 w-4" />
+              Edit workflow
+            </DropdownMenuItem>
+            
+            <DropdownMenuItem onClick={() => setIsTagPickerOpen(true)}>
+              <Tag className="mr-2 h-4 w-4" />
+              Manage tags
+            </DropdownMenuItem>
+            
+            <DropdownMenuSeparator />
+            
+            <DropdownMenuItem onClick={() => setIsDuplicateDialogOpen(true)}>
+              <Copy className="mr-2 h-4 w-4" />
+              Duplicate
+            </DropdownMenuItem>
+            
+            <DropdownMenuSeparator />
+            
+            <DropdownMenuItem 
+              onClick={() => setIsDeleteDialogOpen(true)}
+              className="text-red-600 focus:bg-red-50 focus:text-red-600"
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
-    </motion.div>
+      
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Delete Workflow</DialogTitle>
+            <DialogDescription>
+              This will permanently delete <span className="font-medium">"{workflow.name}"</span>. This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:justify-start">
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={handleDelete}
+            >
+              Delete Workflow
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsDeleteDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Duplicate Dialog */}
+      <Dialog open={isDuplicateDialogOpen} onOpenChange={setIsDuplicateDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Duplicate Workflow</DialogTitle>
+            <DialogDescription>
+              Create a copy of <span className="font-medium">"{workflow.name}"</span> with a new name.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="new-name">New workflow name</Label>
+              <Input
+                id="new-name"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                autoFocus
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsDuplicateDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button 
+              type="button"
+              onClick={handleDuplicate}
+              disabled={!newName.trim()}
+            >
+              Duplicate
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Tag Picker Dialog */}
+      <Dialog open={isTagPickerOpen} onOpenChange={setIsTagPickerOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Manage Tags</DialogTitle>
+            <DialogDescription>
+              Add or remove tags for <span className="font-medium">"{workflow.name}"</span>.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <WorkflowTagPicker 
+              selectedTags={workflow.tags || []}
+              allTags={allTags}
+              onChange={handleTagsChange}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 };
-
