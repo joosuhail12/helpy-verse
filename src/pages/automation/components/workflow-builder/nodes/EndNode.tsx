@@ -5,6 +5,9 @@ import { Square } from 'lucide-react';
 import { NodeProps } from '@/types/workflow-builder';
 
 const EndNode = ({ data, isConnectable }: NodeProps) => {
+  // Access data safely, with default value as fallback
+  const label = data?.label || 'End Workflow';
+
   return (
     <div className="flex flex-col items-center p-3 rounded-xl border shadow-sm bg-background w-[180px] border-muted">
       <Handle
@@ -19,7 +22,7 @@ const EndNode = ({ data, isConnectable }: NodeProps) => {
         <Square className="h-6 w-6" />
       </div>
       
-      <div className="font-medium text-sm text-center">{data.label || 'End Workflow'}</div>
+      <div className="font-medium text-sm text-center">{label}</div>
       <div className="text-xs text-muted-foreground mt-1">Workflow execution stops here</div>
     </div>
   );

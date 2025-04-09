@@ -6,7 +6,9 @@ import { cn } from '@/lib/utils';
 import { NodeProps } from '@/types/workflow-builder';
 
 const ConditionNode = ({ data, isConnectable }: NodeProps) => {
-  const { label, configured } = data;
+  // Access data safely with default values
+  const label = data?.label || 'Condition';
+  const configured = data?.configured || false;
   
   return (
     <div className={cn(

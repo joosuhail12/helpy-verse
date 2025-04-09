@@ -6,8 +6,10 @@ import { cn } from '@/lib/utils';
 import { NodeProps, NodeConfig } from '@/types/workflow-builder';
 
 const MessageNode = ({ data, isConnectable }: NodeProps) => {
-  const { label, configured, config } = data;
-  const messageConfig = config as NodeConfig | undefined;
+  // Access data safely with default values
+  const label = data?.label || 'Message';
+  const configured = data?.configured || false;
+  const config = data?.config as NodeConfig | undefined;
   
   return (
     <div className={cn(
@@ -28,10 +30,10 @@ const MessageNode = ({ data, isConnectable }: NodeProps) => {
       
       <div className="font-medium text-sm text-center">{label}</div>
       
-      {messageConfig?.message && (
+      {config?.message && (
         <div className="mt-2 text-xs text-muted-foreground line-clamp-2 text-center">
-          {messageConfig.message.substring(0, 50)}
-          {messageConfig.message.length > 50 ? '...' : ''}
+          {config.message.substring(0, 50)}
+          {config.message.length > 50 ? '...' : ''}
         </div>
       )}
       

@@ -10,7 +10,9 @@ import { cn } from '@/lib/utils';
 import { NodeProps } from '@/types/workflow-builder';
 
 const TriggerNode = ({ data, isConnectable }: NodeProps) => {
-  const { label, configured } = data;
+  // Access data safely with default values
+  const label = data?.label || 'Trigger';
+  const configured = data?.configured || false;
   
   return (
     <div className={cn(

@@ -1,5 +1,5 @@
 
-import { Node, Edge, NodeProps as XYNodeProps, Position } from '@xyflow/react';
+import { Node as ReactFlowNode, Edge, NodeProps as ReactFlowNodeProps, Position } from '@xyflow/react';
 
 export type NodeType = 
   | 'trigger'
@@ -18,7 +18,7 @@ export type NodeType =
   | 'wait'
   | 'add_note'
   | 'end'
-  | 'action'; // Including 'action' as a valid node type
+  | 'action';
 
 export interface WorkflowTriggerConfig {
   channels: {
@@ -67,14 +67,14 @@ export interface WorkflowNodeData {
   actionType?: string;
   configured: boolean;
   config?: NodeConfig | WorkflowTriggerConfig;
-  [key: string]: unknown; // Add index signature to satisfy Record<string, unknown>
+  [key: string]: unknown;
 }
 
-// Export NodeProps to be used by node components
-export type NodeProps = XYNodeProps<WorkflowNodeData>;
+// Export NodeProps to be used by node components - use ReactFlowNodeProps instead of extending WorkflowNodeData
+export type NodeProps = ReactFlowNodeProps<WorkflowNodeData>;
 
 // Export WorkflowNode type
-export type WorkflowNode = Node<WorkflowNodeData>;
+export type WorkflowNode = ReactFlowNode<WorkflowNodeData>;
 
 export interface WorkflowTagPickerProps {
   selectedTags: { id: string; name: string; color: string }[];

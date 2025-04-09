@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
@@ -62,7 +61,6 @@ import {
   WorkflowNode
 } from '@/types/workflow-builder';
 
-// Define the node types mapping for React Flow
 const nodeTypes: NodeTypes = {
   trigger: TriggerNode,
   message: MessageNode,
@@ -71,7 +69,6 @@ const nodeTypes: NodeTypes = {
   end: EndNode
 };
 
-// List of available node types for the node selector
 const availableNodeTypes: { type: NodeType; label: string; description: string }[] = [
   { type: 'message', label: 'Message', description: 'Send a message to the customer' },
   { type: 'data_collection', label: 'Data Collection', description: 'Collect data from the customer' },
@@ -104,15 +101,12 @@ const WorkflowBuilderPage: React.FC = () => {
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [isPublished, setIsPublished] = useState<boolean>(false);
   
-  // Node and edge states for ReactFlow - explicitly type as Node<WorkflowNodeData>
   const [nodes, setNodes, onNodesChange] = useNodesState<Node<WorkflowNodeData>>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   
-  // Drawers and configuration states
   const [triggerDrawerOpen, setTriggerDrawerOpen] = useState<boolean>(false);
   const [selectedNode, setSelectedNode] = useState<Node<WorkflowNodeData> | null>(null);
   
-  // Add connection handler for ReactFlow
   const onConnect = useCallback(
     (connection: Connection) => {
       setEdges((eds) => addEdge({
@@ -125,7 +119,6 @@ const WorkflowBuilderPage: React.FC = () => {
     [setEdges]
   );
   
-  // Handle node click to open configuration drawer
   const onNodeClick = useCallback((event: React.MouseEvent, node: Node<WorkflowNodeData>) => {
     setSelectedNode(node);
     if (node.type === 'trigger') {
@@ -133,19 +126,19 @@ const WorkflowBuilderPage: React.FC = () => {
     }
   }, []);
   
-  // Add new node to the flow
   const addNode = useCallback((type: NodeType, sourceNodeId: string, position?: XYPosition) => {
     const id = uuidv4();
-    let nodeType: string = type;
-    let nodeData: WorkflowNodeData = {
-      label: availableNodeTypes.find(nt => nt.type === type)?.label || type,
+    let nodeLabel = availableNodeTypes.find(nt => nt.type === type)?.label || type;
+    
+    const newNodeData: WorkflowNodeData = {
+      label: nodeLabel,
       configured: false
     };
     
-    // Map certain node types to their proper visual representation
+    let nodeType: string = type;
     if (['assign_ticket', 'tag_ticket', 'update_ticket', 'wait', 'add_note'].includes(type)) {
       nodeType = 'action';
-      nodeData.actionType = type;
+      newNodeData.actionType = type;
     }
     
     const newNode: Node<WorkflowNodeData> = {
@@ -155,18 +148,16 @@ const WorkflowBuilderPage: React.FC = () => {
         x: window.innerWidth / 2,
         y: window.innerHeight / 2
       },
-      data: nodeData
+      data: newNodeData
     };
     
     setNodes(nodes => [...nodes, newNode]);
     
-    // Create connection from source node to new node
     if (sourceNodeId) {
       const sourceNode = nodes.find(n => n.id === sourceNodeId);
       let sourceHandle: string | undefined = undefined;
       
       if (sourceNode?.type === 'condition') {
-        // Check which condition output is available (yes/no)
         const yesConnection = edges.some(e => 
           e.source === sourceNodeId && e.sourceHandle === 'yes'
         );
@@ -190,11 +181,9 @@ const WorkflowBuilderPage: React.FC = () => {
     return id;
   }, [setNodes, setEdges, nodes, edges]);
   
-  // Configure the trigger node when page loads
   useEffect(() => {
     if (!triggerId) return;
     
-    // Add trigger node to the flow
     const triggerNodeId = uuidv4();
     const triggerNode: Node<WorkflowNodeData> = {
       id: triggerNodeId,
@@ -212,7 +201,6 @@ const WorkflowBuilderPage: React.FC = () => {
     setTriggerDrawerOpen(true);
   }, [triggerId, setNodes]);
   
-  // Save trigger configuration
   const saveTriggerConfig = (config: WorkflowTriggerConfig) => {
     if (!selectedNode) return;
     
@@ -235,7 +223,6 @@ const WorkflowBuilderPage: React.FC = () => {
     toast.success('Trigger configured successfully');
   };
   
-  // Save node configuration
   const saveNodeConfig = (nodeId: string, config: NodeConfig) => {
     setNodes(nodes => 
       nodes.map(node => 
@@ -256,19 +243,15 @@ const WorkflowBuilderPage: React.FC = () => {
     toast.success('Node configured successfully');
   };
   
-  // Save workflow
   const saveWorkflow = async () => {
     setIsSaving(true);
-    // Mock API call to save workflow
     await new Promise(resolve => setTimeout(resolve, 1000));
     toast.success('Workflow saved successfully');
     setIsSaving(false);
   };
   
-  // Publish workflow
   const publishWorkflow = async () => {
     setIsSaving(true);
-    // Mock API call to publish workflow
     await new Promise(resolve => setTimeout(resolve, 1000));
     setIsPublished(true);
     toast.success('Workflow published successfully');
@@ -277,7 +260,6 @@ const WorkflowBuilderPage: React.FC = () => {
 
   return (
     <div className="flex flex-col h-screen w-full">
-      {/* Top bar */}
       <div className="flex items-center justify-between p-4 border-b bg-background">
         <div className="flex items-center space-x-4">
           <Button 
@@ -317,7 +299,6 @@ const WorkflowBuilderPage: React.FC = () => {
         </div>
       </div>
       
-      {/* Main canvas */}
       <div className="flex-grow">
         <ReactFlow
           nodes={nodes}
@@ -349,7 +330,6 @@ const WorkflowBuilderPage: React.FC = () => {
         </ReactFlow>
       </div>
       
-      {/* Trigger configuration drawer */}
       <Drawer open={triggerDrawerOpen} onOpenChange={setTriggerDrawerOpen}>
         <DrawerContent className="h-[80vh]">
           <DrawerHeader>
@@ -372,7 +352,6 @@ const WorkflowBuilderPage: React.FC = () => {
         </DrawerContent>
       </Drawer>
       
-      {/* Node configuration */}
       {selectedNode && selectedNode.type !== 'trigger' && (
         <NodeConfigurator
           node={selectedNode}
@@ -381,7 +360,6 @@ const WorkflowBuilderPage: React.FC = () => {
         />
       )}
       
-      {/* Node selector for adding new nodes */}
       {nodes.map(node => (
         <NodeSelector
           key={`selector-${node.id}`}

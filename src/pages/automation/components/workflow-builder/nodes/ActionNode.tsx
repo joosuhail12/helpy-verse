@@ -25,7 +25,10 @@ const actionIcons: Record<string, React.FC<{ className?: string }>> = {
 };
 
 const ActionNode = ({ data, isConnectable }: NodeProps) => {
-  const { label, configured, actionType = 'default' } = data;
+  // Access data safely with default values
+  const label = data?.label || 'Action';
+  const configured = data?.configured || false;
+  const actionType = data?.actionType || 'default';
   
   // Get the appropriate icon for this action type
   const IconComponent = actionType && actionType in actionIcons 
