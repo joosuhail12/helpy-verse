@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -76,6 +77,8 @@ export const WorkflowDependencies: React.FC<WorkflowDependenciesProps> = ({
         return <Badge variant="warning">Data</Badge>;
       case 'sequence':
         return <Badge variant="secondary">Sequence</Badge>;
+      case 'condition':
+        return <Badge variant="default">Condition</Badge>;
       default:
         return <Badge>{type}</Badge>;
     }
@@ -259,12 +262,14 @@ export const WorkflowDependencies: React.FC<WorkflowDependenciesProps> = ({
                 <SelectContent>
                   <SelectItem value="trigger">Trigger</SelectItem>
                   <SelectItem value="data">Data</SelectItem>
+                  <SelectItem value="condition">Condition</SelectItem>
                   <SelectItem value="sequence">Sequence</SelectItem>
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground mt-1">
                 {dependencyType === 'trigger' && "This workflow is triggered by the target workflow"}
                 {dependencyType === 'data' && "This workflow uses data produced by the target workflow"}
+                {dependencyType === 'condition' && "This workflow uses conditions from the target workflow"}
                 {dependencyType === 'sequence' && "This workflow runs after the target workflow completes"}
               </p>
             </div>

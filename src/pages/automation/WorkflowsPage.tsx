@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { 
@@ -570,10 +569,10 @@ const WorkflowsPage: React.FC = () => {
       createdAt: workflow.createdAt,
       createdBy: currentUser,
       changes: [
-        { field: 'name', newValue: workflow.name, type: 'add' },
-        { field: 'status', newValue: workflow.status, type: 'add' },
-        { field: 'type', newValue: workflow.type, type: 'add' },
-        ...(workflow.description ? [{ field: 'description', newValue: workflow.description, type: 'add' }] : [])
+        { field: 'name', newValue: workflow.name, type: 'add' as WorkflowChangeType },
+        { field: 'status', newValue: workflow.status, type: 'add' as WorkflowChangeType },
+        { field: 'type', newValue: workflow.type, type: 'add' as WorkflowChangeType },
+        ...(workflow.description ? [{ field: 'description', newValue: workflow.description, type: 'add' as WorkflowChangeType }] : [])
       ]
     };
     
@@ -929,7 +928,7 @@ const WorkflowsPage: React.FC = () => {
       
       {isCreateModalOpen && (
         <CreateWorkflowModal 
-          isOpen={isCreateModalOpen}
+          open={isCreateModalOpen}
           onClose={handleCloseCreateModal}
           onWorkflowCreated={handleWorkflowCreated}
         />
@@ -937,13 +936,15 @@ const WorkflowsPage: React.FC = () => {
       
       {isDetailModalOpen && selectedWorkflow && (
         <WorkflowDetailModal
-          isOpen={isDetailModalOpen}
-          onClose={() => {
-            setIsDetailModalOpen(false);
-            setSelectedWorkflow(null);
+          open={isDetailModalOpen}
+          onOpenChange={(open) => {
+            if (!open) {
+              setIsDetailModalOpen(false);
+              setSelectedWorkflow(null);
+            }
           }}
           workflow={selectedWorkflow}
-          onDependenciesUpdate={handleUpdateDependencies}
+          onUpdateDependencies={handleUpdateDependencies}
           onRestoreVersion={handleRestoreVersion}
           allWorkflows={state.workflows}
         />
@@ -953,4 +954,3 @@ const WorkflowsPage: React.FC = () => {
 };
 
 export default WorkflowsPage;
-

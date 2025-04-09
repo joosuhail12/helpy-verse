@@ -15,7 +15,7 @@ export interface WorkflowDependency {
   id: string;
   sourceWorkflowId: string;
   targetWorkflowId: string;
-  type: 'trigger' | 'data' | 'condition';
+  type: 'trigger' | 'data' | 'condition' | 'sequence';
   description?: string;
 }
 
@@ -56,6 +56,7 @@ export interface WorkflowMetrics {
   failedRuns?: number;
   successRate: number;
   averageDuration?: number;
+  lastRun?: Date; // Added this field
 }
 
 export interface Workflow {
