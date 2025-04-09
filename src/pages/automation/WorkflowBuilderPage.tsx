@@ -61,13 +61,13 @@ import {
   WorkflowNode
 } from '@/types/workflow-builder';
 
-const nodeTypes: NodeTypes = {
+const nodeTypes = {
   trigger: TriggerNode,
   message: MessageNode,
   condition: ConditionNode,
   action: ActionNode,
   end: EndNode
-};
+} as NodeTypes;
 
 const availableNodeTypes: { type: NodeType; label: string; description: string }[] = [
   { type: 'message', label: 'Message', description: 'Send a message to the customer' },

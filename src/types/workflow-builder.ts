@@ -70,7 +70,7 @@ export interface WorkflowNodeData {
   [key: string]: unknown;
 }
 
-// Export NodeProps to be used by node components - use ReactFlowNodeProps instead of extending WorkflowNodeData
+// Define custom NodeProps that extends ReactFlowNodeProps but uses our WorkflowNodeData
 export type NodeProps = ReactFlowNodeProps<WorkflowNodeData>;
 
 // Export WorkflowNode type
