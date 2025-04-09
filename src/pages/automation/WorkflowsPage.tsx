@@ -4,10 +4,11 @@ import { Button } from '@/components/ui/button';
 import { PlusIcon } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CreateWorkflowModal from './modals/CreateWorkflowModal';
-import WorkflowCard from './components/WorkflowCard';
-import EmptyWorkflowState from './components/EmptyWorkflowState';
-import WorkflowTableCard from './components/WorkflowTableCard';
-import WorkflowFolders from './components/WorkflowFolders';
+import { WorkflowCard } from './components/WorkflowCard';
+import { EmptyWorkflowState } from './components/EmptyWorkflowState';
+import { WorkflowTableCard } from './components/WorkflowTableCard';
+import { WorkflowFolders } from './components/WorkflowFolders';
+import { Workflow } from '@/types/workflow';
 
 /**
  * Workflows page component that displays workflow management interface
@@ -15,7 +16,29 @@ import WorkflowFolders from './components/WorkflowFolders';
 const WorkflowsPage: React.FC = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
   const [activeView, setActiveView] = useState<string>("grid");
-  const [workflows] = useState<any[]>([]);
+  const [workflows, setWorkflows] = useState<Workflow[]>([]);
+
+  const handleCreateWorkflow = (newWorkflow: Workflow) => {
+    setWorkflows(prev => [...prev, newWorkflow]);
+  };
+
+  const handleDeleteWorkflow = (id: string, name: string) => {
+    setWorkflows(prev => prev.filter(workflow => workflow.id !== id));
+  };
+
+  const handleDuplicateWorkflow = (id: string, name: string) => {
+    const workflowToDuplicate = workflows.find(workflow => workflow.id === id);
+    if (workflowToDuplicate) {
+      const duplicatedWorkflow = {
+        ...workflowToDuplicate,
+        id: `workflow-${Date.now()}`,
+        name,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      setWorkflows(prev => [...prev, duplicatedWorkflow]);
+    }
+  };
 
   return (
     <div className="container mx-auto p-6">
@@ -67,14 +90,33 @@ const WorkflowsPage: React.FC = () => {
         <TabsContent value="all" className="mt-6">
           {workflows.length > 0 ? (
             <div>
-              <WorkflowFolders />
+              <WorkflowFolders 
+                folders={[]} 
+                onFolderCreate={() => {}}
+                onFolderUpdate={() => {}}
+                onFolderDelete={() => {}}
+                selectedFolderId={null}
+                onFolderSelect={() => {}}
+              />
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
                 {activeView === "grid" ? (
                   workflows.map((workflow) => (
-                    <WorkflowCard key={workflow.id} workflow={workflow} />
+                    <WorkflowCard 
+                      key={workflow.id} 
+                      workflow={workflow} 
+                      onDelete={handleDeleteWorkflow} 
+                      onDuplicate={handleDuplicateWorkflow}
+                    />
                   ))
                 ) : (
-                  <WorkflowTableCard workflows={workflows} />
+                  <WorkflowTableCard 
+                    workflows={workflows}
+                    onDelete={handleDeleteWorkflow}
+                    onDuplicate={handleDuplicateWorkflow}
+                    onTagsChange={() => {}}
+                    onMoveToFolder={() => {}}
+                    allTags={[]}
+                  />
                 )}
               </div>
             </div>
@@ -109,8 +151,10 @@ const WorkflowsPage: React.FC = () => {
       </Tabs>
       
       <CreateWorkflowModal
-        isOpen={isCreateModalOpen}
+        open={isCreateModalOpen}
+        onOpenChange={setIsCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
+        onWorkflowCreated={handleCreateWorkflow}
       />
     </div>
   );
