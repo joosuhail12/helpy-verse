@@ -9,7 +9,7 @@ import {
 import { cn } from '@/lib/utils';
 import { WorkflowNodeData } from '@/types/workflow-builder';
 
-const TriggerNode: React.FC<NodeProps<WorkflowNodeData>> = ({ data, isConnectable }) => {
+const TriggerNode = ({ data, isConnectable }: NodeProps<WorkflowNodeData>) => {
   const { label, configured } = data;
   
   return (

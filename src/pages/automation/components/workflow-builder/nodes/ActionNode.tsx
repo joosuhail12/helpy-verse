@@ -24,7 +24,7 @@ const actionIcons: Record<string, React.FC<{ className?: string }>> = {
   default: Cog
 };
 
-const ActionNode: React.FC<NodeProps<WorkflowNodeData>> = ({ data, isConnectable }) => {
+const ActionNode = ({ data, isConnectable }: NodeProps<WorkflowNodeData>) => {
   const { label, configured, actionType = 'default' } = data;
   
   // Get the appropriate icon for this action type

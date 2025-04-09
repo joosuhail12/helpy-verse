@@ -143,58 +143,66 @@ export function NodeConfigurator({ node, onSave, onCancel }: NodeConfiguratorPro
           </div>
         );
 
-      case 'assign_ticket':
-        return (
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="assigneeId">Assign To</Label>
-              <Select
-                value={config.assigneeId || ''}
-                onValueChange={value => updateConfig('assigneeId', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select team member" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="round-robin">Round Robin</SelectItem>
-                  <SelectItem value="least-busy">Least Busy</SelectItem>
-                  <SelectItem value="user-123">Jane Smith</SelectItem>
-                  <SelectItem value="user-456">John Doe</SelectItem>
-                </SelectContent>
-              </Select>
+      case 'action':
+        if (node.data.actionType === 'wait') {
+          return (
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="duration">Duration</Label>
+                <div className="flex space-x-2">
+                  <Input
+                    id="duration"
+                    type="number"
+                    value={config.duration || ''}
+                    onChange={e => updateConfig('duration', e.target.value)}
+                    placeholder="Wait duration"
+                    className="flex-grow"
+                  />
+                  <Select
+                    value={config.unit || 'minutes'}
+                    onValueChange={value => updateConfig('unit', value as 'minutes' | 'hours' | 'days')}
+                  >
+                    <SelectTrigger className="w-[120px]">
+                      <SelectValue placeholder="Unit" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="minutes">Minutes</SelectItem>
+                      <SelectItem value="hours">Hours</SelectItem>
+                      <SelectItem value="days">Days</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
             </div>
-          </div>
-        );
-
-      case 'wait':
-        return (
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="duration">Duration</Label>
-              <div className="flex space-x-2">
-                <Input
-                  id="duration"
-                  type="number"
-                  value={config.duration || ''}
-                  onChange={e => updateConfig('duration', e.target.value)}
-                  placeholder="Wait duration"
-                  className="flex-grow"
-                />
+          );
+        } else if (node.data.actionType === 'assign_ticket') {
+          return (
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="assigneeId">Assign To</Label>
                 <Select
-                  value={config.unit || 'minutes'}
-                  onValueChange={value => updateConfig('unit', value as 'minutes' | 'hours' | 'days')}
+                  value={config.assigneeId || ''}
+                  onValueChange={value => updateConfig('assigneeId', value)}
                 >
-                  <SelectTrigger className="w-[120px]">
-                    <SelectValue placeholder="Unit" />
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select team member" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="minutes">Minutes</SelectItem>
-                    <SelectItem value="hours">Hours</SelectItem>
-                    <SelectItem value="days">Days</SelectItem>
+                    <SelectItem value="round-robin">Round Robin</SelectItem>
+                    <SelectItem value="least-busy">Least Busy</SelectItem>
+                    <SelectItem value="user-123">Jane Smith</SelectItem>
+                    <SelectItem value="user-456">John Doe</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
+          );
+        }
+        
+        // Add other action type editors as needed
+        return (
+          <div className="flex items-center justify-center h-40">
+            <p className="text-muted-foreground">Configuration options for this action type will be added soon.</p>
           </div>
         );
 

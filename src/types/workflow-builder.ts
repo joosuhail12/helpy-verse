@@ -17,7 +17,8 @@ export type NodeType =
   | 'update_ticket'
   | 'wait'
   | 'add_note'
-  | 'end';
+  | 'end'
+  | 'action'; // Adding 'action' as a valid node type
 
 export interface WorkflowTriggerConfig {
   channels: {

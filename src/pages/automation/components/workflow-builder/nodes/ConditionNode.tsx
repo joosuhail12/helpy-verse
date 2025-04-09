@@ -5,7 +5,7 @@ import { GitBranch, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { WorkflowNodeData } from '@/types/workflow-builder';
 
-const ConditionNode: React.FC<NodeProps<WorkflowNodeData>> = ({ data, isConnectable }) => {
+const ConditionNode = ({ data, isConnectable }: NodeProps<WorkflowNodeData>) => {
   const { label, configured } = data;
   
   return (

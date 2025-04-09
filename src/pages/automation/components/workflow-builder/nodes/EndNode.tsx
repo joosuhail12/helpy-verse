@@ -4,7 +4,7 @@ import { Handle, Position, NodeProps } from '@xyflow/react';
 import { Square } from 'lucide-react';
 import { WorkflowNodeData } from '@/types/workflow-builder';
 
-const EndNode: React.FC<NodeProps<WorkflowNodeData>> = ({ data, isConnectable }) => {
+const EndNode = ({ data, isConnectable }: NodeProps<WorkflowNodeData>) => {
   return (
     <div className="flex flex-col items-center p-3 rounded-xl border shadow-sm bg-background w-[180px] border-muted">
       <Handle

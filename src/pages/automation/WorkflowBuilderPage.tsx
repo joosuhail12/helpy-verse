@@ -62,8 +62,8 @@ import {
   WorkflowNode
 } from '@/types/workflow-builder';
 
-// Node types mapping for ReactFlow
-const nodeTypes: NodeTypes = {
+// Define the node types mapping for React Flow
+const nodeTypes = {
   trigger: TriggerNode,
   message: MessageNode,
   condition: ConditionNode,
@@ -104,7 +104,7 @@ const WorkflowBuilderPage: React.FC = () => {
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [isPublished, setIsPublished] = useState<boolean>(false);
   
-  // Node and edge states for ReactFlow
+  // Node and edge states for ReactFlow - explicitly type as Node<WorkflowNodeData>
   const [nodes, setNodes, onNodesChange] = useNodesState<Node<WorkflowNodeData>>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   
@@ -136,7 +136,7 @@ const WorkflowBuilderPage: React.FC = () => {
   // Add new node to the flow
   const addNode = useCallback((type: NodeType, sourceNodeId: string, position?: XYPosition) => {
     const id = uuidv4();
-    let nodeType = type;
+    let nodeType: string = type;
     let nodeData: WorkflowNodeData = {
       label: availableNodeTypes.find(nt => nt.type === type)?.label || type,
       configured: false

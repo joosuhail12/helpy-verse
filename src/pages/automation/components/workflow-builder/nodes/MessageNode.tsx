@@ -5,7 +5,7 @@ import { MessageSquare, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { WorkflowNodeData, NodeConfig } from '@/types/workflow-builder';
 
-const MessageNode: React.FC<NodeProps<WorkflowNodeData>> = ({ data, isConnectable }) => {
+const MessageNode = ({ data, isConnectable }: NodeProps<WorkflowNodeData>) => {
   const { label, configured, config } = data;
   const messageConfig = config as NodeConfig | undefined;
   
