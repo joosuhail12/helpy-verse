@@ -31,6 +31,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 
+// Define interfaces with correct syntax
 interface Trigger {
   id: string;
   name: string;
@@ -78,30 +79,18 @@ const triggerCategories: TriggerCategory[] = [
 
 const getTriggerIcon = (triggerId: string) => {
   switch (triggerId) {
-    case 'page_visit':
-      return <Globe className="h-5 w-5 text-primary/70" />;
-    case 'new_convo':
-      return <MessageSquare className="h-5 w-5 text-primary/70" />;
-    case 'customer_message':
-      return <Mail className="h-5 w-5 text-primary/70" />;
-    case 'customer_unresponsive':
-      return <Clock className="h-5 w-5 text-primary/70" />;
-    case 'teammate_message':
-      return <User className="h-5 w-5 text-primary/70" />;
-    case 'note_added':
-      return <FileText className="h-5 w-5 text-primary/70" />;
-    case 'assignment_change':
-      return <Users className="h-5 w-5 text-primary/70" />;
-    case 'agent_unresponsive':
-      return <AlertCircle className="h-5 w-5 text-primary/70" />;
-    case 'data_change':
-      return <Database className="h-5 w-5 text-primary/70" />;
-    case 'ticket_created':
-      return <Ticket className="h-5 w-5 text-primary/70" />;
-    case 'reusable_workflow':
-      return <Repeat className="h-5 w-5 text-primary/70" />;
-    default:
-      return <Info className="h-5 w-5 text-primary/70" />;
+    case 'page_visit': return <Globe className="h-5 w-5 text-primary/70" />;
+    case 'new_convo': return <MessageSquare className="h-5 w-5 text-primary/70" />;
+    case 'customer_message': return <Mail className="h-5 w-5 text-primary/70" />;
+    case 'customer_unresponsive': return <Clock className="h-5 w-5 text-primary/70" />;
+    case 'teammate_message': return <User className="h-5 w-5 text-primary/70" />;
+    case 'note_added': return <FileText className="h-5 w-5 text-primary/70" />;
+    case 'assignment_change': return <Users className="h-5 w-5 text-primary/70" />;
+    case 'agent_unresponsive': return <AlertCircle className="h-5 w-5 text-primary/70" />;
+    case 'data_change': return <Database className="h-5 w-5 text-primary/70" />;
+    case 'ticket_created': return <Ticket className="h-5 w-5 text-primary/70" />;
+    case 'reusable_workflow': return <Repeat className="h-5 w-5 text-primary/70" />;
+    default: return <Info className="h-5 w-5 text-primary/70" />;
   }
 };
 
