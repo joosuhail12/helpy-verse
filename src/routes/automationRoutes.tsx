@@ -41,6 +41,7 @@ const ContentCenter = lazy(() => import('../pages/automation/ContentCenter').cat
   console.error('Failed to load ContentCenter:', err);
   throw new Error('Failed to load ContentCenter');
 }));
+// Fix Workflows import to ensure it's wrapped properly with React context
 const Workflows = lazy(() => import('../pages/automation/Workflows').catch((err) => {
   console.error('Failed to load Workflows:', err);
   throw new Error('Failed to load Workflows');

@@ -49,10 +49,10 @@ const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
   return (
     <AppErrorBoundary>
       <AppQueryProvider>
-        <Toaster />
-        <Sonner />
         <CaslProvider>
           {children}
+          <Toaster />
+          <Sonner />
         </CaslProvider>
       </AppQueryProvider>
     </AppErrorBoundary>

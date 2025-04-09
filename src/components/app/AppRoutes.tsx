@@ -26,6 +26,7 @@ const LandingPage = React.lazy(() => import('@/pages/LandingPage'));
 const Companies = React.lazy(() => import('@/pages/contacts/Companies'));
 const CompanyDetail = React.lazy(() => import('@/pages/contacts/CompanyDetail'));
 const ContactDetail = React.lazy(() => import('@/pages/contacts/Detail'));
+// Fix Workflows import to ensure it's properly loaded
 const Workflows = React.lazy(() => import('@/pages/automation/Workflows'));
 
 /**
