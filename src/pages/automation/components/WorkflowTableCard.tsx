@@ -8,6 +8,8 @@ import {
   DropdownMenuItem, 
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
 import { format, formatDistance } from 'date-fns';
 import { 
   MoreVertical, 
@@ -30,18 +32,26 @@ interface WorkflowTableCardProps {
     description?: string;
     status: string;
     updatedAt: Date;
-    type?: 'message' | 'automation' | 'schedule' | 'bot'; // Added type for icons
+    type?: 'message' | 'automation' | 'schedule' | 'bot';
   };
   onDelete: (id: string, name: string) => void;
   onDuplicate: (id: string, name: string) => void;
   isEven?: boolean;
+  selectMode?: boolean;
+  isSelected?: boolean;
+  onSelect?: (id: string) => void;
+  onStatusToggle?: (status: 'Live' | 'Draft') => void;
 }
 
 export const WorkflowTableCard: React.FC<WorkflowTableCardProps> = ({ 
   workflow, 
   onDelete, 
   onDuplicate,
-  isEven = false
+  isEven = false,
+  selectMode = false,
+  isSelected = false,
+  onSelect,
+  onStatusToggle
 }) => {
   const [expanded, setExpanded] = useState(false);
 
@@ -88,19 +98,33 @@ export const WorkflowTableCard: React.FC<WorkflowTableCardProps> = ({
     setExpanded(!expanded);
   };
 
+  const handleStatusToggle = () => {
+    if (onStatusToggle) {
+      onStatusToggle(workflow.status === 'Live' ? 'Draft' : 'Live');
+    }
+  };
+
   return (
     <div className={`border-b border-border/40 group transition-all duration-300 ${isEven ? 'bg-muted/10' : 'bg-white'} ${expanded ? 'bg-muted/30' : ''}`}>
       {/* Card Main Row */}
       <div className="grid grid-cols-12 items-center p-4 relative">
         <div className="col-span-5 md:col-span-5 flex items-center gap-2.5">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={toggleExpand} 
-            className={`p-0 h-9 w-9 rounded-full hover:bg-primary/15 hover:text-primary transition-all duration-300 ${expanded ? 'bg-primary/15 text-primary' : ''}`}
-          >
-            <ChevronRight className={`h-5 w-5 transition-transform duration-300 ${expanded ? 'rotate-90' : ''}`} />
-          </Button>
+          {selectMode ? (
+            <Checkbox 
+              checked={isSelected} 
+              onCheckedChange={() => onSelect && onSelect(workflow.id)}
+              className="ml-2"
+            />
+          ) : (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={toggleExpand} 
+              className={`p-0 h-9 w-9 rounded-full hover:bg-primary/15 hover:text-primary transition-all duration-300 ${expanded ? 'bg-primary/15 text-primary' : ''}`}
+            >
+              <ChevronRight className={`h-5 w-5 transition-transform duration-300 ${expanded ? 'rotate-90' : ''}`} />
+            </Button>
+          )}
           
           <div className="flex items-center gap-2.5">
             <div className="p-1.5 bg-muted/70 rounded-md shadow-sm">
@@ -110,8 +134,19 @@ export const WorkflowTableCard: React.FC<WorkflowTableCardProps> = ({
           </div>
         </div>
         
-        <div className="col-span-3 md:col-span-3">
-          {renderStatusBadge(workflow.status)}
+        <div className="col-span-3 md:col-span-3 flex items-center">
+          {onStatusToggle ? (
+            <div className="flex items-center gap-3">
+              <Switch 
+                checked={workflow.status === 'Live'}
+                onCheckedChange={handleStatusToggle}
+                aria-label="Toggle workflow status"
+              />
+              {renderStatusBadge(workflow.status)}
+            </div>
+          ) : (
+            renderStatusBadge(workflow.status)
+          )}
         </div>
         
         <div className="col-span-3 md:col-span-3 text-sm text-muted-foreground">
