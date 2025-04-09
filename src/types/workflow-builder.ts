@@ -1,5 +1,5 @@
 
-import { Node, Edge, NodeProps, Position } from '@xyflow/react';
+import { Node, Edge, NodeProps as XYNodeProps, Position } from '@xyflow/react';
 
 export type NodeType = 
   | 'trigger'
@@ -18,7 +18,7 @@ export type NodeType =
   | 'wait'
   | 'add_note'
   | 'end'
-  | 'action'; // Adding 'action' as a valid node type
+  | 'action'; // Including 'action' as a valid node type
 
 export interface WorkflowTriggerConfig {
   channels: {
@@ -60,6 +60,7 @@ export interface NodeConfig {
   dataUpdates?: Record<string, any>;
 }
 
+// Define the data structure for workflow nodes
 export interface WorkflowNodeData {
   label: string;
   triggerId?: string;
@@ -69,7 +70,10 @@ export interface WorkflowNodeData {
   [key: string]: unknown; // Add index signature to satisfy Record<string, unknown>
 }
 
-// We define our custom node as a standard Node with our specific data type
+// Export NodeProps to be used by node components
+export type NodeProps = XYNodeProps<WorkflowNodeData>;
+
+// Export WorkflowNode type
 export type WorkflowNode = Node<WorkflowNodeData>;
 
 export interface WorkflowTagPickerProps {

@@ -1,11 +1,11 @@
 
 import React from 'react';
-import { Handle, Position, NodeProps } from '@xyflow/react';
+import { Handle, Position } from '@xyflow/react';
 import { MessageSquare, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { WorkflowNodeData, NodeConfig } from '@/types/workflow-builder';
+import { NodeProps, NodeConfig } from '@/types/workflow-builder';
 
-const MessageNode = ({ data, isConnectable }: NodeProps<WorkflowNodeData>) => {
+const MessageNode = ({ data, isConnectable }: NodeProps) => {
   const { label, configured, config } = data;
   const messageConfig = config as NodeConfig | undefined;
   

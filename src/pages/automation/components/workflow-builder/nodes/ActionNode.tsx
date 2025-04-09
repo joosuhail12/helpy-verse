@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Handle, Position, NodeProps } from '@xyflow/react';
+import { Handle, Position } from '@xyflow/react';
 import { 
   Cog, 
   AlertCircle, 
@@ -12,7 +12,7 @@ import {
   MessageSquareMore
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { WorkflowNodeData } from '@/types/workflow-builder';
+import { NodeProps } from '@/types/workflow-builder';
 
 // Icon mapping for different action types
 const actionIcons: Record<string, React.FC<{ className?: string }>> = {
@@ -24,7 +24,7 @@ const actionIcons: Record<string, React.FC<{ className?: string }>> = {
   default: Cog
 };
 
-const ActionNode = ({ data, isConnectable }: NodeProps<WorkflowNodeData>) => {
+const ActionNode = ({ data, isConnectable }: NodeProps) => {
   const { label, configured, actionType = 'default' } = data;
   
   // Get the appropriate icon for this action type

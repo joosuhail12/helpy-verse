@@ -1,15 +1,15 @@
 
 import React from 'react';
-import { Handle, Position, NodeProps } from '@xyflow/react';
+import { Handle, Position } from '@xyflow/react';
 import { 
   Workflow as WorkflowIcon,
   AlertCircle,
   CheckCircle2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { WorkflowNodeData } from '@/types/workflow-builder';
+import { NodeProps } from '@/types/workflow-builder';
 
-const TriggerNode = ({ data, isConnectable }: NodeProps<WorkflowNodeData>) => {
+const TriggerNode = ({ data, isConnectable }: NodeProps) => {
   const { label, configured } = data;
   
   return (

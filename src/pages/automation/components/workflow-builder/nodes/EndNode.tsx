@@ -1,10 +1,10 @@
 
 import React from 'react';
-import { Handle, Position, NodeProps } from '@xyflow/react';
+import { Handle, Position } from '@xyflow/react';
 import { Square } from 'lucide-react';
-import { WorkflowNodeData } from '@/types/workflow-builder';
+import { NodeProps } from '@/types/workflow-builder';
 
-const EndNode = ({ data, isConnectable }: NodeProps<WorkflowNodeData>) => {
+const EndNode = ({ data, isConnectable }: NodeProps) => {
   return (
     <div className="flex flex-col items-center p-3 rounded-xl border shadow-sm bg-background w-[180px] border-muted">
       <Handle

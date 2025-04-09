@@ -63,7 +63,7 @@ import {
 } from '@/types/workflow-builder';
 
 // Define the node types mapping for React Flow
-const nodeTypes = {
+const nodeTypes: NodeTypes = {
   trigger: TriggerNode,
   message: MessageNode,
   condition: ConditionNode,
