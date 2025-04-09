@@ -313,7 +313,7 @@ export const WorkflowTableCard: React.FC<WorkflowTableCardProps> = ({
             <WorkflowTagPicker 
               selectedTags={workflow.tags || []}
               allTags={allTags}
-              onTagsChange={handleTagsChange}
+              onChange={handleTagsChange}
             />
           </div>
         </DialogContent>

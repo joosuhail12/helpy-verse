@@ -56,7 +56,7 @@ export interface WorkflowMetrics {
   failedRuns?: number;
   successRate: number;
   averageDuration?: number;
-  lastRun?: Date; // Added this field
+  lastRun?: Date;
 }
 
 export interface Workflow {
