@@ -9,22 +9,21 @@ import {
   RefreshCw,
   CheckSquare,
   Calendar,
+  Clock,
   X,
   BarChart3,
-  Folder,
-  Tag,
-  FolderOpen,
-  BellDot,
-  Trash,
-  Copy,
-  ListFilter
+  FolderClosed,
+  Tag
 } from 'lucide-react';
+import { format, subDays } from 'date-fns';
 import { CreateWorkflowModal } from './modals/CreateWorkflowModal';
 import { toast } from "sonner";
 import { WorkflowTableCard } from './components/WorkflowTableCard';
 import { EmptyWorkflowState } from './components/EmptyWorkflowState';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { 
   Popover,
   PopoverContent,
@@ -41,22 +40,141 @@ import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
+  DropdownMenuCheckboxItem,
   DropdownMenuItem,
   DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { Workflow, WorkflowType, WorkflowTag, WorkflowFolder, WorkflowStatus } from '@/types/workflow';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { WorkflowFolders } from './components/WorkflowFolders';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { WorkflowMetricsCard } from './components/WorkflowAnalytics';
+import {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizableHandle
+} from '@/components/ui/resizable';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { WorkflowTagPicker } from './components/WorkflowTagPicker';
 import { cn } from '@/lib/utils';
-import { WorkflowFolderSelector } from './components/WorkflowFolderSelector';
-import { WorkflowTagsControl } from './components/WorkflowTagsControl';
+
+const workflows: Workflow[] = [
+  {
+    id: '1',
+    name: 'Urgent Escalation',
+    description: 'Automatically escalate urgent tickets to the relevant team members when specific criteria are met. This workflow ensures critical issues are addressed promptly by the right people.',
+    status: 'Draft',
+    type: 'automation',
+    updatedAt: new Date('2023-10-05T08:30:00Z'),
+    createdAt: new Date('2023-09-15T10:00:00Z'),
+    tags: [
+      { id: 'tag1', name: 'Support', color: '#F87171' },
+      { id: 'tag2', name: 'Urgent', color: '#FB923C' }
+    ],
+    metrics: {
+      totalRuns: 23,
+      successRate: 0.85,
+      failedRuns: 3,
+      successfulRuns: 20,
+      averageDuration: 5800
+    },
+    runs: [
+      {
+        id: 'run1-1',
+        workflowId: '1',
+        status: 'success',
+        startTime: new Date('2023-10-05T08:25:00Z'),
+        endTime: new Date('2023-10-05T08:25:08Z'),
+        duration: 8000
+      },
+      {
+        id: 'run1-2',
+        workflowId: '1',
+        status: 'failed',
+        startTime: new Date('2023-10-04T19:10:00Z'),
+        endTime: new Date('2023-10-04T19:10:05Z'),
+        duration: 5000,
+        error: 'Failed to connect to API'
+      }
+    ],
+  },
+  {
+    id: '2',
+    name: 'Customer Churn Save',
+    description: 'Engage with customers showing churn signals before they leave by sending personalized retention offers and scheduling follow-up calls with account managers.',
+    status: 'Live',
+    type: 'message',
+    updatedAt: new Date('2023-10-07T14:45:00Z'),
+    createdAt: new Date('2023-09-20T09:30:00Z'),
+    tags: [
+      { id: 'tag3', name: 'Retention', color: '#A3E635' },
+      { id: 'tag4', name: 'Automated', color: '#22D3EE' }
+    ],
+    metrics: {
+      totalRuns: 45,
+      successRate: 0.92,
+      failedRuns: 4,
+      successfulRuns: 41,
+      averageDuration: 3200
+    }
+  },
+  {
+    id: '3',
+    name: 'New Customer Onboarding',
+    description: 'Guide new customers through their first steps with our product through a series of timed welcome emails, tutorial recommendations, and check-in messages.',
+    status: 'Live',
+    type: 'schedule',
+    updatedAt: new Date('2023-10-09T11:20:00Z'),
+    createdAt: new Date('2023-09-25T14:15:00Z'),
+    tags: [
+      { id: 'tag5', name: 'Onboarding', color: '#60A5FA' },
+      { id: 'tag3', name: 'Retention', color: '#A3E635' }
+    ],
+  },
+  {
+    id: '4',
+    name: 'Support Bot Response',
+    description: 'AI-powered bot that handles common support inquiries and provides instant responses to customers using our knowledge base.',
+    status: 'Draft',
+    type: 'bot',
+    updatedAt: new Date('2023-10-11T09:15:00Z'),
+    createdAt: new Date('2023-10-01T16:45:00Z'),
+    metrics: {
+      totalRuns: 128,
+      successRate: 0.97,
+      failedRuns: 4,
+      successfulRuns: 124,
+      averageDuration: 1500
+    }
+  },
+];
+
+const initialTags: WorkflowTag[] = [
+  { id: 'tag1', name: 'Support', color: '#F87171' },
+  { id: 'tag2', name: 'Urgent', color: '#FB923C' },
+  { id: 'tag3', name: 'Retention', color: '#A3E635' },
+  { id: 'tag4', name: 'Automated', color: '#22D3EE' },
+  { id: 'tag5', name: 'Onboarding', color: '#60A5FA' },
+];
+
+const initialFolders: WorkflowFolder[] = [
+  { 
+    id: 'folder1', 
+    name: 'Customer Communication', 
+    description: 'Workflows for customer messaging and communication',
+    workflowIds: ['2', '3'] 
+  },
+  { 
+    id: 'folder2', 
+    name: 'Support Automations', 
+    description: 'Workflows for support team automation',
+    workflowIds: ['1', '4'] 
+  },
+];
 
 interface DateRange {
-  from?: Date;
-  to?: Date;
+  from: Date | undefined;
+  to: Date | undefined;
 }
 
 interface WorkflowsPageState {
@@ -77,228 +195,191 @@ interface WorkflowsPageState {
 
 const WorkflowsPage: React.FC = () => {
   const [state, setState] = useState<WorkflowsPageState>({
-    workflows: [],
-    tags: [],
-    folders: [],
-    sortOrder: 'asc',
+    workflows: workflows,
+    tags: initialTags,
+    folders: initialFolders,
+    sortOrder: 'desc',
     searchTerm: '',
     typeFilters: [],
     statusFilter: 'All',
     tagFilters: [],
     selectedFolder: null,
-    dateRange: {},
+    dateRange: {
+      from: undefined,
+      to: undefined
+    },
     selectedWorkflows: [],
     selectMode: false,
     isRefreshing: false,
   });
+  
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [analyticsWorkflow, setAnalyticsWorkflow] = useState<Workflow | null>(null);
-
+  const [isAnalyticsModalOpen, setIsAnalyticsModalOpen] = useState(false);
+  const [selectedWorkflow, setSelectedWorkflow] = useState<Workflow | null>(null);
+  
   useEffect(() => {
-    const fetchWorkflows = async () => {
-      const mockWorkflows: Workflow[] = [
-        {
-          id: '1',
-          name: 'Welcome New Customer',
-          description: 'Sends a welcome message to new customers.',
-          status: 'Live',
-          type: 'message',
-          updatedAt: subDays(new Date(), 2),
-          createdAt: subDays(new Date(), 10),
-          tags: [{ id: 'tag-1', name: 'onboarding', color: '#A3E635' }],
-          metrics: {
-            totalRuns: 50,
-            successRate: 0.95,
-            failedRuns: 2,
-            successfulRuns: 48,
-            averageDuration: 1500,
-          },
-          runs: [
-            { id: 'run-1', workflowId: '1', status: 'success', startTime: subDays(new Date(), 1), endTime: new Date(), duration: 1500 },
-            { id: 'run-2', workflowId: '1', status: 'failed', startTime: subDays(new Date(), 2), endTime: new Date(), duration: 1200, error: 'Failed to send message' },
-          ],
-        },
-        {
-          id: '2',
-          name: 'Daily Report Automation',
-          description: 'Generates and sends a daily report.',
-          status: 'Draft',
-          type: 'schedule',
-          updatedAt: subDays(new Date(), 1),
-          createdAt: subDays(new Date(), 5),
-          tags: [{ id: 'tag-2', name: 'reporting', color: '#60A5FA' }],
-          metrics: {
-            totalRuns: 30,
-            successRate: 0.85,
-            failedRuns: 4,
-            successfulRuns: 26,
-            averageDuration: 2000,
-          },
-          runs: [
-            { id: 'run-3', workflowId: '2', status: 'success', startTime: subDays(new Date(), 1), endTime: new Date(), duration: 1800 },
-            { id: 'run-4', workflowId: '2', status: 'failed', startTime: subDays(new Date(), 2), endTime: new Date(), duration: 2200, error: 'Data fetch error' },
-          ],
-        },
-        {
-          id: '3',
-          name: 'Inactive Customer Follow-up',
-          description: 'Follows up with customers who have been inactive for 30 days.',
-          status: 'Live',
-          type: 'automation',
-          updatedAt: subDays(new Date(), 3),
-          createdAt: subDays(new Date(), 12),
-          tags: [{ id: 'tag-3', name: 'customer-retention', color: '#F472B6' }],
-          metrics: {
-            totalRuns: 60,
-            successRate: 0.92,
-            failedRuns: 5,
-            successfulRuns: 55,
-            averageDuration: 1800,
-          },
-          runs: [
-            { id: 'run-5', workflowId: '3', status: 'success', startTime: subDays(new Date(), 1), endTime: new Date(), duration: 1600 },
-            { id: 'run-6', workflowId: '3', status: 'failed', startTime: subDays(new Date(), 2), endTime: new Date(), duration: 2000, error: 'Customer not found' },
-          ],
-        },
-      ];
-
-      const mockTags: WorkflowTag[] = [
-        { id: 'tag-1', name: 'onboarding', color: '#A3E635' },
-        { id: 'tag-2', name: 'reporting', color: '#60A5FA' },
-        { id: 'tag-3', name: 'customer-retention', color: '#F472B6' },
-        { id: 'tag-4', name: 'urgent', color: '#F87171' },
-      ];
-
-      const mockFolders: WorkflowFolder[] = [
-        { id: 'folder-1', name: 'Customer Engagement', workflowIds: ['1', '3'] },
-        { id: 'folder-2', name: 'Reporting', workflowIds: ['2'] },
-      ];
-
-      setState(prev => ({
-        ...prev,
-        workflows: mockWorkflows,
-        tags: mockTags,
-        folders: mockFolders,
-      }));
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.ctrlKey && event.key === 'n') {
+        setIsCreateModalOpen(true);
+        event.preventDefault();
+      }
+      
+      if (event.ctrlKey && event.key === 'f') {
+        const searchInput = document.getElementById('workflow-search');
+        if (searchInput) {
+          searchInput.focus();
+        }
+        event.preventDefault();
+      }
+      
+      if (event.key === 'Escape' && state.selectMode) {
+        setState(prev => ({
+          ...prev,
+          selectMode: false,
+          selectedWorkflows: []
+        }));
+      }
     };
-
-    fetchWorkflows();
-  }, []);
-
-  const handleSort = () => {
-    setState(prev => ({
-      ...prev,
-      sortOrder: prev.sortOrder === 'asc' ? 'desc' : 'asc',
-      workflows: [...prev.workflows].sort((a, b) =>
-        prev.sortOrder === 'asc'
-          ? a.name.localeCompare(b.name)
-          : b.name.localeCompare(a.name)
-      ),
-    }));
+    
+    window.addEventListener('keydown', handleKeyDown);
+    
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [state.selectMode]);
+  
+  const handleOpenCreateModal = () => {
+    setIsCreateModalOpen(true);
   };
 
-  const handleSearch = (term: string) => {
-    setState(prev => ({
-      ...prev,
-      searchTerm: term,
-    }));
+  const handleCloseCreateModal = () => {
+    setIsCreateModalOpen(false);
   };
-
-  const handleTypeFilter = (type: WorkflowType) => {
-    setState(prev => ({
-      ...prev,
-      typeFilters: prev.typeFilters.includes(type)
-        ? prev.typeFilters.filter(t => t !== type)
-        : [...prev.typeFilters, type],
-    }));
-  };
-
-  const handleStatusFilter = (status: 'Live' | 'Draft' | 'All') => {
-    setState(prev => ({
-      ...prev,
-      statusFilter: status,
-    }));
-  };
-
-  const handleTagFilter = (tagId: string) => {
-    setState(prev => ({
-      ...prev,
-      tagFilters: prev.tagFilters.includes(tagId)
-        ? prev.tagFilters.filter(t => t !== tagId)
-        : [...prev.tagFilters, tagId],
-    }));
-  };
-
-  const handleFolderSelect = (folderId: string | null) => {
-    setState(prev => ({
-      ...prev,
-      selectedFolder: folderId,
-    }));
-  };
-
-  const handleDateRangeChange = (dateRange: DateRange) => {
-    setState(prev => ({
-      ...prev,
-      dateRange: dateRange,
-    }));
-  };
-
-  const filteredWorkflows = state.workflows.filter(workflow => {
-    const searchTermMatch = workflow.name.toLowerCase().includes(state.searchTerm.toLowerCase());
-    const typeFilterMatch = state.typeFilters.length === 0 || state.typeFilters.includes(workflow.type);
-    const statusFilterMatch = state.statusFilter === 'All' || workflow.status === state.statusFilter;
-    const tagFilterMatch = state.tagFilters.length === 0 || (workflow.tags && workflow.tags.some(tag => state.tagFilters.includes(tag.id)));
-    const folderFilterMatch = !state.selectedFolder || workflow.folderId === state.selectedFolder;
-
-    return searchTermMatch && typeFilterMatch && statusFilterMatch && tagFilterMatch && folderFilterMatch;
-  });
 
   const handleDeleteWorkflow = (id: string, name: string) => {
     setState(prev => ({
       ...prev,
-      workflows: prev.workflows.filter(workflow => workflow.id !== id),
+      workflows: prev.workflows.filter(w => w.id !== id),
+      folders: prev.folders.map(folder => ({
+        ...folder,
+        workflowIds: folder.workflowIds.filter(wId => wId !== id)
+      }))
     }));
-    toast.success('Workflow deleted successfully!', {
-      description: `"${name}" has been removed from your workflows.`
-    });
+    
+    toast.success(`Workflow "${name}" deleted successfully`);
   };
 
   const handleDuplicateWorkflow = (id: string, newName: string) => {
-    const originalWorkflow = state.workflows.find(workflow => workflow.id === id);
-    if (originalWorkflow) {
-      const newWorkflow: Workflow = {
-        ...originalWorkflow,
-        id: `duplicate-${Date.now()}`,
-        name: newName,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-      setState(prev => ({
-        ...prev,
-        workflows: [...prev.workflows, newWorkflow],
-      }));
-      toast.success('Workflow duplicated successfully!', {
-        description: `"${originalWorkflow.name}" has been duplicated as "${newName}".`
-      });
-    }
-  };
-
-  const handleCreateWorkflow = (workflow: Workflow) => {
+    const workflowToDuplicate = state.workflows.find(w => w.id === id);
+    
+    if (!workflowToDuplicate) return;
+    
+    const newWorkflow: Workflow = {
+      ...workflowToDuplicate,
+      id: `workflow-${Date.now()}`,
+      name: newName,
+      updatedAt: new Date(),
+      createdAt: new Date(),
+      metrics: {
+        totalRuns: 0,
+        successRate: 0,
+        failedRuns: 0,
+        successfulRuns: 0,
+      },
+      runs: []
+    };
+    
     setState(prev => ({
       ...prev,
-      workflows: [...prev.workflows, workflow],
+      workflows: [...prev.workflows, newWorkflow]
     }));
   };
 
-  const handleMoveToFolder = (workflowId: string, folderId: string | null) => {
+  const toggleSortOrder = () => {
     setState(prev => ({
       ...prev,
-      workflows: prev.workflows.map(workflow =>
-        workflow.id === workflowId ? { ...workflow, folderId: folderId } : workflow
-      ),
+      sortOrder: prev.sortOrder === 'asc' ? 'desc' : 'asc',
+      isRefreshing: true
+    }));
+    
+    setTimeout(() => {
+      setState(prev => ({
+        ...prev,
+        isRefreshing: false
+      }));
+    }, 500);
+  };
+  
+  const toggleTypeFilter = (type: WorkflowType) => {
+    setState(prev => ({
+      ...prev,
+      typeFilters: prev.typeFilters.includes(type)
+        ? prev.typeFilters.filter(t => t !== type)
+        : [...prev.typeFilters, type]
     }));
   };
   
+  const toggleTagFilter = (tagId: string) => {
+    setState(prev => ({
+      ...prev,
+      tagFilters: prev.tagFilters.includes(tagId)
+        ? prev.tagFilters.filter(t => t !== tagId)
+        : [...prev.tagFilters, tagId]
+    }));
+  };
+  
+  const clearFilters = () => {
+    setState(prev => ({
+      ...prev,
+      typeFilters: [],
+      statusFilter: 'All',
+      tagFilters: [],
+      dateRange: { from: undefined, to: undefined },
+      searchTerm: '',
+      selectedFolder: null
+    }));
+  };
+  
+  const toggleWorkflowSelection = (id: string) => {
+    setState(prev => ({
+      ...prev,
+      selectedWorkflows: prev.selectedWorkflows.includes(id)
+        ? prev.selectedWorkflows.filter(wId => wId !== id)
+        : [...prev.selectedWorkflows, id]
+    }));
+  };
+  
+  const selectAllWorkflows = () => {
+    if (state.selectedWorkflows.length === filteredWorkflows.length) {
+      setState(prev => ({
+        ...prev,
+        selectedWorkflows: []
+      }));
+    } else {
+      setState(prev => ({
+        ...prev,
+        selectedWorkflows: filteredWorkflows.map(w => w.id)
+      }));
+    }
+  };
+  
+  const changeWorkflowsStatus = (status: WorkflowStatus) => {
+    if (state.selectedWorkflows.length === 0) return;
+    
+    setState(prev => ({
+      ...prev,
+      workflows: prev.workflows.map(workflow => 
+        prev.selectedWorkflows.includes(workflow.id)
+          ? { ...workflow, status }
+          : workflow
+      ),
+      selectedWorkflows: [],
+      selectMode: false
+    }));
+    
+    toast.success(`${state.selectedWorkflows.length} workflows updated to "${status}" status`);
+  };
+
   const handleTagsChange = (workflowId: string, tags: WorkflowTag[]) => {
     setState(prev => ({
       ...prev,
@@ -309,278 +390,538 @@ const WorkflowsPage: React.FC = () => {
       )
     }));
   };
-
-  const toggleWorkflowSelection = (id: string) => {
-    setState(prev => ({
-      ...prev,
-      selectedWorkflows: prev.selectedWorkflows.includes(id)
-        ? prev.selectedWorkflows.filter(workflowId => workflowId !== id)
-        : [...prev.selectedWorkflows, id],
-    }));
+  
+  const handleMoveToFolder = (workflowId: string, folderId: string | null) => {
+    setState(prev => {
+      const updatedFolders = prev.folders.map(folder => ({
+        ...folder,
+        workflowIds: folder.workflowIds.filter(id => id !== workflowId)
+      }));
+      
+      if (folderId) {
+        const folderIndex = updatedFolders.findIndex(f => f.id === folderId);
+        if (folderIndex !== -1) {
+          updatedFolders[folderIndex] = {
+            ...updatedFolders[folderIndex],
+            workflowIds: [...updatedFolders[folderIndex].workflowIds, workflowId]
+          };
+        }
+      }
+      
+      return {
+        ...prev,
+        folders: updatedFolders
+      };
+    });
   };
-
-  const toggleSelectMode = () => {
-    setState(prev => ({
-      ...prev,
-      selectMode: !prev.selectMode,
-      selectedWorkflows: [],
-    }));
-  };
-
-  const handleWorkflowStatusToggle = (id: string, newStatus: 'Live' | 'Draft') => {
-    setState(prev => ({
-      ...prev,
-      workflows: prev.workflows.map(workflow =>
-        workflow.id === id ? { ...workflow, status: newStatus } : workflow
-      ),
-    }));
-  };
-
-  const handleCreateTag = (tag: WorkflowTag) => {
-    setState(prev => ({
-      ...prev,
-      tags: [...prev.tags, tag],
-    }));
-  };
-
+  
   const handleCreateFolder = (folder: WorkflowFolder) => {
     setState(prev => ({
       ...prev,
       folders: [...prev.folders, folder],
+      selectedFolder: folder.id
     }));
+    
+    toast.success(`Created folder "${folder.name}"`);
   };
-
+  
   const handleUpdateFolder = (updatedFolder: WorkflowFolder) => {
     setState(prev => ({
       ...prev,
-      folders: prev.folders.map(folder =>
+      folders: prev.folders.map(folder => 
         folder.id === updatedFolder.id ? updatedFolder : folder
-      ),
+      )
     }));
   };
-
+  
   const handleDeleteFolder = (folderId: string) => {
+    setState(prev => {
+      const folder = prev.folders.find(f => f.id === folderId);
+      
+      if (folder) {
+        toast.success(`Deleted folder "${folder.name}"`);
+      }
+      
+      return {
+        ...prev,
+        folders: prev.folders.filter(folder => folder.id !== folderId),
+        selectedFolder: prev.selectedFolder === folderId ? null : prev.selectedFolder
+      };
+    });
+  };
+  
+  const handleWorkflowStatusToggle = (id: string, status: WorkflowStatus) => {
     setState(prev => ({
       ...prev,
-      folders: prev.folders.filter(folder => folder.id !== folderId),
-      workflows: prev.workflows.map(workflow =>
-        workflow.folderId === folderId ? { ...workflow, folderId: null } : workflow
-      ),
+      workflows: prev.workflows.map(workflow => 
+        workflow.id === id
+          ? { ...workflow, status }
+          : workflow
+      )
     }));
+    
+    const workflow = state.workflows.find(w => w.id === id);
+    if (workflow) {
+      toast.success(`Workflow "${workflow.name}" set to ${status}`);
+    }
   };
-
+  
   const openAnalyticsModal = (workflow: Workflow) => {
-    setAnalyticsWorkflow(workflow);
+    setSelectedWorkflow(workflow);
+    setIsAnalyticsModalOpen(true);
   };
 
-  const closeAnalyticsModal = () => {
-    setAnalyticsWorkflow(null);
+  const filteredWorkflows = state.workflows
+    .filter(workflow => {
+      const matchesSearch = 
+        state.searchTerm === '' || 
+        workflow.name.toLowerCase().includes(state.searchTerm.toLowerCase()) ||
+        (workflow.description?.toLowerCase().includes(state.searchTerm.toLowerCase()) || false);
+      
+      const matchesType = state.typeFilters.length === 0 || state.typeFilters.includes(workflow.type);
+      
+      const matchesStatus = state.statusFilter === 'All' || workflow.status === state.statusFilter;
+      
+      const matchesDateRange = 
+        !state.dateRange.from || !state.dateRange.to ||
+        (workflow.updatedAt >= state.dateRange.from && workflow.updatedAt <= state.dateRange.to);
+      
+      const matchesFolder = 
+        !state.selectedFolder || 
+        state.folders.find(f => f.id === state.selectedFolder)?.workflowIds.includes(workflow.id);
+      
+      const matchesTags = 
+        state.tagFilters.length === 0 || 
+        (workflow.tags && workflow.tags.some(tag => state.tagFilters.includes(tag.id)));
+      
+      return matchesSearch && matchesType && matchesStatus && matchesDateRange && matchesFolder && matchesTags;
+    })
+    .sort((a, b) => {
+      const dateA = new Date(a.updatedAt).getTime();
+      const dateB = new Date(b.updatedAt).getTime();
+      return state.sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
+    });
+    
+  const typeCount = state.workflows.reduce((acc, workflow) => {
+    acc[workflow.type] = (acc[workflow.type] || 0) + 1;
+    return acc;
+  }, {} as Record<WorkflowType, number>);
+  
+  const analyticsSummary = {
+    totalWorkflows: state.workflows.length,
+    activeWorkflows: state.workflows.filter(w => w.status === 'Live').length,
+    draftWorkflows: state.workflows.filter(w => w.status === 'Draft').length,
+    totalRuns: state.workflows.reduce((total, workflow) => total + (workflow.metrics?.totalRuns || 0), 0),
+    successRate: state.workflows.length > 0 
+      ? state.workflows.reduce((total, workflow) => total + (workflow.metrics?.successRate || 0), 0) / state.workflows.length
+      : 0
   };
+
+  const hasActiveFilters = 
+    state.typeFilters.length > 0 || 
+    state.statusFilter !== 'All' || 
+    state.dateRange.from || 
+    state.searchTerm || 
+    state.tagFilters.length > 0 ||
+    state.selectedFolder !== null;
+
+  const showAnalyticsSummary = analyticsSummary.totalRuns > 0;
 
   return (
-    <div className="container py-10">
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold">Workflows</h1>
-        <div className="space-x-2">
-          <Button variant="outline" onClick={() => setState(prev => ({ ...prev, isRefreshing: true }))}>
-            <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-            {state.isRefreshing ? 'Refreshing...' : 'Refresh'}
-          </Button>
-          <Button onClick={() => setIsCreateModalOpen(true)}>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Create Workflow
-          </Button>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="col-span-1">
-          <Input
-            type="search"
-            placeholder="Search workflows..."
-            value={state.searchTerm}
-            onChange={(e) => handleSearch(e.target.value)}
+    <ResizablePanelGroup direction="horizontal" className="min-h-[calc(100vh-8rem)]">
+      <ResizablePanel defaultSize={20} minSize={15} maxSize={25}>
+        <div className="h-full p-4 border-r overflow-auto">
+          <WorkflowFolders
+            folders={state.folders}
+            onFolderCreate={handleCreateFolder}
+            onFolderUpdate={handleUpdateFolder}
+            onFolderDelete={handleDeleteFolder}
+            selectedFolderId={state.selectedFolder}
+            onFolderSelect={(folderId) => setState(prev => ({ ...prev, selectedFolder: folderId }))}
+            className="mb-6"
           />
-        </div>
-
-        <div className="col-span-2 flex items-center space-x-4">
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className="gap-2">
-                <ListFilter className="h-4 w-4" />
-                Type <ArrowUp className="h-3 w-3" /> <ArrowDown className="h-3 w-3" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-56">
-              <div className="space-y-1">
-                <label className="flex items-center space-x-2">
-                  <Checkbox
-                    checked={state.typeFilters.includes('message')}
-                    onCheckedChange={() => handleTypeFilter('message')}
-                  />
-                  <span>Message</span>
-                </label>
-                <label className="flex items-center space-x-2">
-                  <Checkbox
-                    checked={state.typeFilters.includes('automation')}
-                    onCheckedChange={() => handleTypeFilter('automation')}
-                  />
-                  <span>Automation</span>
-                </label>
-                <label className="flex items-center space-x-2">
-                  <Checkbox
-                    checked={state.typeFilters.includes('schedule')}
-                    onCheckedChange={() => handleTypeFilter('schedule')}
-                  />
-                  <span>Schedule</span>
-                </label>
-                <label className="flex items-center space-x-2">
-                  <Checkbox
-                    checked={state.typeFilters.includes('bot')}
-                    onCheckedChange={() => handleTypeFilter('bot')}
-                  />
-                  <span>Bot</span>
-                </label>
-              </div>
-            </PopoverContent>
-          </Popover>
-
-          <Select value={state.statusFilter} onValueChange={value => handleStatusFilter(value as 'Live' | 'Draft' | 'All')}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="All">All</SelectItem>
-              <SelectItem value="Live">Live</SelectItem>
-              <SelectItem value="Draft">Draft</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className="gap-2">
-                <Tag className="h-4 w-4" />
-                Tags
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-56">
-              <div className="space-y-1">
-                {state.tags.map(tag => (
-                  <label key={tag.id} className="flex items-center space-x-2">
-                    <Checkbox
-                      checked={state.tagFilters.includes(tag.id)}
-                      onCheckedChange={() => handleTagFilter(tag.id)}
+          
+          <div className="mb-6">
+            <h3 className="text-sm font-medium text-muted-foreground mb-2">Filter by Tag</h3>
+            <div className="space-y-1">
+              {state.tags.map(tag => (
+                <div
+                  key={tag.id}
+                  className={cn(
+                    "flex items-center justify-between px-2 py-1.5 rounded-md cursor-pointer group",
+                    state.tagFilters.includes(tag.id) ? "bg-muted" : "hover:bg-muted/50"
+                  )}
+                  onClick={() => toggleTagFilter(tag.id)}
+                >
+                  <div className="flex items-center gap-2">
+                    <div 
+                      className="h-2.5 w-2.5 rounded-full" 
+                      style={{ backgroundColor: tag.color }}
                     />
-                    <span>{tag.name}</span>
-                  </label>
-                ))}
+                    <span className="text-sm">{tag.name}</span>
+                  </div>
+                  <Checkbox 
+                    checked={state.tagFilters.includes(tag.id)}
+                    className="opacity-60 group-hover:opacity-100"
+                  />
+                </div>
+              ))}
+              
+              {state.tags.length === 0 && (
+                <p className="text-sm text-center text-muted-foreground py-2">No tags created</p>
+              )}
+            </div>
+          </div>
+          
+          <div className="border-t border-border/40 pt-4 mt-4">
+            <h3 className="text-sm font-medium text-muted-foreground mb-2">Keyboard Shortcuts</h3>
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">New workflow</span>
+                <kbd className="px-1.5 py-0.5 bg-muted rounded text-xs">Ctrl+N</kbd>
               </div>
-            </PopoverContent>
-          </Popover>
-
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className="gap-2">
-                <Calendar className="h-4 w-4" />
-                Date Range
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <DateRangePicker 
-                date={state.dateRange} 
-                onDateChange={handleDateRangeChange} 
-              />
-            </PopoverContent>
-          </Popover>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Search</span>
+                <kbd className="px-1.5 py-0.5 bg-muted rounded text-xs">Ctrl+F</kbd>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Expand workflow</span>
+                <kbd className="px-1.5 py-0.5 bg-muted rounded text-xs">Shift+E</kbd>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Toggle status</span>
+                <kbd className="px-1.5 py-0.5 bg-muted rounded text-xs">Shift+T</kbd>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Duplicate workflow</span>
+                <kbd className="px-1.5 py-0.5 bg-muted rounded text-xs">Shift+D</kbd>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-
-      {state.selectMode && (
-        <Card className="mb-6">
-          <CardContent className="flex items-center justify-between">
+      </ResizablePanel>
+      
+      <ResizableHandle withHandle />
+      
+      <ResizablePanel defaultSize={80}>
+        <div className="container mx-auto p-4 space-y-8">
+          <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <Checkbox
-                checked={state.selectedWorkflows.length === filteredWorkflows.length}
-                onCheckedChange={() => {
-                  if (state.selectedWorkflows.length === filteredWorkflows.length) {
-                    setState(prev => ({ ...prev, selectedWorkflows: [] }));
-                  } else {
-                    setState(prev => ({ ...prev, selectedWorkflows: filteredWorkflows.map(workflow => workflow.id) }));
-                  }
-                }}
-              />
-              <span className="ml-2 text-sm text-muted-foreground">
-                {state.selectedWorkflows.length} workflows selected
-              </span>
+              <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                Workflows
+              </h1>
+              <p className="text-muted-foreground mt-2 text-lg">
+                Automate your support with triggers, conditions, and actions.
+              </p>
             </div>
-            <div className="space-x-2">
-              <Button variant="outline" size="sm" onClick={toggleSelectMode}>
-                {state.selectMode ? 'Exit Select Mode' : 'Select Workflows'}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+            <Button 
+              onClick={handleOpenCreateModal} 
+              size="lg"
+              className="shrink-0 shadow-md hover:shadow-lg transition-all duration-300 group"
+            >
+              <PlusCircle className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform duration-300" />
+              New Workflow
+            </Button>
+          </header>
 
-      <div className="hidden md:grid grid-cols-12 gap-4 py-2 px-4 text-sm font-medium text-muted-foreground">
-        <div className="col-span-5">
-          Name <Button variant="ghost" size="icon" className="ml-2"><ArrowUp className="h-4 w-4" /></Button>
+          <main>
+            {showAnalyticsSummary && (
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-3xl font-bold">{analyticsSummary.totalWorkflows}</span>
+                      <span className="text-sm text-muted-foreground">Total Workflows</span>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-3xl font-bold text-green-600">{analyticsSummary.activeWorkflows}</span>
+                      <span className="text-sm text-muted-foreground">Active Workflows</span>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-3xl font-bold">{analyticsSummary.totalRuns}</span>
+                      <span className="text-sm text-muted-foreground">Total Executions</span>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-3xl font-bold text-blue-600">{(analyticsSummary.successRate * 100).toFixed(1)}%</span>
+                      <span className="text-sm text-muted-foreground">Success Rate</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+          
+            {state.workflows.length === 0 ? (
+              <EmptyWorkflowState onCreateClick={handleOpenCreateModal} />
+            ) : (
+              <div className="space-y-5">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-4">
+                  <div className="relative w-full md:w-80 transition-all duration-300 hover:shadow-md focus-within:shadow-md rounded-md">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="workflow-search"
+                      placeholder="Search workflows..."
+                      value={state.searchTerm}
+                      onChange={(e) => setState(prev => ({ ...prev, searchTerm: e.target.value }))}
+                      className="pl-10 pr-4 py-2 border-border/60 focus:border-primary/60 transition-all duration-300"
+                    />
+                  </div>
+                  
+                  <div className="flex gap-2 flex-wrap">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          className={`shadow-sm hover:shadow h-9 text-sm transition-all duration-200 flex items-center gap-1.5 ${state.typeFilters.length > 0 ? 'bg-primary/10 border-primary/30' : ''}`}
+                        >
+                          <Filter className="h-3.5 w-3.5" />
+                          <span>Type</span>
+                          {state.typeFilters.length > 0 && (
+                            <span className="ml-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground">
+                              {state.typeFilters.length}
+                            </span>
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-56 p-3">
+                        <div className="space-y-2">
+                          <h4 className="font-medium text-sm">Filter by type</h4>
+                          <div className="grid gap-2">
+                            {(['message', 'automation', 'schedule', 'bot'] as const).map((type) => (
+                              <div key={type} className="flex items-center gap-2">
+                                <Checkbox 
+                                  id={`type-${type}`}
+                                  checked={state.typeFilters.includes(type)}
+                                  onCheckedChange={() => toggleTypeFilter(type)}
+                                />
+                                <label 
+                                  htmlFor={`type-${type}`}
+                                  className="text-sm flex items-center justify-between w-full cursor-pointer"
+                                >
+                                  <span className="capitalize">{type}</span>
+                                  <span className="text-xs text-muted-foreground px-2 py-0.5 rounded-full bg-muted">
+                                    {typeCount[type] || 0}
+                                  </span>
+                                </label>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                    
+                    <Select
+                      value={state.statusFilter}
+                      onValueChange={(value) => setState(prev => ({ ...prev, statusFilter: value as WorkflowStatus | 'All' }))}
+                    >
+                      <SelectTrigger 
+                        className={`w-[110px] shadow-sm hover:shadow h-9 text-sm transition-all duration-200 ${state.statusFilter !== 'All' ? 'bg-primary/10 border-primary/30' : ''}`}
+                      >
+                        <SelectValue placeholder="Status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="All">All Status</SelectItem>
+                        <SelectItem value="Live">Live</SelectItem>
+                        <SelectItem value="Draft">Draft</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    
+                    <DateRangePicker 
+                      date={state.dateRange}
+                      onDateChange={(dateRange) => setState(prev => ({ ...prev, dateRange }))}
+                      align="end"
+                      className={`h-9 ${state.dateRange.from ? 'bg-primary/10 border-primary/30' : ''}`}
+                    />
+                    
+                    {hasActiveFilters && (
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={clearFilters}
+                        className="h-9"
+                      >
+                        <X className="h-3.5 w-3.5 mr-1" />
+                        Clear
+                      </Button>
+                    )}
+                    
+                    <Button 
+                      variant="outline" 
+                      onClick={toggleSortOrder}
+                      className="flex items-center gap-1.5 shadow-sm hover:shadow transition-all duration-200 h-9"
+                      size="sm"
+                    >
+                      <span>Last Updated</span>
+                      {state.sortOrder === 'asc' ? (
+                        <ArrowUp className={`h-3.5 w-3.5 ${state.isRefreshing ? 'animate-pulse' : ''}`} />
+                      ) : (
+                        <ArrowDown className={`h-3.5 w-3.5 ${state.isRefreshing ? 'animate-pulse' : ''}`} />
+                      )}
+                    </Button>
+                  </div>
+                </div>
+
+                {state.selectMode && (
+                  <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg shadow-sm">
+                    <div className="flex items-center gap-3">
+                      <Checkbox
+                        id="select-all"
+                        checked={state.selectedWorkflows.length > 0 && state.selectedWorkflows.length === filteredWorkflows.length}
+                        onCheckedChange={selectAllWorkflows}
+                      />
+                      <label htmlFor="select-all" className="text-sm font-medium">
+                        {state.selectedWorkflows.length === 0 ? 'Select All' : 
+                          `Selected ${state.selectedWorkflows.length} ${state.selectedWorkflows.length === 1 ? 'workflow' : 'workflows'}`}
+                      </label>
+                    </div>
+                    
+                    <div className="flex gap-2">
+                      {state.selectedWorkflows.length > 0 && (
+                        <>
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            onClick={() => changeWorkflowsStatus('Live')}
+                          >
+                            Set Live
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            onClick={() => changeWorkflowsStatus('Draft')}
+                          >
+                            Set Draft
+                          </Button>
+                        </>
+                      )}
+                      <Button 
+                        size="sm" 
+                        variant="ghost" 
+                        onClick={() => {
+                          setState(prev => ({
+                            ...prev,
+                            selectMode: false,
+                            selectedWorkflows: []
+                          }));
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                <div className="rounded-xl overflow-hidden border border-border shadow-sm hover:shadow-md transition-all duration-300">
+                  <div className="grid grid-cols-12 bg-gradient-to-r from-muted/80 to-muted/40 text-sm font-medium text-muted-foreground p-4 border-b border-border/60">
+                    {!state.selectMode ? (
+                      <div className="col-span-5 md:col-span-5 flex items-center gap-2.5">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0 rounded-full"
+                          onClick={() => setState(prev => ({ ...prev, selectMode: true }))}
+                        >
+                          <CheckSquare className="h-4 w-4" />
+                          <span className="sr-only">Select workflows</span>
+                        </Button>
+                        <span>Name</span>
+                        {state.sortOrder === 'asc' ? (
+                          <ArrowUp className="h-3 w-3 opacity-60" />
+                        ) : (
+                          <ArrowDown className="h-3 w-3 opacity-60" />
+                        )}
+                      </div>
+                    ) : (
+                      <div className="col-span-5 md:col-span-5 flex items-center gap-2.5">
+                        <Checkbox 
+                          checked={state.selectedWorkflows.length > 0 && state.selectedWorkflows.length === filteredWorkflows.length}
+                          onCheckedChange={selectAllWorkflows}
+                          className="ml-2"
+                        />
+                        <span>Name</span>
+                      </div>
+                    )}
+                    <div className="col-span-3 md:col-span-3">Status</div>
+                    <div className="col-span-3 md:col-span-3 flex items-center gap-1.5">
+                      <span>Last Updated</span>
+                      <RefreshCw className={`h-3 w-3 transition-all duration-300 ${state.isRefreshing ? 'rotate-180' : ''}`} />
+                    </div>
+                    <div className="col-span-1 md:col-span-1 text-right">Actions</div>
+                  </div>
+
+                  <div className="divide-y divide-border/40">
+                    {filteredWorkflows.map((workflow, index) => (
+                      <WorkflowTableCard 
+                        key={workflow.id}
+                        workflow={workflow}
+                        onDelete={handleDeleteWorkflow}
+                        onDuplicate={handleDuplicateWorkflow}
+                        onTagsChange={handleTagsChange}
+                        onMoveToFolder={handleMoveToFolder}
+                        allTags={state.tags}
+                        isEven={index % 2 === 0}
+                        isSelected={state.selectedWorkflows.includes(workflow.id)}
+                        onSelect={toggleWorkflowSelection}
+                        selectMode={state.selectMode}
+                        onStatusToggle={handleWorkflowStatusToggle}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {filteredWorkflows.length === 0 && (
+                  <div className="text-center py-10 bg-muted/10 rounded-xl border border-border/40 shadow-sm">
+                    <p className="text-muted-foreground mb-2">No workflows found with the current filters</p>
+                    <Button
+                      variant="link"
+                      onClick={clearFilters}
+                      className="mt-2"
+                    >
+                      Clear all filters
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
+          </main>
+
+          <CreateWorkflowModal 
+            open={isCreateModalOpen} 
+            onOpenChange={setIsCreateModalOpen} 
+            onClose={handleCloseCreateModal} 
+          />
+          
+          <Dialog open={isAnalyticsModalOpen} onOpenChange={setIsAnalyticsModalOpen}>
+            <DialogContent className="sm:max-w-2xl">
+              {selectedWorkflow && (
+                <div className="space-y-4">
+                  <h2 className="text-2xl font-semibold">{selectedWorkflow.name} Analytics</h2>
+                  <WorkflowMetricsCard 
+                    metrics={selectedWorkflow.metrics}
+                    runs={selectedWorkflow.runs}
+                  />
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
         </div>
-        <div className="col-span-3">Status</div>
-        <div className="col-span-3">Last Updated</div>
-        <div className="col-span-1 text-right">
-          <Button variant="outline" size="sm" onClick={toggleSelectMode}>
-            {state.selectMode ? 'Exit Select Mode' : 'Select Workflows'}
-          </Button>
-        </div>
-      </div>
-
-      {filteredWorkflows.length > 0 ? (
-        <div className="divide-y divide-border">
-          {filteredWorkflows.map((workflow, index) => (
-            <WorkflowTableCard
-              key={workflow.id}
-              workflow={workflow}
-              onDelete={(id, name) => handleDeleteWorkflow(id, name)}
-              onDuplicate={handleDuplicateWorkflow}
-              onTagsChange={handleTagsChange}
-              onMoveToFolder={(folderId) => handleMoveToFolder(workflow.id, folderId)}
-              allTags={state.tags}
-              tags={workflow.tags}
-              folders={state.folders}
-              isEven={index % 2 === 1}
-              selectMode={state.selectMode}
-              isSelected={state.selectedWorkflows.includes(workflow.id)}
-              onSelect={toggleWorkflowSelection}
-              onStatusToggle={handleWorkflowStatusToggle}
-              onCreateTag={handleCreateTag}
-              onAnalytics={openAnalyticsModal}
-            />
-          ))}
-        </div>
-      ) : (
-        <EmptyWorkflowState onCreateClick={() => setIsCreateModalOpen(true)} />
-      )}
-
-      <CreateWorkflowModal
-        open={isCreateModalOpen}
-        onOpenChange={setIsCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        folders={state.folders}
-        tags={state.tags}
-      />
-
-      <Dialog open={!!analyticsWorkflow} onOpenChange={() => closeAnalyticsModal()}>
-        <DialogContent className="sm:max-w-[80%] lg:max-w-[70%] xl:max-w-[60%]">
-          {analyticsWorkflow && (
-            <WorkflowMetricsCard 
-              metrics={analyticsWorkflow.metrics} 
-              runs={analyticsWorkflow.runs} 
-            />
-          )}
-        </DialogContent>
-      </Dialog>
-    </div>
+      </ResizablePanel>
+    </ResizablePanelGroup>
   );
 };
 
