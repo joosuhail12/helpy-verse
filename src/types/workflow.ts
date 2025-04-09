@@ -1,8 +1,9 @@
 
-import { User } from './content';
+// If this file doesn't exist, we'll create it with the necessary types
 
 export type WorkflowType = 'message' | 'automation' | 'schedule' | 'bot';
 export type WorkflowStatus = 'Live' | 'Draft';
+export type WorkflowChangeType = 'add' | 'update' | 'remove';
 
 export interface WorkflowTag {
   id: string;
@@ -10,20 +11,32 @@ export interface WorkflowTag {
   color: string;
 }
 
-export interface WorkflowFolder {
+export interface WorkflowDependency {
   id: string;
-  name: string;
+  sourceWorkflowId: string;
+  targetWorkflowId: string;
+  type: 'trigger' | 'data' | 'condition';
   description?: string;
-  workflowIds: string[];
 }
 
-export interface WorkflowMetrics {
-  totalRuns: number;
-  successRate: number;
-  lastRun?: Date;
-  averageDuration?: number;
-  failedRuns: number;
-  successfulRuns: number;
+export interface WorkflowChange {
+  field: string;
+  oldValue?: string;
+  newValue?: string;
+  type: WorkflowChangeType;
+}
+
+export interface WorkflowVersion {
+  id: string;
+  workflowId: string;
+  version: number;
+  createdAt: Date;
+  createdBy: {
+    id: string;
+    name: string;
+    avatar?: string;
+  };
+  changes: WorkflowChange[];
 }
 
 export interface WorkflowRun {
@@ -33,32 +46,16 @@ export interface WorkflowRun {
   startTime: Date;
   endTime?: Date;
   duration?: number;
-  triggeredBy?: User;
   error?: string;
+  metadata?: Record<string, any>;
 }
 
-export interface WorkflowDependency {
-  id: string;
-  sourceWorkflowId: string;
-  targetWorkflowId: string;
-  type: 'trigger' | 'data' | 'sequence';
-  description?: string;
-}
-
-export interface WorkflowVersion {
-  id: string;
-  workflowId: string;
-  version: number;
-  createdAt: Date;
-  createdBy: User;
-  changes: WorkflowChange[];
-}
-
-export interface WorkflowChange {
-  field: string;
-  oldValue?: string | number | boolean;
-  newValue?: string | number | boolean;
-  type: 'update' | 'add' | 'remove';
+export interface WorkflowMetrics {
+  totalRuns: number;
+  successfulRuns?: number;
+  failedRuns?: number;
+  successRate: number;
+  averageDuration?: number;
 }
 
 export interface Workflow {
@@ -67,15 +64,25 @@ export interface Workflow {
   description?: string;
   status: WorkflowStatus;
   type: WorkflowType;
-  updatedAt: Date;
   createdAt: Date;
+  updatedAt: Date;
   tags?: WorkflowTag[];
-  folderId?: string;
   metrics?: WorkflowMetrics;
   runs?: WorkflowRun[];
   dependencies?: WorkflowDependency[];
   dependents?: WorkflowDependency[];
-  versions?: WorkflowVersion[];
   version?: number;
-  lastEditedBy?: User;
+  versions?: WorkflowVersion[];
+  lastEditedBy?: {
+    id: string;
+    name: string;
+    avatar?: string;
+  };
+}
+
+export interface WorkflowFolder {
+  id: string;
+  name: string;
+  description?: string;
+  workflowIds: string[];
 }
