@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import CreateWorkflowModal from './modals/CreateWorkflowModal';
 import { Button } from '@/components/ui/button';
 import { 
   PlusCircle, 
@@ -16,7 +17,6 @@ import {
   Tag
 } from 'lucide-react';
 import { format, subDays } from 'date-fns';
-import { CreateWorkflowModal } from './modals/CreateWorkflowModal';
 import { toast } from "sonner";
 import { WorkflowTableCard } from './components/WorkflowTableCard';
 import { EmptyWorkflowState } from './components/EmptyWorkflowState';

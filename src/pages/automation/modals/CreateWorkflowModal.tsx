@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -31,7 +30,6 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 
-// Define interfaces with correct syntax
 interface Trigger {
   id: string;
   name: string;
@@ -96,7 +94,12 @@ const getTriggerIcon = (triggerId: string) => {
   }
 };
 
-const CreateWorkflowModal: React.FC<CreateWorkflowModalProps> = ({ open, onOpenChange, onClose, onWorkflowCreated }) => {
+const CreateWorkflowModal: React.FC<CreateWorkflowModalProps> = ({ 
+  open, 
+  onOpenChange, 
+  onClose, 
+  onWorkflowCreated 
+}) => {
   const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
 
