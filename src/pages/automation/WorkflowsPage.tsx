@@ -258,10 +258,12 @@ const WorkflowsPage: React.FC = () => {
   }, [state.selectMode]);
   
   const handleOpenCreateModal = () => {
+    console.log('Opening create modal');
     setIsCreateModalOpen(true);
   };
 
   const handleCloseCreateModal = () => {
+    console.log('Closing create modal');
     setIsCreateModalOpen(false);
   };
 
@@ -562,6 +564,7 @@ const WorkflowsPage: React.FC = () => {
   };
 
   const handleWorkflowCreated = (workflow: Workflow) => {
+    console.log('Workflow created:', workflow);
     const initialVersion: WorkflowVersion = {
       id: `v${Date.now()}`,
       workflowId: workflow.id,

@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -100,10 +101,12 @@ const CreateWorkflowModal: React.FC<CreateWorkflowModalProps> = ({
   onClose, 
   onWorkflowCreated 
 }) => {
+  console.log('CreateWorkflowModal rendered with open:', open); // Debug log
   const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
 
   const handleTriggerSelect = (triggerId: string) => {
+    console.log('Trigger selected:', triggerId); // Debug log
     navigate(`/workflows/new?trigger=${triggerId}`);
     if (onClose) onClose();
   };
