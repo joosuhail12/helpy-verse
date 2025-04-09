@@ -8,7 +8,6 @@ import CaslProvider from "@/components/CaslProvider";
 import { HttpClient } from "@/api/services/http";
 import { toast } from "@/components/ui/use-toast";
 import { isAuthenticated } from "@/utils/auth/tokenManager";
-import AppInitializer, { initializeApp } from "./AppInitializer";
 
 interface AppProvidersProps {
   children: React.ReactNode;
@@ -23,7 +22,6 @@ const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
   React.useEffect(() => {
     try {
       console.log("Initializing app from AppProviders component");
-      initializeApp();
       
       // Only check API connection once at app start if authenticated
       if (isAuthenticated()) {
