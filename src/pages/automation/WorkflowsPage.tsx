@@ -59,6 +59,8 @@ import { WorkflowTagPicker } from './components/WorkflowTagPicker';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import WorkflowDetailModal from './components/WorkflowDetailModal';
+import { useDebounce } from '@/hooks/useDebounce';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const currentUser = {
   id: 'user1',
@@ -225,6 +227,8 @@ const WorkflowsPage: React.FC = () => {
   const [isAnalyticsModalOpen, setIsAnalyticsModalOpen] = useState(false);
   const [selectedWorkflow, setSelectedWorkflow] = useState<Workflow | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  
+  const debouncedSearchTerm = useDebounce(state.searchTerm, 300);
   
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -597,9 +601,9 @@ const WorkflowsPage: React.FC = () => {
   const filteredWorkflows = state.workflows
     .filter(workflow => {
       const matchesSearch = 
-        state.searchTerm === '' || 
-        workflow.name.toLowerCase().includes(state.searchTerm.toLowerCase()) ||
-        (workflow.description?.toLowerCase().includes(state.searchTerm.toLowerCase()) || false);
+        debouncedSearchTerm === '' || 
+        workflow.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+        (workflow.description?.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) || false);
       
       const matchesType = state.typeFilters.length === 0 || state.typeFilters.includes(workflow.type);
       
@@ -653,7 +657,12 @@ const WorkflowsPage: React.FC = () => {
   return (
     <ResizablePanelGroup direction="horizontal" className="min-h-[calc(100vh-8rem)]">
       <ResizablePanel defaultSize={20} minSize={15} maxSize={25}>
-        <div className="h-full p-4 border-r overflow-auto">
+        <motion.div 
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.3 }}
+          className="h-full p-4 border-r overflow-auto"
+        >
           <WorkflowFolders
             folders={state.folders}
             onFolderCreate={handleCreateFolder}
@@ -668,13 +677,15 @@ const WorkflowsPage: React.FC = () => {
             <h3 className="text-sm font-medium text-muted-foreground mb-2">Filter by Tag</h3>
             <div className="space-y-1">
               {state.tags.map(tag => (
-                <div
+                <motion.div
                   key={tag.id}
                   className={cn(
                     "flex items-center justify-between px-2 py-1.5 rounded-md cursor-pointer group",
                     state.tagFilters.includes(tag.id) ? "bg-muted" : "hover:bg-muted/50"
                   )}
                   onClick={() => toggleTagFilter(tag.id)}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                 >
                   <div className="flex items-center gap-2">
                     <div 
@@ -685,9 +696,9 @@ const WorkflowsPage: React.FC = () => {
                   </div>
                   <Checkbox 
                     checked={state.tagFilters.includes(tag.id)}
-                    className="opacity-60 group-hover:opacity-100"
+                    className="opacity-60 group-hover:opacity-100 transition-opacity duration-200"
                   />
-                </div>
+                </motion.div>
               ))}
               
               {state.tags.length === 0 && (
@@ -721,77 +732,122 @@ const WorkflowsPage: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
       </ResizablePanel>
       
       <ResizableHandle withHandle />
       
       <ResizablePanel defaultSize={80}>
-        <div className="container mx-auto p-4 space-y-8">
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4 }}
+          className="container mx-auto p-4 space-y-8"
+        >
           <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+              <motion.h1 
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.1 }}
+                className="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent"
+              >
                 Workflows
-              </h1>
-              <p className="text-muted-foreground mt-2 text-lg">
+              </motion.h1>
+              <motion.p 
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.2 }}
+                className="text-muted-foreground mt-2 text-lg"
+              >
                 Automate your support with triggers, conditions, and actions.
-              </p>
+              </motion.p>
             </div>
-            <Button 
-              onClick={handleOpenCreateModal} 
-              size="lg"
-              className="shrink-0 shadow-md hover:shadow-lg transition-all duration-300 group"
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ type: "spring", stiffness: 300, damping: 20, delay: 0.3 }}
             >
-              <PlusCircle className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform duration-300" />
-              New Workflow
-            </Button>
+              <Button 
+                onClick={handleOpenCreateModal} 
+                size="lg"
+                className="shrink-0 shadow-md hover:shadow-lg transition-all duration-300 group"
+              >
+                <PlusCircle className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform duration-300" />
+                New Workflow
+              </Button>
+            </motion.div>
           </header>
 
           <main>
             {showAnalyticsSummary && (
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                <Card>
-                  <CardContent className="pt-6">
-                    <div className="flex flex-col gap-1">
-                      <span className="text-3xl font-bold">{analyticsSummary.totalWorkflows}</span>
-                      <span className="text-sm text-muted-foreground">Total Workflows</span>
-                    </div>
-                  </CardContent>
-                </Card>
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6"
+              >
+                <motion.div whileHover={{ y: -4, transition: { duration: 0.2 } }}>
+                  <Card className="hover:shadow-md transition-shadow duration-300">
+                    <CardContent className="pt-6">
+                      <div className="flex flex-col gap-1">
+                        <span className="text-3xl font-bold">{analyticsSummary.totalWorkflows}</span>
+                        <span className="text-sm text-muted-foreground">Total Workflows</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
                 
-                <Card>
-                  <CardContent className="pt-6">
-                    <div className="flex flex-col gap-1">
-                      <span className="text-3xl font-bold text-green-600">{analyticsSummary.activeWorkflows}</span>
-                      <span className="text-sm text-muted-foreground">Active Workflows</span>
-                    </div>
-                  </CardContent>
-                </Card>
+                <motion.div whileHover={{ y: -4, transition: { duration: 0.2 } }}>
+                  <Card className="hover:shadow-md transition-shadow duration-300">
+                    <CardContent className="pt-6">
+                      <div className="flex flex-col gap-1">
+                        <span className="text-3xl font-bold text-green-600">{analyticsSummary.activeWorkflows}</span>
+                        <span className="text-sm text-muted-foreground">Active Workflows</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
                 
-                <Card>
-                  <CardContent className="pt-6">
-                    <div className="flex flex-col gap-1">
-                      <span className="text-3xl font-bold">{analyticsSummary.totalRuns}</span>
-                      <span className="text-sm text-muted-foreground">Total Executions</span>
-                    </div>
-                  </CardContent>
-                </Card>
+                <motion.div whileHover={{ y: -4, transition: { duration: 0.2 } }}>
+                  <Card className="hover:shadow-md transition-shadow duration-300">
+                    <CardContent className="pt-6">
+                      <div className="flex flex-col gap-1">
+                        <span className="text-3xl font-bold">{analyticsSummary.totalRuns}</span>
+                        <span className="text-sm text-muted-foreground">Total Executions</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
                 
-                <Card>
-                  <CardContent className="pt-6">
-                    <div className="flex flex-col gap-1">
-                      <span className="text-3xl font-bold text-blue-600">{(analyticsSummary.successRate * 100).toFixed(1)}%</span>
-                      <span className="text-sm text-muted-foreground">Success Rate</span>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
+                <motion.div whileHover={{ y: -4, transition: { duration: 0.2 } }}>
+                  <Card className="hover:shadow-md transition-shadow duration-300">
+                    <CardContent className="pt-6">
+                      <div className="flex flex-col gap-1">
+                        <span className="text-3xl font-bold text-blue-600">{(analyticsSummary.successRate * 100).toFixed(1)}%</span>
+                        <span className="text-sm text-muted-foreground">Success Rate</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              </motion.div>
             )}
           
             {state.workflows.length === 0 ? (
-              <EmptyWorkflowState onCreateClick={handleOpenCreateModal} />
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5 }}
+              >
+                <EmptyWorkflowState onCreateClick={handleOpenCreateModal} />
+              </motion.div>
             ) : (
-              <div className="space-y-5">
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="space-y-5"
+              >
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-4">
                   <div className="relative w-full md:w-80 transition-all duration-300 hover:shadow-md focus-within:shadow-md rounded-md">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -800,7 +856,7 @@ const WorkflowsPage: React.FC = () => {
                       placeholder="Search workflows..."
                       value={state.searchTerm}
                       onChange={(e) => setState(prev => ({ ...prev, searchTerm: e.target.value }))}
-                      className="pl-10 pr-4 py-2 border-border/60 focus:border-primary/60 transition-all duration-300"
+                      className="pl-10 pr-4 py-2 border-border/60 focus:border-primary/60 transition-all duration-300 focus:ring-2 focus:ring-primary/20"
                     />
                   </div>
                   
@@ -821,16 +877,22 @@ const WorkflowsPage: React.FC = () => {
                           )}
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-56 p-3">
+                      <PopoverContent className="w-56 p-3 z-50">
                         <div className="space-y-2">
                           <h4 className="font-medium text-sm">Filter by type</h4>
                           <div className="grid gap-2">
                             {(['message', 'automation', 'schedule', 'bot'] as const).map((type) => (
-                              <div key={type} className="flex items-center gap-2">
+                              <motion.div 
+                                key={type} 
+                                className="flex items-center gap-2"
+                                whileHover={{ x: 2 }}
+                                whileTap={{ scale: 0.98 }}
+                              >
                                 <Checkbox 
                                   id={`type-${type}`}
                                   checked={state.typeFilters.includes(type)}
                                   onCheckedChange={() => toggleTypeFilter(type)}
+                                  className="transition-all duration-200"
                                 />
                                 <label 
                                   htmlFor={`type-${type}`}
@@ -841,7 +903,7 @@ const WorkflowsPage: React.FC = () => {
                                     {typeCount[type] || 0}
                                   </span>
                                 </label>
-                              </div>
+                              </motion.div>
                             ))}
                           </div>
                         </div>
@@ -871,21 +933,32 @@ const WorkflowsPage: React.FC = () => {
                     />
 
                     {hasActiveFilters && (
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={clearFilters}
-                        className="h-9"
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
                       >
-                        <X className="h-4 w-4 mr-1" />
-                        Clear Filters
-                      </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={clearFilters}
+                          className="h-9 group"
+                        >
+                          <X className="h-4 w-4 mr-1 group-hover:rotate-90 transition-transform duration-200" />
+                          Clear Filters
+                        </Button>
+                      </motion.div>
                     )}
                   </div>
                 </div>
 
                 {filteredWorkflows.length === 0 ? (
-                  <div className="text-center py-12 border border-dashed rounded-lg">
+                  <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.3 }}
+                    className="text-center py-12 border border-dashed rounded-lg"
+                  >
                     <p className="text-muted-foreground">No workflows match the current filters.</p>
                     <Button 
                       variant="link" 
@@ -894,7 +967,7 @@ const WorkflowsPage: React.FC = () => {
                     >
                       Clear all filters
                     </Button>
-                  </div>
+                  </motion.div>
                 ) : (
                   <div>
                     <div className="grid grid-cols-12 py-3 px-4 font-medium text-sm text-muted-foreground border-b mb-1">
@@ -903,30 +976,39 @@ const WorkflowsPage: React.FC = () => {
                       <div className="col-span-3 md:col-span-3">Last Updated</div>
                       <div className="col-span-1 md:col-span-1 text-right">Actions</div>
                     </div>
-                                        
-                    {filteredWorkflows.map((workflow, index) => (
-                      <WorkflowTableCard
-                        key={workflow.id}
-                        workflow={workflow}
-                        isEven={index % 2 === 0}
-                        onDelete={handleDeleteWorkflow}
-                        onDuplicate={handleDuplicateWorkflow}
-                        onTagsChange={handleTagsChange}
-                        onMoveToFolder={handleMoveToFolder}
-                        allTags={state.tags}
-                        isSelected={state.selectedWorkflows.includes(workflow.id)}
-                        selectMode={state.selectMode}
-                        onSelect={toggleWorkflowSelection}
-                        onStatusToggle={handleWorkflowStatusToggle}
-                        onViewDetails={() => handleOpenDetailModal(workflow)}
-                      />
-                    ))}
+                    
+                    <AnimatePresence>
+                      {filteredWorkflows.map((workflow, index) => (
+                        <motion.div
+                          key={workflow.id}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.3, delay: index * 0.05 }}
+                        >
+                          <WorkflowTableCard
+                            workflow={workflow}
+                            isEven={index % 2 === 0}
+                            onDelete={handleDeleteWorkflow}
+                            onDuplicate={handleDuplicateWorkflow}
+                            onTagsChange={handleTagsChange}
+                            onMoveToFolder={handleMoveToFolder}
+                            allTags={state.tags}
+                            isSelected={state.selectedWorkflows.includes(workflow.id)}
+                            selectMode={state.selectMode}
+                            onSelect={toggleWorkflowSelection}
+                            onStatusToggle={handleWorkflowStatusToggle}
+                            onViewDetails={() => handleOpenDetailModal(workflow)}
+                          />
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
                   </div>
                 )}
-              </div>
+              </motion.div>
             )}
           </main>
-        </div>
+        </motion.div>
       </ResizablePanel>
       
       {isCreateModalOpen && (
