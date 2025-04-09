@@ -6,7 +6,7 @@ import {
   MessageSquare, 
   GitBranch, 
   Cog,
-  Data,
+  Database,
   Bot,
   User,
   MessageCircle,
@@ -81,7 +81,7 @@ export const NodeSelector: React.FC<NodeSelectorProps> = ({ nodeId, addNode, ava
       case 'condition':
         return <GitBranch size={16} />;
       case 'data_collection':
-        return <Data size={16} />;
+        return <Database size={16} />;
       case 'chatbot_answer':
         return <Bot size={16} />;
       case 'copilot_action':

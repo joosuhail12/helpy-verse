@@ -68,7 +68,7 @@ export interface WorkflowNodeData {
   [key: string]: unknown; // Add index signature to satisfy Record<string, unknown>
 }
 
-// Define WorkflowNode as a Node with our custom WorkflowNodeData
+// We define our custom node as a standard Node with our specific data type
 export type WorkflowNode = Node<WorkflowNodeData>;
 
 export interface WorkflowTagPickerProps {

@@ -183,9 +183,8 @@ export function NodeConfigurator({ node, onSave, onCancel }: NodeConfiguratorPro
                 <Select
                   value={config.unit || 'minutes'}
                   onValueChange={value => updateConfig('unit', value as 'minutes' | 'hours' | 'days')}
-                  className="w-[120px]"
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="w-[120px]">
                     <SelectValue placeholder="Unit" />
                   </SelectTrigger>
                   <SelectContent>

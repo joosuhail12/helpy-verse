@@ -96,7 +96,7 @@ const getNodePosition = (): XYPosition => ({
 });
 
 const WorkflowBuilderPage: React.FC = () => {
-  const { triggerId } = useParams<{ triggerId: string }>();
+  const { triggerId } = useParams<{ triggerId?: string }>();
   const navigate = useNavigate();
   const reactFlowInstance = useReactFlow();
   
@@ -105,7 +105,7 @@ const WorkflowBuilderPage: React.FC = () => {
   const [isPublished, setIsPublished] = useState<boolean>(false);
   
   // Node and edge states for ReactFlow
-  const [nodes, setNodes, onNodesChange] = useNodesState<WorkflowNodeData>([]);
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node<WorkflowNodeData>>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   
   // Drawers and configuration states
@@ -136,29 +136,50 @@ const WorkflowBuilderPage: React.FC = () => {
   // Add new node to the flow
   const addNode = useCallback((type: NodeType, sourceNodeId: string, position?: XYPosition) => {
     const id = uuidv4();
+    let nodeType = type;
+    let nodeData: WorkflowNodeData = {
+      label: availableNodeTypes.find(nt => nt.type === type)?.label || type,
+      configured: false
+    };
+    
+    // Map certain node types to their proper visual representation
+    if (['assign_ticket', 'tag_ticket', 'update_ticket', 'wait', 'add_note'].includes(type)) {
+      nodeType = 'action';
+      nodeData.actionType = type;
+    }
+    
     const newNode: Node<WorkflowNodeData> = {
       id,
-      type: type as string,
+      type: nodeType,
       position: position || {
         x: window.innerWidth / 2,
         y: window.innerHeight / 2
       },
-      data: {
-        label: availableNodeTypes.find(nt => nt.type === type)?.label || type,
-        configured: false
-      }
+      data: nodeData
     };
     
     setNodes(nodes => [...nodes, newNode]);
     
     // Create connection from source node to new node
     if (sourceNodeId) {
+      const sourceNode = nodes.find(n => n.id === sourceNodeId);
+      let sourceHandle: string | undefined = undefined;
+      
+      if (sourceNode?.type === 'condition') {
+        // Check which condition output is available (yes/no)
+        const yesConnection = edges.some(e => 
+          e.source === sourceNodeId && e.sourceHandle === 'yes'
+        );
+        sourceHandle = !yesConnection ? 'yes' : 'no';
+      }
+      
       setEdges(edges => [
         ...edges,
         {
           id: `e${sourceNodeId}-${id}`,
           source: sourceNodeId,
           target: id,
+          sourceHandle,
           type: 'smoothstep',
           animated: false,
           style: { strokeWidth: 2 }
@@ -167,7 +188,7 @@ const WorkflowBuilderPage: React.FC = () => {
     }
     
     return id;
-  }, [setNodes, setEdges]);
+  }, [setNodes, setEdges, nodes, edges]);
   
   // Configure the trigger node when page loads
   useEffect(() => {
