@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { 
@@ -45,7 +46,7 @@ import {
   DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
-import { Workflow, WorkflowType, WorkflowTag, WorkflowFolder, WorkflowStatus } from '@/types/workflow';
+import { Workflow, WorkflowType, WorkflowTag, WorkflowFolder, WorkflowStatus, WorkflowChange, WorkflowVersion, WorkflowDependency } from '@/types/workflow';
 import { WorkflowFolders } from './components/WorkflowFolders';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { WorkflowMetricsCard } from './components/WorkflowAnalytics';

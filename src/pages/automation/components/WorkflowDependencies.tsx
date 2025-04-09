@@ -1,9 +1,8 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowRightCircle, PlusCircle, AlertTriangle, Link, LinkOff } from 'lucide-react';
+import { ArrowRightCircle, PlusCircle, AlertTriangle, Link, Link2Off } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Workflow, WorkflowDependency } from '@/types/workflow';
 import {
@@ -39,7 +38,6 @@ export const WorkflowDependencies: React.FC<WorkflowDependenciesProps> = ({
   const [targetWorkflowId, setTargetWorkflowId] = useState<string>('');
   const [description, setDescription] = useState<string>('');
 
-  // Filter out current workflow from available targets
   const availableTargetWorkflows = allWorkflows.filter(w => w.id !== workflow.id);
   
   const dependencies = workflow.dependencies || [];
@@ -154,7 +152,7 @@ export const WorkflowDependencies: React.FC<WorkflowDependenciesProps> = ({
                         onClick={() => onRemoveDependency(dependency.id)}
                         className="h-7 w-7 p-0 rounded-full"
                       >
-                        <LinkOff className="h-3.5 w-3.5 text-muted-foreground" />
+                        <Link2Off className="h-3.5 w-3.5 text-muted-foreground" />
                         <span className="sr-only">Remove dependency</span>
                       </Button>
                     )}
@@ -180,7 +178,7 @@ export const WorkflowDependencies: React.FC<WorkflowDependenciesProps> = ({
         <CardContent>
           {dependents.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-6 text-center">
-              <LinkOff className="h-10 w-10 text-muted-foreground/60 mb-3" />
+              <Link2Off className="h-10 w-10 text-muted-foreground/60 mb-3" />
               <p className="text-sm text-muted-foreground">No other workflows depend on this workflow</p>
             </div>
           ) : (

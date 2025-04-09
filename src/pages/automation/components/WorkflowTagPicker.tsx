@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Plus, X, Tag as TagIcon, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -10,9 +9,9 @@ import {
 import { Input } from '@/components/ui/input';
 import { WorkflowTag } from '@/types/workflow';
 
-interface WorkflowTagPickerProps {
-  tags: WorkflowTag[];
+export interface WorkflowTagPickerProps {
   selectedTags: WorkflowTag[];
+  allTags: WorkflowTag[];
   onTagsChange: (tags: WorkflowTag[]) => void;
   className?: string;
   variant?: 'default' | 'compact';
@@ -22,8 +21,8 @@ interface WorkflowTagPickerProps {
  * Component for selecting and managing workflow tags
  */
 export function WorkflowTagPicker({ 
-  tags, 
   selectedTags, 
+  allTags, 
   onTagsChange,
   className = '',
   variant = 'default'
@@ -96,7 +95,7 @@ export function WorkflowTagPicker({
             
             {/* Tag list */}
             <div className="space-y-1 max-h-48 overflow-y-auto">
-              {tags.map(tag => (
+              {allTags.map(tag => (
                 <div 
                   key={tag.id}
                   className="flex items-center justify-between p-1.5 hover:bg-muted/50 rounded-sm cursor-pointer"
@@ -115,7 +114,7 @@ export function WorkflowTagPicker({
                 </div>
               ))}
               
-              {tags.length === 0 && (
+              {allTags.length === 0 && (
                 <p className="text-sm text-muted-foreground py-2 text-center">
                   No tags created yet
                 </p>

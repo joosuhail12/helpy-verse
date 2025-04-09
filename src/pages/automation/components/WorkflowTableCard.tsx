@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { Button } from '@/components/ui/button';
@@ -314,7 +313,7 @@ export const WorkflowTableCard: React.FC<WorkflowTableCardProps> = ({
             <WorkflowTagPicker 
               selectedTags={workflow.tags || []}
               allTags={allTags}
-              onChange={handleTagsChange}
+              onTagsChange={handleTagsChange}
             />
           </div>
         </DialogContent>

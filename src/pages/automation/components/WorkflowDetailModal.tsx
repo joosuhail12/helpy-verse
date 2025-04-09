@@ -20,7 +20,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { formatDistance, format } from 'date-fns';
-import { Workflow } from '@/types/workflow';
+import { Workflow, WorkflowDependency } from '@/types/workflow';
 import { WorkflowMetricsCard } from './WorkflowAnalytics';
 import { WorkflowVersionHistory } from './WorkflowVersionHistory';
 import { WorkflowDependencies } from './WorkflowDependencies';
@@ -58,7 +58,10 @@ const WorkflowDetailModal: React.FC<WorkflowDetailModalProps> = ({
         ...(workflow.dependencies || []),
         {
           id: `dep-${Date.now()}`,
-          ...dependency
+          sourceWorkflowId: dependency.sourceWorkflowId,
+          targetWorkflowId: dependency.targetWorkflowId,
+          type: dependency.type,
+          description: dependency.description
         }
       ]
     };
