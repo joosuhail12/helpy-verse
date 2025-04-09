@@ -12,6 +12,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { toast } from "sonner";
+import { Loader2 } from 'lucide-react';
 
 interface CreateWorkflowModalProps {
   open: boolean;
@@ -39,7 +41,10 @@ export const CreateWorkflowModal: React.FC<CreateWorkflowModalProps> = ({
       setIsSubmitting(false);
       resetForm();
       onClose();
-    }, 600);
+      toast.success('Workflow created successfully!', {
+        description: `"${name}" has been created and is ready to configure.`
+      });
+    }, 800);
   };
 
   const resetForm = () => {
@@ -49,54 +54,68 @@ export const CreateWorkflowModal: React.FC<CreateWorkflowModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[550px] p-0 overflow-hidden rounded-xl border shadow-lg">
         <form onSubmit={handleSubmit}>
-          <DialogHeader>
-            <DialogTitle className="text-xl">Create Workflow</DialogTitle>
-            <DialogDescription>
+          <DialogHeader className="px-6 pt-6 pb-0">
+            <DialogTitle className="text-2xl font-bold">Create Workflow</DialogTitle>
+            <DialogDescription className="text-base mt-2">
               Define a new automation workflow to streamline your support processes.
             </DialogDescription>
           </DialogHeader>
           
-          <div className="grid gap-6 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="name">Name</Label>
+          <div className="grid gap-6 p-6">
+            <div className="grid gap-3">
+              <Label htmlFor="name" className="text-sm font-medium">
+                Name
+              </Label>
               <Input
                 id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="E.g., Customer Onboarding"
+                className="h-11"
                 required
               />
             </div>
             
-            <div className="grid gap-2">
-              <Label htmlFor="description">Description (optional)</Label>
+            <div className="grid gap-3">
+              <Label htmlFor="description" className="text-sm font-medium">
+                Description (optional)
+              </Label>
               <Textarea
                 id="description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Briefly describe what this workflow does"
-                className="resize-none"
+                className="resize-none min-h-[100px]"
                 rows={3}
               />
             </div>
           </div>
           
-          <DialogFooter>
+          <DialogFooter className="bg-muted/20 px-6 py-4">
             <Button 
               type="button" 
               variant="outline" 
               onClick={onClose}
               disabled={isSubmitting}
+              className="mr-2"
             >
               Cancel
             </Button>
             <Button 
               type="submit" 
               disabled={!name.trim() || isSubmitting}
+              className="min-w-[120px]"
             >
-              {isSubmitting ? 'Creating...' : 'Create Workflow'}
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                'Create Workflow'
+              )}
             </Button>
           </DialogFooter>
         </form>
