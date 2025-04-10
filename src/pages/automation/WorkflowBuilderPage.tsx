@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
@@ -18,7 +17,7 @@ import {
   Panel,
   Node,
   ReactFlowProvider,
-  OnViewportChange,
+  Viewport,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
@@ -295,7 +294,7 @@ const WorkflowBuilder: React.FC = () => {
     reactFlowInstance.fitView({ padding: 0.2 });
   }, [reactFlowInstance]);
   
-  const onViewportChange: OnViewportChange = useCallback((viewport) => {
+  const onViewportChange = useCallback((viewport: Viewport) => {
     setCurrentZoom(Math.round(viewport.zoom * 100) / 100);
   }, []);
 
