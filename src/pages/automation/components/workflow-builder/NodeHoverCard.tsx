@@ -1,76 +1,58 @@
 
-import React from 'react';
+import React, { ReactNode } from 'react';
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
 } from '@/components/ui/hover-card';
-import { NodeConfig, NodeType, WorkflowNodeData, WorkflowTriggerConfig } from '@/types/workflow-builder';
-import { CheckCircle2, AlertCircle } from 'lucide-react';
 import { formatNodeConfig } from './utils/nodeUtils';
+import { WorkflowNodeData } from '@/types/workflow-builder';
 
 interface NodeHoverCardProps {
+  children: ReactNode;
   nodeId: string;
-  children: React.ReactNode;
   nodeData?: WorkflowNodeData;
+  disabled?: boolean;
 }
 
-export const NodeHoverCard: React.FC<NodeHoverCardProps> = ({ 
-  nodeId, 
+export const NodeHoverCard: React.FC<NodeHoverCardProps> = ({
   children,
-  nodeData
+  nodeId,
+  nodeData,
+  disabled = false,
 }) => {
-  if (!nodeData) {
+  if (disabled || !nodeData) {
     return <>{children}</>;
   }
 
-  const isConfigured = nodeData.configured;
-  const config = nodeData.config as NodeConfig | WorkflowTriggerConfig | undefined;
-  
-  // Format the configuration details based on node type
   const configDetails = formatNodeConfig(nodeData);
+  const hasDetails = configDetails.length > 0;
+
+  if (!hasDetails) {
+    return <>{children}</>;
+  }
 
   return (
-    <HoverCard openDelay={300} closeDelay={100}>
+    <HoverCard openDelay={300} closeDelay={200}>
       <HoverCardTrigger asChild>
-        <div>{children}</div>
+        <div className="relative">
+          {children}
+        </div>
       </HoverCardTrigger>
       <HoverCardContent 
-        className="w-80 p-4 animate-fadeSlideIn" 
         side="right" 
+        className="w-80 p-4"
         align="start"
       >
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <h4 className="font-medium text-sm">{nodeData.label}</h4>
-            {isConfigured ? (
-              <span className="flex items-center text-xs text-green-600">
-                <CheckCircle2 className="w-3 h-3 mr-1" />
-                <span>Configured</span>
-              </span>
-            ) : (
-              <span className="flex items-center text-xs text-amber-600">
-                <AlertCircle className="w-3 h-3 mr-1" />
-                <span>Not configured</span>
-              </span>
-            )}
-          </div>
-          
-          <div className="text-xs">
-            <div className="text-muted-foreground mb-1">Node ID: {nodeId}</div>
-            
-            {configDetails.length > 0 ? (
-              <div className="border rounded-md p-2 bg-muted/30">
-                {configDetails.map((detail, index) => (
-                  <div key={index} className="flex justify-between py-0.5">
-                    <span className="font-medium">{detail.label}:</span>
-                    <span className="text-muted-foreground truncate max-w-[180px]">{detail.value}</span>
-                  </div>
-                ))}
+        <div className="space-y-3">
+          <h4 className="text-sm font-medium">Node Configuration</h4>
+          <div className="space-y-1">
+            {configDetails.map((detail, index) => (
+              <div key={index} className="flex justify-between text-sm">
+                <span className="text-muted-foreground">{detail.label}</span>
+                <span className="font-medium">{detail.value}</span>
               </div>
-            ) : (
-              <div className="text-muted-foreground italic">No configuration details available</div>
-            )}
+            ))}
           </div>
         </div>
       </HoverCardContent>

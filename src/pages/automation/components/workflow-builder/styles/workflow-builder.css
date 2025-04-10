@@ -1,4 +1,3 @@
-
 /* Workflow Builder Styles */
 
 .workflow-builder .react-flow__edge path {
@@ -37,6 +36,7 @@
 /* Node styles */ 
 .workflow-builder .react-flow__node {
   transition: transform 0.2s, box-shadow 0.3s;
+  z-index: 2;
 }
 
 .workflow-builder .react-flow__node:hover {
@@ -121,4 +121,16 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Add new styles for node add buttons */
+.node-add-button {
+  position: absolute;
+  z-index: 10;
+  transform: translateX(-50%);
+}
+
+/* Ensure the add button doesn't interfere with node selection */
+.node-add-button button:focus {
+  outline: none;
 }

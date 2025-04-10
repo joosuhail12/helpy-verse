@@ -6,8 +6,15 @@ import { cn } from '@/lib/utils';
 import { NodeProps } from '@/types/workflow-builder';
 import '../styles/workflow-builder.css';
 import { NodeHoverCard } from '../NodeHoverCard';
+import { NodeAddButton } from '../NodeAddButton';
 
-const ConditionNode = ({ id, data, isConnectable }: NodeProps) => {
+// Add availableNodeTypes to the expected props
+interface ConditionNodeProps extends NodeProps {
+  addNode?: (type: any, sourceNodeId: string) => string;
+  availableNodeTypes?: { type: any; label: string; description: string }[];
+}
+
+const ConditionNode = ({ id, data, isConnectable, addNode, availableNodeTypes }: ConditionNodeProps) => {
   // Access data safely with default values
   const label = data?.label || 'Condition';
   const configured = data?.configured || false;
@@ -56,6 +63,17 @@ const ConditionNode = ({ id, data, isConnectable }: NodeProps) => {
               isConnectable={isConnectable}
               style={{ left: '30%' }}
             />
+            
+            {addNode && availableNodeTypes && (
+              <div className="absolute" style={{ bottom: -20, left: '30%', transform: 'translateX(-50%)' }}>
+                <NodeAddButton 
+                  nodeId={id} 
+                  addNode={addNode} 
+                  availableNodeTypes={availableNodeTypes}
+                  offsetY={5}
+                />
+              </div>
+            )}
           </div>
           <div className="flex flex-col items-center">
             <div className="text-xs text-muted-foreground">No</div>
@@ -67,6 +85,17 @@ const ConditionNode = ({ id, data, isConnectable }: NodeProps) => {
               isConnectable={isConnectable}
               style={{ left: '70%' }}
             />
+            
+            {addNode && availableNodeTypes && (
+              <div className="absolute" style={{ bottom: -20, left: '70%', transform: 'translateX(-50%)' }}>
+                <NodeAddButton 
+                  nodeId={id} 
+                  addNode={addNode} 
+                  availableNodeTypes={availableNodeTypes}
+                  offsetY={5}
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>

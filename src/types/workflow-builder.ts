@@ -73,9 +73,11 @@ export interface WorkflowNodeData {
   [key: string]: unknown;
 }
 
-// Define our custom NodeProps type
+// Define our custom NodeProps type with the new properties for add buttons
 export type NodeProps = Omit<ReactFlowNodeProps, 'data'> & {
   data?: WorkflowNodeData;
+  addNode?: (type: NodeType, sourceNodeId: string) => string;
+  availableNodeTypes?: { type: NodeType; label: string; description: string }[];
 };
 
 // Export WorkflowNode type

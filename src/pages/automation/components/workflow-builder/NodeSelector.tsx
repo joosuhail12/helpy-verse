@@ -18,9 +18,19 @@ interface NodeSelectorProps {
   nodeId: string;
   addNode: (type: NodeType, sourceNodeId: string) => string;
   availableNodeTypes: { type: NodeType; label: string; description: string }[];
+  position?: 'bottom' | 'inline';
+  offsetX?: number;
+  offsetY?: number;
 }
 
-export const NodeSelector: React.FC<NodeSelectorProps> = ({ nodeId, addNode, availableNodeTypes }) => {
+export const NodeSelector: React.FC<NodeSelectorProps> = ({ 
+  nodeId, 
+  addNode, 
+  availableNodeTypes,
+  position = 'bottom',
+  offsetX = 0,
+  offsetY = 0
+}) => {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<NodeCategory>('all');
@@ -85,16 +95,30 @@ export const NodeSelector: React.FC<NodeSelectorProps> = ({ nodeId, addNode, ava
   
   // Only render if we have a source node
   if (!sourceNode) return null;
+
+  const getPositionStyles = () => {
+    if (position === 'inline') {
+      return {
+        left: offsetX,
+        top: offsetY,
+        transform: 'none',
+        zIndex: 5
+      };
+    }
+    
+    // Default 'bottom' position
+    return {
+      left: sourceNode.position.x + (sourceNode.width || 150) / 2,
+      top: sourceNode.position.y + (sourceNode.height || 50),
+      transform: 'translateX(-50%)',
+      zIndex: 5
+    };
+  };
   
   return (
     <div 
       className="absolute"
-      style={{
-        left: sourceNode.position.x + (sourceNode.width || 150) / 2,
-        top: sourceNode.position.y + (sourceNode.height || 50),
-        transform: 'translateX(-50%)',
-        zIndex: 5
-      }}
+      style={getPositionStyles()}
     >
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>

@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils';
 import { NodeProps } from '@/types/workflow-builder';
 import '../styles/workflow-builder.css';
 import { NodeHoverCard } from '../NodeHoverCard';
+import { NodeAddButton } from '../NodeAddButton';
 
 // Icon mapping for different action types
 const actionIcons: Record<string, React.FC<{ className?: string }>> = {
@@ -26,7 +27,13 @@ const actionIcons: Record<string, React.FC<{ className?: string }>> = {
   default: Cog
 };
 
-const ActionNode = ({ id, data, isConnectable }: NodeProps) => {
+// Add availableNodeTypes to the expected props
+interface ActionNodeProps extends NodeProps {
+  addNode?: (type: any, sourceNodeId: string) => string;
+  availableNodeTypes?: { type: any; label: string; description: string }[];
+}
+
+const ActionNode = ({ id, data, isConnectable, addNode, availableNodeTypes }: ActionNodeProps) => {
   // Access data safely with default values
   const label = data?.label || 'Action';
   const configured = data?.configured || false;
@@ -108,6 +115,16 @@ const ActionNode = ({ id, data, isConnectable }: NodeProps) => {
           className="w-3 h-3 border-2 bg-background border-muted-foreground"
           isConnectable={isConnectable}
         />
+        
+        {addNode && availableNodeTypes && (
+          <div className="absolute" style={{ bottom: -20, left: '50%', transform: 'translateX(-50%)' }}>
+            <NodeAddButton 
+              nodeId={id} 
+              addNode={addNode} 
+              availableNodeTypes={availableNodeTypes}
+            />
+          </div>
+        )}
       </div>
     </NodeHoverCard>
   );

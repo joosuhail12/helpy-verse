@@ -10,8 +10,15 @@ import { cn } from '@/lib/utils';
 import { NodeProps } from '@/types/workflow-builder';
 import '../styles/workflow-builder.css';
 import { NodeHoverCard } from '../NodeHoverCard';
+import { NodeAddButton } from '../NodeAddButton';
 
-const TriggerNode = ({ id, data, isConnectable }: NodeProps) => {
+// Add availableNodeTypes to the expected props
+interface TriggerNodeProps extends NodeProps {
+  addNode?: (type: any, sourceNodeId: string) => string;
+  availableNodeTypes?: { type: any; label: string; description: string }[];
+}
+
+const TriggerNode = ({ id, data, isConnectable, addNode, availableNodeTypes }: TriggerNodeProps) => {
   // Access data safely with default values
   const label = data?.label || 'Trigger';
   const configured = data?.configured || false;
@@ -48,6 +55,16 @@ const TriggerNode = ({ id, data, isConnectable }: NodeProps) => {
           className="w-3 h-3 border-2 bg-background border-muted-foreground"
           isConnectable={isConnectable}
         />
+        
+        {addNode && availableNodeTypes && (
+          <div className="absolute" style={{ bottom: -20, left: '50%', transform: 'translateX(-50%)' }}>
+            <NodeAddButton 
+              nodeId={id} 
+              addNode={addNode} 
+              availableNodeTypes={availableNodeTypes}
+            />
+          </div>
+        )}
       </div>
     </NodeHoverCard>
   );

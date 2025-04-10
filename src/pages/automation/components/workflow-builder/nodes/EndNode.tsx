@@ -7,7 +7,13 @@ import '../styles/workflow-builder.css';
 import { cn } from '@/lib/utils';
 import { NodeHoverCard } from '../NodeHoverCard';
 
-const EndNode = ({ id, data, isConnectable }: NodeProps) => {
+// Add availableNodeTypes to the expected props for interface consistency
+interface EndNodeProps extends NodeProps {
+  addNode?: (type: any, sourceNodeId: string) => string;
+  availableNodeTypes?: { type: any; label: string; description: string }[];
+}
+
+const EndNode = ({ id, data, isConnectable }: EndNodeProps) => {
   // Access data safely, with default value as fallback
   const label = data?.label || 'End Workflow';
 
