@@ -44,7 +44,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
-import { DateRangePicker } from "@/components/ui/date-range-picker";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Workflow, WorkflowType, WorkflowTag, WorkflowFolder, WorkflowStatus, WorkflowChange, WorkflowVersion, WorkflowDependency, WorkflowChangeType } from '@/types/workflow';
 import { WorkflowFolders } from './components/WorkflowFolders';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -184,6 +184,131 @@ interface DateRange {
   from: Date | undefined;
   to: Date | undefined;
 }
+
+interface DateRangePickerProps {
+  date: DateRange;
+  onDateChange: (date: DateRange) => void;
+  align?: "start" | "end";
+}
+
+const DateRangePicker: React.FC<DateRangePickerProps> = ({ date, onDateChange, align = "end" }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [localDate, setLocalDate] = useState<DateRange>(date);
+
+  const handleSelect = (day: Date | undefined) => {
+    if (!day) return;
+    
+    const range = !localDate.from 
+      ? { from: day, to: undefined }
+      : { from: localDate.from, to: day };
+      
+    setLocalDate(range);
+    
+    if (range.from && range.to) {
+      onDateChange(range);
+      setIsOpen(false);
+    }
+  };
+
+  const clearSelection = () => {
+    const newRange = { from: undefined, to: undefined };
+    setLocalDate(newRange);
+    onDateChange(newRange);
+    setIsOpen(false);
+  };
+
+  const formatRange = () => {
+    if (localDate.from && localDate.to) {
+      return `${format(localDate.from, 'MMM d')} - ${format(localDate.to, 'MMM d')}`;
+    }
+    return "Date range";
+  };
+
+  return (
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverTrigger asChild>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className={`h-9 text-sm ${date.from ? 'bg-primary/10 border-primary/30' : ''}`}
+        >
+          <Calendar className="h-3.5 w-3.5 mr-2" />
+          <span>{formatRange()}</span>
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0" align={align}>
+        <div className="p-3 border-b">
+          <div className="flex justify-between items-center">
+            <h4 className="font-medium text-sm">Select date range</h4>
+            {(localDate.from || localDate.to) && (
+              <Button variant="ghost" size="sm" onClick={clearSelection} className="-m-1 h-8">
+                <X className="h-4 w-4 mr-1" />
+                Clear
+              </Button>
+            )}
+          </div>
+        </div>
+        <CalendarComponent
+          mode="range"
+          selected={{ 
+            from: localDate.from, 
+            to: localDate.to 
+          }}
+          onSelect={(range) => {
+            if (!range) return;
+            handleSelect(range.to || range.from);
+          }}
+          numberOfMonths={1}
+          defaultMonth={new Date()}
+          className="p-3"
+        />
+        <div className="p-3 border-t flex gap-2 justify-between">
+          <div className="grid grid-cols-3 gap-1">
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-xs h-8"
+              onClick={() => {
+                const today = new Date();
+                const yesterday = subDays(today, 1);
+                onDateChange({ from: yesterday, to: today });
+                setIsOpen(false);
+              }}
+            >
+              Last day
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-xs h-8"
+              onClick={() => {
+                const today = new Date();
+                const lastWeek = subDays(today, 7);
+                onDateChange({ from: lastWeek, to: today });
+                setIsOpen(false);
+              }}
+            >
+              Last week
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-xs h-8"
+              onClick={() => {
+                const today = new Date();
+                const lastMonth = subDays(today, 30);
+                onDateChange({ from: lastMonth, to: today });
+                setIsOpen(false);
+              }}
+            >
+              Last month
+            </Button>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+};
 
 interface WorkflowsPageState {
   workflows: Workflow[];

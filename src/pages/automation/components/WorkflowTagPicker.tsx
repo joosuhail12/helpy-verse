@@ -1,106 +1,162 @@
-
-import React, { useState, useEffect } from 'react';
+import * as React from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { Tag, X, Plus } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { CheckIcon, PlusCircleIcon } from 'lucide-react';
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList
-} from '@/components/ui/command';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger
-} from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { HexColorPicker } from 'react-colorful';
 import { WorkflowTag } from '@/types/workflow';
+import { cn } from '@/lib/utils';
 
-export interface WorkflowTagPickerProps {
+interface WorkflowTagPickerProps {
+  tags: WorkflowTag[];
   selectedTags: WorkflowTag[];
-  allTags: WorkflowTag[];
   onChange: (tags: WorkflowTag[]) => void;
+  canCreateTags?: boolean;
 }
 
 export const WorkflowTagPicker: React.FC<WorkflowTagPickerProps> = ({
+  tags,
   selectedTags,
-  allTags,
-  onChange
+  onChange,
+  canCreateTags = true
 }) => {
   const [open, setOpen] = useState(false);
-  const [value, setValue] = useState<string>("");
+  const [newTagDialogOpen, setNewTagDialogOpen] = useState(false);
+  const [newTagName, setNewTagName] = useState('');
+  const [newTagColor, setNewTagColor] = useState('#24292F');
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  const selectedTagIds = selectedTags.map((tag) => tag.id);
+  const [availableTags, setAvailableTags] = useState(tags);
+  const [selectedTagIds, setSelectedTagIds] = useState(selectedTags.map(tag => tag.id));
 
-  const handleSelect = (tag: WorkflowTag) => {
+  useEffect(() => {
+    setAvailableTags(tags);
+    setSelectedTagIds(selectedTags.map(tag => tag.id));
+  }, [tags, selectedTags]);
+
+  const handleTagSelect = (tag: WorkflowTag) => {
     const isSelected = selectedTagIds.includes(tag.id);
-    
+    let newSelectedTagIds = [...selectedTagIds];
+
     if (isSelected) {
-      onChange(selectedTags.filter((t) => t.id !== tag.id));
+      newSelectedTagIds = newSelectedTagIds.filter(id => id !== tag.id);
     } else {
-      onChange([...selectedTags, tag]);
+      newSelectedTagIds = [...selectedTagIds, tag.id];
     }
+
+    setSelectedTagIds(newSelectedTagIds);
+    onChange(tags.filter(t => newSelectedTagIds.includes(t.id)));
   };
+
+  const handleCreateTag = () => {
+    if (newTagName.trim() === '') return;
+
+    const newTag: WorkflowTag = {
+      id: `tag-${Date.now()}`,
+      name: newTagName,
+      color: newTagColor,
+    };
+
+    setAvailableTags([...availableTags, newTag]);
+    setSelectedTagIds([...selectedTagIds, newTag.id]);
+    onChange([...tags, newTag]);
+
+    setNewTagDialogOpen(false);
+    setNewTagName('');
+    setNewTagColor('#24292F');
+  };
+
+  const filteredTags = availableTags.filter(tag => !selectedTagIds.includes(tag.id));
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          size="sm"
-          className="justify-start border-dashed h-8"
+          role="combobox"
+          aria-expanded={open}
+          className="w-[200px] justify-between text-sm"
         >
-          {selectedTags.length === 0 ? (
-            <>
-              <PlusCircleIcon className="h-3.5 w-3.5 mr-2" />
-              <span>Add tags</span>
-            </>
-          ) : (
-            <>
-              <span>
-                {selectedTags.length} tag{selectedTags.length > 1 ? 's' : ''}
-              </span>
-            </>
-          )}
+          Tags ({selectedTags.length})
+          <Tag className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-0" align="start">
+      <PopoverContent className="w-[200px] p-0">
         <Command>
-          <CommandInput
-            placeholder="Search tags..."
-            value={value}
-            onValueChange={setValue}
-            className="h-9"
-          />
+          <CommandInput placeholder="Search tags..." ref={inputRef} />
           <CommandList>
-            <CommandEmpty>No tags found</CommandEmpty>
-            <CommandGroup>
-              {allTags.map((tag) => {
-                const isSelected = selectedTagIds.includes(tag.id);
-                
-                return (
-                  <CommandItem
-                    key={tag.id}
-                    value={tag.name}
-                    onSelect={() => handleSelect(tag)}
-                  >
-                    <div 
-                      className="mr-2 h-2.5 w-2.5 rounded-full"
-                      style={{ backgroundColor: tag.color }}
-                    />
-                    <span className="flex-1">{tag.name}</span>
-                    {isSelected && <CheckIcon className="h-3.5 w-3.5 ml-2" />}
-                  </CommandItem>
-                );
-              })}
+            <CommandEmpty>No tags found.</CommandEmpty>
+            <CommandGroup heading="Tags">
+              {filteredTags.map((tag) => (
+                <CommandItem
+                  key={tag.id}
+                  onSelect={() => {
+                    handleTagSelect(tag);
+                    setOpen(false);
+                    inputRef?.current?.focus();
+                  }}
+                >
+                  <Tag className="mr-2 h-4 w-4" />
+                  {tag.name}
+                </CommandItem>
+              ))}
             </CommandGroup>
+            {canCreateTags && (
+              <CommandGroup>
+                <CommandItem
+                  onSelect={() => {
+                    setNewTagDialogOpen(true);
+                    setOpen(false);
+                  }}
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Create Tag
+                </CommandItem>
+              </CommandGroup>
+            )}
           </CommandList>
         </Command>
       </PopoverContent>
+
+      <Dialog open={newTagDialogOpen} onOpenChange={setNewTagDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Create new tag</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="name" className="text-right text-sm font-medium leading-none">
+                Name
+              </label>
+              <div className="col-span-3">
+                <Input
+                  id="name"
+                  value={newTagName}
+                  onChange={(e) => setNewTagName(e.target.value)}
+                  className="col-span-3"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="color" className="text-right text-sm font-medium leading-none">
+                Color
+              </label>
+              <div className="col-span-3">
+                <HexColorPicker color={newTagColor} onChange={setNewTagColor} />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="button" onClick={handleCreateTag}>
+              Create tag
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Popover>
   );
 };
-
-export default WorkflowTagPicker;

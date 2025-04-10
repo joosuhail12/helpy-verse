@@ -1,194 +1,266 @@
-
-import React, { useState } from 'react';
+import * as React from 'react';
+import { useState } from 'react';
+import { FolderClosed, FolderOpen, Trash2, Edit, Plus, FolderPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { 
-  FolderClosed, 
-  FolderOpen, 
-  ChevronRight, 
-  Plus, 
-  Pencil, 
-  Trash2 
-} from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
-} from '@/components/ui/dropdown-menu';
-import { WorkflowFolder } from '@/types/workflow';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter
+} from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { cn } from '@/lib/utils';
+import { WorkflowFolder } from '@/types/workflow';
 
 interface WorkflowFoldersProps {
   folders: WorkflowFolder[];
+  selectedFolderId: string | null;
+  onFolderSelect: (folderId: string | null) => void;
   onFolderCreate: (folder: WorkflowFolder) => void;
   onFolderUpdate: (folder: WorkflowFolder) => void;
   onFolderDelete: (folderId: string) => void;
-  selectedFolderId: string | null;
-  onFolderSelect: (folderId: string | null) => void;
   className?: string;
 }
 
-export function WorkflowFolders({
+export const WorkflowFolders: React.FC<WorkflowFoldersProps> = ({
   folders,
+  selectedFolderId,
+  onFolderSelect,
   onFolderCreate,
   onFolderUpdate,
   onFolderDelete,
-  selectedFolderId,
-  onFolderSelect,
-  className = ''
-}: WorkflowFoldersProps) {
-  const [isCreatingFolder, setIsCreatingFolder] = useState(false);
-  const [newFolderName, setNewFolderName] = useState('');
-  const [editingFolderId, setEditingFolderId] = useState<string | null>(null);
-  const [editedFolderName, setEditedFolderName] = useState('');
+  className
+}) => {
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [folderToDelete, setFolderToDelete] = useState<string | null>(null);
+  const [editingFolder, setEditingFolder] = useState<WorkflowFolder | null>(null);
+  const [newFolder, setNewFolder] = useState<Omit<WorkflowFolder, 'id'>>({ name: '', description: '' });
+
+  const handleFolderSelect = (folderId: string | null) => {
+    onFolderSelect(folderId);
+  };
+
+  const handleOpenCreateModal = () => {
+    setIsCreateModalOpen(true);
+  };
+
+  const handleCloseCreateModal = () => {
+    setIsCreateModalOpen(false);
+    setNewFolder({ name: '', description: '' });
+  };
 
   const handleCreateFolder = () => {
-    if (!newFolderName.trim()) return;
-    
-    const newFolder: WorkflowFolder = {
+    const folder: WorkflowFolder = {
       id: `folder-${Date.now()}`,
-      name: newFolderName.trim(),
+      name: newFolder.name,
+      description: newFolder.description,
       workflowIds: []
     };
-    
-    onFolderCreate(newFolder);
-    setNewFolderName('');
-    setIsCreatingFolder(false);
+    onFolderCreate(folder);
+    handleCloseCreateModal();
   };
 
-  const handleEditFolder = (folder: WorkflowFolder) => {
-    setEditingFolderId(folder.id);
-    setEditedFolderName(folder.name);
+  const handleOpenEditModal = (folder: WorkflowFolder) => {
+    setEditingFolder(folder);
+    setIsEditModalOpen(true);
   };
 
-  const handleSaveEdit = (folder: WorkflowFolder) => {
-    if (!editedFolderName.trim()) return;
-    
-    onFolderUpdate({
-      ...folder,
-      name: editedFolderName.trim()
-    });
-    
-    setEditingFolderId(null);
+  const handleCloseEditModal = () => {
+    setIsEditModalOpen(false);
+    setEditingFolder(null);
   };
 
-  const handleSelectFolder = (folderId: string) => {
-    onFolderSelect(selectedFolderId === folderId ? null : folderId);
+  const handleUpdateFolder = (updatedFolder: WorkflowFolder) => {
+    onFolderUpdate(updatedFolder);
+    handleCloseEditModal();
+  };
+
+  const handleOpenDeleteDialog = (folderId: string) => {
+    setFolderToDelete(folderId);
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setFolderToDelete(null);
+  };
+
+  const handleDeleteFolder = () => {
+    if (folderToDelete) {
+      onFolderDelete(folderToDelete);
+      handleCloseDeleteDialog();
+    }
   };
 
   return (
     <div className={cn("space-y-2", className)}>
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium text-muted-foreground mb-1">Folders</h3>
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={() => setIsCreatingFolder(true)}
-          className="h-7 w-7 p-0"
-          disabled={isCreatingFolder}
-        >
-          <Plus className="h-4 w-4" />
-          <span className="sr-only">Add folder</span>
+        <h3 className="text-sm font-medium text-muted-foreground">Folders</h3>
+        <Button variant="ghost" size="sm" onClick={handleOpenCreateModal}>
+          <FolderPlus className="h-4 w-4 mr-2" />
+          New Folder
         </Button>
       </div>
       
-      {/* All workflows option */}
-      <div
-        className={cn(
-          "flex items-center gap-2 p-2 rounded-md cursor-pointer hover:bg-muted/50 transition-colors",
-          selectedFolderId === null && "bg-muted/70 font-medium"
-        )}
-        onClick={() => onFolderSelect(null)}
-      >
-        <FolderOpen className="h-4 w-4" />
-        <span className="text-sm">All Workflows</span>
-      </div>
-      
-      {/* Folder list */}
       <div className="space-y-1">
-        {folders.map(folder => (
-          <div key={folder.id} className="relative">
-            {editingFolderId === folder.id ? (
-              <div className="flex items-center gap-2 p-2">
-                <Input
-                  value={editedFolderName}
-                  onChange={(e) => setEditedFolderName(e.target.value)}
-                  className="h-7 text-sm"
-                  autoFocus
-                  onKeyDown={(e) => e.key === 'Enter' && handleSaveEdit(folder)}
-                  onBlur={() => handleSaveEdit(folder)}
-                />
-              </div>
-            ) : (
-              <div
-                className={cn(
-                  "flex items-center justify-between p-2 rounded-md group cursor-pointer hover:bg-muted/50 transition-colors",
-                  selectedFolderId === folder.id && "bg-muted/70 font-medium"
-                )}
-                onClick={() => handleSelectFolder(folder.id)}
-              >
-                <div className="flex items-center gap-2">
-                  {selectedFolderId === folder.id ? (
-                    <FolderOpen className="h-4 w-4" />
-                  ) : (
-                    <FolderClosed className="h-4 w-4" />
-                  )}
-                  <span className="text-sm">{folder.name}</span>
-                  <span className="text-xs text-muted-foreground">
-                    ({folder.workflowIds.length})
-                  </span>
-                </div>
-                
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100"
-                    >
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-40">
-                    <DropdownMenuItem onClick={() => handleEditFolder(folder)}>
-                      <Pencil className="h-4 w-4 mr-2" />
-                      Rename
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      className="text-destructive focus:text-destructive"
-                      onClick={() => onFolderDelete(folder.id)}
-                    >
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
+        <Button 
+          variant="ghost" 
+          className={cn(
+            "w-full justify-start font-normal",
+            selectedFolderId === null ? "bg-accent text-accent-foreground hover:bg-accent hover:text-accent-foreground" : "hover:bg-secondary",
+          )}
+          onClick={() => handleFolderSelect(null)}
+        >
+          All Workflows
+        </Button>
+        {folders.map((folder) => (
+          <Button
+            key={folder.id}
+            variant="ghost"
+            className={cn(
+              "w-full justify-start font-normal",
+              selectedFolderId === folder.id ? "bg-accent text-accent-foreground hover:bg-accent hover:text-accent-foreground" : "hover:bg-secondary",
             )}
-          </div>
+            onClick={() => handleFolderSelect(folder.id)}
+          >
+            {selectedFolderId === folder.id ? <FolderOpen className="h-4 w-4 mr-2" /> : <FolderClosed className="h-4 w-4 mr-2" />}
+            {folder.name}
+            <div className="ml-auto space-x-2">
+              <Button variant="ghost" size="icon" onClick={(e) => {
+                e.stopPropagation();
+                handleOpenEditModal(folder);
+              }}>
+                <Edit className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="icon" onClick={(e) => {
+                e.stopPropagation();
+                handleOpenDeleteDialog(folder.id);
+              }}>
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          </Button>
         ))}
         
-        {isCreatingFolder && (
-          <div className="flex items-center gap-2 p-2 bg-muted/40 rounded-md">
-            <Input
-              value={newFolderName}
-              onChange={(e) => setNewFolderName(e.target.value)}
-              className="h-7 text-sm"
-              placeholder="Folder name"
-              autoFocus
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleCreateFolder();
-                if (e.key === 'Escape') setIsCreatingFolder(false);
-              }}
-              onBlur={() => {
-                if (newFolderName) handleCreateFolder();
-                else setIsCreatingFolder(false);
-              }}
-            />
-          </div>
+        {folders.length === 0 && (
+          <p className="text-sm text-center text-muted-foreground py-2">No folders created</p>
         )}
       </div>
+
+      <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create New Folder</DialogTitle>
+            <DialogDescription>
+              Enter the details for your new folder.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="name" className="text-right text-sm font-medium">
+                Name
+              </label>
+              <Input
+                id="name"
+                value={newFolder.name}
+                onChange={(e) => setNewFolder({ ...newFolder, name: e.target.value })}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="description" className="text-right text-sm font-medium">
+                Description
+              </label>
+              <Textarea
+                id="description"
+                value={newFolder.description}
+                onChange={(e) => setNewFolder({ ...newFolder, description: e.target.value })}
+                className="col-span-3"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="secondary" onClick={handleCloseCreateModal}>
+              Cancel
+            </Button>
+            <Button type="button" onClick={handleCreateFolder}>
+              Create
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isEditModalOpen && !!editingFolder} onOpenChange={setIsEditModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Folder</DialogTitle>
+            <DialogDescription>
+              Edit the details for the selected folder.
+            </DialogDescription>
+          </DialogHeader>
+          {editingFolder && (
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <label htmlFor="name" className="text-right text-sm font-medium">
+                  Name
+                </label>
+                <Input
+                  id="name"
+                  value={editingFolder.name}
+                  onChange={(e) => setEditingFolder({ ...editingFolder, name: e.target.value })}
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <label htmlFor="description" className="text-right text-sm font-medium">
+                  Description
+                </label>
+                <Textarea
+                  id="description"
+                  value={editingFolder.description || ''}
+                  onChange={(e) => setEditingFolder({ ...editingFolder, description: e.target.value })}
+                  className="col-span-3"
+                />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button type="button" variant="secondary" onClick={handleCloseEditModal}>
+              Cancel
+            </Button>
+            <Button type="button" onClick={() => editingFolder && handleUpdateFolder(editingFolder)}>
+              Update
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog open={!!folderToDelete} onOpenChange={setFolderToDelete}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the folder and remove all workflows from it.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleCloseDeleteDialog}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteFolder}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
-}
+};
