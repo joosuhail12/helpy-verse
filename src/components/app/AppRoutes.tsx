@@ -19,6 +19,8 @@ import Contacts from '@/pages/Contacts';
 import AllContacts from '@/pages/contacts/All';
 // Import Workflows directly - since we need it in the routes
 import WorkflowsComponent from '@/pages/automation/Workflows';
+// Import WorkflowBuilderPage directly to avoid dynamic import issues
+import WorkflowBuilderPage from '@/pages/automation/WorkflowBuilderPage';
 
 // Lazy load non-critical pages
 const ForgotPassword = React.lazy(() => import('@/pages/ForgotPassword'));

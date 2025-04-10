@@ -361,7 +361,7 @@ const CreateWorkflowModal: React.FC<CreateWorkflowModalProps> = ({
     
     try {
       setTimeout(() => {
-        navigate(`/automation/workflows/new/trigger/${triggerId}`);
+        navigate(`/home/automation/workflows/new/trigger/${triggerId}`);
         setIsNavigating(false);
         if (onClose) onClose();
       }, 300);
