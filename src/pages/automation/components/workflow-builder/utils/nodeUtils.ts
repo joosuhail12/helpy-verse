@@ -1,5 +1,16 @@
 
-import { WorkflowNodeData } from '@/types/workflow-builder';
+import { WorkflowNodeData, NodeConfig, WorkflowTriggerConfig } from '@/types/workflow-builder';
+
+// Helper function to determine if config is NodeConfig
+function isNodeConfig(config: any): config is NodeConfig {
+  return config && 
+    (config.message !== undefined || 
+     config.quickReplies !== undefined ||
+     config.conditionType !== undefined ||
+     config.assigneeId !== undefined ||
+     config.tags !== undefined ||
+     config.duration !== undefined);
+}
 
 // Format node config details for the hover card
 export function formatNodeConfig(nodeData: WorkflowNodeData): { label: string; value: string }[] {
@@ -10,7 +21,7 @@ export function formatNodeConfig(nodeData: WorkflowNodeData): { label: string; v
   
   // Handle trigger nodes
   if (nodeData.triggerId) {
-    const triggerConfig = config as any;
+    const triggerConfig = config as WorkflowTriggerConfig;
     
     if (triggerConfig.channels) {
       if (triggerConfig.channels.chat !== undefined) {
@@ -31,65 +42,67 @@ export function formatNodeConfig(nodeData: WorkflowNodeData): { label: string; v
     return details;
   }
   
-  // Handle different node types
-  switch (nodeData.actionType || nodeData.type) {
-    case 'message':
-      if (config.message) {
-        details.push({ 
-          label: 'Message', 
-          value: config.message.substring(0, 30) + (config.message.length > 30 ? '...' : '') 
-        });
-      }
-      if (config.quickReplies?.length) {
-        details.push({ 
-          label: 'Quick replies', 
-          value: `${config.quickReplies.length} options` 
-        });
-      }
-      break;
-      
-    case 'condition':
-      if (config.conditionType) {
-        details.push({ label: 'Type', value: config.conditionType });
-      }
-      if (config.property) {
-        details.push({ label: 'Property', value: config.property });
-      }
-      if (config.operator && config.value) {
-        details.push({ 
-          label: 'Condition', 
-          value: `${config.operator} ${config.value}` 
-        });
-      }
-      break;
-      
-    case 'assign_ticket':
-      if (config.assigneeId) {
-        details.push({ label: 'Assignee', value: config.assigneeId });
-      }
-      break;
-      
-    case 'tag_ticket':
-      if (config.tags?.length) {
-        details.push({ 
-          label: 'Tags', 
-          value: config.tags.join(', ').substring(0, 30) + (config.tags.join(', ').length > 30 ? '...' : '') 
-        });
-      }
-      break;
-      
-    case 'wait':
-      if (config.duration && config.unit) {
-        details.push({ 
-          label: 'Duration', 
-          value: `${config.duration} ${config.unit}` 
-        });
-      }
-      break;
-  }
-  
-  if (config.customId) {
-    details.push({ label: 'Custom ID', value: config.customId });
+  // Handle different node types for NodeConfig
+  if (isNodeConfig(config)) {
+    switch (nodeData.actionType || nodeData.type) {
+      case 'message':
+        if (config.message) {
+          details.push({ 
+            label: 'Message', 
+            value: config.message.substring(0, 30) + (config.message.length > 30 ? '...' : '') 
+          });
+        }
+        if (config.quickReplies?.length) {
+          details.push({ 
+            label: 'Quick replies', 
+            value: `${config.quickReplies.length} options` 
+          });
+        }
+        break;
+        
+      case 'condition':
+        if (config.conditionType) {
+          details.push({ label: 'Type', value: config.conditionType });
+        }
+        if (config.property) {
+          details.push({ label: 'Property', value: config.property });
+        }
+        if (config.operator && config.value) {
+          details.push({ 
+            label: 'Condition', 
+            value: `${config.operator} ${config.value}` 
+          });
+        }
+        break;
+        
+      case 'assign_ticket':
+        if (config.assigneeId) {
+          details.push({ label: 'Assignee', value: config.assigneeId });
+        }
+        break;
+        
+      case 'tag_ticket':
+        if (config.tags?.length) {
+          details.push({ 
+            label: 'Tags', 
+            value: config.tags.join(', ').substring(0, 30) + (config.tags.join(', ').length > 30 ? '...' : '') 
+          });
+        }
+        break;
+        
+      case 'wait':
+        if (config.duration && config.unit) {
+          details.push({ 
+            label: 'Duration', 
+            value: `${config.duration} ${config.unit}` 
+          });
+        }
+        break;
+    }
+    
+    if (config.customId) {
+      details.push({ label: 'Custom ID', value: config.customId });
+    }
   }
   
   return details;

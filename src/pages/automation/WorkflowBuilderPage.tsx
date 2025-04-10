@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
@@ -120,12 +119,10 @@ const WorkflowBuilder: React.FC = () => {
   const [triggerDrawerOpen, setTriggerDrawerOpen] = useState<boolean>(false);
   const [selectedNode, setSelectedNode] = useState<Node<WorkflowNodeData> | null>(null);
   
-  // Update CSS variable when grid size changes
   useEffect(() => {
     document.documentElement.style.setProperty('--grid-size', `${gridSize}px`);
   }, [gridSize]);
   
-  // Update snap grid when grid size changes
   useEffect(() => {
     const size = parseInt(gridSize, 10);
     setSnapGrid([size, size]);
@@ -319,7 +316,6 @@ const WorkflowBuilder: React.FC = () => {
     setGridSize(size);
   }, []);
 
-  // Auto layout functionality
   const handleAutoLayout = useCallback(() => {
     if (!nodes.length) return;
     
@@ -329,12 +325,10 @@ const WorkflowBuilder: React.FC = () => {
       end: nodes.filter(node => node.type === 'end')
     };
     
-    // Start with identifying the root node(s) (typically trigger nodes)
     const rootNodes = nodesByType.trigger.length > 0 
       ? nodesByType.trigger 
-      : [nodes[0]]; // If no trigger node, use the first node
-      
-    // Create a map of node connections (which node connects to which)
+      : [nodes[0]];
+    
     const nodeConnections = new Map();
     edges.forEach(edge => {
       if (!nodeConnections.has(edge.source)) {
@@ -343,7 +337,6 @@ const WorkflowBuilder: React.FC = () => {
       nodeConnections.get(edge.source).push(edge.target);
     });
     
-    // Function to get all connected nodes in order (breadth-first traversal)
     const getConnectedNodesInOrder = (startNodeIds: string[]) => {
       const visited = new Set();
       const result: string[] = [];
@@ -367,19 +360,15 @@ const WorkflowBuilder: React.FC = () => {
       return result;
     };
     
-    // Get nodes in traversal order
     const orderedNodeIds = getConnectedNodesInOrder(rootNodes.map(n => n.id));
     
-    // Calculate positions for each node
     const HORIZONTAL_SPACING = 250;
     const VERTICAL_SPACING = 150;
     const MAX_NODES_PER_LEVEL = 3;
     
-    // Group nodes into levels based on their distance from root
     const nodeLevels: Record<number, string[]> = {};
     const nodeDistances = new Map();
     
-    // Calculate distance from root for each node
     orderedNodeIds.forEach((nodeId, index) => {
       const level = Math.floor(index / MAX_NODES_PER_LEVEL);
       if (!nodeLevels[level]) {
@@ -389,17 +378,15 @@ const WorkflowBuilder: React.FC = () => {
       nodeDistances.set(nodeId, level);
     });
     
-    // Position nodes based on their level
     const newNodes = nodes.map(node => {
       const level = nodeDistances.get(node.id) || 0;
       const levelNodes = nodeLevels[level] || [];
       const indexInLevel = levelNodes.indexOf(node.id);
       
       if (indexInLevel === -1) {
-        return node; // Keep original position if node wasn't in our traversal
+        return node;
       }
       
-      // Calculate new position
       const x = 100 + (level * HORIZONTAL_SPACING);
       const y = 100 + (indexInLevel * VERTICAL_SPACING);
       
@@ -478,7 +465,6 @@ const WorkflowBuilder: React.FC = () => {
           className={flowClassName}
           onViewportChange={onViewportChange}
           connectionLineStyle={{ strokeWidth: 2, stroke: '#888', strokeDasharray: '5' }}
-          connectionLineClassName="connecting-line"
         >
           <Background gap={parseInt(gridSize)} size={1} />
           <Controls showInteractive={false} />

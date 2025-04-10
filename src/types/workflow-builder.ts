@@ -83,3 +83,6 @@ export interface WorkflowTagPickerProps {
   allTags: { id: string; name: string; color: string }[];
   onChange: (tags: { id: string; name: string; color: string }[]) => void;
 }
+
+// Define category type for NodeSelector
+export type NodeCategory = 'messaging' | 'conditions' | 'tickets' | 'time' | 'data' | 'all';

@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { useReactFlow, getOutgoers, getConnectedEdges } from '@xyflow/react';
 import { 
@@ -28,7 +27,7 @@ import {
 } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { NodeType } from '@/types/workflow-builder';
+import { NodeType, NodeCategory } from '@/types/workflow-builder';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from '@/lib/utils';
 
@@ -38,11 +37,10 @@ interface NodeSelectorProps {
   availableNodeTypes: { type: NodeType; label: string; description: string }[];
 }
 
-type NodeCategory = 'messaging' | 'conditions' | 'tickets' | 'time' | 'data' | 'all';
-
-interface NodeTypeWithCategory extends NodeType {
+type NodeTypeWithCategory = {
+  type: NodeType;
   category: NodeCategory;
-}
+};
 
 const NODE_CATEGORIES: Record<NodeCategory, { label: string; icon: React.ReactNode }> = {
   messaging: { label: 'Messaging', icon: <MessageSquare size={16} className="text-blue-500" /> },
