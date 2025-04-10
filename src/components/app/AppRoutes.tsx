@@ -1,10 +1,10 @@
-
 import React from 'react';
 import { Routes, Route, Navigate } from "react-router-dom";
 import LoadingFallback from './LoadingFallback';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import RootRedirect from './RootRedirect';
 import RouteErrorBoundary from '@/components/app/RouteErrorBoundary';
+import { automationRoutes } from '@/routes/automationRoutes';
 
 // Import directly instead of lazy loading for critical components
 import DashboardLayout from '@/layouts/DashboardLayout';
@@ -129,14 +129,8 @@ const AppRoutes: React.FC = () => {
             } />
           </Route>
           
-          {/* Automation routes */}
-          <Route path="automation/workflows" element={
-            <RouteErrorBoundary>
-              <React.Suspense fallback={<LoadingFallback />}>
-                <Workflows />
-              </React.Suspense>
-            </RouteErrorBoundary>
-          } />
+          {/* Include automationRoutes directly */}
+          {automationRoutes}
         </Route>
         
         {/* Not found route */}
