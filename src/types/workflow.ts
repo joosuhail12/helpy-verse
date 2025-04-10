@@ -42,6 +42,7 @@ export interface WorkflowMetrics {
   failedRuns: number;
   successfulRuns: number;
   averageDuration?: number;
+  lastRun?: Date; // Adding the missing lastRun property
 }
 
 export interface WorkflowChange {
@@ -64,7 +65,7 @@ export interface WorkflowDependency {
   id: string;
   sourceWorkflowId: string;
   targetWorkflowId: string;
-  type: 'trigger' | 'action' | 'data';
+  type: 'trigger' | 'action' | 'data' | 'condition' | 'sequence'; // Added missing types
   description?: string;
 }
 

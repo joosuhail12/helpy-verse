@@ -1,3 +1,4 @@
+
 import * as React from 'react';
 import { useState } from 'react';
 import { FolderClosed, FolderOpen, Trash2, Edit, Plus, FolderPlus } from 'lucide-react';
@@ -48,7 +49,11 @@ export const WorkflowFolders: React.FC<WorkflowFoldersProps> = ({
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [folderToDelete, setFolderToDelete] = useState<string | null>(null);
   const [editingFolder, setEditingFolder] = useState<WorkflowFolder | null>(null);
-  const [newFolder, setNewFolder] = useState<Omit<WorkflowFolder, 'id'>>({ name: '', description: '' });
+  const [newFolder, setNewFolder] = useState<Omit<WorkflowFolder, 'id'>>({
+    name: '',
+    description: '',
+    workflowIds: [] // Added the missing workflowIds property
+  });
 
   const handleFolderSelect = (folderId: string | null) => {
     onFolderSelect(folderId);
@@ -60,7 +65,7 @@ export const WorkflowFolders: React.FC<WorkflowFoldersProps> = ({
 
   const handleCloseCreateModal = () => {
     setIsCreateModalOpen(false);
-    setNewFolder({ name: '', description: '' });
+    setNewFolder({ name: '', description: '', workflowIds: [] }); // Include workflowIds
   };
 
   const handleCreateFolder = () => {
@@ -68,7 +73,7 @@ export const WorkflowFolders: React.FC<WorkflowFoldersProps> = ({
       id: `folder-${Date.now()}`,
       name: newFolder.name,
       description: newFolder.description,
-      workflowIds: []
+      workflowIds: newFolder.workflowIds
     };
     onFolderCreate(folder);
     handleCloseCreateModal();
@@ -185,7 +190,7 @@ export const WorkflowFolders: React.FC<WorkflowFoldersProps> = ({
               </label>
               <Textarea
                 id="description"
-                value={newFolder.description}
+                value={newFolder.description || ''}
                 onChange={(e) => setNewFolder({ ...newFolder, description: e.target.value })}
                 className="col-span-3"
               />
@@ -247,7 +252,7 @@ export const WorkflowFolders: React.FC<WorkflowFoldersProps> = ({
         </DialogContent>
       </Dialog>
 
-      <AlertDialog open={!!folderToDelete} onOpenChange={setFolderToDelete}>
+      <AlertDialog open={!!folderToDelete}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
