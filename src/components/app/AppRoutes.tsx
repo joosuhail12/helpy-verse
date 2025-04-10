@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Routes, Route, Navigate } from "react-router-dom";
 import LoadingFallback from './LoadingFallback';
@@ -129,8 +130,30 @@ const AppRoutes: React.FC = () => {
             } />
           </Route>
           
-          {/* Include automationRoutes directly */}
-          {automationRoutes}
+          {/* Automation routes */}
+          <Route path="automation">
+            <Route path="" element={<Navigate to="workflows" replace />} />
+            <Route path="workflows" element={
+              <RouteErrorBoundary>
+                <React.Suspense fallback={<LoadingFallback />}>
+                  <Workflows />
+                </React.Suspense>
+              </RouteErrorBoundary>
+            } />
+            <Route path="workflows/new/trigger/:triggerId" element={
+              <RouteErrorBoundary>
+                <React.Suspense fallback={<LoadingFallback />}>
+                  <React.Suspense fallback={<LoadingFallback />}>
+                    {/* Use lazy loaded WorkflowBuilderPage */}
+                    {React.createElement(
+                      React.lazy(() => import('@/pages/automation/WorkflowBuilderPage'))
+                    )}
+                  </React.Suspense>
+                </React.Suspense>
+              </RouteErrorBoundary>
+            } />
+            {/* Add additional automation routes as needed */}
+          </Route>
         </Route>
         
         {/* Not found route */}
