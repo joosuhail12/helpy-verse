@@ -53,4 +53,3 @@ export const FieldExamples = ({ type }: FieldExamplesProps) => {
     </HoverCard>
   );
 };
-

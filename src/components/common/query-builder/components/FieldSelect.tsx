@@ -24,7 +24,7 @@ export const FieldSelect = ({ value, onChange, fields, disabled, errorMessage }:
       <SelectContent>
         {fields.map((field) => (
           <SelectItem key={field.id} value={field.id}>
-            {field.label}
+            {field.label || field.name}
           </SelectItem>
         ))}
       </SelectContent>

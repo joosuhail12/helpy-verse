@@ -1,5 +1,5 @@
 
-import { QueryGroup, QueryRule, Operator } from "@/types/queryBuilder";
+import { QueryGroup, QueryRule, QueryOperator } from "@/types/queryBuilder";
 
 export type ValidationResult = {
   isValid: boolean;

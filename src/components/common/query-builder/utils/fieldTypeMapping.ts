@@ -1,5 +1,5 @@
 
-import type { FieldType } from '@/types/queryBuilder';
+import { FieldType } from '@/types/queryBuilder';
 
 export const mapFieldType = (type: string): FieldType => {
   switch (type.toLowerCase()) {

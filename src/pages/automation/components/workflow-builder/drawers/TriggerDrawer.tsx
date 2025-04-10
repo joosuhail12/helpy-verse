@@ -9,7 +9,8 @@ import { DrawerFooter } from '@/components/ui/drawer';
 import { Label } from '@/components/ui/label';
 import { WorkflowTriggerConfig } from '@/types/workflow-builder';
 import { QueryBuilder } from '@/components/common/query-builder/QueryBuilder';
-import { QueryGroup } from '@/types/queryBuilder';
+import { QueryGroup, QueryField } from '@/types/queryBuilder';
+import { generateId } from '@/lib/utils';
 
 interface TriggerDrawerProps {
   triggerId: string;
@@ -54,16 +55,18 @@ export const TriggerDrawer: React.FC<TriggerDrawerProps> = ({ triggerId, onSave 
   ];
 
   // Available audience fields for filtering
-  const audienceFields = [
+  const audienceFields: QueryField[] = [
     {
       id: 'contact.email',
       name: 'Email',
+      label: 'Email',
       type: 'text',
       operators: ['equals', 'contains', 'starts_with', 'ends_with']
     },
     {
       id: 'contact.type',
       name: 'Contact Type',
+      label: 'Contact Type',
       type: 'select',
       operators: ['equals', 'not_equals'],
       options: [
@@ -75,6 +78,7 @@ export const TriggerDrawer: React.FC<TriggerDrawerProps> = ({ triggerId, onSave 
     {
       id: 'contact.status',
       name: 'Contact Status',
+      label: 'Contact Status',
       type: 'select',
       operators: ['equals', 'not_equals'],
       options: [
@@ -86,12 +90,14 @@ export const TriggerDrawer: React.FC<TriggerDrawerProps> = ({ triggerId, onSave 
     {
       id: 'company.name',
       name: 'Company Name',
+      label: 'Company Name',
       type: 'text',
       operators: ['equals', 'contains', 'starts_with']
     },
     {
       id: 'company.industry',
       name: 'Industry',
+      label: 'Industry',
       type: 'select',
       operators: ['equals', 'not_equals'],
       options: [
@@ -208,7 +214,7 @@ export const TriggerDrawer: React.FC<TriggerDrawerProps> = ({ triggerId, onSave 
                         ...audienceQueryGroup,
                         rules: [
                           {
-                            id: uuidv4(),
+                            id: generateId(),
                             field: '',
                             operator: 'equals',
                             value: ''

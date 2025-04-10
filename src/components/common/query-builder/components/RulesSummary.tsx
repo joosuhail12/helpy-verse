@@ -1,10 +1,10 @@
 
 import { QueryGroup, QueryRule, QueryField } from '@/types/queryBuilder';
-import { getOperatorLabel } from '../components/OperatorSelect';
+import { getOperatorLabel } from './OperatorSelect';
 
 const getFieldLabel = (fieldId: string, fields: QueryField[]): string => {
   const field = fields.find(f => f.id === fieldId);
-  return field?.label || fieldId;
+  return field?.label || field?.name || fieldId;
 };
 
 const getRuleDescription = (rule: QueryRule, fields: QueryField[]): string => {
@@ -46,4 +46,3 @@ export const RulesSummary = ({ group, fields }: RulesSummaryProps) => {
     </div>
   );
 };
-

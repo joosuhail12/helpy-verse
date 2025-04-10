@@ -1,6 +1,14 @@
 
 import { ReactNode } from 'react';
 
+export type FieldType = 
+  | 'text'
+  | 'number'
+  | 'boolean'
+  | 'date'
+  | 'select'
+  | 'multi-select';
+
 export interface QueryRuleOption {
   label: string;
   value: string | number | boolean;
@@ -9,12 +17,15 @@ export interface QueryRuleOption {
 export interface QueryField {
   id: string;
   name: string;
-  type: 'text' | 'number' | 'boolean' | 'date' | 'select' | 'multi-select';
+  label: string;
+  type: FieldType;
   defaultOperator?: string;
   options?: QueryRuleOption[];
   operators?: string[];
   placeholder?: string;
   validate?: (value: any) => boolean | string;
+  source?: DataSource;
+  customObject?: string;
 }
 
 export type QueryOperator =
@@ -33,7 +44,24 @@ export type QueryOperator =
   | 'in'
   | 'not_in'
   | 'between'
-  | 'not_between';
+  | 'not_between'
+  | 'has_none'
+  | 'has_any'
+  | 'has_all'
+  | 'contains_any'
+  | 'contains_all'
+  | 'after'
+  | 'before'
+  | 'last_n_days'
+  | 'next_n_days'
+  | 'this_week'
+  | 'this_month'
+  | 'this_year'
+  | 'last_week'
+  | 'last_month'
+  | 'last_year';
+
+export type Operator = QueryOperator;
 
 export interface QueryRule {
   id: string;
@@ -53,3 +81,5 @@ export type DataSource =
   | 'companies'
   | 'tickets'
   | 'custom_objects';
+
+// Remove the duplicate type definition in queryBuilder.d.ts

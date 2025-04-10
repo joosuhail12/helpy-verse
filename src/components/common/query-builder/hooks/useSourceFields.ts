@@ -1,6 +1,6 @@
 
 import { useMemo } from 'react';
-import type { QueryField, DataSource, FieldType } from '@/types/queryBuilder';
+import type { QueryField, DataSource } from '@/types/queryBuilder';
 import { mockCustomObjects } from '@/mock/customObjects';
 import { mockCustomFields } from '@/mock/customFields';
 import { mapFieldType } from '../utils/fieldTypeMapping';
@@ -45,6 +45,7 @@ export const useSourceFields = (selectedSource: ExtendedDataSource, fields: Quer
 
             return {
               id: `${customObject.slug}_${field.id}`,
+              name: field.name,
               label: field.name,
               type: mapFieldType(field.type),
               source: 'custom_objects' as DataSource,
@@ -71,6 +72,7 @@ export const useSourceFields = (selectedSource: ExtendedDataSource, fields: Quer
 
           return {
             id: `custom_${field.id}`,
+            name: field.name,
             label: field.name,
             type: mapFieldType(field.type),
             source: selectedSource as DataSource,
@@ -80,7 +82,7 @@ export const useSourceFields = (selectedSource: ExtendedDataSource, fields: Quer
       );
     }
 
-    return selectedFields.sort((a, b) => a.label.localeCompare(b.label));
+    return selectedFields.sort((a, b) => (a.label || a.name).localeCompare(b.label || b.name));
   }, [fields, selectedSource]);
 
   return sourceFields;

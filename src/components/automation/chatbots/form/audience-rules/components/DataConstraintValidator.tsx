@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { ShieldCheck, AlertTriangle } from 'lucide-react';
-import { QueryGroup, QueryRule, QueryField, Operator } from '@/types/queryBuilder';
+import { QueryGroup, QueryRule, QueryField, QueryOperator } from '@/types/queryBuilder';
 import { useAudienceFields } from '../hooks/useAudienceFields';
 
 interface DataConstraintValidatorProps {

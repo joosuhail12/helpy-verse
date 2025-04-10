@@ -1,5 +1,5 @@
 
-import type { QueryRule, QueryField } from '@/types/queryBuilder';
+import type { QueryRule, QueryField, QueryRuleOption } from '@/types/queryBuilder';
 import { TextInput } from './TextInput';
 import { NumberInput } from './NumberInput';
 import { BooleanInput } from './BooleanInput';
@@ -13,6 +13,8 @@ interface ValueInputProps {
   onChange: (rule: QueryRule) => void;
   errorMessage?: string | null;
 }
+
+type OptionType = { label: string; value: string | number | boolean };
 
 export const ValueInput = ({ rule, selectedField, onChange, errorMessage }: ValueInputProps) => {
   if (!selectedField) return null;
@@ -44,7 +46,10 @@ export const ValueInput = ({ rule, selectedField, onChange, errorMessage }: Valu
         <SelectInput
           value={rule.value as string}
           onChange={handleValueChange}
-          options={selectedField.options || []}
+          options={selectedField.options?.map(opt => ({
+            label: typeof opt === 'string' ? opt : opt.label,
+            value: typeof opt === 'string' ? opt : opt.value
+          })) as OptionType[] || []}
           errorMessage={errorMessage}
         />
       );
@@ -52,9 +57,12 @@ export const ValueInput = ({ rule, selectedField, onChange, errorMessage }: Valu
     case 'multi-select':
       return (
         <MultiSelectInput
-          value={Array.isArray(rule.value) ? rule.value : []}
+          value={Array.isArray(rule.value) ? rule.value.map(v => String(v)) : []}
           onChange={handleValueChange}
-          options={selectedField.options || []}
+          options={selectedField.options?.map(opt => ({
+            label: typeof opt === 'string' ? opt : opt.label,
+            value: typeof opt === 'string' ? opt : opt.value
+          })) as OptionType[] || []}
         />
       );
 

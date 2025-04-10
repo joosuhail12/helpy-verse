@@ -1,5 +1,5 @@
 
-import { Operator } from '@/types/queryBuilder';
+import { QueryOperator } from '@/types/queryBuilder';
 import { CustomRangeInput } from './date/CustomRangeInput';
 import { RelativeDateInput } from './date/RelativeDateInput';
 import { RollingPeriodInput } from './date/RollingPeriodInput';
@@ -7,7 +7,7 @@ import { RollingPeriodInput } from './date/RollingPeriodInput';
 interface DateInputProps {
   value: string;
   onChange: (value: string) => void;
-  operator: Operator;
+  operator: QueryOperator;
 }
 
 export const DateInput = ({ value, onChange, operator }: DateInputProps) => {
