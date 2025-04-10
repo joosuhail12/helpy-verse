@@ -12,6 +12,11 @@ function isNodeConfig(config: any): config is NodeConfig {
      config.duration !== undefined);
 }
 
+// Helper function to determine if config is WorkflowTriggerConfig
+function isWorkflowTriggerConfig(config: any): config is WorkflowTriggerConfig {
+  return config && config.channels !== undefined && config.filters !== undefined;
+}
+
 // Format node config details for the hover card
 export function formatNodeConfig(nodeData: WorkflowNodeData): { label: string; value: string }[] {
   const details: { label: string; value: string }[] = [];
@@ -20,21 +25,19 @@ export function formatNodeConfig(nodeData: WorkflowNodeData): { label: string; v
   if (!config) return details;
   
   // Handle trigger nodes
-  if (nodeData.triggerId) {
-    const triggerConfig = config as WorkflowTriggerConfig;
-    
-    if (triggerConfig.channels) {
-      if (triggerConfig.channels.chat !== undefined) {
+  if (nodeData.triggerId && isWorkflowTriggerConfig(config)) {
+    if (config.channels) {
+      if (config.channels.chat !== undefined) {
         details.push({ 
           label: 'Chat', 
-          value: triggerConfig.channels.chat ? 'Enabled' : 'Disabled' 
+          value: config.channels.chat ? 'Enabled' : 'Disabled' 
         });
       }
       
-      if (triggerConfig.channels.email && triggerConfig.channels.email.length) {
+      if (config.channels.email && config.channels.email.length) {
         details.push({ 
           label: 'Email channels', 
-          value: `${triggerConfig.channels.email.length} configured` 
+          value: `${config.channels.email.length} configured` 
         });
       }
     }
