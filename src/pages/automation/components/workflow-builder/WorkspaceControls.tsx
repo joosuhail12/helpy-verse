@@ -8,13 +8,18 @@ import {
   Maximize,
   MinusCircle,
   PlusCircle,
-  Map
+  Map,
+  AlignJustify,
+  AlignStartVertical,
+  LayoutGrid
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Toggle } from '@/components/ui/toggle';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { cn } from '@/lib/utils';
 
 interface WorkspaceControlsProps {
   snapToGrid: boolean;
@@ -32,6 +37,7 @@ export const WorkspaceControls: React.FC<WorkspaceControlsProps> = ({
   const reactFlowInstance = useReactFlow();
   const [minimapVisible, setMinimapVisible] = useState<boolean>(false);
   const [currentZoom, setCurrentZoom] = useState<number>(1);
+  const [gridSize, setGridSize] = useState<string>("15");
   
   // Update current zoom when the component mounts and whenever viewport changes
   useEffect(() => {
@@ -60,6 +66,16 @@ export const WorkspaceControls: React.FC<WorkspaceControlsProps> = ({
   
   const handleToggleSnapToGrid = (pressed: boolean) => {
     setSnapToGrid(pressed);
+  };
+
+  const handleGridSizeChange = (value: string) => {
+    setGridSize(value);
+    // Pass the grid size to parent component
+    if (reactFlowInstance) {
+      // We need to update the snapGrid in the parent component
+      const size = parseInt(value);
+      reactFlowInstance.setSnapGrid([size, size]);
+    }
   };
 
   return (
@@ -94,8 +110,11 @@ export const WorkspaceControls: React.FC<WorkspaceControlsProps> = ({
                     pressed={snapToGrid}
                     onPressedChange={handleToggleSnapToGrid}
                     size="sm"
+                    className={cn(
+                      snapToGrid ? "bg-purple-100 text-purple-700 border-purple-300" : ""
+                    )}
                   >
-                    <Grid3x3 size={16} />
+                    <LayoutGrid size={16} />
                   </Toggle>
                 </TooltipTrigger>
                 <TooltipContent>
@@ -122,6 +141,27 @@ export const WorkspaceControls: React.FC<WorkspaceControlsProps> = ({
               </Tooltip>
             </TooltipProvider>
           </div>
+
+          {/* Grid size selector - only visible when grid snapping is enabled */}
+          {snapToGrid && (
+            <div className="flex items-center mt-1">
+              <span className="text-xs mr-2 text-muted-foreground">Grid:</span>
+              <Select 
+                value={gridSize} 
+                onValueChange={handleGridSizeChange}
+              >
+                <SelectTrigger className="h-7 text-xs">
+                  <SelectValue placeholder="Grid Size" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="10">10px</SelectItem>
+                  <SelectItem value="15">15px</SelectItem>
+                  <SelectItem value="20">20px</SelectItem>
+                  <SelectItem value="25">25px</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
           
           <div className="flex items-center gap-1 mt-1">
             <Button 
@@ -175,6 +215,49 @@ export const WorkspaceControls: React.FC<WorkspaceControlsProps> = ({
               150%
             </Button>
           </div>
+        </div>
+      </Panel>
+
+      {/* Design controls panel - top right */}
+      <Panel position="top-right" className="bg-background border rounded-lg shadow-sm p-2 m-4">
+        <div className="flex items-center gap-2">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="h-8"
+                  onClick={() => reactFlowInstance.fitView({ padding: 0.2, includeHiddenNodes: false })}
+                >
+                  <AlignJustify size={14} className="mr-1" />
+                  <span className="text-xs">Auto Layout</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Auto arrange nodes</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="h-8"
+                  onClick={onFitView}
+                >
+                  <AlignStartVertical size={14} className="mr-1" />
+                  <span className="text-xs">Center View</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Center the workflow</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </Panel>
       

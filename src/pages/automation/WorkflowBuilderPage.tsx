@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
@@ -302,6 +303,16 @@ const WorkflowBuilder: React.FC = () => {
     setSnapToGrid(value);
   }, []);
 
+  useEffect(() => {
+    if (reactFlowInstance) {
+      reactFlowInstance.setSnapGrid(snapGrid);
+    }
+  }, [snapGrid, reactFlowInstance]);
+
+  const updateSnapGrid = useCallback((size: number) => {
+    setSnapGrid([size, size]);
+  }, []);
+
   return (
     <div className="flex flex-col h-screen w-full">
       <div className="flex items-center justify-between p-4 border-b bg-background">
@@ -362,7 +373,7 @@ const WorkflowBuilder: React.FC = () => {
           className="workflow-builder"
           onViewportChange={onViewportChange}
         >
-          <Background gap={16} size={1} />
+          <Background gap={snapGrid[0]} size={1} />
           <Controls showInteractive={false} />
           <WorkspaceControls 
             snapToGrid={snapToGrid}
