@@ -74,8 +74,9 @@ export const automationRoutes = [
         path: 'workflows',
         element: <RouteErrorBoundary><Workflows /></RouteErrorBoundary>,
       },
+      // Changed route pattern to match the new URL structure
       {
-        path: 'workflows/new/trigger/:triggerId',
+        path: 'workflows/new/:workflowId',
         element: <RouteErrorBoundary><WorkflowBuilderPage /></RouteErrorBoundary>,
       },
       // Add default redirect

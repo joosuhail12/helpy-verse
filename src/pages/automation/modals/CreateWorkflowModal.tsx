@@ -49,6 +49,7 @@ import { cn } from '@/lib/utils';
 import { toast } from "sonner";
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { useDebounce } from '@/hooks/useDebounce';
+import { v4 as uuidv4 } from 'uuid';
 
 interface Trigger {
   id: string;
@@ -360,8 +361,12 @@ const CreateWorkflowModal: React.FC<CreateWorkflowModalProps> = ({
     });
     
     try {
+      const workflowId = uuidv4();
+      
       setTimeout(() => {
-        navigate(`/home/automation/workflows/new/trigger/${triggerId}`);
+        navigate(`/home/automation/workflows/new/${workflowId}`, {
+          state: { triggerId }
+        });
         setIsNavigating(false);
         if (onClose) onClose();
       }, 300);

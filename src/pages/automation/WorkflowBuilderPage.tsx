@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import {
   ReactFlow,
@@ -93,9 +93,12 @@ const getNodePosition = (): XYPosition => ({
 });
 
 const WorkflowBuilderPage: React.FC = () => {
-  const { triggerId } = useParams<{ triggerId?: string }>();
+  const { workflowId } = useParams<{ workflowId: string }>();
+  const location = useLocation();
   const navigate = useNavigate();
   const reactFlowInstance = useReactFlow();
+  
+  const triggerId = location.state?.triggerId;
   
   const [workflowName, setWorkflowName] = useState<string>('Untitled Workflow');
   const [isSaving, setIsSaving] = useState<boolean>(false);
@@ -182,7 +185,18 @@ const WorkflowBuilderPage: React.FC = () => {
   }, [setNodes, setEdges, nodes, edges]);
   
   useEffect(() => {
-    if (!triggerId) return;
+    console.log('WorkflowBuilder rendering with workflowId:', workflowId);
+    console.log('Trigger ID from location state:', triggerId);
+    
+    if (!workflowId) {
+      console.error('No workflow ID provided');
+      return;
+    }
+    
+    if (!triggerId) {
+      console.warn('No trigger ID provided in location state');
+      return;
+    }
     
     const triggerNodeId = uuidv4();
     const triggerNode: Node<WorkflowNodeData> = {
@@ -199,7 +213,7 @@ const WorkflowBuilderPage: React.FC = () => {
     setNodes([triggerNode]);
     setSelectedNode(triggerNode);
     setTriggerDrawerOpen(true);
-  }, [triggerId, setNodes]);
+  }, [workflowId, triggerId, setNodes]);
   
   const saveTriggerConfig = (config: WorkflowTriggerConfig) => {
     if (!selectedNode) return;

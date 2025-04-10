@@ -141,7 +141,8 @@ const AppRoutes: React.FC = () => {
                 <WorkflowsComponent />
               </RouteErrorBoundary>
             } />
-            <Route path="workflows/new/trigger/:triggerId" element={
+            {/* Updated route for workflow builder with new pattern */}
+            <Route path="workflows/new/:workflowId" element={
               <RouteErrorBoundary>
                 <WorkflowBuilderPage />
               </RouteErrorBoundary>
