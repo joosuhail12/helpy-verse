@@ -1,206 +1,124 @@
 
-/* Workflow Builder Visual Enhancements */
+/* Workflow Builder Styles */
 
-/* Node styling improvements */
-.react-flow__node {
-  transition: box-shadow 0.3s ease;
+.workflow-builder .react-flow__edge path {
+  transition: stroke 0.2s, stroke-width 0.2s, opacity 0.2s;
 }
 
-/* Enhanced node borders based on configuration status */
-.node-configured {
-  border-color: #10b981 !important;
-  border-width: 2px !important;
+.workflow-builder .react-flow__edge:hover path {
+  stroke-width: 2.5px;
 }
 
-.node-unconfigured {
-  border-color: #f59e0b !important;
-  border-width: 2px !important;
+.workflow-builder .react-flow__edge.edge-success path {
+  stroke: #22c55e;
 }
 
-.node-error {
-  border-color: #ef4444 !important;
-  border-width: 2px !important;
+.workflow-builder .react-flow__edge.edge-failure path {
+  stroke: #ef4444;
 }
 
-/* Node type-specific styling */
-.node-trigger {
-  background-color: rgba(229, 222, 255, 0.7) !important; /* Soft purple */
+.workflow-builder .react-flow__edge.edge-animated path {
+  animation: flow 1.5s infinite linear;
+  stroke-dasharray: 8;
 }
 
-.node-message {
-  background-color: rgba(209, 250, 229, 0.7) !important; /* Soft green */
+/* Add different dash patterns to different edge types */
+.workflow-builder .react-flow__edge.edge-failure path {
+  stroke-dasharray: 5 3;
 }
 
-.node-condition {
-  background-color: rgba(245, 243, 255, 0.7) !important; /* Light purple */
+/* Snap to grid indicator */
+.workflow-builder.snap-active {
+  background-size: var(--grid-size) var(--grid-size);
+  background-image: radial-gradient(circle, #e5e7eb 1px, transparent 1px);
+  background-position: 0 0;
 }
 
-.node-action {
-  background-color: rgba(254, 243, 242, 0.7) !important; /* Soft peach */
+/* Node styles */ 
+.workflow-builder .react-flow__node {
+  transition: transform 0.2s, box-shadow 0.3s;
 }
 
-.node-end {
-  background-color: rgba(254, 226, 226, 0.7) !important; /* Soft pink */
+.workflow-builder .react-flow__node:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  z-index: 10;
 }
 
-/* Edge styling improvements - glowing effects based on connection type */
-.react-flow__edge-path {
-  stroke-width: 2;
-  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.2));
+/* Node connection animation */
+.connecting-valid .react-flow__handle {
+  animation: pulse 1.5s infinite;
 }
 
-.edge-standard .react-flow__edge-path {
-  stroke: #94a3b8;
-}
-
-.edge-success .react-flow__edge-path {
-  stroke: #10b981;
-  filter: drop-shadow(0 0 3px rgba(16, 185, 129, 0.4));
-}
-
-.edge-failure .react-flow__edge-path {
-  stroke: #f43f5e;
-  filter: drop-shadow(0 0 3px rgba(244, 63, 94, 0.4));
-}
-
-.edge-animated .react-flow__edge-path {
-  stroke-dasharray: 5;
-  animation: flowingDash 1s linear infinite;
-}
-
-@keyframes flowingDash {
+@keyframes flow {
   from {
-    stroke-dashoffset: 10;
+    stroke-dashoffset: 24;
   }
   to {
     stroke-dashoffset: 0;
   }
 }
 
-/* Node hover effect */
-.react-flow__node:hover {
-  box-shadow: 0 0 0 1px rgba(155, 135, 245, 0.3), 0 4px 10px rgba(155, 135, 245, 0.2) !important;
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 5px rgba(99, 102, 241, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+  }
 }
 
-/* Workspace Controls Styling */
-.react-flow__minimap {
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+/* Node types with colors */
+.node-trigger {
+  border-left: 3px solid #818cf8 !important;
 }
 
-/* Style for the node types in the minimap */
-.react-flow__minimap .node-trigger {
-  fill: rgba(229, 222, 255, 0.7);
+.node-message {
+  border-left: 3px solid #60a5fa !important;
 }
 
-.react-flow__minimap .node-message {
-  fill: rgba(209, 250, 229, 0.7);
+.node-condition {
+  border-left: 3px solid #a78bfa !important;
 }
 
-.react-flow__minimap .node-condition {
-  fill: rgba(245, 243, 255, 0.7);
+.node-action {
+  border-left: 3px solid #22c55e !important;
 }
 
-.react-flow__minimap .node-action {
-  fill: rgba(254, 243, 242, 0.7);
+.node-end {
+  border-left: 3px solid #ef4444 !important;
 }
 
-.react-flow__minimap .node-end {
-  fill: rgba(254, 226, 226, 0.7);
+/* Node configuration states */
+.node-configured {
+  border-bottom: 2px solid #22c55e !important;
 }
 
-/* Style for the background grid when snapping is on */
-.react-flow__background path {
-  stroke: rgba(159, 145, 204, 0.2);
-  transition: stroke 0.2s ease;
+.node-unconfigured {
+  border-bottom: 2px solid #f59e0b !important;
 }
 
-/* Grid snapping indicators */
-.react-flow__background.snapping-active path {
-  stroke: rgba(155, 135, 245, 0.4) !important;
-  stroke-width: 1.5;
-}
-
-/* Apply a special class to highlight when snapping is active */
-.react-flow.snap-active .react-flow__background path {
-  stroke: rgba(155, 135, 245, 0.4) !important;
-  stroke-width: 1.5;
-}
-
-/* Streamlined Controls */
-.react-flow__controls {
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.react-flow__controls button {
-  background-color: rgba(255, 255, 255, 0.9);
-  border: none;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  opacity: 0.8;
-  transition: all 0.2s ease;
-}
-
-.react-flow__controls button:hover {
-  background-color: rgba(239, 246, 255, 0.9);
-  opacity: 1;
-}
-
-.react-flow__controls button path {
-  fill: #6b7280;
-}
-
-/* Node selection effect */
-.react-flow__node.selected {
-  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.5), 0 0 10px rgba(139, 92, 246, 0.3) !important;
-}
-
-/* Connection line styling */
+/* Connection line animation */
 .react-flow__connection-path {
-  stroke: #9b87f5;
-  stroke-width: 2;
-  filter: drop-shadow(0 0 3px rgba(155, 135, 245, 0.4));
+  stroke-dasharray: 5;
+  animation: flow 1s infinite linear;
 }
 
-/* Handle styling enhancement */
-.react-flow__handle {
-  width: 8px;
-  height: 8px;
-  background: white;
-  border: 2px solid #9b87f5;
+/* Node hover card animations */
+.animate-fadeSlideIn {
+  animation: fadeSlideIn 0.3s ease-out forwards;
 }
 
-.react-flow__handle:hover {
-  background: #9b87f5;
-}
-
-/* Handle outline on focus */
-.react-flow__handle-connecting {
-  background: #9b87f5 !important;
-  border: 2px solid white !important;
-}
-
-/* Workspace background */
-.workflow-builder {
-  background-color: #f9fafc;
-}
-
-/* Grid size options button styling */
-.grid-size-option {
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.grid-size-option:hover {
-  background-color: #f3f4f6;
-}
-
-.grid-size-option.active {
-  background-color: #e5ddff;
-  color: #6b21a8;
+@keyframes fadeSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

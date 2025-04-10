@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import {
@@ -110,6 +110,7 @@ const WorkflowBuilder: React.FC = () => {
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [isPublished, setIsPublished] = useState<boolean>(false);
   const [snapToGrid, setSnapToGrid] = useState<boolean>(true);
+  const [gridSize, setGridSize] = useState<string>('15');
   const [snapGrid, setSnapGrid] = useState<[number, number]>([15, 15]);
   const [currentZoom, setCurrentZoom] = useState<number>(1);
   
@@ -118,6 +119,17 @@ const WorkflowBuilder: React.FC = () => {
   
   const [triggerDrawerOpen, setTriggerDrawerOpen] = useState<boolean>(false);
   const [selectedNode, setSelectedNode] = useState<Node<WorkflowNodeData> | null>(null);
+  
+  // Update CSS variable when grid size changes
+  useEffect(() => {
+    document.documentElement.style.setProperty('--grid-size', `${gridSize}px`);
+  }, [gridSize]);
+  
+  // Update snap grid when grid size changes
+  useEffect(() => {
+    const size = parseInt(gridSize, 10);
+    setSnapGrid([size, size]);
+  }, [gridSize]);
   
   const onConnect = useCallback(
     (connection: Connection) => {
@@ -303,8 +315,8 @@ const WorkflowBuilder: React.FC = () => {
     setSnapToGrid(value);
   }, []);
 
-  const updateSnapGrid = useCallback((size: number) => {
-    setSnapGrid([size, size]);
+  const handleGridSizeChange = useCallback((size: string) => {
+    setGridSize(size);
   }, []);
 
   // Auto layout functionality
@@ -402,6 +414,10 @@ const WorkflowBuilder: React.FC = () => {
     toast.success('Workflow auto-arranged');
   }, [nodes, edges, reactFlowInstance, setNodes]);
 
+  const flowClassName = useMemo(() => {
+    return `workflow-builder ${snapToGrid ? 'snap-active' : ''}`;
+  }, [snapToGrid]);
+
   return (
     <div className="flex flex-col h-screen w-full">
       <div className="flex items-center justify-between p-4 border-b bg-background">
@@ -459,17 +475,19 @@ const WorkflowBuilder: React.FC = () => {
           snapToGrid={snapToGrid}
           snapGrid={snapGrid}
           fitView
-          className={`workflow-builder ${snapToGrid ? 'snap-active' : ''}`}
+          className={flowClassName}
           onViewportChange={onViewportChange}
+          connectionLineStyle={{ strokeWidth: 2, stroke: '#888', strokeDasharray: '5' }}
+          connectionLineClassName="connecting-line"
         >
-          <Background gap={snapGrid[0]} size={1} />
+          <Background gap={parseInt(gridSize)} size={1} />
           <Controls showInteractive={false} />
           <WorkspaceControls 
             snapToGrid={snapToGrid}
             setSnapToGrid={handleSnapToGridToggle}
             onFitView={handleFitView}
-            gridSize={String(snapGrid[0])}
-            setGridSize={(size) => updateSnapGrid(parseInt(size))}
+            gridSize={gridSize}
+            setGridSize={handleGridSizeChange}
             onAutoLayout={handleAutoLayout}
           />
         </ReactFlow>
