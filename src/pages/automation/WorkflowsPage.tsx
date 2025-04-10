@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+
+import * as React from 'react';
+import { useState, useEffect } from 'react';
 import CreateWorkflowModal from './modals/CreateWorkflowModal';
 import { Button } from '@/components/ui/button';
 import { 
