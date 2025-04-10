@@ -16,6 +16,7 @@ const LoadingSpinner = () => (
 import Automation from '../pages/automation';
 import Workflows from '../pages/automation/Workflows';
 import WorkflowsPage from '../pages/automation/WorkflowsPage';
+import WorkflowBuilderPage from '../pages/automation/WorkflowBuilderPage';
 
 // Lazy load child pages for better performance
 const ActionCenter = React.lazy(() => import('../pages/automation/ActionCenter'));
@@ -24,7 +25,6 @@ const ChatbotProfiles = React.lazy(() => import('../pages/automation/ChatbotProf
 const ChatbotDetail = React.lazy(() => import('../pages/automation/ChatbotDetail'));
 const CreateChatbot = React.lazy(() => import('../pages/automation/CreateChatbot'));
 const ContentCenter = React.lazy(() => import('../pages/automation/ContentCenter'));
-const WorkflowBuilderPage = React.lazy(() => import('../pages/automation/WorkflowBuilderPage'));
 
 // Helper to wrap components with Suspense, ProtectedRoute and RouteErrorBoundary
 const withSuspenseAndProtection = (component) => (
@@ -72,11 +72,11 @@ export const automationRoutes = [
       },
       {
         path: 'workflows',
-        element: <RouteErrorBoundary><React.Suspense fallback={<LoadingSpinner />}><Workflows /></React.Suspense></RouteErrorBoundary>,
+        element: <RouteErrorBoundary><Workflows /></RouteErrorBoundary>,
       },
       {
         path: 'workflows/new/trigger/:triggerId',
-        element: <RouteErrorBoundary><React.Suspense fallback={<LoadingSpinner />}><WorkflowBuilderPage /></React.Suspense></RouteErrorBoundary>,
+        element: <RouteErrorBoundary><WorkflowBuilderPage /></RouteErrorBoundary>,
       },
       // Add default redirect
       {

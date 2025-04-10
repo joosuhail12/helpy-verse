@@ -143,11 +143,7 @@ const AppRoutes: React.FC = () => {
             } />
             <Route path="workflows/new/trigger/:triggerId" element={
               <RouteErrorBoundary>
-                <React.Suspense fallback={<LoadingFallback />}>
-                  {React.createElement(
-                    React.lazy(() => import('@/pages/automation/WorkflowBuilderPage'))
-                  )}
-                </React.Suspense>
+                <WorkflowBuilderPage />
               </RouteErrorBoundary>
             } />
             {/* Add additional automation routes as needed */}
