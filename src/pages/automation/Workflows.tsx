@@ -2,7 +2,10 @@
 import React from 'react';
 import WorkflowsPage from './WorkflowsPage';
 
-const Workflows = () => {
+/**
+ * Container for the Workflows page
+ */
+const Workflows: React.FC = () => {
   return <WorkflowsPage />;
 };
 

@@ -1,5 +1,5 @@
 
-import React, { lazy, Suspense, ReactNode } from 'react';
+import React, { lazy } from 'react';
 import { Navigate } from 'react-router-dom';
 import { ProtectedRoute } from '../components/auth/ProtectedRoute';
 import { Loader2 } from 'lucide-react';
@@ -12,51 +12,26 @@ const LoadingSpinner = () => (
   </div>
 );
 
-// Lazy load automation pages with error handling
-const Automation = lazy(() => import('../pages/automation').catch((err) => {
-  console.error('Failed to load Automation page:', err);
-  throw new Error('Failed to load Automation page');
-}));
-const ActionCenter = lazy(() => import('../pages/automation/ActionCenter').catch((err) => {
-  console.error('Failed to load ActionCenter:', err);
-  throw new Error('Failed to load ActionCenter');
-}));
-const CreateAction = lazy(() => import('../pages/automation/CreateAction').catch((err) => {
-  console.error('Failed to load CreateAction:', err);
-  throw new Error('Failed to load CreateAction');
-}));
-const ChatbotProfiles = lazy(() => import('../pages/automation/ChatbotProfiles').catch((err) => {
-  console.error('Failed to load ChatbotProfiles:', err);
-  throw new Error('Failed to load ChatbotProfiles');
-}));
-const ChatbotDetail = lazy(() => import('../pages/automation/ChatbotDetail').catch((err) => {
-  console.error('Failed to load ChatbotDetail:', err);
-  throw new Error('Failed to load ChatbotDetail');
-}));
-const CreateChatbot = lazy(() => import('../pages/automation/CreateChatbot').catch((err) => {
-  console.error('Failed to load CreateChatbot:', err);
-  throw new Error('Failed to load CreateChatbot');
-}));
-const ContentCenter = lazy(() => import('../pages/automation/ContentCenter').catch((err) => {
-  console.error('Failed to load ContentCenter:', err);
-  throw new Error('Failed to load ContentCenter');
-}));
-const Workflows = lazy(() => import('../pages/automation/Workflows').catch((err) => {
-  console.error('Failed to load Workflows:', err);
-  throw new Error('Failed to load Workflows');
-}));
-const WorkflowBuilderPage = lazy(() => import('../pages/automation/WorkflowBuilderPage').catch((err) => {
-  console.error('Failed to load WorkflowBuilderPage:', err);
-  throw new Error('Failed to load WorkflowBuilderPage');
-}));
+// Import Automation directly to avoid lazy-loading the parent
+import Automation from '../pages/automation';
+
+// Lazy load child pages for better performance
+const ActionCenter = lazy(() => import('../pages/automation/ActionCenter'));
+const CreateAction = lazy(() => import('../pages/automation/CreateAction'));
+const ChatbotProfiles = lazy(() => import('../pages/automation/ChatbotProfiles'));
+const ChatbotDetail = lazy(() => import('../pages/automation/ChatbotDetail'));
+const CreateChatbot = lazy(() => import('../pages/automation/CreateChatbot'));
+const ContentCenter = lazy(() => import('../pages/automation/ContentCenter'));
+const Workflows = lazy(() => import('../pages/automation/Workflows'));
+const WorkflowBuilderPage = lazy(() => import('../pages/automation/WorkflowBuilderPage'));
 
 // Helper to wrap components with Suspense, ProtectedRoute and RouteErrorBoundary
-const withSuspenseAndProtection = (component: ReactNode) => (
+const withSuspenseAndProtection = (component) => (
   <ProtectedRoute>
     <RouteErrorBoundary>
-      <Suspense fallback={<LoadingSpinner />}>
+      <React.Suspense fallback={<LoadingSpinner />}>
         {component}
-      </Suspense>
+      </React.Suspense>
     </RouteErrorBoundary>
   </ProtectedRoute>
 );
@@ -64,39 +39,48 @@ const withSuspenseAndProtection = (component: ReactNode) => (
 export const automationRoutes = [
   {
     path: 'automation',
-    element: withSuspenseAndProtection(<Automation />),
+    element: (
+      <ProtectedRoute>
+        <Automation />
+      </ProtectedRoute>
+    ),
     children: [
       {
         path: 'ai/action-center',
-        element: <RouteErrorBoundary><Suspense fallback={<LoadingSpinner />}><ActionCenter /></Suspense></RouteErrorBoundary>,
+        element: <RouteErrorBoundary><React.Suspense fallback={<LoadingSpinner />}><ActionCenter /></React.Suspense></RouteErrorBoundary>,
       },
       {
         path: 'ai/action-center/create',
-        element: <RouteErrorBoundary><Suspense fallback={<LoadingSpinner />}><CreateAction /></Suspense></RouteErrorBoundary>,
+        element: <RouteErrorBoundary><React.Suspense fallback={<LoadingSpinner />}><CreateAction /></React.Suspense></RouteErrorBoundary>,
       },
       {
         path: 'ai/chatbot-profiles',
-        element: <RouteErrorBoundary><Suspense fallback={<LoadingSpinner />}><ChatbotProfiles /></Suspense></RouteErrorBoundary>,
+        element: <RouteErrorBoundary><React.Suspense fallback={<LoadingSpinner />}><ChatbotProfiles /></React.Suspense></RouteErrorBoundary>,
       },
       {
         path: 'ai/chatbot-profiles/create',
-        element: <RouteErrorBoundary><Suspense fallback={<LoadingSpinner />}><CreateChatbot /></Suspense></RouteErrorBoundary>,
+        element: <RouteErrorBoundary><React.Suspense fallback={<LoadingSpinner />}><CreateChatbot /></React.Suspense></RouteErrorBoundary>,
       },
       {
         path: 'ai/chatbot-profiles/:id',
-        element: <RouteErrorBoundary><Suspense fallback={<LoadingSpinner />}><ChatbotDetail /></Suspense></RouteErrorBoundary>,
+        element: <RouteErrorBoundary><React.Suspense fallback={<LoadingSpinner />}><ChatbotDetail /></React.Suspense></RouteErrorBoundary>,
       },
       {
         path: 'ai/content-center',
-        element: <RouteErrorBoundary><Suspense fallback={<LoadingSpinner />}><ContentCenter /></Suspense></RouteErrorBoundary>,
+        element: <RouteErrorBoundary><React.Suspense fallback={<LoadingSpinner />}><ContentCenter /></React.Suspense></RouteErrorBoundary>,
       },
       {
         path: 'workflows',
-        element: <RouteErrorBoundary><Suspense fallback={<LoadingSpinner />}><Workflows /></Suspense></RouteErrorBoundary>,
+        element: <RouteErrorBoundary><React.Suspense fallback={<LoadingSpinner />}><Workflows /></React.Suspense></RouteErrorBoundary>,
       },
       {
         path: 'workflows/new/trigger/:triggerId',
-        element: <RouteErrorBoundary><Suspense fallback={<LoadingSpinner />}><WorkflowBuilderPage /></Suspense></RouteErrorBoundary>,
+        element: <RouteErrorBoundary><React.Suspense fallback={<LoadingSpinner />}><WorkflowBuilderPage /></React.Suspense></RouteErrorBoundary>,
+      },
+      // Add default redirect
+      {
+        path: '',
+        element: <Navigate to="workflows" replace />,
       },
     ],
   },
