@@ -53,6 +53,7 @@ import EndNode from './components/workflow-builder/nodes/EndNode';
 import { TriggerDrawer } from './components/workflow-builder/drawers/TriggerDrawer';
 import { NodeConfigurator } from './components/workflow-builder/NodeConfigurator';
 import { NodeSelector } from './components/workflow-builder/NodeSelector';
+import { WorkspaceControls } from './components/workflow-builder/WorkspaceControls';
 
 import {
   WorkflowNodeData,
@@ -104,6 +105,8 @@ const WorkflowBuilder: React.FC = () => {
   const [workflowName, setWorkflowName] = useState<string>('Untitled Workflow');
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [isPublished, setIsPublished] = useState<boolean>(false);
+  const [snapToGrid, setSnapToGrid] = useState<boolean>(true);
+  const [snapGrid, setSnapGrid] = useState<[number, number]>([15, 15]);
   
   const [nodes, setNodes, onNodesChange] = useNodesState<Node<WorkflowNodeData>>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -113,7 +116,6 @@ const WorkflowBuilder: React.FC = () => {
   
   const onConnect = useCallback(
     (connection: Connection) => {
-      // Determine edge type based on source handle
       let edgeType = "edge-standard";
       if (connection.sourceHandle === 'yes') {
         edgeType = "edge-success";
@@ -168,7 +170,6 @@ const WorkflowBuilder: React.FC = () => {
     
     setNodes(nodes => [...nodes, newNode]);
     
-    // Create a new edge with appropriate styling based on source handle
     if (sourceNodeId) {
       const sourceNode = nodes.find(n => n.id === sourceNodeId);
       let sourceHandle: string | undefined = undefined;
@@ -209,7 +210,6 @@ const WorkflowBuilder: React.FC = () => {
       return;
     }
     
-    // Create a trigger node if a triggerId is available
     if (triggerId) {
       const triggerNodeId = uuidv4();
       const triggerNode: Node<WorkflowNodeData> = {
@@ -286,6 +286,10 @@ const WorkflowBuilder: React.FC = () => {
     setIsSaving(false);
   };
 
+  const handleFitView = useCallback(() => {
+    reactFlowInstance.fitView({ padding: 0.2 });
+  }, [reactFlowInstance]);
+
   return (
     <div className="flex flex-col h-screen w-full">
       <div className="flex items-center justify-between p-4 border-b bg-background">
@@ -340,22 +344,18 @@ const WorkflowBuilder: React.FC = () => {
           defaultViewport={{ x: 0, y: 0, zoom: 1 }}
           minZoom={0.2}
           maxZoom={1.5}
-          snapToGrid
-          snapGrid={[15, 15]}
+          snapToGrid={snapToGrid}
+          snapGrid={snapGrid}
           fitView
           className="workflow-builder"
         >
           <Background gap={16} size={1} />
-          <Controls />
-          <Panel position="bottom-right" className="bg-transparent">
-            <Button 
-              variant="outline" 
-              className="shadow-md"
-              onClick={() => reactFlowInstance.fitView()}
-            >
-              Fit View
-            </Button>
-          </Panel>
+          <Controls showInteractive={false} />
+          <WorkspaceControls 
+            snapToGrid={snapToGrid}
+            setSnapToGrid={setSnapToGrid}
+            onFitView={handleFitView}
+          />
         </ReactFlow>
       </div>
       

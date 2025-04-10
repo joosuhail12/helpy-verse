@@ -81,3 +81,35 @@
 .react-flow__node:hover {
   box-shadow: 0 0 0 1px rgba(155, 135, 245, 0.3), 0 4px 10px rgba(155, 135, 245, 0.2) !important;
 }
+
+/* Workspace Controls Styling */
+.react-flow__minimap {
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+/* Style for the node types in the minimap */
+.react-flow__minimap .node-trigger {
+  fill: rgba(219, 234, 254, 0.7);
+}
+
+.react-flow__minimap .node-message {
+  fill: rgba(219, 250, 242, 0.7);
+}
+
+.react-flow__minimap .node-condition {
+  fill: rgba(245, 243, 255, 0.7);
+}
+
+.react-flow__minimap .node-action {
+  fill: rgba(254, 243, 242, 0.7);
+}
+
+.react-flow__minimap .node-end {
+  fill: rgba(254, 226, 226, 0.7);
+}
+
+/* Style for the background grid when snapping is on */
+.react-flow__background.snapping-active path {
+  stroke: rgba(135, 135, 245, 0.2);
+}
