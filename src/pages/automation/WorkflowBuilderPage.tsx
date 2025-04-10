@@ -15,7 +15,8 @@ import {
   NodeTypes,
   ConnectionMode,
   Panel,
-  Node
+  Node,
+  ReactFlowProvider
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
@@ -74,7 +75,7 @@ const availableNodeTypes: { type: NodeType; label: string; description: string }
   { type: 'data_collection', label: 'Data Collection', description: 'Collect data from the customer' },
   { type: 'condition', label: 'Condition', description: 'Branch based on conditions' },
   { type: 'chatbot_answer', label: 'Let Chatbot Answer', description: 'Let the chatbot handle the response' },
-  { type: 'copilot_action', label: 'Let Copilot Take Action', description: 'Let AI copilot handle the next steps' },
+  { type: 'copilot_action', label: 'Let AI copilot handle the next steps', description: 'Let AI copilot handle the next steps' },
   { type: 'assign_ticket', label: 'Assign Ticket', description: 'Assign the ticket to a teammate' },
   { type: 'collect_reply', label: 'Collect Customer Reply', description: 'Wait for customer to reply' },
   { type: 'reusable_workflow', label: 'Pass to Reusable Workflow', description: 'Use another workflow' },
@@ -92,7 +93,7 @@ const getNodePosition = (): XYPosition => ({
   y: window.innerHeight / 3
 });
 
-const WorkflowBuilderPage: React.FC = () => {
+const WorkflowBuilder: React.FC = () => {
   const { workflowId } = useParams<{ workflowId: string }>();
   const location = useLocation();
   const navigate = useNavigate();
@@ -383,6 +384,14 @@ const WorkflowBuilderPage: React.FC = () => {
         />
       ))}
     </div>
+  );
+};
+
+const WorkflowBuilderPage: React.FC = () => {
+  return (
+    <ReactFlowProvider>
+      <WorkflowBuilder />
+    </ReactFlowProvider>
   );
 };
 
