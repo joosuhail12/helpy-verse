@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import AppQueryProvider from './AppQueryProvider';
@@ -20,7 +20,7 @@ interface AppProvidersProps {
  */
 const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
   // Initialize app only once on component mount
-  React.useEffect(() => {
+  useEffect(() => {
     try {
       console.log("Initializing app from AppProviders component");
       initializeApp();
