@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
@@ -306,6 +307,101 @@ const WorkflowBuilder: React.FC = () => {
     setSnapGrid([size, size]);
   }, []);
 
+  // Auto layout functionality
+  const handleAutoLayout = useCallback(() => {
+    if (!nodes.length) return;
+    
+    const nodesByType = {
+      trigger: nodes.filter(node => node.type === 'trigger'),
+      regular: nodes.filter(node => node.type !== 'trigger' && node.type !== 'end'),
+      end: nodes.filter(node => node.type === 'end')
+    };
+    
+    // Start with identifying the root node(s) (typically trigger nodes)
+    const rootNodes = nodesByType.trigger.length > 0 
+      ? nodesByType.trigger 
+      : [nodes[0]]; // If no trigger node, use the first node
+      
+    // Create a map of node connections (which node connects to which)
+    const nodeConnections = new Map();
+    edges.forEach(edge => {
+      if (!nodeConnections.has(edge.source)) {
+        nodeConnections.set(edge.source, []);
+      }
+      nodeConnections.get(edge.source).push(edge.target);
+    });
+    
+    // Function to get all connected nodes in order (breadth-first traversal)
+    const getConnectedNodesInOrder = (startNodeIds: string[]) => {
+      const visited = new Set();
+      const result: string[] = [];
+      const queue = [...startNodeIds];
+      
+      while (queue.length > 0) {
+        const currentId = queue.shift();
+        if (!currentId || visited.has(currentId)) continue;
+        
+        visited.add(currentId);
+        result.push(currentId);
+        
+        const connections = nodeConnections.get(currentId) || [];
+        for (const targetId of connections) {
+          if (!visited.has(targetId)) {
+            queue.push(targetId);
+          }
+        }
+      }
+      
+      return result;
+    };
+    
+    // Get nodes in traversal order
+    const orderedNodeIds = getConnectedNodesInOrder(rootNodes.map(n => n.id));
+    
+    // Calculate positions for each node
+    const HORIZONTAL_SPACING = 250;
+    const VERTICAL_SPACING = 150;
+    const MAX_NODES_PER_LEVEL = 3;
+    
+    // Group nodes into levels based on their distance from root
+    const nodeLevels: Record<number, string[]> = {};
+    const nodeDistances = new Map();
+    
+    // Calculate distance from root for each node
+    orderedNodeIds.forEach((nodeId, index) => {
+      const level = Math.floor(index / MAX_NODES_PER_LEVEL);
+      if (!nodeLevels[level]) {
+        nodeLevels[level] = [];
+      }
+      nodeLevels[level].push(nodeId);
+      nodeDistances.set(nodeId, level);
+    });
+    
+    // Position nodes based on their level
+    const newNodes = nodes.map(node => {
+      const level = nodeDistances.get(node.id) || 0;
+      const levelNodes = nodeLevels[level] || [];
+      const indexInLevel = levelNodes.indexOf(node.id);
+      
+      if (indexInLevel === -1) {
+        return node; // Keep original position if node wasn't in our traversal
+      }
+      
+      // Calculate new position
+      const x = 100 + (level * HORIZONTAL_SPACING);
+      const y = 100 + (indexInLevel * VERTICAL_SPACING);
+      
+      return {
+        ...node,
+        position: { x, y }
+      };
+    });
+    
+    setNodes(newNodes);
+    setTimeout(() => reactFlowInstance.fitView({ padding: 0.2 }), 50);
+    toast.success('Workflow auto-arranged');
+  }, [nodes, edges, reactFlowInstance, setNodes]);
+
   return (
     <div className="flex flex-col h-screen w-full">
       <div className="flex items-center justify-between p-4 border-b bg-background">
@@ -363,7 +459,7 @@ const WorkflowBuilder: React.FC = () => {
           snapToGrid={snapToGrid}
           snapGrid={snapGrid}
           fitView
-          className="workflow-builder"
+          className={`workflow-builder ${snapToGrid ? 'snap-active' : ''}`}
           onViewportChange={onViewportChange}
         >
           <Background gap={snapGrid[0]} size={1} />
@@ -374,6 +470,7 @@ const WorkflowBuilder: React.FC = () => {
             onFitView={handleFitView}
             gridSize={String(snapGrid[0])}
             setGridSize={(size) => updateSnapGrid(parseInt(size))}
+            onAutoLayout={handleAutoLayout}
           />
         </ReactFlow>
       </div>

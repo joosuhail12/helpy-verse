@@ -27,6 +27,7 @@ interface WorkspaceControlsProps {
   onFitView: () => void;
   gridSize: string;
   setGridSize: (size: string) => void;
+  onAutoLayout: () => void;
 }
 
 const nodeClassName = (node: any) => node.type;
@@ -36,7 +37,8 @@ export const WorkspaceControls: React.FC<WorkspaceControlsProps> = ({
   setSnapToGrid,
   onFitView,
   gridSize,
-  setGridSize
+  setGridSize,
+  onAutoLayout
 }) => {
   const reactFlowInstance = useReactFlow();
   const [minimapVisible, setMinimapVisible] = useState<boolean>(false);
@@ -225,7 +227,7 @@ export const WorkspaceControls: React.FC<WorkspaceControlsProps> = ({
                   variant="outline" 
                   size="sm"
                   className="h-8"
-                  onClick={() => reactFlowInstance.fitView({ padding: 0.2, includeHiddenNodes: false })}
+                  onClick={onAutoLayout}
                 >
                   <AlignJustify size={14} className="mr-1" />
                   <span className="text-xs">Auto Layout</span>
