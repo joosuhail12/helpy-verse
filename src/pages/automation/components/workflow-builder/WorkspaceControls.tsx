@@ -35,12 +35,9 @@ export const WorkspaceControls: React.FC<WorkspaceControlsProps> = ({
   
   // Update current zoom when the component mounts and whenever viewport changes
   useEffect(() => {
-    // Set initial zoom
     if (reactFlowInstance) {
       setCurrentZoom(Math.round(reactFlowInstance.getViewport().zoom * 100) / 100);
     }
-
-    // We can't use event listeners directly, but we can update in the parent component
   }, [reactFlowInstance]);
   
   const handleZoomIn = () => {
@@ -59,6 +56,10 @@ export const WorkspaceControls: React.FC<WorkspaceControlsProps> = ({
     reactFlowInstance.setViewport({ x: 0, y: 0, zoom: level });
     // Update zoom level after setting specific zoom
     setCurrentZoom(level);
+  };
+  
+  const handleToggleSnapToGrid = (pressed: boolean) => {
+    setSnapToGrid(pressed);
   };
 
   return (
@@ -91,7 +92,7 @@ export const WorkspaceControls: React.FC<WorkspaceControlsProps> = ({
                   <Toggle 
                     aria-label="Toggle grid snapping"
                     pressed={snapToGrid}
-                    onPressedChange={setSnapToGrid}
+                    onPressedChange={handleToggleSnapToGrid}
                     size="sm"
                   >
                     <Grid3x3 size={16} />

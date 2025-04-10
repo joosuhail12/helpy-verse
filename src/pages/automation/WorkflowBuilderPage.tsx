@@ -298,6 +298,10 @@ const WorkflowBuilder: React.FC = () => {
     setCurrentZoom(Math.round(viewport.zoom * 100) / 100);
   }, []);
 
+  const handleSnapToGridToggle = useCallback((value: boolean) => {
+    setSnapToGrid(value);
+  }, []);
+
   return (
     <div className="flex flex-col h-screen w-full">
       <div className="flex items-center justify-between p-4 border-b bg-background">
@@ -362,7 +366,7 @@ const WorkflowBuilder: React.FC = () => {
           <Controls showInteractive={false} />
           <WorkspaceControls 
             snapToGrid={snapToGrid}
-            setSnapToGrid={setSnapToGrid}
+            setSnapToGrid={handleSnapToGridToggle}
             onFitView={handleFitView}
           />
         </ReactFlow>
