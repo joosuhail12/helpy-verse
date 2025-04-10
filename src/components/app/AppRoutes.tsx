@@ -1,5 +1,4 @@
-
-import React from 'react';
+import * as React from 'react';
 import { Routes, Route, Navigate } from "react-router-dom";
 import LoadingFallback from './LoadingFallback';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
@@ -17,6 +16,7 @@ import MentionsInbox from '@/pages/inbox/Mentions';
 import SignIn from '@/pages/SignIn';
 import Contacts from '@/pages/Contacts';
 import AllContacts from '@/pages/contacts/All';
+import Workflows from '@/pages/automation/Workflows';
 
 // Lazy load non-critical pages
 const ForgotPassword = React.lazy(() => import('@/pages/ForgotPassword'));
@@ -130,25 +130,20 @@ const AppRoutes: React.FC = () => {
             } />
           </Route>
           
-          {/* Automation routes */}
+          {/* Automation routes - directly import Workflows component */}
           <Route path="automation">
             <Route path="" element={<Navigate to="workflows" replace />} />
             <Route path="workflows" element={
               <RouteErrorBoundary>
-                <React.Suspense fallback={<LoadingFallback />}>
-                  <Workflows />
-                </React.Suspense>
+                <Workflows />
               </RouteErrorBoundary>
             } />
             <Route path="workflows/new/trigger/:triggerId" element={
               <RouteErrorBoundary>
                 <React.Suspense fallback={<LoadingFallback />}>
-                  <React.Suspense fallback={<LoadingFallback />}>
-                    {/* Use lazy loaded WorkflowBuilderPage */}
-                    {React.createElement(
-                      React.lazy(() => import('@/pages/automation/WorkflowBuilderPage'))
-                    )}
-                  </React.Suspense>
+                  {React.createElement(
+                    React.lazy(() => import('@/pages/automation/WorkflowBuilderPage'))
+                  )}
                 </React.Suspense>
               </RouteErrorBoundary>
             } />

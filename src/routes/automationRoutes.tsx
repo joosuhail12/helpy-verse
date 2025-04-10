@@ -14,6 +14,8 @@ const LoadingSpinner = () => (
 
 // Import Automation directly to avoid lazy-loading the parent
 import Automation from '../pages/automation';
+import Workflows from '../pages/automation/Workflows';
+import WorkflowsPage from '../pages/automation/WorkflowsPage';
 
 // Lazy load child pages for better performance
 const ActionCenter = React.lazy(() => import('../pages/automation/ActionCenter'));
@@ -22,7 +24,6 @@ const ChatbotProfiles = React.lazy(() => import('../pages/automation/ChatbotProf
 const ChatbotDetail = React.lazy(() => import('../pages/automation/ChatbotDetail'));
 const CreateChatbot = React.lazy(() => import('../pages/automation/CreateChatbot'));
 const ContentCenter = React.lazy(() => import('../pages/automation/ContentCenter'));
-const Workflows = React.lazy(() => import('../pages/automation/Workflows'));
 const WorkflowBuilderPage = React.lazy(() => import('../pages/automation/WorkflowBuilderPage'));
 
 // Helper to wrap components with Suspense, ProtectedRoute and RouteErrorBoundary
