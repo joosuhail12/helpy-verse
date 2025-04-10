@@ -1,0 +1,83 @@
+
+/* Workflow Builder Visual Enhancements */
+
+/* Node styling improvements */
+.react-flow__node {
+  transition: box-shadow 0.3s ease;
+}
+
+/* Enhanced node borders based on configuration status */
+.node-configured {
+  border-color: #10b981 !important;
+  border-width: 2px !important;
+}
+
+.node-unconfigured {
+  border-color: #f59e0b !important;
+  border-width: 2px !important;
+}
+
+.node-error {
+  border-color: #ef4444 !important;
+  border-width: 2px !important;
+}
+
+/* Node type-specific styling */
+.node-trigger {
+  background-color: rgba(219, 234, 254, 0.7) !important;
+}
+
+.node-message {
+  background-color: rgba(219, 250, 242, 0.7) !important;
+}
+
+.node-condition {
+  background-color: rgba(245, 243, 255, 0.7) !important; 
+}
+
+.node-action {
+  background-color: rgba(254, 243, 242, 0.7) !important;
+}
+
+.node-end {
+  background-color: rgba(254, 226, 226, 0.7) !important;
+}
+
+/* Edge styling improvements - glowing effects based on connection type */
+.react-flow__edge-path {
+  stroke-width: 2;
+  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.2));
+}
+
+.edge-standard .react-flow__edge-path {
+  stroke: #94a3b8;
+}
+
+.edge-success .react-flow__edge-path {
+  stroke: #10b981;
+  filter: drop-shadow(0 0 3px rgba(16, 185, 129, 0.4));
+}
+
+.edge-failure .react-flow__edge-path {
+  stroke: #f43f5e;
+  filter: drop-shadow(0 0 3px rgba(244, 63, 94, 0.4));
+}
+
+.edge-animated .react-flow__edge-path {
+  stroke-dasharray: 5;
+  animation: flowingDash 1s linear infinite;
+}
+
+@keyframes flowingDash {
+  from {
+    stroke-dashoffset: 10;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Node hover effect */
+.react-flow__node:hover {
+  box-shadow: 0 0 0 1px rgba(155, 135, 245, 0.3), 0 4px 10px rgba(155, 135, 245, 0.2) !important;
+}

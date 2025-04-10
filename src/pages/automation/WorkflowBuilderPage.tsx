@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
@@ -114,11 +113,22 @@ const WorkflowBuilder: React.FC = () => {
   
   const onConnect = useCallback(
     (connection: Connection) => {
+      // Determine edge type based on source handle
+      let edgeType = "edge-standard";
+      if (connection.sourceHandle === 'yes') {
+        edgeType = "edge-success";
+      } else if (connection.sourceHandle === 'no') {
+        edgeType = "edge-failure";
+      }
+
       setEdges((eds) => addEdge({
         ...connection,
         type: 'smoothstep',
-        animated: false,
-        style: { strokeWidth: 2 }
+        animated: connection.sourceHandle === 'yes' ? false : connection.sourceHandle === 'no' ? false : true,
+        style: { strokeWidth: 2 },
+        className: connection.sourceHandle === 'yes' ? 'edge-success' : 
+                  connection.sourceHandle === 'no' ? 'edge-failure' : 
+                  'edge-standard edge-animated'
       }, eds));
     },
     [setEdges]
@@ -158,15 +168,18 @@ const WorkflowBuilder: React.FC = () => {
     
     setNodes(nodes => [...nodes, newNode]);
     
+    // Create a new edge with appropriate styling based on source handle
     if (sourceNodeId) {
       const sourceNode = nodes.find(n => n.id === sourceNodeId);
       let sourceHandle: string | undefined = undefined;
+      let edgeClass = "edge-standard edge-animated";
       
       if (sourceNode?.type === 'condition') {
         const yesConnection = edges.some(e => 
           e.source === sourceNodeId && e.sourceHandle === 'yes'
         );
         sourceHandle = !yesConnection ? 'yes' : 'no';
+        edgeClass = !yesConnection ? 'edge-success' : 'edge-failure';
       }
       
       setEdges(edges => [
@@ -177,8 +190,9 @@ const WorkflowBuilder: React.FC = () => {
           target: id,
           sourceHandle,
           type: 'smoothstep',
-          animated: false,
-          style: { strokeWidth: 2 }
+          animated: sourceHandle !== 'yes' && sourceHandle !== 'no',
+          style: { strokeWidth: 2 },
+          className: edgeClass
         }
       ]);
     }
@@ -329,6 +343,7 @@ const WorkflowBuilder: React.FC = () => {
           snapToGrid
           snapGrid={[15, 15]}
           fitView
+          className="workflow-builder"
         >
           <Background gap={16} size={1} />
           <Controls />

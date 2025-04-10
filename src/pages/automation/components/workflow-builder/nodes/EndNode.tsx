@@ -3,13 +3,19 @@ import React from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { Square } from 'lucide-react';
 import { NodeProps } from '@/types/workflow-builder';
+import '../styles/workflow-builder.css';
+import { cn } from '@/lib/utils';
 
 const EndNode = ({ data, isConnectable }: NodeProps) => {
   // Access data safely, with default value as fallback
   const label = data?.label || 'End Workflow';
 
   return (
-    <div className="flex flex-col items-center p-3 rounded-xl border shadow-sm bg-background w-[180px] border-muted">
+    <div className={cn(
+      "flex flex-col items-center p-3 rounded-xl border shadow-sm bg-background w-[180px]",
+      "node-end",
+      "node-configured" // End nodes are always configured
+    )}>
       <Handle
         type="target"
         position={Position.Top}

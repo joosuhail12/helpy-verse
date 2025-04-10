@@ -95,3 +95,5 @@
   }
 }
 
+/* Import workflow builder styles */
+@import './pages/automation/components/workflow-builder/styles/workflow-builder.css';

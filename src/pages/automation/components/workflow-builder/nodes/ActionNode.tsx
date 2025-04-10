@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { NodeProps } from '@/types/workflow-builder';
+import '../styles/workflow-builder.css';
 
 // Icon mapping for different action types
 const actionIcons: Record<string, React.FC<{ className?: string }>> = {
@@ -65,7 +66,8 @@ const ActionNode = ({ data, isConnectable }: NodeProps) => {
   return (
     <div className={cn(
       "flex flex-col items-center p-3 rounded-xl border shadow-sm bg-background w-[180px]",
-      configured ? "border-primary" : "border-muted"
+      "node-action",
+      configured ? "node-configured" : "node-unconfigured"
     )}>
       <Handle
         type="target"

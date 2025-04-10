@@ -4,6 +4,7 @@ import { Handle, Position } from '@xyflow/react';
 import { GitBranch, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { NodeProps } from '@/types/workflow-builder';
+import '../styles/workflow-builder.css';
 
 const ConditionNode = ({ data, isConnectable }: NodeProps) => {
   // Access data safely with default values
@@ -13,7 +14,8 @@ const ConditionNode = ({ data, isConnectable }: NodeProps) => {
   return (
     <div className={cn(
       "flex flex-col items-center p-3 rounded-xl border shadow-sm bg-background w-[180px]",
-      configured ? "border-primary" : "border-muted"
+      "node-condition",
+      configured ? "node-configured" : "node-unconfigured"
     )}>
       <Handle
         type="target"

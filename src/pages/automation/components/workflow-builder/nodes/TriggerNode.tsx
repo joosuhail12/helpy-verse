@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { NodeProps } from '@/types/workflow-builder';
+import '../styles/workflow-builder.css';
 
 const TriggerNode = ({ data, isConnectable }: NodeProps) => {
   // Access data safely with default values
@@ -17,7 +18,8 @@ const TriggerNode = ({ data, isConnectable }: NodeProps) => {
   return (
     <div className={cn(
       "flex flex-col items-center p-3 rounded-xl border shadow-sm bg-background w-[180px]",
-      configured ? "border-primary" : "border-muted"
+      "node-trigger",
+      configured ? "node-configured" : "node-unconfigured"
     )}>
       <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 text-primary mb-2">
         <WorkflowIcon className="h-6 w-6" />
