@@ -1,3 +1,4 @@
+
 import * as React from 'react';
 import { Routes, Route, Navigate } from "react-router-dom";
 import LoadingFallback from './LoadingFallback';
@@ -16,7 +17,8 @@ import MentionsInbox from '@/pages/inbox/Mentions';
 import SignIn from '@/pages/SignIn';
 import Contacts from '@/pages/Contacts';
 import AllContacts from '@/pages/contacts/All';
-import Workflows from '@/pages/automation/Workflows';
+// Import Workflows directly - since we need it in the routes
+import WorkflowsComponent from '@/pages/automation/Workflows';
 
 // Lazy load non-critical pages
 const ForgotPassword = React.lazy(() => import('@/pages/ForgotPassword'));
@@ -27,7 +29,6 @@ const LandingPage = React.lazy(() => import('@/pages/LandingPage'));
 const Companies = React.lazy(() => import('@/pages/contacts/Companies'));
 const CompanyDetail = React.lazy(() => import('@/pages/contacts/CompanyDetail'));
 const ContactDetail = React.lazy(() => import('@/pages/contacts/Detail'));
-const Workflows = React.lazy(() => import('@/pages/automation/Workflows'));
 
 /**
  * Main routing component for the application
@@ -135,7 +136,7 @@ const AppRoutes: React.FC = () => {
             <Route path="" element={<Navigate to="workflows" replace />} />
             <Route path="workflows" element={
               <RouteErrorBoundary>
-                <Workflows />
+                <WorkflowsComponent />
               </RouteErrorBoundary>
             } />
             <Route path="workflows/new/trigger/:triggerId" element={
