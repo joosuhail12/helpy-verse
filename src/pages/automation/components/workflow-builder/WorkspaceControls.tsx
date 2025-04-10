@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MiniMap, useReactFlow, Panel } from '@xyflow/react';
 import { 
   ZoomIn, 
@@ -12,7 +12,6 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Toggle } from '@/components/ui/toggle';
-import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -34,21 +33,32 @@ export const WorkspaceControls: React.FC<WorkspaceControlsProps> = ({
   const [minimapVisible, setMinimapVisible] = useState<boolean>(false);
   const [currentZoom, setCurrentZoom] = useState<number>(1);
   
-  // Update current zoom whenever the viewport changes
-  reactFlowInstance.on('viewportChange', (e) => {
-    setCurrentZoom(Math.round(e.zoom * 100) / 100);
-  });
+  // Update current zoom when the component mounts and whenever viewport changes
+  useEffect(() => {
+    // Set initial zoom
+    if (reactFlowInstance) {
+      setCurrentZoom(Math.round(reactFlowInstance.getViewport().zoom * 100) / 100);
+    }
+
+    // We can't use event listeners directly, but we can update in the parent component
+  }, [reactFlowInstance]);
   
   const handleZoomIn = () => {
     reactFlowInstance.zoomIn();
+    // Update zoom level after zooming in
+    setCurrentZoom(Math.round(reactFlowInstance.getViewport().zoom * 100) / 100);
   };
   
   const handleZoomOut = () => {
     reactFlowInstance.zoomOut();
+    // Update zoom level after zooming out
+    setCurrentZoom(Math.round(reactFlowInstance.getViewport().zoom * 100) / 100);
   };
   
   const handleZoomTo = (level: number) => {
     reactFlowInstance.setViewport({ x: 0, y: 0, zoom: level });
+    // Update zoom level after setting specific zoom
+    setCurrentZoom(level);
   };
 
   return (

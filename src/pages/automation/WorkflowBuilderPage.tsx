@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
@@ -16,7 +17,8 @@ import {
   ConnectionMode,
   Panel,
   Node,
-  ReactFlowProvider
+  ReactFlowProvider,
+  OnViewportChange,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
@@ -63,6 +65,8 @@ import {
   WorkflowNode
 } from '@/types/workflow-builder';
 
+import './components/workflow-builder/styles/workflow-builder.css';
+
 const nodeTypes = {
   trigger: TriggerNode,
   message: MessageNode,
@@ -107,6 +111,7 @@ const WorkflowBuilder: React.FC = () => {
   const [isPublished, setIsPublished] = useState<boolean>(false);
   const [snapToGrid, setSnapToGrid] = useState<boolean>(true);
   const [snapGrid, setSnapGrid] = useState<[number, number]>([15, 15]);
+  const [currentZoom, setCurrentZoom] = useState<number>(1);
   
   const [nodes, setNodes, onNodesChange] = useNodesState<Node<WorkflowNodeData>>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -289,6 +294,10 @@ const WorkflowBuilder: React.FC = () => {
   const handleFitView = useCallback(() => {
     reactFlowInstance.fitView({ padding: 0.2 });
   }, [reactFlowInstance]);
+  
+  const onViewportChange: OnViewportChange = useCallback((viewport) => {
+    setCurrentZoom(Math.round(viewport.zoom * 100) / 100);
+  }, []);
 
   return (
     <div className="flex flex-col h-screen w-full">
@@ -348,6 +357,7 @@ const WorkflowBuilder: React.FC = () => {
           snapGrid={snapGrid}
           fitView
           className="workflow-builder"
+          onViewportChange={onViewportChange}
         >
           <Background gap={16} size={1} />
           <Controls showInteractive={false} />
