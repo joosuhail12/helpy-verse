@@ -1,37 +1,45 @@
 
-export type Operator = 
-  | 'equals' 
-  | 'not_equals' 
-  | 'contains' 
-  | 'not_contains' 
-  | 'starts_with' 
+import { ReactNode } from 'react';
+
+export interface QueryRuleOption {
+  label: string;
+  value: string | number | boolean;
+}
+
+export interface QueryField {
+  id: string;
+  name: string;
+  type: 'text' | 'number' | 'boolean' | 'date' | 'select' | 'multi-select';
+  defaultOperator?: string;
+  options?: QueryRuleOption[];
+  operators?: string[];
+  placeholder?: string;
+  validate?: (value: any) => boolean | string;
+}
+
+export type QueryOperator =
+  | 'equals'
+  | 'not_equals'
+  | 'contains'
+  | 'not_contains'
+  | 'starts_with'
   | 'ends_with'
-  | 'greater_than' 
-  | 'less_than' 
-  | 'greater_than_equal' 
-  | 'less_than_equal'
-  | 'is_set' 
-  | 'is_not_set' 
-  | 'in' 
-  | 'not_in'
+  | 'greater_than'
+  | 'less_than'
+  | 'greater_than_or_equals'
+  | 'less_than_or_equals'
   | 'is_empty'
   | 'is_not_empty'
+  | 'in'
+  | 'not_in'
   | 'between'
-  | 'last_n_days'
-  | 'next_n_days'
-  | 'rolling_days'
-  | 'this_week'
-  | 'this_month'
-  | 'this_year'
-  | 'last_week'
-  | 'last_month'
-  | 'last_year';
+  | 'not_between';
 
 export interface QueryRule {
   id: string;
   field: string;
-  operator: Operator;
-  value: any;
+  operator: QueryOperator;
+  value: string | number | boolean | Array<string | number | boolean> | null;
 }
 
 export interface QueryGroup {
@@ -40,44 +48,8 @@ export interface QueryGroup {
   rules: Array<QueryRule | QueryGroup>;
 }
 
-export type DataSource = 'contacts' | 'companies';
-
-export type ComparisonOperator = 
-  | 'equals' 
-  | 'not_equals' 
-  | 'contains' 
-  | 'not_contains' 
-  | 'starts_with' 
-  | 'ends_with'
-  | 'greater_than' 
-  | 'less_than' 
-  | 'between' 
-  | 'in' 
-  | 'not_in'
-  | 'exists'
-  | 'not_exists';
-
-export type CombinatorType = 'and' | 'or';
-
-export type FieldType = 
-  | 'string'
-  | 'text'
-  | 'number'
-  | 'boolean'
-  | 'date'
-  | 'enum'
-  | 'email'
-  | 'phone'
-  | 'url'
-  | 'select'
-  | 'multi-select';
-
-export interface QueryField {
-  id: string;
-  label: string;
-  type: FieldType;
-  options?: { label: string; value: string }[];
-  dataSource?: DataSource;
-  source?: DataSource | 'custom_objects';
-  customObject?: string;
-}
+export type DataSource = 
+  | 'contacts'
+  | 'companies'
+  | 'tickets'
+  | 'custom_objects';
