@@ -2,9 +2,9 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 
-interface OptionType {
+export interface OptionType {
   label: string;
-  value: string;
+  value: string | number | boolean;
 }
 
 interface SelectInputProps {
@@ -22,7 +22,7 @@ export const SelectInput = ({ value, onChange, options, errorMessage }: SelectIn
       </SelectTrigger>
       <SelectContent>
         {options.map((option) => {
-          const optionValue = typeof option === 'string' ? option : option.value;
+          const optionValue = typeof option === 'string' ? option : String(option.value);
           const optionLabel = typeof option === 'string' ? option : option.label;
           
           return (

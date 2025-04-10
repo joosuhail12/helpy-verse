@@ -1,9 +1,9 @@
 
-import type { QueryRule, QueryField, QueryRuleOption } from '@/types/queryBuilder';
+import type { QueryRule, QueryField } from '@/types/queryBuilder';
 import { TextInput } from './TextInput';
 import { NumberInput } from './NumberInput';
 import { BooleanInput } from './BooleanInput';
-import { SelectInput } from './SelectInput';
+import { SelectInput, OptionType } from './SelectInput';
 import { MultiSelectInput } from './MultiSelectInput';
 import { DateInput } from './DateInput';
 
@@ -14,13 +14,27 @@ interface ValueInputProps {
   errorMessage?: string | null;
 }
 
-type OptionType = { label: string; value: string | number | boolean };
-
 export const ValueInput = ({ rule, selectedField, onChange, errorMessage }: ValueInputProps) => {
   if (!selectedField) return null;
 
   const handleValueChange = (value: any) => {
     onChange({ ...rule, value });
+  };
+
+  // Convert options from field to the expected format
+  const getOptions = (): OptionType[] | string[] => {
+    if (!selectedField.options) return [];
+
+    return selectedField.options.map(opt => {
+      if (typeof opt === 'string') {
+        return opt;
+      } else {
+        return {
+          label: opt.label,
+          value: opt.value
+        };
+      }
+    });
   };
 
   switch (selectedField.type) {
@@ -46,10 +60,7 @@ export const ValueInput = ({ rule, selectedField, onChange, errorMessage }: Valu
         <SelectInput
           value={rule.value as string}
           onChange={handleValueChange}
-          options={selectedField.options?.map(opt => ({
-            label: typeof opt === 'string' ? opt : opt.label,
-            value: typeof opt === 'string' ? opt : opt.value
-          })) as OptionType[] || []}
+          options={getOptions()}
           errorMessage={errorMessage}
         />
       );
@@ -59,10 +70,7 @@ export const ValueInput = ({ rule, selectedField, onChange, errorMessage }: Valu
         <MultiSelectInput
           value={Array.isArray(rule.value) ? rule.value.map(v => String(v)) : []}
           onChange={handleValueChange}
-          options={selectedField.options?.map(opt => ({
-            label: typeof opt === 'string' ? opt : opt.label,
-            value: typeof opt === 'string' ? opt : opt.value
-          })) as OptionType[] || []}
+          options={getOptions()}
         />
       );
 

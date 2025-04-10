@@ -1,11 +1,7 @@
 
 import { Badge } from '@/components/ui/badge';
 import { Check } from 'lucide-react';
-
-interface OptionType {
-  label: string;
-  value: string;
-}
+import { OptionType } from './SelectInput';
 
 interface MultiSelectInputProps {
   value: string[];
@@ -14,7 +10,7 @@ interface MultiSelectInputProps {
 }
 
 export const MultiSelectInput = ({ value, onChange, options }: MultiSelectInputProps) => {
-  const handleOptionClick = (optionValue: string, optionLabel: string) => {
+  const handleOptionClick = (optionValue: string) => {
     const newValues = value.includes(optionValue)
       ? value.filter((v) => v !== optionValue)
       : [...value, optionValue];
@@ -25,13 +21,13 @@ export const MultiSelectInput = ({ value, onChange, options }: MultiSelectInputP
     <div className="space-y-2">
       <div className="flex flex-wrap gap-2">
         {options.map((option) => {
-          const optionValue = typeof option === 'string' ? option : option.value;
+          const optionValue = typeof option === 'string' ? option : String(option.value);
           const optionLabel = typeof option === 'string' ? option : option.label;
           
           return (
             <div
               key={optionValue}
-              onClick={() => handleOptionClick(optionValue, optionLabel)}
+              onClick={() => handleOptionClick(optionValue)}
               className="cursor-pointer"
             >
               <Badge variant={value.includes(optionValue) ? "default" : "outline"}>
