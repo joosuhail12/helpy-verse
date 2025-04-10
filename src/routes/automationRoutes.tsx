@@ -1,5 +1,5 @@
 
-import React, { lazy } from 'react';
+import * as React from 'react';
 import { Navigate } from 'react-router-dom';
 import { ProtectedRoute } from '../components/auth/ProtectedRoute';
 import { Loader2 } from 'lucide-react';
@@ -16,14 +16,14 @@ const LoadingSpinner = () => (
 import Automation from '../pages/automation';
 
 // Lazy load child pages for better performance
-const ActionCenter = lazy(() => import('../pages/automation/ActionCenter'));
-const CreateAction = lazy(() => import('../pages/automation/CreateAction'));
-const ChatbotProfiles = lazy(() => import('../pages/automation/ChatbotProfiles'));
-const ChatbotDetail = lazy(() => import('../pages/automation/ChatbotDetail'));
-const CreateChatbot = lazy(() => import('../pages/automation/CreateChatbot'));
-const ContentCenter = lazy(() => import('../pages/automation/ContentCenter'));
-const Workflows = lazy(() => import('../pages/automation/Workflows'));
-const WorkflowBuilderPage = lazy(() => import('../pages/automation/WorkflowBuilderPage'));
+const ActionCenter = React.lazy(() => import('../pages/automation/ActionCenter'));
+const CreateAction = React.lazy(() => import('../pages/automation/CreateAction'));
+const ChatbotProfiles = React.lazy(() => import('../pages/automation/ChatbotProfiles'));
+const ChatbotDetail = React.lazy(() => import('../pages/automation/ChatbotDetail'));
+const CreateChatbot = React.lazy(() => import('../pages/automation/CreateChatbot'));
+const ContentCenter = React.lazy(() => import('../pages/automation/ContentCenter'));
+const Workflows = React.lazy(() => import('../pages/automation/Workflows'));
+const WorkflowBuilderPage = React.lazy(() => import('../pages/automation/WorkflowBuilderPage'));
 
 // Helper to wrap components with Suspense, ProtectedRoute and RouteErrorBoundary
 const withSuspenseAndProtection = (component) => (
