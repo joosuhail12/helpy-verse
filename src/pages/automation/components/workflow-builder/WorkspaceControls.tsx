@@ -25,6 +25,8 @@ interface WorkspaceControlsProps {
   snapToGrid: boolean;
   setSnapToGrid: (snap: boolean) => void;
   onFitView: () => void;
+  gridSize: string;
+  setGridSize: (size: string) => void;
 }
 
 const nodeClassName = (node: any) => node.type;
@@ -32,12 +34,13 @@ const nodeClassName = (node: any) => node.type;
 export const WorkspaceControls: React.FC<WorkspaceControlsProps> = ({
   snapToGrid,
   setSnapToGrid,
-  onFitView
+  onFitView,
+  gridSize,
+  setGridSize
 }) => {
   const reactFlowInstance = useReactFlow();
   const [minimapVisible, setMinimapVisible] = useState<boolean>(false);
   const [currentZoom, setCurrentZoom] = useState<number>(1);
-  const [gridSize, setGridSize] = useState<string>("15");
   
   // Update current zoom when the component mounts and whenever viewport changes
   useEffect(() => {
@@ -70,12 +73,6 @@ export const WorkspaceControls: React.FC<WorkspaceControlsProps> = ({
 
   const handleGridSizeChange = (value: string) => {
     setGridSize(value);
-    // Pass the grid size to parent component
-    if (reactFlowInstance) {
-      // We need to update the snapGrid in the parent component
-      const size = parseInt(value);
-      reactFlowInstance.setSnapGrid([size, size]);
-    }
   };
 
   return (

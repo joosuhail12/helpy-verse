@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
@@ -303,12 +302,6 @@ const WorkflowBuilder: React.FC = () => {
     setSnapToGrid(value);
   }, []);
 
-  useEffect(() => {
-    if (reactFlowInstance) {
-      reactFlowInstance.setSnapGrid(snapGrid);
-    }
-  }, [snapGrid, reactFlowInstance]);
-
   const updateSnapGrid = useCallback((size: number) => {
     setSnapGrid([size, size]);
   }, []);
@@ -379,6 +372,8 @@ const WorkflowBuilder: React.FC = () => {
             snapToGrid={snapToGrid}
             setSnapToGrid={handleSnapToGridToggle}
             onFitView={handleFitView}
+            gridSize={String(snapGrid[0])}
+            setGridSize={(size) => updateSnapGrid(parseInt(size))}
           />
         </ReactFlow>
       </div>
