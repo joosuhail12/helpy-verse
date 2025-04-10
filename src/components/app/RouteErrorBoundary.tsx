@@ -1,5 +1,5 @@
 
-import React from 'react';
+import * as React from 'react';
 import ErrorBoundary from '@/components/common/ErrorBoundary';
 import { AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
