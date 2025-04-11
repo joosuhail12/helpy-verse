@@ -57,8 +57,32 @@ const convertMentionToTicket = (mention: Mention): Ticket => {
     // Format customer data to avoid React object rendering errors
     customer: formatCustomer(),
     // Store customerId separately for reference
-    customerId: mention.ticket?.customerId || mention.ticket?.customer?.id
+    customerId: mention.ticket?.customerId || mention.ticket?.customer?.id,
+    // Add externalId to store original ticketId for filtering
+    externalId: mention.ticketId
   };
+};
+
+// Filter out duplicate tickets based on ticketId, keeping the most recent mention for each ticket
+const filterDuplicateTickets = (tickets: Ticket[]): Ticket[] => {
+  const ticketMap = new Map<string, Ticket>();
+
+  // Sort mentions by date (newest first) before filtering
+  const sortedTickets = [...tickets].sort((a, b) => {
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
+
+  // Add each ticket to the map using the ticketId as the key
+  // This will automatically keep only the latest mention for each ticket
+  sortedTickets.forEach(ticket => {
+    const ticketId = ticket.externalId || ticket.threadId;
+    if (ticketId && !ticketMap.has(ticketId)) {
+      ticketMap.set(ticketId, ticket);
+    }
+  });
+
+  // Convert the map values back to an array
+  return Array.from(ticketMap.values());
 };
 
 const MentionsPage = () => {
@@ -91,7 +115,9 @@ const MentionsPage = () => {
 
         // Convert mentions to tickets for display
         const mentionTickets = response.data.map(convertMentionToTicket);
-        setTickets(mentionTickets);
+        // Filter out duplicate tickets by ticketId
+        const uniqueTickets = filterDuplicateTickets(mentionTickets);
+        setTickets(uniqueTickets);
       } else {
         setError('Failed to fetch mentions');
       }
@@ -132,7 +158,9 @@ const MentionsPage = () => {
     }
 
     const filteredTickets = filteredMentions.map(convertMentionToTicket);
-    setTickets(filteredTickets);
+    // Filter out duplicate tickets by ticketId
+    const uniqueTickets = filterDuplicateTickets(filteredTickets);
+    setTickets(uniqueTickets);
   }, [currentTab, allMentions]);
 
   // Mark a mention as read when selected
