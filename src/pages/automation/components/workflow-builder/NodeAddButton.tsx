@@ -30,6 +30,14 @@ export const NodeAddButton: React.FC<NodeAddButtonProps> = ({
   
   const yPosition = (node.height || 0) + offsetY;
   
+  // Add console.log to debug node dimensions and positioning
+  console.log(`NodeAddButton for ${nodeId}:`, {
+    height: node.height,
+    offsetY,
+    yPosition,
+    type: node.type
+  });
+  
   return (
     <NodeSelector
       nodeId={nodeId}

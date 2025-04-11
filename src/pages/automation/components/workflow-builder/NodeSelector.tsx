@@ -78,6 +78,7 @@ export const NodeSelector: React.FC<NodeSelectorProps> = ({
     );
   }, [searchQuery, activeCategory, nodesByCategory, availableNodeTypes]);
   
+  // Fixed: Using explicit type for the handleNodeSelect parameter
   const handleNodeSelect = useCallback((type: NodeType) => {
     if (sourceNode) {
       addNode(type, sourceNode.id);

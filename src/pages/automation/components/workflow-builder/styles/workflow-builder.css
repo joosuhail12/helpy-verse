@@ -126,11 +126,24 @@
 /* Add new styles for node add buttons */
 .node-add-button {
   position: absolute;
-  z-index: 10;
+  bottom: -20px;
+  left: 50%;
   transform: translateX(-50%);
+  z-index: 10;
 }
 
 /* Ensure the add button doesn't interfere with node selection */
 .node-add-button button:focus {
   outline: none;
+}
+
+/* Style for the add node popover to ensure it's above other elements */
+.react-flow .node-popover {
+  z-index: 1000;
+}
+
+/* Ensure buttons are visible and have proper z-index */
+.react-flow__node button {
+  z-index: 10;
+  pointer-events: all;
 }

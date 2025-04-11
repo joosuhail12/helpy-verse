@@ -23,6 +23,13 @@ const TriggerNode = ({ id, data, isConnectable, addNode, availableNodeTypes }: T
   const label = data?.label || 'Trigger';
   const configured = data?.configured || false;
   
+  // Debug output for this node
+  console.log('Rendering TriggerNode:', { 
+    id, 
+    hasAddNode: !!addNode,
+    hasAvailableTypes: !!availableNodeTypes
+  });
+  
   return (
     <NodeHoverCard nodeId={id} nodeData={data}>
       <div className={cn(
@@ -57,11 +64,11 @@ const TriggerNode = ({ id, data, isConnectable, addNode, availableNodeTypes }: T
         />
         
         {addNode && availableNodeTypes && (
-          <div className="absolute" style={{ bottom: -20, left: '50%', transform: 'translateX(-50%)' }}>
+          <div className="absolute bottom-[-24px] left-1/2 transform -translate-x-1/2">
             <NodeAddButton 
               nodeId={id} 
               addNode={addNode} 
-              availableNodeTypes={availableNodeTypes}
+              availableNodeTypes={availableNodeTypes} 
             />
           </div>
         )}

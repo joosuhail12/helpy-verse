@@ -151,6 +151,13 @@ const WorkflowBuilder: React.FC = () => {
       data: newNodeData
     };
     
+    console.log('Adding new node:', {
+      type,
+      id,
+      sourceNodeId,
+      position: newNode.position
+    });
+    
     setNodes(nodes => [...nodes, newNode]);
     
     if (sourceNodeId) {
@@ -182,7 +189,7 @@ const WorkflowBuilder: React.FC = () => {
     }
     
     return id;
-  }, [setNodes, setEdges, nodes, edges]);
+  }, [setNodes, setEdges, nodes, edges, availableNodeTypes]);
   
   const nodeTypes = useMemo(() => ({
     trigger: (props: any) => (
@@ -220,7 +227,7 @@ const WorkflowBuilder: React.FC = () => {
         availableNodeTypes={availableNodeTypes}
       />
     ),
-  }), [addNode]);
+  }), [addNode, availableNodeTypes]);
   
   useEffect(() => {
     console.log('WorkflowBuilder rendering with workflowId:', workflowId);
