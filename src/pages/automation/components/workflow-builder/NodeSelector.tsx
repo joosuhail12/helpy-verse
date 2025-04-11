@@ -56,7 +56,7 @@ export const NodeSelector: React.FC<NodeSelectorProps> = ({
         ['wait'].includes(node.type)),
       'data': availableNodeTypes.filter(node => 
         ['reusable_workflow', 'copilot_action'].includes(node.type)),
-    };
+    } as Record<NodeCategory, { type: NodeType; label: string; description: string }[]>;
     
     return categorizedNodes;
   }, [availableNodeTypes]);
@@ -83,7 +83,7 @@ export const NodeSelector: React.FC<NodeSelectorProps> = ({
       addNode(type, sourceNode.id);
       setOpen(false);
     }
-  }, [sourceNode, addNode, setOpen]);
+  }, [sourceNode, addNode]);
   
   const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);

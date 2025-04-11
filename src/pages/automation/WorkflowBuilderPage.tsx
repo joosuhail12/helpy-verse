@@ -66,37 +66,6 @@ import {
 
 import './components/workflow-builder/styles/workflow-builder.css';
 
-const nodeTypes = {
-  trigger: TriggerNode,
-  message: MessageNode,
-  condition: ConditionNode,
-  action: ActionNode,
-  end: EndNode
-} as NodeTypes;
-
-const availableNodeTypes: { type: NodeType; label: string; description: string }[] = [
-  { type: 'message', label: 'Message', description: 'Send a message to the customer' },
-  { type: 'data_collection', label: 'Data Collection', description: 'Collect data from the customer' },
-  { type: 'condition', label: 'Condition', description: 'Branch based on conditions' },
-  { type: 'chatbot_answer', label: 'Let Chatbot Answer', description: 'Let the chatbot handle the response' },
-  { type: 'copilot_action', label: 'Let AI copilot handle the next steps', description: 'Let AI copilot handle the next steps' },
-  { type: 'assign_ticket', label: 'Assign Ticket', description: 'Assign the ticket to a teammate' },
-  { type: 'collect_reply', label: 'Collect Customer Reply', description: 'Wait for customer to reply' },
-  { type: 'reusable_workflow', label: 'Pass to Reusable Workflow', description: 'Use another workflow' },
-  { type: 'show_reply_time', label: 'Show Expected Reply Time', description: 'Display expected reply time' },
-  { type: 'ask_csat', label: 'Ask for CSAT', description: 'Request customer satisfaction rating' },
-  { type: 'tag_ticket', label: 'Tag Ticket', description: 'Add tags to the ticket' },
-  { type: 'update_ticket', label: 'Update Ticket Data', description: 'Update ticket information' },
-  { type: 'wait', label: 'Wait', description: 'Pause the workflow for some time' },
-  { type: 'add_note', label: 'Add Note', description: 'Add an internal note' },
-  { type: 'end', label: 'End Workflow', description: 'End the workflow execution' }
-];
-
-const getNodePosition = (): XYPosition => ({
-  x: window.innerWidth / 2 - 75,
-  y: window.innerHeight / 3
-});
-
 const WorkflowBuilder: React.FC = () => {
   const { workflowId } = useParams<{ workflowId: string }>();
   const location = useLocation();
@@ -214,6 +183,44 @@ const WorkflowBuilder: React.FC = () => {
     
     return id;
   }, [setNodes, setEdges, nodes, edges]);
+  
+  const nodeTypes = useMemo(() => ({
+    trigger: (props: any) => (
+      <TriggerNode 
+        {...props}
+        addNode={addNode} 
+        availableNodeTypes={availableNodeTypes}
+      />
+    ),
+    message: (props: any) => (
+      <MessageNode 
+        {...props}
+        addNode={addNode} 
+        availableNodeTypes={availableNodeTypes}
+      />
+    ),
+    condition: (props: any) => (
+      <ConditionNode 
+        {...props}
+        addNode={addNode} 
+        availableNodeTypes={availableNodeTypes}
+      />
+    ),
+    action: (props: any) => (
+      <ActionNode 
+        {...props}
+        addNode={addNode} 
+        availableNodeTypes={availableNodeTypes}
+      />
+    ),
+    end: (props: any) => (
+      <EndNode 
+        {...props}
+        addNode={addNode} 
+        availableNodeTypes={availableNodeTypes}
+      />
+    ),
+  }), [addNode]);
   
   useEffect(() => {
     console.log('WorkflowBuilder rendering with workflowId:', workflowId);
@@ -405,6 +412,11 @@ const WorkflowBuilder: React.FC = () => {
     return `workflow-builder ${snapToGrid ? 'snap-active' : ''}`;
   }, [snapToGrid]);
 
+  const getNodePosition = (): XYPosition => ({
+    x: window.innerWidth / 2 - 75,
+    y: window.innerHeight / 3
+  });
+
   return (
     <div className="flex flex-col h-screen w-full">
       <div className="flex items-center justify-between p-4 border-b bg-background">
@@ -511,6 +523,24 @@ const WorkflowBuilder: React.FC = () => {
     </div>
   );
 };
+
+const availableNodeTypes: { type: NodeType; label: string; description: string }[] = [
+  { type: 'message', label: 'Message', description: 'Send a message to the customer' },
+  { type: 'data_collection', label: 'Data Collection', description: 'Collect data from the customer' },
+  { type: 'condition', label: 'Condition', description: 'Branch based on conditions' },
+  { type: 'chatbot_answer', label: 'Let Chatbot Answer', description: 'Let the chatbot handle the response' },
+  { type: 'copilot_action', label: 'Let AI copilot handle the next steps', description: 'Let AI copilot handle the next steps' },
+  { type: 'assign_ticket', label: 'Assign Ticket', description: 'Assign the ticket to a teammate' },
+  { type: 'collect_reply', label: 'Collect Customer Reply', description: 'Wait for customer to reply' },
+  { type: 'reusable_workflow', label: 'Pass to Reusable Workflow', description: 'Use another workflow' },
+  { type: 'show_reply_time', label: 'Show Expected Reply Time', description: 'Display expected reply time' },
+  { type: 'ask_csat', label: 'Ask for CSAT', description: 'Request customer satisfaction rating' },
+  { type: 'tag_ticket', label: 'Tag Ticket', description: 'Add tags to the ticket' },
+  { type: 'update_ticket', label: 'Update Ticket Data', description: 'Update ticket information' },
+  { type: 'wait', label: 'Wait', description: 'Pause the workflow for some time' },
+  { type: 'add_note', label: 'Add Note', description: 'Add an internal note' },
+  { type: 'end', label: 'End Workflow', description: 'End the workflow execution' }
+];
 
 const WorkflowBuilderPage: React.FC = () => {
   console.log('Rendering WorkflowBuilderPage with ReactFlowProvider');
