@@ -25,6 +25,10 @@ export const deleteCookie = (name: string): void => {
 // 🟢 Logout User
 export const handleLogout = (): void => {
     deleteCookie("customerToken");
+    // local storage
+    localStorage.removeItem("userId");
+    localStorage.removeItem("role");
+    localStorage.removeItem("userName");
     window.location.href = "/";
 };
 
