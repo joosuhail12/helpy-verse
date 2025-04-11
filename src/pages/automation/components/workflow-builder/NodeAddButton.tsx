@@ -1,8 +1,10 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useReactFlow } from '@xyflow/react';
 import { NodeSelector } from './NodeSelector';
 import { NodeType } from '@/types/workflow-builder';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
 
 interface NodeAddButtonProps {
   nodeId: string;
@@ -18,6 +20,7 @@ export const NodeAddButton: React.FC<NodeAddButtonProps> = ({
   offsetY = 0
 }) => {
   const reactFlowInstance = useReactFlow();
+  const [selectorOpen, setSelectorOpen] = useState<boolean>(false);
   const node = reactFlowInstance.getNode(nodeId);
   
   if (!node) return null;
@@ -30,22 +33,53 @@ export const NodeAddButton: React.FC<NodeAddButtonProps> = ({
   
   const yPosition = (node.height || 0) + offsetY;
   
-  // Add console.log to debug node dimensions and positioning
+  // Debug output for this button
   console.log(`NodeAddButton for ${nodeId}:`, {
     height: node.height,
     offsetY,
     yPosition,
-    type: node.type
+    type: node.type,
+    openState: selectorOpen
   });
   
+  const handleOpenSelector = () => {
+    console.log(`Opening selector for node ${nodeId}`);
+    setSelectorOpen(true);
+  };
+  
+  const handleCloseSelector = () => {
+    console.log(`Closing selector for node ${nodeId}`);
+    setSelectorOpen(false);
+  };
+
   return (
-    <NodeSelector
-      nodeId={nodeId}
-      addNode={addNode}
-      availableNodeTypes={availableNodeTypes}
-      position="inline"
-      offsetX={0}
-      offsetY={yPosition}
-    />
+    <div className="node-add-button">
+      <Button 
+        size="sm" 
+        variant="secondary" 
+        className="rounded-full h-8 w-8 p-0 shadow-md"
+        onClick={handleOpenSelector}
+      >
+        <Plus className="h-4 w-4" />
+        <span className="sr-only">Add next node</span>
+      </Button>
+      
+      {selectorOpen && (
+        <NodeSelector
+          nodeId={nodeId}
+          addNode={(type, sourceId) => {
+            const newNodeId = addNode(type, sourceId);
+            handleCloseSelector();
+            return newNodeId;
+          }}
+          availableNodeTypes={availableNodeTypes}
+          position="inline"
+          offsetX={0}
+          offsetY={yPosition}
+          isOpen={selectorOpen}
+          onOpenChange={setSelectorOpen}
+        />
+      )}
+    </div>
   );
 };

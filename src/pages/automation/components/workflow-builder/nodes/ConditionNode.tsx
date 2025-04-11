@@ -65,7 +65,7 @@ const ConditionNode = ({ id, data, isConnectable, addNode, availableNodeTypes }:
             />
             
             {addNode && availableNodeTypes && (
-              <div className="absolute" style={{ bottom: -20, left: '30%', transform: 'translateX(-50%)' }}>
+              <div className="absolute" style={{ bottom: -24, left: '30%', transform: 'translateX(-50%)' }}>
                 <NodeAddButton 
                   nodeId={id} 
                   addNode={addNode} 
@@ -87,7 +87,7 @@ const ConditionNode = ({ id, data, isConnectable, addNode, availableNodeTypes }:
             />
             
             {addNode && availableNodeTypes && (
-              <div className="absolute" style={{ bottom: -20, left: '70%', transform: 'translateX(-50%)' }}>
+              <div className="absolute" style={{ bottom: -24, left: '70%', transform: 'translateX(-50%)' }}>
                 <NodeAddButton 
                   nodeId={id} 
                   addNode={addNode} 

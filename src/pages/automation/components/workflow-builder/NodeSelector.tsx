@@ -21,6 +21,8 @@ interface NodeSelectorProps {
   position?: 'bottom' | 'inline';
   offsetX?: number;
   offsetY?: number;
+  isOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export const NodeSelector: React.FC<NodeSelectorProps> = ({ 
@@ -29,9 +31,11 @@ export const NodeSelector: React.FC<NodeSelectorProps> = ({
   availableNodeTypes,
   position = 'bottom',
   offsetX = 0,
-  offsetY = 0
+  offsetY = 0,
+  isOpen,
+  onOpenChange
 }) => {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(isOpen || false);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<NodeCategory>('all');
   
@@ -41,6 +45,13 @@ export const NodeSelector: React.FC<NodeSelectorProps> = ({
     const nodes = reactFlowInstance.getNodes();
     return nodes.find((n) => n.id === nodeId);
   }, [nodeId, reactFlowInstance]);
+  
+  // This function merges internal and external state
+  const handleOpenChange = (newOpenState: boolean) => {
+    console.log(`NodeSelector open state changing to: ${newOpenState}`);
+    setOpen(newOpenState);
+    if (onOpenChange) onOpenChange(newOpenState);
+  };
   
   // Create a memoized map of node types by category
   const nodesByCategory = useMemo(() => {
@@ -78,11 +89,12 @@ export const NodeSelector: React.FC<NodeSelectorProps> = ({
     );
   }, [searchQuery, activeCategory, nodesByCategory, availableNodeTypes]);
   
-  // Fixed: Using explicit type for the handleNodeSelect parameter
+  // Using explicit type for the handleNodeSelect parameter
   const handleNodeSelect = useCallback((type: NodeType) => {
     if (sourceNode) {
+      console.log(`Selected node type: ${type} for source node: ${sourceNode.id}`);
       addNode(type, sourceNode.id);
-      setOpen(false);
+      handleOpenChange(false);
     }
   }, [sourceNode, addNode]);
   
@@ -97,43 +109,12 @@ export const NodeSelector: React.FC<NodeSelectorProps> = ({
   // Only render if we have a source node
   if (!sourceNode) return null;
 
-  const getPositionStyles = () => {
-    if (position === 'inline') {
-      return {
-        left: offsetX,
-        top: offsetY,
-        transform: 'none',
-        zIndex: 5
-      };
-    }
-    
-    // Default 'bottom' position
-    return {
-      left: sourceNode.position.x + (sourceNode.width || 150) / 2,
-      top: sourceNode.position.y + (sourceNode.height || 50),
-      transform: 'translateX(-50%)',
-      zIndex: 5
-    };
-  };
-  
+  // Use controlled popover component
   return (
-    <div 
-      className="absolute"
-      style={getPositionStyles()}
-    >
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button 
-            size="sm" 
-            variant="secondary" 
-            className="rounded-full h-8 w-8 p-0 shadow-md"
-          >
-            <Plus className="h-4 w-4" />
-            <span className="sr-only">Add next node</span>
-          </Button>
-        </PopoverTrigger>
+    <div className="node-selector">
+      <Popover open={open} onOpenChange={handleOpenChange}>
         <PopoverContent 
-          className="w-80 p-0" 
+          className="w-80 p-0 z-50" 
           align="start"
           sideOffset={5}
         >

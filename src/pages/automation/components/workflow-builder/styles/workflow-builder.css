@@ -1,3 +1,4 @@
+
 /* Workflow Builder Styles */
 
 .workflow-builder .react-flow__edge path {
@@ -126,10 +127,10 @@
 /* Add new styles for node add buttons */
 .node-add-button {
   position: absolute;
-  bottom: -20px;
+  bottom: -24px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 10;
+  z-index: 50;
 }
 
 /* Ensure the add button doesn't interfere with node selection */
@@ -137,13 +138,24 @@
   outline: none;
 }
 
+/* Node selector positioning and layer */
+.node-selector {
+  z-index: 1000;
+  position: relative;
+}
+
 /* Style for the add node popover to ensure it's above other elements */
-.react-flow .node-popover {
+.react-flow__node .node-popover {
   z-index: 1000;
 }
 
 /* Ensure buttons are visible and have proper z-index */
 .react-flow__node button {
-  z-index: 10;
+  z-index: 50;
   pointer-events: all;
+}
+
+/* Fix for popover content rendering */
+[data-radix-popper-content-wrapper] {
+  z-index: 1000 !important;
 }

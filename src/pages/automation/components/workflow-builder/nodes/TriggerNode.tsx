@@ -64,13 +64,11 @@ const TriggerNode = ({ id, data, isConnectable, addNode, availableNodeTypes }: T
         />
         
         {addNode && availableNodeTypes && (
-          <div className="absolute bottom-[-24px] left-1/2 transform -translate-x-1/2">
-            <NodeAddButton 
-              nodeId={id} 
-              addNode={addNode} 
-              availableNodeTypes={availableNodeTypes} 
-            />
-          </div>
+          <NodeAddButton 
+            nodeId={id} 
+            addNode={addNode} 
+            availableNodeTypes={availableNodeTypes} 
+          />
         )}
       </div>
     </NodeHoverCard>

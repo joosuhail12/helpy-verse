@@ -117,13 +117,11 @@ const ActionNode = ({ id, data, isConnectable, addNode, availableNodeTypes }: Ac
         />
         
         {addNode && availableNodeTypes && (
-          <div className="absolute" style={{ bottom: -20, left: '50%', transform: 'translateX(-50%)' }}>
-            <NodeAddButton 
-              nodeId={id} 
-              addNode={addNode} 
-              availableNodeTypes={availableNodeTypes}
-            />
-          </div>
+          <NodeAddButton 
+            nodeId={id} 
+            addNode={addNode} 
+            availableNodeTypes={availableNodeTypes}
+          />
         )}
       </div>
     </NodeHoverCard>
