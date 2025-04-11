@@ -4,6 +4,7 @@ export interface UserMentionItem {
     id: string;
     name: string;
     avatar?: string;
+    initial?: string;
 }
 
 interface UserMentionListProps {
@@ -45,7 +46,7 @@ class UserMentionList {
                 // Fallback avatar with initials
                 const avatarFallback = document.createElement('div');
                 avatarFallback.className = 'w-6 h-6 rounded-full mr-2 bg-gray-300 flex items-center justify-center text-xs font-medium';
-                avatarFallback.textContent = item.name.charAt(0).toUpperCase();
+                avatarFallback.textContent = item.initial || item.name.charAt(0).toUpperCase();
                 button.appendChild(avatarFallback);
             }
 
