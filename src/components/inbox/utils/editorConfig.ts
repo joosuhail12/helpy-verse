@@ -71,7 +71,7 @@ const getInitial = (name: string): string => {
 // Create loading indicator for mention dropdown
 const createLoadingIndicator = (): HTMLElement => {
   const loadingDiv = document.createElement('div');
-  loadingDiv.className = 'bg-white shadow-lg rounded-lg p-4 flex items-center justify-center';
+  loadingDiv.className = 'bg-white shadow-lg rounded-lg p-2 flex items-center justify-center';
 
   const spinner = document.createElement('div');
   spinner.className = 'animate-spin rounded-full h-5 w-5 border-b-2 border-primary mr-2';
@@ -105,8 +105,27 @@ const createErrorIndicator = (message: string): HTMLElement => {
   return errorDiv;
 };
 
+// Position the popup near the '@' character
+const positionPopup = (popup: HTMLElement, coords: { left: number; top: number }) => {
+  if (!popup || !coords) return;
+
+  popup.style.position = 'absolute';
+  popup.style.left = `${coords.left}px`;
+  popup.style.top = `${coords.top + 24}px`; // Offset to position below the @ character
+  popup.style.zIndex = '1000';
+
+  // Make sure popup doesn't go off screen
+  const rect = popup.getBoundingClientRect();
+  const viewportWidth = window.innerWidth;
+
+  if (rect.right > viewportWidth) {
+    popup.style.left = `${viewportWidth - rect.width - 20}px`;
+  }
+};
+
 // Cached results to avoid unnecessary API calls
 let cachedMembers: UserMentionItem[] = [];
+let isInitialFetchComplete = false;
 
 // Sample users for fallback and testing
 const sampleUsers: UserMentionItem[] = [
@@ -134,6 +153,77 @@ const getTicketId = (ticket: Ticket | EditorConfigOptions): string | undefined =
 
   console.warn('Could not find ticket ID in ticket object:', ticket);
   return undefined;
+};
+
+// Pre-fetch team members to avoid delay when @ is typed
+const prefetchTeamMembers = async (currentUserId: string | null): Promise<UserMentionItem[]> => {
+  if (cachedMembers.length > 0 && isInitialFetchComplete) {
+    return cachedMembers;
+  }
+
+  try {
+    console.log('Pre-fetching team members...');
+    const response = await HttpClient.apiClient.get<TicketResponse>(
+      '/team/user/tickets',
+      {
+        params: {
+          // workspace_id handled by HttpClient automatically
+          status: 'open',
+          priority: 1,
+          skip: 0,
+          limit: 10
+        }
+      }
+    );
+
+    if (response.data.status === 'success' && response.data.data.length > 0) {
+      // Extract unique team members from all tickets
+      const allMembers: TeamMember[] = [];
+      response.data.data.forEach(ticket => {
+        if (ticket.team && ticket.team.members) {
+          ticket.team.members.forEach(member => {
+            // Skip the current user
+            if (currentUserId && member.id === currentUserId) {
+              return;
+            }
+
+            // Check if member already exists in allMembers
+            const exists = allMembers.some(m => m.id === member.id);
+            if (!exists) {
+              allMembers.push(member);
+            }
+          });
+        }
+      });
+
+      console.log('Extracted team members (excluding current user):', allMembers);
+
+      // Convert to UserMentionItem format
+      cachedMembers = allMembers.map(member => ({
+        id: member.id,
+        name: member.name,
+        initial: getInitial(member.name)
+      }));
+
+      // If no members found, use sample data
+      if (cachedMembers.length === 0) {
+        console.warn('No team members found in response, using sample data');
+        // Filter out the current user from sample data
+        cachedMembers = sampleUsers.filter(user => !currentUserId || user.id !== currentUserId);
+      }
+    } else {
+      console.warn('No valid data in API response, using sample data');
+      cachedMembers = sampleUsers.filter(user => !currentUserId || user.id !== currentUserId);
+    }
+
+    isInitialFetchComplete = true;
+    return cachedMembers;
+  } catch (error) {
+    console.error('Error pre-fetching team members:', error);
+    cachedMembers = sampleUsers.filter(user => !currentUserId || user.id !== currentUserId);
+    isInitialFetchComplete = true;
+    return cachedMembers;
+  }
 };
 
 export const createEditorConfig = (
@@ -164,6 +254,9 @@ export const createEditorConfig = (
 
   const currentUserId = getUserId();
 
+  // Start the prefetch process immediately
+  prefetchTeamMembers(currentUserId);
+
   return {
     extensions: [
       StarterKit,
@@ -178,170 +271,74 @@ export const createEditorConfig = (
         suggestion: {
           char: '@',
           startOfLine: false, // Allow mentions anywhere in the line
+          allowSpaces: true, // Allow spaces in the query
           items: async ({ query }: { query: string }): Promise<UserMentionItem[]> => {
-            console.log('Fetching mention suggestions');
+            console.log('Fetching mention suggestions with query:', query);
 
-            // Use cached results if available
-            if (cachedMembers.length > 0) {
-              console.log('Using cached members');
-              return cachedMembers.filter(item =>
-                !query || item.name.toLowerCase().includes(query.toLowerCase())
-              );
+            // Make sure we have team members loaded
+            if (!isInitialFetchComplete) {
+              await prefetchTeamMembers(currentUserId);
             }
 
-            try {
-              console.log('Making API call to fetch team members...');
+            // If query is empty (just @), return all cached members
+            if (!query) return cachedMembers;
 
-              // Create a timeout promise
-              const timeoutPromise = new Promise<never>((_, reject) => {
-                setTimeout(() => reject(new Error('API request timed out')), 5000);
-              });
-
-              // Race between the API call and the timeout
-              const response = await Promise.race([
-                HttpClient.apiClient.get<TicketResponse>(
-                  '/team/user/tickets',
-                  {
-                    params: {
-                      // workspace_id handled by HttpClient automatically
-                      status: 'open',
-                      priority: 1,
-                      skip: 0,
-                      limit: 10
-                    }
-                  }
-                ),
-                timeoutPromise
-              ]);
-
-              console.log('API response received:', response.data);
-
-              if (response.data.status === 'success' && response.data.data.length > 0) {
-                // Extract unique team members from all tickets
-                const allMembers: TeamMember[] = [];
-                response.data.data.forEach(ticket => {
-                  if (ticket.team && ticket.team.members) {
-                    ticket.team.members.forEach(member => {
-                      // Skip the current user
-                      if (member.id === currentUserId) {
-                        return;
-                      }
-
-                      // Check if member already exists in allMembers
-                      const exists = allMembers.some(m => m.id === member.id);
-                      if (!exists) {
-                        allMembers.push(member);
-                      }
-                    });
-                  }
-                });
-
-                console.log('Extracted team members (excluding current user):', allMembers);
-
-                // Convert to UserMentionItem format
-                cachedMembers = allMembers.map(member => ({
-                  id: member.id,
-                  name: member.name,
-                  initial: getInitial(member.name)
-                }));
-
-                // If no members found, use sample data
-                if (cachedMembers.length === 0) {
-                  console.warn('No team members found in response, using sample data');
-                  // Filter out the current user from sample data
-                  cachedMembers = sampleUsers.filter(user => user.id !== currentUserId);
-                }
-
-                // Filter by query
-                return cachedMembers.filter(item =>
-                  !query || item.name.toLowerCase().includes(query.toLowerCase())
-                );
-              }
-
-              console.warn('No valid data in API response, using sample data:', response.data);
-              // Filter out the current user from sample data
-              return sampleUsers
-                .filter(user => user.id !== currentUserId)
-                .filter(item => !query || item.name.toLowerCase().includes(query.toLowerCase()));
-            } catch (error) {
-              console.error('Error fetching team members:', error);
-              // Filter out the current user from sample data
-              return sampleUsers
-                .filter(user => user.id !== currentUserId)
-                .filter(item => !query || item.name.toLowerCase().includes(query.toLowerCase()));
-            }
+            // Otherwise filter by query
+            return cachedMembers.filter(item =>
+              item.name.toLowerCase().includes(query.toLowerCase())
+            );
           },
           render: () => {
             let component: UserMentionList;
             let popup: HTMLElement;
             let loadingIndicator: HTMLElement;
-            let errorIndicator: HTMLElement;
             let isLoading = false;
-            let loadingTimeout: ReturnType<typeof setTimeout>;
 
             return {
-              onStart: () => {
+              onStart: async (props: SuggestionProps) => {
                 // Create loading indicator
                 isLoading = true;
                 loadingIndicator = createLoadingIndicator();
 
                 popup = document.createElement('div');
-                popup.className = 'mention-popup';
+                popup.className = 'mention-popup shadow-lg rounded-md overflow-hidden';
                 popup.appendChild(loadingIndicator);
                 document.body.appendChild(popup);
 
-                // Position the loading indicator
-                const selection = window.getSelection();
-                if (selection && selection.rangeCount > 0) {
-                  const range = selection.getRangeAt(0);
-                  const rect = range.getBoundingClientRect();
-
-                  popup.style.position = 'absolute';
-                  popup.style.left = `${rect.left}px`;
-                  popup.style.top = `${rect.bottom + 5}px`;
-                  popup.style.zIndex = '1000';
+                // Position the popup using props coordinates
+                const coords = props.clientRect?.();
+                if (coords) {
+                  positionPopup(popup, coords);
                 }
 
-                // Set a timeout to show error if loading takes too long
-                loadingTimeout = setTimeout(() => {
-                  if (isLoading) {
-                    console.warn('Loading timeout reached, showing fallback data');
-                    // Replace loading indicator with error message
-                    isLoading = false;
-                    popup.removeChild(loadingIndicator);
+                // If we already have cached members, show them immediately
+                if (isInitialFetchComplete) {
+                  isLoading = false;
+                  popup.removeChild(loadingIndicator);
 
-                    errorIndicator = createErrorIndicator('Could not load users. Using sample data.');
-                    popup.appendChild(errorIndicator);
+                  component = new UserMentionList({
+                    items: cachedMembers,
+                    command: props.command,
+                  });
 
-                    // Create component with sample data
-                    setTimeout(() => {
-                      popup.removeChild(errorIndicator);
-
-                      // Filter out current user from sample data
-                      const filteredSampleUsers = sampleUsers.filter(user => user.id !== currentUserId);
-
-                      component = new UserMentionList({
-                        items: filteredSampleUsers,
-                        command: (item: UserMentionItem) => {
-                          console.log('Selected user from sample data:', item);
-                        },
-                      });
-                      popup.appendChild(component.element);
-                    }, 1500);
-                  }
-                }, 3000);
+                  popup.appendChild(component.element);
+                }
               },
               onUpdate: (props: SuggestionProps) => {
-                // If loading timeout is active, clear it
-                if (loadingTimeout) {
-                  clearTimeout(loadingTimeout);
+                // Get latest coords for positioning
+                const coords = props.clientRect?.();
+                if (coords) {
+                  positionPopup(popup, coords);
                 }
 
                 // If we were loading but now have items, replace loading indicator with results
                 if (isLoading && props.items.length > 0) {
                   console.log('Received items, replacing loading indicator', props.items);
                   isLoading = false;
-                  popup.removeChild(loadingIndicator);
+
+                  if (popup.contains(loadingIndicator)) {
+                    popup.removeChild(loadingIndicator);
+                  }
 
                   component = new UserMentionList({
                     items: props.items as UserMentionItem[],
@@ -353,26 +350,12 @@ export const createEditorConfig = (
                   // Just update the existing component
                   component.update({ items: props.items as UserMentionItem[] });
                 }
-
-                // Update position
-                const rect = props.clientRect?.();
-                if (rect) {
-                  popup.style.position = 'absolute';
-                  popup.style.left = `${rect.left}px`;
-                  popup.style.top = `${rect.bottom + 5}px`;
-                  popup.style.zIndex = '1000';
-                }
               },
               onKeyDown: (props: { event: KeyboardEvent }) => {
                 if (isLoading) return false;
                 return component.onKeyDown(props);
               },
               onExit: () => {
-                // Clear timeout if it exists
-                if (loadingTimeout) {
-                  clearTimeout(loadingTimeout);
-                }
-
                 if (popup) {
                   popup.remove();
                 }
