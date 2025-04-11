@@ -9,6 +9,32 @@ export interface Mention {
     isRead: boolean;
     createdAt: string;
     updatedAt: string;
+    mentionedAt?: string;
+    ticket?: {
+        id: string;
+        title: string;
+        sno?: number;
+        status: 'open' | 'closed' | 'pending';
+        priority: 'low' | 'medium' | 'high' | number;
+        createdAt: string;
+        updatedAt: string;
+        clientId: string;
+        isUnread: boolean;
+        hasNotification: boolean;
+        notificationType?: string | null;
+        customerId?: string;
+        customer?: {
+            id: string;
+            name: string;
+            email: string;
+            phone?: string | null;
+        }
+    };
+    mentioner?: {
+        id: string;
+        name: string;
+        email: string;
+    };
 }
 
 export interface GetMentionsResponse {

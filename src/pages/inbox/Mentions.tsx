@@ -9,22 +9,55 @@ import { toast } from 'sonner';
 
 // Convert Mention to Ticket format expected by TicketList
 const convertMentionToTicket = (mention: Mention): Ticket => {
+  // Map priority from string or number to the expected format
+  const getPriority = (priority: string | number | undefined): 'low' | 'medium' | 'high' => {
+    if (priority === 'low' || priority === 1) return 'low';
+    if (priority === 'medium' || priority === 2) return 'medium';
+    if (priority === 'high' || priority === 3) return 'high';
+    return 'medium'; // default
+  };
+
+  // Ensure status is one of the expected values
+  const getTicketStatus = (status: string | undefined): 'open' | 'closed' | 'pending' => {
+    if (status === 'open') return 'open';
+    if (status === 'closed') return 'closed';
+    if (status === 'pending') return 'pending';
+    return 'open'; // default
+  };
+
+  // Format the customer data correctly
+  const formatCustomer = () => {
+    if (!mention.ticket?.customer) return undefined;
+
+    // Return the customer ID as a string instead of the full object
+    // This prevents React from trying to render the customer object directly
+    return mention.ticket.customerId || mention.ticket.customer.id;
+  };
+
   return {
     id: mention.id,
-    sno: 0, // Use 0 as a default SNO
-    subject: mention.content || 'New Mention',
+    sno: mention.ticket?.sno || 0,
+    subject: mention.ticket?.title || 'New Mention',
     lastMessage: mention.content || '',
     assignee: null,
-    company: mention.mentionedBy || 'Unknown',
-    status: 'open',
-    priority: 'medium',
+    // Include mentioner's name if available
+    company: mention.mentioner?.name || mention.mentionedBy || 'Unknown',
+    // Use ticket status or default to open
+    status: mention.ticket ? getTicketStatus(mention.ticket.status) : 'open',
+    // Convert priority to the expected format
+    priority: getPriority(mention.ticket?.priority),
     tags: [],
-    createdAt: mention.updatedAt || mention.createdAt || new Date().toISOString(),
+    // Get the most accurate date available
+    createdAt: mention.mentionedAt || mention.updatedAt || mention.createdAt || new Date().toISOString(),
     isUnread: !mention.isRead,
     hasNotification: !mention.isRead,
     notificationType: 'mention',
-    // Store ticketId as threadId since Ticket doesn't have ticketId
-    threadId: mention.ticketId
+    // Store ticketId as threadId since Ticket type doesn't have ticketId
+    threadId: mention.ticketId,
+    // Format customer data to avoid React object rendering errors
+    customer: formatCustomer(),
+    // Store customerId separately for reference
+    customerId: mention.ticket?.customerId || mention.ticket?.customer?.id
   };
 };
 
@@ -80,7 +113,7 @@ const MentionsPage = () => {
     }
 
     fetchMentions();
-  }, []);
+  }, [navigate]);
 
   // Filter tickets based on current tab selection
   useEffect(() => {
