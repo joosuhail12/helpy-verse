@@ -53,7 +53,6 @@ import ConditionNode from './components/workflow-builder/nodes/ConditionNode';
 import ActionNode from './components/workflow-builder/nodes/ActionNode';
 import EndNode from './components/workflow-builder/nodes/EndNode';
 import { TriggerDrawer } from './components/workflow-builder/drawers/TriggerDrawer';
-import { NodeConfigurator } from './components/workflow-builder/NodeConfigurator';
 import { NodeSelector } from './components/workflow-builder/NodeSelector';
 import { WorkspaceControls } from './components/workflow-builder/WorkspaceControls';
 
@@ -142,11 +141,36 @@ const WorkflowBuilder: React.FC = () => {
   );
   
   const onNodeClick = useCallback((event: React.MouseEvent, node: Node<WorkflowNodeData>) => {
-    setSelectedNode(node);
+    // Only set selectedNode and open drawer if it's a trigger node
     if (node.type === 'trigger') {
+      setSelectedNode(node);
       setTriggerDrawerOpen(true);
+    } else {
+      // For other node types, just mark them as selected but don't open any drawer
+      setSelectedNode(node);
+      console.log(`Selected ${node.type} node with ID: ${node.id}`);
+      
+      // Simple placeholder for future in-node configuration
+      if (!node.data.configured) {
+        // Quick example of direct node configuration for demonstration
+        // In the future this would be replaced with in-node configuration
+        setNodes(nodes => 
+          nodes.map(n => 
+            n.id === node.id
+              ? { 
+                  ...n, 
+                  data: { 
+                    ...n.data, 
+                    configured: true
+                  } 
+                }
+              : n
+          )
+        );
+        toast.info(`Node "${node.data.label}" will be configured directly in the node in future updates.`);
+      }
     }
-  }, []);
+  }, [setNodes]);
   
   const addNode = useCallback((type: NodeType, sourceNodeId: string, position?: XYPosition) => {
     const id = uuidv4();
@@ -254,26 +278,6 @@ const WorkflowBuilder: React.FC = () => {
     
     setTriggerDrawerOpen(false);
     toast.success('Trigger configured successfully');
-  };
-  
-  const saveNodeConfig = (nodeId: string, config: NodeConfig) => {
-    setNodes(nodes => 
-      nodes.map(node => 
-        node.id === nodeId
-          ? { 
-              ...node, 
-              data: { 
-                ...node.data, 
-                configured: true, 
-                config 
-              } 
-            }
-          : node
-      )
-    );
-    
-    setSelectedNode(null);
-    toast.success('Node configured successfully');
   };
   
   const saveWorkflow = async () => {
@@ -475,6 +479,7 @@ const WorkflowBuilder: React.FC = () => {
         </ReactFlow>
       </div>
       
+      {/* Only show drawer for trigger nodes */}
       <Drawer open={triggerDrawerOpen} onOpenChange={setTriggerDrawerOpen}>
         <DrawerContent className="h-[80vh]">
           <DrawerHeader>
@@ -489,21 +494,8 @@ const WorkflowBuilder: React.FC = () => {
             onSave={saveTriggerConfig}
           />
           
-          <DrawerFooter>
-            <Button onClick={() => setTriggerDrawerOpen(false)}>
-              Cancel
-            </Button>
-          </DrawerFooter>
         </DrawerContent>
       </Drawer>
-      
-      {selectedNode && selectedNode.type !== 'trigger' && (
-        <NodeConfigurator
-          node={selectedNode}
-          onSave={saveNodeConfig}
-          onCancel={() => setSelectedNode(null)}
-        />
-      )}
       
       {nodes.map(node => (
         <NodeSelector

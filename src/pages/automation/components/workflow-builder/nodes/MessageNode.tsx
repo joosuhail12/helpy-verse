@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Handle, Position } from '@xyflow/react';
-import { MessageSquare, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { MessageSquare, AlertCircle, CheckCircle2, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { NodeProps, NodeConfig } from '@/types/workflow-builder';
 import '../styles/workflow-builder.css';
@@ -11,6 +11,13 @@ const MessageNode = ({ data, isConnectable }: NodeProps) => {
   const label = data?.label || 'Message';
   const configured = data?.configured || false;
   const config = data?.config as NodeConfig | undefined;
+  
+  const handleConfigClick = (event: React.MouseEvent) => {
+    // Stop propagation to prevent the node click handler from being triggered
+    event.stopPropagation();
+    console.log("Configure message node inline (to be implemented)");
+    // Future implementation will show inline configuration UI
+  };
   
   return (
     <div className={cn(
@@ -39,17 +46,27 @@ const MessageNode = ({ data, isConnectable }: NodeProps) => {
         </div>
       )}
       
-      {configured ? (
-        <div className="flex items-center mt-2 text-xs text-green-600">
-          <CheckCircle2 className="w-3 h-3 mr-1" />
-          <span>Configured</span>
-        </div>
-      ) : (
-        <div className="flex items-center mt-2 text-xs text-amber-600">
-          <AlertCircle className="w-3 h-3 mr-1" />
-          <span>Needs configuration</span>
-        </div>
-      )}
+      <div className="mt-2 flex items-center justify-center">
+        {configured ? (
+          <div className="flex items-center text-xs text-green-600">
+            <CheckCircle2 className="w-3 h-3 mr-1" />
+            <span>Configured</span>
+          </div>
+        ) : (
+          <div className="flex items-center text-xs text-amber-600">
+            <AlertCircle className="w-3 h-3 mr-1" />
+            <span>Click to configure</span>
+          </div>
+        )}
+        
+        <button 
+          className="ml-2 p-1 rounded-full hover:bg-slate-100"
+          onClick={handleConfigClick}
+          aria-label="Configure node"
+        >
+          <Settings className="w-3 h-3 text-slate-500" />
+        </button>
+      </div>
       
       <Handle
         type="source"

@@ -9,7 +9,8 @@ import {
   Clock, 
   Tag,
   FileEdit,
-  MessageSquareMore
+  MessageSquareMore,
+  Settings
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { NodeProps } from '@/types/workflow-builder';
@@ -63,6 +64,13 @@ const ActionNode = ({ data, isConnectable }: NodeProps) => {
       break;
   }
   
+  const handleConfigClick = (event: React.MouseEvent) => {
+    // Stop propagation to prevent the node click handler from being triggered
+    event.stopPropagation();
+    console.log(`Configure ${actionType} action node inline (to be implemented)`);
+    // Future implementation will show inline configuration UI
+  };
+  
   return (
     <div className={cn(
       "flex flex-col items-center p-3 rounded-xl border shadow-sm bg-background w-[180px]",
@@ -87,17 +95,27 @@ const ActionNode = ({ data, isConnectable }: NodeProps) => {
       
       <div className="font-medium text-sm text-center">{label}</div>
       
-      {configured ? (
-        <div className="flex items-center mt-2 text-xs text-green-600">
-          <CheckCircle2 className="w-3 h-3 mr-1" />
-          <span>Configured</span>
-        </div>
-      ) : (
-        <div className="flex items-center mt-2 text-xs text-amber-600">
-          <AlertCircle className="w-3 h-3 mr-1" />
-          <span>Needs configuration</span>
-        </div>
-      )}
+      <div className="mt-2 flex items-center justify-center">
+        {configured ? (
+          <div className="flex items-center text-xs text-green-600">
+            <CheckCircle2 className="w-3 h-3 mr-1" />
+            <span>Configured</span>
+          </div>
+        ) : (
+          <div className="flex items-center text-xs text-amber-600">
+            <AlertCircle className="w-3 h-3 mr-1" />
+            <span>Click to configure</span>
+          </div>
+        )}
+        
+        <button 
+          className="ml-2 p-1 rounded-full hover:bg-slate-100"
+          onClick={handleConfigClick}
+          aria-label="Configure node"
+        >
+          <Settings className="w-3 h-3 text-slate-500" />
+        </button>
+      </div>
       
       <Handle
         type="source"
