@@ -1,4 +1,3 @@
-
 import { LucideIcon } from 'lucide-react';
 
 export interface NavigationItem {
@@ -7,6 +6,7 @@ export interface NavigationItem {
   path?: string;
   icon?: LucideIcon;
   children?: NavigationItem[];
+  loadDynamicChildren?: boolean;
 }
 
 export interface MainNavItem extends NavigationItem {

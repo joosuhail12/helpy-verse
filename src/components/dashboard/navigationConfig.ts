@@ -49,10 +49,8 @@ export const subNavItems = {
       icon: UsersRound,
       children: [
         { title: 'All Teams', path: '/home/inbox/teams' },
-        { title: 'Team 1 View', path: '/home/inbox/teams/1' },
-        { title: 'Team 2 View', path: '/home/inbox/teams/2' },
-        { title: 'Team 3 View', path: '/home/inbox/teams/3' },
-      ]
+      ],
+      loadDynamicChildren: true,
     },
     {
       title: 'Teammates',

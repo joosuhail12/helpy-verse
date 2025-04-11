@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -9,6 +8,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { NavigationItem as NavItemType } from '../types/navigation';
+import TeamNavigationItem from './TeamNavigationItem';
 
 interface NavigationItemProps {
   item: NavItemType;
@@ -31,6 +31,22 @@ const NavigationItem = ({
   navigate,
   filterMenuItems,
 }: NavigationItemProps) => {
+  // For Teams item with loadDynamicChildren flag, use the TeamNavigationItem
+  if (item.loadDynamicChildren && item.title === "Teams") {
+    return (
+      <TeamNavigationItem
+        item={item}
+        isSecondPanelCollapsed={isSecondPanelCollapsed}
+        expandedItems={expandedItems}
+        toggleExpanded={toggleExpanded}
+        hasActiveChild={hasActiveChild}
+        isItemActive={isItemActive}
+        navigate={navigate}
+        filterMenuItems={filterMenuItems}
+      />
+    );
+  }
+
   if (item.children) {
     return (
       <div>
@@ -39,10 +55,9 @@ const NavigationItem = ({
             <TooltipTrigger asChild>
               <Button
                 variant="ghost"
-                className={`w-full flex items-center rounded-lg transition-all duration-300 group ${
-                  isSecondPanelCollapsed ? 'justify-center p-2' : 'justify-between px-4 py-2'
-                } ${hasActiveChild?.(item.children) 
-                    ? 'bg-primary/5 text-primary shadow-sm hover:shadow-md' 
+                className={`w-full flex items-center rounded-lg transition-all duration-300 group ${isSecondPanelCollapsed ? 'justify-center p-2' : 'justify-between px-4 py-2'
+                  } ${hasActiveChild?.(item.children)
+                    ? 'bg-primary/5 text-primary shadow-sm hover:shadow-md'
                     : 'hover:bg-primary/5'}`}
                 onClick={() => toggleExpanded(item.title)}
               >
@@ -59,14 +74,13 @@ const NavigationItem = ({
                   )}
                 </div>
                 {!isSecondPanelCollapsed && (
-                  <ChevronRight className={`h-4 w-4 transition-all duration-300 ${
-                    expandedItems.includes(item.title) ? 'rotate-90' : ''
-                  } group-hover:text-primary`} />
+                  <ChevronRight className={`h-4 w-4 transition-all duration-300 ${expandedItems.includes(item.title) ? 'rotate-90' : ''
+                    } group-hover:text-primary`} />
                 )}
               </Button>
             </TooltipTrigger>
-            <TooltipContent 
-              side="right" 
+            <TooltipContent
+              side="right"
               className="z-[60] bg-white shadow-lg"
               sideOffset={12}
             >
@@ -86,8 +100,8 @@ const NavigationItem = ({
                     <Button
                       variant="ghost"
                       className={`w-full flex items-center justify-start text-sm px-4 py-2 rounded-lg transition-all duration-300 group
-                        ${isItemActive(child.path) 
-                          ? 'bg-primary/5 text-primary shadow-sm hover:shadow-md' 
+                        ${isItemActive(child.path)
+                          ? 'bg-primary/5 text-primary shadow-sm hover:shadow-md'
                           : 'hover:bg-primary/5'}`}
                       onClick={() => navigate(child.path)}
                     >
@@ -96,8 +110,8 @@ const NavigationItem = ({
                       </span>
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent 
-                    side="right" 
+                  <TooltipContent
+                    side="right"
                     className="z-[60] bg-white shadow-lg"
                     sideOffset={12}
                   >
@@ -119,10 +133,9 @@ const NavigationItem = ({
         <TooltipTrigger asChild>
           <Button
             variant="ghost"
-            className={`w-full flex items-center rounded-lg transition-all duration-300 group ${
-              isSecondPanelCollapsed ? 'justify-center p-2' : 'justify-start px-4 py-2'
-            } ${isItemActive(item.path) 
-                ? 'bg-primary/5 text-primary shadow-sm hover:shadow-md' 
+            className={`w-full flex items-center rounded-lg transition-all duration-300 group ${isSecondPanelCollapsed ? 'justify-center p-2' : 'justify-start px-4 py-2'
+              } ${isItemActive(item.path)
+                ? 'bg-primary/5 text-primary shadow-sm hover:shadow-md'
                 : 'hover:bg-primary/5'}`}
             onClick={() => navigate(item.path)}
           >
@@ -140,8 +153,8 @@ const NavigationItem = ({
             </div>
           </Button>
         </TooltipTrigger>
-        <TooltipContent 
-          side="right" 
+        <TooltipContent
+          side="right"
           className="z-[60] bg-white shadow-lg"
           sideOffset={12}
         >
