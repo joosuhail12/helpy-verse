@@ -52,7 +52,13 @@ const CustomerContextPanel = ({ ticket }: CustomerContextPanelProps) => {
   // Fetch customer details when ticket changes - only if customerId is not available
   useEffect(() => {
     if (!ticket.customerId && ticket?.customer) {
-      dispatch(fetchCustomerDetails(ticket.customer));
+      // Ensure we only pass string ID to fetchCustomerDetails
+      const customerId = typeof ticket.customer === 'string'
+        ? ticket.customer
+        : ticket.customer.id;
+      if (customerId) {
+        dispatch(fetchCustomerDetails(customerId));
+      }
     }
   }, [dispatch, ticket?.customer, ticket.customerId]);
 
@@ -155,7 +161,7 @@ const CustomerContextPanel = ({ ticket }: CustomerContextPanelProps) => {
   return (
     <Card className="h-full flex flex-col bg-white border-l">
       <CustomerHeader
-        customer={customerDisplayName}
+        customer={customerDisplayName.toString()}
         company={companyInfo}
       />
 

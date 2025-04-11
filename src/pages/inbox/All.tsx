@@ -9,6 +9,7 @@ const ITEMS_PER_PAGE = 5;
 // API response ticket type
 type ApiTicket = {
   id: string;
+  sno?: number;
   subject: string;
   customerId: string;
   lastMessage: string;
@@ -46,12 +47,16 @@ const AllTickets = () => {
         const response = await HttpClient.apiClient.get<TicketResponse>('/ticket');
 
         if (response.data.status === 'success') {
-          // Map API tickets to include the customer field that TicketList expects
+          // Map API tickets to include the customer field and sno that TicketList needs
           const fetchedTickets = response.data.data.docs.map(apiTicket => ({
             ...apiTicket,
+            // Make sure we preserve the sno value for ticket fetching
+            sno: apiTicket.sno,
+            // Set customer to customerId for legacy support or as an object for embedded data
             customer: apiTicket.customerId
           })) as TicketListType[];
 
+          console.log('Fetched tickets with SNOs:', fetchedTickets.map(t => t.sno || t.id));
           setTickets(fetchedTickets);
 
           // Extract clientId from the first API ticket if it exists
@@ -91,7 +96,7 @@ const AllTickets = () => {
             No tickets found
           </div>
         ) : (
-          <TicketList tickets={tickets} />
+          <TicketList tickets={tickets} isLoading={loading} />
         )}
       </div>
     </div>

@@ -1,4 +1,3 @@
-
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { HttpClient } from "@/api/services/HttpClient";
 import { encryptBase64, setCookie, setWorkspaceId, handleSetToken, deleteCookie, getCookie } from '@/utils/helpers/helpers';
@@ -183,6 +182,10 @@ const authSlice = createSlice({
       state.user = null;
       state.error = null;
       deleteCookie("customerToken");
+      // Clear localStorage items
+      localStorage.removeItem("userId");
+      localStorage.removeItem("userEmail");
+      localStorage.removeItem("userName");
     },
     clearError: (state) => {
       state.error = null;
@@ -202,7 +205,7 @@ const authSlice = createSlice({
 
         const loginData = action.payload?.data;
         if (loginData) {
-          const email = loginData?.username || "";
+          const email = loginData?.username || loginData?.email || "";
           const encryptedEmail = encryptBase64(email);
           setCookie("agent_email", encryptedEmail);
 
@@ -210,7 +213,30 @@ const authSlice = createSlice({
 
           setWorkspaceId(get(action.payload, "data.defaultWorkspaceId", ""));
 
+          // Store user data in localStorage for access across components
+          if (loginData.id) {
+            localStorage.setItem("userId", loginData.id);
+            console.log("Setting userId in localStorage:", loginData.id);
+          }
+
+          if (email) {
+            localStorage.setItem("userEmail", email);
+            console.log("Setting userEmail in localStorage:", email);
+          }
+
+          // Try different name properties that might exist in various API responses
+          const userName = loginData.name || loginData.fullName || loginData.userName ||
+            (loginData.profile ? loginData.profile.name : null) ||
+            `User-${loginData.id?.substring(0, 8)}`;
+
+          if (userName) {
+            localStorage.setItem("userName", userName);
+            console.log("Setting userName in localStorage:", userName);
+          }
+
           HttpClient.setAxiosDefaultConfig();
+        } else {
+          console.error("Login response data missing or malformed:", action.payload);
         }
       })
       .addCase(loginUser.rejected, (state, action) => {

@@ -18,6 +18,7 @@ const SignUp = lazy(() => import(/* webpackChunkName: "signup" */ "./pages/SignU
 const ForgotPassword = lazy(() => import(/* webpackChunkName: "forgot-password" */ "./pages/ForgotPassword"));
 const Home = lazy(() => import(/* webpackChunkName: "home" */ "./pages/Dashboard"));
 const AllTickets = lazy(() => import(/* webpackChunkName: "all-tickets" */ "./pages/inbox/All"));
+const Mentions = lazy(() => import(/* webpackChunkName: "mentions" */ "./pages/inbox/Mentions"));
 const AllContacts = lazy(() => import(/* webpackChunkName: "all-contacts" */ "./pages/contacts/All"));
 const ContactDetail = lazy(() => import(/* webpackChunkName: "contact-detail" */ "./pages/contacts/Detail"));
 const Tags = lazy(() => import(/* webpackChunkName: "tags" */ "./pages/settings/Tags"));
@@ -116,6 +117,7 @@ const App = () => (
                     }
                   >
                     <Route path="inbox/all" element={<AllTickets />} />
+                    <Route path="inbox/mentions" element={<Mentions />} />
                     <Route path="contacts/all" element={<AllContacts />} />
                     <Route path="contacts/companies" element={<Companies />} />
                     <Route path="contacts/companies/:id" element={<CompanyDetail />} />

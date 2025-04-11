@@ -25,6 +25,10 @@ export const deleteCookie = (name: string): void => {
 // 🟢 Logout User
 export const handleLogout = (): void => {
     deleteCookie("customerToken");
+    // local storage
+    localStorage.removeItem("userId");
+    localStorage.removeItem("role");
+    localStorage.removeItem("userName");
     window.location.href = "/";
 };
 
@@ -173,3 +177,6 @@ export const isWorkspaceAgent = (): boolean => localStorage.getItem("role") === 
 
 // 🟢 Get User ID
 export const getUserId = (): string | null => localStorage.getItem("userId");
+
+// get user name
+export const getUserName = (): string | null => localStorage.getItem("userName");

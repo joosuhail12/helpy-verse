@@ -166,5 +166,18 @@ export const ticketService = {
             console.error('Error getting conversation:', error);
             throw new Error('Failed to get conversation');
         }
+    },
+    // ✅ Get ticket details by SNo 
+    async fetchTicketBySno(sno: string | number): Promise<GetTicketResponse> {
+        try {
+            console.log(`Making GET request to ${API_URL}/${sno}`);
+            const response = await HttpClient.apiClient.get<GetTicketResponse>(
+                `${API_URL}/${sno}`
+            );
+            return response.data;
+        } catch (error) {
+            console.error(`Error fetching ticket with SNo ${sno}:`, error);
+            throw new Error(`Failed to fetch ticket with SNo ${sno}`);
+        }
     }
-}; 
+}

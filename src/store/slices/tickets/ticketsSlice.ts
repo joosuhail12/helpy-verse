@@ -4,15 +4,68 @@ import { ticketService } from '@/api/services/ticketService';
 
 interface TicketsState {
     currentTicket: Ticket | null;
+    ticketDetails: Record<string, Ticket>; // Store ticket details by sno/id
     loading: boolean;
     error: string | null;
 }
 
 const initialState: TicketsState = {
     currentTicket: null,
+    ticketDetails: {},
     loading: false,
     error: null,
 };
+
+// ✅ Fetch ticket details by SNo
+export const fetchTicketBySno = createAsyncThunk(
+    'tickets/fetchTicketBySno',
+    async (sno: string | number, { rejectWithValue }) => {
+        try {
+            console.log(`Fetching ticket details for SNo: ${sno}`);
+            const response = await ticketService.fetchTicketBySno(sno);
+            console.log('Ticket details response:', response);
+            return response.data;
+        } catch (error: any) {
+            console.error('Error fetching ticket details:', error);
+            return rejectWithValue(error.message || 'Failed to fetch ticket details');
+        }
+    }
+);
+
+// ✅ Fetch multiple tickets by SNo or ID
+export const fetchTicketsBySno = createAsyncThunk(
+    'tickets/fetchTicketsBySno',
+    async (identifiers: (string | number)[], { rejectWithValue }) => {
+        try {
+            console.log(`Fetching ticket details for identifiers: ${identifiers.join(', ')}`);
+            const results: Record<string, Ticket> = {};
+
+            // Process tickets in parallel
+            const promises = identifiers.map(async (identifier) => {
+                try {
+                    const response = await ticketService.fetchTicketBySno(identifier);
+                    if (response.data) {
+                        // Store ticket by both sno and id for easy lookup
+                        if (response.data.sno) {
+                            results[String(response.data.sno)] = response.data;
+                        }
+                        if (response.data.id) {
+                            results[response.data.id] = response.data;
+                        }
+                    }
+                } catch (err) {
+                    console.error(`Error fetching ticket ${identifier}:`, err);
+                }
+            });
+
+            await Promise.all(promises);
+            return results;
+        } catch (error: any) {
+            console.error('Error fetching multiple tickets:', error);
+            return rejectWithValue(error.message || 'Failed to fetch multiple tickets');
+        }
+    }
+);
 
 // ✅ Update ticket
 export const updateTicket = createAsyncThunk(
@@ -109,6 +162,12 @@ const ticketsSlice = createSlice({
                 console.log('Update ticket fulfilled with payload:', action.payload);
                 if (action.payload) {
                     state.currentTicket = action.payload;
+                    // Also update in the ticketDetails cache
+                    if (action.payload.sno) {
+                        state.ticketDetails[String(action.payload.sno)] = action.payload;
+                    } else if (action.payload.id) {
+                        state.ticketDetails[action.payload.id] = action.payload;
+                    }
                 }
             })
             .addCase(updateTicket.rejected, (state, action) => {
@@ -141,6 +200,50 @@ const ticketsSlice = createSlice({
                 console.error('Get conversation rejected:', action);
                 state.error = action.payload as string || action.error.message || 'Failed to get conversation';
             })
+
+            // Fetch ticket by SNo
+            .addCase(fetchTicketBySno.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(fetchTicketBySno.fulfilled, (state, action) => {
+                state.loading = false;
+                if (action.payload) {
+                    state.currentTicket = action.payload;
+
+                    // Store in ticketDetails cache by both sno and id for easy lookup
+                    if (action.payload.sno) {
+                        state.ticketDetails[String(action.payload.sno)] = action.payload;
+                    }
+                    if (action.payload.id) {
+                        state.ticketDetails[action.payload.id] = action.payload;
+                    }
+                }
+            })
+            .addCase(fetchTicketBySno.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string || action.error.message || 'Failed to fetch ticket details';
+            })
+
+            // Fetch multiple tickets by SNo
+            .addCase(fetchTicketsBySno.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(fetchTicketsBySno.fulfilled, (state, action) => {
+                state.loading = false;
+                if (action.payload) {
+                    // Merge the new ticket details with existing ones
+                    state.ticketDetails = {
+                        ...state.ticketDetails,
+                        ...action.payload
+                    };
+                }
+            })
+            .addCase(fetchTicketsBySno.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string || action.error.message || 'Failed to fetch multiple tickets';
+            });
     },
 });
 

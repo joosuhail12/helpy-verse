@@ -119,7 +119,10 @@ const TicketListItem = ({
 
         <div className="relative">
           <TicketCard
-            ticket={ticket}
+            ticket={{
+              ...ticket,
+              customer: typeof ticket.customer === 'string' ? ticket.customer : ticket.customer?.name || ''
+            }}
             viewMode={viewMode}
             onCopyId={() => onCopyId(ticket.id)}
           />
