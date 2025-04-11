@@ -49,12 +49,19 @@ const CustomerContextPanel = ({ ticket }: CustomerContextPanelProps) => {
     [PanelSection.TIMELINE]: false
   });
 
-  // Fetch customer details when ticket changes - only if customerId is not available
+  // Check if we have embedded customer data directly in the ticket
+  const hasEmbeddedCustomer = ticket.customer && typeof ticket.customer === 'object';
+
+  console.log('Ticket customer data:', ticket.customer);
+  console.log('Has embedded customer data:', hasEmbeddedCustomer);
+
+  // Fetch customer details when ticket changes - only if customerId is not available and no embedded data
   useEffect(() => {
-    if (!ticket.customerId && ticket?.customer) {
+    if (!hasEmbeddedCustomer && !ticket.customerId && ticket?.customer && typeof ticket.customer === 'string') {
+      console.log(`🔍 CustomerContextPanel: Fetching legacy customer details for "${ticket.customer}"`);
       dispatch(fetchCustomerDetails(ticket.customer));
     }
-  }, [dispatch, ticket?.customer, ticket.customerId]);
+  }, [dispatch, ticket?.customer, ticket.customerId, hasEmbeddedCustomer]);
 
   // Log errors if any
   useEffect(() => {
@@ -71,14 +78,91 @@ const CustomerContextPanel = ({ ticket }: CustomerContextPanelProps) => {
     }));
   };
 
-  // Get final customer data (prioritize data from our cache if available)
-  const customerData = ticket.customerId ? customerFromCache : contactDetails;
-  const isLoadingCustomer = ticket.customerId ? isCustomerLoading : loading;
+  // Get final customer data with priority:
+  // 1. Embedded customer data from ticket
+  // 2. Data from our cache if customerId is available
+  // 3. Contact details from legacy approach
+  const customerData = hasEmbeddedCustomer
+    ? ticket.customer
+    : (ticket.customerId ? customerFromCache : contactDetails);
+
+  const isLoadingCustomer = hasEmbeddedCustomer
+    ? false
+    : (ticket.customerId ? isCustomerLoading : loading);
 
   // Memoize formatted customer data to prevent unnecessary recalculations
   const formattedCustomerData = useMemo(() => {
     if (!customerData) return null;
 
+    // If data is embedded in the ticket
+    if (hasEmbeddedCustomer) {
+      const embeddedCustomer = ticket.customer as any;
+      return {
+        id: embeddedCustomer.id || ticket.customerId || '',
+        name: embeddedCustomer.name ||
+          `${embeddedCustomer.firstname || ''} ${embeddedCustomer.lastname || ''}`.trim() ||
+          'Unknown Customer',
+        firstName: embeddedCustomer.firstname || embeddedCustomer.name?.split(' ')[0] || '',
+        lastName: embeddedCustomer.lastname || embeddedCustomer.name?.split(' ')[1] || '',
+        email: embeddedCustomer.email || '',
+        phone: embeddedCustomer.phone || '',
+        company: embeddedCustomer.company || ticket.company || '',
+        title: embeddedCustomer.title || '',
+        department: embeddedCustomer.department || '',
+        // Default values for fields that might not be present
+        timezone: embeddedCustomer.timezone || '',
+        linkedin: embeddedCustomer.linkedinUrl || '',
+        twitter: embeddedCustomer.twitterUrl || '',
+        language: embeddedCustomer.language || '',
+        accountValue: embeddedCustomer.accountValue || 0,
+        status: embeddedCustomer.status || 'active',
+        type: embeddedCustomer.type || '',
+        source: embeddedCustomer.source || '',
+        createdAt: embeddedCustomer.createdAt || new Date().toISOString(),
+        updatedAt: embeddedCustomer.updatedAt || new Date().toISOString(),
+        address: {
+          street: embeddedCustomer.street || '',
+          city: embeddedCustomer.city || '',
+          state: embeddedCustomer.state || '',
+          postalCode: embeddedCustomer.postalCode || '',
+          country: embeddedCustomer.country || ''
+        }
+      };
+    }
+
+    // For string-based customer (just an ID)
+    if (typeof customerData === 'string') {
+      return {
+        id: customerData,
+        name: customerData,
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: '',
+        company: ticket.company || '',
+        title: '',
+        department: '',
+        timezone: '',
+        linkedin: '',
+        twitter: '',
+        language: '',
+        accountValue: 0,
+        status: 'active',
+        type: '',
+        source: '',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        address: {
+          street: '',
+          city: '',
+          state: '',
+          postalCode: '',
+          country: ''
+        }
+      };
+    }
+
+    // Handle regular customer data from Redux or API
     return {
       id: customerData.id,
       name: `${customerData.firstname} ${customerData.lastname}`,
@@ -107,7 +191,7 @@ const CustomerContextPanel = ({ ticket }: CustomerContextPanelProps) => {
         country: customerData.country
       }
     };
-  }, [customerData]);
+  }, [customerData, ticket, hasEmbeddedCustomer]);
 
   // Sample timeline data - in a real app, this would come from an API
   const customerTimeline = [
@@ -144,13 +228,18 @@ const CustomerContextPanel = ({ ticket }: CustomerContextPanelProps) => {
 
   // Determine company information with proper fallback
   const companyInfo = useMemo(() => {
+    if (hasEmbeddedCustomer && (ticket.customer as any).company) {
+      return (ticket.customer as any).company;
+    }
     return customerData?.company || ticket.company || null;
-  }, [customerData, ticket.company]);
+  }, [customerData, ticket, hasEmbeddedCustomer]);
 
   // Loading indicator for header
   const customerDisplayName = isLoadingCustomer
     ? 'Loading...'
-    : formattedCustomerData?.name || ticket.customer || 'Unknown Customer';
+    : formattedCustomerData?.name ||
+    (typeof ticket.customer === 'string' ? ticket.customer : '') ||
+    'Unknown Customer';
 
   return (
     <Card className="h-full flex flex-col bg-white border-l">

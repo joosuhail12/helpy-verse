@@ -144,5 +144,19 @@ export const ticketService = {
             const errorMessage = error.response?.data?.message || error.message || 'Failed to update ticket';
             throw new Error(errorMessage);
         }
+    },
+
+    // ✅ Get ticket details by SNo
+    async fetchTicketBySno(sno: string | number): Promise<GetTicketResponse> {
+        try {
+            console.log(`Making GET request to ${API_URL}/${sno}`);
+            const response = await HttpClient.apiClient.get<GetTicketResponse>(
+                `${API_URL}/${sno}`
+            );
+            return response.data;
+        } catch (error) {
+            console.error(`Error fetching ticket with SNo ${sno}:`, error);
+            throw new Error(`Failed to fetch ticket with SNo ${sno}`);
+        }
     }
 }; 
