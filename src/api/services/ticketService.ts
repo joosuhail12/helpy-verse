@@ -1,6 +1,6 @@
+import { Message } from '@/components/inbox/types';
 import { HttpClient } from './HttpClient';
 import type { Ticket } from '@/types/ticket';
-
 const API_URL = '/ticket';
 
 export interface UpdateTicketResponse {
@@ -14,6 +14,17 @@ export interface GetTicketResponse {
     message: string;
     data: Ticket;
 }
+
+export interface GetConversationResponse {
+    status: string;
+    message: string;
+    data: Message[];
+}
+
+
+
+
+
 
 export const ticketService = {
     // Helper method to get a ticket's sno
@@ -143,6 +154,17 @@ export const ticketService = {
             // Use the error message from the API if available
             const errorMessage = error.response?.data?.message || error.message || 'Failed to update ticket';
             throw new Error(errorMessage);
+        }
+    },
+
+    //get conversation for a ticket
+    async getConversation(ticket_sno: string | number | any): Promise<GetConversationResponse> {
+        try {
+            const response = await HttpClient.apiClient.get<GetConversationResponse>(`${API_URL}/${ticket_sno}/conversation`);
+            return response.data;
+        } catch (error: any) {
+            console.error('Error getting conversation:', error);
+            throw new Error('Failed to get conversation');
         }
     }
 }; 

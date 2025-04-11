@@ -8,13 +8,13 @@ import { cn } from "@/lib/utils";
 
 interface MessageListProps {
   messages: Message[];
-  typingUsers?: string[];
+  typingUsers: string[];
   ticket: Ticket;
-  onReply: (content: string) => void;
-  isLoading?: boolean;
+  onReply: (message: string) => void;
+  isLoading: boolean;
 }
 
-const MessageList = ({ messages, typingUsers = [], ticket, onReply, isLoading }: MessageListProps) => {
+const MessageList = ({ messages, typingUsers, ticket, onReply, isLoading }: MessageListProps) => {
   if (isLoading) {
     return (
       <div className="flex-1 flex items-center justify-center">
@@ -22,7 +22,6 @@ const MessageList = ({ messages, typingUsers = [], ticket, onReply, isLoading }:
       </div>
     );
   }
-
   return (
     <ScrollArea className="flex-1 p-4">
       <div className="space-y-4">

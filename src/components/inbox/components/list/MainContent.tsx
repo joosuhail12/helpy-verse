@@ -10,7 +10,7 @@ import TicketListItem from '../TicketListItem';
 import { fetchCustomersForPage } from "@/store/slices/customers/customersSlice";
 import type { AppDispatch } from "@/store/store";
 import type { Ticket, SortField, ViewMode } from '@/types/ticket';
-
+import { getConversation, setCurrentTicket } from "@/store/slices/tickets/ticketsSlice";
 interface MainContentProps {
   isLoading: boolean;
   searchQuery: string;
@@ -88,6 +88,13 @@ const MainContent = ({
     loadCustomerData(paginatedTickets);
   }, [paginatedTickets, loadCustomerData]);
 
+  // on ticket click get conversation
+  const onTicketClickGetConversation = (ticket: Ticket) => {
+    dispatch(getConversation(ticket.id));
+    //set currentTicket in redux slice
+    dispatch(setCurrentTicket(ticket));
+    onTicketClick(ticket);
+  };
   // Pre-fetch customer data for adjacent pages when close to pagination boundary
   useEffect(() => {
     // If we're on the last item of the current page, pre-fetch next page data
@@ -98,7 +105,6 @@ const MainContent = ({
 
       loadCustomerData(nextPageTickets);
     }
-
     // If we're on the first item of a page beyond page 1, pre-fetch previous page data
     if (currentPage > 1) {
       const prevPageIndex = (currentPage - 2) * ITEMS_PER_PAGE;
@@ -164,7 +170,7 @@ const MainContent = ({
             {paginatedTickets.map((ticket) => (
               <div
                 key={ticket.id}
-                onClick={() => onTicketClick(ticket)}
+                onClick={() => onTicketClickGetConversation(ticket)}
                 className="transform transition-all duration-200 hover:-translate-y-0.5"
               >
                 <TicketListItem

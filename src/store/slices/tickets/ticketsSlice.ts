@@ -69,6 +69,20 @@ export const updateTicket = createAsyncThunk(
     }
 );
 
+//get conversation for a ticket
+export const getConversation = createAsyncThunk(
+    'tickets/getConversation',
+    async (ticket_sno: string | number | any, { rejectWithValue }) => {
+        try {
+            const response = await ticketService.getConversation(ticket_sno);
+            return response.data;
+        } catch (error: any) {
+            console.error('Unhandled error in getConversation thunk:', error);
+            return rejectWithValue(error.message || 'Failed to get conversation');
+        }
+    }
+);
+
 const ticketsSlice = createSlice({
     name: 'tickets',
     initialState,
@@ -108,7 +122,25 @@ const ticketsSlice = createSlice({
                 } else {
                     state.error = action.payload as string || action.error.message || 'Failed to update ticket';
                 }
-            });
+            })
+            //get conversation
+            .addCase(getConversation.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(getConversation.fulfilled, (state, action) => {
+                state.loading = false;
+                console.log('Get conversation fulfilled with payload:', action.payload);
+                console.log('Current ticket:', state.currentTicket, action.payload);
+                if (action.payload) {
+                    state.currentTicket.conversation = action.payload;
+                }
+            })
+            .addCase(getConversation.rejected, (state, action) => {
+                state.loading = false;
+                console.error('Get conversation rejected:', action);
+                state.error = action.payload as string || action.error.message || 'Failed to get conversation';
+            })
     },
 });
 

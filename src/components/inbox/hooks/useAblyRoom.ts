@@ -848,6 +848,7 @@ export const useAblyRoom = (ticket: Ticket) => {
         isSending,
         error,
         isInternalNote,
-        setIsInternalNote
+        setIsInternalNote,
+        setMessages
     };
 }; 

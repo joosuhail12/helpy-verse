@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import type { ConversationPanelProps } from './types';
@@ -10,8 +10,12 @@ import { useConversation } from './hooks/useConversation';
 import { cn } from "@/lib/utils";
 import AblyConnectionTest from '@/components/AblyConnectionTest';
 import { MessagesSquare } from "lucide-react";
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store/store';
 
 const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
+  const currentTicket = useSelector((state: RootState) => state.tickets.currentTicket);
+
   const {
     messages,
     newMessage,
@@ -24,9 +28,16 @@ const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
     error,
     isSending,
     isInternalNote,
-    setIsInternalNote
+    setIsInternalNote,
+    setMessages
   } = useConversation(ticket);
 
+  // Use the conversation from the currentTicket if available
+  const conversationMessages = currentTicket?.conversation || [];
+  console.log('conversationMessages', conversationMessages, currentTicket);
+  useEffect(() => {
+    setMessages(conversationMessages);
+  }, [conversationMessages]);
   const handleKeyPress = async (e: React.KeyboardEvent<HTMLDivElement>) => {
     console.log("Key press in ConversationPanel:", e.key);
 
@@ -86,7 +97,7 @@ const ConversationPanel = ({ ticket, onClose }: ConversationPanelProps) => {
           </div>
         ) : (
           <MessageList
-            messages={messages}
+            messages={messages ?? []}
             typingUsers={typingUsers}
             ticket={ticket}
             onReply={setNewMessage}

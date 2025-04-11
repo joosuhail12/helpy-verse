@@ -16,7 +16,8 @@ export const useConversation = (ticket: Ticket) => {
     isSending,
     error,
     isInternalNote,
-    setIsInternalNote
+    setIsInternalNote,
+    setMessages
   } = useAblyRoom(ticket);
 
   // Wrap the handleSendMessage function with additional logging
@@ -43,6 +44,7 @@ export const useConversation = (ticket: Ticket) => {
     isSending,
     error,
     isInternalNote,
-    setIsInternalNote
+    setIsInternalNote,
+    setMessages
   };
 };

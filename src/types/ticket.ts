@@ -1,3 +1,5 @@
+import { Message } from "@/components/inbox/types";
+
 export interface Ticket {
   id: string;
   ticket_sno?: string;
@@ -25,6 +27,7 @@ export interface Ticket {
   externalId?: string;
   description?: string;
   summary?: string;
+  conversation?: Message[];
 }
 
 export type SortField = 'date' | 'priority' | 'status';
