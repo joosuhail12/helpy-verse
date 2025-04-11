@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+
+import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import {
@@ -66,6 +67,37 @@ import {
 
 import './components/workflow-builder/styles/workflow-builder.css';
 
+const nodeTypes = {
+  trigger: TriggerNode,
+  message: MessageNode,
+  condition: ConditionNode,
+  action: ActionNode,
+  end: EndNode
+} as NodeTypes;
+
+const availableNodeTypes: { type: NodeType; label: string; description: string }[] = [
+  { type: 'message', label: 'Message', description: 'Send a message to the customer' },
+  { type: 'data_collection', label: 'Data Collection', description: 'Collect data from the customer' },
+  { type: 'condition', label: 'Condition', description: 'Branch based on conditions' },
+  { type: 'chatbot_answer', label: 'Let Chatbot Answer', description: 'Let the chatbot handle the response' },
+  { type: 'copilot_action', label: 'Let AI copilot handle the next steps', description: 'Let AI copilot handle the next steps' },
+  { type: 'assign_ticket', label: 'Assign Ticket', description: 'Assign the ticket to a teammate' },
+  { type: 'collect_reply', label: 'Collect Customer Reply', description: 'Wait for customer to reply' },
+  { type: 'reusable_workflow', label: 'Pass to Reusable Workflow', description: 'Use another workflow' },
+  { type: 'show_reply_time', label: 'Show Expected Reply Time', description: 'Display expected reply time' },
+  { type: 'ask_csat', label: 'Ask for CSAT', description: 'Request customer satisfaction rating' },
+  { type: 'tag_ticket', label: 'Tag Ticket', description: 'Add tags to the ticket' },
+  { type: 'update_ticket', label: 'Update Ticket Data', description: 'Update ticket information' },
+  { type: 'wait', label: 'Wait', description: 'Pause the workflow for some time' },
+  { type: 'add_note', label: 'Add Note', description: 'Add an internal note' },
+  { type: 'end', label: 'End Workflow', description: 'End the workflow execution' }
+];
+
+const getNodePosition = (): XYPosition => ({
+  x: window.innerWidth / 2 - 75,
+  y: window.innerHeight / 3
+});
+
 const WorkflowBuilder: React.FC = () => {
   const { workflowId } = useParams<{ workflowId: string }>();
   const location = useLocation();
@@ -78,7 +110,6 @@ const WorkflowBuilder: React.FC = () => {
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [isPublished, setIsPublished] = useState<boolean>(false);
   const [snapToGrid, setSnapToGrid] = useState<boolean>(true);
-  const [gridSize, setGridSize] = useState<string>('15');
   const [snapGrid, setSnapGrid] = useState<[number, number]>([15, 15]);
   const [currentZoom, setCurrentZoom] = useState<number>(1);
   
@@ -87,15 +118,6 @@ const WorkflowBuilder: React.FC = () => {
   
   const [triggerDrawerOpen, setTriggerDrawerOpen] = useState<boolean>(false);
   const [selectedNode, setSelectedNode] = useState<Node<WorkflowNodeData> | null>(null);
-  
-  useEffect(() => {
-    document.documentElement.style.setProperty('--grid-size', `${gridSize}px`);
-  }, [gridSize]);
-  
-  useEffect(() => {
-    const size = parseInt(gridSize, 10);
-    setSnapGrid([size, size]);
-  }, [gridSize]);
   
   const onConnect = useCallback(
     (connection: Connection) => {
@@ -151,13 +173,6 @@ const WorkflowBuilder: React.FC = () => {
       data: newNodeData
     };
     
-    console.log('Adding new node:', {
-      type,
-      id,
-      sourceNodeId,
-      position: newNode.position
-    });
-    
     setNodes(nodes => [...nodes, newNode]);
     
     if (sourceNodeId) {
@@ -189,45 +204,7 @@ const WorkflowBuilder: React.FC = () => {
     }
     
     return id;
-  }, [setNodes, setEdges, nodes, edges, availableNodeTypes]);
-  
-  const nodeTypes = useMemo(() => ({
-    trigger: (props: any) => (
-      <TriggerNode 
-        {...props}
-        addNode={addNode} 
-        availableNodeTypes={availableNodeTypes}
-      />
-    ),
-    message: (props: any) => (
-      <MessageNode 
-        {...props}
-        addNode={addNode} 
-        availableNodeTypes={availableNodeTypes}
-      />
-    ),
-    condition: (props: any) => (
-      <ConditionNode 
-        {...props}
-        addNode={addNode} 
-        availableNodeTypes={availableNodeTypes}
-      />
-    ),
-    action: (props: any) => (
-      <ActionNode 
-        {...props}
-        addNode={addNode} 
-        availableNodeTypes={availableNodeTypes}
-      />
-    ),
-    end: (props: any) => (
-      <EndNode 
-        {...props}
-        addNode={addNode} 
-        availableNodeTypes={availableNodeTypes}
-      />
-    ),
-  }), [addNode, availableNodeTypes]);
+  }, [setNodes, setEdges, nodes, edges]);
   
   useEffect(() => {
     console.log('WorkflowBuilder rendering with workflowId:', workflowId);
@@ -326,10 +303,11 @@ const WorkflowBuilder: React.FC = () => {
     setSnapToGrid(value);
   }, []);
 
-  const handleGridSizeChange = useCallback((size: string) => {
-    setGridSize(size);
+  const updateSnapGrid = useCallback((size: number) => {
+    setSnapGrid([size, size]);
   }, []);
 
+  // Auto layout functionality
   const handleAutoLayout = useCallback(() => {
     if (!nodes.length) return;
     
@@ -339,10 +317,12 @@ const WorkflowBuilder: React.FC = () => {
       end: nodes.filter(node => node.type === 'end')
     };
     
+    // Start with identifying the root node(s) (typically trigger nodes)
     const rootNodes = nodesByType.trigger.length > 0 
       ? nodesByType.trigger 
-      : [nodes[0]];
-    
+      : [nodes[0]]; // If no trigger node, use the first node
+      
+    // Create a map of node connections (which node connects to which)
     const nodeConnections = new Map();
     edges.forEach(edge => {
       if (!nodeConnections.has(edge.source)) {
@@ -351,6 +331,7 @@ const WorkflowBuilder: React.FC = () => {
       nodeConnections.get(edge.source).push(edge.target);
     });
     
+    // Function to get all connected nodes in order (breadth-first traversal)
     const getConnectedNodesInOrder = (startNodeIds: string[]) => {
       const visited = new Set();
       const result: string[] = [];
@@ -374,15 +355,19 @@ const WorkflowBuilder: React.FC = () => {
       return result;
     };
     
+    // Get nodes in traversal order
     const orderedNodeIds = getConnectedNodesInOrder(rootNodes.map(n => n.id));
     
+    // Calculate positions for each node
     const HORIZONTAL_SPACING = 250;
     const VERTICAL_SPACING = 150;
     const MAX_NODES_PER_LEVEL = 3;
     
+    // Group nodes into levels based on their distance from root
     const nodeLevels: Record<number, string[]> = {};
     const nodeDistances = new Map();
     
+    // Calculate distance from root for each node
     orderedNodeIds.forEach((nodeId, index) => {
       const level = Math.floor(index / MAX_NODES_PER_LEVEL);
       if (!nodeLevels[level]) {
@@ -392,15 +377,17 @@ const WorkflowBuilder: React.FC = () => {
       nodeDistances.set(nodeId, level);
     });
     
+    // Position nodes based on their level
     const newNodes = nodes.map(node => {
       const level = nodeDistances.get(node.id) || 0;
       const levelNodes = nodeLevels[level] || [];
       const indexInLevel = levelNodes.indexOf(node.id);
       
       if (indexInLevel === -1) {
-        return node;
+        return node; // Keep original position if node wasn't in our traversal
       }
       
+      // Calculate new position
       const x = 100 + (level * HORIZONTAL_SPACING);
       const y = 100 + (indexInLevel * VERTICAL_SPACING);
       
@@ -414,15 +401,6 @@ const WorkflowBuilder: React.FC = () => {
     setTimeout(() => reactFlowInstance.fitView({ padding: 0.2 }), 50);
     toast.success('Workflow auto-arranged');
   }, [nodes, edges, reactFlowInstance, setNodes]);
-
-  const flowClassName = useMemo(() => {
-    return `workflow-builder ${snapToGrid ? 'snap-active' : ''}`;
-  }, [snapToGrid]);
-
-  const getNodePosition = (): XYPosition => ({
-    x: window.innerWidth / 2 - 75,
-    y: window.innerHeight / 3
-  });
 
   return (
     <div className="flex flex-col h-screen w-full">
@@ -481,18 +459,17 @@ const WorkflowBuilder: React.FC = () => {
           snapToGrid={snapToGrid}
           snapGrid={snapGrid}
           fitView
-          className={flowClassName}
+          className={`workflow-builder ${snapToGrid ? 'snap-active' : ''}`}
           onViewportChange={onViewportChange}
-          connectionLineStyle={{ strokeWidth: 2, stroke: '#888', strokeDasharray: '5' }}
         >
-          <Background gap={parseInt(gridSize)} size={1} />
+          <Background gap={snapGrid[0]} size={1} />
           <Controls showInteractive={false} />
           <WorkspaceControls 
             snapToGrid={snapToGrid}
             setSnapToGrid={handleSnapToGridToggle}
             onFitView={handleFitView}
-            gridSize={gridSize}
-            setGridSize={handleGridSizeChange}
+            gridSize={String(snapGrid[0])}
+            setGridSize={(size) => updateSnapGrid(parseInt(size))}
             onAutoLayout={handleAutoLayout}
           />
         </ReactFlow>
@@ -527,27 +504,18 @@ const WorkflowBuilder: React.FC = () => {
           onCancel={() => setSelectedNode(null)}
         />
       )}
+      
+      {nodes.map(node => (
+        <NodeSelector
+          key={`selector-${node.id}`}
+          nodeId={node.id}
+          addNode={addNode}
+          availableNodeTypes={availableNodeTypes}
+        />
+      ))}
     </div>
   );
 };
-
-const availableNodeTypes: { type: NodeType; label: string; description: string }[] = [
-  { type: 'message', label: 'Message', description: 'Send a message to the customer' },
-  { type: 'data_collection', label: 'Data Collection', description: 'Collect data from the customer' },
-  { type: 'condition', label: 'Condition', description: 'Branch based on conditions' },
-  { type: 'chatbot_answer', label: 'Let Chatbot Answer', description: 'Let the chatbot handle the response' },
-  { type: 'copilot_action', label: 'Let AI copilot handle the next steps', description: 'Let AI copilot handle the next steps' },
-  { type: 'assign_ticket', label: 'Assign Ticket', description: 'Assign the ticket to a teammate' },
-  { type: 'collect_reply', label: 'Collect Customer Reply', description: 'Wait for customer to reply' },
-  { type: 'reusable_workflow', label: 'Pass to Reusable Workflow', description: 'Use another workflow' },
-  { type: 'show_reply_time', label: 'Show Expected Reply Time', description: 'Display expected reply time' },
-  { type: 'ask_csat', label: 'Ask for CSAT', description: 'Request customer satisfaction rating' },
-  { type: 'tag_ticket', label: 'Tag Ticket', description: 'Add tags to the ticket' },
-  { type: 'update_ticket', label: 'Update Ticket Data', description: 'Update ticket information' },
-  { type: 'wait', label: 'Wait', description: 'Pause the workflow for some time' },
-  { type: 'add_note', label: 'Add Note', description: 'Add an internal note' },
-  { type: 'end', label: 'End Workflow', description: 'End the workflow execution' }
-];
 
 const WorkflowBuilderPage: React.FC = () => {
   console.log('Rendering WorkflowBuilderPage with ReactFlowProvider');

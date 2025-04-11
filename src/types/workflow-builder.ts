@@ -20,9 +20,6 @@ export type NodeType =
   | 'end'
   | 'action';
 
-// Define category type for NodeSelector properly as a string literal type
-export type NodeCategory = 'messaging' | 'conditions' | 'tickets' | 'time' | 'data' | 'all';
-
 export interface WorkflowTriggerConfig {
   channels: {
     chat: boolean;
@@ -73,11 +70,9 @@ export interface WorkflowNodeData {
   [key: string]: unknown;
 }
 
-// Define our custom NodeProps type with the new properties for add buttons
+// Define our custom NodeProps type
 export type NodeProps = Omit<ReactFlowNodeProps, 'data'> & {
   data?: WorkflowNodeData;
-  addNode?: (type: NodeType, sourceNodeId: string) => string;
-  availableNodeTypes?: { type: NodeType; label: string; description: string }[];
 };
 
 // Export WorkflowNode type

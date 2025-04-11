@@ -1,176 +1,178 @@
 
-import React, { useState, useCallback, useMemo } from 'react';
-import { useReactFlow, Position } from '@xyflow/react';
-import { Plus } from 'lucide-react';
+import React, { useState } from 'react';
+import { useReactFlow, getOutgoers, getConnectedEdges } from '@xyflow/react';
+import { 
+  Plus, 
+  MessageSquare, 
+  GitBranch, 
+  Cog,
+  Database,
+  Bot,
+  User,
+  MessageCircle,
+  Share2,
+  Clock,
+  Star,
+  Tag,
+  FileEdit,
+  AlertCircle,
+  Square
+} from 'lucide-react';
 import {
   Popover,
   PopoverContent,
-  PopoverTrigger,
+  PopoverTrigger
 } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { NodeType, NodeCategory } from '@/types/workflow-builder';
-import { cn } from '@/lib/utils';
+import { NodeType } from '@/types/workflow-builder';
 
 interface NodeSelectorProps {
   nodeId: string;
   addNode: (type: NodeType, sourceNodeId: string) => string;
   availableNodeTypes: { type: NodeType; label: string; description: string }[];
-  position?: 'bottom' | 'inline';
-  offsetX?: number;
-  offsetY?: number;
-  isOpen?: boolean;
-  onOpenChange?: (open: boolean) => void;
 }
 
-export const NodeSelector: React.FC<NodeSelectorProps> = ({ 
-  nodeId, 
-  addNode, 
-  availableNodeTypes,
-  position = 'bottom',
-  offsetX = 0,
-  offsetY = 0,
-  isOpen,
-  onOpenChange
-}) => {
-  const [open, setOpen] = useState(isOpen || false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [activeCategory, setActiveCategory] = useState<NodeCategory>('all');
+export const NodeSelector: React.FC<NodeSelectorProps> = ({ nodeId, addNode, availableNodeTypes }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const { getNode, getNodes, getEdges } = useReactFlow();
+  const currentNode = getNode(nodeId);
   
-  const reactFlowInstance = useReactFlow();
+  // Don't render if the node doesn't exist or is an end node
+  if (!currentNode || currentNode.type === 'end') {
+    return null;
+  }
   
-  const sourceNode = useMemo(() => {
-    const nodes = reactFlowInstance.getNodes();
-    return nodes.find((n) => n.id === nodeId);
-  }, [nodeId, reactFlowInstance]);
+  // Check if this node already has outgoing connections
+  const connectedEdges = getConnectedEdges([currentNode], getEdges());
+  const outgoers = getOutgoers(currentNode, getNodes(), getEdges());
   
-  // This function merges internal and external state
-  const handleOpenChange = (newOpenState: boolean) => {
-    console.log(`NodeSelector open state changing to: ${newOpenState}`);
-    setOpen(newOpenState);
-    if (onOpenChange) onOpenChange(newOpenState);
+  // Condition nodes have two outputs (yes/no), other nodes have just one
+  // If it's not a condition node and already has an outgoing connection, don't show selector
+  if (currentNode.type !== 'condition' && outgoers.length > 0) {
+    return null;
+  }
+  
+  // For condition nodes, check if both outputs are already connected
+  if (currentNode.type === 'condition') {
+    const yesConnection = connectedEdges.some(edge => 
+      edge.source === nodeId && edge.sourceHandle === 'yes'
+    );
+    const noConnection = connectedEdges.some(edge => 
+      edge.source === nodeId && edge.sourceHandle === 'no'
+    );
+    
+    if (yesConnection && noConnection) {
+      return null;
+    }
+  }
+  
+  // Filter node types based on search term
+  const filteredNodeTypes = availableNodeTypes.filter(nodeType => 
+    nodeType.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    nodeType.description.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // Get icon based on node type
+  const getNodeIcon = (type: NodeType) => {
+    switch (type) {
+      case 'message':
+        return <MessageSquare size={16} />;
+      case 'condition':
+        return <GitBranch size={16} />;
+      case 'data_collection':
+        return <Database size={16} />;
+      case 'chatbot_answer':
+        return <Bot size={16} />;
+      case 'copilot_action':
+        return <Bot size={16} />;
+      case 'assign_ticket':
+        return <User size={16} />;
+      case 'collect_reply':
+        return <MessageCircle size={16} />;
+      case 'reusable_workflow':
+        return <Share2 size={16} />;
+      case 'show_reply_time':
+        return <AlertCircle size={16} />;
+      case 'ask_csat':
+        return <Star size={16} />;
+      case 'tag_ticket':
+        return <Tag size={16} />;
+      case 'update_ticket':
+        return <FileEdit size={16} />;
+      case 'wait':
+        return <Clock size={16} />;
+      case 'add_note':
+        return <MessageCircle size={16} />;
+      case 'end':
+        return <Square size={16} />;
+      default:
+        return <Cog size={16} />;
+    }
   };
   
-  // Create a memoized map of node types by category
-  const nodesByCategory = useMemo(() => {
-    const categorizedNodes = {
-      'all': availableNodeTypes,
-      'messaging': availableNodeTypes.filter(node => 
-        ['message', 'data_collection', 'chatbot_answer', 'collect_reply', 'show_reply_time', 'ask_csat'].includes(node.type)),
-      'conditions': availableNodeTypes.filter(node => 
-        ['condition'].includes(node.type)),
-      'tickets': availableNodeTypes.filter(node => 
-        ['assign_ticket', 'tag_ticket', 'update_ticket', 'add_note'].includes(node.type)),
-      'time': availableNodeTypes.filter(node => 
-        ['wait'].includes(node.type)),
-      'data': availableNodeTypes.filter(node => 
-        ['reusable_workflow', 'copilot_action'].includes(node.type)),
-    } as Record<NodeCategory, { type: NodeType; label: string; description: string }[]>;
-    
-    return categorizedNodes;
-  }, [availableNodeTypes]);
-
-  // Apply search filter consistently
-  const filteredNodes = useMemo(() => {
-    if (!searchQuery) {
-      return nodesByCategory[activeCategory] || [];
-    }
-    
-    const query = searchQuery.toLowerCase().trim();
-    const nodesToSearch = activeCategory === 'all' 
-      ? availableNodeTypes 
-      : nodesByCategory[activeCategory] || [];
-      
-    return nodesToSearch.filter(node => 
-      node.label.toLowerCase().includes(query) || 
-      node.description.toLowerCase().includes(query)
-    );
-  }, [searchQuery, activeCategory, nodesByCategory, availableNodeTypes]);
-  
-  // Using explicit type for the handleNodeSelect parameter
-  const handleNodeSelect = useCallback((type: NodeType) => {
-    if (sourceNode) {
-      console.log(`Selected node type: ${type} for source node: ${sourceNode.id}`);
-      addNode(type, sourceNode.id);
-      handleOpenChange(false);
-    }
-  }, [sourceNode, addNode]);
-  
-  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
-  }, []);
-  
-  const handleCategoryChange = useCallback((category: string) => {
-    setActiveCategory(category as NodeCategory);
-  }, []);
-  
-  // Only render if we have a source node
-  if (!sourceNode) return null;
-
-  // Use controlled popover component
   return (
-    <div className="node-selector">
-      <Popover open={open} onOpenChange={handleOpenChange}>
-        <PopoverContent 
-          className="w-80 p-0 z-50" 
-          align="start"
-          sideOffset={5}
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button
+          size="sm"
+          variant="outline"
+          className="absolute flex items-center justify-center rounded-full w-8 h-8 bg-primary text-primary-foreground shadow-md hover:shadow-lg transition-all"
+          style={{
+            top: currentNode.position.y + 120, // Position below the node
+            left: currentNode.position.x + 75, // Center horizontally
+            zIndex: 10,
+            padding: 0
+          }}
         >
-          <div className="p-4 border-b">
-            <h3 className="font-medium mb-1">Add next node</h3>
-            <Input 
-              placeholder="Search node types..." 
-              value={searchQuery}
-              onChange={handleSearchChange}
-              className="mt-2"
-            />
-          </div>
+          <Plus size={14} />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-80 p-4" align="center">
+        <div className="space-y-4">
+          <h3 className="font-medium text-sm">Add Next Step</h3>
           
-          <Tabs 
-            defaultValue="all" 
-            value={activeCategory}
-            onValueChange={handleCategoryChange}
-            className="w-full"
-          >
-            <div className="px-4 pt-2">
-              <TabsList className="w-full grid grid-cols-6 h-auto gap-1 bg-transparent">
-                <TabsTrigger value="all" className="text-xs py-1 h-auto">All</TabsTrigger>
-                <TabsTrigger value="messaging" className="text-xs py-1 h-auto">Messages</TabsTrigger>
-                <TabsTrigger value="conditions" className="text-xs py-1 h-auto">Logic</TabsTrigger>
-                <TabsTrigger value="tickets" className="text-xs py-1 h-auto">Tickets</TabsTrigger>
-                <TabsTrigger value="time" className="text-xs py-1 h-auto">Time</TabsTrigger>
-                <TabsTrigger value="data" className="text-xs py-1 h-auto">Data</TabsTrigger>
-              </TabsList>
-            </div>
-            
-            <ScrollArea className="h-[300px] py-2">
-              <div className="p-2">
-                {filteredNodes.length === 0 ? (
-                  <div className="text-center py-4 text-sm text-muted-foreground">
-                    No node types found for "{searchQuery}"
-                  </div>
-                ) : (
-                  filteredNodes.map((node) => (
-                    <button
-                      key={node.type}
-                      className={cn(
-                        "w-full text-left px-3 py-2 rounded-md hover:bg-muted transition-colors mb-1",
-                        "focus:outline-none focus:ring-2 focus:ring-muted-foreground"
-                      )}
-                      onClick={() => handleNodeSelect(node.type)}
-                    >
-                      <div className="font-medium text-sm">{node.label}</div>
-                      <div className="text-xs text-muted-foreground">{node.description}</div>
-                    </button>
-                  ))
-                )}
-              </div>
-            </ScrollArea>
-          </Tabs>
-        </PopoverContent>
-      </Popover>
-    </div>
+          <Input
+            placeholder="Search node types..."
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            className="mb-2"
+          />
+          
+          <div className="max-h-[300px] overflow-y-auto space-y-2">
+            {filteredNodeTypes.map(nodeType => (
+              <Button
+                key={nodeType.type}
+                variant="ghost"
+                className="w-full justify-start text-left flex items-center gap-2 h-auto py-2"
+                onClick={() => {
+                  // Handle different connection points for condition nodes
+                  if (currentNode.type === 'condition') {
+                    const yesConnection = connectedEdges.some(edge => 
+                      edge.source === nodeId && edge.sourceHandle === 'yes'
+                    );
+                    const sourceHandle = !yesConnection ? 'yes' : 'no';
+                    // For condition nodes, we need to add the connection manually
+                    const newNodeId = addNode(nodeType.type, nodeId);
+                    // Connection is handled in addNode function
+                  } else {
+                    // Regular nodes have a single output
+                    addNode(nodeType.type, nodeId);
+                  }
+                }}
+              >
+                <span className="flex items-center justify-center w-8 h-8 bg-muted rounded-md">
+                  {getNodeIcon(nodeType.type)}
+                </span>
+                <div className="flex flex-col">
+                  <span>{nodeType.label}</span>
+                  <span className="text-xs text-muted-foreground">{nodeType.description}</span>
+                </div>
+              </Button>
+            ))}
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 };
