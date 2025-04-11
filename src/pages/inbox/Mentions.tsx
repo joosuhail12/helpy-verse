@@ -219,6 +219,7 @@ const MentionsPage = () => {
           <TicketList
             tickets={tickets}
             isLoading={loading}
+            hideQuickFilters={true}
           />
         )}
       </div>

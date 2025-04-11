@@ -23,9 +23,14 @@ const ITEMS_PER_PAGE = 5;
 interface TicketListProps {
   tickets?: Ticket[];
   isLoading?: boolean;
+  hideQuickFilters?: boolean;
 }
 
-const TicketList = ({ tickets: propTickets = [], isLoading: propLoading = false }: TicketListProps) => {
+const TicketList = ({
+  tickets: propTickets = [],
+  isLoading: propLoading = false,
+  hideQuickFilters = false
+}: TicketListProps) => {
   const dispatch = useAppDispatch();
   const { ticketDetails, loading: storeLoading, error } = useAppSelector(state => state.tickets);
 
@@ -115,7 +120,9 @@ const TicketList = ({ tickets: propTickets = [], isLoading: propLoading = false 
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between px-6 py-3 bg-white border-b">
-        <h2 className="text-xl font-semibold text-gray-900">All Tickets</h2>
+        <h2 className="text-xl font-semibold text-gray-900">
+          {hideQuickFilters ? "Mentions" : "All Tickets"}
+        </h2>
       </div>
 
       <div className="flex flex-1 min-h-0">
@@ -143,6 +150,7 @@ const TicketList = ({ tickets: propTickets = [], isLoading: propLoading = false 
           markAsUnread={markAsUnread}
           onTicketClick={setSelectedTicketForChat}
           selectedTicketForChat={selectedTicketForChat}
+          hideQuickFilters={hideQuickFilters}
         />
 
         <ConversationPanelContainer

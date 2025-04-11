@@ -35,6 +35,7 @@ interface MainContentProps {
   markAsUnread: (ids: string[]) => void;
   onTicketClick: (ticket: Ticket) => void;
   selectedTicketForChat: Ticket | null;
+  hideQuickFilters?: boolean;
 }
 
 const ITEMS_PER_PAGE = 5;
@@ -63,6 +64,7 @@ const MainContent = ({
   markAsUnread,
   onTicketClick,
   selectedTicketForChat,
+  hideQuickFilters = false,
 }: MainContentProps) => {
   const { toast } = useToast();
   const dispatch = useDispatch<AppDispatch>();
@@ -137,6 +139,7 @@ const MainContent = ({
               setStatusFilter={setStatusFilter}
               priorityFilter={priorityFilter}
               setPriorityFilter={setPriorityFilter}
+              hideQuickFilters={hideQuickFilters}
             />
 
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-4 border-t">

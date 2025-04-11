@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Search, Filter, ChevronUp, ChevronDown } from 'lucide-react';
 import { Input } from "@/components/ui/input";
@@ -25,6 +24,7 @@ interface FilterBarProps {
   setStatusFilter: (status: string) => void;
   priorityFilter: string;
   setPriorityFilter: (priority: string) => void;
+  hideQuickFilters?: boolean;
 }
 
 const FilterBar = ({
@@ -34,8 +34,9 @@ const FilterBar = ({
   setStatusFilter,
   priorityFilter,
   setPriorityFilter,
+  hideQuickFilters = false,
 }: FilterBarProps) => {
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(!hideQuickFilters);
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="space-y-4">
@@ -93,7 +94,7 @@ const FilterBar = ({
                   </Select>
                 </div>
               </TabsContent>
-              
+
               <TabsContent value="advanced" className="space-y-4">
                 <div className="space-y-2">
                   <h4 className="font-medium text-sm">Advanced Search</h4>
@@ -107,53 +108,54 @@ const FilterBar = ({
           </PopoverContent>
         </Popover>
 
-        <CollapsibleTrigger asChild>
-          <Button variant="ghost" size="icon" className="h-10 w-10">
-            {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-          </Button>
-        </CollapsibleTrigger>
+        {!hideQuickFilters && (
+          <CollapsibleTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-10 w-10">
+              {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            </Button>
+          </CollapsibleTrigger>
+        )}
       </div>
 
-      <CollapsibleContent className="space-y-4">
-        <div className="flex flex-wrap gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setStatusFilter('assigned_to_me')}
-            className={`rounded-full text-xs px-4 hover:bg-primary/5 ${
-              statusFilter === 'assigned_to_me' 
-                ? 'bg-primary/10 text-primary border-primary/20' 
+      {!hideQuickFilters && (
+        <CollapsibleContent className="space-y-4">
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setStatusFilter('assigned_to_me')}
+              className={`rounded-full text-xs px-4 hover:bg-primary/5 ${statusFilter === 'assigned_to_me'
+                ? 'bg-primary/10 text-primary border-primary/20'
                 : 'border-gray-200'
-            }`}
-          >
-            Assigned to me
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setStatusFilter('unassigned')}
-            className={`rounded-full text-xs px-4 hover:bg-primary/5 ${
-              statusFilter === 'unassigned' 
-                ? 'bg-primary/10 text-primary border-primary/20' 
+                }`}
+            >
+              Assigned to me
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setStatusFilter('unassigned')}
+              className={`rounded-full text-xs px-4 hover:bg-primary/5 ${statusFilter === 'unassigned'
+                ? 'bg-primary/10 text-primary border-primary/20'
                 : 'border-gray-200'
-            }`}
-          >
-            Unassigned
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setStatusFilter('overdue')}
-            className={`rounded-full text-xs px-4 hover:bg-primary/5 ${
-              statusFilter === 'overdue' 
-                ? 'bg-primary/10 text-primary border-primary/20' 
+                }`}
+            >
+              Unassigned
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setStatusFilter('overdue')}
+              className={`rounded-full text-xs px-4 hover:bg-primary/5 ${statusFilter === 'overdue'
+                ? 'bg-primary/10 text-primary border-primary/20'
                 : 'border-gray-200'
-            }`}
-          >
-            Overdue
-          </Button>
-        </div>
-      </CollapsibleContent>
+                }`}
+            >
+              Overdue
+            </Button>
+          </div>
+        </CollapsibleContent>
+      )}
     </Collapsible>
   );
 };
