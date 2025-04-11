@@ -20,6 +20,7 @@ const Home = lazy(() => import(/* webpackChunkName: "home" */ "./pages/Dashboard
 const AllTickets = lazy(() => import(/* webpackChunkName: "all-tickets" */ "./pages/inbox/All"));
 const Mentions = lazy(() => import(/* webpackChunkName: "mentions" */ "./pages/inbox/Mentions"));
 const YourInbox = lazy(() => import(/* webpackChunkName: "your-inbox" */ "./pages/inbox/YourInbox"));
+const Unassigned = lazy(() => import(/* webpackChunkName: "unassigned" */ "./pages/inbox/Unassigned"));
 const AllContacts = lazy(() => import(/* webpackChunkName: "all-contacts" */ "./pages/contacts/All"));
 const ContactDetail = lazy(() => import(/* webpackChunkName: "contact-detail" */ "./pages/contacts/Detail"));
 const Tags = lazy(() => import(/* webpackChunkName: "tags" */ "./pages/settings/Tags"));
@@ -120,6 +121,7 @@ const App = () => (
                     <Route path="inbox/all" element={<AllTickets />} />
                     <Route path="inbox/mentions" element={<Mentions />} />
                     <Route path="inbox/your-inbox" element={<YourInbox />} />
+                    <Route path="inbox/unassigned" element={<Unassigned />} />
                     <Route path="contacts/all" element={<AllContacts />} />
                     <Route path="contacts/companies" element={<Companies />} />
                     <Route path="contacts/companies/:id" element={<CompanyDetail />} />
