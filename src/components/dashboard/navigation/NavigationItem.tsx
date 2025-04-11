@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/tooltip";
 import { NavigationItem as NavItemType } from '../types/navigation';
 import TeamNavigationItem from './TeamNavigationItem';
+import TeammateNavigationItem from './TeammateNavigationItem';
 
 interface NavigationItemProps {
   item: NavItemType;
@@ -35,6 +36,22 @@ const NavigationItem = ({
   if (item.loadDynamicChildren && item.title === "Teams") {
     return (
       <TeamNavigationItem
+        item={item}
+        isSecondPanelCollapsed={isSecondPanelCollapsed}
+        expandedItems={expandedItems}
+        toggleExpanded={toggleExpanded}
+        hasActiveChild={hasActiveChild}
+        isItemActive={isItemActive}
+        navigate={navigate}
+        filterMenuItems={filterMenuItems}
+      />
+    );
+  }
+
+  // For Teammates item with loadDynamicChildren flag, use the TeammateNavigationItem
+  if (item.loadDynamicChildren && item.title === "Teammates") {
+    return (
+      <TeammateNavigationItem
         item={item}
         isSecondPanelCollapsed={isSecondPanelCollapsed}
         expandedItems={expandedItems}

@@ -11,6 +11,7 @@ import CaslProvider from "./components/CaslProvider";
 import { getCookie } from "./utils/helpers/helpers";
 import AblyTest from './pages/AblyTest';
 import { TeamsProvider } from "./contexts/TeamsContext";
+import { TeammatesProvider } from "./contexts/TeammatesContext";
 
 // Lazy load components with explicit chunk names
 const SignIn = lazy(() => import(/* webpackChunkName: "signin" */ "./pages/SignIn"));
@@ -52,6 +53,7 @@ const CreateAction = lazy(() => import(/* webpackChunkName: "create-action" */ "
 const ChatbotProfiles = lazy(() => import(/* webpackChunkName: "chatbot-profiles" */ "./pages/automation/ChatbotProfiles"));
 const TeamList = lazy(() => import(/* webpackChunkName: "team-list" */ "./pages/inbox/TeamList"));
 const TeamView = lazy(() => import(/* webpackChunkName: "team-view" */ "./pages/inbox/TeamView"));
+const TeammatePage = lazy(() => import(/* webpackChunkName: "teammate-page" */ "./pages/inbox/TeammatePage"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -108,58 +110,61 @@ const App = () => (
           <ErrorBoundary>
             <CaslProvider>
               <TeamsProvider>
-                <Suspense fallback={<LoadingFallback />}>
-                  <Routes>
-                    <Route path="/" element={<RootComponent />} />
-                    <Route path="/sign-in" element={<SignIn />} />
-                    <Route path="/sign-up" element={<SignUp />} />
-                    <Route path="/forgot-password" element={<ForgotPassword />} />
-                    <Route
-                      path="/home/*"
-                      element={
+                <TeammatesProvider>
+                  <Suspense fallback={<LoadingFallback />}>
+                    <Routes>
+                      <Route path="/" element={<RootComponent />} />
+                      <Route path="/sign-in" element={<SignIn />} />
+                      <Route path="/sign-up" element={<SignUp />} />
+                      <Route path="/forgot-password" element={<ForgotPassword />} />
+                      <Route
+                        path="/home/*"
+                        element={
+                          <ProtectedRoute>
+                            <Home />
+                          </ProtectedRoute>
+                        }
+                      >
+                        <Route path="inbox/all" element={<AllTickets />} />
+                        <Route path="inbox/mentions" element={<Mentions />} />
+                        <Route path="inbox/your-inbox" element={<YourInbox />} />
+                        <Route path="inbox/unassigned" element={<Unassigned />} />
+                        <Route path="inbox/teams" element={<TeamList />} />
+                        <Route path="inbox/teams/:teamId" element={<TeamView />} />
+                        <Route path="inbox/teammates/:teammateId" element={<TeammatePage />} />
+                        <Route path="contacts/all" element={<AllContacts />} />
+                        <Route path="contacts/companies" element={<Companies />} />
+                        <Route path="contacts/companies/:id" element={<CompanyDetail />} />
+                        <Route path="contacts/:id" element={<ContactDetail />} />
+                        <Route path="settings/tags" element={<Tags />} />
+                        <Route path="settings/teams" element={<Teams />} />
+                        <Route path="settings/teams/create" element={<CreateTeam />} />
+                        <Route path="settings/teammates" element={<Teammates />} />
+                        <Route path="settings/teammates/:id" element={<TeammateDetail />} />
+                        <Route path="settings/teams/:id" element={<TeamDetail />} />
+                        <Route path="settings/custom-data" element={<CustomData />} />
+                        <Route path="settings/custom-objects" element={<CustomObjects />} />
+                        <Route path="settings/custom-objects/:id" element={<CustomObjectDetail />} />
+                        <Route path="settings/canned-responses" element={<CannedResponses />} />
+                        <Route path="settings/canned-responses/create" element={<CreateCannedResponse />} />
+                        <Route path="settings/canned-responses/:id" element={<CannedResponseDetail />} />
+                        <Route path="settings/email/domains" element={<Domains />} />
+                        <Route path="settings/email/domains/:id" element={<DomainDetail />} />
+                        <Route path="settings/email/channels" element={<Channels />} />
+                        <Route path="settings/email/channels/create" element={<CreateChannel />} />
+                        <Route path="settings/email/channels/:id" element={<EmailChannelDetail />} />
+                        <Route path="automation/ai/content-center" element={<ContentCenter />} />
+                        <Route path="automation/ai/content-center/create" element={<CreateContent />} />
+                      </Route>
+                      <Route path="/ably-test" element={
                         <ProtectedRoute>
-                          <Home />
+                          <AblyTest />
                         </ProtectedRoute>
-                      }
-                    >
-                      <Route path="inbox/all" element={<AllTickets />} />
-                      <Route path="inbox/mentions" element={<Mentions />} />
-                      <Route path="inbox/your-inbox" element={<YourInbox />} />
-                      <Route path="inbox/unassigned" element={<Unassigned />} />
-                      <Route path="inbox/teams" element={<TeamList />} />
-                      <Route path="inbox/teams/:teamId" element={<TeamView />} />
-                      <Route path="contacts/all" element={<AllContacts />} />
-                      <Route path="contacts/companies" element={<Companies />} />
-                      <Route path="contacts/companies/:id" element={<CompanyDetail />} />
-                      <Route path="contacts/:id" element={<ContactDetail />} />
-                      <Route path="settings/tags" element={<Tags />} />
-                      <Route path="settings/teams" element={<Teams />} />
-                      <Route path="settings/teams/create" element={<CreateTeam />} />
-                      <Route path="settings/teammates" element={<Teammates />} />
-                      <Route path="settings/teammates/:id" element={<TeammateDetail />} />
-                      <Route path="settings/teams/:id" element={<TeamDetail />} />
-                      <Route path="settings/custom-data" element={<CustomData />} />
-                      <Route path="settings/custom-objects" element={<CustomObjects />} />
-                      <Route path="settings/custom-objects/:id" element={<CustomObjectDetail />} />
-                      <Route path="settings/canned-responses" element={<CannedResponses />} />
-                      <Route path="settings/canned-responses/create" element={<CreateCannedResponse />} />
-                      <Route path="settings/canned-responses/:id" element={<CannedResponseDetail />} />
-                      <Route path="settings/email/domains" element={<Domains />} />
-                      <Route path="settings/email/domains/:id" element={<DomainDetail />} />
-                      <Route path="settings/email/channels" element={<Channels />} />
-                      <Route path="settings/email/channels/create" element={<CreateChannel />} />
-                      <Route path="settings/email/channels/:id" element={<EmailChannelDetail />} />
-                      <Route path="automation/ai/content-center" element={<ContentCenter />} />
-                      <Route path="automation/ai/content-center/create" element={<CreateContent />} />
-                    </Route>
-                    <Route path="/ably-test" element={
-                      <ProtectedRoute>
-                        <AblyTest />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </Suspense>
+                      } />
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </Suspense>
+                </TeammatesProvider>
               </TeamsProvider>
             </CaslProvider>
           </ErrorBoundary>

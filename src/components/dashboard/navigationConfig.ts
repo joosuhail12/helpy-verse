@@ -48,18 +48,15 @@ export const subNavItems = {
       title: 'Teams',
       icon: UsersRound,
       children: [
-        { title: 'All Teams', path: '/home/inbox/teams' },
+        // { title: 'All Teams', path: '/home/inbox/teams' },
       ],
       loadDynamicChildren: true,
     },
     {
       title: 'Teammates',
       icon: User,
-      children: [
-        { title: 'Teammate 1 View', path: '/home/inbox/teammates/1' },
-        { title: 'Teammate 2 View', path: '/home/inbox/teammates/2' },
-        { title: 'Teammate 3 View', path: '/home/inbox/teammates/3' },
-      ]
+      children: [],
+      loadDynamicChildren: true,
     }
   ],
   contacts: [
