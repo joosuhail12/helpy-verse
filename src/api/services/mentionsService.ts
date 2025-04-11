@@ -29,7 +29,7 @@ export interface UpdateMentionResponse {
     data: Mention;
 }
 
-const API_URL = '/api/mentions';
+const API_URL = '/mentions';
 
 export const mentionsService = {
     // Get mentions for the current user

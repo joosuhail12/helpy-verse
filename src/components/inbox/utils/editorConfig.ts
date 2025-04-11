@@ -6,11 +6,21 @@ import Placeholder from '@tiptap/extension-placeholder';
 import UserMentionList, { UserMentionItem } from '../components/UserMentionList';
 import MentionList, { MentionItem } from '../components/MentionList';
 import { HttpClient } from '@/api/services/HttpClient';
+import { getUserId, getUserName } from '@/utils/helpers/helpers';
+import { mentionsService } from '@/api/services/mentionsService';
+import { toast } from 'sonner';
 
 interface EditorConfigOptions {
   placeholder?: string;
   onUpdate?: (html: string) => void;
   editable?: boolean;
+  ticketId?: string;
+}
+
+interface Ticket {
+  id?: string;
+  ticketId?: string;
+  [key: string]: any; // Allow for other properties
 }
 
 interface CustomerMentionItem {
@@ -106,15 +116,64 @@ const sampleUsers: UserMentionItem[] = [
   { id: '4', name: 'Taylor Brown', initial: 'T' },
 ];
 
-export const createEditorConfig = (options: EditorConfigOptions) => {
-  const { placeholder, onUpdate, editable = true } = options;
+// Extract ticket ID from various ticket object formats
+const getTicketId = (ticket: Ticket | EditorConfigOptions): string | undefined => {
+  if (!ticket) return undefined;
+
+  // If it's already a string, return it
+  if (typeof ticket === 'string') return ticket;
+
+  // Check for ticketId property (from EditorConfigOptions)
+  if ('ticketId' in ticket && ticket.ticketId) return ticket.ticketId;
+
+  // Check for id property (common in ticket objects)
+  if ('id' in ticket && ticket.id) return ticket.id;
+
+  // Check for _id property (MongoDB style)
+  if ('_id' in ticket && ticket._id) return ticket._id;
+
+  console.warn('Could not find ticket ID in ticket object:', ticket);
+  return undefined;
+};
+
+export const createEditorConfig = (
+  newMessage: string,
+  p0: (editor: any) => void,
+  ticketOrOptions: Ticket | EditorConfigOptions,
+  customerName?: string
+) => {
+  // Extract options - we support both a ticket object or EditorConfigOptions
+  let placeholder: string | undefined;
+  let onUpdate = p0;
+  let editable = true;
+
+  // Extract ticket ID from various possible formats
+  const ticketId = getTicketId(ticketOrOptions);
+
+  // If it's EditorConfigOptions object
+  if (ticketOrOptions && 'placeholder' in ticketOrOptions) {
+    placeholder = ticketOrOptions.placeholder;
+    onUpdate = ticketOrOptions.onUpdate || p0;
+    editable = ticketOrOptions.editable !== undefined ? ticketOrOptions.editable : true;
+  } else {
+    // Default placeholder using customer name if available
+    placeholder = customerName
+      ? `Reply to ${customerName}...`
+      : 'Type your message...';
+  }
+
+  const currentUserId = getUserId();
 
   return {
     extensions: [
       StarterKit,
       Mention.configure({
         HTMLAttributes: {
-          class: 'mention',
+          class: 'mention bg-primary/10 text-primary px-1 py-0.5 rounded no-underline',
+          'data-type': 'mention',
+        },
+        renderLabel({ node }) {
+          return `@${node.attrs.label || ''}`;
         },
         suggestion: {
           char: '@',
@@ -163,6 +222,11 @@ export const createEditorConfig = (options: EditorConfigOptions) => {
                 response.data.data.forEach(ticket => {
                   if (ticket.team && ticket.team.members) {
                     ticket.team.members.forEach(member => {
+                      // Skip the current user
+                      if (member.id === currentUserId) {
+                        return;
+                      }
+
                       // Check if member already exists in allMembers
                       const exists = allMembers.some(m => m.id === member.id);
                       if (!exists) {
@@ -172,7 +236,7 @@ export const createEditorConfig = (options: EditorConfigOptions) => {
                   }
                 });
 
-                console.log('Extracted team members:', allMembers);
+                console.log('Extracted team members (excluding current user):', allMembers);
 
                 // Convert to UserMentionItem format
                 cachedMembers = allMembers.map(member => ({
@@ -184,7 +248,8 @@ export const createEditorConfig = (options: EditorConfigOptions) => {
                 // If no members found, use sample data
                 if (cachedMembers.length === 0) {
                   console.warn('No team members found in response, using sample data');
-                  cachedMembers = sampleUsers;
+                  // Filter out the current user from sample data
+                  cachedMembers = sampleUsers.filter(user => user.id !== currentUserId);
                 }
 
                 // Filter by query
@@ -194,14 +259,16 @@ export const createEditorConfig = (options: EditorConfigOptions) => {
               }
 
               console.warn('No valid data in API response, using sample data:', response.data);
-              return sampleUsers.filter(item =>
-                !query || item.name.toLowerCase().includes(query.toLowerCase())
-              );
+              // Filter out the current user from sample data
+              return sampleUsers
+                .filter(user => user.id !== currentUserId)
+                .filter(item => !query || item.name.toLowerCase().includes(query.toLowerCase()));
             } catch (error) {
               console.error('Error fetching team members:', error);
-              return sampleUsers.filter(item =>
-                !query || item.name.toLowerCase().includes(query.toLowerCase())
-              );
+              // Filter out the current user from sample data
+              return sampleUsers
+                .filter(user => user.id !== currentUserId)
+                .filter(item => !query || item.name.toLowerCase().includes(query.toLowerCase()));
             }
           },
           render: () => {
@@ -249,8 +316,12 @@ export const createEditorConfig = (options: EditorConfigOptions) => {
                     // Create component with sample data
                     setTimeout(() => {
                       popup.removeChild(errorIndicator);
+
+                      // Filter out current user from sample data
+                      const filteredSampleUsers = sampleUsers.filter(user => user.id !== currentUserId);
+
                       component = new UserMentionList({
-                        items: sampleUsers,
+                        items: filteredSampleUsers,
                         command: (item: UserMentionItem) => {
                           console.log('Selected user from sample data:', item);
                         },
@@ -308,6 +379,64 @@ export const createEditorConfig = (options: EditorConfigOptions) => {
               },
             };
           },
+          command: ({ editor, range, props }) => {
+            const mentionedBy = getUserId();
+            const userItem = props as UserMentionItem;
+
+            // Create the mention in the editor
+            editor
+              .chain()
+              .focus()
+              .deleteRange(range)
+              .insertContent([
+                {
+                  type: 'mention',
+                  attrs: {
+                    id: userItem.id,
+                    label: userItem.name,
+                    mentionedUser: userItem.id
+                  }
+                },
+                {
+                  type: 'text',
+                  text: ' ' // Add a space after the mention
+                }
+              ])
+              .run();
+
+            // If we have the necessary data, create a mention record
+            if (mentionedBy && ticketId && userItem.id) {
+              try {
+                // Log the data for debugging
+                console.log('Creating mention with data:', {
+                  ticketId,
+                  userId: userItem.id,
+                  mentionedBy
+                });
+
+                // Use the mentionsService to create a mention
+                mentionsService.createMention({
+                  ticketId,
+                  userId: userItem.id,
+                  mentionedBy,
+                  content: `${getUserName()} mentioned you in a ticket`
+                });
+
+                toast.success(`mentioned ${userItem.name} successfully`);
+
+                console.log(`Created mention: ${mentionedBy} mentioned ${userItem.id} in ticket ${ticketId}`);
+              } catch (error) {
+                console.error('Failed to create mention:', error);
+              }
+            } else {
+              console.warn('Missing data for creating mention:', {
+                mentionedBy,
+                ticketId,
+                userId: userItem.id,
+                ticketObject: ticketOrOptions
+              });
+            }
+          },
         },
       }),
       Placeholder.configure({
@@ -315,7 +444,7 @@ export const createEditorConfig = (options: EditorConfigOptions) => {
       }),
     ],
     onUpdate: ({ editor }) => {
-      onUpdate?.(editor.getHTML());
+      onUpdate(editor);
     },
     editable,
     editorProps: {

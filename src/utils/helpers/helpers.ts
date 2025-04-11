@@ -173,3 +173,6 @@ export const isWorkspaceAgent = (): boolean => localStorage.getItem("role") === 
 
 // 🟢 Get User ID
 export const getUserId = (): string | null => localStorage.getItem("userId");
+
+// get user name
+export const getUserName = (): string | null => localStorage.getItem("userName");
