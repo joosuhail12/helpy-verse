@@ -1,24 +1,36 @@
-
-import { useMessages } from './useMessages';
-import { useTypingIndicator } from './useTypingIndicator';
-import { usePresence } from './usePresence';
+import { useAblyRoom } from './useAblyRoom';
 import type { Ticket } from '@/types/ticket';
 
 export const useConversation = (ticket: Ticket) => {
+  console.log("useConversation hook initialized");
+
   const {
     messages,
-    setMessages,
     newMessage,
     setNewMessage,
+    typingUsers,
+    activeUsers,
+    handleSendMessage: originalHandleSendMessage,
+    handleTyping,
+    isLoading,
     isSending,
+    error,
     isInternalNote,
     setIsInternalNote,
-    handleSendMessage,
-    initializeMessages
-  } = useMessages(ticket);
+    setMessages
+  } = useAblyRoom(ticket);
 
-  const { handleTyping } = useTypingIndicator(ticket);
-  const { typingUsers, activeUsers, isLoading, error } = usePresence(ticket, setMessages);
+  // Wrap the handleSendMessage function with additional logging
+  const handleSendMessage = async () => {
+    console.log("handleSendMessage wrapper in useConversation called");
+    console.log("Current message:", newMessage);
+
+    try {
+      await originalHandleSendMessage();
+    } catch (error) {
+      console.error("Error in useConversation.handleSendMessage:", error);
+    }
+  };
 
   return {
     messages,
@@ -32,6 +44,7 @@ export const useConversation = (ticket: Ticket) => {
     isSending,
     error,
     isInternalNote,
-    setIsInternalNote
+    setIsInternalNote,
+    setMessages
   };
 };

@@ -1,87 +1,160 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
-import type { Ticket } from '@/types/ticket';
-import MessageToolbar from './components/MessageToolbar';
-import AttachmentList from './components/AttachmentList';
+import useCustomer from '@/hooks/use-customer';
 import { createEditorConfig } from './utils/editorConfig';
 import { cn } from "@/lib/utils";
+import MessageToolbar from './components/MessageToolbar';
+import AttachmentList from './components/AttachmentList';
 
 interface MessageInputProps {
   newMessage: string;
   onMessageChange: (value: string) => void;
-  onKeyPress: (e: React.KeyboardEvent<HTMLDivElement>) => void;
+  onKeyPress?: (e: React.KeyboardEvent<HTMLDivElement>) => void;
   onSendMessage: () => void;
-  ticket: Ticket;
+  ticket: any;
   isSending?: boolean;
   disabled?: boolean;
+  handleTyping?: () => void;
+  isInternalNote?: boolean;
+  setIsInternalNote?: (value: boolean) => void;
 }
 
-const MessageInput = ({ 
-  newMessage, 
-  onMessageChange, 
-  onKeyPress, 
+const MessageInput = ({
+  newMessage,
+  onMessageChange,
+  onKeyPress,
   onSendMessage,
   ticket,
   isSending = false,
-  disabled = false
+  disabled = false,
+  handleTyping,
+  isInternalNote: isInternalNoteProp = false,
+  setIsInternalNote: setIsInternalNoteProp
 }: MessageInputProps) => {
-  const [isInternalNote, setIsInternalNote] = useState(false);
+  const [isInternalNote, setIsInternalNoteLocal] = useState(isInternalNoteProp);
   const [files, setFiles] = useState<File[]>([]);
   const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
   const [isAttachmentSheetOpen, setIsAttachmentSheetOpen] = useState(false);
 
-  const editor = useEditor(
-    createEditorConfig(newMessage, (editor) => {
-      onMessageChange(editor.getHTML());
-    }, ticket)
+  // Get customer name for better editor placeholders
+  const { customer: customerData, isLoading } = useCustomer(ticket?.customerId);
+  // Safely access customer name with fallback
+  const customerName = customerData?.name || ticket?.customer || 'Customer';
+
+  // Improve the handleContentChange function to ensure HTML is correctly captured
+  const handleContentChange = useCallback(({ editor }: { editor: any }) => {
+    if (editor && typeof editor.getHTML === 'function') {
+      const html = editor.getHTML();
+      console.log("Editor content changed:", html);
+
+      // Only update if the content has actually changed
+      if (html !== newMessage) {
+        onMessageChange(html);
+
+        // Trigger typing indicator whenever content changes
+        if (html && html !== '<p></p>' && handleTyping) {
+          handleTyping();
+        }
+      }
+    }
+  }, [onMessageChange, handleTyping, newMessage]);
+
+  // Create editor config with proper wrapper function
+  const editorConfig = createEditorConfig(
+    newMessage,
+    (editor) => handleContentChange({ editor }),
+    ticket,
+    customerName
   );
 
-  const handleEmojiSelect = (emojiData: any) => {
-    editor?.commands.insertContent(emojiData.emoji);
-  };
+  const editor = useEditor({
+    extensions: editorConfig.extensions,
+    content: newMessage,
+    editorProps: editorConfig.editorProps
+  });
 
+  // Initialize editor with message content
+  useEffect(() => {
+    if (editor && !editor.isDestroyed && newMessage !== editor.getHTML()) {
+      editor.commands.setContent(newMessage);
+    }
+  }, [editor, newMessage]);
+
+  // Use prop setIsInternalNote if provided
+  useEffect(() => {
+    if (setIsInternalNoteProp) {
+      setIsInternalNoteProp(isInternalNote);
+    }
+  }, [isInternalNote, setIsInternalNoteProp]);
+
+  // Use prop isInternalNote if controlled
+  useEffect(() => {
+    if (isInternalNoteProp !== undefined) {
+      setIsInternalNoteLocal(isInternalNoteProp);
+    }
+  }, [isInternalNoteProp]);
+
+  // Handle file uploads
   const handleFilesAdded = (newFiles: File[]) => {
     setFiles(prev => [...prev, ...newFiles]);
-    
-    // Simulate upload progress for each file
-    newFiles.forEach(file => {
-      let progress = 0;
-      const interval = setInterval(() => {
-        progress += 10;
-        setUploadProgress(prev => ({
-          ...prev,
-          [file.name]: progress
-        }));
-        if (progress >= 100) {
-          clearInterval(interval);
-        }
-      }, 500);
-    });
   };
 
-  const handleRemoveFile = (file: File) => {
-    setFiles(prev => prev.filter(f => f !== file));
-    setUploadProgress(prev => {
-      const { [file.name]: _, ...rest } = prev;
-      return rest;
-    });
+  const handleRemoveFile = (fileToRemove: File) => {
+    setFiles(prev => prev.filter(file => file !== fileToRemove));
   };
 
-  const insertPlaceholder = (type: 'customer' | 'company' | 'ticket') => {
-    let content = '';
-    switch (type) {
-      case 'customer':
-        content = `@${ticket.customer}`;
-        break;
-      case 'company':
-        content = `@${ticket.company}`;
-        break;
-      case 'ticket':
-        content = `#${ticket.id}`;
-        break;
+  // Add emoji to editor
+  const handleEmojiSelect = (emojiData: any) => {
+    if (editor && editor.commands && typeof editor.commands.insertContent === 'function') {
+      const emoji = typeof emojiData === 'string' ? emojiData :
+        (emojiData.emoji || emojiData.native || emojiData.colons || '');
+      editor.commands.insertContent(emoji);
     }
-    editor?.commands.insertContent(content);
+  };
+
+  // Insert placeholder
+  const insertPlaceholder = (content: string) => {
+    if (editor && editor.commands && typeof editor.commands.insertContent === 'function') {
+      editor.commands.insertContent(content);
+    }
+  };
+
+  // Also improve the handleSendClick function
+  const handleSendClick = () => {
+    console.log("Send button clicked in MessageInput");
+
+    // Get the latest content from the editor
+    const currentHTML = editor?.getHTML() || '';
+    console.log("Current editor HTML:", currentHTML);
+
+    // Check if the message is empty or contains only HTML placeholders
+    const isEmptyHtml = !currentHTML ||
+      currentHTML.trim() === '' ||
+      currentHTML === '<p></p>' ||
+      currentHTML === '<p><br></p>' ||
+      currentHTML === '<p>&nbsp;</p>';
+
+    if (isEmptyHtml) {
+      console.log("Message is empty or contains only HTML placeholders, not sending");
+      return;
+    }
+
+    // Make sure our message has proper HTML structure
+    let messageToSend = currentHTML;
+    if (messageToSend && !messageToSend.startsWith('<')) {
+      messageToSend = `<p>${messageToSend}</p>`;
+    }
+
+    // Update the message state with the latest content
+    onMessageChange(messageToSend);
+
+    // Call the provided onSendMessage function
+    onSendMessage();
+
+    // Clear the editor content after sending
+    if (editor) {
+      editor.commands.clearContent();
+    }
   };
 
   return (
@@ -90,13 +163,13 @@ const MessageInput = ({
         "border rounded-lg mb-3",
         isInternalNote && "border-yellow-400 bg-yellow-50"
       )}>
-        <MessageToolbar 
+        <MessageToolbar
           editor={editor}
           onInsertPlaceholder={insertPlaceholder}
           ticket={ticket}
           disabled={disabled}
           isInternalNote={isInternalNote}
-          setIsInternalNote={setIsInternalNote}
+          setIsInternalNote={setIsInternalNoteLocal}
           onEmojiSelect={handleEmojiSelect}
           onFilesAdded={handleFilesAdded}
           uploadProgress={uploadProgress}
@@ -105,12 +178,12 @@ const MessageInput = ({
           isAttachmentSheetOpen={isAttachmentSheetOpen}
           setIsAttachmentSheetOpen={setIsAttachmentSheetOpen}
         />
-        <div 
+        <div
           className={`cursor-text ${disabled ? 'opacity-50 pointer-events-none' : ''}`}
           onClick={() => editor?.commands.focus()}
         >
-          <EditorContent 
-            editor={editor} 
+          <EditorContent
+            editor={editor}
             className="p-3"
             onKeyDown={onKeyPress}
           />
@@ -131,7 +204,7 @@ const MessageInput = ({
             disabled && "opacity-50 cursor-not-allowed",
             isInternalNote && "bg-yellow-500"
           )}
-          onClick={onSendMessage}
+          onClick={handleSendClick}
           disabled={disabled || isSending}
         >
           {isSending ? 'Sending...' : isInternalNote ? 'Add Note' : 'Send Reply'}

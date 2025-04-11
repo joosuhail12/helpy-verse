@@ -1,4 +1,3 @@
-
 import { MessageSquare, Building, Tag, Clock, User, UserX, Copy, CheckCircle, Circle } from 'lucide-react';
 import { formatDistanceToNow, format } from 'date-fns';
 import {
@@ -21,13 +20,15 @@ import {
 import { Button } from "@/components/ui/button";
 import TicketStatusBadge from './TicketStatusBadge';
 import TicketPriorityBadge from './TicketPriorityBadge';
+import useCustomer from '@/hooks/use-customer';
 import type { ViewMode } from '@/types/ticket';
 
 interface TicketCardProps {
   ticket: {
     id: string;
     subject: string;
-    customer: string;
+    customer?: string;
+    customerId?: string;
     lastMessage: string;
     assignee: string | null;
     assigneeAvatar?: string;
@@ -44,12 +45,18 @@ interface TicketCardProps {
 
 const TicketCard = ({ ticket, viewMode, onCopyId }: TicketCardProps) => {
   const isCompact = viewMode === 'compact';
+  const { customerName, isLoading: isCustomerLoading, customer } = useCustomer(ticket.customerId);
+
+  // Display customer name if available, otherwise fallback to customerId or "Unknown"
+  const displayName = customerName || ticket.customer || (ticket.customerId ? '...' : "Unknown");
+
+  // For company display, use data from customer if available
+  const companyName = customer?.company || ticket.company || '';
 
   return (
-    <div 
-      className={`group bg-white rounded-xl p-4 hover:bg-gray-50/50 transition-all cursor-pointer w-full ${
-        isCompact ? 'py-3' : ''
-      } ${ticket.isUnread ? 'bg-blue-50/30' : ''}`}
+    <div
+      className={`group bg-white rounded-xl p-4 hover:bg-gray-50/50 transition-all cursor-pointer w-full ${isCompact ? 'py-3' : ''
+        } ${ticket.isUnread ? 'bg-blue-50/30' : ''}`}
       role="article"
       aria-labelledby={`ticket-${ticket.id}-subject`}
     >
@@ -79,10 +86,10 @@ const TicketCard = ({ ticket, viewMode, onCopyId }: TicketCardProps) => {
               <UserX className="w-4 h-4 text-gray-400" />
             </div>
           )}
-          
+
           <div className="flex-1 min-w-0 space-y-1">
             <div className="flex items-start justify-between gap-2">
-              <h3 
+              <h3
                 id={`ticket-${ticket.id}-subject`}
                 className={`font-medium text-sm text-gray-900 truncate ${ticket.isUnread ? 'font-semibold' : ''}`}
               >
@@ -103,10 +110,12 @@ const TicketCard = ({ ticket, viewMode, onCopyId }: TicketCardProps) => {
             <div className="flex items-center gap-2 flex-wrap">
               <div className="flex items-center gap-1.5 text-xs text-gray-600 min-w-0">
                 <Building className="w-3 h-3 text-gray-400 shrink-0" />
-                <span className="truncate">{ticket.company}</span>
+                <span className="truncate">{companyName}</span>
               </div>
               <span className="w-1 h-1 rounded-full bg-gray-300"></span>
-              <span className="text-xs text-gray-600 truncate">{ticket.customer}</span>
+              <span className="text-xs text-gray-600 truncate">
+                {isCustomerLoading ? "Loading..." : displayName}
+              </span>
             </div>
 
             {!isCompact && (

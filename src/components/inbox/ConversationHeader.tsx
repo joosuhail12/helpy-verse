@@ -9,15 +9,16 @@ import { formatDistanceToNow } from 'date-fns';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { RootState } from '@/store/store';
 import { Badge } from '@/components/ui/badge';
+import useCustomer from '@/hooks/use-customer';
 
 interface ConversationHeaderProps {
   ticket: Ticket;
   onClose: () => void;
-  activeUsers: UserPresence[];
+  activeUsers?: UserPresence[];
 }
 
-const ConversationHeader = ({ ticket, onClose, activeUsers }: ConversationHeaderProps) => {
-  // Get customer details from Redux store
+const ConversationHeader = ({ ticket, onClose, activeUsers = [] }: ConversationHeaderProps) => {
+  // Get customer details from Redux store (legacy approach)
   const { contactDetails, loading } = useAppSelector(
     (state: RootState) => state.contacts || {
       contactDetails: null,
@@ -25,26 +26,34 @@ const ConversationHeader = ({ ticket, onClose, activeUsers }: ConversationHeader
     }
   );
 
+  // Use our customer hook for customerId-based approach
+  const { customer: customerFromCache, isLoading: isCustomerLoading } = useCustomer(ticket.customerId);
+
+  // Determine which data source to use
+  const isUsingCustomerId = !!ticket.customerId;
+  const customerData = isUsingCustomerId ? customerFromCache : contactDetails;
+  const isLoadingCustomer = isUsingCustomerId ? isCustomerLoading : loading;
+
   // Memoize customer display information
   const customerInfo = useMemo(() => {
-    if (contactDetails) {
+    if (customerData) {
       return {
-        name: `${contactDetails.firstname} ${contactDetails.lastname}`,
-        initials: `${contactDetails.firstname[0]}${contactDetails.lastname[0]}`,
-        company: contactDetails.company,
-        email: contactDetails.email,
-        id: contactDetails.id
+        name: `${customerData.firstname} ${customerData.lastname}`,
+        initials: `${customerData.firstname[0]}${customerData.lastname[0]}`,
+        company: customerData.company,
+        email: customerData.email,
+        id: customerData.id
       };
     }
 
     // Fallback to ticket data if no contact details available
     return {
       name: ticket.customer,
-      initials: ticket.customer[0],
+      initials: ticket.customer ? ticket.customer[0] : '?',
       company: ticket.company,
-      id: ticket.customer
+      id: ticket.customer || ticket.customerId
     };
-  }, [contactDetails, ticket]);
+  }, [customerData, ticket]);
 
   // Prioritize contact info if available, otherwise fall back to ticket info
   const displayName = customerInfo.name;
@@ -57,11 +66,45 @@ const ConversationHeader = ({ ticket, onClose, activeUsers }: ConversationHeader
         <div className="flex items-center gap-2">
           <h2 className="font-semibold text-lg truncate">{ticket.subject}</h2>
           <Badge variant="outline" className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary">
-            #{ticket.id}
+            <div className="flex items-center gap-2">
+              <div className="flex -space-x-2 relative">
+                {activeUsers.map((user) => (
+                  <div key={user.userId} className="relative">
+                    <Avatar className="h-7 w-7 border-2 border-white rounded-full flex items-center justify-center bg-primary/10">
+                      <span className="text-xs font-medium">{user.name && user.name.length > 0 ? user.name[0].toUpperCase() : '?'}</span>
+                    </Avatar>
+                    <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-white" />
+                  </div>
+                ))}
+              </div>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center gap-1 cursor-pointer">
+                    {/* <span>#{ticket.id}</span> */}
+                    <Users className="h-3.5 w-3.5" />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <div className="space-y-2">
+                    {activeUsers.map((user) => (
+                      <div key={user.userId} className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-green-500" />
+                        <span className="font-medium">{user.name || 'Unknown'}</span>
+                        {user.lastActive && (
+                          <span className="text-xs text-muted-foreground">
+                            • active {formatDistanceToNow(new Date(user.lastActive), { addSuffix: true })}
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            </div>
           </Badge>
         </div>
         <div className="flex items-center gap-2 mt-1">
-          {loading ? (
+          {isLoadingCustomer ? (
             <div className="h-5 w-5 rounded-full bg-muted animate-pulse"></div>
           ) : (
             <Avatar className="h-5 w-5">
@@ -69,7 +112,7 @@ const ConversationHeader = ({ ticket, onClose, activeUsers }: ConversationHeader
             </Avatar>
           )}
           <p className="text-sm text-muted-foreground">
-            {loading ? (
+            {isLoadingCustomer ? (
               <span className="inline-block h-4 w-32 bg-muted animate-pulse rounded"></span>
             ) : (
               <>
@@ -89,7 +132,7 @@ const ConversationHeader = ({ ticket, onClose, activeUsers }: ConversationHeader
                 <div className="flex -space-x-2">
                   {activeUsers.slice(0, 3).map((user) => (
                     <Avatar key={user.userId} className="h-6 w-6 border-2 border-white">
-                      <span className="text-xs">{user.name[0]}</span>
+                      <span className="text-xs">{user.name && user.name.length > 0 ? user.name[0] : '?'}</span>
                     </Avatar>
                   ))}
                   {activeUsers.length > 3 && (
@@ -105,7 +148,7 @@ const ConversationHeader = ({ ticket, onClose, activeUsers }: ConversationHeader
                 {activeUsers.map((user) => (
                   <div key={user.userId} className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-green-500" />
-                    <span className="font-medium">{user.name}</span>
+                    <span className="font-medium">{user.name || 'Unknown'}</span>
                     <span className="text-xs text-muted-foreground">
                       {user.location ? (
                         <>
@@ -113,7 +156,16 @@ const ConversationHeader = ({ ticket, onClose, activeUsers }: ConversationHeader
                           {user.location.area && ` (${user.location.area})`}
                         </>
                       ) : 'browsing'}
-                      • active {formatDistanceToNow(new Date(user.lastActive), { addSuffix: true })}
+                      {user.lastActive &&
+                        typeof user.lastActive === 'string' &&
+                        !isNaN(new Date(user.lastActive).getTime()) ? (
+                        <>
+                          • active {formatDistanceToNow(new Date(user.lastActive), { addSuffix: true })}
+                        </>
+                      ) : (
+                        '• active now'
+                      )
+                      }
                     </span>
                   </div>
                 ))}

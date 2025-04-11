@@ -1,5 +1,6 @@
 import type { Contact } from '@/types/contact';
 import { HttpClient } from '@/api/services/HttpClient';
+import type { Customer } from '@/types/customer';
 
 const API_URL = '/customer';
 
@@ -36,6 +37,12 @@ export interface CreateCustomerData {
     workspace_id: string;
 }
 
+export interface UpdateCustomerResponse {
+    status: string;
+    message: string;
+    data: Customer;
+}
+
 export const customerService = {
     // ✅ Fetch list of customers
     async fetchCustomers(): Promise<CustomersResponse> {
@@ -56,6 +63,48 @@ export const customerService = {
         } catch (error) {
             console.error('Error fetching customer details:', error);
             throw new Error('Failed to fetch customer details');
+        }
+    },
+
+    // ✅ Fetch customer by ID (for customer name display)
+    async fetchCustomerById(customerId: string): Promise<CustomerResponse> {
+        try {
+            const response = await HttpClient.apiClient.get<CustomerResponse>(`${API_URL}/${customerId}`);
+            return response.data;
+        } catch (error) {
+            console.error(`Error fetching customer with ID ${customerId}:`, error);
+            throw new Error(`Failed to fetch customer with ID ${customerId}`);
+        }
+    },
+
+    // ✅ Batch fetch multiple customers by IDs
+    async fetchCustomersByIds(customerIds: string[]): Promise<Record<string, Contact>> {
+        try {
+            if (!customerIds.length) return {};
+
+            // Create promises for all customer requests
+            const promises = customerIds.map(id =>
+                HttpClient.apiClient.get<CustomerResponse>(`${API_URL}/${id}`)
+                    .then(response => ({ id, data: response.data.data }))
+                    .catch(error => {
+                        console.error(`Error fetching customer with ID ${id}:`, error);
+                        return { id, data: null };
+                    })
+            );
+
+            // Execute all promises in parallel
+            const results = await Promise.all(promises);
+
+            // Convert results to a map of customerId -> customer data
+            return results.reduce((acc, { id, data }) => {
+                if (data) {
+                    acc[id] = data;
+                }
+                return acc;
+            }, {} as Record<string, Contact>);
+        } catch (error) {
+            console.error('Error batch fetching customers:', error);
+            throw new Error('Failed to batch fetch customers');
         }
     },
 
@@ -86,9 +135,15 @@ export const customerService = {
     },
 
     // ✅ Update a customer
-    async updateCustomer(customer_id: string, customerData: Partial<Contact>): Promise<Contact> {
+    async updateCustomer(customerId: string, customerData: Partial<Customer>): Promise<UpdateCustomerResponse> {
         try {
-            const response = await HttpClient.apiClient.put<Contact>(`${API_URL}/${customer_id}`, customerData);
+            // Remove workspace_id from the body if it exists
+            const { workspace_id, ...cleanedData } = customerData as any;
+
+            const response = await HttpClient.apiClient.put<UpdateCustomerResponse>(
+                `${API_URL}/${customerId}`,
+                cleanedData
+            );
             return response.data;
         } catch (error) {
             console.error('Error updating customer:', error);

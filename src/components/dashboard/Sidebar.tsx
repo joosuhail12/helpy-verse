@@ -18,6 +18,9 @@ const Sidebar = () => {
   const [isSecondPanelCollapsed, setIsSecondPanelCollapsed] = useState(false);
 
   const handleLogout = () => {
+    localStorage.removeItem("userId");
+    localStorage.removeItem("userEmail");
+    localStorage.removeItem("userName");
     dispatch(logout());
     toast({
       title: "Logged out successfully",
@@ -27,8 +30,8 @@ const Sidebar = () => {
   };
 
   const toggleExpanded = (itemTitle: string) => {
-    setExpandedItems(prev => 
-      prev.includes(itemTitle) 
+    setExpandedItems(prev =>
+      prev.includes(itemTitle)
         ? prev.filter(item => item !== itemTitle)
         : [...prev, itemTitle]
     );
@@ -49,14 +52,14 @@ const Sidebar = () => {
         <div className="flex flex-col items-center gap-8">
           <div className="relative group">
             <div className="absolute inset-0 bg-gradient-to-tr from-purple-500/20 to-blue-500/20 rounded-full blur-xl group-hover:blur-2xl transition-all duration-300 opacity-0 group-hover:opacity-100" />
-            <img 
-              src="https://framerusercontent.com/images/9N8Z1vTRbJsHlrIuTjm6Ajga4dI.png" 
-              alt="Logo" 
+            <img
+              src="https://framerusercontent.com/images/9N8Z1vTRbJsHlrIuTjm6Ajga4dI.png"
+              alt="Logo"
               className="w-10 h-10 object-contain transition-all duration-300 group-hover:scale-110 relative z-10"
             />
           </div>
-          
-          <MainNavigation 
+
+          <MainNavigation
             activeMainNav={activeMainNav}
             setActiveMainNav={setActiveMainNav}
             navigate={navigate}
@@ -76,7 +79,7 @@ const Sidebar = () => {
       </div>
 
       {activeMainNav !== 'home' && subNavItems[activeMainNav as keyof typeof subNavItems] && (
-        <SubNavigation 
+        <SubNavigation
           activeMainNav={activeMainNav}
           isSecondPanelCollapsed={isSecondPanelCollapsed}
           toggleSecondPanel={toggleSecondPanel}

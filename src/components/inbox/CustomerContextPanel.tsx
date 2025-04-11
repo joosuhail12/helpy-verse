@@ -12,6 +12,7 @@ import { RootState } from "@/store/store";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { Contact } from "@/types/contact";
+import useCustomer from "@/hooks/use-customer";
 
 interface CustomerContextPanelProps {
   ticket: TicketType;
@@ -28,7 +29,7 @@ enum PanelSection {
 const CustomerContextPanel = ({ ticket }: CustomerContextPanelProps) => {
   const dispatch = useAppDispatch();
 
-  // Get customer details from Redux store
+  // Get customer details from Redux store using either ID or legacy customer identifier
   const { contactDetails, loading, error } = useAppSelector(
     (state: RootState) => state.contacts || {
       contactDetails: null,
@@ -36,6 +37,9 @@ const CustomerContextPanel = ({ ticket }: CustomerContextPanelProps) => {
       error: null
     }
   );
+
+  // Use our customer hook if customerId is available
+  const { customer: customerFromCache, isLoading: isCustomerLoading } = useCustomer(ticket.customerId);
 
   // Initial state for collapsible sections
   const [openSections, setOpenSections] = useState({
@@ -45,12 +49,18 @@ const CustomerContextPanel = ({ ticket }: CustomerContextPanelProps) => {
     [PanelSection.TIMELINE]: false
   });
 
-  // Fetch customer details when ticket changes
+  // Fetch customer details when ticket changes - only if customerId is not available
   useEffect(() => {
-    if (ticket?.customer) {
-      dispatch(fetchCustomerDetails(ticket.customer));
+    if (!ticket.customerId && ticket?.customer) {
+      // Ensure we only pass string ID to fetchCustomerDetails
+      const customerId = typeof ticket.customer === 'string'
+        ? ticket.customer
+        : ticket.customer.id;
+      if (customerId) {
+        dispatch(fetchCustomerDetails(customerId));
+      }
     }
-  }, [dispatch, ticket?.customer]);
+  }, [dispatch, ticket?.customer, ticket.customerId]);
 
   // Log errors if any
   useEffect(() => {
@@ -67,39 +77,43 @@ const CustomerContextPanel = ({ ticket }: CustomerContextPanelProps) => {
     }));
   };
 
+  // Get final customer data (prioritize data from our cache if available)
+  const customerData = ticket.customerId ? customerFromCache : contactDetails;
+  const isLoadingCustomer = ticket.customerId ? isCustomerLoading : loading;
+
   // Memoize formatted customer data to prevent unnecessary recalculations
   const formattedCustomerData = useMemo(() => {
-    if (!contactDetails) return null;
+    if (!customerData) return null;
 
     return {
-      id: contactDetails.id,
-      name: `${contactDetails.firstname} ${contactDetails.lastname}`,
-      firstName: contactDetails.firstname,
-      lastName: contactDetails.lastname,
-      email: contactDetails.email,
-      phone: contactDetails.phone,
-      company: contactDetails.company,
-      title: contactDetails.title,
-      department: contactDetails.department,
-      timezone: contactDetails.timezone,
-      linkedin: contactDetails.linkedinUrl,
-      twitter: contactDetails.twitterUrl,
-      language: contactDetails.language,
-      accountValue: contactDetails.accountValue,
-      status: contactDetails.status,
-      type: contactDetails.type,
-      source: contactDetails.source,
-      createdAt: contactDetails.createdAt,
-      updatedAt: contactDetails.updatedAt,
+      id: customerData.id,
+      name: `${customerData.firstname} ${customerData.lastname}`,
+      firstName: customerData.firstname,
+      lastName: customerData.lastname,
+      email: customerData.email,
+      phone: customerData.phone,
+      company: customerData.company,
+      title: customerData.title,
+      department: customerData.department,
+      timezone: customerData.timezone,
+      linkedin: customerData.linkedinUrl,
+      twitter: customerData.twitterUrl,
+      language: customerData.language,
+      accountValue: customerData.accountValue,
+      status: customerData.status,
+      type: customerData.type,
+      source: customerData.source,
+      createdAt: customerData.createdAt,
+      updatedAt: customerData.updatedAt,
       address: {
-        street: contactDetails.street,
-        city: contactDetails.city,
-        state: contactDetails.state,
-        postalCode: contactDetails.postalCode,
-        country: contactDetails.country
+        street: customerData.street,
+        city: customerData.city,
+        state: customerData.state,
+        postalCode: customerData.postalCode,
+        country: customerData.country
       }
     };
-  }, [contactDetails]);
+  }, [customerData]);
 
   // Sample timeline data - in a real app, this would come from an API
   const customerTimeline = [
@@ -126,9 +140,9 @@ const CustomerContextPanel = ({ ticket }: CustomerContextPanelProps) => {
 
   // Handler for updating customer information
   const handleUpdateCustomer = (updates: Partial<Contact>) => {
-    if (contactDetails?.id) {
+    if (customerData?.id) {
       dispatch(updateCustomer({
-        customer_id: contactDetails.id,
+        customer_id: customerData.id,
         ...updates
       }));
     }
@@ -136,13 +150,18 @@ const CustomerContextPanel = ({ ticket }: CustomerContextPanelProps) => {
 
   // Determine company information with proper fallback
   const companyInfo = useMemo(() => {
-    return contactDetails?.company || ticket.company || null;
-  }, [contactDetails, ticket]);
+    return customerData?.company || ticket.company || null;
+  }, [customerData, ticket.company]);
+
+  // Loading indicator for header
+  const customerDisplayName = isLoadingCustomer
+    ? 'Loading...'
+    : formattedCustomerData?.name || ticket.customer || 'Unknown Customer';
 
   return (
     <Card className="h-full flex flex-col bg-white border-l">
       <CustomerHeader
-        customer={formattedCustomerData?.name || 'Loading...'}
+        customer={customerDisplayName.toString()}
         company={companyInfo}
       />
 
@@ -159,18 +178,25 @@ const CustomerContextPanel = ({ ticket }: CustomerContextPanelProps) => {
             company={companyInfo}
             isOpen={openSections[PanelSection.CONTACT]}
             onToggle={() => toggleSection(PanelSection.CONTACT)}
-          // onUpdate={handleUpdateCustomer}
+            isLoading={isLoadingCustomer}
           />
 
           <CompanyInfoCard
-            // company={formattedCustomerData.company}
+            company={companyInfo ? {
+              id: 'company-id',
+              name: companyInfo,
+              status: 'active',
+              tierLevel: 'platinum',
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString()
+            } : null}
             isOpen={openSections[PanelSection.COMPANY]}
             onToggle={() => toggleSection(PanelSection.COMPANY)}
           />
 
           <TimelineCard
             events={customerTimeline}
-            isLoading={loading}
+            isLoading={isLoadingCustomer}
             isOpen={openSections[PanelSection.TIMELINE]}
             onToggle={() => toggleSection(PanelSection.TIMELINE)}
           />

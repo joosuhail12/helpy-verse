@@ -1,4 +1,3 @@
-
 import type { Ticket } from '@/types/ticket';
 
 export interface UserPresence {
@@ -11,13 +10,21 @@ export interface UserPresence {
   };
 }
 
+export interface ReadReceipt {
+  userId: string;
+  name: string;
+  readAt: string;
+}
+
 export interface Message {
   id: string;
   content: string;
   sender: string;
+  senderName?: string;
   timestamp: string;
   isCustomer: boolean;
-  readBy?: string[];
+  readBy?: Array<ReadReceipt | string>;
+  lastReadAt?: string;
   reactions?: Record<string, string[]>;
   type?: 'message' | 'internal_note';
 }

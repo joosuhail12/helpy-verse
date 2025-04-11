@@ -1,4 +1,3 @@
-
 import { configureStore } from '@reduxjs/toolkit';
 import actionsReducer from './slices/actions/actionsSlice';
 import chatbotsReducer from './slices/chatbots/chatbotsSlice';
@@ -12,6 +11,9 @@ import securityReducer from './slices/securitySlice';
 import tagsReducer from './slices/tagsSlice';
 import emailChannelsReducer from './slices/emailChannels/emailChannelsSlice';
 import cannedResponsesReducer from './slices/cannedResponses/cannedResponsesSlice';
+import customersReducer from './slices/customers/customersSlice';
+import ticketsReducer from './slices/tickets/ticketsSlice';
+import mentionsReducer from './slices/mentionsSlice';
 
 export const store = configureStore({
   reducer: {
@@ -27,6 +29,9 @@ export const store = configureStore({
     tags: tagsReducer,
     emailChannels: emailChannelsReducer,
     cannedResponses: cannedResponsesReducer,
+    customers: customersReducer,
+    tickets: ticketsReducer,
+    mentions: mentionsReducer,
   },
 });
 
